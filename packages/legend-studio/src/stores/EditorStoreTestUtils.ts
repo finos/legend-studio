@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-application';
 import { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 
-export const TEST_DATA__studioConfig = {
+const TEST_DATA__appConfig = {
   appName: 'test-studio-app',
   env: 'test-env',
   sdlc: {
@@ -47,7 +47,7 @@ export const TEST__getTestStudioConfig = (
 ): LegendStudioConfig => {
   const config = new LegendStudioConfig({
     configData: {
-      ...TEST_DATA__studioConfig,
+      ...TEST_DATA__appConfig,
       ...extraConfigData,
     },
     versionData: TEST_DATA__applicationVersion,

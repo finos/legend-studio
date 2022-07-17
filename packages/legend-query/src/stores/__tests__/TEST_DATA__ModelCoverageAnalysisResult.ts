@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel = {
+export const TEST_DATA__ModelCoverageAnalysisResult_ComplexM2M = {
   mappedEntities: [
     {
       path: 'model::target::NFirm',
@@ -56,7 +56,7 @@ export const Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel = {
+export const TEST_DATA__ModelCoverageAnalysisResult_COVIDDataSimple = {
   mappedEntities: [
     {
       path: 'domain::Demographics',
@@ -108,7 +108,7 @@ export const Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_Auto_M2M = {
+export const TEST_DATA__ModelCoverageAnalysisResult_M2MAutoMapped = {
   mappedEntities: [
     {
       path: 'test::autoMapping::Firm',
@@ -126,7 +126,7 @@ export const Mocked_ModelCoverageAnalyticsResult_Auto_M2M = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_Relational_Inline = {
+export const TEST_DATA__ModelCoverageAnalysisResult_RelationalInline = {
   mappedEntities: [
     {
       path: 'Oct::models::Firm',
@@ -158,7 +158,7 @@ export const Mocked_ModelCoverageAnalyticsResult_Relational_Inline = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceModel =
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance =
   {
     mappedEntities: [
       {
@@ -204,7 +204,7 @@ export const Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceMode
     ],
   };
 
-export const Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel = {
+export const TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping = {
   mappedEntities: [
     {
       path: 'model::Person',
@@ -241,7 +241,7 @@ export const Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel = {
+export const TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational = {
   mappedEntities: [
     {
       path: 'model::pure::tests::model::simple::PersonExtension',
@@ -1016,7 +1016,7 @@ export const Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_SimpleSubtype = {
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype = {
   mappedEntities: [
     {
       path: 'model::LegalEntity',
@@ -1070,7 +1070,7 @@ export const Mocked_ModelCoverageAnalyticsResult_SimpleSubtype = {
   ],
 };
 
-export const Mocked_ModelCoverageAnalyticsResult_SimpleRelationalModel = {
+export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational = {
   mappedEntities: [
     {
       path: 'my::Firm',

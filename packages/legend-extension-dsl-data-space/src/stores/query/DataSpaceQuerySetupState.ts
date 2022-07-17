@@ -27,6 +27,7 @@ import {
   DepotScope,
   ProjectData,
   SNAPSHOT_VERSION_ALIAS,
+  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -98,16 +99,11 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
-    if (this.queryStore.initState.isInInitialState) {
-      yield flowResult(this.queryStore.initialize());
-    } else if (this.queryStore.initState.isInProgress) {
-      return;
-    }
     const isValidSearchString = searchText.length >= 3;
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
-        (yield this.queryStore.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.setupStore.depotServerClient.getEntitiesByClassifierPath(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             search: isValidSearchString ? searchText : undefined,
@@ -129,39 +125,34 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.queryStore.applicationStore.notifyError(error);
+      this.setupStore.applicationStore.notifyError(error);
     }
   }
 
   *loadDataSpace(dataSpace: DataSpaceContext): GeneratorFn<void> {
-    if (this.queryStore.initState.isInInitialState) {
-      yield flowResult(this.queryStore.initialize());
-    } else if (this.queryStore.initState.isInProgress) {
-      return;
-    }
     this.loadDataSpaceState.inProgress();
     try {
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.queryStore.depotServerClient.getProject(
+          this.setupStore.depotServerClient.getProject(
             dataSpace.groupId,
             dataSpace.artifactId,
           ),
         )) as PlainObject<ProjectData>,
       );
-      const entities = (yield this.queryStore.depotServerClient.getEntities(
+      const entities = (yield this.setupStore.depotServerClient.getEntities(
         project,
         dataSpace.versionId,
       )) as Entity[];
       const dependencyEntitiesIndex = (yield flowResult(
-        this.queryStore.depotServerClient.getIndexedDependencyEntities(
+        this.setupStore.depotServerClient.getIndexedDependencyEntities(
           project,
           dataSpace.versionId,
         ),
       )) as Map<string, Entity[]>;
 
       const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
-        this.queryStore.graphManagerState.graphManager,
+        this.setupStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,
         entities,
@@ -169,7 +160,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       )) as DataSpaceAnalysisResult;
 
       this.dataSpaceViewerState = new DataSpaceViewerState(
-        this.queryStore.graphManagerState,
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,
@@ -181,12 +171,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             versionId: string,
             entityPath: string | undefined,
           ): void =>
-            this.queryStore.viewStudioProject(
-              groupId,
-              artifactId,
-              versionId,
-              entityPath,
-            ),
+            this.viewStudioProject(groupId, artifactId, versionId, entityPath),
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },
@@ -196,13 +181,13 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpaceState.fail();
-      this.queryStore.applicationStore.notifyError(error);
+      this.setupStore.applicationStore.notifyError(error);
     }
   }
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      this.queryStore.applicationStore.navigator.goTo(
+      this.setupStore.applicationStore.navigator.goTo(
         generateCreateQueryRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
@@ -214,5 +199,20 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       );
       this.setupStore.setSetupState(undefined);
     }
+  }
+
+  private viewStudioProject(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ): void {
+    this.setupStore.applicationStore.navigator.openNewWindow(
+      `${
+        this.setupStore.applicationStore.config.studioUrl
+      }/view/archive/${generateGAVCoordinates(groupId, artifactId, versionId)}${
+        entityPath ? `/entity/${entityPath}` : ''
+      }`,
+    );
   }
 }

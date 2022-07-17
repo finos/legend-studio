@@ -341,12 +341,12 @@ const generateExplorerTreeClassNodeChildrenIDs = (
 export const getQueryBuilderPropertyNodeData = (
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
-  modelCoverageAnalyticsResult: MappingModelCoverageAnalysisResult,
+  modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreePropertyNodeData => {
   const mappingNodeData = generatePropertyNodeMappingData(
     property,
     parentNode.mappingData,
-    modelCoverageAnalyticsResult,
+    modelCoverageAnalysisResult,
   );
   const isPartOfDerivedPropertyBranch =
     property instanceof DerivedProperty ||

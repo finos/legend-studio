@@ -139,11 +139,14 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
   }
 
   async surveyMappingRuntimeCompatibility(
-    graph: PureModel,
     entities: Entity[],
     dependencyEntities: Map<string, Entity[]>,
   ): Promise<MappingRuntimeCompatibilityAnalysisResult[]> {
     const result: MappingRuntimeCompatibilityAnalysisResult[] = [];
+    const graph = await this.graphManager.createEmptyGraph({
+      initializeSystem: false,
+    });
+
     const graphBuilderInput = await this.graphManager.indexLightGraph(
       graph,
       entities,
@@ -246,11 +249,14 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
   }
 
   async surveyServiceExecution(
-    graph: PureModel,
     entities: Entity[],
     dependencyEntities: Map<string, Entity[]>,
   ): Promise<ServiceExecutionAnalysisResult[]> {
     const result: ServiceExecutionAnalysisResult[] = [];
+    const graph = await this.graphManager.createEmptyGraph({
+      initializeSystem: false,
+    });
+
     const graphBuilderInput = await this.graphManager.indexLightGraph(
       graph,
       entities,

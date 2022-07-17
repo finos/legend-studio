@@ -21,13 +21,13 @@ import { getByDisplayValue, waitFor } from '@testing-library/dom';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import {
-  TEST__provideMockedLegendQueryStore,
+  TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
-} from '../LegendQueryComponentTestUtils.js';
+} from '../QueryEditorComponentTestUtils.js';
 import TEST_DATA__QueryBuilder_Model_PropertySearch from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_PropertySearch.json';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import { Mocked_ModelCoverageAnalyticsResult_SimpleRelationalModel } from '../../stores/__tests__/TEST_DATA__Mocked_ModelCoverageAnalyticsResult.js';
+import { TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 
 test(
   integrationTest(
@@ -36,20 +36,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_DATA__QueryBuilder_Model_PropertySearch,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
-      Mocked_ModelCoverageAnalyticsResult_SimpleRelationalModel,
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
     const _firmClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
 
     await act(async () => {
       queryBuilderState.changeClass(_firmClass);

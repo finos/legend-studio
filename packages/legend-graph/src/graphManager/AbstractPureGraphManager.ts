@@ -27,7 +27,7 @@ import type {
 import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
+import { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../models/metamodels/pure/packageableElements/runtime/Runtime.js';
 import type { DependencyManager } from '../graph/DependencyManager.js';
@@ -48,11 +48,11 @@ import type {
   RawExecutionPlan,
 } from '../models/metamodels/pure/executionPlan/ExecutionPlan.js';
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode.js';
-import type {
+import {
   ActionState,
-  Log,
-  ServerClientConfig,
-  TracerService,
+  type Log,
+  type ServerClientConfig,
+  type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-model-storage';
@@ -430,6 +430,26 @@ export abstract class AbstractPureGraphManager {
       pruneSourceInformation?: boolean;
     },
   ): Entity;
+
+  async createEmptyGraph(options?: {
+    initializeSystem?: boolean;
+  }): Promise<PureModel> {
+    const extensionElementClasses = this.pluginManager
+      .getPureGraphPlugins()
+      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
+    const coreModel = new CoreModel(extensionElementClasses);
+    const systemModel = new SystemModel(extensionElementClasses);
+    if (options?.initializeSystem) {
+      await this.buildSystem(coreModel, systemModel, ActionState.create());
+      systemModel.initializeAutoImports();
+    }
+    const graph = new PureModel(
+      coreModel,
+      systemModel,
+      this.pluginManager.getPureGraphPlugins(),
+    );
+    return graph;
+  }
 
   // ------------------------------------------- Change detection -------------------------------------------
 

@@ -2314,7 +2314,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // --------------------------------------------- Utilities ---------------------------------------------
+  // --------------------------------------------- Database ---------------------------------------------
 
   async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
     const dbBuilderInput = new V1_DatabaseBuilderInput();
@@ -2459,7 +2459,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // --------------------------------------------- Shared ---------------------------------------------
+  // --------------------------------------------- Utilities ---------------------------------------------
 
   elementToEntity = (
     element: PackageableElement,
@@ -2475,6 +2475,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
     return entity;
   };
+
+  // --------------------------------------------- Shared ---------------------------------------------
 
   /**
    * This method helps indexing the graph from graph and dependencies' entities

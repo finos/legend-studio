@@ -20,10 +20,7 @@ import {
   type Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';
-import type {
-  GraphManagerState,
-  PackageableRuntime,
-} from '@finos/legend-graph';
+import type { PackageableRuntime } from '@finos/legend-graph';
 import {
   getNullableFirstElement,
   guaranteeNonNullable,
@@ -45,7 +42,6 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 }
 
 export class DataSpaceViewerState {
-  graphManagerState: GraphManagerState;
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -66,7 +62,6 @@ export class DataSpaceViewerState {
   onDiagramClassDoubleClick?: ((classView: ClassView) => void) | undefined;
 
   constructor(
-    graphManagerState: GraphManagerState,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -95,7 +90,6 @@ export class DataSpaceViewerState {
       setCurrentRuntime: action,
     });
 
-    this.graphManagerState = graphManagerState;
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.groupId = groupId;
     this.artifactId = artifactId;

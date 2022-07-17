@@ -27,7 +27,7 @@ import {
   CustomSelectorInput,
   SearchIcon,
 } from '@finos/legend-art';
-import { useQuerySetupStore, useLegendQueryStore } from '@finos/legend-query';
+import { useQuerySetupStore } from '@finos/legend-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -50,7 +50,6 @@ export const DataspaceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useLegendQueryStore();
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
 
@@ -73,7 +72,6 @@ export const DataspaceQuerySetup = observer(
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentDataSpace(undefined);
-      queryStore.graphManagerState.resetGraph();
     };
 
     // query
@@ -84,7 +82,6 @@ export const DataspaceQuerySetup = observer(
       : null;
     const onDataSpaceOptionChange = (option: DataSpaceOption | null): void => {
       if (option?.value !== querySetupState.currentDataSpace) {
-        queryStore.graphManagerState.resetGraph();
         querySetupState.setCurrentDataSpace(option?.value);
         querySetupState.setDataSpaceViewerState(undefined);
       }

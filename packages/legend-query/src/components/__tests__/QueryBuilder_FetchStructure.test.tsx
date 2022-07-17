@@ -28,9 +28,9 @@ import {
   TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
-  Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel,
-  Mocked_ModelCoverageAnalyticsResult_SimpleSubtype,
-} from '../../stores/__tests__/TEST_DATA__Mocked_ModelCoverageAnalyticsResult.js';
+  TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
+} from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA_SimpleSubtypeModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleSubtype.json';
@@ -47,9 +47,9 @@ import {
   stub_RawLambda,
 } from '@finos/legend-graph';
 import {
-  TEST__provideMockedLegendQueryStore,
+  TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
-} from '../LegendQueryComponentTestUtils.js';
+} from '../QueryEditorComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
@@ -68,23 +68,23 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_DATA__ComplexRelationalModel,
       stub_RawLambda(),
       'model::relational::tests::simpleRelationalMapping',
       'model::MyRuntime',
-      Mocked_ModelCoverageAnalyticsResult_ComplexRelationalModel,
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
-    const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
+    const _personClass = MOCK__editorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
-    const _firmClass = mockedQueryStore.graphManagerState.graph.getClass(
+    const _firmClass = MOCK__editorStore.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
 
@@ -394,20 +394,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_DATA_SimpleSubtypeModel,
       stub_RawLambda(),
       'model::NewMapping',
       'model::Runtime',
-      Mocked_ModelCoverageAnalyticsResult_SimpleSubtype,
+      TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
     const _legalEntityClass =
-      mockedQueryStore.graphManagerState.graph.getClass('model::LegalEntity');
+      MOCK__editorStore.graphManagerState.graph.getClass('model::LegalEntity');
     await act(async () => {
       queryBuilderState.changeClass(_legalEntityClass);
     });
@@ -468,22 +468,22 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_DATA__ComplexM2MModel,
       stub_RawLambda(),
       'model::MyMapping',
       'model::MyRuntime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
-    const _personClass = mockedQueryStore.graphManagerState.graph.getClass(
+    const _personClass = MOCK__editorStore.graphManagerState.graph.getClass(
       'model::target::NPerson',
     );
-    const _firmClass = mockedQueryStore.graphManagerState.graph.getClass(
+    const _firmClass = MOCK__editorStore.graphManagerState.graph.getClass(
       'model::target::NFirm',
     );
 

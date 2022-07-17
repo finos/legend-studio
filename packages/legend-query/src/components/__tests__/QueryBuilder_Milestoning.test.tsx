@@ -39,9 +39,9 @@ import {
 import { waitFor } from '@testing-library/dom';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import {
-  TEST__provideMockedLegendQueryStore,
+  TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
-} from '../LegendQueryComponentTestUtils.js';
+} from '../QueryEditorComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
@@ -54,20 +54,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -112,20 +112,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -170,20 +170,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -228,20 +228,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -286,20 +286,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -344,20 +344,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person1');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -402,20 +402,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -460,20 +460,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -518,20 +518,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Person2');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -576,20 +576,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -634,20 +634,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -692,20 +692,20 @@ test(
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
     pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-    const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+    const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
     const renderResult = await TEST__setUpQueryEditor(
-      mockedQueryStore,
+      MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = mockedQueryStore.queryBuilderState;
+    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      mockedQueryStore.graphManagerState.graph.getClass('my::Firm');
+      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });

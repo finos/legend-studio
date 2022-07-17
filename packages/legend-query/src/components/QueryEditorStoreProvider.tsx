@@ -16,36 +16,40 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { LegendQueryStore } from '../stores/LegendQueryStore.js';
+import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useDepotServerClient } from '@finos/legend-server-depot';
+import { QueryEditorStore } from '../stores/QueryEditorStore.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import { useDepotServerClient } from '@finos/legend-server-depot';
 
-const LegendQueryStoreContext = createContext<LegendQueryStore | undefined>(
+const QueryEditorStoreContext = createContext<QueryEditorStore | undefined>(
   undefined,
 );
 
-export const LegendQueryStoreProvider: React.FC<{
+export const QueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
-  pluginManager: LegendQueryPluginManager;
-}> = ({ children, pluginManager }) => {
+}> = ({ children }) => {
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
+  const queryStore = useLegendQueryStore();
   const store = useLocalObservable(
     () =>
-      new LegendQueryStore(applicationStore, depotServerClient, pluginManager),
+      new QueryEditorStore(
+        applicationStore,
+        depotServerClient,
+        queryStore.pluginManager,
+      ),
   );
   return (
-    <LegendQueryStoreContext.Provider value={store}>
+    <QueryEditorStoreContext.Provider value={store}>
       {children}
-    </LegendQueryStoreContext.Provider>
+    </QueryEditorStoreContext.Provider>
   );
 };
 
-export const useLegendQueryStore = (): LegendQueryStore =>
+export const useQueryEditorStore = (): QueryEditorStore =>
   guaranteeNonNullable(
-    useContext(LegendQueryStoreContext),
-    `Can't find Legend Query store in context`,
+    useContext(QueryEditorStoreContext),
+    `Can't find query editor store in context`,
   );

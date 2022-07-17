@@ -14,75 +14,51 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
-import { QuerySetup } from './LegendQuerySetup.js';
+import { QuerySetup } from './QuerySetup.js';
 import {
   CreateQueryLoader,
   ExistingQueryLoader,
   ServiceQueryLoader,
-} from './LegendQueryEditor.js';
-import { flowResult } from 'mobx';
-import { PanelLoadingIndicator } from '@finos/legend-art';
-import {
-  LegendQueryStoreProvider,
-  useLegendQueryStore,
-} from './LegendQueryStoreProvider.js';
+} from './QueryEditor.js';
+import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { GraphManagerStateProvider } from '@finos/legend-graph';
-import {
-  LegendApplicationComponentFrameworkProvider,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
-const LegendQueryApplicationInner = observer(() => {
-  const queryStore = useLegendQueryStore();
-  const applicationStore = useApplicationStore();
-
-  useEffect(() => {
-    flowResult(queryStore.initialize()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [queryStore, applicationStore]);
-
-  return (
-    <div className="app">
-      <PanelLoadingIndicator isLoading={queryStore.initState.isInProgress} />
-      {queryStore.initState.hasSucceeded && (
-        <Switch>
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
-            component={ExistingQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
-            component={ServiceQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={[
-              LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY,
-              LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY_WITH_CLASS,
-            ]}
-            component={CreateQueryLoader}
-          />
-          <Route
-            exact={true}
-            path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-            component={QuerySetup}
-          />
-          <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
-        </Switch>
-      )}
-    </div>
-  );
-});
+const LegendQueryApplicationInner = observer(() => (
+  <div className="app">
+    <Switch>
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
+        component={ExistingQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+        component={ServiceQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={[
+          LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY,
+          LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY_WITH_CLASS,
+        ]}
+        component={CreateQueryLoader}
+      />
+      <Route
+        exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+        component={QuerySetup}
+      />
+      <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+    </Switch>
+  </div>
+));
 
 export const LegendQueryApplication = observer(
   (props: {
@@ -90,7 +66,6 @@ export const LegendQueryApplication = observer(
     pluginManager: LegendQueryPluginManager;
   }) => {
     const { config, pluginManager } = props;
-    const applicationStore = useApplicationStore();
 
     return (
       <DepotServerClientProvider
@@ -100,16 +75,11 @@ export const LegendQueryApplication = observer(
             config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <GraphManagerStateProvider
-          pluginManager={pluginManager}
-          log={applicationStore.log}
-        >
-          <LegendQueryStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendQueryApplicationInner />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendQueryStoreProvider>
-        </GraphManagerStateProvider>
+        <LegendQueryStoreProvider pluginManager={pluginManager}>
+          <LegendApplicationComponentFrameworkProvider>
+            <LegendQueryApplicationInner />
+          </LegendApplicationComponentFrameworkProvider>
+        </LegendQueryStoreProvider>
       </DepotServerClientProvider>
     );
   },

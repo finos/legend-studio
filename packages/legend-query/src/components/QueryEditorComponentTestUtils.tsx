@@ -31,8 +31,6 @@ import {
   LightQuery,
   RawLambda,
   PackageableElementExplicitReference,
-  TEST__getTestGraphManagerState,
-  TEST__GraphManagerStateProvider,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -46,15 +44,15 @@ import {
   TEST__getTestApplicationStore,
   WebApplicationNavigator,
 } from '@finos/legend-application';
-import { LegendQueryStore } from '../stores/LegendQueryStore.js';
-import { TEST__getTestQueryConfig } from '../stores/LegendQueryStoreTestUtils.js';
+import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { ExistingQueryLoader } from './LegendQueryEditor.js';
+import { ExistingQueryLoader } from './QueryEditor.js';
 import { generateExistingQueryRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
+import { QueryEditorStore } from '../stores/QueryEditorStore.js';
 
 export const TEST__LegendQueryStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -64,36 +62,34 @@ export const TEST__LegendQueryStoreProvider: React.FC<{
   </LegendQueryStoreProvider>
 );
 
-export const TEST__provideMockedLegendQueryStore = (customization?: {
-  mock?: LegendQueryStore;
+export const TEST__provideMockedQueryEditorStore = (customization?: {
+  mock?: QueryEditorStore;
   applicationStore?: ApplicationStore<LegendQueryConfig>;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
-}): LegendQueryStore => {
+}): QueryEditorStore => {
   const pluginManager =
     customization?.pluginManager ?? LegendQueryPluginManager.create();
   const value =
     customization?.mock ??
-    new LegendQueryStore(
+    new QueryEditorStore(
       customization?.applicationStore ??
         TEST__getTestApplicationStore(
-          TEST__getTestQueryConfig(),
+          TEST__getTestLegendQueryApplicationConfig(),
           pluginManager,
         ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
-      customization?.graphManagerState ??
-        TEST__getTestGraphManagerState(customization?.pluginManager),
       pluginManager,
     );
-  const MockedQueryStoreProvider = require('./LegendQueryStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedQueryStoreProvider.useLegendQueryStore = jest.fn();
-  MockedQueryStoreProvider.useLegendQueryStore.mockReturnValue(value);
+  const MOCK__QueryEditorStoreProvider = require('../stores/QueryEditorStore.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  MOCK__QueryEditorStoreProvider.useQueryEditorStore = jest.fn();
+  MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;
 };
 
 export const TEST__setUpQueryEditor = async (
-  mockedQueryStore: LegendQueryStore,
+  MOCK__editorStore: QueryEditorStore,
   entities: Entity[],
   lambda: RawLambda,
   mappingPath: string,
@@ -118,11 +114,11 @@ export const TEST__setUpQueryEditor = async (
   lightQuery.owner = 'test-artifact';
   lightQuery.isCurrentUserQuery = true;
 
-  await mockedQueryStore.graphManagerState.initializeSystem();
-  await mockedQueryStore.graphManagerState.graphManager.buildGraph(
-    mockedQueryStore.graphManagerState.graph,
+  await MOCK__editorStore.graphManagerState.initializeSystem();
+  await MOCK__editorStore.graphManagerState.graphManager.buildGraph(
+    MOCK__editorStore.graphManagerState.graph,
     entities,
-    mockedQueryStore.graphManagerState.graphBuildState,
+    MOCK__editorStore.graphManagerState.graphBuildState,
   );
 
   const query = new Query();
@@ -134,42 +130,42 @@ export const TEST__setUpQueryEditor = async (
   query.owner = lightQuery.owner;
   query.isCurrentUserQuery = lightQuery.isCurrentUserQuery;
   query.mapping = PackageableElementExplicitReference.create(
-    mockedQueryStore.graphManagerState.graph.getMapping(mappingPath),
+    MOCK__editorStore.graphManagerState.graph.getMapping(mappingPath),
   );
   query.runtime = PackageableElementExplicitReference.create(
-    mockedQueryStore.graphManagerState.graph.getRuntime(runtimePath),
+    MOCK__editorStore.graphManagerState.graph.getRuntime(runtimePath),
   );
   query.content = 'some content';
 
   MOBX__enableSpyOrMock();
   jest
-    .spyOn(mockedQueryStore.depotServerClient, 'getProject')
+    .spyOn(MOCK__editorStore.depotServerClient, 'getProject')
     .mockResolvedValue(projectData);
   jest
-    .spyOn(mockedQueryStore.graphManagerState.graphManager, 'getLightQuery')
+    .spyOn(MOCK__editorStore.graphManagerState.graphManager, 'getLightQuery')
     .mockResolvedValue(lightQuery);
   jest
-    .spyOn(mockedQueryStore.graphManagerState.graphManager, 'pureCodeToLambda')
+    .spyOn(MOCK__editorStore.graphManagerState.graphManager, 'pureCodeToLambda')
     .mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
   jest
-    .spyOn(mockedQueryStore.graphManagerState.graphManager, 'getQuery')
+    .spyOn(MOCK__editorStore.graphManagerState.graphManager, 'getQuery')
     .mockResolvedValue(query);
   if (rawMappingModelCoverageAnalysisResult) {
     jest
       .spyOn(
-        mockedQueryStore.graphManagerState.graphManager,
+        MOCK__editorStore.graphManagerState.graphManager,
         'analyzeMappingModelCoverage',
       )
       .mockResolvedValue(
-        mockedQueryStore.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+        MOCK__editorStore.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
           rawMappingModelCoverageAnalysisResult,
         ),
       );
   }
-  mockedQueryStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
+  MOCK__editorStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
   // TODO: we need to think of how we will mock these calls when we modularize
   // See https://github.com/finos/legend-studio/issues/731
-  mockedQueryStore.graphManagerState.graphManager.initialize =
+  MOCK__editorStore.graphManagerState.graphManager.initialize =
     jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
 
@@ -177,21 +173,19 @@ export const TEST__setUpQueryEditor = async (
     initialEntries: [generateExistingQueryRoute(lightQuery.id)],
   });
   const navigator = new WebApplicationNavigator(history);
-  mockedQueryStore.applicationStore.navigator = navigator;
+  MOCK__editorStore.applicationStore.navigator = navigator;
   TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
     <Router history={history}>
       <TEST__ApplicationStoreProvider
-        config={TEST__getTestQueryConfig()}
+        config={TEST__getTestLegendQueryApplicationConfig()}
         pluginManager={LegendQueryPluginManager.create()}
       >
         <TEST__DepotServerClientProvider>
-          <TEST__GraphManagerStateProvider>
-            <TEST__LegendQueryStoreProvider>
-              <ExistingQueryLoader />
-            </TEST__LegendQueryStoreProvider>
-          </TEST__GraphManagerStateProvider>
+          <TEST__LegendQueryStoreProvider>
+            <ExistingQueryLoader />
+          </TEST__LegendQueryStoreProvider>
         </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>
     </Router>,

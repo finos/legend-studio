@@ -14,494 +14,161 @@
  * limitations under the License.
  */
 
-export const TEST_DATA__Auto_M2M = [
+export const TEST_DATA__MappingData__ComplexM2MModel = [
   {
-    path: 'test::autoMapping::Firm',
-    content: {
-      _type: 'class',
-      name: 'Firm',
-      package: 'test::autoMapping',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'name',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'location',
-          type: 'String',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::type::Class',
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'fullName' },
+      { childNodes: [], mappingData: { mapped: false }, name: 'age' },
+    ],
+    mappingData: { mapped: true },
+    name: 'nEmployees',
+  },
+  { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'incType' },
+  {
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'fullName' },
+      { childNodes: [], mappingData: { mapped: false }, name: 'age' },
+    ],
+    mappingData: { mapped: true },
+    name: 'firstEmployee',
+  },
+  { childNodes: [], mappingData: { mapped: true }, name: 'myName' },
+];
+
+export const TEST_DATA__MappingData__COVIDDataSimpleModel = [
+  {
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'id',
   },
   {
-    path: 'test::autoMapping::SFrim',
-    content: {
-      _type: 'class',
-      name: 'SFrim',
-      package: 'test::autoMapping',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'name',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'location',
-          type: 'String',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::type::Class',
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'fips',
   },
   {
-    path: 'test::autoMapping::AutoMapping',
-    content: {
-      _type: 'mapping',
-      classMappings: [
-        {
-          _type: 'pureInstance',
-          class: 'test::autoMapping::Firm',
-          propertyMappings: [],
-          root: true,
-          srcClass: 'test::autoMapping::SFrim',
-        },
-      ],
-      enumerationMappings: [],
-      includedMappings: [],
-      name: 'AutoMapping',
-      package: 'test::autoMapping',
-      tests: [
-        {
-          assert: {
-            _type: 'expectedOutputMappingTestAssert',
-            expectedOutput:
-              '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"name 47\\",\\"location\\":\\"location 66\\"}"},"value":{}},"value":{"location":"location 66","name":"name 47"}}',
-          },
-          inputData: [
-            {
-              _type: 'object',
-              data: '{"name":"name 47","location":"location 66"}',
-              inputType: 'JSON',
-              sourceClass: 'test::autoMapping::SFrim',
-            },
-          ],
-          name: 'test_1',
-          query: {
-            _type: 'lambda',
-            body: [
-              {
-                _type: 'func',
-                function: 'serialize',
-                parameters: [
-                  {
-                    _type: 'func',
-                    function: 'graphFetchChecked',
-                    parameters: [
-                      {
-                        _type: 'func',
-                        function: 'getAll',
-                        parameters: [
-                          {
-                            _type: 'packageableElementPtr',
-                            fullPath: 'test::autoMapping::Firm',
-                          },
-                        ],
-                      },
-                      {
-                        _type: 'rootGraphFetchTree',
-                        class: 'test::autoMapping::Firm',
-                        subTrees: [
-                          {
-                            _type: 'propertyGraphFetchTree',
-                            parameters: [],
-                            property: 'location',
-                            subTrees: [],
-                          },
-                          {
-                            _type: 'propertyGraphFetchTree',
-                            parameters: [],
-                            property: 'name',
-                            subTrees: [],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    _type: 'rootGraphFetchTree',
-                    class: 'test::autoMapping::Firm',
-                    subTrees: [
-                      {
-                        _type: 'propertyGraphFetchTree',
-                        parameters: [],
-                        property: 'location',
-                        subTrees: [],
-                      },
-                      {
-                        _type: 'propertyGraphFetchTree',
-                        parameters: [],
-                        property: 'name',
-                        subTrees: [],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-            parameters: [],
-          },
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::mapping::Mapping',
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'date',
+  },
+  {
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'caseType',
+  },
+  {
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'cases',
+  },
+  {
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'lastReportedFlag',
+  },
+  {
+    childNodes: [
+      {
+        childNodes: [],
+        mappingData: { mapped: true },
+        name: 'fips',
+      },
+      {
+        childNodes: [],
+        mappingData: { mapped: true },
+        name: 'state',
+      },
+    ],
+    mappingData: { mapped: true },
+    name: 'demographics',
   },
 ];
 
-export const TEST_DATA__Relational_Inline = [
+export const TEST_DATA__MappingData_M2MAutoMapped = [
   {
-    path: 'Oct::models::Firm',
-    content: {
-      _type: 'class',
-      name: 'Firm',
-      package: 'Oct::models',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'id',
-          type: 'Integer',
-        },
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'name',
-          type: 'String',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::type::Class',
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'name',
   },
   {
-    path: 'Oct::models::Person',
-    content: {
-      _type: 'class',
-      name: 'Person',
-      package: 'Oct::models',
-      properties: [
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'lName',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'fName',
-          type: 'String',
-        },
-        {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          name: 'firm',
-          type: 'Oct::models::Firm',
-        },
-      ],
-    },
-    classifierPath: 'meta::pure::metamodel::type::Class',
+    childNodes: [],
+    mappingData: { mapped: true },
+    name: 'location',
+  },
+];
+
+export const TEST_DATA__MappingData_RelationalInline = [
+  {
+    name: 'lName',
+    mappingData: { mapped: false },
+    childNodes: [],
   },
   {
-    path: 'Oct::stores::ChildStore',
-    content: {
-      _type: 'relational',
-      filters: [],
-      includedStores: [],
-      joins: [],
-      name: 'ChildStore',
-      package: 'Oct::stores',
-      schemas: [
-        {
-          name: 'default',
-          tables: [
-            {
-              columns: [
-                {
-                  name: 'ID',
-                  nullable: true,
-                  type: {
-                    _type: 'Integer',
-                  },
-                },
-                {
-                  name: 'NAME',
-                  nullable: true,
-                  type: {
-                    _type: 'Varchar',
-                    size: 10,
-                  },
-                },
-                {
-                  name: 'FIRMID',
-                  nullable: true,
-                  type: {
-                    _type: 'Integer',
-                  },
-                },
-              ],
-              name: 'PERSONTABLE',
-              primaryKey: [],
-            },
-          ],
-          views: [],
-        },
-      ],
-    },
-    classifierPath: 'meta::relational::metamodel::Database',
+    name: 'fName',
+    mappingData: { mapped: true },
+    childNodes: [],
   },
   {
-    path: 'Oct::stores::ParentStore',
-    content: {
-      _type: 'relational',
-      filters: [],
-      includedStores: ['Oct::stores::ChildStore'],
-      joins: [
-        {
-          name: 'FRIM_PERSON',
-          operation: {
-            _type: 'dynaFunc',
-            funcName: 'equal',
-            parameters: [
+    name: 'firm',
+    mappingData: { mapped: true },
+    childNodes: [
+      {
+        name: 'id',
+        mappingData: { mapped: true },
+        childNodes: [],
+      },
+      {
+        name: 'name',
+        mappingData: { mapped: true },
+        childNodes: [],
+      },
+    ],
+  },
+];
+
+export const TEST_DATA__MappingData__Relational_Inheritance = [
+  { childNodes: [], mappingData: { mapped: true }, name: 'legalName' },
+  {
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+      { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+    ],
+    mappingData: { mapped: true },
+    name: 'employees',
+  },
+  { childNodes: [], mappingData: { mapped: false }, name: 'incType' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'employeeSize' },
+];
+
+export const TEST_DATA__MappingData__AssociationMapping = [
+  {
+    childNodes: [
+      {
+        childNodes: [
+          {
+            childNodes: [
               {
-                _type: 'column',
-                column: 'ID',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'FIRMTABLE',
-                },
-                tableAlias: 'FIRMTABLE',
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'employee',
               },
-              {
-                _type: 'column',
-                column: 'FIRMID',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'PERSONTABLE',
-                },
-                tableAlias: 'PERSONTABLE',
-              },
+              { childNodes: [], mappingData: { mapped: true }, name: 'name' },
             ],
+            mappingData: { mapped: true },
+            name: 'firm',
           },
-        },
-        {
-          name: 'FRIM_CEO',
-          operation: {
-            _type: 'dynaFunc',
-            funcName: 'equal',
-            parameters: [
-              {
-                _type: 'column',
-                column: 'ID',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'FIRMTABLE',
-                },
-                tableAlias: 'FIRMTABLE',
-              },
-              {
-                _type: 'column',
-                column: 'FIRMID',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'PERSONTABLE',
-                },
-                tableAlias: 'PERSONTABLE',
-              },
-            ],
-          },
-        },
-      ],
-      name: 'ParentStore',
-      package: 'Oct::stores',
-      schemas: [
-        {
-          name: 'default',
-          tables: [
-            {
-              columns: [
-                {
-                  name: 'ID',
-                  nullable: true,
-                  type: {
-                    _type: 'Integer',
-                  },
-                },
-                {
-                  name: 'NAME',
-                  nullable: true,
-                  type: {
-                    _type: 'Varchar',
-                    size: 10,
-                  },
-                },
-              ],
-              name: 'FIRMTABLE',
-              primaryKey: [],
-            },
-          ],
-          views: [],
-        },
-      ],
-    },
-    classifierPath: 'meta::relational::metamodel::Database',
+          { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+          { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
+        ],
+        mappingData: { mapped: true },
+        name: 'employee',
+      },
+      { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+    ],
+    mappingData: { mapped: true },
+    name: 'firm',
   },
-  {
-    path: 'Oct::mappings::simpleRelationalMapping',
-    content: {
-      _type: 'mapping',
-      classMappings: [
-        {
-          _type: 'relational',
-          class: 'Oct::models::Firm',
-          distinct: false,
-          id: 'testInlineMapping',
-          mainTable: {
-            _type: 'Table',
-            database: 'Oct::stores::ParentStore',
-            mainTableDb: 'Oct::stores::ParentStore',
-            schema: 'default',
-            table: 'FIRMTABLE',
-          },
-          primaryKey: [],
-          propertyMappings: [
-            {
-              _type: 'relationalPropertyMapping',
-              property: {
-                class: 'Oct::models::Firm',
-                property: 'id',
-              },
-              relationalOperation: {
-                _type: 'column',
-                column: 'ID',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'FIRMTABLE',
-                },
-                tableAlias: 'FIRMTABLE',
-              },
-            },
-            {
-              _type: 'relationalPropertyMapping',
-              property: {
-                class: 'Oct::models::Firm',
-                property: 'name',
-              },
-              relationalOperation: {
-                _type: 'column',
-                column: 'NAME',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ParentStore',
-                  mainTableDb: 'Oct::stores::ParentStore',
-                  schema: 'default',
-                  table: 'FIRMTABLE',
-                },
-                tableAlias: 'FIRMTABLE',
-              },
-            },
-          ],
-          root: true,
-        },
-        {
-          _type: 'relational',
-          class: 'Oct::models::Person',
-          distinct: false,
-          mainTable: {
-            _type: 'Table',
-            database: 'Oct::stores::ParentStore',
-            mainTableDb: 'Oct::stores::ParentStore',
-            schema: 'default',
-            table: 'PERSONTABLE',
-          },
-          primaryKey: [],
-          propertyMappings: [
-            {
-              _type: 'relationalPropertyMapping',
-              property: {
-                class: 'Oct::models::Person',
-                property: 'fName',
-              },
-              relationalOperation: {
-                _type: 'column',
-                column: 'NAME',
-                table: {
-                  _type: 'Table',
-                  database: 'Oct::stores::ChildStore',
-                  mainTableDb: 'Oct::stores::ChildStore',
-                  schema: 'default',
-                  table: 'PERSONTABLE',
-                },
-                tableAlias: 'PERSONTABLE',
-              },
-            },
-            {
-              _type: 'inlineEmbeddedPropertyMapping',
-              property: {
-                class: 'Oct::models::Person',
-                property: 'firm',
-              },
-              setImplementationId: 'testInlineMapping',
-            },
-          ],
-          root: true,
-        },
-      ],
-      enumerationMappings: [],
-      includedMappings: [],
-      name: 'simpleRelationalMapping',
-      package: 'Oct::mappings',
-      tests: [],
-    },
-    classifierPath: 'meta::pure::mapping::Mapping',
-  },
+  { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
+  { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
 ];

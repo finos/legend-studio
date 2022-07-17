@@ -43,11 +43,14 @@ import {
   ExistingQueryInfoState,
   ServiceQueryInfoState,
   CreateQueryInfoState,
-} from '../stores/LegendQueryStore.js';
+} from '../stores/QueryEditorStore.js';
 import { QueryBuilder } from './QueryBuilder.js';
-import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { RuntimePointer } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
+import {
+  QueryEditorStoreProvider,
+  useQueryEditorStore,
+} from './QueryEditorStoreProvider.js';
 
 const QueryExportInner = observer(
   (props: { queryExportState: QueryExportState }) => {
@@ -109,9 +112,9 @@ const QueryExportInner = observer(
 );
 
 const QueryExport = observer(() => {
-  const queryStore = useLegendQueryStore();
-  const queryExportState = queryStore.queryExportState;
-  const close = (): void => queryStore.setQueryExportState(undefined);
+  const editorStore = useQueryEditorStore();
+  const queryExportState = editorStore.queryExportState;
+  const close = (): void => editorStore.setQueryExportState(undefined);
 
   return (
     <Dialog
@@ -136,15 +139,15 @@ const QueryExport = observer(() => {
 });
 
 const QueryEditorHeader = observer(() => {
-  const queryStore = useLegendQueryStore();
-  const queryInfoState = queryStore.queryInfoState;
+  const editorStore = useQueryEditorStore();
+  const queryInfoState = editorStore.queryInfoState;
   const applicationStore = useApplicationStore();
   const backToMainMenu = (): void =>
     applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
   const viewQueryProject = (): void => {
     if (queryInfoState) {
       const queryProjectInfo = queryInfoState.getQueryProjectInfo();
-      queryStore.viewStudioProject(
+      editorStore.viewStudioProject(
         queryProjectInfo.groupId,
         queryProjectInfo.artifactId,
         queryProjectInfo.versionId,
@@ -153,9 +156,9 @@ const QueryEditorHeader = observer(() => {
     }
   };
   const saveQuery = (): void => {
-    if (queryStore.onSaveQuery) {
-      queryStore.queryBuilderState
-        .saveQuery(queryStore.onSaveQuery)
+    if (editorStore.onSaveQuery) {
+      editorStore.queryBuilderState
+        .saveQuery(editorStore.onSaveQuery)
         .catch(applicationStore.alertUnhandledError);
     }
   };
@@ -205,7 +208,7 @@ const QueryEditorHeader = observer(() => {
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
             onClick={saveQuery}
-            disabled={!queryStore.onSaveQuery}
+            disabled={!editorStore.onSaveQuery}
           >
             <div className="query-editor__header__action__icon">
               <SaveIcon />
@@ -219,10 +222,18 @@ const QueryEditorHeader = observer(() => {
 });
 
 const QueryEditorInner = observer(() => {
-  const queryStore = useLegendQueryStore();
+  const editorStore = useQueryEditorStore();
   const isLoadingEditor =
-    !queryStore.graphManagerState.graphBuildState.hasCompleted ||
-    !queryStore.editorInitState.hasCompleted;
+    !editorStore.graphManagerState.graphBuildState.hasCompleted ||
+    !editorStore.initState.hasCompleted ||
+    !editorStore.editorInitState.hasCompleted;
+  console.log(
+    isLoadingEditor,
+    editorStore.graphManagerState.graphBuildState.hasCompleted,
+    editorStore.initState.hasCompleted,
+    editorStore.editorInitState.hasCompleted,
+  );
+
   return (
     <div className="query-editor">
       <QueryExport />
@@ -230,15 +241,15 @@ const QueryEditorInner = observer(() => {
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && (
-          <QueryBuilder queryBuilderState={queryStore.queryBuilderState} />
+          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
         )}
         {isLoadingEditor && (
           <BlankPanelContent>
-            {queryStore.buildGraphState.message ??
-              queryStore.graphManagerState.systemBuildState.message ??
-              queryStore.graphManagerState.dependenciesBuildState.message ??
-              queryStore.graphManagerState.generationsBuildState.message ??
-              queryStore.graphManagerState.graphBuildState.message}
+            {editorStore.buildGraphState.message ??
+              editorStore.graphManagerState.systemBuildState.message ??
+              editorStore.graphManagerState.dependenciesBuildState.message ??
+              editorStore.graphManagerState.generationsBuildState.message ??
+              editorStore.graphManagerState.graphBuildState.message}
           </BlankPanelContent>
         )}
       </div>
@@ -252,20 +263,26 @@ const QueryEditor: React.FC = () => (
   </DndProvider>
 );
 
-export const ExistingQueryLoader = observer(() => {
-  const queryStore = useLegendQueryStore();
+const ExistingQueryLoaderInner = observer(() => {
+  const editorStore = useQueryEditorStore();
   const params = useParams<ExistingQueryPathParams>();
 
   useEffect(() => {
-    queryStore.setupExistingQueryInfoState(params);
-  }, [queryStore, params]);
+    editorStore.setupExistingQueryInfoState(params);
+  }, [editorStore, params]);
 
   return <QueryEditor />;
 });
 
-export const ServiceQueryLoader = observer(() => {
+export const ExistingQueryLoader: React.FC = () => (
+  <QueryEditorStoreProvider>
+    <ExistingQueryLoaderInner />
+  </QueryEditorStoreProvider>
+);
+
+const ServiceQueryLoaderInner = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useLegendQueryStore();
+  const editorStore = useQueryEditorStore();
   const params = useParams<ServiceQueryPathParams>();
   const queryParams = getQueryParameters<ServiceQueryQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
@@ -273,44 +290,50 @@ export const ServiceQueryLoader = observer(() => {
   );
 
   useEffect(() => {
-    queryStore.setupServiceQueryInfoState(params, queryParams.key);
-  }, [queryStore, params, queryParams]);
+    editorStore.setupServiceQueryInfoState(params, queryParams.key);
+  }, [editorStore, params, queryParams]);
 
   return <QueryEditor />;
 });
 
-export const CreateQueryLoader = observer(() => {
+export const ServiceQueryLoader: React.FC = () => (
+  <QueryEditorStoreProvider>
+    <ServiceQueryLoaderInner />
+  </QueryEditorStoreProvider>
+);
+
+const CreateQueryLoaderInner = observer(() => {
   const applicationStore = useApplicationStore();
-  const queryStore = useLegendQueryStore();
+  const editorStore = useQueryEditorStore();
   const params = useParams<CreateQueryPathParams>();
-  const currentMapping = queryStore.queryBuilderState.querySetupState.mapping;
+  const currentMapping = editorStore.queryBuilderState.querySetupState.mapping;
   const currentRuntime =
-    queryStore.queryBuilderState.querySetupState.runtimeValue instanceof
+    editorStore.queryBuilderState.querySetupState.runtimeValue instanceof
     RuntimePointer
-      ? queryStore.queryBuilderState.querySetupState.runtimeValue
+      ? editorStore.queryBuilderState.querySetupState.runtimeValue
           .packageableRuntime.value
       : undefined;
 
   useEffect(() => {
-    if (queryStore.editorInitState.isInInitialState) {
-      queryStore.setupCreateQueryInfoState(params);
+    if (editorStore.editorInitState.isInInitialState) {
+      editorStore.setupCreateQueryInfoState(params);
     }
-  }, [queryStore, params]);
+  }, [editorStore, params]);
 
   // TODO: this will make the route change as the users select another mapping and runtime
   useEffect(() => {
-    if (queryStore.queryInfoState instanceof CreateQueryInfoState) {
+    if (editorStore.queryInfoState instanceof CreateQueryInfoState) {
       if (
         currentMapping &&
         currentRuntime &&
-        (queryStore.queryInfoState.mapping !== currentMapping ||
-          queryStore.queryInfoState.runtime !== currentRuntime)
+        (editorStore.queryInfoState.mapping !== currentMapping ||
+          editorStore.queryInfoState.runtime !== currentRuntime)
       ) {
         applicationStore.navigator.goTo(
           generateCreateQueryRoute(
-            queryStore.queryInfoState.project.groupId,
-            queryStore.queryInfoState.project.artifactId,
-            queryStore.queryInfoState.versionId,
+            editorStore.queryInfoState.project.groupId,
+            editorStore.queryInfoState.project.artifactId,
+            editorStore.queryInfoState.versionId,
             currentMapping.path,
             currentRuntime.path,
             undefined,
@@ -318,7 +341,13 @@ export const CreateQueryLoader = observer(() => {
         );
       }
     }
-  }, [applicationStore, queryStore, currentMapping, currentRuntime]);
+  }, [applicationStore, editorStore, currentMapping, currentRuntime]);
 
   return <QueryEditor />;
 });
+
+export const CreateQueryLoader: React.FC = () => (
+  <QueryEditorStoreProvider>
+    <CreateQueryLoaderInner />
+  </QueryEditorStoreProvider>
+);
