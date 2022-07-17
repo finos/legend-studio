@@ -133,7 +133,7 @@ export const DataspaceQuerySetup = observer(
     useEffect(() => {
       if (querySetupState.currentDataSpace) {
         flowResult(
-          querySetupState.setUpDataSpace(querySetupState.currentDataSpace),
+          querySetupState.loadDataSpace(querySetupState.currentDataSpace),
         ).catch(applicationStore.alertUnhandledError);
       }
     }, [querySetupState, applicationStore, querySetupState.currentDataSpace]);
@@ -202,40 +202,32 @@ export const DataspaceQuerySetup = observer(
           </div>
           <div className="query-setup__data-space__view">
             <PanelLoadingIndicator
-              isLoading={querySetupState.setUpDataSpaceState.isInProgress}
+              isLoading={querySetupState.loadDataSpaceState.isInProgress}
             />
             {querySetupState.dataSpaceViewerState && (
               <DataSpaceViewer
                 dataSpaceViewerState={querySetupState.dataSpaceViewerState}
               />
             )}
-            {!querySetupState.dataSpaceViewerState &&
-              querySetupState.setUpDataSpaceState.isInProgress && (
-                <BlankPanelContent>
-                  {querySetupState.queryStore.buildGraphState.message ??
-                    querySetupState.queryStore.graphManagerState
-                      .systemBuildState.message ??
-                    querySetupState.queryStore.graphManagerState
-                      .dependenciesBuildState.message ??
-                    querySetupState.queryStore.graphManagerState
-                      .generationsBuildState.message ??
-                    querySetupState.queryStore.graphManagerState.graphBuildState
-                      .message}
-                </BlankPanelContent>
-              )}
-            {!querySetupState.dataSpaceViewerState &&
-              querySetupState.setUpDataSpaceState.hasFailed && (
-                <BlankPanelContent>
-                  <div className="query-setup__data-space__view--failed">
-                    <div className="query-setup__data-space__view--failed__icon">
-                      <TimesCircleIcon />
+            {!querySetupState.dataSpaceViewerState && (
+              <>
+                {querySetupState.loadDataSpaceState.isInProgress && (
+                  <BlankPanelContent>Loading data space...</BlankPanelContent>
+                )}
+                {querySetupState.loadDataSpaceState.hasFailed && (
+                  <BlankPanelContent>
+                    <div className="query-setup__data-space__view--failed">
+                      <div className="query-setup__data-space__view--failed__icon">
+                        <TimesCircleIcon />
+                      </div>
+                      <div className="query-setup__data-space__view--failed__text">
+                        Can&apos;t load data space
+                      </div>
                     </div>
-                    <div className="query-setup__data-space__view--failed__text">
-                      Can&apos;t load data space
-                    </div>
-                  </div>
-                </BlankPanelContent>
-              )}
+                  </BlankPanelContent>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -49,14 +49,23 @@ import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/meta
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { getGraphManager } from './models/protocols/pure/Pure.js';
 
-export class GraphManagerState {
+export class BasicGraphManagerState {
   pluginManager: GraphPluginManager;
   log: Log;
 
+  graphManager: AbstractPureGraphManager;
+
+  constructor(pluginManager: GraphPluginManager, log: Log) {
+    this.pluginManager = pluginManager;
+    this.log = log;
+    this.graphManager = getGraphManager(this.pluginManager, log);
+  }
+}
+
+export class GraphManagerState extends BasicGraphManagerState {
   coreModel: CoreModel;
   systemModel: SystemModel;
   graph: PureModel;
-  graphManager: AbstractPureGraphManager;
 
   systemBuildState = ActionState.create();
   dependenciesBuildState = ActionState.create();
@@ -64,6 +73,8 @@ export class GraphManagerState {
   generationsBuildState = ActionState.create();
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
+    super(pluginManager, log);
+
     makeObservable(this, {
       graph: observable,
       resetGraph: action,

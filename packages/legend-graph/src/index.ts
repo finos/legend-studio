@@ -269,6 +269,7 @@ export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient.js';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine.js';
 export {
+  V1_PureModelContextType,
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
 } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';

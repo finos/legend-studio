@@ -425,7 +425,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // Organizing these constants will help with configuring
   // target protocol version in the future
   // See https://github.com/finos/legend-studio/issues/475
-  private static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
+  static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
 
   engine: V1_Engine;
   graphBuilderExtensions: V1_GraphBuilderExtensions;
@@ -2316,120 +2316,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Utilities ---------------------------------------------
 
-  elementToEntity = (
-    element: PackageableElement,
-    options?: {
-      pruneSourceInformation?: boolean;
-    },
-  ): Entity => {
-    const entity = this.elementProtocolToEntity(
-      this.elementToProtocol<V1_PackageableElement>(element),
-    );
-    if (options?.pruneSourceInformation) {
-      entity.content = pruneSourceInformation(entity.content);
-    }
-    return entity;
-  };
-
-  /**
-   * This method helps indexing the graph from graph and dependencies' entities
-   * This will produce a _light_ graph with empty unprocesed elements, they are just indexed in the graph
-   * and the Pure model context data which can be used to further build the graph
-   *
-   * There are a few simple analytics we want to do on the graph which does not necessarily
-   * require us to build the full-graph, in fact, doing so would be too costly. In those scenarios,
-   * we need to build the _light_ graph, hence the existence of this utility method
-   *
-   * TODO?: do we need to account for system elements?
-   */
-  async indexLightGraph(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-    entityFilterFn?: ((entity: Entity) => boolean) | undefined,
-    entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
-  ): Promise<V1_PureGraphBuilderInput[]> {
-    const report = new GraphBuilderReport();
-
-    // build main graph builder input
-    const data = new V1_PureModelContextData();
-    await V1_entitiesToPureModelContextData(
-      entities
-        .filter((entity) => {
-          // never exclude section index as it could be used for path resolution when building the graph later
-          if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
-            return true;
-          }
-          if (entityFilterFn) {
-            return entityFilterFn(entity);
-          }
-          return true;
-        })
-        .map((entity) =>
-          entityProcessorFn ? entityProcessorFn(entity) : entity,
-        ),
-      data,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
-      {
-        model: graph,
-        data: V1_indexPureModelContextData(
-          report,
-          data,
-          this.graphBuilderExtensions,
-        ),
-      },
-    ];
-
-    // build dependencies graph builder input
-    graph.dependencyManager.initialize(dependencyEntities);
-    const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
-    await Promise.all(
-      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
-        const projectModelData = new V1_PureModelContextData();
-        dependencyGraphDataIndex.set(dependencyKey, projectModelData);
-        return V1_entitiesToPureModelContextData(
-          value
-            .filter((entity) => {
-              // never exclude section index as it could be used for path resolution when building the graph later
-              if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
-                return true;
-              }
-              if (entityFilterFn) {
-                return entityFilterFn(entity);
-              }
-              return true;
-            })
-            .map((entity) =>
-              entityProcessorFn ? entityProcessorFn(entity) : entity,
-            ),
-          projectModelData,
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        );
-      }),
-    );
-    const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
-      dependencyGraphDataIndex.entries(),
-    ).map(([dependencyKey, dependencyData]) => ({
-      data: V1_indexPureModelContextData(
-        report,
-        dependencyData,
-        this.graphBuilderExtensions,
-      ),
-      model: graph.dependencyManager.getModel(dependencyKey),
-    }));
-
-    // index simplified graph
-    const graphBuilderInput = [
-      ...dependencyGraphBuilderInput,
-      ...mainGraphBuilderInput,
-    ];
-    await this.initializeAndIndexElements(graph, graphBuilderInput);
-
-    return graphBuilderInput;
-  }
-
   async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
     const dbBuilderInput = new V1_DatabaseBuilderInput();
     dbBuilderInput.connection = V1_transformRelationalDatabaseConnection(
@@ -2575,19 +2461,121 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Shared ---------------------------------------------
 
-  private async entitiesToPureModelContextData(
+  elementToEntity = (
+    element: PackageableElement,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
+  ): Entity => {
+    const entity = this.elementProtocolToEntity(
+      this.elementToProtocol<V1_PackageableElement>(element),
+    );
+    if (options?.pruneSourceInformation) {
+      entity.content = pruneSourceInformation(entity.content);
+    }
+    return entity;
+  };
+
+  /**
+   * This method helps indexing the graph from graph and dependencies' entities
+   * This will produce a _light_ graph with empty unprocesed elements, they are just indexed in the graph
+   * and the Pure model context data which can be used to further build the graph
+   *
+   * There are a few simple analytics we want to do on the graph which does not necessarily
+   * require us to build the full-graph, in fact, doing so would be too costly. In those scenarios,
+   * we need to build the _light_ graph, hence the existence of this utility method
+   *
+   * TODO?: do we need to account for system elements?
+   */
+  async indexLightGraph(
+    graph: PureModel,
     entities: Entity[],
-  ): Promise<V1_PureModelContextData> {
-    const graphData = new V1_PureModelContextData();
+    dependencyEntities: Map<string, Entity[]>,
+    entityFilterFn?: ((entity: Entity) => boolean) | undefined,
+    entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
+  ): Promise<V1_PureGraphBuilderInput[]> {
+    const report = new GraphBuilderReport();
+
+    // build main graph builder input
+    const data = new V1_PureModelContextData();
     await V1_entitiesToPureModelContextData(
-      entities,
-      graphData,
+      entities
+        .filter((entity) => {
+          // never exclude section index as it could be used for path resolution when building the graph later
+          if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+            return true;
+          }
+          if (entityFilterFn) {
+            return entityFilterFn(entity);
+          }
+          return true;
+        })
+        .map((entity) =>
+          entityProcessorFn ? entityProcessorFn(entity) : entity,
+        ),
+      data,
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    return graphData;
+    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
+      {
+        model: graph,
+        data: V1_indexPureModelContextData(
+          report,
+          data,
+          this.graphBuilderExtensions,
+        ),
+      },
+    ];
+
+    // build dependencies graph builder input
+    graph.dependencyManager.initialize(dependencyEntities);
+    const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
+    await Promise.all(
+      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
+        const projectModelData = new V1_PureModelContextData();
+        dependencyGraphDataIndex.set(dependencyKey, projectModelData);
+        return V1_entitiesToPureModelContextData(
+          value
+            .filter((entity) => {
+              // never exclude section index as it could be used for path resolution when building the graph later
+              if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+                return true;
+              }
+              if (entityFilterFn) {
+                return entityFilterFn(entity);
+              }
+              return true;
+            })
+            .map((entity) =>
+              entityProcessorFn ? entityProcessorFn(entity) : entity,
+            ),
+          projectModelData,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+      }),
+    );
+    const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
+      dependencyGraphDataIndex.entries(),
+    ).map(([dependencyKey, dependencyData]) => ({
+      data: V1_indexPureModelContextData(
+        report,
+        dependencyData,
+        this.graphBuilderExtensions,
+      ),
+      model: graph.dependencyManager.getModel(dependencyKey),
+    }));
+
+    // index simplified graph
+    const graphBuilderInput = [
+      ...dependencyGraphBuilderInput,
+      ...mainGraphBuilderInput,
+    ];
+    await this.initializeAndIndexElements(graph, graphBuilderInput);
+
+    return graphBuilderInput;
   }
 
-  private getFullGraphModelData(
+  getFullGraphModelData(
     graph: PureModel,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): V1_PureModelContextData {
@@ -2600,6 +2588,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...contextData2.elements,
     ];
     return contextData1;
+  }
+
+  elementProtocolToEntity = (
+    elementProtocol: V1_PackageableElement,
+  ): Entity => ({
+    path: this.getElementPath(elementProtocol),
+    content: V1_serializePackageableElement(
+      elementProtocol,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    ),
+    classifierPath: this.getElementClassiferPath(elementProtocol),
+  });
+
+  private async entitiesToPureModelContextData(
+    entities: Entity[],
+  ): Promise<V1_PureModelContextData> {
+    const graphData = new V1_PureModelContextData();
+    await V1_entitiesToPureModelContextData(
+      entities,
+      graphData,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    return graphData;
   }
 
   private elementToProtocol = <T extends V1_PackageableElement>(
@@ -2622,17 +2633,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graphProtocol.elements.map((element) =>
       this.elementProtocolToEntity(element),
     );
-
-  private elementProtocolToEntity = (
-    elementProtocol: V1_PackageableElement,
-  ): Entity => ({
-    path: this.getElementPath(elementProtocol),
-    content: V1_serializePackageableElement(
-      elementProtocol,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    ),
-    classifierPath: this.getElementClassiferPath(elementProtocol),
-  });
 
   private getElementPath = (elementProtocol: V1_PackageableElement): string => {
     let name = elementProtocol.name;

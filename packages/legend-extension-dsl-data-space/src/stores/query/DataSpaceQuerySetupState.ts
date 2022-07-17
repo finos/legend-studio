@@ -16,6 +16,7 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { type Class, QueryTaggedValue } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-model-storage';
 import {
   type QuerySetupStore,
   QuerySetupState,
@@ -34,7 +35,8 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
+import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 
@@ -61,7 +63,7 @@ export const createQueryDataSpaceTaggedValue = (
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: DataSpaceContext[] = [];
   loadDataSpacesState = ActionState.create();
-  setUpDataSpaceState = ActionState.create();
+  loadDataSpaceState = ActionState.create();
   currentDataSpace?: DataSpaceContext | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   toGetSnapShot = false;
@@ -78,7 +80,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       setDataSpaceViewerState: action,
       setToGetSnapShot: action,
       loadDataSpaces: flow,
-      setUpDataSpace: flow,
+      loadDataSpace: flow,
       proceedToCreateQuery: flow,
     });
   }
@@ -131,13 +133,13 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     }
   }
 
-  *setUpDataSpace(dataSpace: DataSpaceContext): GeneratorFn<void> {
+  *loadDataSpace(dataSpace: DataSpaceContext): GeneratorFn<void> {
     if (this.queryStore.initState.isInInitialState) {
       yield flowResult(this.queryStore.initialize());
     } else if (this.queryStore.initState.isInProgress) {
       return;
     }
-    this.setUpDataSpaceState.inProgress();
+    this.loadDataSpaceState.inProgress();
     try {
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
@@ -147,17 +149,31 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           ),
         )) as PlainObject<ProjectData>,
       );
+      const entities = (yield this.queryStore.depotServerClient.getEntities(
+        project,
+        dataSpace.versionId,
+      )) as Entity[];
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.queryStore.depotServerClient.getIndexedDependencyEntities(
+          project,
+          dataSpace.versionId,
+        ),
+      )) as Map<string, Entity[]>;
 
-      yield flowResult(
-        this.queryStore.buildGraph(project, dataSpace.versionId),
-      );
+      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+        this.queryStore.graphManagerState.graphManager,
+      ).analyzeDataSpace(
+        dataSpace.path,
+        entities,
+        dependencyEntitiesIndex,
+      )) as DataSpaceAnalysisResult;
 
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.queryStore.graphManagerState,
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,
-        getDataSpace(dataSpace.path, this.queryStore.graphManagerState.graph),
+        analysisResult,
         {
           viewProject: (
             groupId: string,
@@ -176,10 +192,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           },
         },
       );
-      this.setUpDataSpaceState.pass();
+      this.loadDataSpaceState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.setUpDataSpaceState.fail();
+      this.loadDataSpaceState.fail();
       this.queryStore.applicationStore.notifyError(error);
     }
   }
@@ -191,7 +207,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
           this.dataSpaceViewerState.versionId,
-          this.dataSpaceViewerState.currentExecutionContext.mapping.value.path,
+          this.dataSpaceViewerState.currentExecutionContext.mapping.path,
           this.dataSpaceViewerState.currentRuntime.path,
           _class?.path,
         ),

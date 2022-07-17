@@ -220,7 +220,7 @@ const TaxonomyNodeDataSpaceViewer = observer(
               dataSpaceViewerState.artifactId,
               dataSpaceViewerState.versionId,
             ),
-            dataSpaceViewerState.dataSpace.path,
+            dataSpaceViewerState.dataSpaceAnalysisResult.path,
           ),
         ),
       );

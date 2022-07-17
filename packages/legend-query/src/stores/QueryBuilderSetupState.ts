@@ -116,10 +116,6 @@ export class QueryBuilderSetupState {
     return this.queryBuilderState.graphManagerState.graph.mappings;
   }
 
-  get runtimes(): PackageableRuntime[] {
-    return this.queryBuilderState.graphManagerState.graph.runtimes;
-  }
-
   private get compatibleMappings(): Mapping[] {
     const mappingsWithClassMapped = this.mappings.filter((mapping) =>
       mapping.classMappings.some((cm) => cm.class.value === this._class),
@@ -139,14 +135,15 @@ export class QueryBuilderSetupState {
     // If the runtime claims to cover some mappings which include the specified mapping,
     // then we deem the runtime to be compatible with the such mapping
     return mapping
-      ? this.runtimes.filter((runtime) =>
-          runtime.runtimeValue.mappings
-            .map((mappingReference) => [
-              mappingReference.value,
-              ...getAllIncludedMappings(mappingReference.value),
-            ])
-            .flat()
-            .includes(mapping),
+      ? this.queryBuilderState.graphManagerState.graph.runtimes.filter(
+          (runtime) =>
+            runtime.runtimeValue.mappings
+              .map((mappingReference) => [
+                mappingReference.value,
+                ...getAllIncludedMappings(mappingReference.value),
+              ])
+              .flat()
+              .includes(mapping),
         )
       : [];
   }

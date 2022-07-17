@@ -18,9 +18,17 @@ import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-model-storage';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { DataSpaceAnalysisResult } from '../action/analytics/DataSpaceAnalysis.js';
 
-export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {}
+export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
+  abstract analyzeDataSpace(
+    dataSpacePath: string,
+    entities: Entity[],
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+  ): Promise<DataSpaceAnalysisResult>;
+}
 
 export const getDSLDataSpaceGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,

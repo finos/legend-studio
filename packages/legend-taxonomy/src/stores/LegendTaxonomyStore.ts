@@ -277,51 +277,51 @@ export class TaxonomyNodeViewerState {
 
       // build dataspace
       this.initDataSpaceViewerState.setMessage(`Building dataspace...`);
-      const dataSpaceViewerState = new DataSpaceViewerState(
-        this.taxonomyStore.graphManagerState,
-        dataSpaceTaxonomyContext.groupId,
-        dataSpaceTaxonomyContext.artifactId,
-        dataSpaceTaxonomyContext.versionId,
-        getDataSpace(
-          dataSpaceTaxonomyContext.path,
-          this.taxonomyStore.graphManagerState.graph,
-        ),
-        {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void => {
-            this.taxonomyStore.applicationStore.navigator.openNewWindow(
-              `${
-                this.taxonomyStore.applicationStore.config.studioUrl
-              }/view/archive/${generateGAVCoordinates(
-                _groupId,
-                _artifactId,
-                _versionId,
-              )}${entityPath ? `/entity/${entityPath}` : ''}`,
-            );
-          },
-        },
-      );
-      dataSpaceViewerState.onDiagramClassDoubleClick = (
-        classView: ClassView,
-      ): void => {
-        this.taxonomyStore.applicationStore.navigator.openNewWindow(
-          `${this.taxonomyStore.applicationStore.config.queryUrl}/create/` +
-            `${dataSpaceViewerState.groupId}/` +
-            `${dataSpaceViewerState.artifactId}/` +
-            `${dataSpaceViewerState.versionId}/` +
-            `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
-            `${dataSpaceViewerState.currentRuntime.path}/` +
-            `${classView.class.value.path}/`,
-        );
-      };
-      this.dataSpaceViewerState = dataSpaceViewerState;
-      this.initDataSpaceViewerState.setMessage(undefined);
+      // const dataSpaceViewerState = new DataSpaceViewerState(
+      //   this.taxonomyStore.graphManagerState,
+      //   dataSpaceTaxonomyContext.groupId,
+      //   dataSpaceTaxonomyContext.artifactId,
+      //   dataSpaceTaxonomyContext.versionId,
+      //   getDataSpace(
+      //     dataSpaceTaxonomyContext.path,
+      //     this.taxonomyStore.graphManagerState.graph,
+      //   ),
+      //   {
+      //     viewProject: (
+      //       _groupId: string,
+      //       _artifactId: string,
+      //       _versionId: string,
+      //       entityPath: string | undefined,
+      //     ): void => {
+      //       this.taxonomyStore.applicationStore.navigator.openNewWindow(
+      //         `${
+      //           this.taxonomyStore.applicationStore.config.studioUrl
+      //         }/view/archive/${generateGAVCoordinates(
+      //           _groupId,
+      //           _artifactId,
+      //           _versionId,
+      //         )}${entityPath ? `/entity/${entityPath}` : ''}`,
+      //       );
+      //     },
+      //   },
+      // );
+      // dataSpaceViewerState.onDiagramClassDoubleClick = (
+      //   classView: ClassView,
+      // ): void => {
+      //   this.taxonomyStore.applicationStore.navigator.openNewWindow(
+      //     `${this.taxonomyStore.applicationStore.config.queryUrl}/create/` +
+      //       `${dataSpaceViewerState.groupId}/` +
+      //       `${dataSpaceViewerState.artifactId}/` +
+      //       `${dataSpaceViewerState.versionId}/` +
+      //       `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
+      //       `${dataSpaceViewerState.currentRuntime.path}/` +
+      //       `${classView.class.value.path}/`,
+      //   );
+      // };
+      // this.dataSpaceViewerState = dataSpaceViewerState;
+      // this.initDataSpaceViewerState.setMessage(undefined);
 
-      this.currentDataSpace = dataSpaceTaxonomyContext;
+      // this.currentDataSpace = dataSpaceTaxonomyContext;
     } catch (error) {
       assertErrorThrown(error);
       this.taxonomyStore.applicationStore.notifyError(error);
@@ -803,48 +803,48 @@ export class LegendTaxonomyStore {
       this.initStandaloneDataSpaceViewerState.setMessage(
         `Building dataspace...`,
       );
-      const dataSpaceViewerState = new DataSpaceViewerState(
-        this.graphManagerState,
-        project.groupId,
-        project.artifactId,
-        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
-        getDataSpace(dataSpacePath, this.graphManagerState.graph),
-        {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void => {
-            this.applicationStore.navigator.openNewWindow(
-              `${
-                this.applicationStore.config.studioUrl
-              }/view/archive/${generateGAVCoordinates(
-                _groupId,
-                _artifactId,
-                _versionId,
-              )}${entityPath ? `/entity/${entityPath}` : ''}`,
-            );
-          },
-        },
-      );
-      dataSpaceViewerState.onDiagramClassDoubleClick = (
-        classView: ClassView,
-      ): void => {
-        this.applicationStore.navigator.openNewWindow(
-          `${this.applicationStore.config.queryUrl}/create/` +
-            `${dataSpaceViewerState.groupId}/` +
-            `${dataSpaceViewerState.artifactId}/` +
-            `${dataSpaceViewerState.versionId}/` +
-            `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
-            `${dataSpaceViewerState.currentRuntime.path}/` +
-            `${classView.class.value.path}/`,
-        );
-      };
-      this.standaloneDataSpaceViewerState = dataSpaceViewerState;
-      this.initStandaloneDataSpaceViewerState.setMessage(undefined);
+      // const dataSpaceViewerState = new DataSpaceViewerState(
+      //   this.graphManagerState,
+      //   project.groupId,
+      //   project.artifactId,
+      //   versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      //   getDataSpace(dataSpacePath, this.graphManagerState.graph),
+      //   {
+      //     viewProject: (
+      //       _groupId: string,
+      //       _artifactId: string,
+      //       _versionId: string,
+      //       entityPath: string | undefined,
+      //     ): void => {
+      //       this.applicationStore.navigator.openNewWindow(
+      //         `${
+      //           this.applicationStore.config.studioUrl
+      //         }/view/archive/${generateGAVCoordinates(
+      //           _groupId,
+      //           _artifactId,
+      //           _versionId,
+      //         )}${entityPath ? `/entity/${entityPath}` : ''}`,
+      //       );
+      //     },
+      //   },
+      // );
+      // dataSpaceViewerState.onDiagramClassDoubleClick = (
+      //   classView: ClassView,
+      // ): void => {
+      //   this.applicationStore.navigator.openNewWindow(
+      //     `${this.applicationStore.config.queryUrl}/create/` +
+      //       `${dataSpaceViewerState.groupId}/` +
+      //       `${dataSpaceViewerState.artifactId}/` +
+      //       `${dataSpaceViewerState.versionId}/` +
+      //       `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
+      //       `${dataSpaceViewerState.currentRuntime.path}/` +
+      //       `${classView.class.value.path}/`,
+      //   );
+      // };
+      // this.standaloneDataSpaceViewerState = dataSpaceViewerState;
+      // this.initStandaloneDataSpaceViewerState.setMessage(undefined);
 
-      this.initStandaloneDataSpaceViewerState.pass();
+      // this.initStandaloneDataSpaceViewerState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.initStandaloneDataSpaceViewerState.fail();
@@ -853,13 +853,13 @@ export class LegendTaxonomyStore {
   }
 
   queryUsingDataSpace(dataSpaceViewerState: DataSpaceViewerState): void {
-    this.applicationStore.navigator.openNewWindow(
-      `${this.applicationStore.config.queryUrl}/create/` +
-        `${dataSpaceViewerState.groupId}/` +
-        `${dataSpaceViewerState.artifactId}/` +
-        `${dataSpaceViewerState.versionId}/` +
-        `${dataSpaceViewerState.currentExecutionContext.mapping.value.path}/` +
-        `${dataSpaceViewerState.currentRuntime.path}`,
-    );
+    // this.applicationStore.navigator.openNewWindow(
+    //   `${this.applicationStore.config.queryUrl}/create/` +
+    //     `${dataSpaceViewerState.groupId}/` +
+    //     `${dataSpaceViewerState.artifactId}/` +
+    //     `${dataSpaceViewerState.versionId}/` +
+    //     `${dataSpaceViewerState.currentExecutionContext.mapping.path}/` +
+    //     `${dataSpaceViewerState.currentRuntime.path}`,
+    // );
   }
 }

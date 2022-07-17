@@ -129,6 +129,8 @@ export abstract class AbstractPureGraphManager {
       );
   }
 
+  abstract getSupportedProtocolVersion(): string;
+
   /**
    * TODO: we should not expose a fixed config like this, we probably
    * should not mention anything about engine because it is an internal construct
@@ -145,8 +147,6 @@ export abstract class AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void>;
-
-  abstract getSupportedProtocolVersion(): string;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
