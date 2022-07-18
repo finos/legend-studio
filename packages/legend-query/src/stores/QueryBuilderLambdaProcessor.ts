@@ -621,7 +621,7 @@ export class QueryBuilderLambdaProcessor
           `Can't process post-filter expression: expects argument #1 to be a lambda function`,
         );
         processPostFilterLambda(postFilterLambda, postFilterState);
-        postFilterState.setShowPostFilterPanel(true);
+        this.queryBuilderState.setShowPostFilterPanel(true);
         postFilterState.simplifyTree();
         return;
       } else {

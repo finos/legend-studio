@@ -206,6 +206,7 @@ export class QueryBuilderState {
   backdrop = false;
   showFunctionPanel = false;
   showParameterPanel = false;
+  showPostFilterPanel = false;
 
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
@@ -229,6 +230,7 @@ export class QueryBuilderState {
       mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
+      showPostFilterPanel: observable,
       setMode: action,
       resetQueryBuilder: action,
       resetQuerySetup: action,
@@ -237,6 +239,7 @@ export class QueryBuilderState {
       setBackdrop: action,
       setShowFunctionPanel: action,
       setShowParameterPanel: action,
+      setShowPostFilterPanel: action,
       changeClass: action,
       changeFetchStructure: action,
       compileQuery: flow,
@@ -276,8 +279,13 @@ export class QueryBuilderState {
   setShowFunctionPanel(val: boolean): void {
     this.showFunctionPanel = val;
   }
+
   setShowParameterPanel(val: boolean): void {
     this.showParameterPanel = val;
+  }
+
+  setShowPostFilterPanel(val: boolean): void {
+    this.showPostFilterPanel = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {

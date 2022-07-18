@@ -115,7 +115,6 @@ export const QueryBuilder = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const isQuerySupported = queryBuilderState.isQuerySupported();
-    const postFilterState = queryBuilderState.postFilterState;
 
     // Hotkeys
     const keyMap = {
@@ -142,8 +141,8 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowPostFilterPanel = (): void => {
-      postFilterState.setShowPostFilterPanel(
-        !postFilterState.showPostFilterPanel,
+      queryBuilderState.setShowPostFilterPanel(
+        !queryBuilderState.showPostFilterPanel,
       );
     };
 
@@ -187,9 +186,12 @@ export const QueryBuilder = observer(
                       Show Parameter Panel
                     </MenuContentItemLabel>
                   </MenuContentItem>
-                  <MenuContentItem onClick={toggleShowPostFilterPanel}>
+                  <MenuContentItem
+                    onClick={toggleShowPostFilterPanel}
+                    disabled={queryBuilderState.fetchStructureState.isGraphFetchMode()}
+                  >
                     <MenuContentItemIcon>
-                      {postFilterState.showPostFilterPanel ? (
+                      {queryBuilderState.showPostFilterPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
@@ -321,12 +323,12 @@ export const QueryBuilder = observer(
                       </ResizablePanel>
                       <ResizablePanelSplitter />
                       <ResizablePanel minSize={300}>
-                        {!postFilterState.showPostFilterPanel && (
+                        {!queryBuilderState.showPostFilterPanel && (
                           <QueryBuilderFilterPanel
                             queryBuilderState={queryBuilderState}
                           />
                         )}
-                        {postFilterState.showPostFilterPanel && (
+                        {queryBuilderState.showPostFilterPanel && (
                           <ResizablePanelGroup orientation="horizontal">
                             <ResizablePanel minSize={300}>
                               <QueryBuilderFilterPanel
