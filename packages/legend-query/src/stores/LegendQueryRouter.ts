@@ -24,17 +24,16 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   MAPPING_PATH = 'mappingPath',
   RUNTIME_PATH = 'runtimePath',
   SERVICE_PATH = 'servicePath',
-  CLASS_PATH = 'classPath',
 }
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  SERVICE_KEY = 'key',
+  CLASS_PATH = 'classPath',
+  SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
   CREATE_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
-  CREATE_QUERY_WITH_CLASS: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.CLASS_PATH}`,
   SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
   EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
@@ -45,24 +44,26 @@ export const generateCreateQueryRoute = (
   versionId: string,
   mappingPath: string,
   runtimePath: string,
-  classPath: string | undefined,
 ): string =>
-  classPath
-    ? generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY_WITH_CLASS, {
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: groupId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: mappingPath,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.CLASS_PATH]: classPath,
-      })
-    : generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: groupId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: mappingPath,
-        [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
-      });
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: groupId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: mappingPath,
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
+  });
+
+export interface CreateQueryPathParams {
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
+  [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
+}
+
+export interface CreateQueryQueryParams {
+  [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
+}
 
 export const generateServiceQueryRoute = (
   groupId: string,
@@ -76,12 +77,9 @@ export const generateServiceQueryRoute = (
     [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: artifactId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: versionId,
     [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
-  })}${key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY}=${key}` : ''}`;
-
-export const generateExistingQueryRoute = (queryId: string): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
-    [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
-  });
+  })}${
+    key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY}=${key}` : ''
+  }`;
 
 export interface ServiceQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
@@ -90,18 +88,14 @@ export interface ServiceQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface CreateQueryPathParams {
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
-  [LEGEND_QUERY_PATH_PARAM_TOKEN.CLASS_PATH]?: string;
+export interface ServiceQueryQueryParams {
+  [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string;
 }
 
-export interface ServiceQueryQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_KEY]?: string;
-}
+export const generateExistingQueryRoute = (queryId: string): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
+    [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
+  });
 
 export interface ExistingQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;

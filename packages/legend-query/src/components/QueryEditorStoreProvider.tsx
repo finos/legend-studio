@@ -18,7 +18,12 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { QueryEditorStore } from '../stores/QueryEditorStore.js';
+import {
+  type QueryEditorStore,
+  CreateQueryEditorStore,
+  ExistingQueryEditorStore,
+  ServiceQueryEditorStore,
+} from '../stores/QueryEditorStore.js';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
@@ -27,18 +32,99 @@ const QueryEditorStoreContext = createContext<QueryEditorStore | undefined>(
   undefined,
 );
 
-export const QueryEditorStoreProvider: React.FC<{
+export const ExistingQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
-}> = ({ children }) => {
+  queryId: string;
+}> = ({ children, queryId }) => {
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const queryStore = useLegendQueryStore();
   const store = useLocalObservable(
     () =>
-      new QueryEditorStore(
+      new ExistingQueryEditorStore(
         applicationStore,
         depotServerClient,
         queryStore.pluginManager,
+        queryId,
+      ),
+  );
+  return (
+    <QueryEditorStoreContext.Provider value={store}>
+      {children}
+    </QueryEditorStoreContext.Provider>
+  );
+};
+
+export const CreateQueryEditorStoreProvider: React.FC<{
+  children: React.ReactNode;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  mappingPath: string;
+  runtimePath: string;
+  classPath: string | undefined;
+}> = ({
+  children,
+  groupId,
+  artifactId,
+  versionId,
+  mappingPath,
+  runtimePath,
+  classPath,
+}) => {
+  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const depotServerClient = useDepotServerClient();
+  const queryStore = useLegendQueryStore();
+  const store = useLocalObservable(
+    () =>
+      new CreateQueryEditorStore(
+        applicationStore,
+        depotServerClient,
+        queryStore.pluginManager,
+        groupId,
+        artifactId,
+        versionId,
+        mappingPath,
+        runtimePath,
+        classPath,
+      ),
+  );
+  return (
+    <QueryEditorStoreContext.Provider value={store}>
+      {children}
+    </QueryEditorStoreContext.Provider>
+  );
+};
+
+export const ServiceQueryEditorStoreProvider: React.FC<{
+  children: React.ReactNode;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  servicePath: string;
+  executionKey: string | undefined;
+}> = ({
+  children,
+  groupId,
+  artifactId,
+  versionId,
+  servicePath,
+  executionKey,
+}) => {
+  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const depotServerClient = useDepotServerClient();
+  const queryStore = useLegendQueryStore();
+  const store = useLocalObservable(
+    () =>
+      new ServiceQueryEditorStore(
+        applicationStore,
+        depotServerClient,
+        queryStore.pluginManager,
+        groupId,
+        artifactId,
+        versionId,
+        servicePath,
+        executionKey,
       ),
   );
   return (

@@ -232,7 +232,7 @@ export const QueryBuilderSetupPanel = observer(
               onChange={changeClass}
               value={selectedClassOption}
               darkMode={true}
-              disabled={!isQuerySupported}
+              disabled={!isQuerySupported || querySetupState.classIsReadOnly}
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,

@@ -34,6 +34,11 @@ const LegendQueryApplicationInner = observer(() => (
     <Switch>
       <Route
         exact={true}
+        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+        component={QuerySetup}
+      />
+      <Route
+        exact={true}
         path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
         component={ExistingQueryLoader}
       />
@@ -44,16 +49,8 @@ const LegendQueryApplicationInner = observer(() => (
       />
       <Route
         exact={true}
-        path={[
-          LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY,
-          LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY_WITH_CLASS,
-        ]}
+        path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
         component={CreateQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-        component={QuerySetup}
       />
       <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
     </Switch>

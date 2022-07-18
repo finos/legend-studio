@@ -38,6 +38,7 @@ export class QueryBuilderSetupState {
   _class?: Class | undefined;
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
+  classIsReadOnly = false;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
   showSetupPanel = true;
@@ -59,6 +60,9 @@ export class QueryBuilderSetupState {
       setProcessingDate: action,
       setBusinessDate: action,
       setShowSetupPanel: action,
+      setClassIsReadOnly: action,
+      setMappingIsReadOnly: action,
+      setRuntimeIsReadOnly: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -152,12 +156,13 @@ export class QueryBuilderSetupState {
     this.queryBuilderState = queryBuilderState;
   }
   setRuntimeValue(val: Runtime | undefined): void {
-    if (!this.runtimeIsReadOnly) {
-      this.runtimeValue = val;
-    }
+    this.runtimeValue = val;
   }
   setShowSetupPanel(val: boolean): void {
     this.showSetupPanel = val;
+  }
+  setClassIsReadOnly(val: boolean): void {
+    this.classIsReadOnly = val;
   }
   setMappingIsReadOnly(val: boolean): void {
     this.mappingIsReadOnly = val;
@@ -193,6 +198,9 @@ export class QueryBuilderSetupState {
 
   setMapping(val: Mapping | undefined): void {
     this.mapping = val;
+    if (this.runtimeIsReadOnly) {
+      return;
+    }
     const runtimeToPick = getNullableFirstElement(this.compatibleRuntimes);
     if (runtimeToPick) {
       this.setRuntimeValue(

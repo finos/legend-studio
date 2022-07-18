@@ -52,7 +52,7 @@ import { generateExistingQueryRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
-import { QueryEditorStore } from '../stores/QueryEditorStore.js';
+import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 
 export const TEST__LegendQueryStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -62,18 +62,20 @@ export const TEST__LegendQueryStoreProvider: React.FC<{
   </LegendQueryStoreProvider>
 );
 
+const TEST_QUERY_ID = 'test-query-id';
+
 export const TEST__provideMockedQueryEditorStore = (customization?: {
-  mock?: QueryEditorStore;
+  mock?: ExistingQueryEditorStore;
   applicationStore?: ApplicationStore<LegendQueryConfig>;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
-}): QueryEditorStore => {
+}): ExistingQueryEditorStore => {
   const pluginManager =
     customization?.pluginManager ?? LegendQueryPluginManager.create();
   const value =
     customization?.mock ??
-    new QueryEditorStore(
+    new ExistingQueryEditorStore(
       customization?.applicationStore ??
         TEST__getTestApplicationStore(
           TEST__getTestLegendQueryApplicationConfig(),
@@ -81,15 +83,16 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
         ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       pluginManager,
+      TEST_QUERY_ID,
     );
-  const MOCK__QueryEditorStoreProvider = require('../stores/QueryEditorStore.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+  const MOCK__QueryEditorStoreProvider = require('./QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MOCK__QueryEditorStoreProvider.useQueryEditorStore = jest.fn();
   MOCK__QueryEditorStoreProvider.useQueryEditorStore.mockReturnValue(value);
   return value;
 };
 
 export const TEST__setUpQueryEditor = async (
-  MOCK__editorStore: QueryEditorStore,
+  MOCK__editorStore: ExistingQueryEditorStore,
   entities: Entity[],
   lambda: RawLambda,
   mappingPath: string,
@@ -107,7 +110,7 @@ export const TEST__setUpQueryEditor = async (
 
   const lightQuery = new LightQuery();
   lightQuery.name = 'MyTestQuery';
-  lightQuery.id = 'test-query';
+  lightQuery.id = TEST_QUERY_ID;
   lightQuery.versionId = '0.0.0';
   lightQuery.groupId = 'test.group';
   lightQuery.artifactId = 'test-artifact';

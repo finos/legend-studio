@@ -194,7 +194,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           this.dataSpaceViewerState.versionId,
           this.dataSpaceViewerState.currentExecutionContext.mapping.path,
           this.dataSpaceViewerState.currentRuntime.path,
-          _class?.path,
         ),
       );
       this.setupStore.setSetupState(undefined);

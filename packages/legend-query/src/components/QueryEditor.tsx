@@ -15,7 +15,6 @@
  */
 
 import {
-  clsx,
   Dialog,
   ArrowLeftIcon,
   ExternalLinkSquareIcon,
@@ -36,40 +35,47 @@ import {
   type ServiceQueryPathParams,
   type ServiceQueryQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
-  generateCreateQueryRoute,
+  LEGEND_QUERY_QUERY_PARAM_TOKEN,
+  LEGEND_QUERY_PATH_PARAM_TOKEN,
 } from '../stores/LegendQueryRouter.js';
 import {
-  type QueryExportState,
-  ExistingQueryInfoState,
-  ServiceQueryInfoState,
-  CreateQueryInfoState,
+  type QueryEditorStore,
+  CreateQueryEditorStore,
+  ExistingQueryEditorStore,
+  QueryExportState,
+  ServiceQueryEditorStore,
 } from '../stores/QueryEditorStore.js';
 import { QueryBuilder } from './QueryBuilder.js';
-import { RuntimePointer } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  QueryEditorStoreProvider,
+  CreateQueryEditorStoreProvider,
+  ExistingQueryEditorStoreProvider,
+  ServiceQueryEditorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
+import {
+  extractElementNameFromPath,
+  type RawLambda,
+} from '@finos/legend-graph';
+import { flowResult } from 'mobx';
 
 const QueryExportInner = observer(
-  (props: { queryExportState: QueryExportState }) => {
-    const { queryExportState } = props;
+  (props: { exportState: QueryExportState }) => {
+    const { exportState } = props;
     const applicationStore = useApplicationStore();
-    const allowCreate = queryExportState.allowPersist;
-    const allowSave =
-      queryExportState.allowPersist && queryExportState.allowUpdate;
+    const allowCreate = exportState.allowPersist;
+    const allowSave = exportState.allowPersist && exportState.allowUpdate;
     const create = applicationStore.guardUnhandledError(() =>
-      queryExportState.persistQuery(true),
+      exportState.persistQuery(true),
     );
     const save = applicationStore.guardUnhandledError(() =>
-      queryExportState.persistQuery(false),
+      exportState.persistQuery(false),
     );
 
     // name
     const nameInputRef = useRef<HTMLInputElement>(null);
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      queryExportState.setQueryName(event.target.value);
+      exportState.setQueryName(event.target.value);
 
     useEffect(() => {
       nameInputRef.current?.focus();
@@ -79,13 +85,13 @@ const QueryExportInner = observer(
       <>
         <div className="modal__body">
           <PanelLoadingIndicator
-            isLoading={queryExportState.persistQueryState.isInProgress}
+            isLoading={exportState.persistQueryState.isInProgress}
           />
           <input
             ref={nameInputRef}
             className="input input--dark"
             spellCheck={false}
-            value={queryExportState.queryName}
+            value={exportState.queryName}
             onChange={changeName}
           />
         </div>
@@ -113,12 +119,12 @@ const QueryExportInner = observer(
 
 const QueryExport = observer(() => {
   const editorStore = useQueryEditorStore();
-  const queryExportState = editorStore.queryExportState;
-  const close = (): void => editorStore.setQueryExportState(undefined);
+  const exportState = editorStore.exportState;
+  const close = (): void => editorStore.setExportState(undefined);
 
   return (
     <Dialog
-      open={Boolean(queryExportState)}
+      open={Boolean(exportState)}
       onClose={close}
       classes={{
         root: 'editor-modal__root-container',
@@ -130,114 +136,109 @@ const QueryExport = observer(() => {
         <div className="modal__header">
           <div className="modal__title">Save Query</div>
         </div>
-        {queryExportState && (
-          <QueryExportInner queryExportState={queryExportState} />
-        )}
+        {exportState && <QueryExportInner exportState={exportState} />}
       </div>
     </Dialog>
   );
 });
 
+const renderQueryEditorHeaderLabel = (
+  editorStore: QueryEditorStore,
+): React.ReactNode => {
+  if (editorStore instanceof ExistingQueryEditorStore) {
+    return (
+      <div className="query-editor__header__label query-editor__header__label--existing-query">
+        {editorStore.query.name}
+      </div>
+    );
+  } else if (editorStore instanceof CreateQueryEditorStore) {
+    return (
+      <div className="query-editor__header__label query-editor__header__label--create-query">
+        New Query
+      </div>
+    );
+  } else if (editorStore instanceof ServiceQueryEditorStore) {
+    return (
+      <div className="query-editor__header__label query-editor__header__label--service-query">
+        <RobotIcon className="query-editor__header__label__icon" />
+        {extractElementNameFromPath(editorStore.servicePath)}
+      </div>
+    );
+  }
+  return null;
+};
+
 const QueryEditorHeader = observer(() => {
   const editorStore = useQueryEditorStore();
-  const queryInfoState = editorStore.queryInfoState;
   const applicationStore = useApplicationStore();
-  const backToMainMenu = (): void =>
-    applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
-  const viewQueryProject = (): void => {
-    if (queryInfoState) {
-      const queryProjectInfo = queryInfoState.getQueryProjectInfo();
-      editorStore.viewStudioProject(
-        queryProjectInfo.groupId,
-        queryProjectInfo.artifactId,
-        queryProjectInfo.versionId,
-        undefined,
-      );
-    }
-  };
+  const viewQueryProject = (): void => editorStore.viewStudioProject(undefined);
   const saveQuery = (): void => {
-    if (editorStore.onSaveQuery) {
-      editorStore.queryBuilderState
-        .saveQuery(editorStore.onSaveQuery)
-        .catch(applicationStore.alertUnhandledError);
-    }
+    editorStore.queryBuilderState
+      .saveQuery(async (lambda: RawLambda) => {
+        editorStore.setExportState(
+          new QueryExportState(
+            editorStore,
+            lambda,
+            await editorStore.getExportConfiguration(lambda),
+          ),
+        );
+      })
+      .catch(applicationStore.alertUnhandledError);
   };
 
   return (
-    <div className="query-editor__header">
-      <button
-        className="query-editor__header__back-btn btn--dark"
-        onClick={backToMainMenu}
-        title="Back to Main Menu"
-      >
-        <ArrowLeftIcon />
-      </button>
-      <div className="query-editor__header__content">
-        <div
-          className={clsx('query-editor__header__label', {
-            'query-editor__header__label--existing-query':
-              queryInfoState instanceof ExistingQueryInfoState,
-            'query-editor__header__label--create-query':
-              queryInfoState instanceof CreateQueryInfoState,
-            'query-editor__header__label--service-query':
-              queryInfoState instanceof ServiceQueryInfoState,
-          })}
+    <div className="query-editor__header__content">
+      {renderQueryEditorHeaderLabel(editorStore)}
+      <div className="query-editor__header__actions">
+        <button
+          className="query-editor__header__action query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          title="View project"
+          onClick={viewQueryProject}
         >
-          {queryInfoState instanceof CreateQueryInfoState && <>New Query</>}
-          {queryInfoState instanceof ServiceQueryInfoState && (
-            <>
-              <RobotIcon className="query-editor__header__label__icon" />
-              {queryInfoState.service.name}
-            </>
-          )}
-          {queryInfoState instanceof ExistingQueryInfoState && (
-            <>{queryInfoState.query.name}</>
-          )}
-        </div>
-        <div className="query-editor__header__actions">
-          <button
-            className="query-editor__header__action query-editor__header__action--simple btn--dark"
-            tabIndex={-1}
-            title="View project"
-            onClick={viewQueryProject}
-            disabled={!queryInfoState}
-          >
-            <ExternalLinkSquareIcon />
-          </button>
-          <button
-            className="query-editor__header__action btn--dark"
-            tabIndex={-1}
-            onClick={saveQuery}
-            disabled={!editorStore.onSaveQuery}
-          >
-            <div className="query-editor__header__action__icon">
-              <SaveIcon />
-            </div>
-            <div className="query-editor__header__action__label">Save</div>
-          </button>
-        </div>
+          <ExternalLinkSquareIcon />
+        </button>
+        <button
+          className="query-editor__header__action btn--dark"
+          tabIndex={-1}
+          onClick={saveQuery}
+        >
+          <div className="query-editor__header__action__icon">
+            <SaveIcon />
+            <QueryExport />
+          </div>
+          <div className="query-editor__header__action__label">Save</div>
+        </button>
       </div>
     </div>
   );
 });
 
 const QueryEditorInner = observer(() => {
+  const applicationStore = useApplicationStore();
   const editorStore = useQueryEditorStore();
-  const isLoadingEditor =
-    !editorStore.graphManagerState.graphBuildState.hasCompleted ||
-    !editorStore.initState.hasCompleted ||
-    !editorStore.editorInitState.hasCompleted;
-  console.log(
-    isLoadingEditor,
-    editorStore.graphManagerState.graphBuildState.hasCompleted,
-    editorStore.initState.hasCompleted,
-    editorStore.editorInitState.hasCompleted,
-  );
+  const isLoadingEditor = !editorStore.initState.hasCompleted;
+  const backToMainMenu = (): void =>
+    applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+
+  useEffect(() => {
+    flowResult(editorStore.initialize()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  }, [editorStore, applicationStore]);
 
   return (
     <div className="query-editor">
-      <QueryExport />
-      <QueryEditorHeader />
+      <div className="query-editor__header">
+        <button
+          className="query-editor__header__back-btn btn--dark"
+          onClick={backToMainMenu}
+          title="Back to Main Menu"
+        >
+          <ArrowLeftIcon />
+        </button>
+        {!isLoadingEditor && <QueryEditorHeader />}
+      </div>
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && (
@@ -245,7 +246,7 @@ const QueryEditorInner = observer(() => {
         )}
         {isLoadingEditor && (
           <BlankPanelContent>
-            {editorStore.buildGraphState.message ??
+            {editorStore.initState.message ??
               editorStore.graphManagerState.systemBuildState.message ??
               editorStore.graphManagerState.dependenciesBuildState.message ??
               editorStore.graphManagerState.generationsBuildState.message ??
@@ -263,91 +264,65 @@ const QueryEditor: React.FC = () => (
   </DndProvider>
 );
 
-const ExistingQueryLoaderInner = observer(() => {
-  const editorStore = useQueryEditorStore();
+export const ExistingQueryLoader = observer(() => {
   const params = useParams<ExistingQueryPathParams>();
+  const queryId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID];
 
-  useEffect(() => {
-    editorStore.setupExistingQueryInfoState(params);
-  }, [editorStore, params]);
-
-  return <QueryEditor />;
+  return (
+    <ExistingQueryEditorStoreProvider queryId={queryId}>
+      <QueryEditor />
+    </ExistingQueryEditorStoreProvider>
+  );
 });
 
-export const ExistingQueryLoader: React.FC = () => (
-  <QueryEditorStoreProvider>
-    <ExistingQueryLoaderInner />
-  </QueryEditorStoreProvider>
-);
-
-const ServiceQueryLoaderInner = observer(() => {
+export const ServiceQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const editorStore = useQueryEditorStore();
   const params = useParams<ServiceQueryPathParams>();
-  const queryParams = getQueryParameters<ServiceQueryQueryParams>(
+  const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
+  const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
+  const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
+  const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
+  const executionKey = getQueryParameters<ServiceQueryQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
+  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
+
+  return (
+    <ServiceQueryEditorStoreProvider
+      groupId={groupId}
+      artifactId={artifactId}
+      versionId={versionId}
+      servicePath={servicePath}
+      executionKey={executionKey}
+    >
+      <QueryEditor />
+    </ServiceQueryEditorStoreProvider>
   );
-
-  useEffect(() => {
-    editorStore.setupServiceQueryInfoState(params, queryParams.key);
-  }, [editorStore, params, queryParams]);
-
-  return <QueryEditor />;
 });
 
-export const ServiceQueryLoader: React.FC = () => (
-  <QueryEditorStoreProvider>
-    <ServiceQueryLoaderInner />
-  </QueryEditorStoreProvider>
-);
-
-const CreateQueryLoaderInner = observer(() => {
+export const CreateQueryLoader = observer(() => {
   const applicationStore = useApplicationStore();
-  const editorStore = useQueryEditorStore();
   const params = useParams<CreateQueryPathParams>();
-  const currentMapping = editorStore.queryBuilderState.querySetupState.mapping;
-  const currentRuntime =
-    editorStore.queryBuilderState.querySetupState.runtimeValue instanceof
-    RuntimePointer
-      ? editorStore.queryBuilderState.querySetupState.runtimeValue
-          .packageableRuntime.value
-      : undefined;
+  const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
+  const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
+  const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
+  const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
+  const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
+  const classPath = getQueryParameters<ServiceQueryQueryParams>(
+    applicationStore.navigator.getCurrentLocation(),
+    true,
+  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 
-  useEffect(() => {
-    if (editorStore.editorInitState.isInInitialState) {
-      editorStore.setupCreateQueryInfoState(params);
-    }
-  }, [editorStore, params]);
-
-  // TODO: this will make the route change as the users select another mapping and runtime
-  useEffect(() => {
-    if (editorStore.queryInfoState instanceof CreateQueryInfoState) {
-      if (
-        currentMapping &&
-        currentRuntime &&
-        (editorStore.queryInfoState.mapping !== currentMapping ||
-          editorStore.queryInfoState.runtime !== currentRuntime)
-      ) {
-        applicationStore.navigator.goTo(
-          generateCreateQueryRoute(
-            editorStore.queryInfoState.project.groupId,
-            editorStore.queryInfoState.project.artifactId,
-            editorStore.queryInfoState.versionId,
-            currentMapping.path,
-            currentRuntime.path,
-            undefined,
-          ),
-        );
-      }
-    }
-  }, [applicationStore, editorStore, currentMapping, currentRuntime]);
-
-  return <QueryEditor />;
+  return (
+    <CreateQueryEditorStoreProvider
+      groupId={groupId}
+      artifactId={artifactId}
+      versionId={versionId}
+      mappingPath={mappingPath}
+      runtimePath={runtimePath}
+      classPath={classPath}
+    >
+      <QueryEditor />
+    </CreateQueryEditorStoreProvider>
+  );
 });
-
-export const CreateQueryLoader: React.FC = () => (
-  <QueryEditorStoreProvider>
-    <CreateQueryLoaderInner />
-  </QueryEditorStoreProvider>
-);
