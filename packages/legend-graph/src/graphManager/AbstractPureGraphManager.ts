@@ -69,6 +69,10 @@ import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 import type { AtomicTest } from '../models/metamodels/pure/test/Test.js';
 import type { TestAssertion } from '../models/metamodels/pure/test/assertion/TestAssertion.js';
 import type { AssertFail } from '../models/metamodels/pure/test/assertion/status/AssertFail.js';
+import type {
+  MappingModelCoverageAnalysisResult,
+  RawMappingModelCoverageAnalysisResult,
+} from './action/analytics/MappingAnalytics.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -95,13 +99,35 @@ export interface ExecutionOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export abstract class AbstractPureGraphManagerExtension {
+  graphManager: AbstractPureGraphManager;
+
+  constructor(graphManager: AbstractPureGraphManager) {
+    this.graphManager = graphManager;
+  }
+
+  abstract getSupportedProtocolVersion(): string;
+}
+
 export abstract class AbstractPureGraphManager {
+  extensions: AbstractPureGraphManagerExtension[] = [];
   pluginManager: GraphPluginManager;
   log: Log;
 
   constructor(pluginManager: GraphPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
+    this.extensions = pluginManager
+      .getPureGraphManagerPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraPureGraphManagerExtensionBuilders?.() ?? [],
+      )
+      .map((builder) => builder(this))
+      .filter(
+        (extension) =>
+          extension.getSupportedProtocolVersion() ===
+          this.getSupportedProtocolVersion(),
+      );
   }
 
   /**
@@ -120,6 +146,8 @@ export abstract class AbstractPureGraphManager {
       tracerService?: TracerService | undefined;
     },
   ): Promise<void>;
+
+  abstract getSupportedProtocolVersion(): string;
 
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
@@ -302,7 +330,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
@@ -311,7 +338,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
@@ -319,7 +345,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
@@ -338,7 +363,6 @@ export abstract class AbstractPureGraphManager {
     mapping: Mapping,
     lambda: RawLambda,
     runtime: Runtime,
-    clientVersion: string,
     parameters: (string | number | boolean)[],
     options?: {
       // Anonymizes data by hashing any string values in the generated data
@@ -396,23 +420,16 @@ export abstract class AbstractPureGraphManager {
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract deleteQuery(queryId: string): Promise<void>;
 
-  // ------------------------------------------- Legend Query -------------------------------------
-  /**
-   * @modularize
-   * See https://github.com/finos/legend-studio/issues/65
-   */
+  // -------------------------------------- Analysis --------------------------------------
 
-  abstract buildGraphForCreateQuerySetup(
+  abstract analyzeMappingModelCoverage(
     graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+    mapping: Mapping,
+  ): Promise<MappingModelCoverageAnalysisResult>;
 
-  abstract buildGraphForServiceQuerySetup(
-    graph: PureModel,
-    entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+  abstract buildMappingModelCoverageAnalysisResult(
+    input: RawMappingModelCoverageAnalysisResult,
+  ): MappingModelCoverageAnalysisResult;
 
   // ------------------------------------------- Utilities -------------------------------------------
 

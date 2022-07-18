@@ -21,15 +21,18 @@ import {
   type Runtime,
   type EmbeddedData,
   type RawLambda,
+  type DataElement,
   ConnectionTestData,
   PureSingleExecution,
   PureMultiExecution,
   DatabaseConnection,
-  PureClientVersion,
   buildLambdaVariableExpressions,
   VariableExpression,
   PrimitiveType,
   Enumeration,
+  DataElementReference,
+  PackageableElementExplicitReference,
+  ConnectionPointer,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -40,6 +43,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
+  getNullableFirstElement,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -57,6 +61,7 @@ import {
   getAllIdentifiedConnectionsFromRuntime,
   TEMPORARY_EmbeddedDataConnectionVisitor,
 } from '../../../../shared/testable/TestableUtils.js';
+import { EmbeddedDataType } from '../../../ExternalFormatState.js';
 import {
   type EmbeddedDataTypeOption,
   EmbeddedDataEditorState,
@@ -122,8 +127,9 @@ export class ConnectionTestDataState {
 
   *generateTestData(): GeneratorFn<void> {
     try {
+      this.generatingTestDataSate.inProgress();
       const connection = guaranteeNonNullable(
-        this.resolveConnection(this.connectionData.connectionId),
+        this.resolveConnectionValue(this.connectionData.connectionId),
         `Unable to resolve connection id '${this.connectionData.connectionId}`,
       );
 
@@ -140,7 +146,6 @@ export class ConnectionTestDataState {
             serviceExecutionParameters.mapping,
             serviceExecutionParameters.query,
             serviceExecutionParameters.runtime,
-            PureClientVersion.VX_X_X,
             buildTestDataParameters(
               serviceExecutionParameters.query,
               this.editorStore,
@@ -164,17 +169,24 @@ export class ConnectionTestDataState {
         this.testDataState.editorStore,
         this.connectionData.testData,
       );
+      this.generatingTestDataSate.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notifyError(
         `Unable to generate test data: ${error.message}`,
       );
+      this.generatingTestDataSate.fail();
     }
   }
 
-  resolveConnection(id: string): Connection | undefined {
-    return this.getAllIdentifiedConnections().find((c) => c.id === id)
-      ?.connection;
+  resolveConnectionValue(id: string): Connection | undefined {
+    const connection = this.getAllIdentifiedConnections().find(
+      (c) => c.id === id,
+    )?.connection;
+    if (connection instanceof ConnectionPointer) {
+      return connection.packageableConnection.value.connectionValue;
+    }
+    return connection;
   }
 
   getAllIdentifiedConnections(): IdentifiedConnection[] {
@@ -197,22 +209,30 @@ export class NewConnectionDataState {
   showModal = false;
   connection: IdentifiedConnection | undefined;
   embeddedDataType: EmbeddedDataTypeOption | undefined;
+  dataElement: DataElement | undefined;
 
   constructor(suite: ServiceTestDataState) {
     makeObservable(this, {
       showModal: observable,
       connection: observable,
       embeddedDataType: observable,
+      dataElement: observable,
       setModal: action,
       openModal: action,
       setEmbeddedDataType: action,
       handleConnectionChange: action,
+      setDataElement: action,
     });
     this.testSuiteState = suite;
+    this.dataElement = this.testSuiteState.editorStore.dataOptions[0]?.value;
   }
 
   setModal(val: boolean): void {
     this.showModal = val;
+  }
+
+  setDataElement(val: DataElement | undefined): void {
+    this.dataElement = val;
   }
 
   setEmbeddedDataType(val: EmbeddedDataTypeOption | undefined): void {
@@ -246,10 +266,23 @@ export class NewConnectionDataState {
     const embeddedDataType = guaranteeNonNullable(this.embeddedDataType);
     const connectionTestData = new ConnectionTestData();
     connectionTestData.connectionId = val.id;
-    connectionTestData.testData = createEmbeddedData(
-      embeddedDataType.value,
-      this.testSuiteState.editorStore,
-    );
+    let testData: EmbeddedData;
+    if (
+      this.embeddedDataType?.value === EmbeddedDataType.DATA_ELEMENT &&
+      this.dataElement
+    ) {
+      const value = new DataElementReference();
+      value.dataElement = PackageableElementExplicitReference.create(
+        this.dataElement,
+      );
+      testData = value;
+    } else {
+      testData = createEmbeddedData(
+        embeddedDataType.value,
+        this.testSuiteState.editorStore,
+      );
+    }
+    connectionTestData.testData = testData;
     return connectionTestData;
   }
 }
@@ -267,11 +300,14 @@ export class ServiceTestDataState {
       openConnectionTestData: action,
       createConnectionTestData: action,
       newConnectionDataState: observable,
+      selectedDataState: observable,
     });
     this.testData = testData;
     this.testSuiteState = testSuiteState;
     this.editorStore = testSuiteState.editorStore;
-    const connectionData = testData.connectionsTestData[0];
+    const connectionData = getNullableFirstElement(
+      testData.connectionsTestData,
+    );
     if (connectionData) {
       this.selectedDataState = new ConnectionTestDataState(
         this,
@@ -302,7 +338,7 @@ export class ServiceTestDataState {
   deleteConnectionTestData(val: ConnectionTestData): void {
     deleteEntry(this.testData.connectionsTestData, val);
     if (this.selectedDataState?.connectionData === val) {
-      const data = this.testData.connectionsTestData[0];
+      const data = getNullableFirstElement(this.testData.connectionsTestData);
       this.selectedDataState = data
         ? new ConnectionTestDataState(this, data)
         : undefined;

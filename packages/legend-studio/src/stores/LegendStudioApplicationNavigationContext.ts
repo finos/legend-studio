@@ -14,19 +14,33 @@
  * limitations under the License.
  */
 
-export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT {
+export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   // SETUP
-  SETUP = 'setup',
-  SETUP_CREATE_PROJECT_DIALOG = 'setup.create-project-dialog',
+  SETUP = 'studio.setup',
+  SETUP_CREATE_PROJECT_DIALOG = 'studio.setup.create-project-dialog',
 
   // EDITOR
-  EDITOR = 'editor',
+  EDITOR = 'studio.editor',
 
-  CLASS_EDITOR = 'editor.class-editor',
-  CLASS_EDITOR_PROPERTIES = 'editor.class-editor.properties',
-  CLASS_EDITOR_DERIVED_PROPERTIES = 'editor.class-editor.derived-properties',
-  CLASS_EDITOR_CONSTRAINTS = 'editor.class-editor.constraints',
-  CLASS_EDITOR_SUPERTYPES = 'editor.class-editor.supertypes',
-  CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR = 'editor.class-editor.derived-properties.lambda-editor',
-  CLASS_CONTRAINT_LAMBDA_EDITOR = 'editor.class-editor.constraints.lambda-editor',
+  MODEL_LOADER = 'studio.editor.model-loader',
+  TEXT_MODE_EDITOR = 'studio.editor.text-mode-editor',
+
+  CLASS_EDITOR = 'studio.editor.class-editor',
+  CLASS_EDITOR_PROPERTIES = 'studio.editor.class-editor.properties',
+  CLASS_EDITOR_DERIVED_PROPERTIES = 'studio.editor.class-editor.derived-properties',
+  CLASS_EDITOR_CONSTRAINTS = 'studio.editor.class-editor.constraints',
+  CLASS_EDITOR_SUPERTYPES = 'studio.editor.class-editor.supertypes',
+  CLASS_DERIVED_PROPERTY_LAMBDA_EDITOR = 'studio.editor.class-editor.derived-properties.lambda-editor',
+  CLASS_CONTRAINT_LAMBDA_EDITOR = 'studio.editor.class-editor.constraints.lambda-editor',
+
+  PROFILE_EDITOR = 'studio.editor.profile-editor',
+  ASSOCIATION_EDITOR = 'studio.editor.association-editor',
+  ENUMERATION_EDITOR = 'studio.editor.enumeration-editor',
+  FUNCTION_EDITOR = 'studio.editor.function-editor',
+
+  MAPPING_EDITOR = 'studio.editor.mapping-editor',
+  RUNTIME_EDITOR = 'studio.editor.runtime-editor',
+  CONNECTION_EDITOR = 'studio.editor.connection-editor',
+
+  SERVICE_EDITOR = 'studio.editor.service-editor',
 }

@@ -149,7 +149,7 @@ import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunner
 
 export abstract class EditorExtensionState {
   /**
-   * This helps to better type-checking for this empty abtract type
+   * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
@@ -1428,11 +1428,6 @@ export class EditorStore {
       .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
   }
 
-  // may make sense to add to config
-  get TEMPORARY_supportNewServiceTestableFlow(): boolean {
-    return true;
-  }
-
   get storeOptions(): PackageableElementOption<Store>[] {
     return this.graphManagerState.graph.ownStores
       .concat(this.graphManagerState.graph.dependencyManager.stores)
@@ -1446,6 +1441,7 @@ export class EditorStore {
         (e) => buildElementOption(e) as PackageableElementOption<DataElement>,
       );
   }
+
   getSupportedElementTypes(): string[] {
     return (
       [

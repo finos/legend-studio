@@ -21,6 +21,7 @@ import {
   type ServiceExecutionState,
   UnsupportedServiceExecutionState,
   SingleServicePureExecutionState,
+  MultiServicePureExecutionState,
 } from './ServiceExecutionState.js';
 import { ServiceRegistrationState } from '../../../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { ElementEditorState } from '../../../editor-state/element-editor-state/ElementEditorState.js';
@@ -28,6 +29,7 @@ import {
   type PackageableElement,
   Service,
   PureSingleExecution,
+  PureMultiExecution,
 } from '@finos/legend-graph';
 import { ServiceTestableState } from './testable/ServiceTestableState.js';
 
@@ -53,6 +55,7 @@ export class ServiceEditorState extends ElementEditorState {
       registrationState: observable,
       selectedTab: observable,
       setSelectedTab: action,
+      resetExecutionState: action,
       service: computed,
       reprocess: action,
     });
@@ -66,10 +69,20 @@ export class ServiceEditorState extends ElementEditorState {
     this.selectedTab = tab;
   }
 
+  resetExecutionState(): void {
+    this.executionState = this.buildExecutionState();
+  }
+
   buildExecutionState(): ServiceExecutionState {
     const execution = this.service.execution;
     if (execution instanceof PureSingleExecution) {
       return new SingleServicePureExecutionState(
+        this.editorStore,
+        this,
+        execution,
+      );
+    } else if (execution instanceof PureMultiExecution) {
+      return new MultiServicePureExecutionState(
         this.editorStore,
         this,
         execution,

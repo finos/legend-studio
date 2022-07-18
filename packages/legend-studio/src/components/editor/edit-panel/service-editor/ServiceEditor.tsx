@@ -48,6 +48,8 @@ import {
 } from '../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ServiceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -426,6 +428,10 @@ export const ServiceEditor = observer(() => {
   const canRegisterService = Boolean(
     editorStore.applicationStore.config.options
       .TEMPORARY__serviceRegistrationConfig.length,
+  );
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR,
   );
 
   return (

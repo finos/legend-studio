@@ -120,6 +120,7 @@ import {
   setImpl_updateRootOnDelete,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil.js';
+import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -899,9 +900,17 @@ export class MappingEditorState extends ElementEditorState {
       this.editorStore.pluginManager.getStudioPlugins(),
     );
     if (currentSource !== newSource) {
+      // first, we check if the current class mapping is compatible with the new source
+      // if it is, we don't need to create a new class mapping,
+      // if it is not, we would need to create a new class mapping that is compatible with the new source
+      // and as a result, we will reset all the property mappings
+      //
+      // TODO?: we might need to think of how we would handle embedded class mapping
+      let sourceUpdated = false;
       if (setImplementation instanceof PureInstanceSetImplementation) {
         if (newSource instanceof Class || newSource === undefined) {
           pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
+          sourceUpdated = true;
         }
       } else if (
         setImplementation instanceof FlatDataInstanceSetImplementation
@@ -911,6 +920,17 @@ export class MappingEditorState extends ElementEditorState {
           !getEmbeddedSetImplementations(setImplementation).length
         ) {
           flatData_setSourceRootRecordType(setImplementation, newSource);
+          sourceUpdated = true;
+        }
+      } else if (
+        setImplementation instanceof RootRelationalInstanceSetImplementation
+      ) {
+        if (
+          newSource instanceof TableAlias &&
+          !getEmbeddedSetImplementations(setImplementation).length
+        ) {
+          rootRelationalSetImp_setMainTableAlias(setImplementation, newSource);
+          sourceUpdated = true;
         }
       } else {
         const extraInstanceSetImplementationSourceUpdaters =
@@ -923,11 +943,25 @@ export class MappingEditorState extends ElementEditorState {
                 ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
         for (const updater of extraInstanceSetImplementationSourceUpdaters) {
-          updater(setImplementation, newSource);
+          sourceUpdated = updater(setImplementation, newSource);
+          if (sourceUpdated) {
+            break;
+          }
         }
-        // here we require a change of set implementation as the source type does not match the what the current class mapping supports
+      }
+
+      // here we require a change of set implementation as the source type does not match the what the current class mapping supports
+      if (!sourceUpdated) {
         let newSetImp: InstanceSetImplementation;
-        if (newSource instanceof RootFlatDataRecordType) {
+        if (newSource instanceof Class || newSource === undefined) {
+          newSetImp = new PureInstanceSetImplementation(
+            setImplementation.id,
+            this.mapping,
+            setImplementation.class,
+            setImplementation.root,
+            OptionalPackageableElementExplicitReference.create(newSource),
+          );
+        } else if (newSource instanceof RootFlatDataRecordType) {
           newSetImp = new FlatDataInstanceSetImplementation(
             setImplementation.id,
             this.mapping,
@@ -936,14 +970,6 @@ export class MappingEditorState extends ElementEditorState {
             ),
             setImplementation.root,
             RootFlatDataRecordTypeExplicitReference.create(newSource),
-          );
-        } else if (newSource instanceof Class || newSource === undefined) {
-          newSetImp = new PureInstanceSetImplementation(
-            setImplementation.id,
-            this.mapping,
-            setImplementation.class,
-            setImplementation.root,
-            OptionalPackageableElementExplicitReference.create(newSource),
           );
         } else if (newSource instanceof TableAlias) {
           const newRootRelationalInstanceSetImplementation =

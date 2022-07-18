@@ -51,6 +51,7 @@ import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
+import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingAnalytics.js';
 
 enum CORE_ENGINE_TRACER_SPAN {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -77,6 +78,8 @@ enum CORE_ENGINE_TRACER_SPAN {
   CREATE_QUERY = 'create query',
   UPDATE_QUERY = 'update query',
   DELETE_QUERY = 'delete query',
+
+  MODEL_ANALYTICS = 'model analytics',
 }
 
 type GrammarParserBatchInputEntry = {
@@ -497,6 +500,21 @@ export class V1_EngineServerClient extends AbstractServerClient {
       input,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+      undefined,
+      { enableCompression: true },
+    );
+
+  // --------------------------------------- Analysis ---------------------------------------
+
+  analyzeMappingModelCoverage = (
+    input: PlainObject<V1_MappingModelCoverageAnalysisResult>,
+  ): Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_TRACER_SPAN.MODEL_ANALYTICS),
+      `${this._pure()}/analytics/mapping/modelCoverage`,
+      input,
+      {},
+      undefined,
       undefined,
       { enableCompression: true },
     );

@@ -35,7 +35,6 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import {
-  DATE_TIME_FORMAT,
   TAB_SIZE,
   ActionAlertType,
   ActionAlertActionType,
@@ -53,6 +52,7 @@ import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { WorkspaceSyncState } from './WorkspaceSyncState.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
+import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 
 class PatchLoaderState {
   editorStore: EditorStore;

@@ -181,6 +181,8 @@ const QueryBuilderFilterConditionEditor = observer(
             .nonNullableTreeData,
           propertyNode,
           graph,
+          node.condition.filterState.queryBuilderState.explorerState
+            .propertySearchPanelState.allMappedPropertyNodes,
         ),
       );
     // Drag and Drop on filter condition value
@@ -271,7 +273,7 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                updateValue={(val: ValueSpecification): void =>
+                setValueSpecification={(val: ValueSpecification): void =>
                   node.condition.setValue(val)
                 }
                 graph={graph}
@@ -398,6 +400,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
                 filterState.queryBuilderState.graphManagerState.graph,
+                filterState.queryBuilderState.explorerState
+                  .propertySearchPanelState.allMappedPropertyNodes,
               ),
             );
           } catch (error) {
@@ -713,6 +717,8 @@ export const QueryBuilderFilterPanel = observer(
               filterState.queryBuilderState.explorerState.nonNullableTreeData,
               (item as QueryBuilderExplorerTreeDragSource).node,
               filterState.queryBuilderState.graphManagerState.graph,
+              filterState.queryBuilderState.explorerState
+                .propertySearchPanelState.allMappedPropertyNodes,
             ),
           );
         } catch (error) {

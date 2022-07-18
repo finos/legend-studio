@@ -168,13 +168,16 @@ const StringPrimitiveInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
+    setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
   }) => {
-    const { valueSpecification, className, resetValue } = props;
+    const { valueSpecification, className, resetValue, setValueSpecification } =
+      props;
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       instanceValue_changeValue(valueSpecification, event.target.value, 0);
-
+      setValueSpecification(valueSpecification);
+    };
     return (
       <div className={clsx('value-spec-editor', className)}>
         <input
@@ -201,11 +204,15 @@ const BooleanPrimitiveInstanceValueEditor = observer(
     valueSpecification: PrimitiveInstanceValue;
     className?: string | undefined;
     resetValue: () => void;
+    setValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const { valueSpecification, className, resetValue } = props;
+    const { valueSpecification, className, resetValue, setValueSpecification } =
+      props;
     const value = valueSpecification.values[0] as boolean;
-    const toggleValue = (): void =>
+    const toggleValue = (): void => {
       instanceValue_changeValue(valueSpecification, !value, 0);
+      setValueSpecification(valueSpecification);
+    };
 
     return (
       <div className={clsx('value-spec-editor', className)}>
@@ -235,8 +242,15 @@ const NumberPrimitiveInstanceValueEditor = observer(
     isInteger: boolean;
     className?: string | undefined;
     resetValue: () => void;
+    setValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const { valueSpecification, isInteger, className, resetValue } = props;
+    const {
+      valueSpecification,
+      isInteger,
+      className,
+      resetValue,
+      setValueSpecification,
+    } = props;
     const value = valueSpecification.values[0] as number;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       let inputVal = isInteger
@@ -244,6 +258,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         : parseFloat(event.target.value);
       inputVal = isNaN(inputVal) ? 0 : inputVal;
       instanceValue_changeValue(valueSpecification, inputVal, 0);
+      setValueSpecification(valueSpecification);
     };
 
     return (
@@ -271,9 +286,11 @@ const EnumValueInstanceValueEditor = observer(
   (props: {
     valueSpecification: EnumValueInstanceValue;
     className?: string | undefined;
+    setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
   }) => {
-    const { valueSpecification, className, resetValue } = props;
+    const { valueSpecification, className, resetValue, setValueSpecification } =
+      props;
     const enumValueRef = guaranteeNonNullable(valueSpecification.values[0]);
     const enumValue = enumValueRef.value;
     const options = enumValue._OWNER.values.map((value) => ({
@@ -286,6 +303,7 @@ const EnumValueInstanceValueEditor = observer(
         EnumValueExplicitReference.create(val.value),
         0,
       );
+      setValueSpecification(valueSpecification);
     };
 
     return (
@@ -441,9 +459,16 @@ const CollectionValueInstanceValueEditor = observer(
     expectedType: Type;
     className?: string | undefined;
     resetValue: () => void;
+    setValueSpecification: (val: ValueSpecification) => void;
   }) => {
-    const { valueSpecification, graph, expectedType, className, resetValue } =
-      props;
+    const {
+      valueSpecification,
+      graph,
+      expectedType,
+      className,
+      resetValue,
+      setValueSpecification,
+    } = props;
     const inputRef = useRef<HTMLInputElement>(null);
     const [text, setText] = useState(stringifyValue(valueSpecification.values));
     const [editable, setEditable] = useState(false);
@@ -466,6 +491,7 @@ const CollectionValueInstanceValueEditor = observer(
       setEditable(false);
       setCollectionValue(valueSpecification, graph, expectedType, text);
       setText(stringifyValue(valueSpecification.values));
+      setValueSpecification(valueSpecification);
     };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setText(event.target.value);
@@ -534,12 +560,12 @@ const DateInstanceValueEditor = observer(
     graph: PureModel;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
-    updateValue: (val: ValueSpecification) => void;
+    setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
   }) => {
     const {
       valueSpecification,
-      updateValue,
+      setValueSpecification,
       graph,
       typeCheckOption,
       resetValue,
@@ -551,7 +577,7 @@ const DateInstanceValueEditor = observer(
           valueSpecification={valueSpecification}
           graph={graph}
           typeCheckOption={typeCheckOption}
-          updateValue={updateValue}
+          setValueSpecification={setValueSpecification}
         />
         <button
           className="value-spec-editor__reset-btn"
@@ -566,7 +592,7 @@ const DateInstanceValueEditor = observer(
 );
 
 /**
- * TODO we should pass in the props `setValueSpecification` and `resetValueSpecification`. Reset
+ * TODO we should pass in the props `resetValueSpecification`. Reset
  * should be part of this editor. Also through here we can call `observe_` accordingly.
  *
  * See https://github.com/finos/legend-studio/pull/1021
@@ -576,7 +602,7 @@ export const BasicValueSpecificationEditor: React.FC<{
   graph: PureModel;
   typeCheckOption: TypeCheckOption;
   className?: string | undefined;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   resetValue: () => void;
 }> = (props) => {
   const {
@@ -584,7 +610,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     valueSpecification,
     graph,
     typeCheckOption,
-    updateValue,
+    setValueSpecification,
     resetValue,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
@@ -594,6 +620,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         return (
           <StringPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
+            setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
           />
@@ -602,6 +629,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         return (
           <BooleanPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
+            setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
           />
@@ -614,6 +642,7 @@ export const BasicValueSpecificationEditor: React.FC<{
           <NumberPrimitiveInstanceValueEditor
             valueSpecification={valueSpecification}
             isInteger={_type.path === PRIMITIVE_TYPE.INTEGER}
+            setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
           />
@@ -628,7 +657,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             graph={graph}
             typeCheckOption={typeCheckOption}
             className={className}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             resetValue={resetValue}
           />
         );
@@ -641,6 +670,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         valueSpecification={valueSpecification}
         className={className}
         resetValue={resetValue}
+        setValueSpecification={setValueSpecification}
       />
     );
   } else if (
@@ -657,6 +687,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         expectedType={typeCheckOption.expectedType}
         className={className}
         resetValue={resetValue}
+        setValueSpecification={setValueSpecification}
       />
     );
   }
@@ -675,7 +706,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
         typeCheckOption={typeCheckOption}
-        updateValue={updateValue}
+        setValueSpecification={setValueSpecification}
         resetValue={resetValue}
       />
     );
@@ -694,7 +725,7 @@ export const BasicValueSpecificationEditor: React.FC<{
         graph={graph}
         typeCheckOption={typeCheckOption}
         className={className}
-        updateValue={updateValue}
+        setValueSpecification={setValueSpecification}
         resetValue={resetValue}
       />
     );

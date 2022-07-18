@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-export const DATE_TIME_FORMAT_WITH_MILLISECONDS =
-  "yyyy-MM-dd'T'HH:mm:ss.SSSxxxx";
-export const DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssxxxx";
-export const DATE_FORMAT = 'yyyy-MM-dd';
-
 export const TAB_SIZE = 2;
 
 export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';

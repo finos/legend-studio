@@ -15,13 +15,25 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
+import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type {
   LegendApplicationContextualDocumentationEntry,
   LegendApplicationDocumentationRegistryEntry,
   LegendApplicationKeyedDocumentationEntry,
 } from './LegendApplicationDocumentationService.js';
 
+export type LegendApplicationSetup = (
+  pluginManager: LegendApplicationPluginManager,
+) => Promise<void>;
+
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
+  /**
+   * Get the list of setup procedures to be run when booting up the application.
+   *
+   * NOTE: The application will call the setup procedures from all extensions concurrently.
+   */
+  getExtraApplicationSetups?(): LegendApplicationSetup[];
+
   /**
    * Get the list of documentation registry entries from which the application can fetch
    * documentation config data and load the documentation registry
@@ -44,4 +56,10 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
    * Get the list of contextual documentation entries to be registered with documentation service.
    */
   getExtraContextualDocumentationEntries?(): LegendApplicationContextualDocumentationEntry[];
+
+  /**
+   * Get the list of application context keys for which the application will log event for
+   * when their corresponding contexts are accessed
+   */
+  getExtraAccessEventLoggingApplicationContextKeys?(): string[];
 }

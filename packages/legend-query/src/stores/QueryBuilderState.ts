@@ -205,7 +205,7 @@ export class QueryBuilderState {
   isCompiling = false;
   backdrop = false;
   showFunctionPanel = false;
-  showParameterPanel = true;
+  showParameterPanel = false;
 
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
@@ -327,13 +327,12 @@ export class QueryBuilderState {
     this.fetchStructureState.graphFetchTreeState.initialize();
   }
 
-  setQuerySetupState(val: QueryBuilderSetupState): void {
-    this.querySetupState = val;
-  }
-
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
+      if (this.queryParametersState.parameterStates.length > 0) {
+        this.setShowParameterPanel(true);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.changeClass(undefined, true);

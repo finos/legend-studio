@@ -25,7 +25,6 @@ import {
   type EditorExtensionState,
   type EditorExtensionStateCreator,
   type EditorStore,
-  type LegendStudioPluginManager,
   type EditorExtensionComponentRendererConfiguration,
   type ExplorerContextMenuItemRendererConfiguration,
   type ServicePureExecutionState,
@@ -33,7 +32,6 @@ import {
   type MappingExecutionState,
   type MappingTestQueryEditorActionConfiguration,
   type MappingTestState,
-  type ApplicationSetup,
   type DSLService_LegendStudioPlugin_Extension,
   type ServiceQueryEditorActionConfiguration,
   NewServiceModal,
@@ -44,7 +42,7 @@ import {
   service_setLegacyTest,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
-import { QueryBuilderDialog } from './QueryBuilderDialog.js';
+import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder.js';
 import { MappingExecutionQueryBuilder } from './MappingExecutionQueryBuilder.js';
 import { MappingTestQueryBuilder } from './MappingTestQueryBuilder.js';
@@ -65,6 +63,8 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import type { LegendApplicationSetup } from '@finos/legend-application';
+import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 const promoteQueryToService = async (
   packagePath: string,
@@ -169,9 +169,9 @@ export class QueryBuilder_LegendStudioPlugin
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }
 
-  override getExtraApplicationSetups(): ApplicationSetup[] {
+  override getExtraApplicationSetups(): LegendApplicationSetup[] {
     return [
-      async (pluginManager: LegendStudioPluginManager): Promise<void> => {
+      async (pluginManager): Promise<void> => {
         await setupLegendQueryUILibrary();
       },
     ];
@@ -184,7 +184,7 @@ export class QueryBuilder_LegendStudioPlugin
         renderer: function QueryBuilderDialogRenderer(
           editorStore: EditorStore,
         ): React.ReactNode | undefined {
-          return <QueryBuilderDialog />;
+          return <EmbeddedQueryBuilder />;
         },
       },
     ];
@@ -232,12 +232,18 @@ export class QueryBuilder_LegendStudioPlugin
             );
 
             return (
-              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             );
           }
           return undefined;
         },
       },
+    ];
+  }
+
+  override getExtraAccessEventLoggingApplicationContextKeys(): string[] {
+    return [
+      QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
     ];
   }
 
@@ -332,7 +338,7 @@ export class QueryBuilder_LegendStudioPlugin
               );
 
             return (
-              <MenuContentItem onClick={buildQuery}>Execute...</MenuContentItem>
+              <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
             );
           }
           return undefined;

@@ -83,6 +83,8 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -417,6 +419,11 @@ export const AssociationEditor = observer(
       }),
       [handleDropStereotype],
     );
+
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ASSOCIATION_EDITOR,
+    );
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR}

@@ -103,6 +103,7 @@ import { flowResult } from 'mobx';
 import {
   type PackageableElementOption,
   useApplicationStore,
+  useApplicationNavigationContext,
 } from '@finos/legend-application';
 import {
   ClassFormEditor,
@@ -121,6 +122,7 @@ import {
   classView_setHideStereotypes,
   classView_setHideTaggedValues,
 } from '../../stores/studio/DSLDiagram_GraphModifierHelper.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLDiagram_LegendStudioApplicationNavigationContext.js';
 
 const DiagramEditorContextMenu = observer(
   forwardRef<
@@ -1434,6 +1436,10 @@ export const DiagramEditor = observer(() => {
     editorStore.getCurrentEditorState(DiagramEditorState);
   const diagramCanvasRef = useRef<HTMLDivElement>(null);
   const onContextMenuClose = (): void => diagramEditorState.closeContextMenu();
+
+  useApplicationNavigationContext(
+    DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
+  );
 
   return (
     <div className="diagram-editor">

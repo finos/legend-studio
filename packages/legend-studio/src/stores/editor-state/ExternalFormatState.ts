@@ -32,9 +32,10 @@ export type ExternalFormatTypeOption = {
 };
 
 export enum EmbeddedDataType {
-  EXTERNAL_FORMAT_DATA = 'ExternalFormat',
-  MODEL_STORE_DATA = 'ModelStore',
-  REALTIONAL_CSV = 'Relational',
+  EXTERNAL_FORMAT_DATA = 'EXTERNAL_FORMAT',
+  MODEL_STORE_DATA = 'MODEL_STORE',
+  RELATIONAL_CSV = 'RELATIONAL',
+  DATA_ELEMENT = 'DATA_ELEMENT',
 }
 
 export class ExternalFormatState {

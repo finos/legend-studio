@@ -21,8 +21,10 @@ import type { Clazz } from '../CommonUtils.js';
  * NOTE: despite the push to adopt visitor pattern across the code-base, hashing implementation for now will remain within
  * the owner class instead of being moved to an outside visitor for the following reasons:
  * 1. Hashing of sub-structures should be cached (using mobx @computed) and hence we would have to do something like:
- *    @computed get hashCode(): string { return this.accept(new HashVisitor()) }
- *    @computed get hashCode(): string { return hashSubElement(this) } // for sub-structures without an `accept` method
+ * ```ts
+ *  get hashCode(): string { return this.accept(new HashVisitor()) }
+ *  get hashCode(): string { return hashSubElement(this) } // for sub-structures without an `accept` method
+ * ```
  * 2. On the other hand, we cannot remove `get hashCode` from sub-structure such as `Tag` or `Stereotype` because we want
  *    to cache these, regardless of how we compute hash for bigger structure like `Class` or `Enumeration`.
  *    The whole point of the visitor pattern is to avoid the exploring sub-structures in a structure, i.e. we should only
@@ -32,9 +34,11 @@ import type { Clazz } from '../CommonUtils.js';
  * 3. A huge benefit of visitor pattern is to collocate the hashing logic in one place to reduce look-up time, but if we
  *    use `.hashCode` for sub-structures, visitor pattern will actually mean more look-ups.
  * 4. Also because of caching, certain really simple sub-structure would seem overkill to have hashing logic in a visitor:
- *    class AbstractSomething {
- *      @computed get hashCode(): string { return hashArray(['abstract-something', ...<and some other simple things>... ]) }
- *    }
+ * ```ts
+ * class AbstractSomething {
+ *   get hashCode(): string { return hashArray(['abstract-something', ...<and some other simple things>... ]) }
+ * }
+ * ```
  * 5. It's not too bad to have hashing logic coupled with the structure it's trying to hash
  *    (e.g. `hashCode` and `equals` in Java)
  */

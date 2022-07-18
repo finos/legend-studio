@@ -30,4 +30,8 @@ export enum APPLICATION_EVENT {
   APPLICATION_LOAD_FAILURE = 'application.load.failure',
 
   DEVELOPMENT_ISSUE = 'development.issue',
+
+  APPLICATION_CONTEXT_ACCESSED = 'application.context.accessed',
+
+  VIRTUAL_ASSISTANT_DOCUMENTATION_ENTRY_ACCESSED = 'application.virtual-assistant.documentation-entry.accessed',
 }

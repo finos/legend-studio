@@ -77,7 +77,6 @@ import {
   LocalH2DatasourceSpecification,
   DefaultH2AuthenticationStrategy,
   buildSourceInformationSourceId,
-  PureClientVersion,
   TableAlias,
   type RawExecutionPlan,
   isStubbed_RawLambda,
@@ -624,7 +623,6 @@ export class MappingTestState {
           this.mappingEditorState.mapping,
           query,
           runtime,
-          PureClientVersion.VX_X_X,
           {
             useLosslessParse: true,
           },
@@ -685,7 +683,6 @@ export class MappingTestState {
           this.mappingEditorState.mapping,
           this.test.query,
           runtime,
-          PureClientVersion.VX_X_X,
           {
             useLosslessParse: true,
           },
@@ -769,7 +766,6 @@ export class MappingTestState {
             this.mappingEditorState.mapping,
             this.queryState.query,
             this.inputDataState.runtime,
-            PureClientVersion.VX_X_X,
           )) as { plan: RawExecutionPlan; debug: string };
         rawPlan = debugResult.plan;
         this.executionPlanState.setDebugText(debugResult.debug);
@@ -780,7 +776,6 @@ export class MappingTestState {
             this.mappingEditorState.mapping,
             this.queryState.query,
             this.inputDataState.runtime,
-            PureClientVersion.VX_X_X,
           )) as object;
       }
       try {

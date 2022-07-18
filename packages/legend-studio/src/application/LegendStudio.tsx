@@ -48,13 +48,6 @@ const setupLegendStudioUILibrary = async (
     // See https://github.com/greena13/react-hotkeys#ignoring-events
     ignoreTags: [],
   });
-
-  await Promise.all(
-    pluginManager
-      .getStudioPlugins()
-      .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
-      .map((setup) => setup(pluginManager)),
-  );
 };
 
 export class LegendStudio extends LegendApplication {

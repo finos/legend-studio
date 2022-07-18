@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-text
 
+## 3.1.0
+
+### Minor Changes
+
+- [#1282](https://github.com/finos/legend-studio/pull/1282) [`280b6bbe`](https://github.com/finos/legend-studio/commit/280b6bbe9ba88006f245fc36c2baa4179a72937d) ([@ijeh-i](https://github.com/ijeh-i)) - Support previewing `Markdown` in editor.
+
+## 3.0.8
+
+## 3.0.7
+
+## 3.0.6
+
 ## 3.0.5
 
 ## 3.0.4

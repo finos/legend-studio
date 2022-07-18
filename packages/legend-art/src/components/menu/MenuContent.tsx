@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import React, { forwardRef } from 'react';
-import { clsx } from '../../utils/CJS__clsx.cjs';
+import { forwardRef } from 'react';
+import { clsx } from 'clsx';
 
 export const MenuContent = forwardRef<
   HTMLDivElement,

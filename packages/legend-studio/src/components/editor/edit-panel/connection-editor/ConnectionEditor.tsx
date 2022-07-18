@@ -33,6 +33,8 @@ import {
   modelConnection_setClass,
   modelConnection_setUrl,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ModelConnectionEditor = observer(
   (props: {
@@ -177,6 +179,10 @@ export const PackageableConnectionEditor = observer(() => {
     PackageableConnectionEditorState,
   );
   const isReadOnly = editorState.isReadOnly;
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CONNECTION_EDITOR,
+  );
 
   return (
     <ConnectionEditor

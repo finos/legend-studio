@@ -75,7 +75,9 @@ export const LambdaParameterValuesEditor = observer(
                   {paramState.value && (
                     <BasicValueSpecificationEditor
                       valueSpecification={paramState.value}
-                      updateValue={(val: ValueSpecification): void => {
+                      setValueSpecification={(
+                        val: ValueSpecification,
+                      ): void => {
                         paramState.setValue(val);
                       }}
                       graph={graph}

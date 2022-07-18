@@ -673,10 +673,15 @@ const buildDatePickerOption = (
 const AbsoluteDateValueSpecificationEditor: React.FC<{
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
   graph: PureModel;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
-  const { valueSpecification, graph, updateValue, setDatePickerOption } = props;
+  const {
+    valueSpecification,
+    graph,
+    setValueSpecification,
+    setDatePickerOption,
+  } = props;
   const absoluteDateValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
@@ -685,7 +690,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
     event,
   ) => {
     if (valueSpecification instanceof SimpleFunctionExpression) {
-      updateValue(
+      setValueSpecification(
         buildPrimitiveInstanceValue(
           graph,
           PRIMITIVE_TYPE.STRICTDATE,
@@ -727,10 +732,15 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
 const AbsoluteTimeValueSpecificationEditor: React.FC<{
   valueSpecification: SimpleFunctionExpression | PrimitiveInstanceValue;
   graph: PureModel;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
-  const { valueSpecification, graph, updateValue, setDatePickerOption } = props;
+  const {
+    valueSpecification,
+    graph,
+    setValueSpecification,
+    setDatePickerOption,
+  } = props;
   const absoluteTimeValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
@@ -739,7 +749,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
     event,
   ) => {
     if (valueSpecification instanceof SimpleFunctionExpression) {
-      updateValue(
+      setValueSpecification(
         buildPrimitiveInstanceValue(
           graph,
           PRIMITIVE_TYPE.DATETIME,
@@ -783,11 +793,15 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
 const CustomDateInstanceValueEditor: React.FC<{
   customDateOptionValue: CustomDateOption;
   graph: PureModel;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
-  const { customDateOptionValue, graph, updateValue, setDatePickerOption } =
-    props;
+  const {
+    customDateOptionValue,
+    graph,
+    setValueSpecification,
+    setDatePickerOption,
+  } = props;
   const [durationValue, setDurationValue] = useState(
     customDateOptionValue.duration,
   );
@@ -821,7 +835,7 @@ const CustomDateInstanceValueEditor: React.FC<{
         latestDirectionValue as CUSTOM_DATE_OPTION_DIRECTION,
         latestReferenceMomentValue as CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
       );
-      updateValue(buildPureAdjustDateFunction(dateOption, graph));
+      setValueSpecification(buildPureAdjustDateFunction(dateOption, graph));
       const matchedPreservedCustomAdjustDates =
         reservedCustomDateOptions.filter(
           (t) => t.generateDisplayLabel() === dateOption.generateDisplayLabel(),
@@ -933,13 +947,13 @@ const CustomDateInstanceValueEditor: React.FC<{
 const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   customDateAdjustOptionValue: DatePickerOption;
   graph: PureModel;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
   const {
     customDateAdjustOptionValue,
     graph,
-    updateValue,
+    setValueSpecification,
     setDatePickerOption,
   } = props;
   const [unitValue, setUnitValue] = useState(
@@ -959,7 +973,9 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
               latestUnitValue as CUSTOM_DATE_FIRST_DAY_OF_UNIT,
             )
           : new CustomFirstDayOfOption('', undefined);
-      updateValue(buildPureDateFunctionExpression(startDayOfDateOption, graph));
+      setValueSpecification(
+        buildPureDateFunctionExpression(startDayOfDateOption, graph),
+      );
       setDatePickerOption(startDayOfDateOption);
     }
   };
@@ -991,13 +1007,13 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
 const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   customDateAdjustOptionValue: DatePickerOption;
   graph: PureModel;
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
   const {
     customDateAdjustOptionValue,
     graph,
-    updateValue,
+    setValueSpecification,
     setDatePickerOption,
   } = props;
   const [dayOfWeekValue, setDayOfWeekValue] = useState(
@@ -1011,7 +1027,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
         `Previous ${latestDurationUnitValue}`,
         latestDurationUnitValue as CUSTOM_DATE_DAY_OF_WEEK,
       );
-      updateValue(
+      setValueSpecification(
         buildPureDateFunctionExpression(previousDayOfWeekDateOption, graph),
       );
       setDatePickerOption(previousDayOfWeekDateOption);
@@ -1064,9 +1080,10 @@ export const CustomDatePicker: React.FC<{
      */
     match?: boolean;
   };
-  updateValue: (val: ValueSpecification) => void;
+  setValueSpecification: (val: ValueSpecification) => void;
 }> = (props) => {
-  const { valueSpecification, updateValue, graph, typeCheckOption } = props;
+  const { valueSpecification, setValueSpecification, graph, typeCheckOption } =
+    props;
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
   const targetDateOptionsEnum = typeCheckOption.match
@@ -1102,7 +1119,7 @@ export const CustomDatePicker: React.FC<{
     if (
       CUSTOM_DATE_PICKER_OPTION.LATEST_DATE === chosenDatePickerOption.value
     ) {
-      updateValue(
+      setValueSpecification(
         buildPrimitiveInstanceValue(
           graph,
           PRIMITIVE_TYPE.LATESTDATE,
@@ -1123,13 +1140,13 @@ export const CustomDatePicker: React.FC<{
         (d) => d.value === chosenDatePickerOption.value,
       );
       theReservedCustomDateOption.length > 0
-        ? updateValue(
+        ? setValueSpecification(
             buildPureAdjustDateFunction(
               guaranteeNonNullable(theReservedCustomDateOption[0]),
               graph,
             ),
           )
-        : updateValue(
+        : setValueSpecification(
             buildPureDateFunctionExpression(chosenDatePickerOption, graph),
           );
     }
@@ -1142,7 +1159,7 @@ export const CustomDatePicker: React.FC<{
           <AbsoluteDateValueSpecificationEditor
             graph={graph}
             valueSpecification={valueSpecification}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
@@ -1151,7 +1168,7 @@ export const CustomDatePicker: React.FC<{
           <AbsoluteTimeValueSpecificationEditor
             graph={graph}
             valueSpecification={valueSpecification}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
@@ -1160,7 +1177,7 @@ export const CustomDatePicker: React.FC<{
           <CustomDateInstanceValueEditor
             graph={graph}
             customDateOptionValue={buildCustomDateOption(valueSpecification)}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
@@ -1171,7 +1188,7 @@ export const CustomDatePicker: React.FC<{
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
             )}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );
@@ -1182,7 +1199,7 @@ export const CustomDatePicker: React.FC<{
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
             )}
-            updateValue={updateValue}
+            setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
           />
         );

@@ -132,6 +132,7 @@ export {
   FaMapMarkerAlt as MapMarkerIcon,
   FaHatWizard as WizardHatIcon,
   FaRegLaughWink as FaceLaughWinkIcon,
+  FaRegSadTear as FaceSadTearIcon,
   FaBusinessTime as BusinessTimeIcon, // to be reviewed/combined
   FaDatabase as DatabaseIcon,
   FaServer as ServerIcon,
@@ -141,6 +142,7 @@ export {
   GiWaterDrop as WaterDropIcon,
   GiBeard as BeardIcon,
   GiSunglasses as SunglassesIcon,
+  GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
   MdModeEdit as PencilIcon,
@@ -169,6 +171,7 @@ export {
   VscClose as CloseIcon,
   VscRunAll as RunAllIcon,
   VscRunErrors as RunErrorsIcon,
+  VscOpenPreview as OpenPreviewIcon
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,
@@ -224,3 +227,7 @@ export {
   RiShapeLine as ShapeLineIcon,
   RiTestTubeFill as TestTubeIcon,
 } from 'react-icons/ri';
+export {
+  TbArrowsJoin2 as ArrowsJoinIcon,
+  TbArrowsSplit2 as ArrowsSplitIcon,
+} from 'react-icons/tb';

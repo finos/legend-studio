@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-model-storage",
-  "version": "2.0.4",
+  "version": "2.0.6",
   "description": "Legend storage models",
   "keywords": [
     "legend",
@@ -43,7 +43,7 @@
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "28.1.2",
     "cross-env": "7.0.3",
-    "eslint": "8.18.0",
+    "eslint": "8.19.0",
     "jest": "28.1.2",
     "lodash": "4.17.21",
     "npm-run-all": "4.1.5",
@@ -52,5 +52,9 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
+  },
+  "typedoc": {
+    "entryPoint": "./src/index.ts",
+    "readmeFile": "./README.md"
   }
 }

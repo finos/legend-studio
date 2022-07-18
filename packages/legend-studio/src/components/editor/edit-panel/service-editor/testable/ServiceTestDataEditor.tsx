@@ -22,6 +22,7 @@ import {
   MaskIcon,
   MenuContent,
   MenuContentItem,
+  PanelLoadingIndicator,
   PlusIcon,
   PURE_ConnectionIcon,
   RefreshIcon,
@@ -33,6 +34,7 @@ import {
 import type {
   IdentifiedConnection,
   ConnectionTestData,
+  DataElement,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
@@ -45,6 +47,8 @@ import type { EmbeddedDataTypeOption } from '../../../../../stores/editor-state/
 import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
 import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFormatState.js';
 import { flowResult } from 'mobx';
+import { buildElementOption } from '@finos/legend-application';
+import { prettyCONSTName } from '@finos/legend-shared';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -205,9 +209,20 @@ const ConnectionTestDataItem = observer(
 export const NewConnectionDataModal = observer(
   (props: { testDataState: ServiceTestDataState }) => {
     const { testDataState } = props;
+    const dataElementOptions = testDataState.editorStore.dataOptions;
+    const newConnectionState = testDataState.newConnectionDataState;
+    const dataElement = newConnectionState.dataElement;
+    const selectedOption = dataElement ? buildElementOption(dataElement) : null;
+    const onDataElementChange = (val: {
+      label: string;
+      value?: DataElement;
+    }): void => {
+      if (val.value !== selectedOption?.value && val.value) {
+        newConnectionState.setDataElement(val.value);
+      }
+    };
     const isReadOnly =
       testDataState.testSuiteState.testableState.serviceEditorState.isReadOnly;
-    const newConnectionState = testDataState.newConnectionDataState;
     const closeModal = (): void => newConnectionState.setModal(false);
     const connectionOptions = testDataState.allIdentifiedConnections.map(
       (e) => ({
@@ -248,7 +263,12 @@ export const NewConnectionDataModal = observer(
       }
     };
     // external format
-    const selectedEmbeddedType = newConnectionState.embeddedDataType;
+    const selectedEmbeddedType = newConnectionState.embeddedDataType
+      ? {
+          label: prettyCONSTName(newConnectionState.embeddedDataType.label),
+          value: newConnectionState.embeddedDataType.value,
+        }
+      : undefined;
     const extraOptionTypes = testDataState.editorStore.pluginManager
       .getStudioPlugins()
       .flatMap(
@@ -259,7 +279,7 @@ export const NewConnectionDataModal = observer(
       );
     const embeddedOptions = [
       ...Object.values(EmbeddedDataType).map((typeOption) => ({
-        label: typeOption,
+        label: prettyCONSTName(typeOption),
         value: typeOption,
       })),
       ...extraOptionTypes,
@@ -283,7 +303,7 @@ export const NewConnectionDataModal = observer(
           onSubmit={handleSubmit}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Create a new Connection Data</div>
+          <div className="modal__title">Create a connection test data</div>
           <div className="explorer__new-element-modal__driver">
             <CustomSelectorInput
               className="explorer__new-element-modal__driver__dropdown"
@@ -294,7 +314,6 @@ export const NewConnectionDataModal = observer(
               darkMode={true}
             />
           </div>
-
           <div className="explorer__new-element-modal__driver">
             <CustomSelectorInput
               className="explorer__new-element-modal__driver__dropdown"
@@ -305,7 +324,18 @@ export const NewConnectionDataModal = observer(
               darkMode={true}
             />
           </div>
-
+          {selectedEmbeddedType?.value === EmbeddedDataType.DATA_ELEMENT && (
+            <div className="explorer__new-element-modal__driver">
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown data-element-reference-editor__value__dropdown"
+                disabled={isReadOnly}
+                options={dataElementOptions}
+                onChange={onDataElementChange}
+                value={selectedOption}
+                darkMode={true}
+              />
+            </div>
+          )}
           <div className="search-modal__actions">
             <button
               type="button"
@@ -375,6 +405,12 @@ export const ServiceTestDataEditor = observer(
               <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
             </ResizablePanelSplitter>
             <ResizablePanel minSize={600}>
+              <PanelLoadingIndicator
+                isLoading={Boolean(
+                  testDataState.selectedDataState?.generatingTestDataSate
+                    .isInProgress,
+                )}
+              />
               {testDataState.selectedDataState && (
                 <ConnectionTestDataEditor
                   connectionTestDataState={testDataState.selectedDataState}

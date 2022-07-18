@@ -57,7 +57,6 @@ import {
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
   TdsExecutionResult,
-  PureClientVersion,
   PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
@@ -178,6 +177,8 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
           .nonNullableTreeData,
         node,
         this.projectionState.queryBuilderState.graphManagerState.graph,
+        this.projectionState.queryBuilderState.explorerState
+          .propertySearchPanelState.allMappedPropertyNodes,
       ),
     );
     this.columnName = getPropertyChainName(
@@ -696,6 +697,8 @@ export class QueryBuilderProjectionState {
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
       this.queryBuilderState.graphManagerState.graph,
+      this.queryBuilderState.explorerState.propertySearchPanelState
+        .allMappedPropertyNodes,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {
@@ -717,7 +720,6 @@ export class QueryBuilderProjectionState {
                 this.queryBuilderState.graphManagerState,
               ),
               runtime,
-              PureClientVersion.VX_X_X,
             )) as ExecutionResult;
           assertType(
             previewResult,
@@ -761,7 +763,6 @@ export class QueryBuilderProjectionState {
                 this.queryBuilderState.graphManagerState,
               ),
               runtime,
-              PureClientVersion.VX_X_X,
             )) as ExecutionResult;
           assertType(
             previewResult,

@@ -147,6 +147,14 @@ export const generateMilestonedPropertyParameterValue = (
   derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState,
   idx: number,
 ): ValueSpecification | undefined => {
+  // Milestoning transformations should not be done on actual derived properties.
+  if (
+    derivedPropertyExpressionState.derivedProperty._OWNER.derivedProperties.includes(
+      derivedPropertyExpressionState.derivedProperty,
+    )
+  ) {
+    return undefined;
+  }
   const querySetupState =
     derivedPropertyExpressionState.queryBuilderState.querySetupState;
   const temporalSource = getDerivedPropertyMilestoningSteoreotype(

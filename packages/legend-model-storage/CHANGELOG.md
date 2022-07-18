@@ -1,5 +1,9 @@
 # @finos/legend-model-storage
 
+## 2.0.6
+
+## 2.0.5
+
 ## 2.0.4
 
 ## 2.0.3

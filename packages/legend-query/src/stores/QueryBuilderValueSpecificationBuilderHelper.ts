@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '@finos/legend-application';
 import {
   type PureModel,
   type ValueSpecification,
@@ -25,6 +24,8 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { format } from 'date-fns';

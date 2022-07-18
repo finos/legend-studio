@@ -127,7 +127,7 @@ const MilestoningParameterEditor = observer(
         <BasicValueSpecificationEditor
           valueSpecification={milestoningParameter}
           graph={queryBuilderState.graphManagerState.graph}
-          updateValue={(val: ValueSpecification): void =>
+          setValueSpecification={(val: ValueSpecification): void =>
             stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
               ? queryBuilderState.querySetupState.setBusinessDate(val)
               : queryBuilderState.querySetupState.setProcessingDate(val)

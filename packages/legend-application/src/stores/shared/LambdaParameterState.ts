@@ -15,22 +15,15 @@
  */
 
 import {
-  type InstanceValue,
   type ObserverContext,
   type Type,
   type ValueSpecification,
   type PureModel,
-  CollectionInstanceValue,
-  Enumeration,
-  EnumValueExplicitReference,
-  EnumValueInstanceValue,
   GenericType,
   GenericTypeExplicitReference,
-  getEnumValue,
   observe_ValueSpecification,
   observe_VariableExpression,
   PrimitiveInstanceValue,
-  PrimitiveType,
   PRIMITIVE_TYPE,
   VariableExpression,
   LambdaFunction,
@@ -40,13 +33,13 @@ import {
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
   extractElementNameFromPath,
+  generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
   deleteEntry,
   IllegalStateError,
   isNonNullable,
-  Randomizer,
   uuid,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action } from 'mobx';
@@ -55,57 +48,11 @@ import {
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
 } from './ValueSpecificationModifierHelper.js';
-import { format, addDays } from 'date-fns';
-import { DATE_FORMAT, DATE_TIME_FORMAT } from '../../const.js';
 
 export enum PARAMETER_SUBMIT_ACTION {
   EXECUTE = 'EXECUTE',
   EXPORT = 'EXPORT',
 }
-
-export const createMockEnumerationProperty = (
-  enumeration: Enumeration,
-): string =>
-  new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
-
-const createMockPrimitiveProperty = (
-  primitiveType: PrimitiveType,
-  propertyName: string,
-): string | number | boolean => {
-  const randomizer = new Randomizer();
-  switch (primitiveType.name) {
-    case PRIMITIVE_TYPE.BOOLEAN:
-      return randomizer.getRandomItemInCollection([true, false]) ?? true;
-    case PRIMITIVE_TYPE.FLOAT:
-      return randomizer.getRandomFloat();
-    case PRIMITIVE_TYPE.DECIMAL:
-      return randomizer.getRandomDouble();
-    case PRIMITIVE_TYPE.NUMBER:
-    case PRIMITIVE_TYPE.INTEGER:
-      return randomizer.getRandomWholeNumber(100);
-    // NOTE that `Date` is the umbrella type that comprises `StrictDate` and `DateTime`, but for simplicity, we will generate `Date` as `StrictDate`
-    case PRIMITIVE_TYPE.DATE:
-    case PRIMITIVE_TYPE.STRICTDATE:
-      return format(
-        randomizer.getRandomDate(
-          new Date(Date.now()),
-          addDays(Date.now(), 100),
-        ),
-        DATE_FORMAT,
-      );
-    case PRIMITIVE_TYPE.DATETIME:
-      return format(
-        randomizer.getRandomDate(
-          new Date(Date.now()),
-          addDays(Date.now(), 100),
-        ),
-        DATE_TIME_FORMAT,
-      );
-    case PRIMITIVE_TYPE.STRING:
-    default:
-      return `${propertyName} ${randomizer.getRandomWholeNumber(100)}`;
-  }
-};
 
 export const buildParametersLetLambdaFunc = (
   graph: PureModel,
@@ -140,45 +87,6 @@ export const buildParametersLetLambdaFunc = (
     .filter(isNonNullable);
   return letlambdaFunction;
 };
-
-export const generateVariableExpressionMockValues = (
-  parameter: VariableExpression,
-): InstanceValue | undefined => {
-  const varType = parameter.genericType?.value.rawType;
-  const multiplicity = parameter.multiplicity;
-  if ((!multiplicity.upperBound || multiplicity.upperBound > 1) && varType) {
-    return new CollectionInstanceValue(
-      multiplicity,
-      GenericTypeExplicitReference.create(new GenericType(varType)),
-    );
-  }
-  if (varType instanceof PrimitiveType) {
-    const primitiveInst = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(varType)),
-      multiplicity,
-    );
-    primitiveInst.values = [
-      createMockPrimitiveProperty(
-        varType,
-        parameter.name === '' ? 'myVar' : parameter.name,
-      ),
-    ];
-    return primitiveInst;
-  } else if (varType instanceof Enumeration) {
-    const enumValueInstance = new EnumValueInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(varType)),
-      multiplicity,
-    );
-    const mock = createMockEnumerationProperty(varType);
-    if (mock !== '') {
-      enumValueInstance.values = [
-        EnumValueExplicitReference.create(getEnumValue(varType, mock)),
-      ];
-    }
-    return enumValueInstance;
-  }
-  return undefined;
-};
 export class LambdaParameterState {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
@@ -199,7 +107,7 @@ export class LambdaParameterState {
   }
 
   mockParameterValue(): void {
-    this.setValue(generateVariableExpressionMockValues(this.parameter));
+    this.setValue(generateVariableExpressionMockValue(this.parameter));
   }
 
   setValue(value: ValueSpecification | undefined): void {

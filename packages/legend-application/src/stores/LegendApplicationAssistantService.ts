@@ -81,6 +81,10 @@ export class VirtualAssistantContextualDocumentationEntry {
 export class LegendApplicationAssistantService {
   readonly applicationStore: ApplicationStore<LegendApplicationConfig>;
   private readonly searchEngine: Fuse<LegendApplicationDocumentationEntry>;
+  /**
+   * This key is used to allow programmatic re-rendering of the assistant panel
+   */
+  panelRenderingKey = uuid();
   isHidden = false;
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
@@ -93,6 +97,7 @@ export class LegendApplicationAssistantService {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
+      panelRenderingKey: observable,
       selectedTab: observable,
       searchText: observable,
       searchResults: observable,
@@ -103,6 +108,7 @@ export class LegendApplicationAssistantService {
       setSearchText: action,
       resetSearch: action,
       search: action,
+      refreshPanelRendering: action,
     });
 
     this.applicationStore = applicationStore;
@@ -149,7 +155,7 @@ export class LegendApplicationAssistantService {
       return undefined;
     }
     const currentContext =
-      this.applicationStore.navigationContextService.currentContext.value;
+      this.applicationStore.navigationContextService.currentContext.key;
     const currentContextualDocumentationEntry =
       this.applicationStore.documentationService.getContextualDocEntry(
         currentContext,
@@ -200,6 +206,10 @@ export class LegendApplicationAssistantService {
 
   setSelectedTab(val: VIRTUAL_ASSISTANT_TAB): void {
     this.selectedTab = val;
+  }
+
+  refreshPanelRendering(): void {
+    this.panelRenderingKey = uuid();
   }
 
   setSearchText(val: string): void {

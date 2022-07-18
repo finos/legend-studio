@@ -44,9 +44,11 @@ export const ServiceQueryBuilder = observer(
     const editWithQueryBuilder = applicationStore.guardUnhandledError(
       async () => {
         executionState.setOpeningQueryEditor(true);
-        if (executionState.selectedExecutionContext) {
-          const mapping = executionState.selectedExecutionContext.mapping.value;
-          const runtime = executionState.selectedExecutionContext.runtime;
+        const selectedExecutionState =
+          executionState.selectedExecutionContextState;
+        if (selectedExecutionState) {
+          const mapping = selectedExecutionState.executionContext.mapping.value;
+          const runtime = selectedExecutionState.executionContext.runtime;
           if (!isStubbed_PackageableElement(mapping)) {
             queryBuilderExtension.reset();
             queryBuilderExtension.queryBuilderState.querySetupState.setMapping(

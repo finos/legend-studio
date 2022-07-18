@@ -28,7 +28,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
 
   // SDLC
   // TODO: consider to split this generic errors into more specific events
-  SDLC_MANAGER_FAILURE = 'SDLC_MANAGER_FAILURE',
+  SDLC_MANAGER_FAILURE = 'sdlc.manager.failure',
 
   WORKSPACE_UPDATED = 'sdlc.workspace-update.success',
   WORKSPACE_LOCAL_CHANGES_PUSHED = 'sdlc.local-changes-push.success',

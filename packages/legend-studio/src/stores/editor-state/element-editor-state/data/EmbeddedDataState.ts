@@ -60,7 +60,7 @@ export const createEmbeddedData = (
       ),
     );
     return externalFormatData;
-  } else if (type === EmbeddedDataType.REALTIONAL_CSV) {
+  } else if (type === EmbeddedDataType.RELATIONAL_CSV) {
     const relational = new RelationalCSVData();
     return relational;
   } else if (type === EmbeddedDataType.MODEL_STORE_DATA) {
@@ -312,11 +312,12 @@ export class DataElementReferenceState extends EmbeddedDataState {
   }
 }
 
-export class UnSupportedDataState extends EmbeddedDataState {
+export class UnsupportedDataState extends EmbeddedDataState {
   label(): string {
     return 'Unsupported embedded data';
   }
 }
+
 export function buildEmbeddedDataEditorState(
   _embeddedData: EmbeddedData,
   editorStore: EditorStore,
@@ -345,6 +346,6 @@ export function buildEmbeddedDataEditorState(
         return state;
       }
     }
-    return new UnSupportedDataState(editorStore, embeddedData);
+    return new UnsupportedDataState(editorStore, embeddedData);
   }
 }

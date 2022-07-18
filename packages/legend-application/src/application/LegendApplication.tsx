@@ -349,6 +349,12 @@ export abstract class LegendApplication {
       );
 
       await this.loadApplication();
+      await Promise.all(
+        this.pluginManager
+          .getApplicationPlugins()
+          .flatMap((plugin) => plugin.getExtraApplicationSetups?.() ?? [])
+          .map((setup) => setup(this.pluginManager)),
+      );
 
       this.logger.info(
         LogEvent.create(APPLICATION_EVENT.APPLICATION_LOADED),

@@ -94,12 +94,16 @@ import {
   ModelChainConnection,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
 } from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -1047,6 +1051,11 @@ export const PackageableRuntimeEditor = observer(() => {
     PackageableRuntimeEditorState,
   );
   const isReadOnly = editorState.isReadOnly;
+
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.RUNTIME_EDITOR,
+  );
+
   return (
     <RuntimeEditor
       runtimeEditorState={editorState.runtimeEditorState}

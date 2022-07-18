@@ -21,14 +21,12 @@ import {
   TestFailed,
   ServiceTestSuite,
   TestData,
-  ConnectionTestData,
   ServiceTest,
-  EqualToJson,
-  ExternalFormatData,
   RunTestsTestableInput,
   AtomicTestId,
   DEFAULT_TEST_SUITE_PREFIX,
   DEFAULT_TEST_PREFIX,
+  TestError,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -36,11 +34,8 @@ import {
   assertErrorThrown,
   filterByType,
   ActionState,
-  assertNonNullable,
-  ContentType,
   deleteEntry,
   isNonNullable,
-  returnUndefOnError,
   generateEnumerableNameFromToken,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
@@ -50,14 +45,13 @@ import {
   service_addTestSuite,
   service_deleteTestSuite,
 } from '../../../../graphModifier/DSLService_GraphModifierHelper.js';
-import {
-  createEmptyEqualToJsonAssertion,
-  getAllIdentifiedConnectionsFromRuntime,
-  TEMPORARY_EmbeddedDataConnectionVisitor,
-} from '../../../../shared/testable/TestableUtils.js';
+import { createEmptyEqualToJsonAssertion } from '../../../../shared/testable/TestableUtils.js';
 import type { ServiceEditorState } from '../ServiceEditorState.js';
 import { ServiceTestDataState } from './ServiceTestDataState.js';
-import { ServiceTestState } from './ServiceTestEditorState.js';
+import {
+  SERIALIZATION_FORMAT,
+  ServiceTestState,
+} from './ServiceTestEditorState.js';
 
 const createEmptyServiceTestSuite = (service: Service): ServiceTestSuite => {
   const suite = new ServiceTestSuite();
@@ -67,6 +61,7 @@ const createEmptyServiceTestSuite = (service: Service): ServiceTestSuite => {
   );
   suite.testData = new TestData();
   const test = new ServiceTest();
+  test.serializationFormat = SERIALIZATION_FORMAT.PURE;
   test.id = generateEnumerableNameFromToken([], DEFAULT_TEST_PREFIX);
   test.__parent = suite;
   suite.tests = [test];
@@ -118,6 +113,7 @@ export class ServiceTestSuiteState {
 
   addServiceTest(): void {
     const test = new ServiceTest();
+    test.serializationFormat = SERIALIZATION_FORMAT.PURE;
     test.id = generateEnumerableNameFromToken(
       this.suite.tests.map((t) => t.id),
       DEFAULT_TEST_PREFIX,
@@ -178,7 +174,7 @@ export class ServiceTestSuiteState {
       input.unitTestIds = this.testStates
         .map((testState) => {
           const result = testState.testResultState.result;
-          if (result instanceof TestFailed || result instanceof TestFailed) {
+          if (result instanceof TestFailed || result instanceof TestError) {
             testState.runningTestAction.inProgress();
             return new AtomicTestId(this.suite, testState.test);
           }
@@ -272,14 +268,11 @@ export class ServiceTestableState {
   }
 
   initSuites(): void {
-    const suites = this.serviceEditorState.service.tests;
-    if (suites.length) {
-      this.selectedSuiteState = new ServiceTestSuiteState(
-        suites[0] as ServiceTestSuite,
-        this,
-      );
+    const serviceSuite = this.serviceEditorState.service.tests[0];
+    if (serviceSuite instanceof ServiceTestSuite) {
+      this.selectedSuiteState = new ServiceTestSuiteState(serviceSuite, this);
     } else {
-      this.addTestSuite();
+      this.selectedSuiteState = undefined;
     }
   }
 
@@ -291,57 +284,5 @@ export class ServiceTestableState {
       this.serviceEditorState.editorStore.changeDetectionState.observerContext,
     );
     this.selectedSuiteState = new ServiceTestSuiteState(suite, this);
-  }
-
-  // TODO: FIX
-  generateServiceSuite(): void {
-    try {
-      const executionContext =
-        this.serviceEditorState.executionState.serviceExecutionParameters;
-      assertNonNullable(
-        executionContext,
-        'Query, Mapping and Runtime is required to generate service suite',
-      );
-      const suite = new ServiceTestSuite();
-      suite.id = 'suite_1';
-      const connections = getAllIdentifiedConnectionsFromRuntime(
-        executionContext.runtime,
-      );
-      suite.testData = new TestData();
-      suite.testData.connectionsTestData = connections
-        .map((e) => {
-          const _data = returnUndefOnError(() =>
-            e.connection.accept_ConnectionVisitor(
-              new TEMPORARY_EmbeddedDataConnectionVisitor(this.editorStore),
-            ),
-          );
-          if (_data) {
-            const conData = new ConnectionTestData();
-            conData.connectionId = e.id;
-            conData.testData = _data;
-            return conData;
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
-      const test = new ServiceTest();
-      test.id = `test_1`;
-      // TODO generate param values
-      // we will generate `toJSON` value for now
-      const _equalToJson = new EqualToJson();
-      _equalToJson.id = 'assertion_1';
-      const data = new ExternalFormatData();
-      data.contentType = ContentType.APPLICATION_JSON;
-      data.data = '{}';
-      _equalToJson.expected = data;
-      test.assertions = [_equalToJson];
-      service_addTestSuite(
-        this.serviceEditorState.service,
-        suite,
-        this.editorStore.changeDetectionState.observerContext,
-      );
-    } catch (error) {
-      // console
-    }
   }
 }

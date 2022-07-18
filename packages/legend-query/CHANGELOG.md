@@ -1,5 +1,35 @@
 # @finos/legend-query
 
+## 3.2.2
+
+### Patch Changes
+
+- [#1304](https://github.com/finos/legend-studio/pull/1304) [`8781d63b`](https://github.com/finos/legend-studio/commit/8781d63b281025b0e41464ef6c81484d00e5cac3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Provide a UI feedback when fetching mapped properties from Engine ([#1307] https://github.com/finos/legend-studio/issues/1307).
+
+* [#1292](https://github.com/finos/legend-studio/pull/1292) [`3dee7f31`](https://github.com/finos/legend-studio/commit/3dee7f310b27aa15bd03a31c441a8b0e303ad5cf) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Forbid removal of projection columns used in the post filter ([#1288] https://github.com/finos/legend-studio/issues/1288).
+
+- [#1298](https://github.com/finos/legend-studio/pull/1298) [`5ef7e36a`](https://github.com/finos/legend-studio/commit/5ef7e36a715d29f5a010d3b922163f1da9fa56c8) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Hide Parameter panel by default.
+
+## 3.2.1
+
+## 3.2.0
+
+### Minor Changes
+
+- [#1212](https://github.com/finos/legend-studio/pull/1212) [`ac58c746`](https://github.com/finos/legend-studio/commit/ac58c746863a7372add17d5f5e41630ca0900ced) ([@gayathrir11](https://github.com/gayathrir11)) - Support property search in query builder
+
+* [#1270](https://github.com/finos/legend-studio/pull/1270) [`3ae5c562`](https://github.com/finos/legend-studio/commit/3ae5c562841efaafc81854bb6ddee525f09306f5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add Filter by/out on TDS Result ([#1204] https://github.com/finos/legend-studio/issues/1204).
+
+## 3.1.0
+
+### Minor Changes
+
+- [#1186](https://github.com/finos/legend-studio/pull/1186) [`cce3d6d4`](https://github.com/finos/legend-studio/commit/cce3d6d4e28bdfec3626eb5775ba3cf45acc343d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Make use of `engine` [mapping analytics](https://github.com/finos/legend-engine/pull/740) API to improve `mappedness check` for query builder explorer.
+
+### Patch Changes
+
+- [#1271](https://github.com/finos/legend-studio/pull/1271) [`7b4c4d81`](https://github.com/finos/legend-studio/commit/7b4c4d81941d6a304bc2375519ed111b71de9e75) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add parameter name validation when creating/updating query parameter.
+
 ## 3.0.5
 
 ### Patch Changes

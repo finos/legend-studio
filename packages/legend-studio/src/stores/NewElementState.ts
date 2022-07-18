@@ -74,8 +74,6 @@ import {
   DataElement,
   stub_RawLambda,
   stub_Database,
-  ServiceTestSuite,
-  TestData,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
 import {
@@ -88,7 +86,6 @@ import {
   generationSpecification_addGenerationElement,
 } from './graphModifier/DSLGeneration_GraphModifierHelper.js';
 import {
-  service_addTestSuite,
   service_initNewService,
   service_setExecution,
 } from './graphModifier/DSLService_GraphModifierHelper.js';
@@ -419,14 +416,6 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       decorateRuntimeWithNewMapping(engineRuntime, _mapping, this.editorStore);
       runtimeValue = engineRuntime;
     }
-    const suite = new ServiceTestSuite();
-    suite.id = 'suite1';
-    suite.testData = new TestData();
-    service_addTestSuite(
-      service,
-      suite,
-      this.editorStore.changeDetectionState.observerContext,
-    );
     service_setExecution(
       service,
       new PureSingleExecution(stub_RawLambda(), service, mapping, runtimeValue),

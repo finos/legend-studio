@@ -74,6 +74,7 @@ export const getAllIdentifiedConnectionsFromRuntime = (
 };
 
 // NOTE: this will all move to `engine` once engine support generating test data for all connections
+// Throws if unable to generate test data
 export class TEMPORARY_EmbeddedDataConnectionVisitor
   implements ConnectionVisitor<EmbeddedData>
 {
@@ -83,7 +84,7 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
   }
 
   visit_Connection(connection: Connection): EmbeddedData {
-    return createBareExternalFormat();
+    throw new Error('Method not implemented.');
   }
   visit_ConnectionPointer(connection: ConnectionPointer): EmbeddedData {
     const packageableConnection =
@@ -112,8 +113,7 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): EmbeddedData {
-    const relationalDb = new RelationalCSVData();
-    return relationalDb;
+    throw new Error('Method not implemented.');
   }
 }
 
@@ -149,7 +149,7 @@ export class EmbeddedDataConnectionTypeVisitor
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): string {
-    return EmbeddedDataType.REALTIONAL_CSV;
+    return EmbeddedDataType.RELATIONAL_CSV;
   }
 }
 
@@ -186,6 +186,7 @@ export const createEmptyEqualToJsonAssertion = (
     DEFAULT_TEST_ASSERTION_PREFIX,
   );
   assert.expected = createBareExternalFormat();
+  assert.parentTest = test;
   return assert;
 };
 
