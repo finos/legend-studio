@@ -519,7 +519,6 @@ const VirtualAssistantPanel = observer(
             if (event.key === 'Tab') {
               event.preventDefault();
               event.stopPropagation();
-              return;
             }
           }}
         >

@@ -112,9 +112,9 @@ const generateExtensionUrlPattern = (pattern: string): string =>
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useLegendStudioStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const extraApplicationPageRenderEntries = studioStore.pluginManager
+  const extraApplicationPageEntries = studioStore.pluginManager
     .getStudioPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
+    .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
   useEffect(() => {
     flowResult(studioStore.initialize()).catch(
@@ -172,12 +172,12 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={Setup}
             />
-            {extraApplicationPageRenderEntries.map((entry) => (
+            {extraApplicationPageEntries.map((entry) => (
               <Route
                 key={entry.key}
                 exact={true}
                 path={entry.urlPatterns.map(generateExtensionUrlPattern)}
-                component={entry.component as React.ComponentType<unknown>}
+                component={entry.renderer as React.ComponentType<unknown>}
               />
             ))}
             <Route>

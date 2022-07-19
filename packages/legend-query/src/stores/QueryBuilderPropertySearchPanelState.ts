@@ -294,8 +294,7 @@ export class QueryBuilderPropertySearchPanelState {
 
   fetchMappedPropertyNodes(propName: string): void {
     const propertyName = propName.toLowerCase();
-    for (let i = 0; i < this.allMappedPropertyNodes.length; i++) {
-      const node = guaranteeNonNullable(this.allMappedPropertyNodes[i]);
+    for (const node of this.allMappedPropertyNodes) {
       if (node.label.toLowerCase().includes(propertyName)) {
         this.searchedMappedPropertyNodes.push(node);
         if (

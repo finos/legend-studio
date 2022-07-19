@@ -26,6 +26,12 @@ export type LegendApplicationSetup = (
   pluginManager: LegendApplicationPluginManager,
 ) => Promise<void>;
 
+export type ApplicationPageEntry = {
+  key: string;
+  urlPatterns: string[];
+  renderer: React.FC | React.ReactElement;
+};
+
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
    * Get the list of setup procedures to be run when booting up the application.
@@ -33,6 +39,11 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
    * NOTE: The application will call the setup procedures from all extensions concurrently.
    */
   getExtraApplicationSetups?(): LegendApplicationSetup[];
+
+  /**
+   * Get the list of application page entries to be rendered.
+   */
+  getExtraApplicationPageEntries?(): ApplicationPageEntry[];
 
   /**
    * Get the list of documentation registry entries from which the application can fetch

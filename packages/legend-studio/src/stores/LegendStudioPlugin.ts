@@ -30,12 +30,6 @@ import {
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
 
-export type ApplicationPageRenderEntry = {
-  key: string;
-  urlPatterns: string[];
-  component: React.FC | React.ReactElement;
-};
-
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
   renderer: (
@@ -80,11 +74,6 @@ export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
     pluginManager.registerApplicationPlugin(this);
     pluginManager.registerStudioPlugin(this);
   }
-
-  /**
-   * Get the list of application pages to be rendered.
-   */
-  getExtraApplicationPageRenderEntries?(): ApplicationPageRenderEntry[];
 
   /**
    * Get the list of items to be rendered in the explorer context menu.
