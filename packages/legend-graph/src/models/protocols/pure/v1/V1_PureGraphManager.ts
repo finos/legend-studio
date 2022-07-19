@@ -35,7 +35,6 @@ import {
   assertErrorThrown,
   promisify,
   StopWatch,
-  filterByType,
   isNonNullable,
   addUniqueEntry,
   uuid,
@@ -73,7 +72,6 @@ import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
-import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput.js';
@@ -199,7 +197,6 @@ import type {
 } from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
-  V1_buildLegacyServiceTestResult,
   V1_buildServiceRegistrationResult,
   V1_transformQuery,
   V1_buildGenerationOutput,
@@ -2101,26 +2098,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   // --------------------------------------------- Service ---------------------------------------------
-
-  async runLegacyServiceTests(
-    service: Service,
-    graph: PureModel,
-  ): Promise<DEPRECATED__ServiceTestResult[]> {
-    const protocolGraph = this.getFullGraphModelData(graph);
-    const targetService = guaranteeNonNullable(
-      protocolGraph.elements
-        .filter(filterByType(V1_Service))
-        .find((element) => element.path === service.path),
-      `Can't run service test: service '${service.path}' not found`,
-    );
-    protocolGraph.elements = protocolGraph.elements.filter(
-      (element) => !(element instanceof V1_Service),
-    );
-    protocolGraph.elements.push(targetService);
-    return (await this.engine.runLegacyServiceTests(protocolGraph)).map(
-      V1_buildLegacyServiceTestResult,
-    );
-  }
 
   async registerService(
     graph: PureModel,

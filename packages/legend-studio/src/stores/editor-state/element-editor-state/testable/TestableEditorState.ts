@@ -19,7 +19,6 @@ import {
   type Testable,
   type TestAssertion,
   type TestResult,
-  AssertPass,
   TestPassed,
   AtomicTestId,
   RunTestsTestableInput,
@@ -41,7 +40,6 @@ import { createEmptyEqualToJsonAssertion } from '../../../shared/testable/Testab
 import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
   TestAssertionEditorState,
-  TestAssertionStatusState,
   TEST_ASSERTION_TAB,
 } from './TestAssertionState.js';
 

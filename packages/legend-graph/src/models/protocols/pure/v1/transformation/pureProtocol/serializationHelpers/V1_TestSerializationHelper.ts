@@ -78,7 +78,7 @@ enum V1_TestResultType {
   TEST_PASSED = 'testPassed',
   TEST_FAILED = 'testFailed',
   MULTI_EXECUTION_TEST_RESULT = 'multiExecutionTestResult',
-  // Remove once https://github.com/finos/legend-engine/pull/808 is releaseds
+  // Remove once https://github.com/finos/legend-engine/pull/808 is released
   TEMPROARY_MULTI_EXECUTION_TEST_RESULT = 'MultiExecutionServiceTestResult',
 }
 

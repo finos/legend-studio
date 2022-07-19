@@ -39,7 +39,6 @@ import {
   LegendStudioPlugin,
   service_initNewService,
   service_setExecution,
-  service_setLegacyTest,
 } from '@finos/legend-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
@@ -53,7 +52,6 @@ import {
   PackageableElementExplicitReference,
   PureSingleExecution,
   Service,
-  DEPRECATED__SingleExecutionTest,
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import {
@@ -86,10 +84,6 @@ const promoteQueryToService = async (
     const query = queryBuilderState.getQuery();
     const service = new Service(serviceName);
     service_initNewService(service);
-    service_setLegacyTest(
-      service,
-      new DEPRECATED__SingleExecutionTest(service, ''),
-    );
     service_setExecution(
       service,
       new PureSingleExecution(

@@ -57,7 +57,6 @@ import {
   testAssertion_setId,
 } from '../../../../../stores/graphModifier/Testable_GraphModifierHelper.js';
 import {
-  getTestableResultFromAssertionStatus,
   getTestableResultFromTestResult,
   TESTABLE_RESULT,
 } from '../../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';

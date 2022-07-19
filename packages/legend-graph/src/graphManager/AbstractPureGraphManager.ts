@@ -61,7 +61,6 @@ import type { ExternalFormatDescription } from './action/externalFormat/External
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import type { GraphBuilderReport } from './GraphBuilderReport.js';
 import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration.js';
-import type { DEPRECATED__ServiceTestResult } from './action/service/DEPRECATED__ServiceTestResult.js';
 import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../models/metamodels/pure/test/result/TestResult.js';
 import type { GraphPluginManager } from '../GraphPluginManager.js';
@@ -389,14 +388,6 @@ export abstract class AbstractPureGraphManager {
     serviceUrl: string,
     serviceId: string,
   ): Promise<void>;
-
-  /**
-   * @deprecated
-   */
-  abstract runLegacyServiceTests(
-    service: Service,
-    graph: PureModel,
-  ): Promise<DEPRECATED__ServiceTestResult[]>;
 
   // ------------------------------------------- Database -------------------------------------------
   /**
