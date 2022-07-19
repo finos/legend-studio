@@ -209,7 +209,9 @@ export const DataspaceQuerySetup = observer(
             {!querySetupState.dataSpaceViewerState && (
               <>
                 {querySetupState.loadDataSpaceState.isInProgress && (
-                  <BlankPanelContent>Loading data space...</BlankPanelContent>
+                  <BlankPanelContent>
+                    {querySetupState.loadDataSpaceState.message}
+                  </BlankPanelContent>
                 )}
                 {querySetupState.loadDataSpaceState.hasFailed && (
                   <BlankPanelContent>

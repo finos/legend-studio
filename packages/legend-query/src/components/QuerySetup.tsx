@@ -50,7 +50,6 @@ import {
   ServiceQuerySetupState,
 } from '../stores/QuerySetupStore.js';
 import {
-  QuerySetupStoreProvider,
   useQuerySetupStore,
   withQuerySetupStore,
 } from './QuerySetupStoreProvider.js';

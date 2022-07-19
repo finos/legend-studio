@@ -17,13 +17,16 @@
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import { type QuerySetupStore, QuerySetupState } from '@finos/legend-query';
+import {
+  type QuerySetupStore,
+  QuerySetupState,
+  generateStudioProjectViewUrl,
+} from '@finos/legend-query';
 import {
   type StoredEntity,
   DepotScope,
   ProjectData,
   SNAPSHOT_VERSION_ALIAS,
-  generateGAVCoordinates,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -115,7 +118,11 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *loadDataSpace(dataSpace: DataSpaceContext): GeneratorFn<void> {
     this.loadDataSpaceState.inProgress();
+    this.loadDataSpaceState.setMessage(`Initializing...`);
+
     try {
+      // fetch project
+      this.loadDataSpaceState.setMessage(`Fetching project...`);
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
           this.setupStore.depotServerClient.getProject(
@@ -124,10 +131,16 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           ),
         )) as PlainObject<ProjectData>,
       );
+
+      // fetch entities
+      this.loadDataSpaceState.setMessage(`Fetching entities...`);
       const entities = (yield this.setupStore.depotServerClient.getEntities(
         project,
         dataSpace.versionId,
       )) as Entity[];
+
+      // fetch dependencies
+      this.loadDataSpaceState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesIndex = (yield flowResult(
         this.setupStore.depotServerClient.getIndexedDependencyEntities(
           project,
@@ -135,6 +148,8 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         ),
       )) as Map<string, Entity[]>;
 
+      // analyze data space
+      this.loadDataSpaceState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
         this.setupStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
@@ -155,7 +170,15 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             versionId: string,
             entityPath: string | undefined,
           ): void =>
-            this.viewStudioProject(groupId, artifactId, versionId, entityPath),
+            this.setupStore.applicationStore.navigator.openNewWindow(
+              generateStudioProjectViewUrl(
+                this.setupStore.applicationStore.config.studioUrl,
+                groupId,
+                artifactId,
+                versionId,
+                entityPath,
+              ),
+            ),
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },
@@ -166,6 +189,8 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       assertErrorThrown(error);
       this.loadDataSpaceState.fail();
       this.setupStore.applicationStore.notifyError(error);
+    } finally {
+      this.loadDataSpaceState.setMessage(undefined);
     }
   }
 
@@ -187,20 +212,5 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       );
       this.setupStore.setSetupState(undefined);
     }
-  }
-
-  private viewStudioProject(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    entityPath: string | undefined,
-  ): void {
-    this.setupStore.applicationStore.navigator.openNewWindow(
-      `${
-        this.setupStore.applicationStore.config.studioUrl
-      }/view/archive/${generateGAVCoordinates(groupId, artifactId, versionId)}${
-        entityPath ? `/entity/${entityPath}` : ''
-      }`,
-    );
   }
 }

@@ -31,11 +31,7 @@ import {
   AssistantIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore.js';
-import {
-  SetupStoreProvider,
-  useSetupStore,
-  withSetupStore,
-} from './SetupStoreProvider.js';
+import { useSetupStore, withSetupStore } from './SetupStoreProvider.js';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {

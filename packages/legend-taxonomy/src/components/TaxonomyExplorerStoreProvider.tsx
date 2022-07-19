@@ -17,44 +17,51 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { LegendTaxonomyStore } from '../stores/LegendTaxonomyStore.js';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
-import { TaxonomyServerClient } from '../stores/TaxonomyServerClient.js';
+import { TaxonomyExplorerStore } from '../stores/TaxonomyExplorerStore.js';
+import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 
-const LegendTaxonomyStoreContext = createContext<
-  LegendTaxonomyStore | undefined
+const TaxonomyExplorerStoreContext = createContext<
+  TaxonomyExplorerStore | undefined
 >(undefined);
 
-export const LegendTaxonomyStoreProvider: React.FC<{
+const TaxonomyExplorerStoreProvider: React.FC<{
   children: React.ReactNode;
-  pluginManager: LegendTaxonomyPluginManager;
-}> = ({ children, pluginManager }) => {
+}> = ({ children }) => {
   const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-  const taxonomyServerClient = new TaxonomyServerClient(
-    applicationStore.config.currentTaxonomyTreeOption.url,
-  );
   const depotServerClient = useDepotServerClient();
+  const baseStore = useLegendTaxonomyStore();
   const store = useLocalObservable(
     () =>
-      new LegendTaxonomyStore(
+      new TaxonomyExplorerStore(
         applicationStore,
-        taxonomyServerClient,
+        baseStore.taxonomyServerClient,
         depotServerClient,
-        pluginManager,
+        baseStore.pluginManager,
       ),
   );
   return (
-    <LegendTaxonomyStoreContext.Provider value={store}>
+    <TaxonomyExplorerStoreContext.Provider value={store}>
       {children}
-    </LegendTaxonomyStoreContext.Provider>
+    </TaxonomyExplorerStoreContext.Provider>
   );
 };
 
-export const useLegendTaxonomyStore = (): LegendTaxonomyStore =>
+export const withTaxonomyExplorerStore = (
+  WrappedComponent: React.FC,
+): React.FC =>
+  function WithTaxonomyExplorerStore() {
+    return (
+      <TaxonomyExplorerStoreProvider>
+        <WrappedComponent />
+      </TaxonomyExplorerStoreProvider>
+    );
+  };
+
+export const useTaxonomyExplorerStore = (): TaxonomyExplorerStore =>
   guaranteeNonNullable(
-    useContext(LegendTaxonomyStoreContext),
-    `Can't find Legend Taxonomy store in context`,
+    useContext(TaxonomyExplorerStoreContext),
+    `Can't find taxonomy explorer store in context`,
   );

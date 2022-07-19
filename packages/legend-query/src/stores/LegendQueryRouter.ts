@@ -99,3 +99,16 @@ export const generateExistingQueryEditorRoute = (queryId: string): string =>
 export interface ExistingQueryEditorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
 }
+
+export const generateStudioProjectViewUrl = (
+  studioUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  entityPath: string | undefined,
+): string =>
+  `${studioUrl}/view/archive/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}${entityPath ? `/entity/${entityPath}` : ''}`;

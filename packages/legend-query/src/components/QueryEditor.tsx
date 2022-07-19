@@ -37,6 +37,7 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
+  generateStudioProjectViewUrl,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QueryEditorStore,
@@ -58,6 +59,7 @@ import {
   type RawLambda,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
+import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -184,8 +186,19 @@ const renderQueryEditorHeaderLabel = (
 
 const QueryEditorHeaderContent = observer(() => {
   const editorStore = useQueryEditorStore();
-  const applicationStore = useApplicationStore();
-  const viewQueryProject = (): void => editorStore.viewStudioProject(undefined);
+  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const viewQueryProject = (): void => {
+    const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
+    applicationStore.navigator.openNewWindow(
+      generateStudioProjectViewUrl(
+        applicationStore.config.studioUrl,
+        groupId,
+        artifactId,
+        versionId,
+        undefined,
+      ),
+    );
+  };
   const saveQuery = (): void => {
     editorStore.queryBuilderState
       .saveQuery(async (lambda: RawLambda) => {

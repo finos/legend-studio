@@ -83,7 +83,7 @@ export class V1_DSLDataSpace_PureGraphManagerExtension extends DSLDataSpace_Pure
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
         engineServerClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
-        `${engineServerClient._pure()}/analytics/dataSpace/modelCoverage`,
+        `${engineServerClient._pure()}/analytics/dataSpace/render`,
         {
           clientVersion: V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
           dataSpace: dataSpacePath,

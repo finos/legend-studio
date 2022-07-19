@@ -16,11 +16,7 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  ReviewStoreProvider,
-  useReviewStore,
-  withReviewStore,
-} from './ReviewStoreProvider.js';
+import { useReviewStore, withReviewStore } from './ReviewStoreProvider.js';
 import { useParams } from 'react-router';
 import { ReviewSideBar } from './ReviewSideBar.js';
 import { ReviewPanel } from './ReviewPanel.js';
@@ -47,7 +43,6 @@ import {
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
-  EditorStoreProvider,
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';

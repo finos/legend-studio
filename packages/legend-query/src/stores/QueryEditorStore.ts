@@ -61,7 +61,6 @@ import type { Entity } from '@finos/legend-model-storage';
 import {
   type DepotServerClient,
   type ProjectGAVCoordinates,
-  generateGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
 import {
@@ -240,7 +239,7 @@ export abstract class QueryEditorStore {
     this.exportState = val;
   }
 
-  protected abstract getProjectInfo(): ProjectGAVCoordinates;
+  abstract getProjectInfo(): ProjectGAVCoordinates;
   /**
    * Set up the editor state before building the graph
    */
@@ -254,17 +253,6 @@ export abstract class QueryEditorStore {
   abstract getExportConfiguration(
     lambda: RawLambda,
   ): Promise<QueryExportConfiguration>;
-
-  viewStudioProject(entityPath: string | undefined): void {
-    const { groupId, artifactId, versionId } = this.getProjectInfo();
-    this.applicationStore.navigator.openNewWindow(
-      `${
-        this.applicationStore.config.studioUrl
-      }/view/archive/${generateGAVCoordinates(groupId, artifactId, versionId)}${
-        entityPath ? `/entity/${entityPath}` : ''
-      }`,
-    );
-  }
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {

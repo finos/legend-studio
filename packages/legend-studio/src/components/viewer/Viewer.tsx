@@ -45,11 +45,7 @@ import {
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import {
-  useViewerStore,
-  ViewerStoreProvider,
-  withViewerStore,
-} from './ViewerStoreProvider.js';
+import { useViewerStore, withViewerStore } from './ViewerStoreProvider.js';
 import {
   type ViewerPathParams,
   generateSetupRoute,
@@ -57,7 +53,6 @@ import {
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {
-  EditorStoreProvider,
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
