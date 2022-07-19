@@ -93,6 +93,12 @@ export const getControlledResizablePanelProps = (
     options?.onStopResize?.(handleProps);
   },
   size: !minimizeCondition && options?.size ? options?.size : 0,
+  /**
+   * NOTE: An issue, the window collapses when reopening the parent complement,
+   * occurs by always setting flex to 0. Instead, When minimizeCondition is false,
+   * the value of flex should be handled programmatically based on size.
+   * Setting it to undefined will call an API at runtime to retrieve the actual value.
+   */
   flex: !minimizeCondition ? (undefined as unknown as number) : 0,
 });
 
