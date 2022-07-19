@@ -17,7 +17,10 @@
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import { useDepotServerClient } from '@finos/legend-server-depot';
+import {
+  parseGAVCoordinates,
+  useDepotServerClient,
+} from '@finos/legend-server-depot';
 import {
   type LegendQueryConfig,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -36,23 +39,20 @@ import {
 
 const DataSpaceQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
-  groupId: string;
-  artifactId: string;
-  versionId: string;
+  gav: string;
   dataSpacePath: string;
   executionContext: string;
   runtimePath: string | undefined;
   classPath: string | undefined;
 }> = ({
   children,
-  groupId,
-  artifactId,
-  versionId,
+  gav,
   dataSpacePath,
   executionContext,
   runtimePath,
   classPath,
 }) => {
+  const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const queryStore = useLegendQueryStore();
@@ -81,9 +81,7 @@ const DataSpaceQueryEditorStoreProvider: React.FC<{
 export const DataSpaceQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<DataSpaceQueryEditorPathParams>();
-  const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
-  const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
-  const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
+  const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const dataSpacePath =
     params[DATA_SPACE_QUERY_EDITOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH];
   const executionContext =
@@ -96,9 +94,7 @@ export const DataSpaceQueryEditor = observer(() => {
 
   return (
     <DataSpaceQueryEditorStoreProvider
-      groupId={groupId}
-      artifactId={artifactId}
-      versionId={versionId}
+      gav={gav}
       dataSpacePath={dataSpacePath}
       executionContext={executionContext}
       runtimePath={runtimePath}

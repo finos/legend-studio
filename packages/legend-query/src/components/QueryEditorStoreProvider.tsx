@@ -26,7 +26,10 @@ import {
 } from '../stores/QueryEditorStore.js';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
+import {
+  parseGAVCoordinates,
+  useDepotServerClient,
+} from '@finos/legend-server-depot';
 
 export const QueryEditorStoreContext = createContext<
   QueryEditorStore | undefined
@@ -57,21 +60,12 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
 
 export const CreateQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
-  groupId: string;
-  artifactId: string;
-  versionId: string;
+  gav: string;
   mappingPath: string;
   runtimePath: string;
   classPath: string | undefined;
-}> = ({
-  children,
-  groupId,
-  artifactId,
-  versionId,
-  mappingPath,
-  runtimePath,
-  classPath,
-}) => {
+}> = ({ children, gav, mappingPath, runtimePath, classPath }) => {
+  const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const queryStore = useLegendQueryStore();
@@ -98,19 +92,11 @@ export const CreateQueryEditorStoreProvider: React.FC<{
 
 export const ServiceQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
-  groupId: string;
-  artifactId: string;
-  versionId: string;
+  gav: string;
   servicePath: string;
   executionKey: string | undefined;
-}> = ({
-  children,
-  groupId,
-  artifactId,
-  versionId,
-  servicePath,
-  executionKey,
-}) => {
+}> = ({ children, gav, servicePath, executionKey }) => {
+  const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
   const queryStore = useLegendQueryStore();

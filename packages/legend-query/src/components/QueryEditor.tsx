@@ -294,9 +294,7 @@ export const ExistingQueryEditor = observer(() => {
 export const ServiceQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<ServiceQueryEditorPathParams>();
-  const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
-  const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
-  const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
+  const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
   const executionKey = getQueryParameters<ServiceQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
@@ -305,9 +303,7 @@ export const ServiceQueryEditor = observer(() => {
 
   return (
     <ServiceQueryEditorStoreProvider
-      groupId={groupId}
-      artifactId={artifactId}
-      versionId={versionId}
+      gav={gav}
       servicePath={servicePath}
       executionKey={executionKey}
     >
@@ -319,9 +315,7 @@ export const ServiceQueryEditor = observer(() => {
 export const CreateQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<CreateQueryPathParams>();
-  const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
-  const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
-  const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
+  const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
   const classPath = getQueryParameters<ServiceQueryEditorQueryParams>(
@@ -331,9 +325,7 @@ export const CreateQueryEditor = observer(() => {
 
   return (
     <CreateQueryEditorStoreProvider
-      groupId={groupId}
-      artifactId={artifactId}
-      versionId={versionId}
+      gav={gav}
       mappingPath={mappingPath}
       runtimePath={runtimePath}
       classPath={classPath}
