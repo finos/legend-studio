@@ -52,6 +52,7 @@ import {
 import {
   QuerySetupStoreProvider,
   useQuerySetupStore,
+  withQuerySetupStore,
 } from './QuerySetupStoreProvider.js';
 import {
   type ProjectData,
@@ -871,41 +872,37 @@ const QuerySetupLandingPage = observer(() => {
   );
 });
 
-const QuerySetupInner = observer(() => {
-  const setupStore = useQuerySetupStore();
-  const querySetupState = setupStore.querySetupState;
-  const renderQuerySetupScreen = (
-    setupState: QuerySetupState,
-  ): React.ReactNode => {
-    if (setupState instanceof ExistingQuerySetupState) {
-      return <ExistingQuerySetup querySetupState={setupState} />;
-    } else if (setupState instanceof ServiceQuerySetupState) {
-      return <ServiceQuerySetup querySetupState={setupState} />;
-    } else if (setupState instanceof CreateQuerySetupState) {
-      return <CreateQuerySetup querySetupState={setupState} />;
-    }
-    const extraQuerySetupRenderers = setupStore.pluginManager
-      .getQueryPlugins()
-      .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
-    for (const querySetupRenderer of extraQuerySetupRenderers) {
-      const elementEditor = querySetupRenderer(setupState);
-      if (elementEditor) {
-        return elementEditor;
+export const QuerySetup = withQuerySetupStore(
+  observer(() => {
+    const setupStore = useQuerySetupStore();
+    const querySetupState = setupStore.querySetupState;
+    const renderQuerySetupScreen = (
+      setupState: QuerySetupState,
+    ): React.ReactNode => {
+      if (setupState instanceof ExistingQuerySetupState) {
+        return <ExistingQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof ServiceQuerySetupState) {
+        return <ServiceQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof CreateQuerySetupState) {
+        return <CreateQuerySetup querySetupState={setupState} />;
       }
-    }
-    return null;
-  };
+      const extraQuerySetupRenderers = setupStore.pluginManager
+        .getQueryPlugins()
+        .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
+      for (const querySetupRenderer of extraQuerySetupRenderers) {
+        const elementEditor = querySetupRenderer(setupState);
+        if (elementEditor) {
+          return elementEditor;
+        }
+      }
+      return null;
+    };
 
-  return (
-    <div className="query-setup">
-      {!querySetupState && <QuerySetupLandingPage />}
-      {querySetupState && renderQuerySetupScreen(querySetupState)}
-    </div>
-  );
-});
-
-export const QuerySetup: React.FC = () => (
-  <QuerySetupStoreProvider>
-    <QuerySetupInner />
-  </QuerySetupStoreProvider>
+    return (
+      <div className="query-setup">
+        {!querySetupState && <QuerySetupLandingPage />}
+        {querySetupState && renderQuerySetupScreen(querySetupState)}
+      </div>
+    );
+  }),
 );

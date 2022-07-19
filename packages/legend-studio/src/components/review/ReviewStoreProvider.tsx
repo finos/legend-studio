@@ -43,3 +43,12 @@ export const useReviewStore = (): ReviewStore =>
     useContext(ReviewStoreContext),
     `Can't find review store in context`,
   );
+
+export const withReviewStore = (WrappedComponent: React.FC): React.FC =>
+  function WithReviewStore() {
+    return (
+      <ReviewStoreProvider>
+        <WrappedComponent />
+      </ReviewStoreProvider>
+    );
+  };

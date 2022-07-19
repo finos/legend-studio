@@ -59,7 +59,7 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 
-const QueryExportInner = observer(
+const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
     const { exportState } = props;
     const applicationStore = useApplicationStore();
@@ -136,7 +136,7 @@ const QueryExport = observer(() => {
         <div className="modal__header">
           <div className="modal__title">Save Query</div>
         </div>
-        {exportState && <QueryExportInner exportState={exportState} />}
+        {exportState && <QueryExportDialogContent exportState={exportState} />}
       </div>
     </Dialog>
   );
@@ -230,7 +230,7 @@ const QueryEditorHeaderContent = observer(() => {
   );
 });
 
-const QueryEditorInner = observer(() => {
+export const QueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useQueryEditorStore();
   const isLoadingEditor = !editorStore.initState.hasCompleted;
@@ -244,41 +244,37 @@ const QueryEditorInner = observer(() => {
   }, [editorStore, applicationStore]);
 
   return (
-    <div className="query-editor">
-      <div className="query-editor__header">
-        <button
-          className="query-editor__header__back-btn btn--dark"
-          onClick={backToMainMenu}
-          title="Back to Main Menu"
-        >
-          <ArrowLeftIcon />
-        </button>
-        {!isLoadingEditor && <QueryEditorHeaderContent />}
+    <DndProvider backend={HTML5Backend}>
+      <div className="query-editor">
+        <div className="query-editor__header">
+          <button
+            className="query-editor__header__back-btn btn--dark"
+            onClick={backToMainMenu}
+            title="Back to Main Menu"
+          >
+            <ArrowLeftIcon />
+          </button>
+          {!isLoadingEditor && <QueryEditorHeaderContent />}
+        </div>
+        <div className="query-editor__content">
+          <PanelLoadingIndicator isLoading={isLoadingEditor} />
+          {!isLoadingEditor && (
+            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          )}
+          {isLoadingEditor && (
+            <BlankPanelContent>
+              {editorStore.initState.message ??
+                editorStore.graphManagerState.systemBuildState.message ??
+                editorStore.graphManagerState.dependenciesBuildState.message ??
+                editorStore.graphManagerState.generationsBuildState.message ??
+                editorStore.graphManagerState.graphBuildState.message}
+            </BlankPanelContent>
+          )}
+        </div>
       </div>
-      <div className="query-editor__content">
-        <PanelLoadingIndicator isLoading={isLoadingEditor} />
-        {!isLoadingEditor && (
-          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
-        )}
-        {isLoadingEditor && (
-          <BlankPanelContent>
-            {editorStore.initState.message ??
-              editorStore.graphManagerState.systemBuildState.message ??
-              editorStore.graphManagerState.dependenciesBuildState.message ??
-              editorStore.graphManagerState.generationsBuildState.message ??
-              editorStore.graphManagerState.graphBuildState.message}
-          </BlankPanelContent>
-        )}
-      </div>
-    </div>
+    </DndProvider>
   );
 });
-
-export const QueryEditor: React.FC = () => (
-  <DndProvider backend={HTML5Backend}>
-    <QueryEditorInner />
-  </DndProvider>
-);
 
 export const ExistingQueryEditor = observer(() => {
   const params = useParams<ExistingQueryEditorPathParams>();

@@ -716,7 +716,7 @@ const DiagramEditorOverlay = observer(
   },
 );
 
-const DiagramEditorInlineClassRenamerInner = observer(
+const DiagramEditorInlineClassRenamerContent = observer(
   (props: {
     inlineClassRenamerState: DiagramEditorInlineClassRenamerState;
   }) => {
@@ -823,7 +823,7 @@ const DiagramEditorInlineClassRenamer = observer(
       >
         <div className="diagram-editor__inline-class-creator__container">
           {inlineClassRenamerState && (
-            <DiagramEditorInlineClassRenamerInner
+            <DiagramEditorInlineClassRenamerContent
               inlineClassRenamerState={inlineClassRenamerState}
             />
           )}
@@ -833,7 +833,7 @@ const DiagramEditorInlineClassRenamer = observer(
   },
 );
 
-const DiagramEditorInlineClassCreatorInner = observer(
+const DiagramEditorInlineClassCreatorContent = observer(
   (props: {
     inlineClassCreatorState: DiagramEditorInlineClassCreatorState;
   }) => {
@@ -953,7 +953,7 @@ const DiagramEditorInlineClassCreator = observer(
       >
         <div className="diagram-editor__inline-class-creator__container">
           {inlineClassCreatorState && (
-            <DiagramEditorInlineClassCreatorInner
+            <DiagramEditorInlineClassCreatorContent
               inlineClassCreatorState={inlineClassCreatorState}
             />
           )}
@@ -1028,7 +1028,7 @@ const DiagramEditorInlinePropertyMultiplicityEditor = observer(
   },
 );
 
-const DiagramEditorInlinePropertyEditorInner = observer(
+const DiagramEditorInlinePropertyEditorContent = observer(
   (props: {
     inlinePropertyEditorState: DiagramEditorInlinePropertyEditorState;
   }) => {
@@ -1157,7 +1157,7 @@ const DiagramEditorInlinePropertyEditor = observer(
       >
         <div className="diagram-editor__inline-property-editor__container">
           {inlinePropertyEditorState && (
-            <DiagramEditorInlinePropertyEditorInner
+            <DiagramEditorInlinePropertyEditorContent
               inlinePropertyEditorState={inlinePropertyEditorState}
             />
           )}

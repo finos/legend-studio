@@ -43,3 +43,12 @@ export const useViewerStore = (): ViewerStore =>
     useContext(ViewerStoreContext),
     `Can't find viewer store in context`,
   );
+
+export const withViewerStore = (WrappedComponent: React.FC): React.FC =>
+  function WithViewerStore() {
+    return (
+      <ViewerStoreProvider>
+        <WrappedComponent />
+      </ViewerStoreProvider>
+    );
+  };

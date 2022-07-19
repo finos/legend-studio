@@ -31,7 +31,11 @@ import {
   AssistantIcon,
 } from '@finos/legend-art';
 import type { ProjectOption } from '../../stores/SetupStore.js';
-import { SetupStoreProvider, useSetupStore } from './SetupStoreProvider.js';
+import {
+  SetupStoreProvider,
+  useSetupStore,
+  withSetupStore,
+} from './SetupStoreProvider.js';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
@@ -373,35 +377,31 @@ const SetupSelection = observer(() => {
   );
 });
 
-export const SetupInner = observer(() => {
-  const params = useParams<SetupPathParams>();
-  const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore();
-  useEffect(() => {
-    setupStore.setCurrentProjectId(params.projectId);
-    setupStore.init(params.workspaceId, params.groupWorkspaceId);
-  }, [setupStore, params]);
+export const Setup = withSetupStore(
+  observer(() => {
+    const params = useParams<SetupPathParams>();
+    const setupStore = useSetupStore();
+    const applicationStore = useApplicationStore();
+    useEffect(() => {
+      setupStore.setCurrentProjectId(params.projectId);
+      setupStore.init(params.workspaceId, params.groupWorkspaceId);
+    }, [setupStore, params]);
 
-  useEffect(() => {
-    flowResult(setupStore.fetchProjects()).catch(
-      applicationStore.alertUnhandledError,
-    );
-    if (setupStore.currentProjectId) {
-      flowResult(setupStore.fetchWorkspaces(setupStore.currentProjectId)).catch(
+    useEffect(() => {
+      flowResult(setupStore.fetchProjects()).catch(
         applicationStore.alertUnhandledError,
       );
-    }
-  }, [applicationStore, setupStore]);
+      if (setupStore.currentProjectId) {
+        flowResult(
+          setupStore.fetchWorkspaces(setupStore.currentProjectId),
+        ).catch(applicationStore.alertUnhandledError);
+      }
+    }, [applicationStore, setupStore]);
 
-  useApplicationNavigationContext(
-    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
-  );
+    useApplicationNavigationContext(
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
+    );
 
-  return <SetupSelection />;
-});
-
-export const Setup: React.FC = () => (
-  <SetupStoreProvider>
-    <SetupInner />
-  </SetupStoreProvider>
+    return <SetupSelection />;
+  }),
 );

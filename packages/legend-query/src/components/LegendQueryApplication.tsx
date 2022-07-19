@@ -33,7 +33,7 @@ import {
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
-const LegendQueryApplicationInner = observer(() => {
+const LegendQueryApplicationRoot = observer(() => {
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
@@ -93,7 +93,7 @@ export const LegendQueryApplication = observer(
       >
         <LegendQueryStoreProvider pluginManager={pluginManager}>
           <LegendApplicationComponentFrameworkProvider>
-            <LegendQueryApplicationInner />
+            <LegendQueryApplicationRoot />
           </LegendApplicationComponentFrameworkProvider>
         </LegendQueryStoreProvider>
       </DepotServerClientProvider>

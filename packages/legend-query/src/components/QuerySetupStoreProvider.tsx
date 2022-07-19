@@ -53,3 +53,12 @@ export const useQuerySetupStore = (): QuerySetupStore =>
     useContext(QuerySetupStoreContext),
     `Can't find query setup store in context`,
   );
+
+export const withQuerySetupStore = (WrappedComponent: React.FC): React.FC =>
+  function WithQuerySetupStore() {
+    return (
+      <QuerySetupStoreProvider>
+        <WrappedComponent />
+      </QuerySetupStoreProvider>
+    );
+  };

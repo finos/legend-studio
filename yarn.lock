@@ -2688,6 +2688,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     react: 18.2.0
+    react-router: 5.3.3
     rimraf: 3.0.2
     sass: 1.53.0
     typescript: 4.7.4

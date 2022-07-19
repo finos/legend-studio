@@ -16,7 +16,11 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ReviewStoreProvider, useReviewStore } from './ReviewStoreProvider.js';
+import {
+  ReviewStoreProvider,
+  useReviewStore,
+  withReviewStore,
+} from './ReviewStoreProvider.js';
 import { useParams } from 'react-router';
 import { ReviewSideBar } from './ReviewSideBar.js';
 import { ReviewPanel } from './ReviewPanel.js';
@@ -45,6 +49,7 @@ import { flowResult } from 'mobx';
 import {
   EditorStoreProvider,
   useEditorStore,
+  withEditorStore,
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
@@ -167,80 +172,76 @@ const ReviewExplorer = observer(() => {
   );
 });
 
-const ReviewInner = observer(() => {
-  const params = useParams<ReviewPathParams>();
-  const projectId = params.projectId;
-  const reviewId = params.reviewId;
-  const reviewStore = useReviewStore();
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const changeActivity =
-    (activity: ACTIVITY_MODE): (() => void) =>
-    (): void =>
-      editorStore.setActiveActivity(activity);
+export const Review = withEditorStore(
+  withReviewStore(
+    observer(() => {
+      const params = useParams<ReviewPathParams>();
+      const projectId = params.projectId;
+      const reviewId = params.reviewId;
+      const reviewStore = useReviewStore();
+      const editorStore = useEditorStore();
+      const applicationStore = useApplicationStore();
+      const changeActivity =
+        (activity: ACTIVITY_MODE): (() => void) =>
+        (): void =>
+          editorStore.setActiveActivity(activity);
 
-  useEffect(() => {
-    reviewStore.setProjectIdAndReviewId(projectId, reviewId);
-    flowResult(reviewStore.initialize()).catch(
-      applicationStore.alertUnhandledError,
-    );
-    flowResult(reviewStore.getReview()).catch(
-      applicationStore.alertUnhandledError,
-    );
-    flowResult(reviewStore.fetchProject()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, reviewStore, projectId, reviewId]);
+      useEffect(() => {
+        reviewStore.setProjectIdAndReviewId(projectId, reviewId);
+        flowResult(reviewStore.initialize()).catch(
+          applicationStore.alertUnhandledError,
+        );
+        flowResult(reviewStore.getReview()).catch(
+          applicationStore.alertUnhandledError,
+        );
+        flowResult(reviewStore.fetchProject()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }, [applicationStore, reviewStore, projectId, reviewId]);
 
-  return (
-    <div className="app__page">
-      <div className="review">
-        <PanelLoadingIndicator
-          isLoading={reviewStore.isFetchingCurrentReview}
-        />
-        {reviewStore.currentReview && (
-          <>
-            <div className="review__body">
-              <div className="activity-bar">
-                <div className="activity-bar__items">
-                  <button
-                    key={ACTIVITY_MODE.REVIEW}
-                    className="activity-bar__item activity-bar__item--active review__activity-bar__review-icon"
-                    tabIndex={-1}
-                    title={'Review'}
-                    onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
-                  >
-                    <CheckListIcon />
-                  </button>
+      return (
+        <div className="app__page">
+          <div className="review">
+            <PanelLoadingIndicator
+              isLoading={reviewStore.isFetchingCurrentReview}
+            />
+            {reviewStore.currentReview && (
+              <>
+                <div className="review__body">
+                  <div className="activity-bar">
+                    <div className="activity-bar__items">
+                      <button
+                        key={ACTIVITY_MODE.REVIEW}
+                        className="activity-bar__item activity-bar__item--active review__activity-bar__review-icon"
+                        tabIndex={-1}
+                        title={'Review'}
+                        onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
+                      >
+                        <CheckListIcon />
+                      </button>
+                    </div>
+                    <div className="activity-bar__setting">
+                      <button
+                        className="activity-bar__item"
+                        tabIndex={-1}
+                        title={'Settings...'}
+                      >
+                        <CogIcon />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="review__content-container">
+                    <div className="review__content">
+                      <ReviewExplorer />
+                    </div>
+                  </div>
                 </div>
-                <div className="activity-bar__setting">
-                  <button
-                    className="activity-bar__item"
-                    tabIndex={-1}
-                    title={'Settings...'}
-                  >
-                    <CogIcon />
-                  </button>
-                </div>
-              </div>
-              <div className="review__content-container">
-                <div className="review__content">
-                  <ReviewExplorer />
-                </div>
-              </div>
-            </div>
-            <ReviewStatusBar />
-          </>
-        )}
-      </div>
-    </div>
-  );
-});
-
-export const Review: React.FC = () => (
-  <EditorStoreProvider>
-    <ReviewStoreProvider>
-      <ReviewInner />
-    </ReviewStoreProvider>
-  </EditorStoreProvider>
+                <ReviewStatusBar />
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }),
+  ),
 );

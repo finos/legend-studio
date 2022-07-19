@@ -57,3 +57,12 @@ export const useEditorStore = (): EditorStore =>
     useContext(EditorStoreContext),
     `Can't find editor store in context`,
   );
+
+export const withEditorStore = (WrappedComponent: React.FC): React.FC =>
+  function WithEditorStore() {
+    return (
+      <EditorStoreProvider>
+        <WrappedComponent />
+      </EditorStoreProvider>
+    );
+  };
