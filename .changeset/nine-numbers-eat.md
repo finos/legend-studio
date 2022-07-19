@@ -2,4 +2,4 @@
 '@finos/legend-art': patch
 ---
 
-Fix the bug where property editor panel is disabled when switching class editor panels ([[#1316](https://github.com/finos/legend-studio/issues/1316)]).
+Fix a bug where the class property editor panel is hidden when switching between class editors ([#1316](https://github.com/finos/legend-studio/issues/1316)).
