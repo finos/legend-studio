@@ -19,6 +19,7 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  deserializeMap,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -27,8 +28,10 @@ import {
   list,
   primitive,
   serialize,
+  SKIP,
 } from 'serializr';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_MultiExecutionServiceTestResult } from '../../../model/packageableElements/service/V1_MultiExecutionServiceTestResult.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail.js';
@@ -74,6 +77,9 @@ enum V1_TestResultType {
   TEST_ERROR = 'testError',
   TEST_PASSED = 'testPassed',
   TEST_FAILED = 'testFailed',
+  MULTI_EXECUTION_TEST_RESULT = 'multiExecutionTestResult',
+  // Remove once https://github.com/finos/legend-engine/pull/808 is releaseds
+  TEMPROARY_MULTI_EXECUTION_TEST_RESULT = 'MultiExecutionServiceTestResult',
 }
 
 export enum V1_TestSuiteType {
@@ -177,13 +183,29 @@ export const V1_testFailedModelSchema = createModelSchema(V1_TestFailed, {
   testable: primitive(),
 });
 
+export const V1_MultiExecutionServiceTestResultModelSchema = createModelSchema(
+  V1_MultiExecutionServiceTestResult,
+  {
+    atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
+    keyIndexedTestResults: custom(
+      () => SKIP,
+      (val) =>
+        deserializeMap(val, (v) =>
+          V1_deserializeTestResult(v as PlainObject<V1_TestResult>),
+        ),
+    ),
+    testable: primitive(),
+  },
+);
+
 export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
   atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
   testable: primitive(),
 });
-export const V1_deserializeTestResult = (
+
+export function V1_deserializeTestResult(
   json: PlainObject<V1_TestResult>,
-): V1_TestResult => {
+): V1_TestResult {
   switch (json._type) {
     case V1_TestResultType.TEST_ERROR:
       return deserialize(V1_testErrorModelSchema, json);
@@ -191,12 +213,16 @@ export const V1_deserializeTestResult = (
       return deserialize(V1_testFailedModelSchema, json);
     case V1_TestResultType.TEST_PASSED:
       return deserialize(V1_testPassedModelSchema, json);
+    case V1_TestResultType.MULTI_EXECUTION_TEST_RESULT:
+    case V1_TestResultType.TEMPROARY_MULTI_EXECUTION_TEST_RESULT:
+      return deserialize(V1_MultiExecutionServiceTestResultModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize atomic test of type '${json._type}'`,
       );
   }
-};
+}
+
 export const V1_serializeAtomicTest = (
   protocol: V1_AtomicTest,
 ): PlainObject<V1_AtomicTest> => {

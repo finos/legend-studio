@@ -39,7 +39,7 @@ beforeEach(async () => {
   });
 });
 
-test.skip(
+test(
   integrationTest('Test navigation on gloabl test runner explorer'),
   async () => {
     const globalTestRunnerButton =

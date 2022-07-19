@@ -42,6 +42,7 @@ import {
   deleteEntry,
   assertType,
   uniq,
+  IllegalStateError,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -237,6 +238,7 @@ import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
 import {
   type TestResult,
   TestFailed,
+  TestError,
 } from '../../../metamodels/pure/test/result/TestResult.js';
 import type { Service } from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../metamodels/pure/test/Testable.js';
@@ -1734,6 +1736,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ),
       );
       const result = results[0];
+      if (result instanceof TestError) {
+        throw new IllegalStateError(result.error);
+      }
       assertType(result, TestFailed);
       const status = result.assertStatuses.find(
         (e) => e.assertion === baseAssertion,

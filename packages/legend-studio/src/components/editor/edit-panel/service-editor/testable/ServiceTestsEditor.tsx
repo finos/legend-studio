@@ -99,16 +99,11 @@ const TestAssertionItem = observer(
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const isRunning = serviceTestState.runningTestAction.isInProgress;
-    const status =
-      testAssertionEditorState.assertionResultState.statusState?.status;
     const testAssertion = testAssertionEditorState.assertion;
     const isActive =
       serviceTestState.selectedAsertionState?.assertion === testAssertion;
-    const _testableResult = status
-      ? getTestableResultFromAssertionStatus(status)
-      : getTestableResultFromTestResult(
-          serviceTestState.testResultState.result,
-        );
+    const _testableResult =
+      testAssertionEditorState.assertionResultState.result;
     const testableResult = isRunning
       ? TESTABLE_RESULT.IN_PROGRESS
       : _testableResult;

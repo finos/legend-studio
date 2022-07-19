@@ -38,8 +38,10 @@ import { action, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
 import { atomicTest_addAssertion } from '../../../graphModifier/Testable_GraphModifierHelper.js';
 import { createEmptyEqualToJsonAssertion } from '../../../shared/testable/TestableUtils.js';
+import { TESTABLE_RESULT } from '../../../sidebar-state/testable/GlobalTestRunnerState.js';
 import {
   TestAssertionEditorState,
+  TestAssertionStatusState,
   TEST_ASSERTION_TAB,
 } from './TestAssertionState.js';
 
@@ -159,7 +161,9 @@ export class TestableTestEditorState {
       this.runningTestAction.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(
+        `Error running test: ${error.message}`,
+      );
       this.runningTestAction.fail();
     }
   }
@@ -188,7 +192,7 @@ export class TestableTestEditorState {
       return this.assertionCount;
     }
     return this.assertionEditorStates.filter(
-      (a) => a.assertionResultState.statusState?.status instanceof AssertPass,
+      (state) => state.assertionResultState.result === TESTABLE_RESULT.PASSED,
     ).length;
   }
 
@@ -197,9 +201,7 @@ export class TestableTestEditorState {
       return 0;
     }
     return this.assertionEditorStates.filter(
-      (a) =>
-        a.assertionResultState.statusState?.status &&
-        !(a.assertionResultState.statusState.status instanceof AssertPass),
+      (state) => state.assertionResultState.result !== TESTABLE_RESULT.PASSED,
     ).length;
   }
 }

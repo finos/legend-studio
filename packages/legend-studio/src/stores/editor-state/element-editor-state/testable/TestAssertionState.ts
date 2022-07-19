@@ -25,6 +25,8 @@ import {
   EqualToJson,
   ExternalFormatData,
   EqualToJsonAssertFail,
+  MultiExecutionServiceTestResult,
+  AssertPass,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -93,7 +95,10 @@ export class UnsupportedAssertionStatusState extends TestAssertionStatusState {}
 
 export class TestAssertionResultState {
   testResult: TestResult | undefined;
-  statusState: TestAssertionStatusState | undefined;
+  statusState:
+    | TestAssertionStatusState
+    | Map<string, TestAssertionResultState>
+    | undefined;
   readonly editorStore: EditorStore;
   readonly assertionState: TestAssertionEditorState;
   constructor(
@@ -117,6 +122,17 @@ export class TestAssertionResultState {
         (_status) => _status.assertion === this.assertionState.assertion,
       );
       this.statusState = this.buildStatus(status);
+    } else if (val instanceof MultiExecutionServiceTestResult) {
+      const statusMap = new Map<string, TestAssertionResultState>();
+      Array.from(val.keyIndexedTestResults.entries()).forEach((keyedResult) => {
+        const resultState = new TestAssertionResultState(
+          this.editorStore,
+          this.assertionState,
+        );
+        resultState.setTestResult(keyedResult[1]);
+        statusMap.set(keyedResult[0], resultState);
+      });
+      this.statusState = statusMap;
     }
   }
 
@@ -143,8 +159,39 @@ export class TestAssertionResultState {
       return TESTABLE_RESULT.ERROR;
     } else if (this.testResult instanceof TestPassed) {
       return TESTABLE_RESULT.PASSED;
-    } else if (this.testResult instanceof TestFailed) {
-      return getTestableResultFromAssertionStatus(this.statusState?.status);
+    } else if (
+      this.testResult instanceof TestFailed &&
+      this.statusState instanceof TestAssertionStatusState
+    ) {
+      return getTestableResultFromAssertionStatus(this.statusState.status);
+    } else if (this.testResult instanceof MultiExecutionServiceTestResult) {
+      const passed = Array.from(
+        this.testResult.keyIndexedTestResults.entries(),
+      ).every((keyResult) => {
+        const result = keyResult[1];
+        if (result instanceof TestPassed) {
+          return true;
+        }
+        if (result instanceof TestFailed) {
+          const status = result.assertStatuses.find(
+            (_status) => _status.assertion === this.assertionState.assertion,
+          );
+          if (status instanceof AssertPass) {
+            return true;
+          }
+        }
+        return false;
+      });
+      if (passed) {
+        return TESTABLE_RESULT.PASSED;
+      }
+      const assertionErrors = Array.from(
+        this.testResult.keyIndexedTestResults.values(),
+      ).find((t) => t instanceof TestError);
+      if (assertionErrors) {
+        return TESTABLE_RESULT.ERROR;
+      }
+      return TESTABLE_RESULT.FAILED;
     }
     return TESTABLE_RESULT.DID_NOT_RUN;
   }
@@ -256,7 +303,9 @@ export class TestAssertionEditorState {
       this.generatingExpectedAction.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(
+        `Error generating expected result: ${error.message}`,
+      );
       this.generatingExpectedAction.fail();
     }
   }
