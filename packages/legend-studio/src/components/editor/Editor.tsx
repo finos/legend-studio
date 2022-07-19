@@ -246,9 +246,9 @@ export const EditorInner = observer(() => {
                       editorStore.sideBarDisplayState.size === 0,
                       {
                         onStopResize: resizeSideBar,
+                        size: editorStore.sideBarDisplayState.size,
                       },
                     )}
-                    size={editorStore.sideBarDisplayState.size}
                     direction={1}
                   >
                     <SideBar />
@@ -282,11 +282,10 @@ export const EditorInner = observer(() => {
                           editorStore.auxPanelDisplayState.size === 0,
                           {
                             onStopResize: resizeAuxPanel,
+                            size: editorStore.auxPanelDisplayState.size,
                           },
                         )}
-                        flex={0}
                         direction={-1}
-                        size={editorStore.auxPanelDisplayState.size}
                       >
                         <AuxiliaryPanel />
                       </ResizablePanel>

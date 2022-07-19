@@ -1478,10 +1478,11 @@ export const ClassFormEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!editorState.selectedProperty)}
-            flex={0}
+            {...getControlledResizablePanelProps(
+              !editorState.selectedProperty,
+              { size: 250 },
+            )}
             direction={-1}
-            size={editorState.selectedProperty ? 250 : 0}
           >
             {editorState.selectedProperty ? (
               <PropertyEditor
