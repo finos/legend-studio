@@ -173,7 +173,7 @@ export const QueryBuilder = observer(
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Functions Explorer Panel
+                      Show Function(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={toggleShowParameterPanel}>
@@ -183,7 +183,7 @@ export const QueryBuilder = observer(
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Parameter Panel
+                      Show Parameter(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem
@@ -196,7 +196,7 @@ export const QueryBuilder = observer(
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Post-Filter Panel
+                      Show Post-Filter
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>

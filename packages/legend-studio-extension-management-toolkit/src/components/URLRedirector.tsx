@@ -21,7 +21,7 @@ import {
   type TelemetryService,
   getQueryParameters,
 } from '@finos/legend-shared';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useLegendStudioStore } from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-application';
 

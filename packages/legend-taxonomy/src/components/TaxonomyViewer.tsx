@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApplicationStore } from '@finos/legend-application';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,

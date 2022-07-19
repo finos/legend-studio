@@ -17,7 +17,7 @@
 import { useEffect } from 'react';
 import { useApplicationStore } from '@finos/legend-application';
 import { observer } from 'mobx-react-lite';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import type { LegendTaxonomyStandaloneDataSpaceViewerParams } from '../stores/LegendTaxonomyRouter.js';
 import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { flowResult } from 'mobx';

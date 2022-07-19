@@ -16,7 +16,7 @@
 
 import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { Router } from 'react-router-dom';
+import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 import {
   type TEMPORARY__JestMock,
@@ -47,8 +47,8 @@ import {
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import { ExistingQueryLoader } from './QueryEditor.js';
-import { generateExistingQueryRoute } from '../stores/LegendQueryRouter.js';
+import { ExistingQueryEditor } from './QueryEditor.js';
+import { generateExistingQueryEditorRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
@@ -173,7 +173,7 @@ export const TEST__setUpQueryEditor = async (
   MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory({
-    initialEntries: [generateExistingQueryRoute(lightQuery.id)],
+    initialEntries: [generateExistingQueryEditorRoute(lightQuery.id)],
   });
   const navigator = new WebApplicationNavigator(history);
   MOCK__editorStore.applicationStore.navigator = navigator;
@@ -187,7 +187,7 @@ export const TEST__setUpQueryEditor = async (
       >
         <TEST__DepotServerClientProvider>
           <TEST__LegendQueryStoreProvider>
-            <ExistingQueryLoader />
+            <ExistingQueryEditor />
           </TEST__LegendQueryStoreProvider>
         </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>

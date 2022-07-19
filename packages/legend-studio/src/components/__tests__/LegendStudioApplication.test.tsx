@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-application';
 import { TEST__LegendStudioStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { createMemoryHistory } from 'history';
 import {
   SDLCServerClient,

@@ -55,7 +55,7 @@ import {
   QueryBuilderState,
   StandardQueryBuilderMode,
 } from './QueryBuilderState.js';
-import { generateExistingQueryRoute } from './LegendQueryRouter.js';
+import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -64,7 +64,11 @@ import {
   generateGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
-import { type ApplicationStore, TAB_SIZE } from '@finos/legend-application';
+import {
+  type ApplicationStore,
+  TAB_SIZE,
+  APPLICATION_EVENT,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
@@ -99,7 +103,7 @@ export class QueryExportState {
     this.editorStore = editorStore;
     this.lambda = lambda;
     this.allowUpdate = config.allowUpdate ?? false;
-    this.queryName = config.defaultName ?? 'My New Query';
+    this.queryName = config.defaultName ?? 'New Query';
     this.decorator = config.decorator;
     this.onQueryUpdate = config.onQueryUpdate;
   }
@@ -168,7 +172,7 @@ export class QueryExportState {
         ).notify_QueryCreated({ queryId: newQuery.id });
         this.editorStore.applicationStore.navigator.jumpTo(
           this.editorStore.applicationStore.navigator.generateLocation(
-            generateExistingQueryRoute(newQuery.id),
+            generateExistingQueryEditorRoute(newQuery.id),
           ),
         );
       } else {
@@ -263,6 +267,21 @@ export abstract class QueryEditorStore {
   }
 
   *initialize(): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      // eslint-disable-next-line no-process-env
+      if (process.env.NODE_ENV === 'development') {
+        this.applicationStore.log.info(
+          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
+          `Fast-refreshing the app - preventing initialize() recall...`,
+        );
+        return;
+      }
+      this.applicationStore.notifyIllegalState(
+        `Query editor store is already initialized`,
+      );
+      return;
+    }
+
     try {
       this.initState.inProgress();
 
@@ -452,6 +471,8 @@ export class CreateQueryEditorStore extends QueryEditorStore {
           : [],
       );
     }
+
+    // initialize query builder state after setting up
     this.queryBuilderState.resetQueryBuilder();
     this.queryBuilderState.resetQuerySetup();
   }
@@ -473,7 +494,7 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   artifactId: string;
   versionId: string;
   servicePath: string;
-  executionKey?: string | undefined;
+  executionKey: string | undefined;
 
   constructor(
     applicationStore: ApplicationStore<LegendQueryConfig>,
@@ -549,7 +570,7 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {
     return {
-      defaultName: `My New Query for ${extractElementNameFromPath(
+      defaultName: `New Query for ${extractElementNameFromPath(
         this.servicePath,
       )}${this.executionKey ? `[${this.executionKey}]` : ''}`,
       decorator: (query: Query): void => {

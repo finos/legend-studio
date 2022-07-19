@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router';
 import { Setup } from './setup/Setup.js';
 import { Editor } from './editor/Editor.js';
 import { Review } from './review/Review.js';
@@ -38,6 +38,7 @@ import {
 } from './LegendStudioStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
+  generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
   VirtualAssistant,
@@ -102,18 +103,11 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
   );
 });
 
-/**
- * Prefix URL patterns coming from extensions with `/extensions/`
- * to avoid potential conflicts with main routes.
- */
-const generateExtensionUrlPattern = (pattern: string): string =>
-  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
-
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useLegendStudioStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const extraApplicationPageEntries = studioStore.pluginManager
-    .getStudioPlugins()
+  const extraApplicationPageEntries = applicationStore.pluginManager
+    .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
   useEffect(() => {

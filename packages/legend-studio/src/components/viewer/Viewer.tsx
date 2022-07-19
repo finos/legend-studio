@@ -21,7 +21,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   ACTIVITY_MODE,

@@ -15,7 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 import {
   clsx,
   HammerIcon,

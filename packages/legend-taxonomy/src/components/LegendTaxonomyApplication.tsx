@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,

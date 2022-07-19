@@ -22,7 +22,7 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { Router } from 'react-router-dom';
+import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
 import { EditorStore } from '../stores/EditorStore.js';

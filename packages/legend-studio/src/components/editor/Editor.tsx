@@ -38,7 +38,7 @@ import { GlobalHotKeys } from 'react-hotkeys';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
-import { useParams, Prompt } from 'react-router-dom';
+import { useParams, Prompt } from 'react-router';
 import type {
   EditorPathParams,
   GroupEditorPathParams,

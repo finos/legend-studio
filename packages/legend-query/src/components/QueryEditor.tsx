@@ -31,9 +31,9 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
 import {
   type CreateQueryPathParams,
-  type ExistingQueryPathParams,
-  type ServiceQueryPathParams,
-  type ServiceQueryQueryParams,
+  type ExistingQueryEditorPathParams,
+  type ServiceQueryEditorPathParams,
+  type ServiceQueryEditorQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -162,13 +162,27 @@ const renderQueryEditorHeaderLabel = (
       <div className="query-editor__header__label query-editor__header__label--service-query">
         <RobotIcon className="query-editor__header__label__icon" />
         {extractElementNameFromPath(editorStore.servicePath)}
+        {editorStore.executionKey && (
+          <div className="query-editor__header__label__tag">
+            {editorStore.executionKey}
+          </div>
+        )}
       </div>
     );
+  }
+  const extraQueryEditorHeaderLabelers = editorStore.pluginManager
+    .getQueryPlugins()
+    .flatMap((plugin) => plugin.getExtraQueryEditorHeaderLabelers?.() ?? []);
+  for (const labeler of extraQueryEditorHeaderLabelers) {
+    const label = labeler(editorStore);
+    if (label) {
+      return label;
+    }
   }
   return null;
 };
 
-const QueryEditorHeader = observer(() => {
+const QueryEditorHeaderContent = observer(() => {
   const editorStore = useQueryEditorStore();
   const applicationStore = useApplicationStore();
   const viewQueryProject = (): void => editorStore.viewStudioProject(undefined);
@@ -188,7 +202,9 @@ const QueryEditorHeader = observer(() => {
 
   return (
     <div className="query-editor__header__content">
-      {renderQueryEditorHeaderLabel(editorStore)}
+      <div className="query-editor__header__content__main">
+        {renderQueryEditorHeaderLabel(editorStore)}
+      </div>
       <div className="query-editor__header__actions">
         <button
           className="query-editor__header__action query-editor__header__action--simple btn--dark"
@@ -237,7 +253,7 @@ const QueryEditorInner = observer(() => {
         >
           <ArrowLeftIcon />
         </button>
-        {!isLoadingEditor && <QueryEditorHeader />}
+        {!isLoadingEditor && <QueryEditorHeaderContent />}
       </div>
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
@@ -258,14 +274,14 @@ const QueryEditorInner = observer(() => {
   );
 });
 
-const QueryEditor: React.FC = () => (
+export const QueryEditor: React.FC = () => (
   <DndProvider backend={HTML5Backend}>
     <QueryEditorInner />
   </DndProvider>
 );
 
-export const ExistingQueryLoader = observer(() => {
-  const params = useParams<ExistingQueryPathParams>();
+export const ExistingQueryEditor = observer(() => {
+  const params = useParams<ExistingQueryEditorPathParams>();
   const queryId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID];
 
   return (
@@ -275,14 +291,14 @@ export const ExistingQueryLoader = observer(() => {
   );
 });
 
-export const ServiceQueryLoader = observer(() => {
+export const ServiceQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<ServiceQueryPathParams>();
+  const params = useParams<ServiceQueryEditorPathParams>();
   const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
   const artifactId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID];
   const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
-  const executionKey = getQueryParameters<ServiceQueryQueryParams>(
+  const executionKey = getQueryParameters<ServiceQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
@@ -300,7 +316,7 @@ export const ServiceQueryLoader = observer(() => {
   );
 });
 
-export const CreateQueryLoader = observer(() => {
+export const CreateQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const params = useParams<CreateQueryPathParams>();
   const groupId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID];
@@ -308,7 +324,7 @@ export const CreateQueryLoader = observer(() => {
   const versionId = params[LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
-  const classPath = getQueryParameters<ServiceQueryQueryParams>(
+  const classPath = getQueryParameters<ServiceQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];

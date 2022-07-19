@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generatePath } from 'react-router-dom';
+import { generatePath } from 'react-router';
 
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   GROUP_ID = 'groupId',
@@ -27,7 +27,7 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
 }
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  CLASS_PATH = 'classPath',
+  CLASS_PATH = 'class',
   SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
@@ -38,7 +38,7 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export const generateCreateQueryRoute = (
+export const generateCreateQueryEditorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
@@ -61,11 +61,11 @@ export interface CreateQueryPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
 }
 
-export interface CreateQueryQueryParams {
+export interface CreateQueryEditorQueryParams {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
 }
 
-export const generateServiceQueryRoute = (
+export const generateServiceQueryEditorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
@@ -81,22 +81,22 @@ export const generateServiceQueryRoute = (
     key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY}=${key}` : ''
   }`;
 
-export interface ServiceQueryPathParams {
+export interface ServiceQueryEditorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GROUP_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.ARTIFACT_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.VERSION_ID]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface ServiceQueryQueryParams {
+export interface ServiceQueryEditorQueryParams {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string;
 }
 
-export const generateExistingQueryRoute = (queryId: string): string =>
+export const generateExistingQueryEditorRoute = (queryId: string): string =>
   generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
   });
 
-export interface ExistingQueryPathParams {
+export interface ExistingQueryEditorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
 }

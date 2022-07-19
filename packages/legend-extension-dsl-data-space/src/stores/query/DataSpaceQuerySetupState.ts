@@ -15,13 +15,9 @@
  */
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import { type Class, QueryTaggedValue } from '@finos/legend-graph';
+import type { Class } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
-import {
-  type QuerySetupStore,
-  QuerySetupState,
-  generateCreateQueryRoute,
-} from '@finos/legend-query';
+import { type QuerySetupStore, QuerySetupState } from '@finos/legend-query';
 import {
   type StoredEntity,
   DepotScope,
@@ -40,6 +36,7 @@ import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytic
 import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
+import { generateDataSpaceQueryEditorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 
 export interface DataSpaceContext {
   groupId: string;
@@ -47,19 +44,6 @@ export interface DataSpaceContext {
   versionId: string;
   path: string;
 }
-
-const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';
-const QUERY_PROFILE_TAG_DATA_SPACE = 'dataSpace';
-
-export const createQueryDataSpaceTaggedValue = (
-  dataSpacePath: string,
-): QueryTaggedValue => {
-  const taggedValue = new QueryTaggedValue();
-  taggedValue.profile = QUERY_PROFILE_PATH;
-  taggedValue.tag = QUERY_PROFILE_TAG_DATA_SPACE;
-  taggedValue.value = dataSpacePath;
-  return taggedValue;
-};
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: DataSpaceContext[] = [];
@@ -188,12 +172,17 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
       this.setupStore.applicationStore.navigator.goTo(
-        generateCreateQueryRoute(
+        generateDataSpaceQueryEditorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
           this.dataSpaceViewerState.versionId,
-          this.dataSpaceViewerState.currentExecutionContext.mapping.path,
-          this.dataSpaceViewerState.currentRuntime.path,
+          this.dataSpaceViewerState.dataSpaceAnalysisResult.path,
+          this.dataSpaceViewerState.currentExecutionContext.name,
+          this.dataSpaceViewerState.currentRuntime ===
+            this.dataSpaceViewerState.currentExecutionContext.defaultRuntime
+            ? undefined
+            : this.dataSpaceViewerState.currentRuntime.path,
+          _class?.path,
         ),
       );
       this.setupStore.setSetupState(undefined);

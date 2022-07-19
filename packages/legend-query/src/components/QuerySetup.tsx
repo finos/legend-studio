@@ -38,9 +38,9 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  generateCreateQueryRoute,
-  generateExistingQueryRoute,
-  generateServiceQueryRoute,
+  generateCreateQueryEditorRoute,
+  generateExistingQueryEditorRoute,
+  generateServiceQueryEditorRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QuerySetupState,
@@ -90,7 +90,7 @@ const ExistingQuerySetup = observer(
     const next = (): void => {
       if (querySetupState.currentQuery) {
         applicationStore.navigator.goTo(
-          generateExistingQueryRoute(querySetupState.currentQuery.id),
+          generateExistingQueryEditorRoute(querySetupState.currentQuery.id),
         );
       }
       setupStore.setSetupState(undefined);
@@ -290,7 +290,7 @@ const ServiceQuerySetup = observer(
         querySetupState.currentServiceExecutionOption
       ) {
         applicationStore.navigator.goTo(
-          generateServiceQueryRoute(
+          generateServiceQueryEditorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
@@ -528,7 +528,7 @@ const CreateQuerySetup = observer(
         querySetupState.currentRuntime
       ) {
         applicationStore.navigator.goTo(
-          generateCreateQueryRoute(
+          generateCreateQueryEditorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,

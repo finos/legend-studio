@@ -14,48 +14,67 @@
  * limitations under the License.
  */
 
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
 import { QuerySetup } from './QuerySetup.js';
 import {
-  CreateQueryLoader,
-  ExistingQueryLoader,
-  ServiceQueryLoader,
+  CreateQueryEditor,
+  ExistingQueryEditor,
+  ServiceQueryEditor,
 } from './QueryEditor.js';
 import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
+import {
+  generateExtensionUrlPattern,
+  LegendApplicationComponentFrameworkProvider,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 
-const LegendQueryApplicationInner = observer(() => (
-  <div className="app">
-    <Switch>
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-        component={QuerySetup}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
-        component={ExistingQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
-        component={ServiceQueryLoader}
-      />
-      <Route
-        exact={true}
-        path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
-        component={CreateQueryLoader}
-      />
-      <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
-    </Switch>
-  </div>
-));
+const LegendQueryApplicationInner = observer(() => {
+  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const extraApplicationPageEntries = applicationStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
+
+  return (
+    <div className="app">
+      <Switch>
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
+          component={QuerySetup}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY}
+          component={ExistingQueryEditor}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+          component={ServiceQueryEditor}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY}
+          component={CreateQueryEditor}
+        />
+        {extraApplicationPageEntries.map((entry) => (
+          <Route
+            key={entry.key}
+            exact={true}
+            path={entry.urlPatterns.map(generateExtensionUrlPattern)}
+            component={entry.renderer as React.ComponentType<unknown>}
+          />
+        ))}
+        <Redirect to={LEGEND_QUERY_ROUTE_PATTERN.SETUP} />
+      </Switch>
+    </div>
+  );
+});
 
 export const LegendQueryApplication = observer(
   (props: {

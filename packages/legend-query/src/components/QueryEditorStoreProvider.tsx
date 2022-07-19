@@ -28,9 +28,9 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 
-const QueryEditorStoreContext = createContext<QueryEditorStore | undefined>(
-  undefined,
-);
+export const QueryEditorStoreContext = createContext<
+  QueryEditorStore | undefined
+>(undefined);
 
 export const ExistingQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;

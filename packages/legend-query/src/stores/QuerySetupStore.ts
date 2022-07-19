@@ -401,6 +401,7 @@ export class QuerySetupStore {
       );
       return;
     }
+
     try {
       this.initState.inProgress();
       yield this.graphManagerState.graphManager.initialize(

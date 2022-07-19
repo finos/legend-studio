@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generatePath } from 'react-router-dom';
+import { generatePath } from 'react-router';
 
 export enum LEGEND_TAXONOMY_PARAM_TOKEN {
   TAXONOMY_TREE_KEY = 'taxonomyTreeKey',
