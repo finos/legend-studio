@@ -457,10 +457,10 @@ export const TaxonomyViewer = observer(() => {
                       taxonomyStore.sideBarDisplayState.size === 0,
                       {
                         onStopResize: resizeSideBar,
+                        size: taxonomyStore.sideBarDisplayState.size,
                       },
                     )}
                     direction={1}
-                    size={taxonomyStore.sideBarDisplayState.size}
                   >
                     <TaxonomyViewerSideBar />
                   </ResizablePanel>

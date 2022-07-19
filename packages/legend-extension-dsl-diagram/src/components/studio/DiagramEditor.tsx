@@ -694,11 +694,10 @@ const DiagramEditorOverlay = observer(
             {
               classes: ['diagram-editor__overlay__panel'],
               onStopResize: resizeSidePanel,
+              size: diagramEditorState.sidePanelDisplayState.size,
             },
           )}
-          flex={0}
           direction={-1}
-          size={diagramEditorState.sidePanelDisplayState.size}
         >
           <div className="panel diagram-editor__side-panel">
             {sidePanelState instanceof

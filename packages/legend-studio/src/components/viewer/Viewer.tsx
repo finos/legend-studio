@@ -317,10 +317,10 @@ export const ViewerInner = observer(() => {
                       editorStore.sideBarDisplayState.size === 0,
                       {
                         onStopResize: resizeSideBar,
+                        size: editorStore.sideBarDisplayState.size,
                       },
                     )}
                     direction={1}
-                    size={editorStore.sideBarDisplayState.size}
                   >
                     <ViewerSideBar />
                   </ResizablePanel>

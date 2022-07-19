@@ -543,10 +543,10 @@ export const AssociationEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedProperty)}
-            flex={0}
+            {...getControlledResizablePanelProps(!selectedProperty, {
+              size: 250,
+            })}
             direction={-1}
-            size={selectedProperty ? 250 : 0}
           >
             {selectedProperty ? (
               <PropertyEditor

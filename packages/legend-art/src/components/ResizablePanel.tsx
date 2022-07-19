@@ -69,6 +69,7 @@ export const getControlledResizablePanelProps = (
     classes?: ClassValue[];
     onStartResize?: (handleProps: ResizablePanelHandlerProps) => void;
     onStopResize?: (handleProps: ResizablePanelHandlerProps) => void;
+    size?: number;
   },
 ): ReflexElementProps => ({
   className: clsx(...(options?.classes ?? []), {
@@ -91,6 +92,8 @@ export const getControlledResizablePanelProps = (
     }
     options?.onStopResize?.(handleProps);
   },
+  size: !minimizeCondition && options?.size ? options?.size : 0,
+  flex: !minimizeCondition ? (undefined as unknown as number) : 0,
 });
 
 export const ResizablePanel =
