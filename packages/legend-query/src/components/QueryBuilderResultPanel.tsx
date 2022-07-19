@@ -250,7 +250,7 @@ const QueryBuilderResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      postFilterState.setShowPostFilterPanel(true);
+      queryBuilderState.setShowPostFilterPanel(true);
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
