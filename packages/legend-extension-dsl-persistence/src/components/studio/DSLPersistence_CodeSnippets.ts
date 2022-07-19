@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// TODO: we should add more example snippet
+// TODO: ledav -- add a suggestion snippet for persistence and persistence context
 //
 // ###Persistence
 // Persistence test::TestPersistence
@@ -43,4 +43,9 @@
 export const BLANK_PERSISTENCE_SNIPPET = `Persistence \${1:model::NewPersistence}
 {
   \${2:// persistence content}
+}`;
+
+export const BLANK_PERSISTENCE_CONTEXT_SNIPPET = `PersistenceContext \${1:model::NewPersistenceContext}
+{
+  \${2:// persistence context content}
 }`;

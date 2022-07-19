@@ -15,7 +15,8 @@
  */
 
 import packageJson from '../../../package.json';
-import { MeteorIcon } from '@finos/legend-art';
+import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
   LegendStudioPlugin,
@@ -36,17 +37,25 @@ import {
   type PureGrammarParserDocumentationGetter,
 } from '@finos/legend-studio';
 import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import {
+  PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_PARSER_NAME,
 } from '../../graphManager/DSLPersistence_PureGraphManagerPlugin.js';
+import {
+  BLANK_PERSISTENCE_CONTEXT_SNIPPET,
+  BLANK_PERSISTENCE_SNIPPET,
+} from './DSLPersistence_CodeSnippets.js';
 import { DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLPersistence_LegendStudioDocumentation.js';
-import { BLANK_PERSISTENCE_SNIPPET } from './DSLPersistence_CodeSnippets.js';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
 
 const PERSISTENCE_ELEMENT_TYPE = 'PERSISTENCE';
+const PERSISTENCE_CONTEXT_ELEMENT_TYPE = 'PERSISTENCE_CONTEXT';
+
 const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_PERSISTENCE';
+const PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
+  'PROJECT_EXPLORER_PERSISTENCE_CONTEXT';
 
 export class DSLPersistence_LegendStudioPlugin
   extends LegendStudioPlugin
@@ -59,12 +68,13 @@ export class DSLPersistence_LegendStudioPlugin
   override getExtraRequiredDocumentationKeys(): string[] {
     return [
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE,
+      DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE_CONTEXT,
       DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,
     ];
   }
 
   getExtraSupportedElementTypes(): string[] {
-    return [PERSISTENCE_ELEMENT_TYPE];
+    return [PERSISTENCE_ELEMENT_TYPE, PERSISTENCE_CONTEXT_ELEMENT_TYPE];
   }
 
   getExtraElementTypeGetters(): ElementTypeGetter[] {
@@ -72,6 +82,8 @@ export class DSLPersistence_LegendStudioPlugin
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {
           return PERSISTENCE_ELEMENT_TYPE;
+        } else if (element instanceof PersistenceContext) {
+          return PERSISTENCE_CONTEXT_ELEMENT_TYPE;
         }
         return undefined;
       },
@@ -85,6 +97,12 @@ export class DSLPersistence_LegendStudioPlugin
           return (
             <div className="icon icon--persistence">
               <MeteorIcon />
+            </div>
+          );
+        } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
+          return (
+            <div className="icon icon--persistence-context">
+              <PuzzlePieceIcon />
             </div>
           );
         }
@@ -102,6 +120,8 @@ export class DSLPersistence_LegendStudioPlugin
       ): PackageableElement | undefined => {
         if (type === PERSISTENCE_ELEMENT_TYPE) {
           return new Persistence(name);
+        } else if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
+          return new PersistenceContext(name);
         }
         return undefined;
       },
@@ -116,6 +136,8 @@ export class DSLPersistence_LegendStudioPlugin
       ): ElementEditorState | undefined => {
         if (element instanceof Persistence) {
           return new UnsupportedElementEditorState(editorStore, element);
+        } else if (element instanceof PersistenceContext) {
+          return new UnsupportedElementEditorState(editorStore, element);
         }
         return undefined;
       },
@@ -127,6 +149,8 @@ export class DSLPersistence_LegendStudioPlugin
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {
           return PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE;
+        } else if (element instanceof PersistenceContext) {
+          return PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE;
         }
         return undefined;
       },
@@ -134,7 +158,10 @@ export class DSLPersistence_LegendStudioPlugin
   }
 
   getExtraGrammarTextEditorDnDTypes(): string[] {
-    return [PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
+    return [
+      PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
+      PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
+    ];
   }
 
   getExtraPureGrammarParserElementDocumentationGetters(): PureGrammarParserElementDocumentationGetter[] {
@@ -148,6 +175,13 @@ export class DSLPersistence_LegendStudioPlugin
           if (elementKeyword === PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
               DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE,
+            );
+          } else if (
+            elementKeyword ===
+            PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL
+          ) {
+            return editorStore.applicationStore.documentationService.getDocEntry(
+              DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_ELEMENT_PERSISTENCE_CONTEXT,
             );
           }
         }
@@ -200,6 +234,11 @@ export class DSLPersistence_LegendStudioPlugin
                 text: PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
                 description: '(blank)',
                 insertText: BLANK_PERSISTENCE_SNIPPET,
+              },
+              {
+                text: PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
+                description: '(blank)',
+                insertText: BLANK_PERSISTENCE_CONTEXT_SNIPPET,
               },
             ]
           : undefined,

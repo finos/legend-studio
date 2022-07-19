@@ -71,6 +71,8 @@ export {
   RuntimePointer,
   StoreConnections,
 } from './models/metamodels/pure/packageableElements/runtime/Runtime.js';
+// relational packageable elements
+export { Database } from './models/metamodels/pure/packageableElements/store/relational/model/Database.js';
 // metamodel external formats
 export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
 export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
@@ -275,8 +277,13 @@ export {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
-export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 export {
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+export { V1_transformRootValueSpecification } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
+export {
+  V1_buildValueSpecification,
   V1_ValueSpecificationBuilder,
   V1_buildGenericFunctionExpression,
   V1_buildBaseSimpleFunctionExpression,

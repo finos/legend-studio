@@ -16,7 +16,9 @@
 
 import packageJson from '../../package.json';
 import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import { observe_Persistence } from './action/changeDetection/DSLPersistence_ObserverHelper.js';
+import { observe_PersistenceContext } from './action/changeDetection/DSLPersistenceContext_ObserverHelper.js';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,
@@ -27,6 +29,8 @@ import {
 
 export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
+export const PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL =
+  'PersistenceContext';
 
 export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
@@ -38,7 +42,10 @@ export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugi
   }
 
   override getExtraPureGrammarKeywords(): string[] {
-    return [PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL];
+    return [
+      PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
+      PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
+    ];
   }
 
   override getExtraPureGrammarElementLabelers(): PureGrammarElementLabeler[] {
@@ -46,6 +53,8 @@ export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugi
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {
           return PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL;
+        } else if (element instanceof PersistenceContext) {
+          return PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL;
         }
         return undefined;
       },
@@ -60,6 +69,8 @@ export class DSLPersistence_PureGraphManagerPlugin extends PureGraphManagerPlugi
       ): PackageableElement | undefined => {
         if (element instanceof Persistence) {
           return observe_Persistence(element);
+        } else if (element instanceof PersistenceContext) {
+          return observe_PersistenceContext(element);
         }
         return undefined;
       },

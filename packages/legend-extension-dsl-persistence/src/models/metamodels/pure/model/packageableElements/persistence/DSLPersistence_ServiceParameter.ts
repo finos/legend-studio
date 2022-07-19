@@ -15,43 +15,47 @@
  */
 
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
-import type {
-  Binding,
-  Connection,
-  Database,
-  PackageableElementReference,
-} from '@finos/legend-graph';
+import type { Connection, ValueSpecification } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export abstract class Sink implements Hashable {
-  abstract get hashCode(): string;
-}
+export class ServiceParameter implements Hashable {
+  name!: string;
+  value!: ServiceParameterValue;
 
-export class RelationalSink extends Sink implements Hashable {
-  //TODO: ledav -- make required once persistence changes are rolled out in engine
-  database?: PackageableElementReference<Database>;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: Connection;
-
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
-      this.database?.valueForSerialization ?? '',
-      this.connection ?? '',
+      PERSISTENCE_HASH_STRUCTURE.SERVICE_PARAMETER,
+      this.name,
+      this.value,
     ]);
   }
 }
 
-export class ObjectStorageSink extends Sink implements Hashable {
-  binding!: PackageableElementReference<Binding>;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: Connection;
+export abstract class ServiceParameterValue implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class PrimitiveTypeValue
+  extends ServiceParameterValue
+  implements Hashable
+{
+  primitiveType!: ValueSpecification;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
-      this.binding.valueForSerialization ?? '',
-      this.connection ?? '',
+      PERSISTENCE_HASH_STRUCTURE.PRIMITIVE_TYPE_VALUE_SERVICE_PARAMETER,
+      //TODO: ledav -- hash value specification
+    ]);
+  }
+}
+
+export class ConnectionValue extends ServiceParameterValue implements Hashable {
+  connection!: Connection;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.CONNECTION_VALUE_SERVICE_PARAMETER,
+      this.connection,
     ]);
   }
 }

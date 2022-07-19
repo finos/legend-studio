@@ -15,38 +15,50 @@
  */
 
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
-import type { V1_Connection } from '@finos/legend-graph';
+import type { V1_Connection, V1_ValueSpecification } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
-export abstract class V1_Sink implements Hashable {
-  abstract get hashCode(): string;
-}
+export class V1_ServiceParameter implements Hashable {
+  name!: string;
+  value!: V1_ServiceParameterValue;
 
-export class V1_RelationalSink extends V1_Sink implements Hashable {
-  //TODO: ledav -- make required once persistence changes are rolled out in engine
-  database?: string;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: V1_Connection;
-
-  override get hashCode(): string {
+  get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
-      this.database ?? '',
-      this.connection ?? '',
+      PERSISTENCE_HASH_STRUCTURE.SERVICE_PARAMETER,
+      this.name,
+      this.value,
     ]);
   }
 }
 
-export class V1_ObjectStorageSink extends V1_Sink implements Hashable {
-  binding!: string;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: V1_Connection;
+export abstract class V1_ServiceParameterValue implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class V1_PrimitiveTypeValue
+  extends V1_ServiceParameterValue
+  implements Hashable
+{
+  primitiveType!: V1_ValueSpecification;
 
   override get hashCode(): string {
     return hashArray([
-      PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
-      this.binding,
-      this.connection ?? '',
+      PERSISTENCE_HASH_STRUCTURE.PRIMITIVE_TYPE_VALUE_SERVICE_PARAMETER,
+      //TODO: ledav -- hash value specification
+    ]);
+  }
+}
+
+export class V1_ConnectionValue
+  extends V1_ServiceParameterValue
+  implements Hashable
+{
+  connection!: V1_Connection;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_HASH_STRUCTURE.CONNECTION_VALUE_SERVICE_PARAMETER,
+      this.connection,
     ]);
   }
 }
