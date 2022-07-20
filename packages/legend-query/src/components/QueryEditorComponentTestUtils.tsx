@@ -20,17 +20,16 @@ import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 import {
   type TEMPORARY__JestMock,
-  type PlainObject,
   MOBX__disableSpyOrMock,
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import {
   type GraphManagerState,
-  type V1_MappingModelCoverageAnalysisResult,
   Query,
   LightQuery,
   RawLambda,
   PackageableElementExplicitReference,
+  type RawMappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -98,7 +97,7 @@ export const TEST__setUpQueryEditor = async (
   lambda: RawLambda,
   mappingPath: string,
   runtimePath: string,
-  rawMappingModelCoverageAnalysisResult?: PlainObject<V1_MappingModelCoverageAnalysisResult>,
+  rawMappingModelCoverageAnalysisResult?: RawMappingModelCoverageAnalysisResult,
 ): Promise<RenderResult> => {
   const projectData = {
     id: 'test-id',

@@ -30,7 +30,7 @@ import { PureInstanceSetImplementation } from '../../../../../../metamodels/pure
 import { FlatDataInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import { InferableMappingElementRootExplicitValue } from '../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementRoot.js';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
 import type {
   V1_ClassMappingVisitor,
   V1_ClassMapping,
@@ -41,7 +41,7 @@ import type { V1_RelationalClassMapping } from '../../../model/packageableElemen
 import type { V1_RootFlatDataClassMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_RootFlatDataClassMapping.js';
 import type { V1_RootRelationalClassMapping } from '../../../model/packageableElements/store/relational/mapping/V1_RootRelationalClassMapping.js';
 import type { V1_AggregationAwareClassMapping } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregationAwareClassMapping.js';
-import { V1_getInferredClassMappingId } from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper.js';
+import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper.js';
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import type { InstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import { V1_buildAggregateContainer } from './helpers/V1_AggregationAwareClassMappingBuilderHelper.js';
@@ -55,10 +55,10 @@ import { MergeOperationSetImplementation } from '../../../../../../metamodels/pu
 const getClassMappingOperationType = (value: string): OperationType =>
   guaranteeNonNullable(
     Object.values(OperationType).find((type) => type === value),
-    `Encountered unsupproted class mapping operation type '${value}'`,
+    `Encountered unsupported class mapping operation type '${value}'`,
   );
 
-export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
+export class V1_ClassMappingFirstPassBuilder
   implements V1_ClassMappingVisitor<SetImplementation>
 {
   context: V1_GraphBuilderContext;
@@ -262,10 +262,7 @@ export class V1_ProtocolToMetaModelClassMappingFirstPassBuilder
         targetClass,
         InferableMappingElementRootExplicitValue.create(classMapping.root),
         classMapping.mainSetImplementation.accept_ClassMappingVisitor(
-          new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
-            this.context,
-            mapping,
-          ),
+          new V1_ClassMappingFirstPassBuilder(this.context, mapping),
         ) as InstanceSetImplementation,
       );
     aggragetionAwareInstanceSetImplementation.aggregateSetImplementations =

@@ -50,7 +50,7 @@ import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../.
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { InlineEmbeddedRelationalInstanceSetImplementation } from '../../../../../../metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import { AssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import type { V1_GraphBuilderContext } from './V1_GraphBuilderContext.js';
 import type {
   V1_PropertyMapping,
   V1_PropertyMappingVisitor,
@@ -63,8 +63,8 @@ import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packagea
 import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
 import type { V1_OtherwiseEmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_OtherwiseEmbeddedRelationalPropertyMapping.js';
 import type { V1_EmbeddedRelationalPropertyMapping } from '../../../model/packageableElements/store/relational/mapping/V1_EmbeddedRelationalPropertyMapping.js';
-import { V1_buildRelationalOperationElement } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper.js';
-import { V1_buildEmbeddedRelationalMappingProperty } from '../../../transformation/pureGraph/to/helpers/V1_RelationalPropertyMappingBuilder.js';
+import { V1_buildRelationalOperationElement } from './helpers/V1_DatabaseBuilderHelper.js';
+import { V1_buildEmbeddedRelationalMappingProperty } from './helpers/V1_RelationalPropertyMappingBuilder.js';
 import type { V1_XStorePropertyMapping } from '../../../model/packageableElements/mapping/xStore/V1_XStorePropertyMapping.js';
 import { XStorePropertyMapping } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStorePropertyMapping.js';
 import type { XStoreAssociationImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/xStore/XStoreAssociationImplementation.js';
@@ -139,7 +139,7 @@ const resolveRelationalPropertyMappingSource = (
   return topParent;
 };
 
-export class V1_ProtocolToMetaModelPropertyMappingBuilder
+export class V1_PropertyMappingBuilder
   implements V1_PropertyMappingVisitor<PropertyMapping>
 {
   private context: V1_GraphBuilderContext;
@@ -460,7 +460,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingBuilder(
+          new V1_PropertyMappingBuilder(
             this.context,
             embeddedPropertyMapping,
             this.topParent,
@@ -759,7 +759,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     embedded.propertyMappings = protocol.classMapping.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingBuilder(
+          new V1_PropertyMappingBuilder(
             this.context,
             embedded,
             this.topParent,
@@ -819,7 +819,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     otherwiseEmbedded.propertyMappings =
       protocol.classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
-          new V1_ProtocolToMetaModelPropertyMappingBuilder(
+          new V1_PropertyMappingBuilder(
             this.context,
             otherwiseEmbedded,
             this.topParent,
@@ -832,7 +832,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       ) as RelationalPropertyMapping[];
     otherwiseEmbedded.otherwisePropertyMapping = guaranteeType(
       protocol.otherwisePropertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingBuilder(
+        new V1_PropertyMappingBuilder(
           this.context,
           otherwiseEmbedded,
           this.topParent,

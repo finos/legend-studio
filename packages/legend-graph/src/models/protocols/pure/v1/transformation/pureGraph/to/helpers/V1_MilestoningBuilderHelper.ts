@@ -30,7 +30,7 @@ import { ProcessingMilestoning } from '../../../../../../../metamodels/pure/pack
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 import { RawPrimitiveInstanceValue } from '../../../../../../../metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
-import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from '../V1_ProtocolToMetaModelRawValueSpecificationBuilder.js';
+import { V1_RawValueSpecificationBuilder } from '../V1_RawValueSpecificationBuilder.js';
 
 const buildBusinessMilesoning = (
   protocol: V1_BusinessMilestoning,
@@ -52,7 +52,7 @@ const buildBusinessMilesoning = (
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
-        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+        new V1_RawValueSpecificationBuilder(context),
       ),
       RawPrimitiveInstanceValue,
     );
@@ -72,7 +72,7 @@ const buildBusinessSnapshotMilestoning = (
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
-        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+        new V1_RawValueSpecificationBuilder(context),
       ),
       RawPrimitiveInstanceValue,
     );
@@ -100,7 +100,7 @@ const buildProcessingMilestoning = (
   if (protocol.infinityDate) {
     metamodel.infinityDate = guaranteeType(
       protocol.infinityDate.accept_RawValueSpecificationVisitor(
-        new V1_ProtocolToMetaModelRawValueSpecificationBuilder(context),
+        new V1_RawValueSpecificationBuilder(context),
       ),
       RawPrimitiveInstanceValue,
     );

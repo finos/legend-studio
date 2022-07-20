@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  UnsupportedOperationError,
+  assertTrue,
+  isNonNullable,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  LogEvent,
+  addUniqueEntry,
+} from '@finos/legend-shared';
+import { CORE_PURE_PATH } from '../../../../../../../MetaModelConst.js';
+import { Class } from '../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
@@ -32,26 +42,24 @@ import type { V1_FlatData } from '../../../model/packageableElements/store/flatD
 import type { V1_Database } from '../../../model/packageableElements/store/relational/model/V1_Database.js';
 import type { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import type { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
-import { V1_ProtocolToMetaModelClassMappingSecondPassBuilder } from './V1_ProtocolToMetaModelClassMappingSecondPassBuilder.js';
+import { V1_ClassMappingFirstPassBuilder } from './V1_ClassMappingFirstPassBuilder.js';
 import {
-  V1_buildMappingTest,
-  V1_resolveClassMappingRoot,
-} from './helpers/V1_MappingBuilderHelper.js';
+  V1_buildAssociationProperty,
+  V1_buildDerivedProperty,
+  V1_buildProperty,
+  V1_buildTaggedValue,
+} from './helpers/V1_DomainBuilderHelper.js';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure.js';
-import {
-  V1_buildDatabaseJoin,
-  V1_buildDatabaseFilter,
-} from './helpers/V1_DatabaseBuilderHelper.js';
+import { V1_buildDatabaseSchemaViewsFirstPass } from './helpers/V1_DatabaseBuilderHelper.js';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
-import { V1_buildAssociationMapping } from './helpers/V1_AssociationMappingHelper.js';
-import { V1_buildMilestoningProperties } from './helpers/V1_MilestoneBuilderHelper.js';
+import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 
-export class V1_ProtocolToMetaModelGraphFourthPassBuilder
+export class V1_ElementThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -63,7 +71,7 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   visit_PackageableElement(element: V1_PackageableElement): void {
     this.context.extensions
       .getExtraBuilderOrThrow(element)
-      .runFourthPass(element, this.context);
+      .runThirdPass(element, this.context);
   }
 
   visit_Profile(element: V1_Profile): void {
@@ -82,14 +90,89 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
     const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
-    V1_buildMilestoningProperties(_class, this.context.graph);
+    element.superTypes.forEach((type) => {
+      // supertype `Any` will not be processed
+      if (type !== CORE_PURE_PATH.ANY) {
+        try {
+          const genricTypeReference = this.context.resolveGenericType(type);
+          addUniqueEntry(_class.generalizations, genricTypeReference);
+          if (genricTypeReference.ownerReference.value instanceof Class) {
+            addUniqueEntry(
+              genricTypeReference.ownerReference.value._subclasses,
+              _class,
+            );
+          }
+        } catch (error) {
+          assertErrorThrown(error);
+          // NOTE: reconsider this as we might need to get elements from `system` and `platform` as well
+          throw new GraphBuilderError(
+            `Can't find supertype '${type}' of class '${V1_buildFullPath(
+              element.package,
+              element.name,
+            )}': ${error.message}`,
+          );
+        }
+      }
+    });
+    const uniqueProperties = new Set<string>();
+    element.properties.forEach((property) => {
+      if (uniqueProperties.has(property.name)) {
+        /**
+         * This test is skipped because we want to temporarily relax graph building algorithm
+         * to ease Pure -> Legend migration push.
+         * See https://github.com/finos/legend-studio/issues/660
+         *
+         * @discrepancy graph-building
+         */
+        this.context.log.warn(
+          LogEvent.create(
+            `Found duplicated property '${property.name}' in class '${_class.path}'`,
+          ),
+        );
+      }
+      _class.properties.push(V1_buildProperty(property, this.context, _class));
+      uniqueProperties.add(property.name);
+    });
   }
 
   visit_Association(element: V1_Association): void {
     const association = this.context.currentSubGraph.getOwnAssociation(
       V1_buildFullPath(element.package, element.name),
     );
-    V1_buildMilestoningProperties(association, this.context.graph);
+    assertTrue(
+      element.properties.length === 2,
+      'Association must have exactly 2 properties',
+    );
+    const first = guaranteeNonNullable(element.properties[0]);
+    const second = guaranteeNonNullable(element.properties[1]);
+    if (first.name === second.name) {
+      /**
+       * This test is skipped because we want to temporarily relax graph building algorithm
+       * to ease Pure -> Legend migration push.
+       * See https://github.com/finos/legend-studio/issues/660
+       *
+       * @discrepancy graph-building
+       */
+      this.context.log.warn(
+        LogEvent.create(
+          `Found duplicated property '${element.properties[0]?.name}' in association '${element.name}'`,
+        ),
+      );
+    }
+    association.properties = [
+      V1_buildAssociationProperty(first, second, this.context, association),
+      V1_buildAssociationProperty(second, first, this.context, association),
+    ];
+    association.stereotypes = element.stereotypes
+      .map((stereotype) => this.context.resolveStereotype(stereotype))
+      .filter(isNonNullable);
+    association.taggedValues = element.taggedValues
+      .map((taggedValue) => V1_buildTaggedValue(taggedValue, this.context))
+      .filter(isNonNullable);
+    association.derivedProperties = element.derivedProperties.map(
+      (derivedProperty) =>
+        V1_buildDerivedProperty(derivedProperty, this.context, association),
+    );
   }
 
   visit_ConcreteFunctionDefinition(
@@ -106,41 +189,23 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
     const database = this.context.currentSubGraph.getOwnDatabase(
       V1_buildFullPath(element.package, element.name),
     );
-    database.joins = element.joins.map((join) =>
-      V1_buildDatabaseJoin(join, this.context, database),
-    );
-    database.filters = element.filters.map((filter) =>
-      V1_buildDatabaseFilter(filter, this.context, database),
+    element.schemas.forEach((schema) =>
+      V1_buildDatabaseSchemaViewsFirstPass(schema, database, this.context),
     );
   }
 
   visit_Mapping(element: V1_Mapping): void {
-    const path = V1_buildFullPath(element.package, element.name);
-    const mapping = this.context.currentSubGraph.getOwnMapping(path);
-    mapping.associationMappings = element.associationMappings.map(
-      (_associationMapping) =>
-        V1_buildAssociationMapping(_associationMapping, mapping, this.context),
+    const mapping = this.context.currentSubGraph.getOwnMapping(
+      V1_buildFullPath(element.package, element.name),
     );
-    element.classMappings.forEach((classMapping) =>
+    mapping.classMappings = element.classMappings.map((classMapping) =>
       classMapping.accept_ClassMappingVisitor(
-        new V1_ProtocolToMetaModelClassMappingSecondPassBuilder(
-          this.context,
-          mapping,
-        ),
+        new V1_ClassMappingFirstPassBuilder(this.context, mapping),
       ),
     );
-    mapping.tests = element.tests.map((test) =>
-      V1_buildMappingTest(test, this.context),
-    );
-    // resolve class mappings root
-    V1_resolveClassMappingRoot(mapping);
   }
 
   visit_Service(element: V1_Service): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_SectionIndex(element: V1_SectionIndex): void {
     throw new UnsupportedOperationError();
   }
 
@@ -149,6 +214,10 @@ export class V1_ProtocolToMetaModelGraphFourthPassBuilder
   }
 
   visit_GenerationSpecification(element: V1_GenerationSpecification): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_SectionIndex(element: V1_SectionIndex): void {
     throw new UnsupportedOperationError();
   }
 

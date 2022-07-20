@@ -43,7 +43,7 @@ import {
   V1_buildFullPath,
   V1_buildValueSpecification,
   type V1_GraphBuilderContext,
-  V1_ProtocolToMetaModelConnectionBuilder,
+  V1_buildConnection,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -93,10 +93,10 @@ export const V1_buildServiceParameterValue = (
     return serviceParameterValue;
   } else if (protocol instanceof V1_ConnectionValue) {
     const serviceParameterValue = new ConnectionValue();
-    serviceParameterValue.connection =
-      protocol.connection.accept_ConnectionVisitor(
-        new V1_ProtocolToMetaModelConnectionBuilder(context),
-      );
+    serviceParameterValue.connection = V1_buildConnection(
+      protocol.connection,
+      context,
+    );
     return serviceParameterValue;
   }
   throw new UnsupportedOperationError(
@@ -143,9 +143,9 @@ export const V1_buildPersistenceContext = (
     V1_buildServiceParameter(sp, context),
   );
   if (protocol.sinkConnection) {
-    persistenceContext.sinkConnection =
-      protocol.sinkConnection.accept_ConnectionVisitor(
-        new V1_ProtocolToMetaModelConnectionBuilder(context),
-      );
+    persistenceContext.sinkConnection = V1_buildConnection(
+      protocol.sinkConnection,
+      context,
+    );
   }
 };

@@ -68,7 +68,7 @@ import type { Package } from '../../../../../../metamodels/pure/packageableEleme
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../metamodels/pure/packageableElements/data/DataElement.js';
 
-export class V1_ProtocolToMetaModelGraphFirstPassBuilder
+export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
 {
   context: V1_GraphBuilderContext;

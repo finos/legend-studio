@@ -21,48 +21,46 @@ import {
   assertType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { MODEL_STORE_NAME } from '../../../../../../../MetaModelConst.js';
+import { MODEL_STORE_NAME } from '../../../../../../../../MetaModelConst.js';
 import {
   type DatabaseType,
   RelationalDatabaseConnection,
-} from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
+} from '../../../../../../../metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 import {
   type Connection,
   ConnectionPointer,
-} from '../../../../../../metamodels/pure/packageableElements/connection/Connection.js';
-import { JsonModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
-import { XmlModelConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
-import { FlatDataConnection } from '../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
-import type { Store } from '../../../../../../metamodels/pure/packageableElements/store/Store.js';
-import { FlatData } from '../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
-import { Database } from '../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
-import { ModelStore } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/model/ModelStore.js';
+} from '../../../../../../../metamodels/pure/packageableElements/connection/Connection.js';
+import { JsonModelConnection } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/JsonModelConnection.js';
+import { XmlModelConnection } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/XmlModelConnection.js';
+import { FlatDataConnection } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
+import type { Store } from '../../../../../../../metamodels/pure/packageableElements/store/Store.js';
+import { FlatData } from '../../../../../../../metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import { Database } from '../../../../../../../metamodels/pure/packageableElements/store/relational/model/Database.js';
+import { ModelStore } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 import {
   type PackageableElementReference,
   PackageableElementImplicitReference,
-} from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
-import { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
-import type { V1_GraphBuilderContext } from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { ModelChainConnection } from '../../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
+import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import type {
   V1_Connection,
   V1_ConnectionVisitor,
-} from '../../../model/packageableElements/connection/V1_Connection.js';
-import type { V1_JsonModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
-import type { V1_XmlModelConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
-import type { V1_FlatDataConnection } from '../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
-import type { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
-import type { V1_RelationalDatabaseConnection } from '../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
+} from '../../../../model/packageableElements/connection/V1_Connection.js';
+import type { V1_JsonModelConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_JsonModelConnection.js';
+import type { V1_XmlModelConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_XmlModelConnection.js';
+import type { V1_FlatDataConnection } from '../../../../model/packageableElements/store/flatData/connection/V1_FlatDataConnection.js';
+import type { V1_ConnectionPointer } from '../../../../model/packageableElements/connection/V1_ConnectionPointer.js';
+import type { V1_RelationalDatabaseConnection } from '../../../../model/packageableElements/store/relational/connection/V1_RelationalDatabaseConnection.js';
 import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
-} from '../../../transformation/pureGraph/to/helpers/V1_RelationalConnectionBuilderHelper.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
-import type { V1_ModelChainConnection } from '../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
-import { V1_buildPostProcessor } from './helpers/V1_PostProcessorBuilderHelper.js';
+} from './V1_RelationalConnectionBuilderHelper.js';
+import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
+import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 
-export class V1_ProtocolToMetaModelConnectionBuilder
-  implements V1_ConnectionVisitor<Connection>
-{
+class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
   context: V1_GraphBuilderContext;
   embeddedConnectionStore?: PackageableElementReference<Store> | undefined;
 
@@ -273,3 +271,12 @@ export class V1_ProtocolToMetaModelConnectionBuilder
     return val;
   }
 }
+
+export const V1_buildConnection = (
+  connection: V1_Connection,
+  context: V1_GraphBuilderContext,
+  embeddedConnectionStore?: PackageableElementReference<Store> | undefined,
+): Connection =>
+  connection.accept_ConnectionVisitor(
+    new V1_ConnectionBuilder(context, embeddedConnectionStore),
+  );

@@ -30,7 +30,7 @@ import { Enum } from '../../../../../../metamodels/pure/packageableElements/doma
 import {
   V1_buildFullPath,
   type V1_GraphBuilderContext,
-} from '../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+} from './V1_GraphBuilderContext.js';
 import type { V1_GenerationSpecification } from '../../../model/packageableElements/generationSpecification/V1_GenerationSpecification.js';
 import type {
   V1_PackageableElement,
@@ -49,42 +49,42 @@ import {
   V1_buildVariable,
   V1_buildUnit,
   V1_buildTaggedValue,
-} from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
+} from './helpers/V1_DomainBuilderHelper.js';
 import {
   V1_buildServiceExecution,
   V1_buildLegacyServiceTest,
-} from '../../../transformation/pureGraph/to/helpers/V1_ServiceBuilderHelper.js';
+} from './helpers/V1_ServiceBuilderHelper.js';
 import {
   V1_buildEnumerationMapping,
   V1_buildMappingInclude,
-} from '../../../transformation/pureGraph/to/helpers/V1_MappingBuilderHelper.js';
-import { V1_buildFlatDataSection } from '../../../transformation/pureGraph/to/helpers/V1_FlatDataStoreBuilderHelper.js';
-import { V1_buildSchema } from '../../../transformation/pureGraph/to/helpers/V1_DatabaseBuilderHelper.js';
+} from './helpers/V1_MappingBuilderHelper.js';
+import { V1_buildFlatDataSection } from './helpers/V1_FlatDataStoreBuilderHelper.js';
+import { V1_buildSchema } from './helpers/V1_DatabaseBuilderHelper.js';
 import {
   V1_buildConfigurationProperty,
   V1_buildScopeElement,
-} from '../../../transformation/pureGraph/to/helpers/V1_FileGenerationBuilderHelper.js';
-import { V1_buildEngineRuntime } from '../../../transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
+} from './helpers/V1_FileGenerationBuilderHelper.js';
+import { V1_buildEngineRuntime } from './helpers/V1_RuntimeBuilderHelper.js';
 import type { V1_PackageableRuntime } from '../../../model/packageableElements/runtime/V1_PackageableRuntime.js';
 import type { V1_PackageableConnection } from '../../../model/packageableElements/connection/V1_PackageableConnection.js';
-import { V1_ProtocolToMetaModelConnectionBuilder } from './V1_ProtocolToMetaModelConnectionBuilder.js';
+import { V1_buildConnection } from './helpers/V1_ConnectionBuilderHelper.js';
 import { V1_ConnectionPointer } from '../../../model/packageableElements/connection/V1_ConnectionPointer.js';
 import type { V1_FileGenerationSpecification } from '../../../model/packageableElements/fileGeneration/V1_FileGenerationSpecification.js';
 import {
   V1_buildGenerationTreeNode,
   V1_buildFileGenerationPointer,
-} from '../../../transformation/pureGraph/to/helpers/V1_GenerationSpecificationBuilderHelper.js';
+} from './helpers/V1_GenerationSpecificationBuilderHelper.js';
 import type { V1_Measure } from '../../../model/packageableElements/domain/V1_Measure.js';
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
-import { V1_buildSection } from '../../../transformation/pureGraph/to/helpers/V1_SectionBuilderHelper.js';
+import { V1_buildSection } from './helpers/V1_SectionBuilderHelper.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './helpers/V1_DataElementBuilderHelper.js';
+import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../metamodels/pure/packageableElements/service/ServiceTestSuite.js';
 import { V1_getIncludedMappingPath } from '../../../helper/V1_DSLMapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 
-export class V1_ProtocolToMetaModelGraphSecondPassBuilder
+export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
@@ -392,10 +392,10 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         'Packageable connection value cannot be a connection pointer',
       );
     }
-    connection.connectionValue =
-      element.connectionValue.accept_ConnectionVisitor(
-        new V1_ProtocolToMetaModelConnectionBuilder(this.context),
-      );
+    connection.connectionValue = V1_buildConnection(
+      element.connectionValue,
+      this.context,
+    );
   }
 
   visit_DataElement(element: V1_DataElement): void {
@@ -413,8 +413,6 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
         'Cannot use Data element reference in a Data element',
       );
     }
-    dataElement.data = element.data.accept_EmbeddedDataVisitor(
-      new V1_ProtocolToMetaModelEmbeddedDataBuilder(this.context),
-    );
+    dataElement.data = V1_buildEmbeddedData(element.data, this.context);
   }
 }

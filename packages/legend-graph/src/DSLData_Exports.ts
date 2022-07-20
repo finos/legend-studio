@@ -31,7 +31,7 @@ export {
 export * from './models/metamodels/pure/data/RelationalCSVData.js';
 export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension.js';
 export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension.js';
-export { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
+export { V1_buildEmbeddedData } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
 export {
   observe_ExternalFormatData,
   observe_EmbeddedData,

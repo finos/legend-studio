@@ -45,7 +45,7 @@ import { V1_buildDatabaseSchemaViewsSecondPass } from './helpers/V1_DatabaseBuil
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 
-export class V1_ProtocolToMetaModelGraphFifthPassBuilder
+export class V1_ElementFifthPassBuilder
   implements V1_PackageableElementVisitor<void>
 {
   context: V1_GraphBuilderContext;
