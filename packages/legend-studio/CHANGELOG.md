@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 11.0.3
+
+### Patch Changes
+
+- [#1318](https://github.com/finos/legend-studio/pull/1318) [`a8707451`](https://github.com/finos/legend-studio/commit/a87074512560809111c03bad9921023ad3655f67) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle `MultiExecutionServiceTestResult` in service test editor.
+
 ## 11.0.2
 
 ### Patch Changes
