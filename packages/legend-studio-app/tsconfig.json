@@ -18,6 +18,7 @@
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-dsl-data-space" },
     { "path": "../legend-extension-dsl-persistence" },
+    { "path": "../legend-extension-dsl-persistence-cloud" },
     { "path": "../legend-studio-extension-query-builder" },
     { "path": "../legend-extension-external-language-morphir" }
   ]

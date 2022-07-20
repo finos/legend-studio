@@ -177,6 +177,10 @@ Persistence org::legend::ZooPersistence
 PersistenceContext org::legend::ZooPersistenceContext
 {
   persistence: org::legend::ZooPersistence;
+  platform: AwsGlue
+  #{
+    dataProcessingUnits: 10;
+  }#;
   serviceParameters:
   [
     connection=org::legend::ZooDbConnection

@@ -40,6 +40,7 @@
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
+    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
     "@finos/legend-extension-external-store-service": "workspace:*",
