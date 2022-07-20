@@ -576,10 +576,10 @@ export const EnumerationEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedEnum)}
-            flex={0}
+            {...getControlledResizablePanelProps(!selectedEnum, {
+              size: 250,
+            })}
             direction={-1}
-            size={selectedEnum ? 250 : 0}
           >
             {selectedEnum ? (
               <EnumEditor
