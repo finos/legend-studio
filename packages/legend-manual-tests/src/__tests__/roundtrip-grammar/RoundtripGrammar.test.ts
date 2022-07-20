@@ -30,7 +30,7 @@ import fs from 'fs';
 import { default as axios, type AxiosResponse } from 'axios';
 import {
   type PlainObject,
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
   WebConsole,
   Log,
   LogEvent,
@@ -223,7 +223,7 @@ const checkGrammarRoundtrip = async (
       expect(
         // received: transformed entity
         transformedEntities.map((entity) => entity.content),
-      ) as TEMPORARRY__JestMatcher
+      ) as TEMPORARY__JestMatcher
     ).toIncludeSameMembers(
       // expected: protocol JSON parsed from grammar text
       (

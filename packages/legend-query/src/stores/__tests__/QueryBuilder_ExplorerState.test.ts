@@ -22,7 +22,7 @@ import TEST_DATA__AssociationMappingModel from '../../stores/__tests__/TEST_DATA
 import TEST_DATA__M2MAutoMapped from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
 import TEST_DATA__RelationalInline from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_RelationalInline.json';
 import {
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
   type PlainObject,
   integrationTest,
 } from '@finos/legend-shared';
@@ -275,7 +275,7 @@ describe(integrationTest('Build property mapping data'), () => {
         maxDepth === undefined ? 1000 : maxDepth,
       );
       (
-        expect(expectedMappingData) as TEMPORARRY__JestMatcher
+        expect(expectedMappingData) as TEMPORARY__JestMatcher
       ).toIncludeSameMembers(
         transformToTestPropertyMappingData(actualMappingData),
       );
