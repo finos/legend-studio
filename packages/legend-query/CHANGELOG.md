@@ -1,5 +1,11 @@
 # @finos/legend-query
 
+## 3.2.3
+
+### Patch Changes
+
+- [#1314](https://github.com/finos/legend-studio/pull/1314) [`156a920d`](https://github.com/finos/legend-studio/commit/156a920ddc00ac192c498de09574ad86d8e8d37d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Made the toggle behavior of post-filter consistent with parameter/function panel and added a warning popup when switching to graph fetch panel with post filter panel open [[#1265](https://github.com/finos/legend-studio/issues/1265) .
+
 ## 3.2.2
 
 ### Patch Changes

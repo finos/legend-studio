@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 2.0.8
+
+### Patch Changes
+
+- [#1317](https://github.com/finos/legend-studio/pull/1317) [`0cb01807`](https://github.com/finos/legend-studio/commit/0cb0180776bf772001357674d5845b10edbf6b13) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where the class property editor panel is hidden when switching between class editors ([#1316](https://github.com/finos/legend-studio/issues/1316)).
+
 ## 2.0.7
 
 ## 2.0.6
