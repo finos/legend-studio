@@ -227,7 +227,7 @@ export const TEST__openElementFromExplorerTree = async (
  * setup method
  */
 export const TEST__setUpEditor = async (
-  mockedEditorStore: EditorStore,
+  MOCK__editorStore: EditorStore,
   data: {
     project: PlainObject<Project>;
     workspace: PlainObject<Workspace>;
@@ -263,39 +263,39 @@ export const TEST__setUpEditor = async (
 
   // SDLC
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getProject')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getProject')
     .mockResolvedValue(project);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getWorkspace')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getWorkspace')
     .mockResolvedValue(workspace);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getVersions')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getVersions')
     .mockResolvedValue(projectVersions);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getRevision')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getRevision')
     .mockResolvedValue(curentRevision);
   jest
     .spyOn(
-      mockedEditorStore.sdlcServerClient,
+      MOCK__editorStore.sdlcServerClient,
       'checkIfWorkspaceIsInConflictResolutionMode',
     )
     .mockResolvedValue(false);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'isWorkspaceOutdated')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'isWorkspaceOutdated')
     .mockResolvedValue(false);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getEntities')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getEntities')
     .mockResolvedValue(entities);
   jest
-    .spyOn(mockedEditorStore.sdlcServerClient, 'getConfiguration')
+    .spyOn(MOCK__editorStore.sdlcServerClient, 'getConfiguration')
     .mockResolvedValue(projectConfiguration);
   jest
     .spyOn(
-      mockedEditorStore.sdlcServerClient,
+      MOCK__editorStore.sdlcServerClient,
       'getLatestProjectStructureVersion',
     )
     .mockResolvedValue(latestProjectStructureVersion);
-  mockedEditorStore.sdlcServerClient._setFeatures(
+  MOCK__editorStore.sdlcServerClient._setFeatures(
     SDLCServerFeaturesConfiguration.serialization.fromJson({
       canCreateProject: true,
       canCreateVersion: true,
@@ -304,41 +304,41 @@ export const TEST__setUpEditor = async (
 
   // depot
   jest
-    .spyOn(mockedEditorStore.depotServerClient, 'getProjects')
+    .spyOn(MOCK__editorStore.depotServerClient, 'getProjects')
     .mockResolvedValue(projects);
   jest
-    .spyOn(mockedEditorStore.depotServerClient, 'getProjectById')
+    .spyOn(MOCK__editorStore.depotServerClient, 'getProjectById')
     .mockResolvedValue(projectData);
   jest
-    .spyOn(mockedEditorStore.depotServerClient, 'collectDependencyEntities')
+    .spyOn(MOCK__editorStore.depotServerClient, 'collectDependencyEntities')
     .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize
-  mockedEditorStore.graphManagerState.graphManager.initialize =
+  MOCK__editorStore.graphManagerState.graphManager.initialize =
     jest.fn<TEMPORARY__JestMock>();
   jest
     .spyOn(
-      mockedEditorStore.graphManagerState.graphManager,
+      MOCK__editorStore.graphManagerState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
     .mockResolvedValue(availableGenerationDescriptions);
   jest
     .spyOn(
-      mockedEditorStore.graphManagerState.graphManager,
+      MOCK__editorStore.graphManagerState.graphManager,
       'getAvailableImportConfigurationDescriptions',
     )
     .mockResolvedValue(availableImportDescriptions);
 
   // mock change detections (since we do not test them now)
-  mockedEditorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
+  MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
     jest.fn<TEMPORARY__JestMock>();
-  mockedEditorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
+  MOCK__editorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
     jest.fn<TEMPORARY__JestMock>();
-  mockedEditorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex =
+  MOCK__editorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex =
     jest.fn<TEMPORARY__JestMock>();
-  mockedEditorStore.workspaceReviewState.fetchCurrentWorkspaceReview =
+  MOCK__editorStore.workspaceReviewState.fetchCurrentWorkspaceReview =
     jest.fn<TEMPORARY__JestMock>();
-  mockedEditorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
+  MOCK__editorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
     jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
 
@@ -352,7 +352,7 @@ export const TEST__setUpEditor = async (
     ],
   });
   const navigator = new WebApplicationNavigator(history);
-  mockedEditorStore.applicationStore.navigator = navigator;
+  MOCK__editorStore.applicationStore.navigator = navigator;
   TEST__provideMockedWebApplicationNavigator({ mock: navigator });
 
   const renderResult = render(
@@ -377,31 +377,31 @@ export const TEST__setUpEditor = async (
   );
   // assert project/workspace have been set
   await waitFor(() =>
-    expect(mockedEditorStore.sdlcState.currentProject).toBeDefined(),
+    expect(MOCK__editorStore.sdlcState.currentProject).toBeDefined(),
   );
   await waitFor(() =>
-    expect(mockedEditorStore.sdlcState.currentWorkspace).toBeDefined(),
+    expect(MOCK__editorStore.sdlcState.currentWorkspace).toBeDefined(),
   );
   // assert immutable models have been model
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.systemBuildState.hasSucceeded,
+      MOCK__editorStore.graphManagerState.systemBuildState.hasSucceeded,
     ).toBe(true),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
+      MOCK__editorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
     ).toBe(true),
   );
   // assert main model has been build
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graphBuildState.hasSucceeded,
+      MOCK__editorStore.graphManagerState.graphBuildState.hasSucceeded,
     ).toBe(true),
   );
   // assert explorer trees have been built and rendered
   await waitFor(() =>
-    expect(mockedEditorStore.explorerTreeState.buildState.hasCompleted).toBe(
+    expect(MOCK__editorStore.explorerTreeState.buildState.hasCompleted).toBe(
       true,
     ),
   );
@@ -412,7 +412,7 @@ export const TEST__setUpEditor = async (
 };
 
 export const TEST__setUpEditorWithDefaultSDLCData = (
-  mockedEditorStore: EditorStore,
+  MOCK__editorStore: EditorStore,
   overrides?: {
     project?: PlainObject<Project>;
     workspace?: PlainObject<Workspace>;
@@ -428,7 +428,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projectDependency?: PlainObject<ProjectVersionEntities>[];
   },
 ): Promise<RenderResult> =>
-  TEST__setUpEditor(mockedEditorStore, {
+  TEST__setUpEditor(MOCK__editorStore, {
     project: TEST_DATA__DefaultSDLCInfo.project,
     workspace: TEST_DATA__DefaultSDLCInfo.workspace,
     curentRevision: TEST_DATA__DefaultSDLCInfo.currentRevision,

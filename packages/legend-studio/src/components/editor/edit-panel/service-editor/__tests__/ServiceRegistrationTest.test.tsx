@@ -60,7 +60,7 @@ const setup = async (
   workspace: PlainObject<Workspace>,
   versions?: PlainObject<Version>[],
 ): Promise<EditorStore> => {
-  const mockedEditorStore = TEST__provideMockedEditorStore({
+  const MOCK__editorStore = TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
       TEST__getLegendStudioApplicationConfig({
         extensions: {
@@ -100,7 +100,7 @@ const setup = async (
     ),
   });
 
-  renderResult = await TEST__setUpEditor(mockedEditorStore, {
+  renderResult = await TEST__setUpEditor(MOCK__editorStore, {
     project: project,
     workspace: workspace,
     curentRevision: TEST_DATA__DefaultSDLCInfo.currentRevision,
@@ -121,7 +121,7 @@ const setup = async (
     projectData: [],
     projectDependency: [],
   });
-  return mockedEditorStore;
+  return MOCK__editorStore;
 };
 
 test(
@@ -129,7 +129,7 @@ test(
     'Service Editor basic registration functionality for projects with versions',
   ),
   async () => {
-    const mockedEditorStore = await setup(
+    const MOCK__editorStore = await setup(
       {
         projectId: 'PROD-19481',
         description: 'sdlcTesting',
@@ -157,7 +157,7 @@ test(
       ],
     );
     await act(async () => {
-      await flowResult(mockedEditorStore.sdlcState.fetchProjectVersions());
+      await flowResult(MOCK__editorStore.sdlcState.fetchProjectVersions());
     });
     const result = new ServiceRegistrationResult(
       'https://legend.org/exec',
@@ -167,13 +167,13 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(
-        mockedEditorStore.graphManagerState.graphManager,
+        MOCK__editorStore.graphManagerState.graphManager,
         'registerService',
       )
       .mockResolvedValue(result);
     jest
       .spyOn(
-        mockedEditorStore.graphManagerState.graphManager,
+        MOCK__editorStore.graphManagerState.graphManager,
         'activateService',
       )
       .mockResolvedValue();
@@ -188,7 +188,7 @@ test(
     );
     fireEvent.click(getByText(editPanel, 'Registration'));
     const serviceEditorState =
-      mockedEditorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
     const registrationEditor = await waitFor(() =>
       renderResult.getByTestId(
         LEGEND_STUDIO_TEST_ID.SERVICE_REGISTRATION_EDITOR,
@@ -205,7 +205,7 @@ test(
     await waitFor(() => getByText(registrationEditor, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
     expect(registrationState.executionModes).toHaveLength(3);
-    const versions = mockedEditorStore.sdlcState.projectVersions;
+    const versions = MOCK__editorStore.sdlcState.projectVersions;
     expect(versions).toHaveLength(2);
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved
     // since `int` is the first env in the config list, it is expected to be selected by default
@@ -258,7 +258,7 @@ test(
     'Service Editor basic general and registration functionality for projects without versions',
   ),
   async () => {
-    const mockedEditorStore = await setup(
+    const MOCK__editorStore = await setup(
       TEST_DATA__DefaultSDLCInfo.project,
       TEST_DATA__DefaultSDLCInfo.workspace,
     );
@@ -270,13 +270,13 @@ test(
     MOBX__enableSpyOrMock();
     jest
       .spyOn(
-        mockedEditorStore.graphManagerState.graphManager,
+        MOCK__editorStore.graphManagerState.graphManager,
         'registerService',
       )
       .mockResolvedValue(result);
     jest
       .spyOn(
-        mockedEditorStore.graphManagerState.graphManager,
+        MOCK__editorStore.graphManagerState.graphManager,
         'activateService',
       )
       .mockResolvedValue();
@@ -305,7 +305,7 @@ test(
     await waitFor(() => getByText(editPanel, 'owner2'));
     // add owner
     const serviceEditorState =
-      mockedEditorStore.getCurrentEditorState(ServiceEditorState);
+      MOCK__editorStore.getCurrentEditorState(ServiceEditorState);
     const service = serviceEditorState.service;
     expect(service.owners).toHaveLength(2);
     fireEvent.click(getByTitle(editPanel, 'Add owner'));

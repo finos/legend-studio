@@ -30,11 +30,11 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
 import { TEST_DATA__RelationalServiceTestable } from './TEST_DATA__TestableData.js';
 
 let renderResult: RenderResult;
-let mockedEditorStore: EditorStore;
+let MOCK__editorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__RelationalServiceTestable,
   });
 });

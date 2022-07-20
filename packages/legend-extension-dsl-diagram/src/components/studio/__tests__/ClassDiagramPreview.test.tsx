@@ -56,9 +56,9 @@ pluginManager
   .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {
-  const mockedEditorStore = TEST__provideMockedEditorStore({ pluginManager });
+  const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-    mockedEditorStore,
+    MOCK__editorStore,
     {
       entities: TEST_DATA__dummyModel,
     },
