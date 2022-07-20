@@ -16,39 +16,41 @@
 
 import { useContext, createContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ViewerStore } from '../../stores/ViewerStore.js';
+import { ProjectViewerStore } from '../../stores/ProjectViewerStore.js';
 import { EDITOR_MODE } from '../../stores/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
-import { ViewerEditorMode } from '../../stores/viewer/ViewerEditorMode.js';
+import { ProjectViewerEditorMode } from '../../stores/project-viewer/ProjectViewerEditorMode.js';
 
-const ViewerStoreContext = createContext<ViewerStore | undefined>(undefined);
+const ProjectViewerStoreContext = createContext<ProjectViewerStore | undefined>(
+  undefined,
+);
 
-export const ViewerStoreProvider: React.FC<{
+export const ProjectViewerStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.VIEWER);
-  const store = useLocalObservable(() => new ViewerStore(editorStore));
-  editorStore.setEditorMode(new ViewerEditorMode(store));
+  const store = useLocalObservable(() => new ProjectViewerStore(editorStore));
+  editorStore.setEditorMode(new ProjectViewerEditorMode(store));
   return (
-    <ViewerStoreContext.Provider value={store}>
+    <ProjectViewerStoreContext.Provider value={store}>
       {children}
-    </ViewerStoreContext.Provider>
+    </ProjectViewerStoreContext.Provider>
   );
 };
 
-export const useViewerStore = (): ViewerStore =>
+export const useProjectViewerStore = (): ProjectViewerStore =>
   guaranteeNonNullable(
-    useContext(ViewerStoreContext),
-    `Can't find viewer store in context`,
+    useContext(ProjectViewerStoreContext),
+    `Can't find project viewer store in context`,
   );
 
-export const withViewerStore = (WrappedComponent: React.FC): React.FC =>
-  function WithViewerStore() {
+export const withProjectViewerStore = (WrappedComponent: React.FC): React.FC =>
+  function WithProjectViewerStore() {
     return (
-      <ViewerStoreProvider>
+      <ProjectViewerStoreProvider>
         <WrappedComponent />
-      </ViewerStoreProvider>
+      </ProjectViewerStoreProvider>
     );
   };

@@ -45,7 +45,10 @@ import {
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, withViewerStore } from './ViewerStoreProvider.js';
+import {
+  useProjectViewerStore,
+  withProjectViewerStore,
+} from './ProjectViewerStoreProvider.js';
 import {
   type ViewerPathParams,
   generateSetupRoute,
@@ -66,9 +69,9 @@ import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
-const ViewerStatusBar = observer(() => {
+const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
-  const viewerStore = useViewerStore();
+  const viewerStore = useProjectViewerStore();
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const latestVersion = viewerStore.onLatestVersion;
@@ -99,7 +102,7 @@ const ViewerStatusBar = observer(() => {
   return (
     <div
       data-testid={LEGEND_STUDIO_TEST_ID.STATUS_BAR}
-      className="editor__status-bar viewer__status-bar"
+      className="editor__status-bar project-viewer__status-bar"
     >
       <div className="editor__status-bar__left">
         {currentProject && (
@@ -158,8 +161,8 @@ const ViewerStatusBar = observer(() => {
   );
 });
 
-const ViewerSideBar = observer(() => {
-  const viewerStore = useViewerStore();
+const ProjectViewerSideBar = observer(() => {
+  const viewerStore = useProjectViewerStore();
   const editorStore = viewerStore.editorStore;
   const renderSideBar = (): React.ReactNode => {
     switch (editorStore.activeActivity) {
@@ -184,8 +187,8 @@ const ViewerSideBar = observer(() => {
   );
 });
 
-const ViewerActivityBar = observer(() => {
-  const viewerStore = useViewerStore();
+const ProjectViewerActivityBar = observer(() => {
+  const viewerStore = useProjectViewerStore();
   const editorStore = viewerStore.editorStore;
   const changeActivity =
     (activity: ACTIVITY_MODE): (() => void) =>
@@ -240,11 +243,11 @@ const ViewerActivityBar = observer(() => {
   );
 });
 
-export const Viewer = withEditorStore(
-  withViewerStore(
+export const ProjectViewer = withEditorStore(
+  withProjectViewerStore(
     observer(() => {
       const params = useParams<ViewerPathParams>();
-      const viewerStore = useViewerStore();
+      const viewerStore = useProjectViewerStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
       const allowOpeningElement =
@@ -315,7 +318,7 @@ export const Viewer = withEditorStore(
             <div className="editor viewer">
               <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
                 <div className="editor__body">
-                  <ViewerActivityBar />
+                  <ProjectViewerActivityBar />
                   <div ref={ref} className="editor__content-container">
                     <div className="editor__content">
                       <ResizablePanelGroup orientation="vertical">
@@ -329,7 +332,7 @@ export const Viewer = withEditorStore(
                           )}
                           direction={1}
                         >
-                          <ViewerSideBar />
+                          <ProjectViewerSideBar />
                         </ResizablePanel>
                         <ResizablePanelSplitter />
                         <ResizablePanel minSize={300}>
@@ -342,7 +345,7 @@ export const Viewer = withEditorStore(
                     </div>
                   </div>
                 </div>
-                <ViewerStatusBar />
+                <ProjectViewerStatusBar />
                 {extraEditorExtensionComponents}
                 {allowOpeningElement && <ProjectSearchCommand />}
               </GlobalHotKeys>

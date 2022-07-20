@@ -19,7 +19,7 @@ import { Switch, Route } from 'react-router';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { Review } from './review/Review.js';
-import { Viewer } from './viewer/Viewer.js';
+import { ProjectViewer } from './project-viewer/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -141,7 +141,7 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
               ]}
-              component={Viewer}
+              component={ProjectViewer}
             />
             <Route
               exact={true}

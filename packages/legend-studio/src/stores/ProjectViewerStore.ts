@@ -62,12 +62,12 @@ import {
 } from '@finos/legend-graph';
 import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
 
-interface ViewerGraphBuilderMaterial {
+interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];
   dependencyEntitiesIndex: Map<string, Entity[]>;
 }
 
-export class ViewerStore {
+export class ProjectViewerStore {
   editorStore: EditorStore;
   currentRevision?: Revision | undefined;
   latestVersion?: Version | undefined;
@@ -161,7 +161,7 @@ export class ViewerStore {
     projectId: string,
     versionId: string | undefined,
     revisionId: string | undefined,
-  ): GeneratorFn<ViewerGraphBuilderMaterial> {
+  ): GeneratorFn<ProjectViewerGraphBuilderMaterial> {
     const stopWatch = new StopWatch();
 
     // fetch project informations
@@ -310,7 +310,7 @@ export class ViewerStore {
     groupId: string,
     artifactId: string,
     versionId: string,
-  ): GeneratorFn<ViewerGraphBuilderMaterial> {
+  ): GeneratorFn<ProjectViewerGraphBuilderMaterial> {
     const stopWatch = new StopWatch();
 
     // fetch project data
@@ -492,7 +492,7 @@ export class ViewerStore {
     };
 
     try {
-      let graphBuilderMaterial: ViewerGraphBuilderMaterial;
+      let graphBuilderMaterial: ProjectViewerGraphBuilderMaterial;
       if (projectId) {
         graphBuilderMaterial = (yield flowResult(
           this.initializeWithProjectInformation(
@@ -500,13 +500,13 @@ export class ViewerStore {
             params.versionId,
             params.revisionId,
           ),
-        )) as ViewerGraphBuilderMaterial;
+        )) as ProjectViewerGraphBuilderMaterial;
       } else if (gav) {
         this.projectGAVCoordinates = parseGAVCoordinates(gav);
         const { groupId, artifactId, versionId } = this.projectGAVCoordinates;
         graphBuilderMaterial = (yield flowResult(
           this.initializeWithGAV(groupId, artifactId, versionId),
-        )) as ViewerGraphBuilderMaterial;
+        )) as ProjectViewerGraphBuilderMaterial;
       } else {
         throw new IllegalStateError(
           `Can't initialize viewer when neither 'projectId' nor 'gav' is provided`,
