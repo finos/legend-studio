@@ -30,7 +30,7 @@ import {
   MarkdownTextViewer,
   AssistantIcon,
 } from '@finos/legend-art';
-import type { ProjectOption } from '../../stores/WorkspaceSetupStore.js';
+import type { ProjectOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import {
   useWorkspaceSetupStore,
   withWorkspaceSetupStore,

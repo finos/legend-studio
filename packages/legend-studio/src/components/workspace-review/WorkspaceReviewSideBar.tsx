@@ -31,12 +31,12 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, ReviewState } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../stores/EditorSDLCState.js';
-import { useReviewStore } from './ReviewStoreProvider.js';
+import { useWorkspaceReviewStore } from './WorkspaceReviewStoreProvider.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-export const ReviewSideBar = observer(() => {
-  const reviewStore = useReviewStore();
+export const WorkspaceReviewSideBar = observer(() => {
+  const reviewStore = useWorkspaceReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const workspaceContainsSnapshotDependencies =
@@ -110,9 +110,9 @@ export const ReviewSideBar = observer(() => {
       editorStore.workspaceReviewState.openReviewChange(diff);
 
   return (
-    <div className="panel review__side-bar">
+    <div className="panel workspace-review__side-bar">
       <div className="panel__header side-bar__header">
-        <div className="panel__header__title review__side-bar__header__title">
+        <div className="panel__header__title workspace-review__side-bar__header__title">
           <div className="panel__header__title__content side-bar__header__title__content">
             REVIEW
           </div>
@@ -120,7 +120,7 @@ export const ReviewSideBar = observer(() => {
         <div className="panel__header__actions side-bar__header__actions">
           {review.state !== ReviewState.COMMITTED && (
             <button
-              className="panel__header__action side-bar__header__action review__close-btn"
+              className="panel__header__action side-bar__header__action workspace-review__close-btn"
               disabled={
                 isDispatchingAction || review.state === ReviewState.CLOSED
               }
@@ -136,29 +136,29 @@ export const ReviewSideBar = observer(() => {
       <div className="panel__content side-bar__content">
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel workspace-review">
-          <div className="review__side-bar__review__info">
+          <div className="workspace-review__side-bar__review__info">
             <div
               className={clsx(
-                'review__side-bar__review__info__content',
+                'workspace-review__side-bar__review__info__content',
                 {
-                  'review__side-bar__review__info__content--closed':
+                  'workspace-review__side-bar__review__info__content--closed':
                     review.state === ReviewState.CLOSED,
                 },
                 {
-                  'review__side-bar__review__info__content--committed':
+                  'workspace-review__side-bar__review__info__content--committed':
                     review.state === ReviewState.COMMITTED,
                 },
               )}
             >
-              <div className="review__side-bar__review__info__content__title">
-                <span className="review__side-bar__review__info__content__title__review-name">
+              <div className="workspace-review__side-bar__review__info__content__title">
+                <span className="workspace-review__side-bar__review__info__content__title__review-name">
                   {review.title}
                 </span>
               </div>
             </div>
             {review.state === ReviewState.CLOSED && (
               <button
-                className="review__side-bar__review__info__action btn--dark btn--sm"
+                className="workspace-review__side-bar__review__info__action btn--dark btn--sm"
                 onClick={reOpenReview}
                 disabled={isDispatchingAction}
                 tabIndex={-1}
@@ -184,7 +184,7 @@ export const ReviewSideBar = observer(() => {
                 </button>
                 <button
                   className={clsx(
-                    'btn--dark btn--sm review__side-bar__merge-btn',
+                    'btn--dark btn--sm workspace-review__side-bar__merge-btn',
                     {
                       'btn--error': workspaceContainsSnapshotDependencies,
                     },
@@ -206,7 +206,7 @@ export const ReviewSideBar = observer(() => {
               </>
             )}
           </div>
-          <div className="review__side-bar__review__info__content__status">
+          <div className="workspace-review__side-bar__review__info__content__status">
             {reviewStatus}
           </div>
           <div className="panel side-bar__panel">

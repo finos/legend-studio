@@ -26,7 +26,7 @@ import {
   CONNECTION_TYPE,
   NewDataElementDriver,
   NewServiceDriver,
-} from '../../../stores/NewElementState.js';
+} from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';

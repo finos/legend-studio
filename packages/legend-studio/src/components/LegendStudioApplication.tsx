@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { Switch, Route } from 'react-router';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
-import { Review } from './review/Review.js';
+import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
 import { ProjectViewer } from './project-viewer/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
 import {
@@ -146,7 +146,7 @@ export const LegendStudioApplicationRoot = observer(() => {
             <Route
               exact={true}
               path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-              component={Review}
+              component={WorkspaceReview}
             />
             <Route
               exact={true}

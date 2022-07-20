@@ -26,11 +26,11 @@ import type { EditorState } from '../../stores/editor-state/EditorState.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { forwardRef } from 'react';
 
-export const ReviewPanelSplashScreen: React.FC = () => (
-  <div className="review-panel__splash-screen"></div>
+const WorkspaceReviewPanelSplashScreen: React.FC = () => (
+  <div className="workspace-review-panel__splash-screen"></div>
 );
 
-export const ReviewPanelHeaderTabContextMenu = observer(
+const WorkspaceReviewPanelHeaderTabContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
@@ -45,22 +45,25 @@ export const ReviewPanelHeaderTabContextMenu = observer(
     const closeAll = (): void => editorStore.closeAllStates();
 
     return (
-      <div ref={ref} className="review-panel__header__tab__context-menu">
+      <div
+        ref={ref}
+        className="workspace-review-panel__header__tab__context-menu"
+      >
         <button
-          className="review-panel__header__tab__context-menu__item"
+          className="workspace-review-panel__header__tab__context-menu__item"
           onClick={close}
         >
           Close
         </button>
         <button
-          className="review-panel__header__tab__context-menu__item"
+          className="workspace-review-panel__header__tab__context-menu__item"
           disabled={editorStore.openedEditorStates.length < 2}
           onClick={closeOthers}
         >
           Close Others
         </button>
         <button
-          className="review-panel__header__tab__context-menu__item"
+          className="workspace-review-panel__header__tab__context-menu__item"
           onClick={closeAll}
         >
           Close All
@@ -70,7 +73,7 @@ export const ReviewPanelHeaderTabContextMenu = observer(
   }),
 );
 
-export const ReviewPanel = observer(() => {
+export const WorkspaceReviewPanel = observer(() => {
   const editorStore = useEditorStore();
   const currentEditorState =
     editorStore.currentEditorState instanceof EntityDiffViewState
@@ -100,39 +103,41 @@ export const ReviewPanel = observer(() => {
       currentEditorState?.setDiffMode(mode);
 
   if (!currentEditorState) {
-    return <ReviewPanelSplashScreen />;
+    return <WorkspaceReviewPanelSplashScreen />;
   }
   return (
-    <div className="panel review-panel">
+    <div className="panel workspace-review-panel">
       <ContextMenu
-        className="panel__header review-panel__header"
+        className="panel__header workspace-review-panel__header"
         disabled={true}
       >
-        <div className="review-panel__header__tabs">
+        <div className="workspace-review-panel__header__tabs">
           {openedEditorStates.map((editorState) => (
             <div
-              className={clsx('review-panel__header__tab', {
-                'review-panel__header__tab--active':
+              className={clsx('workspace-review-panel__header__tab', {
+                'workspace-review-panel__header__tab--active':
                   editorState === currentEditorState,
               })}
               key={editorState.uuid}
               onMouseUp={closeTabOnMiddleClick(editorState)}
             >
               <ContextMenu
-                className="review-panel__header__tab__content"
+                className="workspace-review-panel__header__tab__content"
                 content={
-                  <ReviewPanelHeaderTabContextMenu editorState={editorState} />
+                  <WorkspaceReviewPanelHeaderTabContextMenu
+                    editorState={editorState}
+                  />
                 }
               >
                 <button
-                  className="review-panel__header__tab__element__name"
+                  className="workspace-review-panel__header__tab__element__name"
                   tabIndex={-1}
                   onClick={switchTab(editorState)}
                 >
                   {editorState.headerName}
                 </button>
                 <button
-                  className="review-panel__header__tab__close-btn"
+                  className="workspace-review-panel__header__tab__close-btn"
                   onClick={closeTab(editorState)}
                   tabIndex={-1}
                 >
@@ -142,19 +147,19 @@ export const ReviewPanel = observer(() => {
             </div>
           ))}
         </div>
-        <div className="review-panel__header__actions">
+        <div className="workspace-review-panel__header__actions">
           <DropdownMenu
-            className="review-panel__element-view"
+            className="workspace-review-panel__element-view"
             content={
-              <div className="review-panel__element-view__options">
+              <div className="workspace-review-panel__element-view__options">
                 <div
-                  className="review-panel__element-view__option"
+                  className="workspace-review-panel__element-view__option"
                   onClick={switchViewMode(DIFF_VIEW_MODE.GRAMMAR)}
                 >
                   {DIFF_VIEW_MODE.GRAMMAR}
                 </div>
                 <div
-                  className="review-panel__element-view__option"
+                  className="workspace-review-panel__element-view__option"
                   onClick={switchViewMode(DIFF_VIEW_MODE.JSON)}
                 >
                   {DIFF_VIEW_MODE.JSON}
@@ -167,17 +172,17 @@ export const ReviewPanel = observer(() => {
             }}
           >
             <button
-              className="review-panel__element-view__type"
+              className="workspace-review-panel__element-view__type"
               title="View as..."
             >
-              <div className="review-panel__element-view__type__label">
+              <div className="workspace-review-panel__element-view__type__label">
                 {currentEditorState.diffMode}
               </div>
             </button>
           </DropdownMenu>
         </div>
       </ContextMenu>
-      <div className="panel__content review-panel__content">
+      <div className="panel__content workspace-review-panel__content">
         <EntityDiffView entityDiffViewState={currentEditorState} />
       </div>
     </div>

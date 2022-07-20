@@ -15,7 +15,7 @@
  */
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -23,7 +23,7 @@ import {
   LogEvent,
   ActionState,
 } from '@finos/legend-shared';
-import { generateSetupRoute } from './LegendStudioRouter.js';
+import { generateSetupRoute } from '../LegendStudioRouter.js';
 import {
   type SDLCServerClient,
   WorkspaceType,
@@ -33,7 +33,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
+import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;

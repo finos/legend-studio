@@ -32,7 +32,7 @@ export {
   NewElementState,
   NewElementDriver,
   NewConnectionValueDriver,
-} from './stores/NewElementState.js';
+} from './stores/editor/NewElementState.js';
 export {
   CORE_DND_TYPE,
   ElementDragSource,
@@ -78,7 +78,7 @@ export {
   WorkspaceSetupStoreProvider as SetupStoreProvider,
   useWorkspaceSetupStore as useSetupStore,
 } from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
-export { WorkspaceSetupStore } from './stores/WorkspaceSetupStore.js';
+export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
 export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
 
 // --------------------------------------------- DSL --------------------------------------------------

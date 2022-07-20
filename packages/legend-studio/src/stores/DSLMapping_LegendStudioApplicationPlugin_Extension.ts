@@ -25,7 +25,7 @@ import type {
 } from '@finos/legend-graph';
 import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
 import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
-import type { NewConnectionValueDriver } from './NewElementState.js';
+import type { NewConnectionValueDriver } from './editor/NewElementState.js';
 import type {
   MappingElement,
   MappingElementSource,

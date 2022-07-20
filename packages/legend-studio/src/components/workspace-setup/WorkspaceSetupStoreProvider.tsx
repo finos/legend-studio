@@ -16,7 +16,7 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { WorkspaceSetupStore } from '../../stores/WorkspaceSetupStore.js';
+import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';

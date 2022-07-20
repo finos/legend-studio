@@ -17,7 +17,10 @@
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import type { EditorExtensionState, EditorStore } from './EditorStore.js';
-import type { NewElementDriver, NewElementState } from './NewElementState.js';
+import type {
+  NewElementDriver,
+  NewElementState,
+} from './editor/NewElementState.js';
 import type {
   Class,
   PackageableElement,

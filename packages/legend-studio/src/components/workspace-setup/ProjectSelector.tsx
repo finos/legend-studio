@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ProjectOption } from '../../stores/WorkspaceSetupStore.js';
+import type { ProjectOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import {
   type SelectComponent,
   compareLabelFn,

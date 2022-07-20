@@ -16,10 +16,13 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useReviewStore, withReviewStore } from './ReviewStoreProvider.js';
+import {
+  useWorkspaceReviewStore,
+  withWorkspaceReviewStore,
+} from './WorkspaceReviewStoreProvider.js';
 import { useParams } from 'react-router';
-import { ReviewSideBar } from './ReviewSideBar.js';
-import { ReviewPanel } from './ReviewPanel.js';
+import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
+import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import { Link } from 'react-router-dom';
 import {
@@ -48,8 +51,8 @@ import {
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 
-const ReviewStatusBar = observer(() => {
-  const reviewStore = useReviewStore();
+const WorkspaceReviewStatusBar = observer(() => {
+  const reviewStore = useWorkspaceReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const currentUserId =
@@ -73,19 +76,19 @@ const ReviewStatusBar = observer(() => {
     applicationStore.assistantService.toggleAssistant();
 
   return (
-    <div className="review__status-bar review__status-bar">
-      <div className="review__status-bar__left">
-        <div className="review__status-bar__workspace">
-          <div className="review__status-bar__workspace__icon">
+    <div className="workspace-review__status-bar workspace-review__status-bar">
+      <div className="workspace-review__status-bar__left">
+        <div className="workspace-review__status-bar__workspace">
+          <div className="workspace-review__status-bar__workspace__icon">
             <CodeBranchIcon />
           </div>
-          <div className="review__status-bar__workspace__project">
+          <div className="workspace-review__status-bar__workspace__project">
             <Link to={generateViewProjectRoute(reviewStore.projectId)}>
               {currentProject}
             </Link>
           </div>
           /
-          <div className="review__status-bar__workspace__workspace">
+          <div className="workspace-review__status-bar__workspace__workspace">
             <Link
               to={generateEditorRoute(
                 reviewStore.projectId,
@@ -96,17 +99,19 @@ const ReviewStatusBar = observer(() => {
               {review.workspaceId}
             </Link>
           </div>
-          <div className="review__status-bar__review">
+          <div className="workspace-review__status-bar__review">
             <a target="_blank" rel="noopener noreferrer" href={review.webURL}>
               {review.title}
             </a>
           </div>
         </div>
       </div>
-      <div className="review__status-bar__right">
-        <div className="review__status-bar__status">{reviewStatus}</div>
-        <div className="review__status-bar__user">
-          <div className="review__status-bar__user__icon">
+      <div className="workspace-review__status-bar__right">
+        <div className="workspace-review__status-bar__status">
+          {reviewStatus}
+        </div>
+        <div className="workspace-review__status-bar__user">
+          <div className="workspace-review__status-bar__user__icon">
             <UserIcon />
           </div>
           <div className="review__status-bar__user__name">{currentUserId}</div>
@@ -130,8 +135,8 @@ const ReviewStatusBar = observer(() => {
   );
 });
 
-const ReviewExplorer = observer(() => {
-  const reviewStore = useReviewStore();
+const WorkspaceReviewExplorer = observer(() => {
+  const reviewStore = useWorkspaceReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
@@ -157,23 +162,23 @@ const ReviewExplorer = observer(() => {
         )}
         direction={1}
       >
-        <ReviewSideBar />
+        <WorkspaceReviewSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
       <ResizablePanel minSize={300}>
-        <ReviewPanel />
+        <WorkspaceReviewPanel />
       </ResizablePanel>
     </ResizablePanelGroup>
   );
 });
 
-export const Review = withEditorStore(
-  withReviewStore(
+export const WorkspaceReview = withEditorStore(
+  withWorkspaceReviewStore(
     observer(() => {
       const params = useParams<ReviewPathParams>();
       const projectId = params.projectId;
       const reviewId = params.reviewId;
-      const reviewStore = useReviewStore();
+      const reviewStore = useWorkspaceReviewStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
       const changeActivity =
@@ -196,18 +201,18 @@ export const Review = withEditorStore(
 
       return (
         <div className="app__page">
-          <div className="review">
+          <div className="workspace-review">
             <PanelLoadingIndicator
               isLoading={reviewStore.isFetchingCurrentReview}
             />
             {reviewStore.currentReview && (
               <>
-                <div className="review__body">
+                <div className="workspace-review__body">
                   <div className="activity-bar">
                     <div className="activity-bar__items">
                       <button
                         key={ACTIVITY_MODE.REVIEW}
-                        className="activity-bar__item activity-bar__item--active review__activity-bar__review-icon"
+                        className="activity-bar__item activity-bar__item--active workspace-review__activity-bar__review-icon"
                         tabIndex={-1}
                         title={'Review'}
                         onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
@@ -225,13 +230,13 @@ export const Review = withEditorStore(
                       </button>
                     </div>
                   </div>
-                  <div className="review__content-container">
-                    <div className="review__content">
-                      <ReviewExplorer />
+                  <div className="workspace-review__content-container">
+                    <div className="workspace-review__content">
+                      <WorkspaceReviewExplorer />
                     </div>
                   </div>
                 </div>
-                <ReviewStatusBar />
+                <WorkspaceReviewStatusBar />
               </>
             )}
           </div>

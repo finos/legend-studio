@@ -15,7 +15,7 @@
  */
 
 import { action, flowResult, makeAutoObservable, observable } from 'mobx';
-import type { EditorStore } from './EditorStore.js';
+import type { EditorStore } from '../EditorStore.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -31,7 +31,7 @@ import {
   generateViewVersionRoute,
   generateViewRevisionRoute,
   generateViewProjectRoute,
-} from './LegendStudioRouter.js';
+} from '../LegendStudioRouter.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
@@ -40,7 +40,7 @@ import {
   Version,
   Workspace,
 } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 import {
   type ProjectGAVCoordinates,
@@ -51,7 +51,7 @@ import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,
   ProjectWorkflowManagerState,
-} from './sidebar-state/WorkflowManagerState.js';
+} from '../sidebar-state/WorkflowManagerState.js';
 import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
@@ -60,7 +60,7 @@ import {
   GraphDataDeserializationError,
   GraphBuilderError,
 } from '@finos/legend-graph';
-import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
+import { GRAPH_EDITOR_MODE } from '../EditorConfig.js';
 
 interface ProjectViewerGraphBuilderMaterial {
   entities: Entity[];

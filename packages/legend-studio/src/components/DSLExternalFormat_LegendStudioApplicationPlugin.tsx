@@ -64,11 +64,6 @@ import type {
   NewConnectionDriverCreator,
   RuntimeConnectionTooltipTextBuilder,
 } from '../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
-import type {
-  NewConnectionValueDriver,
-  NewElementDriver,
-  NewElementState,
-} from '../stores/NewElementState.js';
 import type { EditorStore } from '../stores/EditorStore.js';
 import type { ElementEditorState } from '../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { SchemaSetEditorState } from '../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState.js';
@@ -91,6 +86,11 @@ import {
   NewSchemaSetDriver,
   NewSchemaSetDriverEditor,
 } from './editor/edit-panel/external-format-editor/NewSchemaSetDriver.js';
+import type {
+  NewConnectionValueDriver,
+  NewElementDriver,
+  NewElementState,
+} from '../stores/editor/NewElementState.js';
 
 const SCHEMA_SET_ELEMENT_TYPE = 'SCHEMASET';
 const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =

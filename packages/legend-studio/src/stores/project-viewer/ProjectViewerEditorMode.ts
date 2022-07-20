@@ -21,7 +21,7 @@ import {
   generateViewVersionRoute,
 } from '../LegendStudioRouter.js';
 import { EditorMode } from '../editor/EditorMode.js';
-import type { ProjectViewerStore } from '../ProjectViewerStore.js';
+import type { ProjectViewerStore } from './ProjectViewerStore.js';
 
 export class ProjectViewerEditorMode extends EditorMode {
   viewerStore: ProjectViewerStore;

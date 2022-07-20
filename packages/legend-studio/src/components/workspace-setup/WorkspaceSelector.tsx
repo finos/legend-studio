@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WorkspaceOption } from '../../stores/WorkspaceSetupStore.js';
+import type { WorkspaceOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type SelectComponent,

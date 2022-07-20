@@ -33,7 +33,7 @@ import {
   GraphBuilderStatus,
 } from './EditorGraphState.js';
 import { ChangeDetectionState } from './ChangeDetectionState.js';
-import { NewElementState } from './NewElementState.js';
+import { NewElementState } from './editor/NewElementState.js';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';

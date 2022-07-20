@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
+import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -23,14 +23,14 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { makeAutoObservable, action, flowResult } from 'mobx';
-import type { EditorStore } from './EditorStore.js';
-import { ACTIVITY_MODE } from './EditorConfig.js';
+import type { EditorStore } from '../EditorStore.js';
+import { ACTIVITY_MODE } from '../EditorConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
-import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 
-export class ReviewStore {
+export class WorkspaceReviewStore {
   editorStore: EditorStore;
   currentProjectId?: string | undefined;
   currentProject?: Project | undefined;

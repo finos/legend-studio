@@ -16,39 +16,43 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ReviewStore } from '../../stores/ReviewStore.js';
+import { WorkspaceReviewStore } from '../../stores/workspace-review/WorkspaceReviewStore.js';
 import { EDITOR_MODE } from '../../stores/EditorConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
-const ReviewStoreContext = createContext<ReviewStore | undefined>(undefined);
+const WorkspaceReviewStoreContext = createContext<
+  WorkspaceReviewStore | undefined
+>(undefined);
 
-export const ReviewStoreProvider = ({
+export const WorkspaceReviewStoreProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }): React.ReactElement => {
   const editorStore = useEditorStore();
   editorStore.setMode(EDITOR_MODE.REVIEW);
-  const store = useLocalObservable(() => new ReviewStore(editorStore));
+  const store = useLocalObservable(() => new WorkspaceReviewStore(editorStore));
   return (
-    <ReviewStoreContext.Provider value={store}>
+    <WorkspaceReviewStoreContext.Provider value={store}>
       {children}
-    </ReviewStoreContext.Provider>
+    </WorkspaceReviewStoreContext.Provider>
   );
 };
 
-export const useReviewStore = (): ReviewStore =>
+export const useWorkspaceReviewStore = (): WorkspaceReviewStore =>
   guaranteeNonNullable(
-    useContext(ReviewStoreContext),
-    `Can't find review store in context`,
+    useContext(WorkspaceReviewStoreContext),
+    `Can't find workspace review store in context`,
   );
 
-export const withReviewStore = (WrappedComponent: React.FC): React.FC =>
-  function WithReviewStore() {
+export const withWorkspaceReviewStore = (
+  WrappedComponent: React.FC,
+): React.FC =>
+  function WithWorkspaceReviewStore() {
     return (
-      <ReviewStoreProvider>
+      <WorkspaceReviewStoreProvider>
         <WrappedComponent />
-      </ReviewStoreProvider>
+      </WorkspaceReviewStoreProvider>
     );
   };
