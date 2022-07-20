@@ -22,8 +22,8 @@ import {
   getQueryParameters,
 } from '@finos/legend-shared';
 import { useParams } from 'react-router';
-import { useLegendStudioStore } from '@finos/legend-studio';
 import { useApplicationStore } from '@finos/legend-application';
+import { useLegendStudioBaseStore } from '@finos/legend-studio';
 
 const MARKETING_LINK_ACCESS = 'marketing_link_accessed';
 type MarketingLinkAccess_TelemetryData = {
@@ -68,11 +68,11 @@ interface RedirectPathParams {
  */
 export const URLRedirector = observer(() => {
   const applicationStore = useApplicationStore();
-  const studioStore = useLegendStudioStore();
+  const baseStore = useLegendStudioBaseStore();
   const params = useParams<RedirectPathParams>();
 
   useEffect(() => {
-    if (studioStore.initState.hasCompleted) {
+    if (baseStore.initState.hasCompleted) {
       const queryParams = getQueryParameters<{
         marketingId?: string;
       }>(applicationStore.navigator.getCurrentLocation(), true);
@@ -95,12 +95,7 @@ export const URLRedirector = observer(() => {
       }
       applicationStore.navigator.goTo(`/${redirectUrl}`);
     }
-  }, [
-    applicationStore,
-    studioStore,
-    params,
-    studioStore.initState.hasCompleted,
-  ]);
+  }, [applicationStore, baseStore, params, baseStore.initState.hasCompleted]);
 
   return (
     <div className="app__page">

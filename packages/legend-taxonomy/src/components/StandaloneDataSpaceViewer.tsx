@@ -19,7 +19,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { useParams } from 'react-router';
 import type { LegendTaxonomyStandaloneDataSpaceViewerPathParams } from '../stores/LegendTaxonomyRouter.js';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { flowResult } from 'mobx';
 import {
   ArrowRightIcon,
@@ -29,9 +28,12 @@ import {
 } from '@finos/legend-art';
 import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 import { StandaloneDataSpaceViewerStore } from '../stores/StandaloneDataSpaceViewerStore.js';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  useLegendTaxonomyApplicationStore,
+  useLegendTaxonomyBaseStore,
+} from './LegendTaxonomyBaseStoreProvider.js';
 
 const StandaloneDataSpaceViewerStoreContext = createContext<
   StandaloneDataSpaceViewerStore | undefined
@@ -40,9 +42,9 @@ const StandaloneDataSpaceViewerStoreContext = createContext<
 const StandaloneDataSpaceViewerStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const applicationStore = useLegendTaxonomyApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendTaxonomyStore();
+  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
     () =>
       new StandaloneDataSpaceViewerStore(

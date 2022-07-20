@@ -21,8 +21,7 @@ import {
   ExecutionPlan,
   ExecutionNode,
 } from '@finos/legend-graph';
-import type { ApplicationStore } from '../ApplicationStore.js';
-import type { LegendApplicationConfig } from '../LegendApplicationConfig.js';
+import type { GenericLegendApplicationStore } from '../ApplicationStore.js';
 import type { TreeNodeData } from '@finos/legend-art';
 
 export class ExecutionPlanViewTreeNodeData implements TreeNodeData {
@@ -61,7 +60,7 @@ export enum EXECUTION_PLAN_VIEW_MODE {
 }
 
 export class ExecutionPlanState {
-  applicationStore: ApplicationStore<LegendApplicationConfig>;
+  applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
   displayDataJson: object = {};
   displayData = '';
@@ -75,7 +74,7 @@ export class ExecutionPlanState {
   debugText?: string | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendApplicationConfig>,
+    applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
   ) {
     makeObservable(this, {

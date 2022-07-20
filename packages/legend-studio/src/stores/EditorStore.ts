@@ -33,7 +33,7 @@ import {
   GraphBuilderStatus,
 } from './EditorGraphState.js';
 import { ChangeDetectionState } from './ChangeDetectionState.js';
-import { NewElementState } from './NewElementState.js';
+import { NewElementState } from './editor/NewElementState.js';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
@@ -86,7 +86,7 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
@@ -122,7 +122,6 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
   type ActionAlertInfo,
-  type ApplicationStore,
   type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
@@ -132,7 +131,6 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 import type { EditorMode } from './editor/EditorMode.js';
 import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
@@ -144,6 +142,7 @@ import {
 } from './graphModifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -154,7 +153,7 @@ export abstract class EditorExtensionState {
 }
 
 export class EditorStore {
-  applicationStore: ApplicationStore<LegendStudioConfig>;
+  applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
@@ -236,7 +235,7 @@ export class EditorStore {
   isDevToolEnabled = true;
 
   constructor(
-    applicationStore: ApplicationStore<LegendStudioConfig>,
+    applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
@@ -322,7 +321,7 @@ export class EditorStore {
     );
     // extensions
     this.editorExtensionStates = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
       )
@@ -1059,11 +1058,11 @@ export class EditorStore {
       return new PackageableDataEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1163,11 +1162,11 @@ export class EditorStore {
     graph_deleteElement(this.graphManagerState.graph, element);
 
     const extraElementEditorPostDeleteActions = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
     for (const postDeleteAction of extraElementEditorPostDeleteActions) {
@@ -1199,11 +1198,11 @@ export class EditorStore {
     );
 
     const extraElementEditorPostRenameActions = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
     for (const postRenameAction of extraElementEditorPostRenameActions) {
@@ -1452,11 +1451,11 @@ export class EditorStore {
       ] as string[]
     ).concat(
       this.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

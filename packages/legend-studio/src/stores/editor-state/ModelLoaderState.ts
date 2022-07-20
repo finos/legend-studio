@@ -33,8 +33,8 @@ import {
 import { TAB_SIZE } from '@finos/legend-application';
 import type {
   ModelLoaderExtensionConfiguration,
-  LegendStudioPlugin,
-} from '../LegendStudioPlugin.js';
+  LegendStudioApplicationPlugin,
+} from '../LegendStudioApplicationPlugin.js';
 
 export enum MODEL_UPDATER_INPUT_TYPE {
   ENTITIES = 'ENTITIES',
@@ -71,9 +71,9 @@ export class ModelLoaderState extends EditorState {
 
     //extensions
     this.modelLoaderExtensionConfigurations = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
-        (plugin: LegendStudioPlugin) =>
+        (plugin: LegendStudioApplicationPlugin) =>
           plugin.getExtraModelLoaderExtensionConfigurations?.() ?? [],
       )
       .filter(isNonNullable);

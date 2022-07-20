@@ -90,7 +90,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
-import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin.js';
+import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import {
   class_addProperty,
   class_deleteDerivedProperty,
@@ -1508,7 +1508,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
 
   const classPreviewRenderers = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
     .filter(isNonNullable);
 

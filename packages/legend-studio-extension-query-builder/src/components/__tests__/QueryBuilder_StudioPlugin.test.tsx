@@ -28,7 +28,7 @@ import {
   LegendStudioPluginManager,
   LEGEND_STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,
-  TEST__getTestStudioConfig,
+  TEST__getLegendStudioApplicationConfig,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
@@ -44,7 +44,7 @@ const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
-      TEST__getTestStudioConfig(),
+      TEST__getLegendStudioApplicationConfig(),
       pluginManager,
     ),
     graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),
@@ -219,16 +219,16 @@ const entities = [
 ];
 
 test(integrationTest('Open query builder by executing a class'), async () => {
-  const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+  const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-    mockedEditorStore,
+    MOCK__editorStore,
     { entities },
   );
 
   MOBX__enableSpyOrMock();
-  mockedEditorStore.graphState.globalCompileInFormMode =
+  MOCK__editorStore.graphState.globalCompileInFormMode =
     jest.fn<TEMPORARY__JestMock>();
-  mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+  MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     jest.fn<TEMPORARY__JestMock>();
   MockedMonacoEditorInstance.getValue.mockReturnValue('');
   MOBX__disableSpyOrMock();
@@ -254,18 +254,18 @@ test(integrationTest('Open query builder by executing a class'), async () => {
 test(
   integrationTest('Open query builder by editing query of a mapping execution'),
   async () => {
-    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      mockedEditorStore,
+      MOCK__editorStore,
       { entities },
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode =
+    MOCK__editorStore.graphState.globalCompileInFormMode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
+    MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+    MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
@@ -291,18 +291,18 @@ test(
 test(
   integrationTest('Open query builder by editing query of a mapping execution'),
   async () => {
-    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      mockedEditorStore,
+      MOCK__editorStore,
       { entities },
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode =
+    MOCK__editorStore.graphState.globalCompileInFormMode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
+    MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+    MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();
@@ -321,18 +321,18 @@ test(
 test(
   integrationTest('Open query builder by editing query of a service'),
   async () => {
-    const mockedEditorStore = TEST__buildQueryBuilderMockedEditorStore();
+    const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      mockedEditorStore,
+      MOCK__editorStore,
       { entities },
     );
 
     MOBX__enableSpyOrMock();
-    mockedEditorStore.graphState.globalCompileInFormMode =
+    MOCK__editorStore.graphState.globalCompileInFormMode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.lambdasToPureCode =
+    MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
-    mockedEditorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
+    MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MOBX__disableSpyOrMock();

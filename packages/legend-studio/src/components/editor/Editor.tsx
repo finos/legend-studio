@@ -74,7 +74,7 @@ export const Editor = withEditorStore(
 
     // Extensions
     const extraEditorExtensionComponents = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??

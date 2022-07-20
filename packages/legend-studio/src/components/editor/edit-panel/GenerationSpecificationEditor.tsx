@@ -52,7 +52,7 @@ import {
   type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtil.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
+import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -280,11 +280,11 @@ const ModelGenerationSpecifications = observer(
       .flatMap((getter) => getter(editorStore.graphManagerState.graph));
     const extraModelGenerationSpecificationElementDnDTypes =
       editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+              plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =

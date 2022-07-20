@@ -50,9 +50,9 @@ import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils.
 import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import type { EditorStore } from '../../EditorStore.js';
 import type {
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   TestableMetadataGetter,
-} from '../../LegendStudioPlugin.js';
+} from '../../LegendStudioApplicationPlugin.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -503,9 +503,9 @@ export class GlobalTestRunnerState {
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
     this.extraTestableMetadataGetters = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
-        (plugin: LegendStudioPlugin) =>
+        (plugin: LegendStudioApplicationPlugin) =>
           plugin.getExtraTestableMetadata?.() ?? [],
       )
       .filter(isNonNullable);

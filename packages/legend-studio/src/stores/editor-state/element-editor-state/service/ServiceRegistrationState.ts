@@ -38,7 +38,7 @@ import {
   type ServiceRegistrationResult,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig.js';
+import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,

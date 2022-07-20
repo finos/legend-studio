@@ -25,7 +25,7 @@ import type { V1_GroupByFunction } from '../../../../model/packageableElements/s
 import { GroupByFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/GroupByFunctionSpecification.js';
 import { AggregationFunctionSpecification } from '../../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationFunctionSpecification.js';
 import type { V1_AggregateFunction } from '../../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateFunction.js';
-import { V1_ProtocolToMetaModelClassMappingFirstPassBuilder } from '../V1_ProtocolToMetaModelClassMappingFirstPassBuilder.js';
+import { V1_ClassMappingFirstPassBuilder } from '../V1_ClassMappingFirstPassBuilder.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
 
 const buildGroupByFunction = (
@@ -86,10 +86,7 @@ export const V1_buildAggregateContainer = (
       container.index,
       buildAggregateSpecification(container.aggregateSpecification, context),
       container.setImplementation.accept_ClassMappingVisitor(
-        new V1_ProtocolToMetaModelClassMappingFirstPassBuilder(
-          context,
-          mapping,
-        ),
+        new V1_ClassMappingFirstPassBuilder(context, mapping),
       ) as InstanceSetImplementation,
     );
 

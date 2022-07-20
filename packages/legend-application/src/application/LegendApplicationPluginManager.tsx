@@ -27,7 +27,7 @@ import {
 } from '@finos/legend-shared';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
-export class LegendApplicationPluginManager
+export class LegendApplicationPluginManager<T extends LegendApplicationPlugin>
   extends AbstractPluginManager
   implements
     LoggerPluginManager,
@@ -39,7 +39,7 @@ export class LegendApplicationPluginManager
   protected telemetryServicePlugins: TelemetryServicePlugin[] = [];
   protected tracerServicePlugins: TracerServicePlugin<unknown>[] = [];
   protected eventNotifierPlugins: EventNotifierPlugin[] = [];
-  protected applicationPlugins: LegendApplicationPlugin[] = [];
+  protected applicationPlugins: T[] = [];
 
   registerLoggerPlugin(plugin: LoggerPlugin): void {
     this.loggerPlugins.push(plugin);
@@ -57,7 +57,7 @@ export class LegendApplicationPluginManager
     this.eventNotifierPlugins.push(plugin);
   }
 
-  registerApplicationPlugin(plugin: LegendApplicationPlugin): void {
+  registerApplicationPlugin(plugin: T): void {
     this.applicationPlugins.push(plugin);
   }
 
@@ -77,7 +77,7 @@ export class LegendApplicationPluginManager
     return [...this.eventNotifierPlugins];
   }
 
-  getApplicationPlugins(): LegendApplicationPlugin[] {
+  getApplicationPlugins(): T[] {
     return [...this.applicationPlugins];
   }
 }

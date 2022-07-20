@@ -857,7 +857,7 @@ export class MappingExecutionState {
           this.setInputDataStateBasedOnSource(
             getMappingElementSource(
               setImplementation,
-              this.editorStore.pluginManager.getStudioPlugins(),
+              this.editorStore.pluginManager.getApplicationPlugins(),
             ),
             true,
           );
@@ -877,7 +877,7 @@ export class MappingExecutionState {
                 this.setInputDataStateBasedOnSource(
                   getMappingElementSource(
                     setImplementation,
-                    this.editorStore.pluginManager.getStudioPlugins(),
+                    this.editorStore.pluginManager.getApplicationPlugins(),
                   ),
                   true,
                 ),

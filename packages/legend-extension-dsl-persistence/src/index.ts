@@ -15,7 +15,7 @@
  */
 
 export * from './DSLPersistence_Extension.js';
-export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersistence_LegendStudioPlugin.js';
+export { DSLPersistence_LegendStudioApplicationPlugin } from './components/studio/DSLPersistence_LegendStudioApplicationPlugin.js';
 
 // ---------- PACKAGEABLE ELEMENT ----------
 

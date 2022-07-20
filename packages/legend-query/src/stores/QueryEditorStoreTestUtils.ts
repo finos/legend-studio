@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import { TEST_DATA__applicationVersion } from '@finos/legend-application';
 
-export const TEST_DATA__appConfig = {
+const TEST_DATA__appConfig = {
   appName: 'test-query-app',
   env: 'test-env',
   engine: {
@@ -33,8 +33,8 @@ export const TEST_DATA__appConfig = {
 
 export const TEST__getTestLegendQueryApplicationConfig = (
   extraConfigData = {},
-): LegendQueryConfig => {
-  const config = new LegendQueryConfig({
+): LegendQueryApplicationConfig => {
+  const config = new LegendQueryApplicationConfig({
     configData: {
       ...TEST_DATA__appConfig,
       ...extraConfigData,

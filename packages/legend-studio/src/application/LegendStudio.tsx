@@ -31,10 +31,10 @@ import {
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import {
-  type LegendStudioConfigurationData,
-  LegendStudioConfig,
-} from './LegendStudioConfig.js';
-import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin.js';
+  type LegendStudioApplicationConfigurationData,
+  LegendStudioApplicationConfig,
+} from './LegendStudioApplicationConfig.js';
+import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
@@ -51,22 +51,22 @@ const setupLegendStudioUILibrary = async (
 };
 
 export class LegendStudio extends LegendApplication {
-  declare config: LegendStudioConfig;
+  declare config: LegendStudioApplicationConfig;
   declare pluginManager: LegendStudioPluginManager;
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
     application.withBasePlugins([
       new CorePureGraphManagerPlugin(),
-      new Core_LegendStudioPlugin(),
+      new Core_LegendStudioApplicationPlugin(),
     ]);
     return application;
   }
 
   async configureApplication(
-    input: LegendApplicationConfigurationInput<LegendStudioConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendStudioConfig(input);
+    return new LegendStudioApplicationConfig(input);
   }
 
   async loadApplication(): Promise<void> {

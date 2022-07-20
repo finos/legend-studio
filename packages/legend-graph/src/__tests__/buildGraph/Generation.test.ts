@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import {
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -97,7 +97,7 @@ const testGeneratedElements = async (
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>
     graphManagerState.graphManager.elementToEntity(el),
   );
-  (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+  (expect(entities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
     transformedEntities,
   );
   // Ensure generated elements are not transformed

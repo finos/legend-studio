@@ -50,13 +50,13 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 const ShareProjectModal = observer(
   (props: { open: boolean; closeModal: () => void }) => {
     const { open, closeModal } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<LegendStudioConfig>();
+    const applicationStore = useLegendStudioApplicationStore();
     const versions = editorStore.sdlcState.projectVersions;
     const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
     const isFetchingProject = editorStore.sdlcState.isFetchingProject;
@@ -280,7 +280,7 @@ const WorkspacesViewer = observer(() => {
 
 const ReleaseEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const projectOverviewState = editorStore.projectOverviewState;
   const commitedReviews =
     projectOverviewState.committedReviewsBetweenMostRecentVersionAndProjectLatest;
@@ -466,7 +466,7 @@ const ReleaseEditor = observer(() => {
 
 const VersionsViewer = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const versions = editorStore.sdlcState.projectVersions;
   const isDispatchingAction = editorStore.sdlcState.isFetchingProjectVersions;
 

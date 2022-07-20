@@ -71,5 +71,5 @@ export const MOBX__disableSpyOrMock = (): void => {
  * TODO: We will remove these when Jest sort this out
  * See https://github.com/facebook/jest/issues/12424
  */
-export type TEMPORARRY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type TEMPORARY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 export type TEMPORARY__JestMock = any; // eslint-disable-line @typescript-eslint/no-explicit-any

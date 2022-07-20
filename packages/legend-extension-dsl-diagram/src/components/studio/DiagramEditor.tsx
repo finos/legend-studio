@@ -116,7 +116,7 @@ import {
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DSLDiagram_Helper.js';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension.js';
+import type { DSLDiagram_LegendStudioApplicationPlugin_Extension } from './DSLDiagram_LegendStudioApplicationPlugin_Extension.js';
 import {
   classView_setHideProperties,
   classView_setHideStereotypes,
@@ -136,11 +136,11 @@ const DiagramEditorContextMenu = observer(
     const extraClassViewContextMenuItems =
       diagramEditorState.contextMenuClassView
         ? editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLDiagram_LegendStudioPlugin_Extension
+                  plugin as DSLDiagram_LegendStudioApplicationPlugin_Extension
                 ).getExtraClassViewContextMenuItemRendererConfigurations?.() ??
                 [],
             )

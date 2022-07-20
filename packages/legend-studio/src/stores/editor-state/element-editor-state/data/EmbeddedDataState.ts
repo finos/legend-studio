@@ -30,7 +30,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../DSLData_LegendStudioPlugin_Extension.js';
+import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../DSLData_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   dataElementReference_setDataElement,
@@ -69,11 +69,11 @@ export const createEmbeddedData = (
     return modelStoreData;
   } else {
     const extraEmbeddedDataCreator = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioPlugin_Extension
+            plugin as DSLData_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataCreators?.() ?? [],
       );
     for (const creator of extraEmbeddedDataCreator) {
@@ -333,11 +333,11 @@ export function buildEmbeddedDataEditorState(
     return new DataElementReferenceState(editorStore, embeddedData);
   } else {
     const extraEmbeddedDataEditorStateBuilders = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioPlugin_Extension
+            plugin as DSLData_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataEditorStateBuilders?.() ?? [],
       );
     for (const stateBuilder of extraEmbeddedDataEditorStateBuilders) {

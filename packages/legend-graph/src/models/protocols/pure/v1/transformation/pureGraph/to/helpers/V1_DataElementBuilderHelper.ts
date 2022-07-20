@@ -37,9 +37,7 @@ import type {
 import type { V1_RelationalCSVData } from '../../../../model/data/V1_RelationalCSVData.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 
-export class V1_ProtocolToMetaModelEmbeddedDataBuilder
-  implements V1_EmbeddedDataVisitor<EmbeddedData>
-{
+class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
   context: V1_GraphBuilderContext;
 
   constructor(context: V1_GraphBuilderContext) {
@@ -107,3 +105,9 @@ export class V1_ProtocolToMetaModelEmbeddedDataBuilder
     return metamodel;
   }
 }
+
+export const V1_buildEmbeddedData = (
+  protocol: V1_EmbeddedData,
+  context: V1_GraphBuilderContext,
+): EmbeddedData =>
+  protocol.accept_EmbeddedDataVisitor(new V1_EmbeddedDataBuilder(context));

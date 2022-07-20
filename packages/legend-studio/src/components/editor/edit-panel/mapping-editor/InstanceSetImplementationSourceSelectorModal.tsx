@@ -170,7 +170,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
       sourceElementToSelect ??
         getMappingElementSource(
           setImplementation,
-          editorStore.pluginManager.getStudioPlugins(),
+          editorStore.pluginManager.getApplicationPlugins(),
         ),
     );
     const changeSourceType = (

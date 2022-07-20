@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './components/ELMorphir_LegendStudioPlugin.js';
+export * from './components/ELMorphir_LegendStudioApplicationPlugin.js';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type ApplicationStore, TAB_SIZE } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
@@ -35,8 +35,8 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { makeObservable, flow, observable, flowResult } from 'mobx';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
+import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
   generateDataSpaceQueryEditorUrl,
   generateStudioProjectViewUrl,
@@ -44,7 +44,7 @@ import {
 } from './LegendTaxonomyRouter.js';
 
 export class StandaloneDataSpaceViewerStore {
-  applicationStore: ApplicationStore<LegendTaxonomyConfig>;
+  applicationStore: LegendTaxonomyApplicationStore;
   depotServerClient: DepotServerClient;
   graphManagerState: BasicGraphManagerState;
   pluginManager: LegendTaxonomyPluginManager;
@@ -53,7 +53,7 @@ export class StandaloneDataSpaceViewerStore {
   viewerState?: DataSpaceViewerState | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendTaxonomyConfig>,
+    applicationStore: LegendTaxonomyApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendTaxonomyPluginManager,
   ) {

@@ -102,12 +102,12 @@ import {
   type V1_PackageableElementVisitor,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement.js';
-import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphSecondPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphSecondPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphThirdPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphThirdPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFourthPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder.js';
-import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder.js';
+import { V1_ElementFirstPassBuilder } from './transformation/pureGraph/to/V1_ElementFirstPassBuilder.js';
+import { V1_ElementSecondPassBuilder } from './transformation/pureGraph/to/V1_ElementSecondPassBuilder.js';
+import { V1_ElementThirdPassBuilder } from './transformation/pureGraph/to/V1_ElementThirdPassBuilder.js';
+import { V1_ElementFourthPassBuilder } from './transformation/pureGraph/to/V1_ElementFourthPassBuilder.js';
+import { V1_ElementFifthPassBuilder } from './transformation/pureGraph/to/V1_ElementFifthPassBuilder.js';
+import { V1_RawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_RawValueSpecificationBuilder.js';
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext.js';
 import {
   type V1_GraphBuilderContext,
@@ -904,7 +904,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           input.data.nativeElements.map((element) =>
             this.visitWithGraphBuilderErrorHandling(
               element,
-              new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+              new V1_ElementFirstPassBuilder(
                 this.getBuilderContext(graph, input.model, element, options),
                 packageCache,
                 elementPathCache,
@@ -919,7 +919,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+                    new V1_ElementFirstPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -948,7 +948,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.profiles.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -960,7 +960,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -972,7 +972,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.enumerations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -984,7 +984,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.measures.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -996,7 +996,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.functions.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1009,7 +1009,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1021,7 +1021,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.associations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1034,7 +1034,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1046,7 +1046,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.associations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1059,7 +1059,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+            new V1_ElementFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1078,7 +1078,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1090,7 +1090,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1102,7 +1102,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1114,7 +1114,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+            new V1_ElementFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1133,7 +1133,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1145,7 +1145,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1157,7 +1157,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1177,7 +1177,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.connections.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1189,7 +1189,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.runtimes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1208,7 +1208,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.services.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1227,7 +1227,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.dataElements.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1246,7 +1246,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.fileGenerations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1265,7 +1265,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.generationSpecifications.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1284,7 +1284,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.sectionIndices.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1307,7 +1307,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+                    new V1_ElementSecondPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1325,7 +1325,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+                    new V1_ElementThirdPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1343,7 +1343,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+                    new V1_ElementFourthPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1361,7 +1361,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+                    new V1_ElementFifthPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1761,7 +1761,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // deserialize json and builds metamodal raw value spec
     const rawValueSpecification = V1_deserializeRawValueSpecification(json);
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
-      new V1_ProtocolToMetaModelRawValueSpecificationBuilder(
+      new V1_RawValueSpecificationBuilder(
         new V1_GraphBuilderContextBuilder(
           graph,
           graph,

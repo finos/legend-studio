@@ -9,7 +9,7 @@ The codebase and home of Legend applications: `Legend Studio`, `Legend Query`, e
 
 ## Getting started
 
-Make sure you have _at least_ SDLC and Engine servers running. To quickly set these up, use our development [Docker compose](https://github.com/finos/legend/tree/master/installers/docker-compose/legend-studio-dev). If you need to debug and code on the backend at the same time, follow [this guide](./fixtures/legend-docker-setup/studio-dev-setup/README.md) to set them up using `maven`.
+Studio relies [Legend SDLC](https://github.com/finos/legend-sdlc) server and [Legend Engine](https://github.com/finos/legend-engine) server. To quickly set these backend servers up, use our development [Docker compose](./fixtures/legend-docker-setup/studio-dev-setup/README.md). If you need to debug and develop the backend, [setup with Maven](https://legend.finos.org/docs/getting-started/installation-guide#maven-install) instead.
 
 Last but not least, make sure you have `Yarn` installed. Run the following commands in order.
 
@@ -21,7 +21,7 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
 
 After setting up, visit http://localhost:8080/studio and the application should be up :tada:
 
-> If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
+> If you get `Unauthorized` error, visit `SDLC` server at http://localhost:7070/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
 
 ## Documentation
 

@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { applyEntityChanges, EntityChange } from '@finos/legend-server-sdlc';
-import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
+import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 
@@ -120,7 +120,7 @@ test(unitTest('Apply entity changes'), async () => {
       EntityChange.serialization.fromJson(e),
     ),
   );
-  (expect(changed) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+  (expect(changed) as TEMPORARY__JestMatcher).toIncludeSameMembers(
     changedEntities,
   );
 });

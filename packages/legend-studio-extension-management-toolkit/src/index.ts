@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './components/Management_LegendStudioPlugin.js';
+export * from './components/Management_LegendStudioApplicationPlugin.js';

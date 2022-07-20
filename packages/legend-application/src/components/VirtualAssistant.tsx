@@ -51,7 +51,7 @@ import { TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
-} from '../stores/LegendApplicationAssistantService.js';
+} from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';

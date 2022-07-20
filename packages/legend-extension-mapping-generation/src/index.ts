@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export * from './components/MappingGeneration_LegendStudioPlugin.js';
+export * from './components/MappingGeneration_LegendStudioApplicationPlugin.js';
 export * from './models/MappingGeneration_Extension.js';

@@ -22,7 +22,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import { externalFormat_schemaSet_setFormat } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
-import { NewElementDriver } from '../../../../stores/NewElementState.js';
+import { NewElementDriver } from '../../../../stores/editor/NewElementState.js';
 import type { ExternalFormatTypeOption } from '../../../../stores/editor-state/ExternalFormatState.js';
 
 export class NewSchemaSetDriver extends NewElementDriver<SchemaSet> {

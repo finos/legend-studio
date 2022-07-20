@@ -48,7 +48,7 @@ import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFor
 import { flowResult } from 'mobx';
 import { buildElementOption } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
@@ -270,11 +270,11 @@ export const NewConnectionDataModal = observer(
         }
       : undefined;
     const extraOptionTypes = testDataState.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioPlugin_Extension
+            plugin as DSLData_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataTypeOptions?.() ?? [],
       );
     const embeddedOptions = [

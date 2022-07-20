@@ -21,9 +21,10 @@ import type {
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
+import type { LegendTaxonomyApplicationPlugin } from '../stores/LegendTaxonomyApplicationPlugin.js';
 
 export class LegendTaxonomyPluginManager
-  extends LegendApplicationPluginManager
+  extends LegendApplicationPluginManager<LegendTaxonomyApplicationPlugin>
   implements GraphPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];

@@ -22,12 +22,12 @@ import {
   useDepotServerClient,
 } from '@finos/legend-server-depot';
 import {
-  type LegendQueryConfig,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   QueryEditor,
   QueryEditorStoreContext,
-  useLegendQueryStore,
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
 } from '@finos/legend-query';
 import { useParams } from 'react-router';
 import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
@@ -53,15 +53,15 @@ const DataSpaceQueryEditorStoreProvider: React.FC<{
   classPath,
 }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
-  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const queryStore = useLegendQueryStore();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new DataSpaceQueryEditorStore(
         applicationStore,
         depotServerClient,
-        queryStore.pluginManager,
+        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,

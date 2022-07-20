@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
+import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils.js';
 import { DependencyManager } from '../../graph/DependencyManager.js';
 import type { Entity } from '@finos/legend-model-storage';
@@ -129,7 +129,7 @@ test(
     const transformedEntities = graphManagerState.graph.allOwnElements.map(
       (el) => graphManagerState.graphManager.elementToEntity(el),
     );
-    (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    (expect(entities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
       transformedEntities,
     );
   },

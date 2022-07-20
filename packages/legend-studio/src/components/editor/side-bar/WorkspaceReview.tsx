@@ -40,9 +40,8 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -98,7 +97,7 @@ export const WorkspaceReviewDiffs = observer(() => {
 
 export const WorkspaceReview = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const workspaceReviewState = editorStore.workspaceReviewState;
   const workspaceContainsSnapshotDependencies =
     editorStore.projectConfigurationEditorState.containsSnapshotDependencies;

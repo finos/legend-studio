@@ -72,7 +72,7 @@ import {
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import {
   integrationTest,
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
 import {
   QueryBuilderState,
@@ -366,7 +366,7 @@ describe(
           graphManagerState.graphManager.serializeRawValueSpecification(
             queryBuilderState.getQuery(),
           );
-        (expect([lambda]) as TEMPORARRY__JestMatcher).toIncludeSameMembers([
+        (expect([lambda]) as TEMPORARY__JestMatcher).toIncludeSameMembers([
           jsonQuery,
         ]);
       },

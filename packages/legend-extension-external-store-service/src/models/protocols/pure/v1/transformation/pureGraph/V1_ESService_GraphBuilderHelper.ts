@@ -22,7 +22,7 @@ import {
   V1_resolveBinding,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
-  V1_ProtocolToMetaModelEmbeddedDataBuilder,
+  V1_buildEmbeddedData,
 } from '@finos/legend-graph';
 import type { V1_ServiceStoreServicePtr } from '../../model/packageableElements/store/serviceStore/model/V1_ESService_ServiceStoreServicePtr.js';
 import {
@@ -414,9 +414,7 @@ const V1_buildServiceResponseDefinition = (
 ): ServiceResponseDefinition => {
   const serviceResponseDefinition = new ServiceResponseDefinition();
   serviceResponseDefinition.body = guaranteeType(
-    protocol.body.accept_EmbeddedDataVisitor(
-      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
-    ),
+    V1_buildEmbeddedData(protocol.body, context),
     ExternalFormatData,
     'Service response definition body must be external format data',
   );

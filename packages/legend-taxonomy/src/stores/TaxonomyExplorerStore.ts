@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type ApplicationStore, TAB_SIZE } from '@finos/legend-application';
+import { TAB_SIZE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeData,
@@ -44,9 +44,9 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent.js';
+import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
   generateExploreTaxonomyTreeRoute,
   type LegendTaxonomyPathParams,
@@ -118,7 +118,7 @@ const LEGEND_TAXONOMY_HOTKEY_MAP = Object.freeze({
 });
 
 export class TaxonomyExplorerStore {
-  applicationStore: ApplicationStore<LegendTaxonomyConfig>;
+  applicationStore: LegendTaxonomyApplicationStore;
   depotServerClient: DepotServerClient;
   taxonomyServerClient: TaxonomyServerClient;
   graphManagerState: BasicGraphManagerState;
@@ -142,7 +142,7 @@ export class TaxonomyExplorerStore {
   currentTaxonomyNodeViewerState?: TaxonomyNodeViewerState | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendTaxonomyConfig>,
+    applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
     pluginManager: LegendTaxonomyPluginManager,

@@ -61,7 +61,7 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
+import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
@@ -138,11 +138,11 @@ export class GraphGenerationState {
       // Note: For now we only allow classes and enumerations for all types of generations.
       const extraFileGenerationScopeFilterConfigurations =
         this.editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+                plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
               ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
           );
       return this.fileGenerationConfigurations.filter((generationType) => {

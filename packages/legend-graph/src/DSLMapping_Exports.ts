@@ -30,11 +30,7 @@ export {
   OperationType,
 } from './models/metamodels/pure/packageableElements/mapping/OperationSetImplementation.js';
 export { PropertyMapping } from './models/metamodels/pure/packageableElements/mapping/PropertyMapping.js';
-export {
-  Connection,
-  ConnectionPointer,
-  type ConnectionVisitor,
-} from './models/metamodels/pure/packageableElements/connection/Connection.js';
+export * from './models/metamodels/pure/packageableElements/connection/Connection.js';
 export { PackageableConnection } from './models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
 export { ModelStore } from './models/metamodels/pure/packageableElements/store/modelToModel/model/ModelStore.js';
 export { PureModelConnection } from './models/metamodels/pure/packageableElements/store/modelToModel/connection/PureModelConnection.js';
@@ -64,6 +60,15 @@ export {
 } from './models/metamodels/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 export { type EmbeddedSetImplementation } from './models/metamodels/pure/packageableElements/mapping/EmbeddedSetImplementation.js';
 
+export {
+  type RawMappingModelCoverageAnalysisResult,
+  MappingModelCoverageAnalysisResult,
+  MappedEntity,
+  MappedProperty,
+  EntityMappedProperty,
+  EnumMappedProperty,
+} from './graphManager/action/analytics/MappingModelCoverageAnalysis.js';
+
 // protocols
 export {
   V1_Connection,
@@ -87,6 +92,15 @@ export {
 } from './models/protocols/pure/v1/model/packageableElements/mapping/V1_ClassMapping.js';
 export * from './models/protocols/pure/DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 export { V1_MAPPING_ELEMENT_PROTOCOL_TYPE } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_MappingSerializationHelper.js';
-export { V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
+export {
+  V1_runtimePointerModelSchema,
+  V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 export { MappingInclude } from './models/metamodels/pure/packageableElements/mapping/MappingInclude.js';
 export { V1_getIncludedMappingPath } from './models/protocols/pure/v1/helper/V1_DSLMapping_Helper.js';
+export { V1_buildConnection } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ConnectionBuilderHelper.js';
+export {
+  V1_deserializeConnectionValue,
+  V1_serializeConnectionValue,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
+export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
