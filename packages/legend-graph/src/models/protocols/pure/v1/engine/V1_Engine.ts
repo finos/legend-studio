@@ -300,7 +300,7 @@ export class V1_Engine {
         undefined,
         undefined,
         options?.pruneSourceInformation !== undefined
-          ? !options?.pruneSourceInformation
+          ? !options.pruneSourceInformation
           : true,
       )) as unknown as V1_RawLambda;
     } catch (error) {
