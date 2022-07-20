@@ -15,7 +15,7 @@
  */
 
 import type { PackageableElement } from '@finos/legend-graph';
-import type { PackageableElementOption } from '../../index.js';
+import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
 export const getPackageableElementOptionalFormatter = (props?: {
   darkMode?: boolean;

@@ -743,10 +743,10 @@ export class MappingExecutionState {
         this.isExecuting = true;
         const result =
           (yield this.editorStore.graphManagerState.graphManager.executeMapping(
-            this.editorStore.graphManagerState.graph,
-            this.mappingEditorState.mapping,
             query,
+            this.mappingEditorState.mapping,
             runtime,
+            this.editorStore.graphManagerState.graph,
             {
               useLosslessParse: true,
             },
@@ -786,20 +786,20 @@ export class MappingExecutionState {
         if (debug) {
           const debugResult =
             (yield this.editorStore.graphManagerState.graphManager.debugExecutionPlanGeneration(
-              this.editorStore.graphManagerState.graph,
-              this.mappingEditorState.mapping,
               query,
+              this.mappingEditorState.mapping,
               runtime,
+              this.editorStore.graphManagerState.graph,
             )) as { plan: RawExecutionPlan; debug: string };
           rawPlan = debugResult.plan;
           this.executionPlanState.setDebugText(debugResult.debug);
         } else {
           rawPlan =
             (yield this.editorStore.graphManagerState.graphManager.generateExecutionPlan(
-              this.editorStore.graphManagerState.graph,
-              this.mappingEditorState.mapping,
               query,
+              this.mappingEditorState.mapping,
               runtime,
+              this.editorStore.graphManagerState.graph,
             )) as object;
         }
         try {

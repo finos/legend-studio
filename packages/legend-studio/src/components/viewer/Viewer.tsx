@@ -21,7 +21,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   ACTIVITY_MODE,
@@ -44,7 +45,7 @@ import {
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
-import { useViewerStore, ViewerStoreProvider } from './ViewerStoreProvider.js';
+import { useViewerStore, withViewerStore } from './ViewerStoreProvider.js';
 import {
   type ViewerPathParams,
   generateSetupRoute,
@@ -52,8 +53,8 @@ import {
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
 import { flowResult } from 'mobx';
 import {
-  EditorStoreProvider,
   useEditorStore,
+  withEditorStore,
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
@@ -239,115 +240,116 @@ const ViewerActivityBar = observer(() => {
   );
 });
 
-export const ViewerInner = observer(() => {
-  const params = useParams<ViewerPathParams>();
-  const viewerStore = useViewerStore();
-  const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
-  const allowOpeningElement =
-    editorStore.sdlcState.currentProject &&
-    editorStore.graphManagerState.graphBuildState.hasSucceeded;
-  const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
-    editorStore.sideBarDisplayState.setSize(
-      (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
-    );
-  // Extensions
-  const extraEditorExtensionComponents = editorStore.pluginManager
-    .getStudioPlugins()
-    .flatMap(
-      (plugin) =>
-        plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ?? [],
-    )
-    .filter(isNonNullable)
-    .map((config) => (
-      <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
-    ));
-  // Resize
-  const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-  // Hotkeys
-  const keyMap = {
-    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
-      LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
-    ],
-    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
-      LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
-    ],
-  };
-  const handlers = {
-    [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: editorStore.createGlobalHotKeyAction(
-      () => editorStore.searchElementCommandState.open(),
-    ),
-    [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
-      editorStore.createGlobalHotKeyAction(() => {
-        flowResult(editorStore.toggleTextMode()).catch(
+export const Viewer = withEditorStore(
+  withViewerStore(
+    observer(() => {
+      const params = useParams<ViewerPathParams>();
+      const viewerStore = useViewerStore();
+      const editorStore = useEditorStore();
+      const applicationStore = useApplicationStore();
+      const allowOpeningElement =
+        editorStore.sdlcState.currentProject &&
+        editorStore.graphManagerState.graphBuildState.hasSucceeded;
+      const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+        editorStore.sideBarDisplayState.setSize(
+          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+            .width,
+        );
+      // Extensions
+      const extraEditorExtensionComponents = editorStore.pluginManager
+        .getStudioPlugins()
+        .flatMap(
+          (plugin) =>
+            plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??
+            [],
+        )
+        .filter(isNonNullable)
+        .map((config) => (
+          <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
+        ));
+      // Resize
+      const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+      // Hotkeys
+      const keyMap = {
+        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
+          LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
+        ],
+        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
+          LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
+        ],
+      };
+      const handlers = {
+        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]:
+          editorStore.createGlobalHotKeyAction(() =>
+            editorStore.searchElementCommandState.open(),
+          ),
+        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
+          editorStore.createGlobalHotKeyAction(() => {
+            flowResult(editorStore.toggleTextMode()).catch(
+              applicationStore.alertUnhandledError,
+            );
+          }),
+      };
+
+      useEffect(() => {
+        if (ref.current) {
+          editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+        }
+      }, [ref, editorStore, width, height]);
+
+      useEffect(() => {
+        viewerStore.internalizeEntityPath(params);
+      }, [viewerStore, params]);
+
+      // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
+      // on the second call when we remove entity path from the route
+      useEffect(() => {
+        flowResult(viewerStore.initialize(params)).catch(
           applicationStore.alertUnhandledError,
         );
-      }),
-  };
+      }, [applicationStore, viewerStore, params]);
 
-  useEffect(() => {
-    if (ref.current) {
-      editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
-    }
-  }, [ref, editorStore, width, height]);
-
-  useEffect(() => {
-    viewerStore.internalizeEntityPath(params);
-  }, [viewerStore, params]);
-
-  // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
-  // on the second call when we remove entity path from the route
-  useEffect(() => {
-    flowResult(viewerStore.initialize(params)).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, viewerStore, params]);
-
-  return (
-    <div className="app__page">
-      <div className="editor viewer">
-        <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <div className="editor__body">
-            <ViewerActivityBar />
-            <div ref={ref} className="editor__content-container">
-              <div className="editor__content">
-                <ResizablePanelGroup orientation="vertical">
-                  <ResizablePanel
-                    {...getControlledResizablePanelProps(
-                      editorStore.sideBarDisplayState.size === 0,
-                      {
-                        onStopResize: resizeSideBar,
-                        size: editorStore.sideBarDisplayState.size,
-                      },
-                    )}
-                    direction={1}
-                  >
-                    <ViewerSideBar />
-                  </ResizablePanel>
-                  <ResizablePanelSplitter />
-                  <ResizablePanel minSize={300}>
-                    {editorStore.isInFormMode && <EditPanel />}
-                    {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </div>
+      return (
+        <DndProvider backend={HTML5Backend}>
+          <div className="app__page">
+            <div className="editor viewer">
+              <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+                <div className="editor__body">
+                  <ViewerActivityBar />
+                  <div ref={ref} className="editor__content-container">
+                    <div className="editor__content">
+                      <ResizablePanelGroup orientation="vertical">
+                        <ResizablePanel
+                          {...getControlledResizablePanelProps(
+                            editorStore.sideBarDisplayState.size === 0,
+                            {
+                              onStopResize: resizeSideBar,
+                              size: editorStore.sideBarDisplayState.size,
+                            },
+                          )}
+                          direction={1}
+                        >
+                          <ViewerSideBar />
+                        </ResizablePanel>
+                        <ResizablePanelSplitter />
+                        <ResizablePanel minSize={300}>
+                          {editorStore.isInFormMode && <EditPanel />}
+                          {editorStore.isInGrammarTextMode && (
+                            <GrammarTextEditor />
+                          )}
+                        </ResizablePanel>
+                      </ResizablePanelGroup>
+                    </div>
+                  </div>
+                </div>
+                <ViewerStatusBar />
+                {extraEditorExtensionComponents}
+                {allowOpeningElement && <ProjectSearchCommand />}
+              </GlobalHotKeys>
             </div>
           </div>
-          <ViewerStatusBar />
-          {extraEditorExtensionComponents}
-          {allowOpeningElement && <ProjectSearchCommand />}
-        </GlobalHotKeys>
-      </div>
-    </div>
-  );
-});
-
-export const Viewer: React.FC = () => (
-  <EditorStoreProvider>
-    <ViewerStoreProvider>
-      <DndProvider backend={HTML5Backend}>
-        <ViewerInner />
-      </DndProvider>
-    </ViewerStoreProvider>
-  </EditorStoreProvider>
+        </DndProvider>
+      );
+    }),
+  ),
 );

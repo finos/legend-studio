@@ -55,15 +55,15 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
 import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import {
+  EDITOR_LANGUAGE,
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {

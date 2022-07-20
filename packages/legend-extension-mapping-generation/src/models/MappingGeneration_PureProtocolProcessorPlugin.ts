@@ -27,7 +27,7 @@ import {
 import { V1_MappingGenerateModelInput } from './protocols/pure/v1/engine/V1_MappingGenerateModelInput.js';
 import { V1_MappingGenConfiguration } from './protocols/pure/v1/model/V1_MappingGenConfiguration.js';
 
-const GENERATE_MAPPING_ENGINE_TRACER_SPAN = 'generate relational mapping';
+const GENERATE_MAPPING_ENGINE_ACTIVITY_TRACE = 'generate relational mapping';
 
 export class MappingGeneration_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
@@ -53,7 +53,7 @@ export class MappingGeneration_PureProtocolProcessorPlugin
           const pmcd = V1_deserializePureModelContextData(
             await engineServerClient.postWithTracing(
               engineServerClient.getTraceData(
-                GENERATE_MAPPING_ENGINE_TRACER_SPAN,
+                GENERATE_MAPPING_ENGINE_ACTIVITY_TRACE,
               ),
               `${engineServerClient._pure()}/modelGeneration/mappingGeneration`,
               V1_MappingGenerateModelInput.serialization.toJson(configInput),

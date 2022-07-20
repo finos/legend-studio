@@ -18,7 +18,9 @@ import { test, expect, describe } from '@jest/globals';
 import TEST_DATA__ComplexM2MModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__SimpleRelationalInheritanceModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
-import TEST_DATA_AssociationMappingModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
+import TEST_DATA__AssociationMappingModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
+import TEST_DATA__M2MAutoMapped from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
+import TEST_DATA__RelationalInline from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_RelationalInline.json';
 import {
   type TEMPORARRY__JestMatcher,
   type PlainObject,
@@ -41,27 +43,23 @@ import {
 } from '../../stores/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
-import { TEST__provideMockedLegendQueryStore } from '../../components/LegendQueryComponentTestUtils.js';
+import { TEST__provideMockedQueryEditorStore } from '../../components/QueryEditorComponentTestUtils.js';
 import {
-  TEST_DATA__Auto_M2M,
-  TEST_DATA__Relational_Inline,
+  TEST_DATA__MappingData__ComplexM2MModel,
+  TEST_DATA__MappingData__AssociationMapping,
+  TEST_DATA__MappingData_M2MAutoMapped,
+  TEST_DATA__MappingData__COVIDDataSimpleModel,
+  TEST_DATA__MappingData__Relational_Inheritance,
+  TEST_DATA__MappingData_RelationalInline,
 } from './TEST_DATA__MappingData.js';
 import {
-  EXPECTED__MappingData_ComplexM2MModel,
-  EXPECTED__MappingData__AssociationMapping,
-  EXPECTED__MappingData__Auto_M2M,
-  EXPECTED__MappingData__COVIDDataSimpleModel,
-  EXPECTED__MappingData__Relational_Inheritance,
-  EXPECTED__MappingData__Relational_Inline,
-} from './TEST_DATA__Expected_MappingData.js';
-import {
-  Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel,
-  Mocked_ModelCoverageAnalyticsResult_Auto_M2M,
-  Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel,
-  Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel,
-  Mocked_ModelCoverageAnalyticsResult_Relational_Inline,
-  Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceModel,
-} from './TEST_DATA__Mocked_ModelCoverageAnalyticsResult.js';
+  TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
+  TEST_DATA__ModelCoverageAnalysisResult_M2MAutoMapped,
+  TEST_DATA__ModelCoverageAnalysisResult_ComplexM2M,
+  TEST_DATA__ModelCoverageAnalysisResult_COVIDDataSimple,
+  TEST_DATA__ModelCoverageAnalysisResult_RelationalInline,
+  TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
+} from './TEST_DATA__ModelCoverageAnalysisResult.js';
 
 interface NodePropertyMappingData {
   property: AbstractProperty;
@@ -96,10 +94,10 @@ const cases: TestCase[] = [
       mapping: 'model::MyMapping',
       rootClass: 'model::target::NFirm',
       expectedMappingData:
-        EXPECTED__MappingData_ComplexM2MModel as TestNodePropertyMappingData[],
+        TEST_DATA__MappingData__ComplexM2MModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__ComplexM2MModel,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_ComplexM2MModel,
+        TEST_DATA__ModelCoverageAnalysisResult_ComplexM2M,
     },
   ],
   [
@@ -108,10 +106,10 @@ const cases: TestCase[] = [
       mapping: 'mapping::CovidDataMapping',
       rootClass: 'domain::COVIDData',
       expectedMappingData:
-        EXPECTED__MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
+        TEST_DATA__MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
       entities: TEST_DATA__COVIDDataSimpleModel,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_COVIDDataSimpleModel,
+        TEST_DATA__ModelCoverageAnalysisResult_COVIDDataSimple,
     },
   ],
   [
@@ -120,10 +118,10 @@ const cases: TestCase[] = [
       mapping: 'test::autoMapping::AutoMapping',
       rootClass: 'test::autoMapping::Firm',
       expectedMappingData:
-        EXPECTED__MappingData__Auto_M2M as TestNodePropertyMappingData[],
-      entities: TEST_DATA__Auto_M2M,
+        TEST_DATA__MappingData_M2MAutoMapped as TestNodePropertyMappingData[],
+      entities: TEST_DATA__M2MAutoMapped,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_Auto_M2M,
+        TEST_DATA__ModelCoverageAnalysisResult_M2MAutoMapped,
     },
   ],
   [
@@ -132,10 +130,10 @@ const cases: TestCase[] = [
       mapping: 'Oct::mappings::simpleRelationalMapping',
       rootClass: 'Oct::models::Person',
       expectedMappingData:
-        EXPECTED__MappingData__Relational_Inline as TestNodePropertyMappingData[],
-      entities: TEST_DATA__Relational_Inline,
+        TEST_DATA__MappingData_RelationalInline as TestNodePropertyMappingData[],
+      entities: TEST_DATA__RelationalInline,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_Relational_Inline,
+        TEST_DATA__ModelCoverageAnalysisResult_RelationalInline,
     },
   ],
   [
@@ -144,10 +142,10 @@ const cases: TestCase[] = [
       mapping: 'model::NewMapping',
       rootClass: 'model::Firm',
       expectedMappingData:
-        EXPECTED__MappingData__Relational_Inheritance as TestNodePropertyMappingData[],
+        TEST_DATA__MappingData__Relational_Inheritance as TestNodePropertyMappingData[],
       entities: TEST_DATA__SimpleRelationalInheritanceModel,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_SimpleRelationalInheritanceModel,
+        TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
     },
   ],
   [
@@ -156,11 +154,11 @@ const cases: TestCase[] = [
       mapping: 'model::parentMapping',
       rootClass: 'model::Person',
       expectedMappingData:
-        EXPECTED__MappingData__AssociationMapping as TestNodePropertyMappingData[],
-      entities: TEST_DATA_AssociationMappingModel,
+        TEST_DATA__MappingData__AssociationMapping as TestNodePropertyMappingData[],
+      entities: TEST_DATA__AssociationMappingModel,
       maxDepth: 2,
       rawMappingModelCoverageAnalysisResult:
-        Mocked_ModelCoverageAnalyticsResult_AssociationMappingModel,
+        TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
     },
   ],
 ];
@@ -254,11 +252,11 @@ describe(integrationTest('Build property mapping data'), () => {
       } = testCase;
       const pluginManager = LegendQueryPluginManager.create();
       pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
-      const mockedQueryStore = TEST__provideMockedLegendQueryStore({
+      const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
         pluginManager,
       });
       const graphManagerState =
-        mockedQueryStore.queryBuilderState.graphManagerState;
+        MOCK__editorStore.queryBuilderState.graphManagerState;
       await graphManagerState.initializeSystem();
       await graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,

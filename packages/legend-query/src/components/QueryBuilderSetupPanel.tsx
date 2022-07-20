@@ -17,7 +17,6 @@
 import {
   CustomSelectorInput,
   createFilter,
-  ErrorIcon,
   CogIcon,
   PURE_ClassIcon,
   PURE_MappingIcon,
@@ -46,6 +45,7 @@ import {
 import {
   type PackageableElementOption,
   getPackageableElementOptionalFormatter,
+  buildElementOption,
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
@@ -132,7 +132,7 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = queryBuilderState.classOptions;
+    const classOptions = querySetupState.classes.map(buildElementOption);
     const selectedClassOption = querySetupState._class
       ? {
           value: querySetupState._class,
@@ -143,29 +143,9 @@ export const QueryBuilderSetupPanel = observer(
       queryBuilderState.changeClass(val.value);
     };
     // mapping
-    const mappingOptions = querySetupState.possibleMappings.map((mapping) => ({
-      value: mapping,
-      label: mapping.name,
-    }));
-    const inCompatibleMappingLabel = (
-      <div
-        className="query-builder__setup__config__item__mapping-option--incompatible"
-        title={'Mapping incompatibe with class'}
-      >
-        <div className="query-builder__setup__config__item__mapping-option--incompatible__label">
-          {querySetupState.mapping?.name ?? ''}
-        </div>
-        <ErrorIcon />
-      </div>
-    );
+    const mappingOptions = querySetupState.mappings.map(buildElementOption);
     const selectedMappingOption = querySetupState.mapping
-      ? {
-          value: querySetupState.mapping,
-          label:
-            querySetupState.isMappingCompatible || !isQuerySupported
-              ? querySetupState.mapping.name
-              : inCompatibleMappingLabel,
-        }
+      ? buildElementOption(querySetupState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
@@ -175,7 +155,7 @@ export const QueryBuilderSetupPanel = observer(
       }
     };
     // runtime
-    const runtime = querySetupState.runtime;
+    const runtime = querySetupState.runtimeValue;
     const isRuntimePointer = runtime instanceof RuntimePointer;
     const customRuntimeLabel = (
       <div className="service-execution-editor__configuration__runtime-option--custom">
@@ -193,7 +173,7 @@ export const QueryBuilderSetupPanel = observer(
           value?: Runtime;
         }[]);
     runtimeOptions = runtimeOptions.concat(
-      querySetupState.possibleRuntimes.map((rt) => ({
+      querySetupState.compatibleRuntimes.map((rt) => ({
         value: new RuntimePointer(
           PackageableElementExplicitReference.create(rt),
         ),
@@ -212,7 +192,7 @@ export const QueryBuilderSetupPanel = observer(
       value?: Runtime;
     }): void => {
       if (val.value !== runtime) {
-        querySetupState.setRuntime(val.value);
+        querySetupState.setRuntimeValue(val.value);
       }
     };
     const runtimeFilterOption = createFilter({
@@ -252,7 +232,7 @@ export const QueryBuilderSetupPanel = observer(
               onChange={changeClass}
               value={selectedClassOption}
               darkMode={true}
-              disabled={!isQuerySupported}
+              disabled={!isQuerySupported || querySetupState.classIsReadOnly}
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
@@ -289,11 +269,6 @@ export const QueryBuilderSetupPanel = observer(
               value={selectedMappingOption}
               darkMode={true}
               filterOption={elementFilterOption}
-              hasError={
-                querySetupState.mapping &&
-                !querySetupState.isMappingCompatible &&
-                isQuerySupported
-              }
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
               })}

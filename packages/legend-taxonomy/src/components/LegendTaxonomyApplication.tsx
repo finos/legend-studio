@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,
@@ -23,13 +23,12 @@ import {
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider.js';
-import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
-import { TaxonomyViewer } from './TaxonomyViewer.js';
+import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
@@ -45,11 +44,11 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
             LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE,
             LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE,
           ]}
-          component={TaxonomyViewer}
+          component={TaxonomyExplorer}
         />
         <Route
           exact={true}
-          path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
+          path={LEGEND_TAXONOMY_ROUTE_PATTERN.STANDALONE_DATA_SPACE_VIEWER}
           component={StandaloneDataSpaceViewer}
         />
         <Redirect
@@ -68,7 +67,6 @@ export const LegendTaxonomyApplication = observer(
     pluginManager: LegendTaxonomyPluginManager;
   }) => {
     const { config, pluginManager } = props;
-    const applicationStore = useApplicationStore();
 
     return (
       <DepotServerClientProvider
@@ -78,16 +76,11 @@ export const LegendTaxonomyApplication = observer(
             config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <GraphManagerStateProvider
-          pluginManager={pluginManager}
-          log={applicationStore.log}
-        >
-          <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendTaxonomyApplicationRoot />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendTaxonomyStoreProvider>
-        </GraphManagerStateProvider>
+        <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
+          <LegendApplicationComponentFrameworkProvider>
+            <LegendTaxonomyApplicationRoot />
+          </LegendApplicationComponentFrameworkProvider>
+        </LegendTaxonomyStoreProvider>
       </DepotServerClientProvider>
     );
   },

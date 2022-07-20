@@ -78,7 +78,7 @@ const promoteQueryToService = async (
       'Mapping is required to create service execution',
     );
     const runtime = guaranteeNonNullable(
-      queryBuilderState.querySetupState.runtime,
+      queryBuilderState.querySetupState.runtimeValue,
       'Runtime is required to create service execution',
     );
     const query = queryBuilderState.getQuery();
@@ -115,7 +115,7 @@ const PromoteToServiceQueryBuilderAction = observer(() => {
   const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
   const allowPromoteToService = Boolean(
     queryBuilderExtension.queryBuilderState.querySetupState.mapping &&
-      queryBuilderExtension.queryBuilderState.querySetupState.runtime,
+      queryBuilderExtension.queryBuilderState.querySetupState.runtimeValue,
   );
   const promoteToService = async (
     packagePath: string,

@@ -23,7 +23,7 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { render } from '@testing-library/react';
 import {
   type SDLCServerClient,

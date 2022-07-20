@@ -216,13 +216,13 @@ export class ServiceRegistrationState {
       );
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
-          this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
+          this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
+          versionInput,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
-          versionInput,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
         this.registrationState.setMessage(

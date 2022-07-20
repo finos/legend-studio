@@ -89,22 +89,25 @@ export const getDecoratedSetImplementationPropertyMappings = <
     property: Property,
   ) => T[],
 ): T[] => {
-  const propertyMappingMap = new Map<string, T[]>();
+  const propertyMappingIndex = new Map<string, T[]>();
   (setImp.propertyMappings as T[]).forEach((pm) => {
-    const propertyMapping = propertyMappingMap.get(pm.property.value.name);
+    const propertyMapping = propertyMappingIndex.get(pm.property.value.name);
     if (propertyMapping) {
       propertyMapping.push(pm);
     } else {
-      propertyMappingMap.set(pm.property.value.name, [pm]);
+      propertyMappingIndex.set(pm.property.value.name, [pm]);
     }
   });
   getAllClassProperties(setImp.class.value).forEach((property) => {
-    propertyMappingMap.set(
+    propertyMappingIndex.set(
       property.name,
-      decoratePropertyMapping(propertyMappingMap.get(property.name), property),
+      decoratePropertyMapping(
+        propertyMappingIndex.get(property.name),
+        property,
+      ),
     );
   });
-  return Array.from(propertyMappingMap.values()).flat();
+  return Array.from(propertyMappingIndex.values()).flat();
 };
 
 export const getLeafSetImplementationsForClass = (

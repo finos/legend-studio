@@ -865,6 +865,7 @@ export const ProjectOverview = observer(() => {
           </button>
           <button
             className="panel__header__action side-bar__header__action"
+            disabled={!editorStore.sdlcState.currentProject}
             onClick={openProjectWebUrl}
             tabIndex={-1}
             title="Go to project in underlying VCS system"

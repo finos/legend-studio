@@ -30,7 +30,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
  * navigation, e.g. clicking, focusing, etc. else if the component
  * is already pre-rendered and just temporarily hidden away (e.g. dialog)
  * it is not safe to call this as it might mess up the stack. For this,
- * use {@link useConditionedApplicationNavigationContext }
+ * use {@link useConditionedApplicationNavigationContext}
  */
 export const useApplicationNavigationContext = (value: string): void => {
   const applicationStore = useApplicationStore();
@@ -42,6 +42,18 @@ export const useApplicationNavigationContext = (value: string): void => {
   }, [applicationStore, value]);
 };
 
+/**
+ * Provides a convenient hook mechanism to handle application navigation
+ * context of a component.
+ *
+ * This will push the context when the condition is met
+ * and will cleanup the context when the condition
+ * is no longer met.
+ *
+ * Unlike {@link useApplicationNavigationContext}, this is useful for case
+ * where the the context is attached to an element that is never remounted
+ * just hidden/shown based on some condition
+ */
 export const useConditionedApplicationNavigationContext = (
   value: string,
   condition: boolean,

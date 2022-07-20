@@ -48,7 +48,6 @@ import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -88,6 +87,7 @@ import {
   getPackageableElementOptionalFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin.js';

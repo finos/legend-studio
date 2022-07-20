@@ -216,8 +216,8 @@ export class EditorGraphState {
       this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
         `Fetching dependencies...`,
       );
-      const dependencyEntitiesMap = (yield flowResult(
-        this.getConfigurationProjectDependencyEntities(),
+      const dependencyEntitiesIndex = (yield flowResult(
+        this.getIndexedDependencyEntities(),
       )) as Map<string, Entity[]>;
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
@@ -226,7 +226,7 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
-          dependencyEntitiesMap,
+          dependencyEntitiesIndex,
           this.editorStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
       dependency_buildReport.timings[
@@ -804,9 +804,10 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
-          (yield flowResult(
-            this.getConfigurationProjectDependencyEntities(),
-          )) as Map<string, Entity[]>,
+          (yield flowResult(this.getIndexedDependencyEntities())) as Map<
+            string,
+            Entity[]
+          >,
           dependenciesBuildState,
         );
         this.editorStore.graphManagerState.dependenciesBuildState =
@@ -1010,10 +1011,8 @@ export class EditorGraphState {
     }
   }
 
-  *getConfigurationProjectDependencyEntities(): GeneratorFn<
-    Map<string, Entity[]>
-  > {
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
+  *getIndexedDependencyEntities(): GeneratorFn<Map<string, Entity[]>> {
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
@@ -1027,7 +1026,7 @@ export class EditorGraphState {
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.depotServerClient.getProjectVersionsDependencyEntities(
+          (yield this.editorStore.depotServerClient.collectDependencyEntities(
             dependencyCoordinates.map((e) =>
               ProjectDependencyCoordinates.serialization.toJson(e),
             ),
@@ -1059,7 +1058,10 @@ export class EditorGraphState {
               )}.`,
             );
           }
-          dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
+          dependencyEntitiesIndex.set(
+            dependencyInfo.id,
+            dependencyInfo.entities,
+          );
           dependencyProjects.add(dependencyInfo.id);
         });
       }
@@ -1073,7 +1075,7 @@ export class EditorGraphState {
       this.editorStore.applicationStore.notifyError(error);
       throw new DependencyGraphBuilderError(error);
     }
-    return dependencyEntitiesMap;
+    return dependencyEntitiesIndex;
   }
 
   *buildProjectDependencyCoordinates(
@@ -1107,10 +1109,10 @@ export class EditorGraphState {
                     .join(', ')}.`,
                 );
               }
-              const projectData = projectsData[0] as ProjectData;
+              const project = projectsData[0] as ProjectData;
               return new ProjectDependencyCoordinates(
-                projectData.groupId,
-                projectData.artifactId,
+                project.groupId,
+                project.artifactId,
                 dep.versionId,
               );
             });

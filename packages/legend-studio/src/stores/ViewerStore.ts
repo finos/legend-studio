@@ -44,11 +44,8 @@ import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 import {
   type ProjectGAVCoordinates,
-  LATEST_VERSION_ALIAS,
-  SNAPSHOT_VERSION_ALIAS,
   parseGAVCoordinates,
   ProjectData,
-  ProjectVersionEntities,
 } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
@@ -67,7 +64,7 @@ import { GRAPH_EDITOR_MODE } from './EditorConfig.js';
 
 interface ViewerGraphBuilderMaterial {
   entities: Entity[];
-  dependencyEntitiesMap: Map<string, Entity[]>;
+  dependencyEntitiesIndex: Map<string, Entity[]>;
 }
 
 export class ViewerStore {
@@ -292,14 +289,14 @@ export class ViewerStore {
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const dependencyEntitiesMap = (yield flowResult(
-      this.editorStore.graphState.getConfigurationProjectDependencyEntities(),
+    const dependencyEntitiesIndex = (yield flowResult(
+      this.editorStore.graphState.getIndexedDependencyEntities(),
     )) as Map<string, Entity[]>;
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     return {
       entities,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
     };
   }
 
@@ -318,7 +315,7 @@ export class ViewerStore {
 
     // fetch project data
     this.editorStore.initState.setMessage(`Fetching project data...`);
-    const projectData = ProjectData.serialization.fromJson(
+    const project = ProjectData.serialization.fromJson(
       (yield flowResult(
         this.editorStore.depotServerClient.getProject(groupId, artifactId),
       )) as PlainObject<ProjectData>,
@@ -328,22 +325,10 @@ export class ViewerStore {
     // fetch entities
     stopWatch.record();
     this.editorStore.initState.setMessage(`Fetching entities...`);
-    let entities: Entity[] = [];
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      entities =
-        (yield this.editorStore.depotServerClient.getLatestRevisionEntities(
-          groupId,
-          artifactId,
-        )) as Entity[];
-    } else {
-      entities = (yield this.editorStore.depotServerClient.getVersionEntities(
-        groupId,
-        artifactId,
-        versionId === LATEST_VERSION_ALIAS
-          ? projectData.latestVersion
-          : versionId,
-      )) as Entity[];
-    }
+    const entities = (yield this.editorStore.depotServerClient.getEntities(
+      project,
+      versionId,
+    )) as Entity[];
     this.editorStore.initState.setMessage(undefined);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED);
 
@@ -351,39 +336,23 @@ export class ViewerStore {
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
-    (versionId === SNAPSHOT_VERSION_ALIAS
-      ? ((yield this.editorStore.depotServerClient.getLatestDependencyEntities(
-          groupId,
-          artifactId,
-          true,
-          false,
-        )) as PlainObject<ProjectVersionEntities>[])
-      : ((yield this.editorStore.depotServerClient.getDependencyEntities(
-          groupId,
-          artifactId,
-          versionId === LATEST_VERSION_ALIAS
-            ? projectData.latestVersion
-            : versionId,
-          true,
-          false,
-        )) as PlainObject<ProjectVersionEntities>[])
-    )
-      .map((v) => ProjectVersionEntities.serialization.fromJson(v))
-      .forEach((dependencyInfo) => {
-        dependencyEntitiesMap.set(dependencyInfo.id, dependencyInfo.entities);
-      });
+    const dependencyEntitiesIndex = (yield flowResult(
+      this.editorStore.depotServerClient.getIndexedDependencyEntities(
+        project,
+        versionId,
+      ),
+    )) as Map<string, Entity[]>;
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     return {
       entities,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
     };
   }
 
   *buildGraph(
     entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, Entity[]>,
   ): GeneratorFn<boolean> {
     try {
       const stopWatch = new StopWatch();
@@ -406,7 +375,7 @@ export class ViewerStore {
           this.editorStore.graphManagerState.coreModel,
           this.editorStore.graphManagerState.systemModel,
           dependencyManager,
-          dependencyEntitiesMap,
+          dependencyEntitiesIndex,
           this.editorStore.graphManagerState.dependenciesBuildState,
         )) as GraphBuilderReport;
 
@@ -547,7 +516,7 @@ export class ViewerStore {
       const graphBuilderResult = (yield flowResult(
         this.buildGraph(
           graphBuilderMaterial.entities,
-          graphBuilderMaterial.dependencyEntitiesMap,
+          graphBuilderMaterial.dependencyEntitiesIndex,
         ),
       )) as boolean;
 

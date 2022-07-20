@@ -18,13 +18,13 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { LegendApplicationConfigurationInput } from '../index.js';
+import type { LegendApplicationConfigurationInput } from '../application/LegendApplication.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
-  collectContextualDocumnetationEntry,
+  collectContextualDocumnetationEntries,
   type LegendApplicationKeyedDocumentationEntry,
   type LegendApplicationDocumentationConfigEntry,
-  type LegendApplicationContextualDocumentationMapConfig,
+  type LegendApplicationContextualDocumentationConfig,
   type LegendApplicationContextualDocumentationEntry,
   type LegendApplicationDocumentationRegistryEntry,
 } from './LegendApplicationDocumentationService.js';
@@ -42,7 +42,7 @@ export interface LegendApplicationConfigurationData {
     url: string;
     registry?: LegendApplicationDocumentationRegistryEntry[];
     entries?: Record<string, LegendApplicationDocumentationConfigEntry>;
-    contextualDocMap?: LegendApplicationContextualDocumentationMapConfig;
+    contextualEntries?: LegendApplicationContextualDocumentationConfig;
   };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
@@ -89,8 +89,8 @@ export abstract class LegendApplicationConfig {
     this.keyedDocumentationEntries = collectKeyedDocumnetationEntriesFromConfig(
       input.configData.documentation?.entries ?? {},
     );
-    this.contextualDocEntries = collectContextualDocumnetationEntry(
-      input.configData.documentation?.contextualDocMap ?? {},
+    this.contextualDocEntries = collectContextualDocumnetationEntries(
+      input.configData.documentation?.contextualEntries ?? {},
     );
 
     // Version

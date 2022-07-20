@@ -96,15 +96,15 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
-    dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
-    dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+    dependencyEntitiesIndex.set(firstDependencyKey, firstDependencyEntities);
+    dependencyEntitiesIndex.set(secondDependencyKey, secondDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
@@ -115,7 +115,7 @@ test(
       graphManagerState.graphBuildState,
     );
     expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
-    Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
+    Array.from(dependencyEntitiesIndex.keys()).forEach((k) =>
       expect(dependencyManager.getModel(k)).toBeDefined(),
     );
 
@@ -142,14 +142,14 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
-    dependencyEntitiesMap.set('dep', firstDependencyEntities);
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+    dependencyEntitiesIndex.set('dep', firstDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);

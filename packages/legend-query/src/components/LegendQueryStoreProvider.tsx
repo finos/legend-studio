@@ -19,7 +19,6 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { LegendQueryStore } from '../stores/LegendQueryStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useGraphManagerState } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
@@ -34,15 +33,9 @@ export const LegendQueryStoreProvider: React.FC<{
 }> = ({ children, pluginManager }) => {
   const applicationStore = useApplicationStore<LegendQueryConfig>();
   const depotServerClient = useDepotServerClient();
-  const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
-      new LegendQueryStore(
-        applicationStore,
-        depotServerClient,
-        graphManagerState,
-        pluginManager,
-      ),
+      new LegendQueryStore(applicationStore, depotServerClient, pluginManager),
   );
   return (
     <LegendQueryStoreContext.Provider value={store}>

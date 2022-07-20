@@ -27,7 +27,7 @@ import type {
 import type { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
+import { PureModel, CoreModel, SystemModel } from '../graph/PureModel.js';
 import type { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../models/metamodels/pure/packageableElements/runtime/Runtime.js';
 import type { DependencyManager } from '../graph/DependencyManager.js';
@@ -48,11 +48,11 @@ import type {
   RawExecutionPlan,
 } from '../models/metamodels/pure/executionPlan/ExecutionPlan.js';
 import type { ExecutionNode } from '../models/metamodels/pure/executionPlan/nodes/ExecutionNode.js';
-import type {
+import {
   ActionState,
-  Log,
-  ServerClientConfig,
-  TracerService,
+  type Log,
+  type ServerClientConfig,
+  type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query.js';
 import type { Entity } from '@finos/legend-model-storage';
@@ -71,7 +71,7 @@ import type { AssertFail } from '../models/metamodels/pure/test/assertion/status
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
-} from './action/analytics/MappingAnalytics.js';
+} from './action/analytics/MappingModelCoverageAnalysis.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -129,6 +129,8 @@ export abstract class AbstractPureGraphManager {
       );
   }
 
+  abstract getSupportedProtocolVersion(): string;
+
   /**
    * TODO: we should not expose a fixed config like this, we probably
    * should not mention anything about engine because it is an internal construct
@@ -146,8 +148,6 @@ export abstract class AbstractPureGraphManager {
     },
   ): Promise<void>;
 
-  abstract getSupportedProtocolVersion(): string;
-
   // --------------------------------------------- Graph Builder ---------------------------------------------
 
   /**
@@ -164,16 +164,6 @@ export abstract class AbstractPureGraphManager {
   ): Promise<GraphBuilderReport>;
 
   /**
-   * Process entities and build the main graph.
-   */
-  abstract buildGraph(
-    graph: PureModel,
-    entities: Entity[],
-    buildState: ActionState,
-    options?: GraphBuilderOptions,
-  ): Promise<GraphBuilderReport>;
-
-  /**
    * Build immutable models which holds dependencies.
    * Dependency models MUST not depend on the main model.
    *
@@ -185,7 +175,17 @@ export abstract class AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesMap: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+    buildState: ActionState,
+    options?: GraphBuilderOptions,
+  ): Promise<GraphBuilderReport>;
+
+  /**
+   * Process entities and build the main graph.
+   */
+  abstract buildGraph(
+    graph: PureModel,
+    entities: Entity[],
     buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport>;
@@ -325,25 +325,25 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Execute -------------------------------------------
 
   abstract executeMapping(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult>;
 
   abstract generateExecutionPlan(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<RawExecutionPlan>;
 
   abstract debugExecutionPlanGeneration(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }>;
 
   abstract buildExecutionPlan(
@@ -358,11 +358,11 @@ export abstract class AbstractPureGraphManager {
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 
   abstract generateExecuteTestData(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
-    runtime: Runtime,
     parameters: (string | number | boolean)[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
     options?: {
       // Anonymizes data by hashing any string values in the generated data
       anonymizeGeneratedData?: boolean;
@@ -376,13 +376,13 @@ export abstract class AbstractPureGraphManager {
    */
 
   abstract registerService(
-    graph: PureModel,
     service: Service,
+    graph: PureModel,
     groupId: string,
     artifactId: string,
+    version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    version: string | undefined,
   ): Promise<ServiceRegistrationResult>;
   abstract activateService(
     serviceUrl: string,
@@ -414,8 +414,8 @@ export abstract class AbstractPureGraphManager {
   // -------------------------------------- Analysis --------------------------------------
 
   abstract analyzeMappingModelCoverage(
-    graph: PureModel,
     mapping: Mapping,
+    graph: PureModel,
   ): Promise<MappingModelCoverageAnalysisResult>;
 
   abstract buildMappingModelCoverageAnalysisResult(
@@ -430,6 +430,26 @@ export abstract class AbstractPureGraphManager {
       pruneSourceInformation?: boolean;
     },
   ): Entity;
+
+  async createEmptyGraph(options?: {
+    initializeSystem?: boolean;
+  }): Promise<PureModel> {
+    const extensionElementClasses = this.pluginManager
+      .getPureGraphPlugins()
+      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
+    const coreModel = new CoreModel(extensionElementClasses);
+    const systemModel = new SystemModel(extensionElementClasses);
+    if (options?.initializeSystem) {
+      await this.buildSystem(coreModel, systemModel, ActionState.create());
+      systemModel.initializeAutoImports();
+    }
+    const graph = new PureModel(
+      coreModel,
+      systemModel,
+      this.pluginManager.getPureGraphPlugins(),
+    );
+    return graph;
+  }
 
   // ------------------------------------------- Change detection -------------------------------------------
 

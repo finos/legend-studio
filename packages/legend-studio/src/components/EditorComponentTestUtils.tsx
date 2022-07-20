@@ -22,7 +22,7 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { Router } from 'react-router-dom';
+import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
 import { EditorStore } from '../stores/EditorStore.js';
@@ -309,10 +309,7 @@ export const TEST__setUpEditor = async (
     .spyOn(mockedEditorStore.depotServerClient, 'getProjectById')
     .mockResolvedValue(projectData);
   jest
-    .spyOn(
-      mockedEditorStore.depotServerClient,
-      'getProjectVersionsDependencyEntities',
-    )
+    .spyOn(mockedEditorStore.depotServerClient, 'collectDependencyEntities')
     .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize

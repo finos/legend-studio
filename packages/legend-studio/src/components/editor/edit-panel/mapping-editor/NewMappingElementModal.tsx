@@ -34,7 +34,6 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type PackageableElement,
@@ -45,7 +44,10 @@ import {
   Association,
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
-import { getPackageableElementOptionalFormatter } from '@finos/legend-application';
+import {
+  getPackageableElementOptionalFormatter,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 
 interface ClassMappingSubTypeOption {
   label: string;

@@ -16,24 +16,23 @@
 
 import type { Entity } from '@finos/legend-model-storage';
 import {
-  type PureModel,
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { MappingRuntimeCompatibilityAnalysisResult } from '../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+import type { ServiceExecutionAnalysisResult } from '../action/analytics/ServiceExecutionAnalysis.js';
 
 export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
-  abstract buildGraphForCreateQuerySetup(
-    graph: PureModel,
+  abstract surveyMappingRuntimeCompatibility(
     entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+  ): Promise<MappingRuntimeCompatibilityAnalysisResult[]>;
 
-  abstract buildGraphForServiceQuerySetup(
-    graph: PureModel,
+  abstract surveyServiceExecution(
     entities: Entity[],
-    dependencyEntitiesMap: Map<string, Entity[]>,
-  ): Promise<void>;
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+  ): Promise<ServiceExecutionAnalysisResult[]>;
 }
 
 export const getQueryBuilderGraphManagerExtension = (

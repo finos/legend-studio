@@ -30,7 +30,6 @@ import {
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil.js';
 import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -44,6 +43,7 @@ import { flowResult } from 'mobx';
 import {
   getPackageableElementOptionalFormatter,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';

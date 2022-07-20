@@ -19,7 +19,6 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useGraphManagerState } from '@finos/legend-graph';
 import { LegendTaxonomyStore } from '../stores/LegendTaxonomyStore.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
@@ -38,14 +37,12 @@ export const LegendTaxonomyStoreProvider: React.FC<{
     applicationStore.config.currentTaxonomyTreeOption.url,
   );
   const depotServerClient = useDepotServerClient();
-  const graphManagerState = useGraphManagerState();
   const store = useLocalObservable(
     () =>
       new LegendTaxonomyStore(
         applicationStore,
         taxonomyServerClient,
         depotServerClient,
-        graphManagerState,
         pluginManager,
       ),
   );

@@ -40,7 +40,7 @@ import {
   QueryBuilderState,
   StandardQueryBuilderMode,
 } from '../QueryBuilderState.js';
-import { TEST__getTestQueryConfig } from '../LegendQueryStoreTestUtils.js';
+import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
 
 type TestCase = [
   string,
@@ -121,7 +121,7 @@ describe(
         const pluginManager = LegendQueryPluginManager.create();
         pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
         const applicationStore = TEST__getTestApplicationStore(
-          TEST__getTestQueryConfig(),
+          TEST__getTestLegendQueryApplicationConfig(),
           LegendQueryPluginManager.create(),
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);

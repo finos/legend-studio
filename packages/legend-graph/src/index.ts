@@ -186,7 +186,10 @@ export * from './graph/PureGraphPlugin.js';
 
 export { type GraphPluginManager } from './GraphPluginManager.js';
 export { CorePureGraphManagerPlugin } from './graphManager/CorePureGraphManagerPlugin.js';
-export { GraphManagerState } from './GraphManagerState.js';
+export {
+  BasicGraphManagerState,
+  GraphManagerState,
+} from './GraphManagerState.js';
 export * from './GraphManagerStateProvider.js';
 export * from './GraphManagerTestUtils.js';
 export {
@@ -227,8 +230,8 @@ export {
   MappedProperty,
   EntityMappedProperty,
   EnumMappedProperty,
-} from './graphManager/action/analytics/MappingAnalytics.js';
-export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingAnalytics.js';
+} from './graphManager/action/analytics/MappingModelCoverageAnalysis.js';
+export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingModelCoverageAnalysis.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
@@ -269,6 +272,7 @@ export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient.js';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine.js';
 export {
+  V1_PureModelContextType,
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
 } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';

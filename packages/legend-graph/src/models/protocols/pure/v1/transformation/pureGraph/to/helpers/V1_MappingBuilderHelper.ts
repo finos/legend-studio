@@ -292,19 +292,19 @@ export const V1_buildMappingTest = (
 };
 
 export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
-  const classToSetImplMap = new Map<Class, Set<SetImplementation>>();
+  const index = new Map<Class, Set<SetImplementation>>();
   getAllClassMappings(mapping).forEach((setImpl) => {
     const targetClass = guaranteeNonNullable(setImpl.class.value);
-    const setImplsWithTargetClass = classToSetImplMap.get(targetClass);
+    const setImplsWithTargetClass = index.get(targetClass);
     if (setImplsWithTargetClass) {
       setImplsWithTargetClass.add(setImpl);
     } else {
       const _set = new Set<SetImplementation>();
       _set.add(setImpl);
-      classToSetImplMap.set(targetClass, _set);
+      index.set(targetClass, _set);
     }
   });
-  Array.from(classToSetImplMap.entries()).forEach((entries) => {
+  Array.from(index.entries()).forEach((entries) => {
     const _classMappings = entries[1];
     if (_classMappings.size === 1) {
       const classMapping = Array.from(

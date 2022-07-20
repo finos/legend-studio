@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.taxonomy-viewer {
+.taxonomy-explorer {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
   }
 }
 
-.taxonomy-viewer__status-bar {
+.taxonomy-explorer__status-bar {
   align-items: center;
   display: flex;
   justify-content: space-between;
@@ -94,7 +94,7 @@
   }
 }
 
-.taxonomy-viewer__side-bar {
+.taxonomy-explorer__side-bar {
   height: 100%;
 
   &__header {
@@ -135,7 +135,7 @@
   }
 }
 
-.taxonomy-viewer__main-panel {
+.taxonomy-explorer__main-panel {
   &__header {
     background: var(--color-dark-grey-100);
     z-index: 1;
@@ -314,7 +314,7 @@
   }
 }
 
-.taxonomy-viewer__explorer {
+.taxonomy-explorer__explorer {
   &__header {
     min-width: 9rem;
     background: var(--color-dark-grey-200);
@@ -328,7 +328,7 @@
   }
 }
 
-.taxonomy-viewer__activity-bar {
+.taxonomy-explorer__activity-bar {
   width: 5rem;
   background: var(--color-dark-grey-250);
   height: 100%;
@@ -391,7 +391,7 @@
   }
 }
 
-.taxonomy-viewer__header__server-dropdown {
+.taxonomy-explorer__header__server-dropdown {
   margin: 0 0.5rem;
 
   &__menu {

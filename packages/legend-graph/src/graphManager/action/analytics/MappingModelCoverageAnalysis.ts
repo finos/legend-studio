@@ -17,7 +17,7 @@
 export type RawMappingModelCoverageAnalysisResult = object;
 
 export class MappedEntity {
-  readonly __NAME_TO_PROPERTY!: Map<string, MappedProperty>;
+  readonly __PROPERTIES_INDEX = new Map<string, MappedProperty>();
 
   path: string;
   properties: MappedProperty[];
@@ -25,8 +25,9 @@ export class MappedEntity {
   constructor(path: string, properties: MappedProperty[]) {
     this.path = path;
     this.properties = properties;
-    this.__NAME_TO_PROPERTY = new Map<string, MappedProperty>();
-    properties.map((p) => this.__NAME_TO_PROPERTY.set(p.name, p));
+    properties.forEach((property) =>
+      this.__PROPERTIES_INDEX.set(property.name, property),
+    );
   }
 }
 
@@ -59,13 +60,14 @@ export class EnumMappedProperty extends MappedProperty {
 }
 
 export class MappingModelCoverageAnalysisResult {
-  readonly __PATH_TO_ENTITY!: Map<string, MappedEntity>;
+  readonly __ENTITIES_INDEX = new Map<string, MappedEntity>();
 
   mappedEntities: MappedEntity[];
 
   constructor(mappedEntities: MappedEntity[]) {
     this.mappedEntities = mappedEntities;
-    this.__PATH_TO_ENTITY = new Map<string, MappedEntity>();
-    mappedEntities.map((e) => this.__PATH_TO_ENTITY.set(e.path, e));
+    mappedEntities.forEach((entity) =>
+      this.__ENTITIES_INDEX.set(entity.path, entity),
+    );
   }
 }

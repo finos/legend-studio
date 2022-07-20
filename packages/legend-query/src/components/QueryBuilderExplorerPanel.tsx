@@ -483,11 +483,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
     }, [dragPreviewConnector]);
 
-    if (
-      !node.mappingData.mapped &&
-      !explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
-    ) {
+    if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
       return null;
     }
     return (
@@ -660,8 +656,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
 
     if (
       !node.mappingData.mapped &&
-      !queryBuilderState.explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
+      !queryBuilderState.explorerState.showUnmappedProperties
     ) {
       return null;
     }
@@ -736,8 +731,7 @@ const QueryBuilderExplorerTree = observer(
               property,
               node,
               guaranteeNonNullable(
-                explorerState.queryBuilderState.querySetupState
-                  .mappingModelCoverageAnalysisResult,
+                explorerState.mappingModelCoverageAnalysisResult,
               ),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
@@ -747,8 +741,7 @@ const QueryBuilderExplorerTree = observer(
               subclass,
               node,
               guaranteeNonNullable(
-                explorerState.queryBuilderState.querySetupState
-                  .mappingModelCoverageAnalysisResult,
+                explorerState.mappingModelCoverageAnalysisResult,
               ),
             );
             treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
@@ -834,12 +827,12 @@ export const QueryBuilderExplorerPanel = observer(
     };
 
     useEffect(() => {
-      flowResult(
-        queryBuilderState.querySetupState.analyzeMappingModelCoverage(),
-      ).catch(applicationStore.alertUnhandledError);
+      flowResult(explorerState.analyzeMappingModelCoverage()).catch(
+        applicationStore.alertUnhandledError,
+      );
     }, [
       applicationStore,
-      queryBuilderState,
+      explorerState,
       queryBuilderState.querySetupState.mapping,
     ]);
 
@@ -933,25 +926,25 @@ export const QueryBuilderExplorerPanel = observer(
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />
-          {!explorerState.treeData &&
-            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
-              <BlankPanelContent>
-                {explorerState.mappingModelCoverageAnalysisState.message}
-              </BlankPanelContent>
-            ) : (
-              <BlankPanelContent>
-                Specify the class, mapping, and connection to start building
-                query
-              </BlankPanelContent>
-            ))}
-          {explorerState.treeData &&
-            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
-              <BlankPanelContent>
-                {explorerState.mappingModelCoverageAnalysisState.message}
-              </BlankPanelContent>
-            ) : (
-              <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
-            ))}
+          {explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+            <BlankPanelContent>
+              {explorerState.mappingModelCoverageAnalysisState.message}
+            </BlankPanelContent>
+          ) : (
+            <>
+              {!explorerState.treeData && (
+                <BlankPanelContent>
+                  Specify the class, mapping, and runtime to start building
+                  query
+                </BlankPanelContent>
+              )}
+              {explorerState.treeData && (
+                <QueryBuilderExplorerTree
+                  queryBuilderState={queryBuilderState}
+                />
+              )}
+            </>
+          )}
           <QueryBuilderExplorerPreviewDataModal
             queryBuilderState={queryBuilderState}
           />

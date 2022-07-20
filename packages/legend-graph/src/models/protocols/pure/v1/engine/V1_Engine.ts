@@ -97,7 +97,7 @@ import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
-} from './analytics/V1_MappingAnalytics.js';
+} from './analytics/V1_MappingModelCoverageAnalysis.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;

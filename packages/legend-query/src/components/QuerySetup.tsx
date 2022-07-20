@@ -29,14 +29,18 @@ import {
   UserIcon,
   QuestionCircleIcon,
 } from '@finos/legend-art';
-import { debounce, isNonNullable } from '@finos/legend-shared';
+import {
+  debounce,
+  getNullableFirstElement,
+  isNonNullable,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  generateCreateQueryRoute,
-  generateExistingQueryRoute,
-  generateServiceQueryRoute,
+  generateCreateQueryEditorRoute,
+  generateExistingQueryEditorRoute,
+  generateServiceQueryEditorRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QuerySetupState,
@@ -44,30 +48,21 @@ import {
   CreateQuerySetupState,
   ExistingQuerySetupState,
   ServiceQuerySetupState,
-} from '../stores/LegendQuerySetupStore.js';
+} from '../stores/QuerySetupStore.js';
 import {
-  CreateQueryInfoState,
-  ExistingQueryInfoState,
-  ServiceQueryInfoState,
-} from '../stores/LegendQueryStore.js';
-import {
-  QuerySetupStoreProvider,
   useQuerySetupStore,
-} from './LegendQuerySetupStoreProvider.js';
-import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
+  withQuerySetupStore,
+} from './QuerySetupStoreProvider.js';
 import {
   type ProjectData,
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
   compareSemVerVersions,
 } from '@finos/legend-server-depot';
-import {
-  type LightQuery,
-  type Mapping,
-  type Service,
-  type PackageableRuntime,
-  PureMultiExecution,
-  PureSingleExecution,
+import type {
+  LightQuery,
+  Mapping,
+  PackageableRuntime,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -86,24 +81,16 @@ const ExistingQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useLegendQueryStore();
     const querySearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentQuery(undefined);
-      setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (querySetupState.currentQuery) {
-        queryStore.setQueryInfoState(
-          new ExistingQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentQuery,
-          ),
-        );
         applicationStore.navigator.goTo(
-          generateExistingQueryRoute(querySetupState.currentQuery.id),
+          generateExistingQueryEditorRoute(querySetupState.currentQuery.id),
         );
       }
       setupStore.setSetupState(undefined);
@@ -136,7 +123,7 @@ const ExistingQuerySetup = observer(
       ) => {
         event.preventDefault();
         event.stopPropagation();
-        queryStore.graphManagerState.graphManager
+        setupStore.graphManagerState.graphManager
           .deleteQuery(option.value.id)
           .then(() =>
             flowResult(querySetupState.loadQueries('')).catch(
@@ -291,36 +278,24 @@ const ServiceQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      queryStore.setQueryInfoState(undefined);
-      setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (
         querySetupState.currentProject &&
         querySetupState.currentVersionId &&
-        querySetupState.currentService
+        querySetupState.currentServiceExecutionOption
       ) {
-        queryStore.setQueryInfoState(
-          new ServiceQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentProject,
-            querySetupState.currentVersionId,
-            querySetupState.currentService,
-            querySetupState.currentServiceExecutionKey,
-          ),
-        );
         applicationStore.navigator.goTo(
-          generateServiceQueryRoute(
+          generateServiceQueryEditorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
-            querySetupState.currentService.path,
-            querySetupState.currentServiceExecutionKey,
+            querySetupState.currentServiceExecutionOption.service.path,
+            querySetupState.currentServiceExecutionOption.key,
           ),
         );
       }
@@ -329,8 +304,7 @@ const ServiceQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.buildGraphState.hasSucceeded &&
-      querySetupState.currentService;
+      querySetupState.currentServiceExecutionOption;
 
     // project
     const projectOptions = querySetupState.projects.map(buildProjectOption);
@@ -350,7 +324,7 @@ const ServiceQuerySetup = observer(
         querySetupState.setCurrentProject(option?.value);
         // cascade
         querySetupState.setCurrentVersionId(undefined);
-        querySetupState.setCurrentServiceExecution(undefined, undefined);
+        querySetupState.setCurrentServiceExecutionOption(undefined);
       }
     };
 
@@ -375,79 +349,49 @@ const ServiceQuerySetup = observer(
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
-        queryStore.graphManagerState.resetGraph();
-        querySetupState.setCurrentServiceExecution(undefined, undefined);
+        querySetupState.setCurrentServiceExecutionOption(undefined);
         if (
           querySetupState.currentProject &&
           querySetupState.currentVersionId
         ) {
           await flowResult(
-            queryStore.buildGraphForServiceQuerySetup(
+            querySetupState.loadServiceExecutionOptions(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
-
-          querySetupState.setServiceExecutionOptions(
-            querySetupState.queryStore.queryBuilderState.graphManagerState.graph.ownServices
-              .map(
-                (e) =>
-                  buildElementOption(e) as PackageableElementOption<Service>,
-              )
-              .flatMap((serviceOption) => {
-                const service = serviceOption.value;
-                const serviceExecution = service.execution;
-                if (serviceExecution instanceof PureSingleExecution) {
-                  return {
-                    label: service.name,
-                    value: {
-                      service,
-                    },
-                  };
-                } else if (serviceExecution instanceof PureMultiExecution) {
-                  return serviceExecution.executionParameters.map(
-                    (parameter) => ({
-                      label: `${service.name} [${parameter.key}]`,
-                      value: {
-                        service,
-                        key: parameter.key,
-                      },
-                    }),
-                  );
-                }
-                return [];
-              }),
-          );
         }
       }
     };
 
     // service and key
-    const serviceExecutionOptions = querySetupState.serviceExecutionOptions;
-    const selectedServiceExecutionOptions = querySetupState.currentService
-      ? {
-          label: `${querySetupState.currentService.name}${
-            querySetupState.currentServiceExecutionKey
-              ? ` [${querySetupState.currentServiceExecutionKey}]`
-              : ''
-          }`,
-          value: querySetupState.currentServiceExecutionKey
-            ? {
-                service: querySetupState.currentService,
-                key: querySetupState.currentServiceExecutionKey,
-              }
-            : { service: querySetupState.currentService },
-        }
-      : null;
+    const serviceExecutionOptions = querySetupState.serviceExecutionOptions.map(
+      (option) => ({
+        label: `${option.service.name}${option.key ? ` [${option.key}]` : ''}`,
+        value: option,
+      }),
+    );
+    const selectedServiceExecutionOption =
+      querySetupState.currentServiceExecutionOption
+        ? {
+            label: `${
+              querySetupState.currentServiceExecutionOption.service.name
+            }${
+              querySetupState.currentServiceExecutionOption.key
+                ? ` [${querySetupState.currentServiceExecutionOption.key}]`
+                : ''
+            }`,
+            value: querySetupState.currentServiceExecutionOption,
+          }
+        : null;
     const serviceExecutionSelectorPlaceholder = serviceExecutionOptions.length
       ? 'Choose a service'
       : 'No service available';
     const onServiceExecutionOptionChange = (
-      option: ServiceExecutionOption | null,
+      option: { value: ServiceExecutionOption } | null,
     ): void => {
-      querySetupState.setCurrentServiceExecution(
-        option?.value.service,
-        option?.value.key,
+      querySetupState.setCurrentServiceExecutionOption(
+        option?.value ?? undefined,
       );
     };
 
@@ -519,38 +463,27 @@ const ServiceQuerySetup = observer(
           <div className="query-setup__service-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.buildGraphState.hasSucceeded) && (
+              !querySetupState.loadServiceExecutionsState.hasSucceeded) && (
               <div className="query-setup__service-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.buildGraphState.hasSucceeded
+                    !querySetupState.loadServiceExecutionsState.isInProgress
                   }
                 />
-                {queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.systemBuildState.message ??
-                      queryStore.graphManagerState.dependenciesBuildState
-                        .message ??
-                      queryStore.graphManagerState.generationsBuildState
-                        .message ??
-                      queryStore.graphManagerState.graphBuildState.message}
-                  </BlankPanelContent>
-                )}
-                {!queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.hasFailed
-                      ? `Can't build graph`
-                      : 'Project and version must be specified'}
-                  </BlankPanelContent>
-                )}
+                <BlankPanelContent>
+                  {querySetupState.loadServiceExecutionsState.isInProgress
+                    ? `Surveying service executions...`
+                    : querySetupState.loadServiceExecutionsState.hasFailed
+                    ? `Can't load service executions`
+                    : 'Project and version must be specified'}
+                </BlankPanelContent>
               </div>
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.buildGraphState.hasSucceeded && (
+              querySetupState.loadServiceExecutionsState.hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">
@@ -561,7 +494,7 @@ const ServiceQuerySetup = observer(
                       options={serviceExecutionOptions}
                       disabled={!serviceExecutionOptions.length}
                       onChange={onServiceExecutionOptionChange}
-                      value={selectedServiceExecutionOptions}
+                      value={selectedServiceExecutionOption}
                       placeholder={serviceExecutionSelectorPlaceholder}
                       isClearable={true}
                       escapeClearsValue={true}
@@ -582,13 +515,10 @@ const CreateQuerySetup = observer(
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
-    const queryStore = useLegendQueryStore();
     const back = (): void => {
       setupStore.setSetupState(undefined);
       querySetupState.setCurrentVersionId(undefined);
       querySetupState.setCurrentProject(undefined);
-      queryStore.setQueryInfoState(undefined);
-      setupStore.queryStore.graphManagerState.resetGraph();
     };
     const next = (): void => {
       if (
@@ -597,23 +527,13 @@ const CreateQuerySetup = observer(
         querySetupState.currentMapping &&
         querySetupState.currentRuntime
       ) {
-        queryStore.setQueryInfoState(
-          new CreateQueryInfoState(
-            querySetupState.queryStore,
-            querySetupState.currentProject,
-            querySetupState.currentVersionId,
-            querySetupState.currentMapping,
-            querySetupState.currentRuntime,
-          ),
-        );
         applicationStore.navigator.goTo(
-          generateCreateQueryRoute(
+          generateCreateQueryEditorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
             querySetupState.currentMapping.path,
             querySetupState.currentRuntime.path,
-            undefined,
           ),
         );
       }
@@ -622,7 +542,6 @@ const CreateQuerySetup = observer(
     const canProceed =
       querySetupState.currentProject &&
       querySetupState.currentVersionId &&
-      queryStore.buildGraphState.hasSucceeded &&
       querySetupState.currentMapping &&
       querySetupState.currentRuntime;
 
@@ -670,7 +589,6 @@ const CreateQuerySetup = observer(
       if (option?.value !== querySetupState.currentVersionId) {
         querySetupState.setCurrentVersionId(option?.value);
         // cascade
-        queryStore.graphManagerState.resetGraph();
         querySetupState.setCurrentMapping(undefined);
         querySetupState.setCurrentRuntime(undefined);
         if (
@@ -678,23 +596,20 @@ const CreateQuerySetup = observer(
           querySetupState.currentVersionId
         ) {
           await flowResult(
-            queryStore.buildGraphForCreateQuerySetup(
+            querySetupState.surveyMappingRuntimeCompatibility(
               querySetupState.currentProject,
               querySetupState.currentVersionId,
             ),
           ).catch(applicationStore.alertUnhandledError);
-
-          querySetupState.setMappingOptions(
-            querySetupState.queryStore.queryBuilderState.mappings.map(
-              (e) => buildElementOption(e) as PackageableElementOption<Mapping>,
-            ),
-          );
         }
       }
     };
 
     // mapping
-    const mappingOptions = querySetupState.mappingOptions;
+    const mappingOptions =
+      querySetupState.mappingRuntimeCompatibilitySurveyResult.map((result) =>
+        buildElementOption(result.mapping),
+      );
     const selectedMappingOption = querySetupState.currentMapping
       ? {
           label: querySetupState.currentMapping.name,
@@ -710,21 +625,17 @@ const CreateQuerySetup = observer(
       querySetupState.setCurrentMapping(option?.value);
       // cascade
       if (querySetupState.currentMapping) {
-        if (querySetupState.runtimeOptions.length) {
-          querySetupState.setCurrentRuntime(
-            (
-              querySetupState
-                .runtimeOptions[0] as PackageableElementOption<PackageableRuntime>
-            ).value,
-          );
-        }
+        querySetupState.setCurrentRuntime(
+          getNullableFirstElement(querySetupState.compatibleRuntimes),
+        );
       } else {
         querySetupState.setCurrentRuntime(undefined);
       }
     };
 
     // runtime
-    const runtimeOptions = querySetupState.runtimeOptions;
+    const runtimeOptions =
+      querySetupState.compatibleRuntimes.map(buildElementOption);
     const selectedRuntimeOption = querySetupState.currentRuntime
       ? {
           label: querySetupState.currentRuntime.name,
@@ -810,38 +721,32 @@ const CreateQuerySetup = observer(
           <div className="query-setup__create-query__graph">
             {(!querySetupState.currentProject ||
               !querySetupState.currentVersionId ||
-              !queryStore.buildGraphState.hasSucceeded) && (
+              !querySetupState.surveyMappingRuntimeCompatibilityState
+                .hasSucceeded) && (
               <div className="query-setup__create-query__graph__loader">
                 <PanelLoadingIndicator
                   isLoading={
                     Boolean(querySetupState.currentProject) &&
                     Boolean(querySetupState.currentVersionId) &&
-                    !queryStore.buildGraphState.hasSucceeded
+                    !querySetupState.surveyMappingRuntimeCompatibilityState
+                      .hasSucceeded
                   }
                 />
-                {queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.message ??
-                      queryStore.graphManagerState.systemBuildState.message ??
-                      queryStore.graphManagerState.dependenciesBuildState
-                        .message ??
-                      queryStore.graphManagerState.generationsBuildState
-                        .message ??
-                      queryStore.graphManagerState.graphBuildState.message}
-                  </BlankPanelContent>
-                )}
-                {!queryStore.buildGraphState.isInProgress && (
-                  <BlankPanelContent>
-                    {queryStore.buildGraphState.hasFailed
-                      ? `Can't build graph`
-                      : 'Project and version must be specified'}
-                  </BlankPanelContent>
-                )}
+                <BlankPanelContent>
+                  {querySetupState.surveyMappingRuntimeCompatibilityState
+                    .isInProgress
+                    ? `Surveying runtime and mapping compatibility...`
+                    : querySetupState.surveyMappingRuntimeCompatibilityState
+                        .hasFailed
+                    ? `Can't load runtime and mapping`
+                    : 'Project and version must be specified'}
+                </BlankPanelContent>
               </div>
             )}
             {querySetupState.currentProject &&
               querySetupState.currentVersionId &&
-              queryStore.buildGraphState.hasSucceeded && (
+              querySetupState.surveyMappingRuntimeCompatibilityState
+                .hasSucceeded && (
                 <>
                   <div className="query-setup__wizard__group">
                     <div className="query-setup__wizard__group__title">
@@ -889,8 +794,7 @@ const CreateQuerySetup = observer(
 
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
-  const queryStore = useLegendQueryStore();
-  const extraQuerySetupOptions = queryStore.pluginManager
+  const extraQuerySetupOptions = setupStore.pluginManager
     .getQueryPlugins()
     .flatMap(
       (plugin) =>
@@ -912,90 +816,92 @@ const QuerySetupLandingPage = observer(() => {
   }, [setupStore]);
 
   return (
-    <div className="query-setup__landing-page">
-      <div className="query-setup__landing-page__title">
-        What do you want to do today
-        <QuestionCircleIcon
-          className="query-setup__landing-page__title__question-mark"
-          title="Choose one of the option below to start"
-        />
+    <>
+      <div className="query-setup__landing-page">
+        <PanelLoadingIndicator isLoading={setupStore.initState.isInProgress} />
+        {setupStore.initState.hasCompleted && (
+          <>
+            <div className="query-setup__landing-page__title">
+              What do you want to do today
+              <QuestionCircleIcon
+                className="query-setup__landing-page__title__question-mark"
+                title="Choose one of the option below to start"
+              />
+            </div>
+            <div className="query-setup__landing-page__options">
+              <button
+                className="query-setup__landing-page__option query-setup__landing-page__option--existing-query"
+                onClick={editQuery}
+              >
+                <div className="query-setup__landing-page__option__icon">
+                  <PencilIcon className="query-setup__landing-page__icon--edit" />
+                </div>
+                <div className="query-setup__landing-page__option__label">
+                  Load an existing query
+                </div>
+              </button>
+              {extraQuerySetupOptions}
+              <button
+                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
+                onClick={loadServiceQuery}
+              >
+                <div className="query-setup__landing-page__option__icon">
+                  <RobotIcon />
+                </div>
+                <div className="query-setup__landing-page__option__label">
+                  Load query from a service
+                </div>
+              </button>
+              <button
+                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
+                onClick={createQuery}
+              >
+                <div className="query-setup__landing-page__option__icon">
+                  <PlusIcon />
+                </div>
+                <div className="query-setup__landing-page__option__label">
+                  Create a new query
+                </div>
+              </button>
+            </div>
+          </>
+        )}
       </div>
-      <div className="query-setup__landing-page__options">
-        <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--existing-query"
-          onClick={editQuery}
-        >
-          <div className="query-setup__landing-page__option__icon">
-            <PencilIcon className="query-setup__landing-page__icon--edit" />
-          </div>
-          <div className="query-setup__landing-page__option__label">
-            Load an existing query
-          </div>
-        </button>
-        {extraQuerySetupOptions}
-        <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
-          onClick={loadServiceQuery}
-        >
-          <div className="query-setup__landing-page__option__icon">
-            <RobotIcon />
-          </div>
-          <div className="query-setup__landing-page__option__label">
-            Load query from a service
-          </div>
-        </button>
-        <button
-          className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
-          onClick={createQuery}
-        >
-          <div className="query-setup__landing-page__option__icon">
-            <PlusIcon />
-          </div>
-          <div className="query-setup__landing-page__option__label">
-            Create a new query
-          </div>
-        </button>
-      </div>
-    </div>
+    </>
   );
 });
 
-const QuerySetupInner = observer(() => {
-  const setupStore = useQuerySetupStore();
-  const queryStore = useLegendQueryStore();
-  const querySetupState = setupStore.querySetupState;
-  const renderQuerySetupScreen = (
-    setupState: QuerySetupState,
-  ): React.ReactNode => {
-    if (setupState instanceof ExistingQuerySetupState) {
-      return <ExistingQuerySetup querySetupState={setupState} />;
-    } else if (setupState instanceof ServiceQuerySetupState) {
-      return <ServiceQuerySetup querySetupState={setupState} />;
-    } else if (setupState instanceof CreateQuerySetupState) {
-      return <CreateQuerySetup querySetupState={setupState} />;
-    }
-    const extraQuerySetupRenderers = queryStore.pluginManager
-      .getQueryPlugins()
-      .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
-    for (const querySetupRenderer of extraQuerySetupRenderers) {
-      const elementEditor = querySetupRenderer(setupState);
-      if (elementEditor) {
-        return elementEditor;
+export const QuerySetup = withQuerySetupStore(
+  observer(() => {
+    const setupStore = useQuerySetupStore();
+    const querySetupState = setupStore.querySetupState;
+    const renderQuerySetupScreen = (
+      setupState: QuerySetupState,
+    ): React.ReactNode => {
+      if (setupState instanceof ExistingQuerySetupState) {
+        return <ExistingQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof ServiceQuerySetupState) {
+        return <ServiceQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof CreateQuerySetupState) {
+        return <CreateQuerySetup querySetupState={setupState} />;
       }
-    }
-    return null;
-  };
+      const extraQuerySetupRenderers = setupStore.pluginManager
+        .getQueryPlugins()
+        .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
+      for (const querySetupRenderer of extraQuerySetupRenderers) {
+        const elementEditor = querySetupRenderer(setupState);
+        if (elementEditor) {
+          return elementEditor;
+        }
+      }
+      return null;
+    };
 
-  return (
-    <div className="query-setup">
-      {!querySetupState && <QuerySetupLandingPage />}
-      {querySetupState && renderQuerySetupScreen(querySetupState)}
-    </div>
-  );
-});
-
-export const QuerySetup: React.FC = () => (
-  <QuerySetupStoreProvider>
-    <QuerySetupInner />
-  </QuerySetupStoreProvider>
+    return (
+      <div className="query-setup">
+        {!querySetupState && <QuerySetupLandingPage />}
+        {querySetupState && renderQuerySetupScreen(querySetupState)}
+      </div>
+    );
+  }),
 );

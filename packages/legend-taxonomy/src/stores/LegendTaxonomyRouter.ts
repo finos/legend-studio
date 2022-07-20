@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { generatePath } from 'react-router-dom';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generatePath } from 'react-router';
 
 export enum LEGEND_TAXONOMY_PARAM_TOKEN {
   TAXONOMY_TREE_KEY = 'taxonomyTreeKey',
@@ -27,7 +28,7 @@ export const LEGEND_TAXONOMY_ROUTE_PATTERN = Object.freeze({
   EXPLORE_TAXONOMY_TREE: `/tree/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY}`,
   EXPLORE_TAXONOMY_TREE_NODE: `/tree/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY}/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_PATH}`,
   EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE: `/tree/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY}/:${LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_PATH}/:${LEGEND_TAXONOMY_PARAM_TOKEN.GAV}/:${LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH}`,
-  VIEW_DATA_SPACE: `/dataspace/:${LEGEND_TAXONOMY_PARAM_TOKEN.GAV}/:${LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH}`,
+  STANDALONE_DATA_SPACE_VIEWER: `/dataspace/:${LEGEND_TAXONOMY_PARAM_TOKEN.GAV}/:${LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH}`,
 });
 
 export interface LegendTaxonomyPathParams {
@@ -37,7 +38,7 @@ export interface LegendTaxonomyPathParams {
   [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]?: string;
 }
 
-export interface LegendTaxonomyStandaloneDataSpaceViewerParams {
+export interface LegendTaxonomyStandaloneDataSpaceViewerPathParams {
   [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]: string;
   [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: string;
 }
@@ -78,7 +79,38 @@ export const generateStandaloneDataSpaceViewerRoute = (
   GAVCoordinates: string,
   dataSpacePath: string,
 ): string =>
-  generatePath(LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE, {
+  generatePath(LEGEND_TAXONOMY_ROUTE_PATTERN.STANDALONE_DATA_SPACE_VIEWER, {
     [LEGEND_TAXONOMY_PARAM_TOKEN.GAV]: GAVCoordinates,
     [LEGEND_TAXONOMY_PARAM_TOKEN.DATA_SPACE_PATH]: dataSpacePath,
   });
+
+export const generateStudioProjectViewUrl = (
+  studioUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  entityPath: string | undefined,
+): string =>
+  `${studioUrl}/view/archive/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}${entityPath ? `/entity/${entityPath}` : ''}`;
+
+export const generateDataSpaceQueryEditorUrl = (
+  queryUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  dataSpacePath: string,
+  executionContext: string,
+  runtimePath: string | undefined,
+  classPath: string | undefined,
+): string =>
+  `${queryUrl}/extensions/dataspace/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}/${dataSpacePath}/${executionContext}/${
+    runtimePath ? `/${runtimePath}` : ''
+  }${classPath ? `?class=${classPath}` : ''}`;

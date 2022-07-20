@@ -78,7 +78,7 @@ const V1_serializeSupportInfo = (
   throw new UnsupportedOperationError(`Can't serialize support info`, protocol);
 };
 
-const V1_deserializeSupportInfo = (
+export const V1_deserializeSupportInfo = (
   json: PlainObject<V1_DataSpaceSupportInfo> | undefined,
 ): V1_DataSpaceSupportInfo | undefined => {
   if (!json) {

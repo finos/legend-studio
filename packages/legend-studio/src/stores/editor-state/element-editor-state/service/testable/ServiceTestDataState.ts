@@ -142,14 +142,14 @@ export class ConnectionTestDataState {
 
         const value =
           (yield this.editorStore.graphManagerState.graphManager.generateExecuteTestData(
-            this.editorStore.graphManagerState.graph,
-            serviceExecutionParameters.mapping,
             serviceExecutionParameters.query,
-            serviceExecutionParameters.runtime,
             buildTestDataParameters(
               serviceExecutionParameters.query,
               this.editorStore,
             ),
+            serviceExecutionParameters.mapping,
+            serviceExecutionParameters.runtime,
+            this.editorStore.graphManagerState.graph,
             {
               anonymizeGeneratedData: this.anonymizeGeneratedData,
             },

@@ -35,7 +35,7 @@ const getActionButtonClassName = (type: ActionAlertActionType): string => {
   }
 };
 
-const ActionAlertInner = observer((props: { info: ActionAlertInfo }) => {
+const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
   const { info } = props;
   const applicationStore = useApplicationStore();
   const { title, message, prompt, type, onClose, onEnter, actions } = info;
@@ -126,5 +126,5 @@ export const ActionAlert = observer(() => {
   if (!actionAlertInfo) {
     return null;
   }
-  return <ActionAlertInner info={actionAlertInfo} />;
+  return <ActionAlertContent info={actionAlertInfo} />;
 });

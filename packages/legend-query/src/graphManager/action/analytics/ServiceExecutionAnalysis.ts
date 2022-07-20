@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '@finos/legend-graph';
+import type { Service } from '@finos/legend-graph';
 
-export interface PackageableElementOption<T extends PackageableElement> {
-  label: string;
-  value: T;
+export class ServiceExecutionAnalysisResult {
+  service!: Service;
+  executionKeys?: string[] | undefined;
 }
-
-export const buildElementOption = (
-  element: PackageableElement,
-): PackageableElementOption<PackageableElement> => ({
-  label: element.name,
-  value: element,
-});

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
+import { LegendApplicationPlugin } from '@finos/legend-application';
+import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type {
-  QuerySetupState,
-  QuerySetupStore,
-} from './LegendQuerySetupStore.js';
+import type { QueryEditorStore } from './QueryEditorStore.js';
+import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
 
 export type QuerySetupOptionRendererConfiguration = {
   key: string;
@@ -30,7 +29,11 @@ export type QuerySetupRenderer = (
   setupState: QuerySetupState,
 ) => React.ReactNode | undefined;
 
-export abstract class LegendQueryPlugin extends AbstractPlugin {
+export type QueryEditorHeaderLabeler = (
+  editorStore: QueryEditorStore,
+) => React.ReactNode | undefined;
+
+export abstract class LegendQueryPlugin extends LegendApplicationPlugin {
   /**
    * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
@@ -51,4 +54,9 @@ export abstract class LegendQueryPlugin extends AbstractPlugin {
    * Get the list of renderers for query setup.
    */
   getExtraQuerySetupRenderers?(): QuerySetupRenderer[];
+
+  /**
+   * Get the list of query editor header labelers.
+   */
+  getExtraQueryEditorHeaderLabelers?(): QueryEditorHeaderLabeler[];
 }

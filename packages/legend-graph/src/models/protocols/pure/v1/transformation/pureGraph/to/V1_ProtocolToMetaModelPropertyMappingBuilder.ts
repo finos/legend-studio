@@ -146,7 +146,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
   private immediateParent: PropertyMappingsImplementation; // either root instance set implementation or the immediate embedded parent property mapping (needed for processing embedded property mapping)
   private topParent: InstanceSetImplementation | undefined;
   private allEnumerationMappings: EnumerationMapping[] = [];
-  private tableAliasMap: Map<string, TableAlias>;
+  private tableAliasIndex: Map<string, TableAlias>;
   private allClassMappings: SetImplementation[];
   private xStoreParent?: XStoreAssociationImplementation | undefined;
   private aggregationAwareParent?:
@@ -167,7 +167,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
     this.immediateParent = immediateParent;
     this.topParent = topParent;
     this.allEnumerationMappings = allEnumerationMappings;
-    this.tableAliasMap = tableAliasMap ?? new Map<string, TableAlias>();
+    this.tableAliasIndex = tableAliasMap ?? new Map<string, TableAlias>();
     this.allClassMappings = allClassMappings ?? [];
     this.xStoreParent = xStoreParent;
     this.aggregationAwareParent = aggregationAwareParent;
@@ -612,7 +612,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
                 protocol.relationalOperation,
               ),
               this.context,
-              this.tableAliasMap,
+              this.tableAliasIndex,
               [],
             ),
             new V1_GraphTransformerContextBuilder(
@@ -752,7 +752,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       V1_buildRelationalOperationElement(
         key,
         this.context,
-        this.tableAliasMap,
+        this.tableAliasIndex,
         [],
       ),
     );
@@ -766,7 +766,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.topParent?._PARENT
               ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
-            this.tableAliasMap,
+            this.tableAliasIndex,
           ),
         ),
     ) as RelationalPropertyMapping[];
@@ -812,7 +812,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
       V1_buildRelationalOperationElement(
         key,
         this.context,
-        this.tableAliasMap,
+        this.tableAliasIndex,
         [],
       ),
     );
@@ -826,7 +826,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
             this.topParent?._PARENT
               ? getAllEnumerationMappings(this.topParent._PARENT)
               : [],
-            this.tableAliasMap,
+            this.tableAliasIndex,
           ),
         ),
       ) as RelationalPropertyMapping[];
@@ -839,7 +839,7 @@ export class V1_ProtocolToMetaModelPropertyMappingBuilder
           this.topParent?._PARENT
             ? getAllEnumerationMappings(this.topParent._PARENT)
             : [],
-          this.tableAliasMap,
+          this.tableAliasIndex,
         ),
       ),
       RelationalPropertyMapping,

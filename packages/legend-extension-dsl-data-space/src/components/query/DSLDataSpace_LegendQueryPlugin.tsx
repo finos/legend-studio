@@ -17,6 +17,8 @@
 import packageJson from '../../../package.json';
 import {
   LegendQueryPlugin,
+  type QueryEditorStore,
+  type QueryEditorHeaderLabeler,
   type QuerySetupOptionRendererConfiguration,
   type QuerySetupRenderer,
   type QuerySetupState,
@@ -25,10 +27,26 @@ import {
 import { SquareIcon } from '@finos/legend-art';
 import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
 import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
+import type { ApplicationPageEntry } from '@finos/legend-application';
+import { DATA_SPACE_QUERY_EDITOR_ROUTE_PATTERN } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
+import { DataSpaceQueryEditor } from './DataSpaceQueryEditor.js';
+import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
+import { extractElementNameFromPath } from '@finos/legend-graph';
 
 export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
   constructor() {
     super(packageJson.extensions.queryPlugin, packageJson.version);
+  }
+
+  override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
+    return [
+      // data space query editor
+      {
+        key: 'data-space-query-editor-application-page',
+        urlPatterns: [DATA_SPACE_QUERY_EDITOR_ROUTE_PATTERN],
+        renderer: DataSpaceQueryEditor,
+      },
+    ];
   }
 
   override getExtraQuerySetupOptionRendererConfigurations(): QuerySetupOptionRendererConfiguration[] {
@@ -63,6 +81,25 @@ export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
       (querySetupState: QuerySetupState): React.ReactNode | undefined => {
         if (querySetupState instanceof DataSpaceQuerySetupState) {
           return <DataspaceQuerySetup querySetupState={querySetupState} />;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraQueryEditorHeaderLabelers(): QueryEditorHeaderLabeler[] {
+    return [
+      (editorStore: QueryEditorStore): React.ReactNode | undefined => {
+        if (editorStore instanceof DataSpaceQueryEditorStore) {
+          return (
+            <div className="query-editor__header__label">
+              <SquareIcon className="query-editor__header__label__icon icon--data-space" />
+              {extractElementNameFromPath(editorStore.dataSpacePath)}
+              <div className="query-editor__header__label__tag">
+                {editorStore.executionContext}
+              </div>
+            </div>
+          );
         }
         return undefined;
       },

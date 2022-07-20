@@ -54,7 +54,7 @@ export const ServiceQueryBuilder = observer(
             queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
               mapping,
             );
-            queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
+            queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeValue(
               runtime,
             );
             queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(

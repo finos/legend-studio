@@ -33,10 +33,6 @@ import {
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
-import type {
-  DataSpaceTaxonomyContext,
-  TaxonomyNodeViewerState,
-} from '../stores/LegendTaxonomyStore.js';
 import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
@@ -47,7 +43,8 @@ import {
   type DataSpaceViewerState,
 } from '@finos/legend-extension-dsl-data-space';
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
+import type { DataSpaceTaxonomyContext } from '../stores/TaxonomyExplorerStore.js';
+import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
@@ -205,12 +202,14 @@ const TaxonomyNodeViewerExplorer = observer(
 );
 
 const TaxonomyNodeDataSpaceViewer = observer(
-  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
-    const { dataSpaceViewerState } = props;
-    const taxonomyStore = useLegendTaxonomyStore();
+  (props: {
+    nodeViewerState: TaxonomyNodeViewerState;
+    dataSpaceViewerState: DataSpaceViewerState;
+  }) => {
+    const { nodeViewerState, dataSpaceViewerState } = props;
     const applicationStore = useApplicationStore();
     const queryDataSpace = (): void =>
-      taxonomyStore.queryUsingDataSpace(dataSpaceViewerState);
+      nodeViewerState.queryDataSpace(undefined);
     const viewDataSpace = (): void =>
       applicationStore.navigator.openNewWindow(
         applicationStore.navigator.generateLocation(
@@ -220,7 +219,7 @@ const TaxonomyNodeDataSpaceViewer = observer(
               dataSpaceViewerState.artifactId,
               dataSpaceViewerState.versionId,
             ),
-            dataSpaceViewerState.dataSpace.path,
+            dataSpaceViewerState.dataSpaceAnalysisResult.path,
           ),
         ),
       );
@@ -259,7 +258,6 @@ const TaxonomyNodeDataSpaceViewer = observer(
 export const TaxonomyNodeViewer = observer(
   (props: { taxonomyNodeViewerState: TaxonomyNodeViewerState }) => {
     const { taxonomyNodeViewerState } = props;
-    const taxonomyStore = useLegendTaxonomyStore();
     const description =
       taxonomyNodeViewerState.taxonomyNode.taxonomyData?.description;
 
@@ -288,6 +286,7 @@ export const TaxonomyNodeViewer = observer(
             <ResizablePanel minSize={300}>
               {taxonomyNodeViewerState.dataSpaceViewerState && (
                 <TaxonomyNodeDataSpaceViewer
+                  nodeViewerState={taxonomyNodeViewerState}
                   dataSpaceViewerState={
                     taxonomyNodeViewerState.dataSpaceViewerState
                   }
@@ -299,15 +298,7 @@ export const TaxonomyNodeViewer = observer(
                   <div className="taxonomy-node-viewer__content-placeholder">
                     <PanelLoadingIndicator isLoading={true} />
                     <BlankPanelContent>
-                      {taxonomyNodeViewerState.initDataSpaceViewerState
-                        .message ??
-                        taxonomyStore.graphManagerState.systemBuildState
-                          .message ??
-                        taxonomyStore.graphManagerState.dependenciesBuildState
-                          .message ??
-                        taxonomyStore.graphManagerState.generationsBuildState
-                          .message ??
-                        taxonomyStore.graphManagerState.graphBuildState.message}
+                      {taxonomyNodeViewerState.initDataSpaceViewerState.message}
                     </BlankPanelContent>
                   </div>
                 )}

@@ -22,6 +22,9 @@ import type { ModelUnit } from './DSLExternalFormat_ModelUnit.js';
 import type { PackageableElementVisitor } from '../../PackageableElement.js';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
 
+// NOTE: in the metamodel, `Binding` extends `ModelStore`, we could consider doing the same
+// although this might not be trivial as we have a fair amount of logic around the special
+// handling of `ModelStore`
 export class Binding extends Store implements Hashable {
   schemaSet!: OptionalPackageableElementReference<SchemaSet>;
   schemaId?: string | undefined;

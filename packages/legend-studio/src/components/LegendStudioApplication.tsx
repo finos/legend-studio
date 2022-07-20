@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router';
 import { Setup } from './setup/Setup.js';
 import { Editor } from './editor/Editor.js';
 import { Review } from './review/Review.js';
@@ -38,6 +38,7 @@ import {
 } from './LegendStudioStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
+  generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
   VirtualAssistant,
@@ -102,19 +103,12 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
   );
 });
 
-/**
- * Prefix URL patterns coming from extensions with `/extensions/`
- * to avoid potential conflicts with main routes.
- */
-const generateExtensionUrlPattern = (pattern: string): string =>
-  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
-
 export const LegendStudioApplicationRoot = observer(() => {
   const studioStore = useLegendStudioStore();
   const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const extraApplicationPageRenderEntries = studioStore.pluginManager
-    .getStudioPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
+  const extraApplicationPageEntries = applicationStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
   useEffect(() => {
     flowResult(studioStore.initialize()).catch(
@@ -172,12 +166,12 @@ export const LegendStudioApplicationRoot = observer(() => {
               ]}
               component={Setup}
             />
-            {extraApplicationPageRenderEntries.map((entry) => (
+            {extraApplicationPageEntries.map((entry) => (
               <Route
                 key={entry.key}
                 exact={true}
                 path={entry.urlPatterns.map(generateExtensionUrlPattern)}
-                component={entry.component as React.ComponentType<unknown>}
+                component={entry.renderer as React.ComponentType<unknown>}
               />
             ))}
             <Route>

@@ -82,7 +82,7 @@ export const checkProjectReferenceConfig = ({
     // resolve all projects referenced in the root TS config
     // and build a lookup table between project and corresponding package
     const rootTsConfigPath = resolve(rootDir, tsConfigFileName);
-    const projectMap = new Map();
+    const projectIndex = new Map();
     (getTsConfigJSON(rootTsConfigPath).references ?? [])
       .map((ref) => ref.path)
       .forEach((projectPath) => {
@@ -94,7 +94,7 @@ export const checkProjectReferenceConfig = ({
           );
           const { dir, packageJson, projectReferences } = projectInfo;
           if (projectInfo) {
-            projectMap.set(dir, { packageJson, projectReferences });
+            projectIndex.set(dir, { packageJson, projectReferences });
           }
         } catch (e) {
           errors.push(e.message);
@@ -125,7 +125,7 @@ export const checkProjectReferenceConfig = ({
         return;
       }
       // check if a package written in Typescript is not listed as a project reference in the root TS config
-      if (!projectMap.has(dir)) {
+      if (!projectIndex.has(dir)) {
         errors.push(
           `Project '${dir}' corresponding to package '${packageJson.name}' is not listed as a reference in root TypeScript config`,
         );
@@ -134,7 +134,7 @@ export const checkProjectReferenceConfig = ({
       }
     });
 
-    projectMap.forEach(({ packageJson, projectReferences }, dir) => {
+    projectIndex.forEach(({ packageJson, projectReferences }, dir) => {
       const allDependencies = (
         packageJson.dependencies ? Object.keys(packageJson.dependencies) : []
       ).concat(
@@ -172,7 +172,7 @@ export const checkProjectReferenceConfig = ({
                 }')`,
               );
             }
-            if (!projectMap.has(projectInfo.dir)) {
+            if (!projectIndex.has(projectInfo.dir)) {
               // check if a Typescript project is not listed as a reference the root TS config
               errors.push(
                 `Root TypeScript config needs to reference TypeScript project '${projectInfo.dir}' corresponding to package '${projectInfo.packageJson.name}'`,

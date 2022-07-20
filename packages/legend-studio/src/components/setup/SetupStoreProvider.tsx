@@ -44,3 +44,12 @@ export const useSetupStore = (): SetupStore =>
     useContext(SetupStoreContext),
     `Can't find setup store in context`,
   );
+
+export const withSetupStore = (WrappedComponent: React.FC): React.FC =>
+  function WithSetupStore() {
+    return (
+      <SetupStoreProvider>
+        <WrappedComponent />
+      </SetupStoreProvider>
+    );
+  };

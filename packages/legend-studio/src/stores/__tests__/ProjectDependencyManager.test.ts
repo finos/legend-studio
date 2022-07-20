@@ -208,7 +208,7 @@ const testDependencyElements = async (
   jest
     .spyOn(
       guaranteeNonNullable(editorStore.depotServerClient),
-      'getProjectVersionsDependencyEntities',
+      'collectDependencyEntities',
     )
     .mockResolvedValue(dependencyEntities);
   if (projectsData) {
@@ -221,15 +221,15 @@ const testDependencyElements = async (
   }
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyEntitiesMap = await flowResult(
-    editorStore.graphState.getConfigurationProjectDependencyEntities(),
+  const dependencyEntitiesIndex = await flowResult(
+    editorStore.graphState.getIndexedDependencyEntities(),
   );
   editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
   await editorStore.graphManagerState.graphManager.buildDependencies(
     editorStore.graphManagerState.coreModel,
     editorStore.graphManagerState.systemModel,
     dependencyManager,
-    dependencyEntitiesMap,
+    dependencyEntitiesIndex,
     editorStore.graphManagerState.dependenciesBuildState,
   );
   expect(
@@ -243,7 +243,7 @@ const testDependencyElements = async (
   );
   expect(editorStore.graphManagerState.graphBuildState.hasSucceeded).toBe(true);
 
-  Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
+  Array.from(dependencyEntitiesIndex.keys()).forEach((k) =>
     expect(dependencyManager.getModel(k)).toBeDefined(),
   );
   Array.from(keys).forEach((k) =>

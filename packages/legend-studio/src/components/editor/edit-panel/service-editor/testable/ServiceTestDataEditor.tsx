@@ -38,7 +38,6 @@ import type {
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useState } from 'react';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../../../index.js';
 import type {
   ConnectionTestDataState,
   ServiceTestDataState,
@@ -49,6 +48,7 @@ import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFor
 import { flowResult } from 'mobx';
 import { buildElementOption } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
+import type { DSLData_LegendStudioPlugin_Extension } from '../../../../../stores/DSLData_LegendStudioPlugin_Extension.js';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {

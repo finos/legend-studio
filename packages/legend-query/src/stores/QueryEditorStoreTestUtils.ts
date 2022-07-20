@@ -17,7 +17,7 @@
 import { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { TEST_DATA__applicationVersion } from '@finos/legend-application';
 
-export const TEST_DATA__queryConfig = {
+export const TEST_DATA__appConfig = {
   appName: 'test-query-app',
   env: 'test-env',
   engine: {
@@ -31,12 +31,12 @@ export const TEST_DATA__queryConfig = {
   },
 };
 
-export const TEST__getTestQueryConfig = (
+export const TEST__getTestLegendQueryApplicationConfig = (
   extraConfigData = {},
 ): LegendQueryConfig => {
   const config = new LegendQueryConfig({
     configData: {
-      ...TEST_DATA__queryConfig,
+      ...TEST_DATA__appConfig,
       ...extraConfigData,
     },
     versionData: TEST_DATA__applicationVersion,

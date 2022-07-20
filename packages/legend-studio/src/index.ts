@@ -19,7 +19,6 @@ export * from './components/LegendStudioStoreProvider.js';
 export * from './application/LegendStudio.js';
 export * from './application/LegendStudioConfig.js';
 export * from './application/LegendStudioPluginManager.js';
-export * from './stores/shared/PackageableElementOptionUtil.js';
 export * from './stores/LegendStudioAppEvent.js';
 
 // stores
