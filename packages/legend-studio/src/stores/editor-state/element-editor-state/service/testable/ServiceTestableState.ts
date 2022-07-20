@@ -27,6 +27,7 @@ import {
   DEFAULT_TEST_SUITE_PREFIX,
   DEFAULT_TEST_PREFIX,
   TestError,
+  MultiExecutionServiceTestResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -208,16 +209,17 @@ export class ServiceTestSuiteState {
 
   get testPassed(): number {
     return this.testStates.filter(
-      (e) => e.testResultState.result instanceof TestPassed,
+      (e) =>
+        e.testResultState.result instanceof TestPassed ||
+        (e.testResultState.result instanceof MultiExecutionServiceTestResult &&
+          Array.from(
+            e.testResultState.result.keyIndexedTestResults.values(),
+          ).every((kv) => kv instanceof TestPassed)),
     ).length;
   }
 
   get testFailed(): number {
-    return this.testStates.filter(
-      (e) =>
-        e.testResultState.result &&
-        !(e.testResultState.result instanceof TestPassed),
-    ).length;
+    return this.testCount - this.testPassed;
   }
 }
 

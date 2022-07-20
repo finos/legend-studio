@@ -46,7 +46,6 @@ import {
   V1_serializePureModelContext,
   V1_serializePureModelContextData,
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
-import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
@@ -636,16 +635,6 @@ export class V1_Engine {
 
   async getServerServiceInfo(): Promise<V1_ServiceConfigurationInfo> {
     return (await this.engineServerClient.getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
-  }
-
-  async runLegacyServiceTests(
-    model: V1_PureModelContextData,
-  ): Promise<V1_DEPRECATED__ServiceTestResult[]> {
-    return (
-      await this.engineServerClient.runServiceTests(
-        V1_serializePureModelContextData(model),
-      )
-    ).map((v) => V1_DEPRECATED__ServiceTestResult.serialization.fromJson(v));
   }
 
   async registerService(

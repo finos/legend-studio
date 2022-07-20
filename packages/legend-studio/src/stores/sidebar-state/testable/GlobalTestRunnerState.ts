@@ -32,6 +32,7 @@ import {
   AssertFail,
   PackageableElement,
   getNullableIDFromTestable,
+  MultiExecutionServiceTestResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -270,6 +271,14 @@ export const getTestableResultFromTestResult = (
     return TESTABLE_RESULT.FAILED;
   } else if (testResult instanceof TestError) {
     return TESTABLE_RESULT.ERROR;
+  } else if (testResult instanceof MultiExecutionServiceTestResult) {
+    const result = Array.from(testResult.keyIndexedTestResults.values());
+    if (result.every((t) => t instanceof TestPassed)) {
+      return TESTABLE_RESULT.PASSED;
+    } else if (result.some((t) => t instanceof TestError)) {
+      return TESTABLE_RESULT.ERROR;
+    }
+    return TESTABLE_RESULT.FAILED;
   }
   return TESTABLE_RESULT.DID_NOT_RUN;
 };

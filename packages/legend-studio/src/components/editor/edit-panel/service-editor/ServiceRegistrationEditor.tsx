@@ -164,7 +164,7 @@ export const ServiceRegistrationEditor = observer(() => {
               )}
             </button>
             <div className="panel__content__form__section__toggler__prompt">
-              Activates service after registering
+              Activates service after registration
             </div>
           </div>
         </div>

@@ -25,7 +25,6 @@ import {
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult.js';
-import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
@@ -579,18 +578,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       {},
       { skipProcessing: true },
-    );
-  runServiceTests = (
-    model: PlainObject<V1_PureModelContextData>,
-  ): Promise<PlainObject<V1_DEPRECATED__ServiceTestResult>[]> =>
-    this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_SERVICE_TESTS),
-      `${this._service()}/doTest`,
-      model,
-      {},
-      undefined,
-      undefined,
-      { enableCompression: true },
     );
 
   // ------------------------------------------- Query -------------------------------------------
