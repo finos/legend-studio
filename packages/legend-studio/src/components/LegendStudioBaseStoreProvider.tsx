@@ -18,26 +18,37 @@ import { createContext, useContext } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { LegendStudioStore } from '../stores/LegendStudioStore.js';
+import {
+  type LegendStudioApplicationStore,
+  LegendStudioBaseStore,
+} from '../stores/LegendStudioBaseStore.js';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
+import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
-const LegendStudioStoreContext = createContext<LegendStudioStore | undefined>(
-  undefined,
-);
+export const useLegendStudioApplicationStore =
+  (): LegendStudioApplicationStore =>
+    useApplicationStore<
+      LegendStudioApplicationConfig,
+      LegendStudioApplicationPlugin
+    >();
 
-export const LegendStudioStoreProvider: React.FC<{
+const LegendStudioBaseStoreContext = createContext<
+  LegendStudioBaseStore | undefined
+>(undefined);
+
+export const LegendStudioBaseStoreProvider: React.FC<{
   pluginManager: LegendStudioPluginManager;
   children: React.ReactNode;
 }> = ({ pluginManager, children }) => {
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
-  const studioStore = useLocalObservable(
+  const baseStore = useLocalObservable(
     () =>
-      new LegendStudioStore(
+      new LegendStudioBaseStore(
         applicationStore,
         sdlcServerClient,
         depotServerClient,
@@ -45,14 +56,14 @@ export const LegendStudioStoreProvider: React.FC<{
       ),
   );
   return (
-    <LegendStudioStoreContext.Provider value={studioStore}>
+    <LegendStudioBaseStoreContext.Provider value={baseStore}>
       {children}
-    </LegendStudioStoreContext.Provider>
+    </LegendStudioBaseStoreContext.Provider>
   );
 };
 
-export const useLegendStudioStore = (): LegendStudioStore =>
+export const useLegendStudioBaseStore = (): LegendStudioBaseStore =>
   guaranteeNonNullable(
-    useContext(LegendStudioStoreContext),
-    `Can't find Legend Studio store in context`,
+    useContext(LegendStudioBaseStoreContext),
+    `Can't find Legend Studio base store in context`,
   );

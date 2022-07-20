@@ -63,16 +63,15 @@ export type TestableMetadataGetter = (
   editorStore: EditorStore,
 ) => TestableMetadata | undefined;
 
-export abstract class LegendStudioPlugin extends LegendApplicationPlugin {
+export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlugin {
   /**
    * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
-  private readonly _$nominalTypeBrand!: 'LegendStudioPlugin';
+  private readonly _$nominalTypeBrand!: 'LegendStudioApplicationPlugin';
 
   install(pluginManager: LegendStudioPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
-    pluginManager.registerStudioPlugin(this);
   }
 
   /**
@@ -232,7 +231,8 @@ export type PureGrammarParserElementSnippetSuggestionsGetter = (
 /**
  * Studio plugins for new DSL extension.
  */
-export interface DSL_LegendStudioPlugin_Extension extends LegendStudioPlugin {
+export interface DSL_LegendStudioApplicationPlugin_Extension
+  extends LegendStudioApplicationPlugin {
   /**
    * Get the list of the supported packageable element type specifiers.
    */

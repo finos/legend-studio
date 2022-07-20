@@ -23,18 +23,20 @@ import {
   ExistingQueryEditor,
   ServiceQueryEditor,
 } from './QueryEditor.js';
-import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
-  useApplicationStore,
 } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
+import {
+  LegendQueryBaseStoreProvider,
+  useLegendQueryApplicationStore,
+} from './LegendQueryBaseStoreProvider.js';
 
 const LegendQueryApplicationRoot = observer(() => {
-  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const applicationStore = useLegendQueryApplicationStore();
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
@@ -78,7 +80,7 @@ const LegendQueryApplicationRoot = observer(() => {
 
 export const LegendQueryApplication = observer(
   (props: {
-    config: LegendQueryConfig;
+    config: LegendQueryApplicationConfig;
     pluginManager: LegendQueryPluginManager;
   }) => {
     const { config, pluginManager } = props;
@@ -91,11 +93,11 @@ export const LegendQueryApplication = observer(
             config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <LegendQueryStoreProvider pluginManager={pluginManager}>
+        <LegendQueryBaseStoreProvider pluginManager={pluginManager}>
           <LegendApplicationComponentFrameworkProvider>
             <LegendQueryApplicationRoot />
           </LegendApplicationComponentFrameworkProvider>
-        </LegendQueryStoreProvider>
+        </LegendQueryBaseStoreProvider>
       </DepotServerClientProvider>
     );
   },

@@ -34,7 +34,7 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';
-import { TEST__getTestStudioConfig } from '../../../stores/EditorStoreTestUtils.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../../stores/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../application/LegendStudioPluginManager.js';
 
 let sdlcServerClient: SDLCServerClient;
@@ -59,7 +59,7 @@ test(
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider
-          config={TEST__getTestStudioConfig()}
+          config={TEST__getLegendStudioApplicationConfig()}
           pluginManager={LegendStudioPluginManager.create()}
         >
           <TEST__SDLCServerClientProvider>
@@ -88,7 +88,7 @@ test(
     const { queryByText } = render(
       <MemoryRouter>
         <TEST__ApplicationStoreProvider
-          config={TEST__getTestStudioConfig()}
+          config={TEST__getLegendStudioApplicationConfig()}
           pluginManager={LegendStudioPluginManager.create()}
         >
           <TEST__SDLCServerClientProvider>

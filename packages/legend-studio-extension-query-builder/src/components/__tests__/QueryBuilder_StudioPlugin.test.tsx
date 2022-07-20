@@ -28,7 +28,7 @@ import {
   LegendStudioPluginManager,
   LEGEND_STUDIO_TEST_ID,
   TEST__openElementFromExplorerTree,
-  TEST__getTestStudioConfig,
+  TEST__getLegendStudioApplicationConfig,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
 } from '@finos/legend-studio';
@@ -44,7 +44,7 @@ const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
-      TEST__getTestStudioConfig(),
+      TEST__getLegendStudioApplicationConfig(),
       pluginManager,
     ),
     graphManagerState: TEST__provideMockedGraphManagerState({ pluginManager }),

@@ -92,8 +92,7 @@ import {
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
   LambdaParameterState,
-  type ApplicationStore,
-  type LegendApplicationConfig,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
@@ -145,7 +144,7 @@ export class StandardQueryBuilderMode extends QueryBuilderMode {
 }
 
 export class QueryBuilderState {
-  applicationStore: ApplicationStore<LegendApplicationConfig>;
+  applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
   mode: QueryBuilderMode;
@@ -204,7 +203,7 @@ export class QueryBuilderState {
   showPostFilterPanel = false;
 
   constructor(
-    applicationStore: ApplicationStore<LegendApplicationConfig>,
+    applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     queryBuilderMode: QueryBuilderMode,
   ) {

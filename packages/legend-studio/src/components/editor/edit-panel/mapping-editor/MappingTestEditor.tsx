@@ -82,7 +82,7 @@ import {
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
@@ -97,11 +97,11 @@ const MappingTestQueryEditor = observer(
     const applicationStore = useApplicationStore();
 
     const extraQueryEditorActions = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
       )
       .map((config) => (
@@ -150,7 +150,7 @@ const MappingTestQueryEditor = observer(
                   testState.setInputDataStateBasedOnSource(
                     getMappingElementSource(
                       setImplementation,
-                      editorStore.pluginManager.getStudioPlugins(),
+                      editorStore.pluginManager.getApplicationPlugins(),
                     ),
                     true,
                   ),
@@ -388,7 +388,7 @@ export const MappingTestInputDataBuilder = observer(
           setImplementation
             ? getMappingElementSource(
                 setImplementation,
-                editorStore.pluginManager.getStudioPlugins(),
+                editorStore.pluginManager.getApplicationPlugins(),
               )
             : undefined,
           true,

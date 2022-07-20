@@ -19,18 +19,18 @@ import { MappingGenerationEditor } from './MappingGenerationEditor.js';
 import { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import {
   type EditorStore,
-  type DSLMapping_LegendStudioPlugin_Extension,
+  type DSLMapping_LegendStudioApplicationPlugin_Extension,
   type ModelLoaderExtensionConfiguration,
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
 } from '@finos/legend-studio';
 import type { Entity } from '@finos/legend-model-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
 
-export class MappingGeneration_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSLMapping_LegendStudioPlugin_Extension
+export class MappingGeneration_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSLMapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

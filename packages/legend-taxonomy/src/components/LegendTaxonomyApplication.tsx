@@ -22,17 +22,17 @@ import {
 } from '../stores/LegendTaxonomyRouter.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider.js';
-import {
-  LegendApplicationComponentFrameworkProvider,
-  useApplicationStore,
-} from '@finos/legend-application';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
+import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
+import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
+import {
+  LegendTaxonomyBaseStoreProvider,
+  useLegendTaxonomyApplicationStore,
+} from './LegendTaxonomyBaseStoreProvider.js';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const applicationStore = useLegendTaxonomyApplicationStore();
 
   return (
     <div className="app">
@@ -63,7 +63,7 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
 
 export const LegendTaxonomyApplication = observer(
   (props: {
-    config: LegendTaxonomyConfig;
+    config: LegendTaxonomyApplicationConfig;
     pluginManager: LegendTaxonomyPluginManager;
   }) => {
     const { config, pluginManager } = props;
@@ -76,11 +76,11 @@ export const LegendTaxonomyApplication = observer(
             config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
+        <LegendTaxonomyBaseStoreProvider pluginManager={pluginManager}>
           <LegendApplicationComponentFrameworkProvider>
             <LegendTaxonomyApplicationRoot />
           </LegendApplicationComponentFrameworkProvider>
-        </LegendTaxonomyStoreProvider>
+        </LegendTaxonomyBaseStoreProvider>
       </DepotServerClientProvider>
     );
   },

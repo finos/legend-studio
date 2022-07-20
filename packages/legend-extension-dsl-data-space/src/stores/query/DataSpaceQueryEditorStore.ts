@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { ApplicationStore } from '@finos/legend-application';
 import {
   type Query,
   extractElementNameFromPath,
@@ -22,9 +21,9 @@ import {
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
-  type LegendQueryConfig,
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
+  type LegendQueryApplicationStore,
 } from '@finos/legend-query';
 import type {
   DepotServerClient,
@@ -57,7 +56,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
   classPath: string | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,

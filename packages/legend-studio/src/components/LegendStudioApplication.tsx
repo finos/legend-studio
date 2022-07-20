@@ -33,9 +33,10 @@ import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
-  LegendStudioStoreProvider,
-  useLegendStudioStore,
-} from './LegendStudioStoreProvider.js';
+  LegendStudioBaseStoreProvider,
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from './LegendStudioBaseStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
@@ -43,7 +44,7 @@ import {
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
@@ -104,26 +105,26 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
 });
 
 export const LegendStudioApplicationRoot = observer(() => {
-  const studioStore = useLegendStudioStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const baseStore = useLegendStudioBaseStore();
+  const applicationStore = useLegendStudioApplicationStore();
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
   useEffect(() => {
-    flowResult(studioStore.initialize()).catch(
+    flowResult(baseStore.initialize()).catch(
       applicationStore.alertUnhandledError,
     );
-  }, [applicationStore, studioStore]);
+  }, [applicationStore, baseStore]);
 
   return (
     <div className="app">
-      {!studioStore.isSDLCAuthorized && (
+      {!baseStore.isSDLCAuthorized && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
       )}
-      {studioStore.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized && (
         <>
           {/* TODO: consider moving this to `LegendApplicationComponentFrameworkProvider` */}
           <VirtualAssistant />
@@ -186,7 +187,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 
 export const LegendStudioApplication = observer(
   (props: {
-    config: LegendStudioConfig;
+    config: LegendStudioApplicationConfig;
     pluginManager: LegendStudioPluginManager;
   }) => {
     const { config, pluginManager } = props;
@@ -209,11 +210,11 @@ export const LegendStudioApplication = observer(
             pluginManager={pluginManager}
             log={applicationStore.log}
           >
-            <LegendStudioStoreProvider pluginManager={pluginManager}>
+            <LegendStudioBaseStoreProvider pluginManager={pluginManager}>
               <LegendApplicationComponentFrameworkProvider>
                 <LegendStudioApplicationRoot />
               </LegendApplicationComponentFrameworkProvider>
-            </LegendStudioStoreProvider>
+            </LegendStudioBaseStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>
       </SDLCServerClientProvider>

@@ -102,10 +102,10 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
-  DSLMapping_LegendStudioPlugin_Extension,
+  DSLMapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
-import type { LegendStudioPlugin } from '../../../LegendStudioPlugin.js';
+} from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
 import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
@@ -224,11 +224,11 @@ export const getMappingElementLabel = (
     }
     const extraSetImplementationMappingElementLabelInfoBuilders =
       editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
             [],
         );
@@ -259,7 +259,7 @@ export const getMappingElementLabel = (
 
 export const getMappingElementSource = (
   mappingElement: MappingElement,
-  plugins: LegendStudioPlugin[],
+  plugins: LegendStudioApplicationPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
@@ -298,7 +298,7 @@ export const getMappingElementSource = (
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_LegendStudioPlugin_Extension
+        plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
       ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
   for (const extractor of extraMappingElementSourceExtractors) {
@@ -897,7 +897,7 @@ export class MappingEditorState extends ElementEditorState {
   ): GeneratorFn<void> {
     const currentSource = getMappingElementSource(
       setImplementation,
-      this.editorStore.pluginManager.getStudioPlugins(),
+      this.editorStore.pluginManager.getApplicationPlugins(),
     );
     if (currentSource !== newSource) {
       // first, we check if the current class mapping is compatible with the new source
@@ -935,11 +935,11 @@ export class MappingEditorState extends ElementEditorState {
       } else {
         const extraInstanceSetImplementationSourceUpdaters =
           this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLMapping_LegendStudioPlugin_Extension
+                  plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
                 ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
         for (const updater of extraInstanceSetImplementationSourceUpdaters) {
@@ -1150,11 +1150,11 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     const extraMappingElementStateCreators = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingElementStateCreators?.() ?? [],
       );
     for (const elementStateCreator of extraMappingElementStateCreators) {
@@ -1467,7 +1467,7 @@ export class MappingEditorState extends ElementEditorState {
       );
     const source = getMappingElementSource(
       setImplementation,
-      this.editorStore.pluginManager.getStudioPlugins(),
+      this.editorStore.pluginManager.getApplicationPlugins(),
     );
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(

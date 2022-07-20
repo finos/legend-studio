@@ -41,13 +41,19 @@ import { User, SDLCServerClient } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventService } from './LegendStudioEventService.js';
+import type { LegendStudioApplicationPlugin } from './LegendStudioApplicationPlugin.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
-export class LegendStudioStore {
-  applicationStore: ApplicationStore<LegendStudioConfig>;
+export type LegendStudioApplicationStore = ApplicationStore<
+  LegendStudioApplicationConfig,
+  LegendStudioApplicationPlugin
+>;
+
+export class LegendStudioBaseStore {
+  applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
@@ -58,12 +64,12 @@ export class LegendStudioStore {
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
-    applicationStore: ApplicationStore<LegendStudioConfig>,
+    applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     pluginManager: LegendStudioPluginManager,
   ) {
-    makeObservable<LegendStudioStore, 'initializeSDLCServerClient'>(this, {
+    makeObservable<LegendStudioBaseStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
       SDLCServerTermsOfServicesUrlsToView: observable,
       needsToAcceptSDLCServerTermsOfServices: computed,

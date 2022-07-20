@@ -16,7 +16,7 @@
 
 import type { PackageableElement } from '@finos/legend-graph';
 import type { FileGenerationState } from './editor-state/FileGenerationState.js';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 
 export type FileGenerationResultViewerActionConfiguration = {
   key: string;
@@ -30,8 +30,8 @@ export type FileGenerationScopeFilterConfiguration = {
   filter: (element: PackageableElement) => boolean;
 };
 
-export interface DSLGenerationSpecification_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get drag-and-drop type specifier for model generation specification elements.
    */

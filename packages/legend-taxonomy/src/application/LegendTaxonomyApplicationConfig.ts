@@ -46,7 +46,7 @@ export class TaxonomyTreeOption {
   );
 }
 
-export interface LegendTaxonomyConfigurationData
+export interface LegendTaxonomyApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
@@ -66,7 +66,7 @@ export interface LegendTaxonomyConfigurationData
   extensions?: Record<PropertyKey, unknown>;
 }
 
-export class LegendTaxonomyConfig extends LegendApplicationConfig {
+export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -78,7 +78,7 @@ export class LegendTaxonomyConfig extends LegendApplicationConfig {
   taxonomyTreeOptions: TaxonomyTreeOption[] = [];
 
   constructor(
-    input: LegendApplicationConfigurationInput<LegendTaxonomyConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendTaxonomyApplicationConfigurationData>,
   ) {
     super(input);
 

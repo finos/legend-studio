@@ -52,9 +52,9 @@ import {
 } from '../../../stores/shared/DnDUtil.js';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import type {
-  DSL_LegendStudioPlugin_Extension,
+  DSL_LegendStudioApplicationPlugin_Extension,
   PureGrammarTextSuggestion,
-} from '../../../stores/LegendStudioPlugin.js';
+} from '../../../stores/LegendStudioApplicationPlugin.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -99,7 +99,7 @@ import {
   MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
 } from '../../../stores/LegendStudioCodeSnippets.js';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getSectionParserNameFromLineText = (
@@ -187,11 +187,11 @@ const getParserDocumetation = (
     }
     default: {
       const parserDocumentationGetters = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraPureGrammarParserDocumentationGetters?.() ?? [],
         );
       for (const docGetter of parserDocumentationGetters) {
@@ -322,11 +322,11 @@ const getParserElementDocumentation = (
     }
     default: {
       const parserElementDocumentationGetters = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraPureGrammarParserElementDocumentationGetters?.() ?? [],
         );
       for (const docGetter of parserElementDocumentationGetters) {
@@ -344,11 +344,11 @@ const getParserKeywordSuggestions = (
   editorStore: EditorStore,
 ): PureGrammarTextSuggestion[] => {
   const parserKeywordSuggestions = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_LegendStudioPlugin_Extension
+          plugin as DSL_LegendStudioApplicationPlugin_Extension
         ).getExtraPureGrammarParserKeywordSuggestionGetters?.() ?? [],
     )
     .flatMap((suggestionGetter) => suggestionGetter(editorStore));
@@ -599,11 +599,11 @@ const getParserElementSnippetSuggestions = (
     }
     case PURE_PARSER.DATA: {
       const embeddedDateSnippetSuggestions = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLData_LegendStudioPlugin_Extension
+              plugin as DSLData_LegendStudioApplicationPlugin_Extension
             ).getExtraEmbeddedDataSnippetSuggestions?.() ?? [],
         );
       return [
@@ -628,11 +628,11 @@ const getParserElementSnippetSuggestions = (
     }
     default: {
       const parserElementSnippetSuggestionsGetters = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraPureGrammarParserElementSnippetSuggestionsGetters?.() ??
             [],
         );
@@ -817,11 +817,11 @@ export const GrammarTextEditor = observer(() => {
 
   // Drag and Drop
   const extraDnDTypes = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_LegendStudioPlugin_Extension
+          plugin as DSL_LegendStudioApplicationPlugin_Extension
         ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(

@@ -19,7 +19,7 @@ import type {
   ClassView,
   ClassViewContextMenuItemRendererConfiguration,
   DiagramEditorState,
-  DSLDiagram_LegendStudioPlugin_Extension,
+  DSLDiagram_LegendStudioApplicationPlugin_Extension,
 } from '@finos/legend-extension-dsl-diagram';
 import {
   type EditorExtensionState,
@@ -32,11 +32,11 @@ import {
   type MappingExecutionState,
   type MappingTestQueryEditorActionConfiguration,
   type MappingTestState,
-  type DSLService_LegendStudioPlugin_Extension,
+  type DSLService_LegendStudioApplicationPlugin_Extension,
   type ServiceQueryEditorActionConfiguration,
   NewServiceModal,
   useEditorStore,
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   service_initNewService,
   service_setExecution,
 } from '@finos/legend-studio';
@@ -153,11 +153,11 @@ const PromoteToServiceQueryBuilderAction = observer(() => {
   );
 });
 
-export class QueryBuilder_LegendStudioPlugin
-  extends LegendStudioPlugin
+export class QueryBuilder_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
   implements
-    DSLDiagram_LegendStudioPlugin_Extension,
-    DSLService_LegendStudioPlugin_Extension
+    DSLDiagram_LegendStudioApplicationPlugin_Extension,
+    DSLService_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { ConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from './EditorStore.js';
 import type {
@@ -29,12 +29,12 @@ import type { NewConnectionValueDriver } from './NewElementState.js';
 import type {
   MappingElement,
   MappingElementSource,
-} from '../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
+} from './editor-state/element-editor-state/mapping/MappingEditorState.js';
 import type {
   InstanceSetImplementationState,
   MappingElementState,
   PropertyMappingState,
-} from '../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+} from './editor-state/element-editor-state/mapping/MappingElementState.js';
 
 type MappingSourceTypeInfo = {
   sourceType: string;
@@ -135,8 +135,8 @@ export type InstanceSetImplementationStoreExtractor = (
   sourceElement: MappingElementSource,
 ) => Store | undefined;
 
-export interface DSLMapping_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface DSLMapping_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get the list of set implementation decorators.
    */

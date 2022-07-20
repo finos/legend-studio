@@ -16,7 +16,7 @@
 
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { EditorStore } from '../../stores/EditorStore.js';
-import type { DSL_LegendStudioPlugin_Extension } from '../../stores/LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../stores/LegendStudioApplicationPlugin.js';
 import {
   type PackageableElement,
   type Type,
@@ -108,11 +108,11 @@ export const getElementTypeIcon = (
     default: {
       if (type) {
         const extraElementIconGetters = editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_LegendStudioPlugin_Extension
+                plugin as DSL_LegendStudioApplicationPlugin_Extension
               ).getExtraElementIconGetters?.() ?? [],
           );
         for (const iconGetter of extraElementIconGetters) {

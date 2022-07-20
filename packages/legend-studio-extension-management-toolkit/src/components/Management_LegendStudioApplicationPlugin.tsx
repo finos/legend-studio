@@ -15,14 +15,14 @@
  */
 
 import packageJson from '../../package.json';
-import { LegendStudioPlugin } from '@finos/legend-studio';
+import { LegendStudioApplicationPlugin } from '@finos/legend-studio';
 import {
   PATH_PARAM_TOKEN_REDIRECT_URL,
   URLRedirector,
 } from './URLRedirector.js';
 import type { ApplicationPageEntry } from '@finos/legend-application';
 
-export class Management_LegendStudioPlugin extends LegendStudioPlugin {
+export class Management_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);
   }

@@ -16,12 +16,13 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import { TaxonomyExplorerStore } from '../stores/TaxonomyExplorerStore.js';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
+import {
+  useLegendTaxonomyApplicationStore,
+  useLegendTaxonomyBaseStore,
+} from './LegendTaxonomyBaseStoreProvider.js';
 
 const TaxonomyExplorerStoreContext = createContext<
   TaxonomyExplorerStore | undefined
@@ -30,9 +31,9 @@ const TaxonomyExplorerStoreContext = createContext<
 const TaxonomyExplorerStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const applicationStore = useLegendTaxonomyApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendTaxonomyStore();
+  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
     () =>
       new TaxonomyExplorerStore(

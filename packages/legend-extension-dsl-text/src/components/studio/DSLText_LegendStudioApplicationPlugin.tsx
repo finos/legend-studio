@@ -16,7 +16,7 @@
 
 import packageJson from '../../../package.json';
 import {
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   type NewElementFromStateCreator,
   type EditorStore,
   type ElementEditorState,
@@ -25,7 +25,7 @@ import {
   type ElementProjectExplorerDnDTypeGetter,
   type ElementIconGetter,
   type ElementEditorRenderer,
-  type DSL_LegendStudioPlugin_Extension,
+  type DSL_LegendStudioApplicationPlugin_Extension,
   type NewElementState,
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
@@ -54,9 +54,9 @@ import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../..
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
-export class DSLText_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSL_LegendStudioPlugin_Extension
+export class DSLText_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

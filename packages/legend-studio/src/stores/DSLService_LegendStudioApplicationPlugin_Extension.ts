@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Connection, Runtime } from '@finos/legend-graph';
-import type { ServicePureExecutionState } from '../stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
+import type { ServicePureExecutionState } from './editor-state/element-editor-state/service/ServiceExecutionState.js';
 
 export type ServiceQueryEditorActionConfiguration = {
   key: string;
@@ -32,8 +32,8 @@ export type ServiceTestRuntimeConnectionBuilder = (
   testData: string,
 ) => Connection | undefined;
 
-export interface DSLService_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface DSLService_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get the list of actions for service execution query editor.
    */

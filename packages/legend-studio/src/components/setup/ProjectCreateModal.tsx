@@ -29,13 +29,12 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
-  useApplicationStore,
   DocumentationLink,
   useConditionedApplicationNavigationContext,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',
@@ -44,7 +43,7 @@ enum CREATE_PROJECT_MODAL_TAB {
 
 const CreateNewProjectTab = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT,
   );
@@ -356,7 +355,7 @@ const CreateNewProjectTab = observer(() => {
 
 const ImportProjectTab = observer(() => {
   const setupStore = useSetupStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT,

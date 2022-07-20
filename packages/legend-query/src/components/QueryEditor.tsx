@@ -59,7 +59,7 @@ import {
   type RawLambda,
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -173,7 +173,7 @@ const renderQueryEditorHeaderLabel = (
     );
   }
   const extraQueryEditorHeaderLabelers = editorStore.pluginManager
-    .getQueryPlugins()
+    .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraQueryEditorHeaderLabelers?.() ?? []);
   for (const labeler of extraQueryEditorHeaderLabelers) {
     const label = labeler(editorStore);
@@ -186,7 +186,7 @@ const renderQueryEditorHeaderLabel = (
 
 const QueryEditorHeaderContent = observer(() => {
   const editorStore = useQueryEditorStore();
-  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const applicationStore = useLegendQueryApplicationStore();
   const viewQueryProject = (): void => {
     const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
     applicationStore.navigator.openNewWindow(

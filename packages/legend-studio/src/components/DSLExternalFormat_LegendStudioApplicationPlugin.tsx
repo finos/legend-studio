@@ -54,16 +54,16 @@ import {
   type PureGrammarParserDocumentationGetter,
   type PureGrammarParserKeywordSuggestionGetter,
   type PureGrammarTextSuggestion,
-  LegendStudioPlugin,
-} from '../stores/LegendStudioPlugin.js';
+  LegendStudioApplicationPlugin,
+} from '../stores/LegendStudioApplicationPlugin.js';
 import type {
   ConnectionEditorRenderer,
   ConnectionValueEditorStateBuilder,
   DefaultConnectionValueBuilder,
-  DSLMapping_LegendStudioPlugin_Extension,
+  DSLMapping_LegendStudioApplicationPlugin_Extension,
   NewConnectionDriverCreator,
   RuntimeConnectionTooltipTextBuilder,
-} from '../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+} from '../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import type {
   NewConnectionValueDriver,
   NewElementDriver,
@@ -98,9 +98,9 @@ const SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const BINDING_ELEMENT_TYPE = 'BINDING';
 const BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_BINDING';
 
-export class DSLExternalFormat_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSLMapping_LegendStudioPlugin_Extension
+export class DSLExternalFormat_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSLMapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(

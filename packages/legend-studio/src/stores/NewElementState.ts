@@ -32,7 +32,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { decorateRuntimeWithNewMapping } from './editor-state/element-editor-state/RuntimeEditorState.js';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import {
   type FileGenerationTypeOption,
   DEFAULT_GENERATION_SPECIFICATION_NAME,
@@ -75,7 +75,7 @@ import {
   stub_RawLambda,
   stub_Database,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from './DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
@@ -331,11 +331,11 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
       return new NewRelationalDatabaseConnectionDriver(this.editorStore);
     }
     const extraNewConnectionDriverCreators = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraNewConnectionDriverCreators?.() ?? [],
       );
     for (const creator of extraNewConnectionDriverCreators) {
@@ -630,11 +630,11 @@ export class NewElementState {
           break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_LegendStudioPlugin_Extension
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
                 ).getExtraNewElementDriverCreators?.() ?? [],
             );
           for (const creator of extraNewElementDriverCreators) {
@@ -719,11 +719,11 @@ export class NewElementState {
 
         const extraElementEditorPostCreateActions =
           this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_LegendStudioPlugin_Extension
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
                 ).getExtraElementEditorPostCreateActions?.() ?? [],
             );
         for (const postCreateAction of extraElementEditorPostCreateActions) {
@@ -804,11 +804,11 @@ export class NewElementState {
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_LegendStudioPlugin_Extension
+                plugin as DSL_LegendStudioApplicationPlugin_Extension
               ).getExtraNewElementFromStateCreators?.() ?? [],
           );
         for (const creator of extraNewElementFromStateCreators) {

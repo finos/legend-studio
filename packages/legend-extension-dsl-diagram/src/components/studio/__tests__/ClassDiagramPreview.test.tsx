@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-studio';
 import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID.js';
 import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension.js';
-import { DSLDiagram_LegendStudioPlugin } from '../DSLDiagram_LegendStudioPlugin.js';
+import { DSLDiagram_LegendStudioApplicationPlugin } from '../DSLDiagram_LegendStudioApplicationPlugin.js';
 
 const TEST_DATA__dummyModel = [
   {
@@ -52,7 +52,7 @@ const TEST_DATA__dummyModel = [
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
   .usePresets([new DSLDiagram_GraphPreset()])
-  .usePlugins([new DSLDiagram_LegendStudioPlugin()])
+  .usePlugins([new DSLDiagram_LegendStudioApplicationPlugin()])
   .install();
 
 test(integrationTest('Class diagram preview shows up properly'), async () => {

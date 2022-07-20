@@ -88,7 +88,7 @@ class LegendStudioApplicationCoreOptions {
   }
 }
 
-export interface LegendStudioConfigurationData
+export interface LegendStudioApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
@@ -97,7 +97,7 @@ export interface LegendStudioConfigurationData
   engine: { url: string; queryUrl?: string };
 }
 
-export class LegendStudioConfig extends LegendApplicationConfig {
+export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendStudioApplicationCoreOptions();
 
   readonly engineServerUrl: string;
@@ -107,7 +107,7 @@ export class LegendStudioConfig extends LegendApplicationConfig {
   readonly SDLCServerBaseHeaders?: RequestHeaders | undefined;
 
   constructor(
-    input: LegendApplicationConfigurationInput<LegendStudioConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendStudioApplicationConfigurationData>,
   ) {
     super(input);
 

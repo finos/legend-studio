@@ -26,20 +26,26 @@ export {
   useQueryEditorStore,
 } from './components/QueryEditorStoreProvider.js';
 export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
-export { useLegendQueryStore } from './components/LegendQueryStoreProvider.js';
+export {
+  useLegendQueryBaseStore,
+  useLegendQueryApplicationStore,
+} from './components/LegendQueryBaseStoreProvider.js';
 export { QueryEditor } from './components/QueryEditor.js';
 
 export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
 
-export * from './stores/LegendQueryPlugin.js';
+export * from './stores/LegendQueryApplicationPlugin.js';
 export * from './stores/LegendQueryRouter.js';
 export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
-export { LegendQueryConfig } from './application/LegendQueryConfig.js';
+export { LegendQueryApplicationConfig } from './application/LegendQueryApplicationConfig.js';
 export {
   QueryEditorStore,
   type QueryExportConfiguration,
 } from './stores/QueryEditorStore.js';
-export { LegendQueryStore } from './stores/LegendQueryStore.js';
+export {
+  LegendQueryBaseStore,
+  type LegendQueryApplicationStore,
+} from './stores/LegendQueryBaseStore.js';
 export {
   QueryBuilderMode,
   StandardQueryBuilderMode,

@@ -49,7 +49,7 @@ import {
   ServiceExecutionMode,
   ServiceRegistrationResult,
 } from '@finos/legend-graph';
-import { TEST__getTestStudioConfig } from '../../../../../stores/EditorStoreTestUtils.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { service_deleteOwner } from '../../../../../stores/graphModifier/DSLService_GraphModifierHelper.js';
 
@@ -62,7 +62,7 @@ const setup = async (
 ): Promise<EditorStore> => {
   const mockedEditorStore = TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(
-      TEST__getTestStudioConfig({
+      TEST__getLegendStudioApplicationConfig({
         extensions: {
           core: {
             TEMPORARY__serviceRegistrationConfig: [

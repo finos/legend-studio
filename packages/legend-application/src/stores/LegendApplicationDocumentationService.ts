@@ -30,8 +30,7 @@ import {
   primitive,
 } from 'serializr';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
-import type { ApplicationStore } from './ApplicationStore.js';
-import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
 export type LegendApplicationDocumentationRegistryEntry = {
   url: string;
@@ -135,7 +134,7 @@ export class LegendApplicationDocumentationService {
     LegendApplicationDocumentationEntry
   >();
 
-  constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
+  constructor(applicationStore: GenericLegendApplicationStore) {
     // set the main documenation site url
     this.url = applicationStore.config.documentationUrl;
 

@@ -28,7 +28,7 @@ import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedEl
 import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
@@ -109,7 +109,7 @@ export const ConnectionEditor = observer(
     const { connectionEditorState, isReadOnly, disableChangingStore } = props;
     const connectionValueState = connectionEditorState.connectionValueState;
     const editorStore = useEditorStore();
-    const plugins = editorStore.pluginManager.getStudioPlugins();
+    const plugins = editorStore.pluginManager.getApplicationPlugins();
 
     const renderConnectionValueEditor = (): React.ReactNode => {
       if (connectionValueState instanceof JsonModelConnectionValueState) {
@@ -140,7 +140,7 @@ export const ConnectionEditor = observer(
         const extraConnectionEditorRenderers = plugins.flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraConnectionEditorRenderers?.() ?? [],
         );
         for (const editorRenderer of extraConnectionEditorRenderers) {

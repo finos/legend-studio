@@ -38,15 +38,14 @@ import {
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
   const params = useParams<EditorPathParams | GroupEditorPathParams>();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;

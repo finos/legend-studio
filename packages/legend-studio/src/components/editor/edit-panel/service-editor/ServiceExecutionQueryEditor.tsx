@@ -45,7 +45,7 @@ import {
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { LightQuery } from '@finos/legend-graph';
-import type { DSLService_LegendStudioPlugin_Extension } from '../../../../stores/DSLService_LegendStudioPlugin_Extension.js';
+import type { DSLService_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLService_LegendStudioApplicationPlugin_Extension.js';
 
 const ServiceExecutionResultViewer = observer(
   (props: { executionState: ServicePureExecutionState }) => {
@@ -236,11 +236,11 @@ export const ServiceExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const extraServiceQueryEditorActions = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLService_LegendStudioPlugin_Extension
+            plugin as DSLService_LegendStudioApplicationPlugin_Extension
           ).getExtraServiceQueryEditorActionConfigurations?.() ?? [],
       )
       .map((config) => (

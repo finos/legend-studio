@@ -46,13 +46,9 @@ import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/Q
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';
 import type { MappingRuntimeCompatibilityAnalysisResult } from '../graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
-import {
-  APPLICATION_EVENT,
-  TAB_SIZE,
-  type ApplicationStore,
-} from '@finos/legend-application';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import { APPLICATION_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -354,16 +350,15 @@ export class ServiceQuerySetupState extends QuerySetupState {
 }
 
 export class QuerySetupStore {
-  applicationStore: ApplicationStore<LegendQueryConfig>;
+  applicationStore: LegendQueryApplicationStore;
   graphManagerState: BasicGraphManagerState;
   depotServerClient: DepotServerClient;
   pluginManager: LegendQueryPluginManager;
-
   querySetupState?: QuerySetupState | undefined;
   initState = ActionState.create();
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
   ) {

@@ -22,17 +22,16 @@ import {
   type PureGraphPlugin,
   type PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import { Core_LegendStudioPlugin } from '../components/Core_LegendStudioPlugin.js';
-import type { LegendStudioPlugin } from '../stores/LegendStudioPlugin.js';
+import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
+import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
 export class LegendStudioPluginManager
-  extends LegendApplicationPluginManager
+  extends LegendApplicationPluginManager<LegendStudioApplicationPlugin>
   implements GraphPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
-  private studioPlugins: LegendStudioPlugin[] = [];
 
   private constructor() {
     super();
@@ -56,10 +55,6 @@ export class LegendStudioPluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
-  registerStudioPlugin(plugin: LegendStudioPlugin): void {
-    this.studioPlugins.push(plugin);
-  }
-
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
     return [...this.pureGraphManagerPlugins];
   }
@@ -72,11 +67,10 @@ export class LegendStudioPluginManager
     return [...this.pureGraphPlugins];
   }
 
-  getStudioPlugins(): LegendStudioPlugin[] {
-    return [...this.studioPlugins];
-  }
-
   override getHiddenPluginNames(): string[] {
-    return [Core_LegendStudioPlugin.NAME, CorePureGraphManagerPlugin.NAME];
+    return [
+      Core_LegendStudioApplicationPlugin.NAME,
+      CorePureGraphManagerPlugin.NAME,
+    ];
   }
 }

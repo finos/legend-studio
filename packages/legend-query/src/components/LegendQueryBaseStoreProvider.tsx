@@ -16,36 +16,53 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { LegendQueryStore } from '../stores/LegendQueryStore.js';
+import { LegendQueryBaseStore } from '../stores/LegendQueryBaseStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useApplicationStore } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
+import type { LegendQueryApplicationPlugin } from '../stores/LegendQueryApplicationPlugin.js';
+import {
+  type ApplicationStore,
+  useApplicationStore,
+} from '@finos/legend-application';
 
-const LegendQueryStoreContext = createContext<LegendQueryStore | undefined>(
-  undefined,
-);
+export const useLegendQueryApplicationStore = (): ApplicationStore<
+  LegendQueryApplicationConfig,
+  LegendQueryApplicationPlugin
+> =>
+  useApplicationStore<
+    LegendQueryApplicationConfig,
+    LegendQueryApplicationPlugin
+  >();
 
-export const LegendQueryStoreProvider: React.FC<{
+const LegendQueryBaseStoreContext = createContext<
+  LegendQueryBaseStore | undefined
+>(undefined);
+
+export const LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
   pluginManager: LegendQueryPluginManager;
 }> = ({ children, pluginManager }) => {
-  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
   const store = useLocalObservable(
     () =>
-      new LegendQueryStore(applicationStore, depotServerClient, pluginManager),
+      new LegendQueryBaseStore(
+        applicationStore,
+        depotServerClient,
+        pluginManager,
+      ),
   );
   return (
-    <LegendQueryStoreContext.Provider value={store}>
+    <LegendQueryBaseStoreContext.Provider value={store}>
       {children}
-    </LegendQueryStoreContext.Provider>
+    </LegendQueryBaseStoreContext.Provider>
   );
 };
 
-export const useLegendQueryStore = (): LegendQueryStore =>
+export const useLegendQueryBaseStore = (): LegendQueryBaseStore =>
   guaranteeNonNullable(
-    useContext(LegendQueryStoreContext),
-    `Can't find Legend Query store in context`,
+    useContext(LegendQueryBaseStoreContext),
+    `Can't find Legend Query base store in context`,
   );

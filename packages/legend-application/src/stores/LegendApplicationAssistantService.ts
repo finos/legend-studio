@@ -16,8 +16,7 @@
 
 import { action, makeObservable, observable, computed } from 'mobx';
 import type { LegendApplicationDocumentationEntry } from './LegendApplicationDocumentationService.js';
-import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
-import type { ApplicationStore } from './ApplicationStore.js';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { Fuse } from './CJS__Fuse.cjs';
 import {
   type MarkdownText,
@@ -79,7 +78,7 @@ export class VirtualAssistantContextualDocumentationEntry {
 }
 
 export class LegendApplicationAssistantService {
-  readonly applicationStore: ApplicationStore<LegendApplicationConfig>;
+  readonly applicationStore: GenericLegendApplicationStore;
   private readonly searchEngine: Fuse<LegendApplicationDocumentationEntry>;
   /**
    * This key is used to allow programmatic re-rendering of the assistant panel
@@ -93,7 +92,7 @@ export class LegendApplicationAssistantService {
   searchState = ActionState.create().pass();
   searchText = '';
 
-  constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
+  constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,

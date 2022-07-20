@@ -795,7 +795,7 @@ const CreateQuerySetup = observer(
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
   const extraQuerySetupOptions = setupStore.pluginManager
-    .getQueryPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         plugin.getExtraQuerySetupOptionRendererConfigurations?.() ?? [],
@@ -886,7 +886,7 @@ export const QuerySetup = withQuerySetupStore(
         return <CreateQuerySetup querySetupState={setupState} />;
       }
       const extraQuerySetupRenderers = setupStore.pluginManager
-        .getQueryPlugins()
+        .getApplicationPlugins()
         .flatMap((plugin) => plugin.getExtraQuerySetupRenderers?.() ?? []);
       for (const querySetupRenderer of extraQuerySetupRenderers) {
         const elementEditor = querySetupRenderer(setupState);

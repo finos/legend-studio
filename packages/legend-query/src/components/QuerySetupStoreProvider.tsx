@@ -17,11 +17,12 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { QuerySetupStore } from '../stores/QuerySetupStore.js';
-import { useLegendQueryStore } from './LegendQueryStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
+import {
+  useLegendQueryApplicationStore,
+  useLegendQueryBaseStore,
+} from './LegendQueryBaseStoreProvider.js';
 
 const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
   undefined,
@@ -30,15 +31,15 @@ const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
 export const QuerySetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<LegendQueryConfig>();
+  const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const queryStore = useLegendQueryStore();
+  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new QuerySetupStore(
         applicationStore,
         depotServerClient,
-        queryStore.pluginManager,
+        baseStore.pluginManager,
       ),
   );
   return (

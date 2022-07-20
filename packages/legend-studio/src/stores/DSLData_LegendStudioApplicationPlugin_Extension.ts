@@ -19,9 +19,9 @@ import type { EmbeddedDataTypeOption } from './editor-state/element-editor-state
 import type { EmbeddedDataState } from './editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { EditorStore } from './EditorStore.js';
 import type {
-  DSL_LegendStudioPlugin_Extension,
+  DSL_LegendStudioApplicationPlugin_Extension,
   ElementEmbeddedContentSnippetSuggestion,
-} from './LegendStudioPlugin.js';
+} from './LegendStudioApplicationPlugin.js';
 
 export type EmbeddedDataEditorStateBuilder = (
   editorStore: EditorStore,
@@ -43,8 +43,8 @@ export type EmbeddedDataCreator = (
 export type EmbeddedDataSnippetSuggestion =
   ElementEmbeddedContentSnippetSuggestion;
 
-export interface DSLData_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface DSLData_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get the list of extra embedded data editor state builders.
    */

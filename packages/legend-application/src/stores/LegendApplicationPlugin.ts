@@ -22,8 +22,8 @@ import type {
   LegendApplicationKeyedDocumentationEntry,
 } from './LegendApplicationDocumentationService.js';
 
-export type LegendApplicationSetup = (
-  pluginManager: LegendApplicationPluginManager,
+export type LegendApplicationSetup = <T extends LegendApplicationPlugin>(
+  pluginManager: LegendApplicationPluginManager<T>,
 ) => Promise<void>;
 
 /**

@@ -21,11 +21,12 @@ import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
 import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 export const TEST__ApplicationStoreProvider: React.FC<{
   children: React.ReactNode;
   config: LegendApplicationConfig;
-  pluginManager: LegendApplicationPluginManager;
+  pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>;
 }> = ({ children, config, pluginManager }) => (
   <ApplicationStoreProvider config={config} pluginManager={pluginManager}>
     {children}
@@ -34,14 +35,15 @@ export const TEST__ApplicationStoreProvider: React.FC<{
 
 export const TEST__provideMockedApplicationStore = <
   T extends LegendApplicationConfig,
+  V extends LegendApplicationPlugin,
 >(
   config: T,
-  pluginManager: LegendApplicationPluginManager,
+  pluginManager: LegendApplicationPluginManager<V>,
   customization?: {
-    mock?: ApplicationStore<T>;
+    mock?: ApplicationStore<T, V>;
     navigator?: WebApplicationNavigator;
   },
-): ApplicationStore<T> => {
+): ApplicationStore<T, V> => {
   const value =
     customization?.mock ??
     new ApplicationStore(

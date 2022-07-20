@@ -16,24 +16,31 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { ApplicationStore } from '../stores/ApplicationStore.js';
+import {
+  ApplicationStore,
+  type GenericLegendApplicationStore,
+} from '../stores/ApplicationStore.js';
 import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 const ApplicationStoreContext = createContext<
-  ApplicationStore<LegendApplicationConfig> | undefined
+  GenericLegendApplicationStore | undefined
 >(undefined);
 
-export const ApplicationStoreProvider = <T extends LegendApplicationConfig>({
+export const ApplicationStoreProvider = <
+  T extends LegendApplicationConfig,
+  V extends LegendApplicationPlugin,
+>({
   children,
   config,
   pluginManager,
 }: {
   children: React.ReactNode;
   config: T;
-  pluginManager: LegendApplicationPluginManager;
+  pluginManager: LegendApplicationPluginManager<V>;
 }): React.ReactElement => {
   const navigator = useWebApplicationNavigator();
   const applicationStore = useLocalObservable(
@@ -48,8 +55,9 @@ export const ApplicationStoreProvider = <T extends LegendApplicationConfig>({
 
 export const useApplicationStore = <
   T extends LegendApplicationConfig,
->(): ApplicationStore<T> =>
+  V extends LegendApplicationPlugin,
+>(): ApplicationStore<T, V> =>
   guaranteeNonNullable(
-    useContext(ApplicationStoreContext) as ApplicationStore<T> | undefined,
+    useContext(ApplicationStoreContext) as ApplicationStore<T, V> | undefined,
     `Can't find application store in context`,
   );

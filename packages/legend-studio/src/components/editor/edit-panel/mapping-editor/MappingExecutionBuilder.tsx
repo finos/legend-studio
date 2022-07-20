@@ -77,7 +77,7 @@ import {
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
@@ -179,11 +179,11 @@ const MappingExecutionQueryEditor = observer(
     const applicationStore = useApplicationStore();
 
     const extraQueryEditorActions = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
       )
       .map((config) => (
@@ -234,7 +234,7 @@ const MappingExecutionQueryEditor = observer(
               executionState.setInputDataStateBasedOnSource(
                 getMappingElementSource(
                   setImplementation,
-                  editorStore.pluginManager.getStudioPlugins(),
+                  editorStore.pluginManager.getApplicationPlugins(),
                 ),
                 true,
               );
@@ -254,7 +254,7 @@ const MappingExecutionQueryEditor = observer(
                     executionState.setInputDataStateBasedOnSource(
                       getMappingElementSource(
                         setImplementation,
-                        editorStore.pluginManager.getStudioPlugins(),
+                        editorStore.pluginManager.getApplicationPlugins(),
                       ),
                       true,
                     ),
@@ -527,7 +527,7 @@ export const MappingExecutionInputDataBuilder = observer(
           setImplementation
             ? getMappingElementSource(
                 setImplementation,
-                editorStore.pluginManager.getStudioPlugins(),
+                editorStore.pluginManager.getApplicationPlugins(),
               )
             : undefined,
           true,

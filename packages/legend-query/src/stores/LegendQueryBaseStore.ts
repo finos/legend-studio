@@ -14,33 +14,32 @@
  * limitations under the License.
  */
 
-import type { ApplicationStore } from '@finos/legend-application';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
-import type { TaxonomyServerClient } from './TaxonomyServerClient.js';
+import type { ApplicationStore } from '@finos/legend-application';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
+import type { LegendQueryApplicationPlugin } from './LegendQueryApplicationPlugin.js';
 
-export class LegendTaxonomyStore {
-  applicationStore: ApplicationStore<LegendTaxonomyConfig>;
+export type LegendQueryApplicationStore = ApplicationStore<
+  LegendQueryApplicationConfig,
+  LegendQueryApplicationPlugin
+>;
+
+export class LegendQueryBaseStore {
+  applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
-  taxonomyServerClient: TaxonomyServerClient;
-  pluginManager: LegendTaxonomyPluginManager;
+  pluginManager: LegendQueryPluginManager;
 
   constructor(
-    applicationStore: ApplicationStore<LegendTaxonomyConfig>,
-    taxonomyServerClient: TaxonomyServerClient,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
+    pluginManager: LegendQueryPluginManager,
   ) {
     this.applicationStore = applicationStore;
-    this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
     this.pluginManager = pluginManager;
 
     // Register plugins
-    this.taxonomyServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );

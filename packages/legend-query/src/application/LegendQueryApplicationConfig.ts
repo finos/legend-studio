@@ -24,7 +24,7 @@ import {
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
 
-export interface LegendQueryConfigurationData
+export interface LegendQueryApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
   env: string;
@@ -42,7 +42,7 @@ export interface LegendQueryConfigurationData
   extensions?: Record<PropertyKey, unknown>;
 }
 
-export class LegendQueryConfig extends LegendApplicationConfig {
+export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -50,7 +50,7 @@ export class LegendQueryConfig extends LegendApplicationConfig {
   readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   constructor(
-    input: LegendApplicationConfigurationInput<LegendQueryConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
   ) {
     super(input);
 

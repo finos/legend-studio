@@ -16,9 +16,8 @@
 
 import { IllegalStateError } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
-import type { ApplicationStore } from './ApplicationStore.js';
+import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { ApplicationTelemetry } from './ApplicationTelemetry.js';
-import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 
 /**
  * Context data refers to the area of the application that the user is
@@ -67,10 +66,10 @@ export class ApplicationNavigationContextData {
 }
 
 export class LegendApplicationNavigationContextService {
-  applicationStore: ApplicationStore<LegendApplicationConfig>;
+  applicationStore: GenericLegendApplicationStore;
   contextStack: ApplicationNavigationContextData[] = [];
 
-  constructor(applicationStore: ApplicationStore<LegendApplicationConfig>) {
+  constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       contextStack: observable,
       currentContext: computed,

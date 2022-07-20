@@ -16,8 +16,8 @@
 
 import packageJson from '../../package.json';
 import {
-  LegendStudioPlugin,
-  type DSL_LegendStudioPlugin_Extension,
+  LegendStudioApplicationPlugin,
+  type DSL_LegendStudioApplicationPlugin_Extension,
   type GenerationFile,
   type FileGenerationState,
   type FileGenerationResultViewerActionConfiguration,
@@ -35,15 +35,15 @@ import {
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
-interface ELMorphir_LegendStudioPluginConfigData {
+interface ELMorphir_LegendStudioApplicationPluginConfigData {
   visualizer: { url: string };
   linterServer: { url: string };
   linterApp: { url: string };
 }
 
-export class ELMorphir_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSL_LegendStudioPlugin_Extension
+export class ELMorphir_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_LegendStudioApplicationPlugin_Extension
 {
   networkClient: NetworkClient;
   private _morphirVisualizerUrl?: string | undefined;
@@ -55,8 +55,11 @@ export class ELMorphir_LegendStudioPlugin
     this.networkClient = new NetworkClient();
   }
 
-  override configure(_configData: object): ELMorphir_LegendStudioPlugin {
-    const configData = _configData as ELMorphir_LegendStudioPluginConfigData;
+  override configure(
+    _configData: object,
+  ): ELMorphir_LegendStudioApplicationPlugin {
+    const configData =
+      _configData as ELMorphir_LegendStudioApplicationPluginConfigData;
     this._morphirVisualizerUrl = guaranteeNonEmptyString(
       configData.visualizer.url,
       `Can't configure Morphir generator: 'visualizer.url' field is missing or empty`,

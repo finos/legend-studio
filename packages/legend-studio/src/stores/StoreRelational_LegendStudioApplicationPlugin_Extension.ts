@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,
@@ -50,8 +50,8 @@ export type AuthenticationStrategyEditorRenderer = (
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
 
-export interface StoreRelational_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface StoreRelational_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   // --------------------- relational database connection datasource specification ------------------
 
   /**

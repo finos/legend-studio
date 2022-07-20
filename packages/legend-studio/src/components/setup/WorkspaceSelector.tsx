@@ -29,8 +29,7 @@ import {
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
 import { useSetupStore } from './SetupStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
   <div className="setup__workspace__label">
@@ -55,7 +54,7 @@ export const WorkspaceSelector = observer(
   >(function WorkspaceSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore<LegendStudioConfig>();
+    const applicationStore = useLegendStudioApplicationStore();
     const currentWorkspaceCompositeId = setupStore.currentWorkspaceCompositeId;
     const options =
       setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);

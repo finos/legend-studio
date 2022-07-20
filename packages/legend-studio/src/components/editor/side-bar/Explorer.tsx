@@ -74,8 +74,8 @@ import {
   getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
   getElementRootPackage(node.packageableElement).name ===
@@ -185,9 +185,9 @@ const ExplorerContextMenu = observer(
   >(function ExplorerContextMenu(props, ref) {
     const { node, nodeIsImmutable } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore<LegendStudioConfig>();
+    const applicationStore = useLegendStudioApplicationStore();
     const extraExplorerContextMenuItems = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           plugin.getExtraExplorerContextMenuItemRendererConfigurations?.() ??

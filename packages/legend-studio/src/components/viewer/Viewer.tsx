@@ -57,7 +57,6 @@ import {
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 import {
   ActivityBarMenu,
   type ActivityDisplay,
@@ -65,12 +64,13 @@ import {
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const ViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
   const viewerStore = useViewerStore();
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const latestVersion = viewerStore.onLatestVersion;
   const currentRevision = viewerStore.onCurrentRevision;
   const extraSDLCInfo = params.revisionId ?? params.versionId ?? 'HEAD';
@@ -257,7 +257,7 @@ export const Viewer = withEditorStore(
         );
       // Extensions
       const extraEditorExtensionComponents = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             plugin.getExtraEditorExtensionComponentRendererConfigurations?.() ??

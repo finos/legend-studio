@@ -33,16 +33,15 @@ export type QueryEditorHeaderLabeler = (
   editorStore: QueryEditorStore,
 ) => React.ReactNode | undefined;
 
-export abstract class LegendQueryPlugin extends LegendApplicationPlugin {
+export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlugin {
   /**
    * This helps to better type-check for this empty abtract type
    * See https://github.com/finos/legend-studio/blob/master/docs/technical/typescript-usage.md#understand-typescript-structual-type-system
    */
-  private readonly _$nominalTypeBrand!: 'LegendQueryPlugin';
+  private readonly _$nominalTypeBrand!: 'LegendQueryApplicationPlugin';
 
   install(pluginManager: LegendQueryPluginManager): void {
     pluginManager.registerApplicationPlugin(this);
-    pluginManager.registerQueryPlugin(this);
   }
 
   /**

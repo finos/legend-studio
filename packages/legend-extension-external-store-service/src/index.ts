@@ -15,7 +15,7 @@
  */
 
 export * from './ESService_Extension.js';
-export { ESService_LegendStudioPlugin } from './components/ESService_LegendStudioPlugin.js';
+export { ESService_LegendStudioApplicationPlugin } from './components/ESService_LegendStudioApplicationPlugin.js';
 export * from './models/protocols/pure/ESService_PureProtocolPlugin_Extension.js';
 export * from './graphManager/ESService_PureGraphManagerPlugin_Extension.js';
 

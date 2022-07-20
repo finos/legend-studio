@@ -66,7 +66,7 @@ import { GenerationSpecificationEditorState } from '../../../stores/editor-state
 import { GenerationSpecificationEditor } from './GenerationSpecificationEditor.js';
 import { FileGenerationViewerState } from '../../../stores/editor-state/FileGenerationViewerState.js';
 import { FileGenerationViewer } from '../../editor/edit-panel/FileGenerationViewer.js';
-import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
@@ -279,11 +279,11 @@ export const EditPanel = observer(() => {
             return <UnsupportedElementEditor key={currentEditorState.uuid} />;
           }
           const extraElementEditorCreators = editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSL_LegendStudioPlugin_Extension
+                  plugin as DSL_LegendStudioApplicationPlugin_Extension
                 ).getExtraElementEditorRenderers?.() ?? [],
             );
           for (const elementEditorCreators of extraElementEditorCreators) {

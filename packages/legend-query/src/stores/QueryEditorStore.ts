@@ -63,14 +63,10 @@ import {
   type ProjectGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
-import {
-  type ApplicationStore,
-  TAB_SIZE,
-  APPLICATION_EVENT,
-} from '@finos/legend-application';
+import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
+import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -200,7 +196,7 @@ export class QueryExportState {
 }
 
 export abstract class QueryEditorStore {
-  applicationStore: ApplicationStore<LegendQueryConfig>;
+  applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   pluginManager: LegendQueryPluginManager;
   graphManagerState: GraphManagerState;
@@ -210,7 +206,7 @@ export abstract class QueryEditorStore {
   exportState?: QueryExportState | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
   ) {
@@ -405,7 +401,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   classPath: string | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
@@ -485,7 +481,7 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   executionKey: string | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
@@ -576,7 +572,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   private _query?: LightQuery | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendQueryConfig>,
+    applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
     pluginManager: LegendQueryPluginManager,
     queryId: string,

@@ -43,6 +43,7 @@ import {
   type LegendApplicationDocumentationRegistryData,
   type LegendApplicationDocumentationRegistryEntry,
 } from '../stores/LegendApplicationDocumentationService.js';
+import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 export abstract class LegendApplicationLogger {
   abstract debug(event: LogEvent, ...data: unknown[]): void;
@@ -146,20 +147,22 @@ export abstract class LegendApplication {
   protected config!: LegendApplicationConfig;
   protected logger!: LegendApplicationLogger;
 
-  protected pluginManager: LegendApplicationPluginManager;
+  protected pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>;
   protected basePresets: AbstractPreset[] = [];
   protected basePlugins: AbstractPlugin[] = [];
 
   protected baseUrl!: string;
   protected pluginRegister?:
     | ((
-        pluginManager: LegendApplicationPluginManager,
+        pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
         config: LegendApplicationConfig,
       ) => void)
     | undefined;
   protected _isConfigured = false;
 
-  protected constructor(pluginManager: LegendApplicationPluginManager) {
+  protected constructor(
+    pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
+  ) {
     this.pluginManager = pluginManager;
     this.logger = new LegendApplicationWebConsole();
   }
@@ -172,7 +175,7 @@ export abstract class LegendApplication {
      * which is more flexible by allowing configuring specific plugin or preset.
      */
     pluginRegister?: (
-      pluginManager: LegendApplicationPluginManager,
+      pluginManager: LegendApplicationPluginManager<LegendApplicationPlugin>,
       config: LegendApplicationConfig,
     ) => void;
   }): LegendApplication {

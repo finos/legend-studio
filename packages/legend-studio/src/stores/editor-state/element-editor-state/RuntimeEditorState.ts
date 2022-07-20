@@ -66,7 +66,7 @@ import {
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,
@@ -82,7 +82,7 @@ export const getClassMappingStore = (
 ): Store | undefined => {
   const sourceElement = getMappingElementSource(
     setImplementation,
-    editorStore.pluginManager.getStudioPlugins(),
+    editorStore.pluginManager.getApplicationPlugins(),
   );
   if (sourceElement instanceof Class) {
     return editorStore.graphManagerState.graph.modelStore;
@@ -94,11 +94,11 @@ export const getClassMappingStore = (
   if (sourceElement) {
     const extraInstanceSetImplementationStoreExtractors =
       editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraInstanceSetImplementationStoreExtractors?.() ?? [],
         );
     for (const extractor of extraInstanceSetImplementationStoreExtractors) {
@@ -155,7 +155,7 @@ export const decorateRuntimeWithNewMapping = (
     .map((classMapping) =>
       getMappingElementSource(
         classMapping,
-        editorStore.pluginManager.getStudioPlugins(),
+        editorStore.pluginManager.getApplicationPlugins(),
       ),
     )
     .filter(filterByType(Class));
@@ -263,7 +263,7 @@ export const getRuntimeExplorerTreeData = (
         .map((setImplementation) =>
           getMappingElementSource(
             setImplementation,
-            editorStore.pluginManager.getStudioPlugins(),
+            editorStore.pluginManager.getApplicationPlugins(),
           ),
         )
         .filter(filterByType(Class)),
@@ -500,11 +500,11 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
       );
     }
     const extraDefaultConnectionValueBuilders = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
 
@@ -623,7 +623,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
             .map((setImplementation) =>
               getMappingElementSource(
                 setImplementation,
-                this.editorStore.pluginManager.getStudioPlugins(),
+                this.editorStore.pluginManager.getApplicationPlugins(),
               ),
             )
             .filter(filterByType(Class)),

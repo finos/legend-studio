@@ -63,7 +63,7 @@ import {
   getRawGenericType,
   OptionalEnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   enumMapping_setEnumValueMappings,
@@ -636,11 +636,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 
   visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorators = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
     for (const decorator of extraSetImplementationDecorators) {
@@ -777,11 +777,11 @@ export class MappingElementDecorationCleaner
   visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorationCleaners =
       this.editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationDecorationCleaners?.() ?? [],
         );
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {

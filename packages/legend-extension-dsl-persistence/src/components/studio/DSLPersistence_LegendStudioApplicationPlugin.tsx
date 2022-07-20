@@ -19,9 +19,9 @@ import type { LegendApplicationDocumentationEntry } from '@finos/legend-applicat
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
-  type DSL_LegendStudioPlugin_Extension,
+  type DSL_LegendStudioApplicationPlugin_Extension,
   type EditorStore,
   type ElementEditorState,
   type ElementEditorStateCreator,
@@ -57,9 +57,9 @@ const PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_PERSISTENCE_CONTEXT';
 
-export class DSLPersistence_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSL_LegendStudioPlugin_Extension
+export class DSLPersistence_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

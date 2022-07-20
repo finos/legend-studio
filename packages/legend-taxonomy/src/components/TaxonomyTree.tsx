@@ -30,12 +30,11 @@ import {
   TreeView,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
 import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter.js';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import { useTaxonomyExplorerStore } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyTreeNodeData } from '../stores/TaxonomyExplorerStore.js';
 import { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
 
 const TaxonomyTreeNodeContainer = observer(
   (
@@ -50,7 +49,7 @@ const TaxonomyTreeNodeContainer = observer(
     const { treeData } = innerProps;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+    const applicationStore = useLegendTaxonomyApplicationStore();
     const explorerStore = useTaxonomyExplorerStore();
     const expandIcon = !node.childrenIds.length ? (
       <div />

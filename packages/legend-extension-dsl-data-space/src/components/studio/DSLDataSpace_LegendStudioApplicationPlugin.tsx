@@ -20,7 +20,7 @@ import {
   type ElementTypeGetter,
   type ElementProjectExplorerDnDTypeGetter,
   type ElementIconGetter,
-  type DSL_LegendStudioPlugin_Extension,
+  type DSL_LegendStudioApplicationPlugin_Extension,
   type NewElementState,
   type ElementEditorStateCreator,
   type EditorStore,
@@ -31,7 +31,7 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
 } from '@finos/legend-studio';
 import { SquareIcon } from '@finos/legend-art';
 import {
@@ -56,9 +56,9 @@ const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 
-export class DSLDataSpace_LegendStudioPlugin
-  extends LegendStudioPlugin
-  implements DSL_LegendStudioPlugin_Extension
+export class DSLDataSpace_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

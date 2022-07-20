@@ -36,7 +36,7 @@ import type { EditorStore } from './EditorStore.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState.js';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   type EntityChange,
@@ -96,7 +96,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from './DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from './DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
   PACKAGEABLE_ELEMENT_TYPE,
@@ -1183,11 +1183,11 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.DATA;
     }
     const extraElementTypeLabelGetters = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementTypeGetters?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {
@@ -1222,11 +1222,11 @@ export class EditorGraphState {
       return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
     }
     const extraSetImplementationClassifiers = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraSetImplementationClassifiers?.() ?? [],
       );
     for (const Classifier of extraSetImplementationClassifiers) {

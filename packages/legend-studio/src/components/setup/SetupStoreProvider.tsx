@@ -18,16 +18,15 @@ import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { SetupStore } from '../../stores/SetupStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
 
 export const SetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
     () => new SetupStore(applicationStore, sdlcServerClient),

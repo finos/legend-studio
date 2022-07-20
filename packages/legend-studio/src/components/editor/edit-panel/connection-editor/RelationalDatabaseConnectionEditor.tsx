@@ -55,8 +55,8 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { runInAction } from 'mobx';
-import type { LegendStudioPlugin } from '../../../../stores/LegendStudioPlugin.js';
-import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioPlugin_Extension.js';
+import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
+import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -1127,7 +1127,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: LegendStudioPlugin[],
+  plugins: LegendStudioApplicationPlugin[],
 ): React.ReactNode => {
   const sourceSpec = connection.datasourceSpecification;
   if (sourceSpec instanceof StaticDatasourceSpecification) {
@@ -1183,7 +1183,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_LegendStudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -1200,7 +1200,7 @@ const renderDatasourceSpecificationEditor = (
 const renderAuthenticationStrategyEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
-  plugins: LegendStudioPlugin[],
+  plugins: LegendStudioApplicationPlugin[],
 ): React.ReactNode => {
   const authSpec = connection.authenticationStrategy;
   if (authSpec instanceof DelegatedKerberosAuthenticationStrategy) {
@@ -1251,7 +1251,7 @@ const renderAuthenticationStrategyEditor = (
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_LegendStudioPlugin_Extension
+          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -1273,7 +1273,7 @@ const RelationalConnectionGeneralEditor = observer(
     const { connectionValueState, isReadOnly } = props;
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
-    const plugins = editorStore.pluginManager.getStudioPlugins();
+    const plugins = editorStore.pluginManager.getApplicationPlugins();
     // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,
@@ -1297,7 +1297,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -1325,7 +1325,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )

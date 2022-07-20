@@ -37,7 +37,6 @@ import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,
 } from '../stores/LegendTaxonomyRouter.js';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
 import {
   DataSpaceViewer,
   type DataSpaceViewerState,
@@ -45,6 +44,7 @@ import {
 import { ELEMENT_PATH_DELIMITER } from '@finos/legend-graph';
 import type { DataSpaceTaxonomyContext } from '../stores/TaxonomyExplorerStore.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
 
 const TaxonomyNodeDataSpaceItem = observer(
   (props: {
@@ -57,9 +57,9 @@ const TaxonomyNodeDataSpaceItem = observer(
       taxonomyNodeViewerState,
       selectDataSpace,
     } = props;
+    const applicationStore = useLegendTaxonomyApplicationStore();
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
     const isSelected =
       dataSpaceTaxonomyContext === taxonomyNodeViewerState.currentDataSpace;
     const idx = dataSpaceTaxonomyContext.path.lastIndexOf(

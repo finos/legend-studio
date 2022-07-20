@@ -24,13 +24,13 @@ import {
   CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
 } from '../stores/LegendStudioDocumentation.js';
-import { LegendStudioPlugin } from '../stores/LegendStudioPlugin.js';
+import { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
-export class Core_LegendStudioPlugin extends LegendStudioPlugin {
+export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   static NAME = packageJson.extensions.core_studioPlugin;
 
   constructor() {
-    super(Core_LegendStudioPlugin.NAME, packageJson.version);
+    super(Core_LegendStudioApplicationPlugin.NAME, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

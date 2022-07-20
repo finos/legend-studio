@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioPlugin_Extension } from '@finos/legend-studio';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '@finos/legend-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
 import type { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 
@@ -26,8 +26,8 @@ export type ClassViewContextMenuItemRendererConfiguration = {
   ) => React.ReactNode | undefined;
 };
 
-export interface DSLDiagram_LegendStudioPlugin_Extension
-  extends DSL_LegendStudioPlugin_Extension {
+export interface DSLDiagram_LegendStudioApplicationPlugin_Extension
+  extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get the list of items to be rendered in the context menu of a class view.
    */

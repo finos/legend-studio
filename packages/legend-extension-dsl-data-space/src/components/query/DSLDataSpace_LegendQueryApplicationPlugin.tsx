@@ -16,13 +16,13 @@
 
 import packageJson from '../../../package.json';
 import {
-  LegendQueryPlugin,
   type QueryEditorStore,
   type QueryEditorHeaderLabeler,
   type QuerySetupOptionRendererConfiguration,
   type QuerySetupRenderer,
   type QuerySetupState,
   type QuerySetupStore,
+  LegendQueryApplicationPlugin,
 } from '@finos/legend-query';
 import { SquareIcon } from '@finos/legend-art';
 import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
@@ -33,7 +33,7 @@ import { DataSpaceQueryEditor } from './DataSpaceQueryEditor.js';
 import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 
-export class DSLDataSpace_LegendQueryPlugin extends LegendQueryPlugin {
+export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
     super(packageJson.extensions.queryPlugin, packageJson.version);
   }

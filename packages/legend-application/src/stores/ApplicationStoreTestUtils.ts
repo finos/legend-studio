@@ -19,6 +19,7 @@ import { createBrowserHistory } from 'history';
 import { WebApplicationNavigator } from './WebApplicationNavigator.js';
 import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
+import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 
 export const TEST_DATA__applicationVersion = {
   buildTime: '2001-01-01T00:00:00-0000',
@@ -28,10 +29,11 @@ export const TEST_DATA__applicationVersion = {
 
 export const TEST__getTestApplicationStore = <
   T extends LegendApplicationConfig,
+  V extends LegendApplicationPlugin,
 >(
   config: T,
-  pluginManager: LegendApplicationPluginManager,
-): ApplicationStore<T> =>
+  pluginManager: LegendApplicationPluginManager<V>,
+): ApplicationStore<T, V> =>
   new ApplicationStore(
     config,
     new WebApplicationNavigator(createBrowserHistory()),

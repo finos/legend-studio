@@ -34,6 +34,7 @@ import { LegendApplicationDocumentationService } from './LegendApplicationDocume
 import { LegendApplicationAssistantService } from './LegendApplicationAssistantService.js';
 import { LegendApplicationEventService } from './LegendApplicationEventService.js';
 import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService.js';
+import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -102,8 +103,16 @@ export class Notification {
   }
 }
 
-export class ApplicationStore<T extends LegendApplicationConfig> {
-  pluginManager: LegendApplicationPluginManager;
+export type GenericLegendApplicationStore = ApplicationStore<
+  LegendApplicationConfig,
+  LegendApplicationPlugin
+>;
+
+export class ApplicationStore<
+  T extends LegendApplicationConfig,
+  V extends LegendApplicationPlugin,
+> {
+  pluginManager: LegendApplicationPluginManager<V>;
   config: T;
 
   // navigation
@@ -130,7 +139,7 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   constructor(
     config: T,
     navigator: WebApplicationNavigator,
-    pluginManager: LegendApplicationPluginManager,
+    pluginManager: LegendApplicationPluginManager<V>,
   ) {
     makeAutoObservable(this, {
       navigator: false,

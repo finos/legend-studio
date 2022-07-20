@@ -66,17 +66,16 @@ import {
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
-import { LegendStudioStoreProvider } from './LegendStudioStoreProvider.js';
+import { LegendStudioBaseStoreProvider } from './LegendStudioBaseStoreProvider.js';
 import {
-  type ApplicationStore,
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
   TEST__getTestApplicationStore,
   LegendApplicationComponentFrameworkProvider,
   WebApplicationNavigator,
 } from '@finos/legend-application';
-import { TEST__getTestStudioConfig } from '../stores/EditorStoreTestUtils.js';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
+import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
 
 export const TEST_DATA__DefaultSDLCInfo = {
   project: {
@@ -143,17 +142,19 @@ export const TEST_DATA__DefaultSDLCInfo = {
   ],
 };
 
-export const TEST__LegendStudioStoreProvider: React.FC<{
+export const TEST__LegendStudioBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <LegendStudioStoreProvider pluginManager={LegendStudioPluginManager.create()}>
+  <LegendStudioBaseStoreProvider
+    pluginManager={LegendStudioPluginManager.create()}
+  >
     {children}
-  </LegendStudioStoreProvider>
+  </LegendStudioBaseStoreProvider>
 );
 
 export const TEST__provideMockedEditorStore = (customization?: {
   mock?: EditorStore;
-  applicationStore?: ApplicationStore<LegendStudioConfig>;
+  applicationStore?: LegendStudioApplicationStore;
   sdlcServerClient?: SDLCServerClient;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
@@ -166,7 +167,7 @@ export const TEST__provideMockedEditorStore = (customization?: {
     new EditorStore(
       customization?.applicationStore ??
         TEST__getTestApplicationStore(
-          TEST__getTestStudioConfig(),
+          TEST__getLegendStudioApplicationConfig(),
           pluginManager,
         ),
       customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
@@ -357,17 +358,17 @@ export const TEST__setUpEditor = async (
   const renderResult = render(
     <Router history={history}>
       <TEST__ApplicationStoreProvider
-        config={TEST__getTestStudioConfig()}
+        config={TEST__getLegendStudioApplicationConfig()}
         pluginManager={LegendStudioPluginManager.create()}
       >
         <TEST__SDLCServerClientProvider>
           <TEST__DepotServerClientProvider>
             <TEST__GraphManagerStateProvider>
-              <TEST__LegendStudioStoreProvider>
+              <TEST__LegendStudioBaseStoreProvider>
                 <LegendApplicationComponentFrameworkProvider>
                   <Editor />
                 </LegendApplicationComponentFrameworkProvider>
-              </TEST__LegendStudioStoreProvider>
+              </TEST__LegendStudioBaseStoreProvider>
             </TEST__GraphManagerStateProvider>
           </TEST__DepotServerClientProvider>
         </TEST__SDLCServerClientProvider>

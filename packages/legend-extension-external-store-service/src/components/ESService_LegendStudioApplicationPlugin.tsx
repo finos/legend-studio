@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import {
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
   UnsupportedInstanceSetImplementationState,
   type NewElementFromStateCreator,
@@ -27,14 +27,14 @@ import {
   type ElementTypeGetter,
   type ElementProjectExplorerDnDTypeGetter,
   type NewElementState,
-  type DSLMapping_LegendStudioPlugin_Extension,
+  type DSLMapping_LegendStudioApplicationPlugin_Extension,
   type SetImplemtationClassifier,
   type MappingElementStateCreator,
   type MappingElement,
   type MappingElementState,
   type MappingElementSourceExtractor,
   type ElementIconGetter,
-  type DSLData_LegendStudioPlugin_Extension,
+  type DSLData_LegendStudioApplicationPlugin_Extension,
   type EmbeddedDataTypeOption,
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
@@ -81,11 +81,11 @@ const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
 const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 
-export class ESService_LegendStudioPlugin
-  extends LegendStudioPlugin
+export class ESService_LegendStudioApplicationPlugin
+  extends LegendStudioApplicationPlugin
   implements
-    DSLMapping_LegendStudioPlugin_Extension,
-    DSLData_LegendStudioPlugin_Extension
+    DSLMapping_LegendStudioApplicationPlugin_Extension,
+    DSLData_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.studioPlugin, packageJson.version);

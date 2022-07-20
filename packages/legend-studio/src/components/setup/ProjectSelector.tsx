@@ -31,8 +31,7 @@ import {
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import { useSetupStore } from './SetupStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 export const ProjectSelector = observer(
   forwardRef<
@@ -44,7 +43,7 @@ export const ProjectSelector = observer(
   >(function ProjectSelector(props, ref) {
     const { onChange, create } = props;
     const setupStore = useSetupStore();
-    const applicationStore = useApplicationStore<LegendStudioConfig>();
+    const applicationStore = useLegendStudioApplicationStore();
     const currentProjectId = setupStore.currentProjectId;
     const options = setupStore.projectOptions.sort(compareLabelFn);
     const selectedOption =

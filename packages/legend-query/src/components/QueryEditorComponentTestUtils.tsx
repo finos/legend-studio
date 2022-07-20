@@ -38,35 +38,36 @@ import {
   TEST__getTestDepotServerClient,
 } from '@finos/legend-server-depot';
 import {
-  type ApplicationStore,
   TEST__provideMockedWebApplicationNavigator,
   TEST__ApplicationStoreProvider,
-  TEST__getTestApplicationStore,
   WebApplicationNavigator,
+  TEST__getTestApplicationStore,
 } from '@finos/legend-application';
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
-import { LegendQueryStoreProvider } from './LegendQueryStoreProvider.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { ExistingQueryEditor } from './QueryEditor.js';
 import { generateExistingQueryEditorRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
-import type { LegendQueryConfig } from '../application/LegendQueryConfig.js';
 import type { Entity } from '@finos/legend-model-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
+import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
+import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
 
-export const TEST__LegendQueryStoreProvider: React.FC<{
+export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <LegendQueryStoreProvider pluginManager={LegendQueryPluginManager.create()}>
+  <LegendQueryBaseStoreProvider
+    pluginManager={LegendQueryPluginManager.create()}
+  >
     {children}
-  </LegendQueryStoreProvider>
+  </LegendQueryBaseStoreProvider>
 );
 
 const TEST_QUERY_ID = 'test-query-id';
 
 export const TEST__provideMockedQueryEditorStore = (customization?: {
   mock?: ExistingQueryEditorStore;
-  applicationStore?: ApplicationStore<LegendQueryConfig>;
+  applicationStore?: LegendQueryApplicationStore;
   depotServerClient?: DepotServerClient;
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
@@ -186,9 +187,9 @@ export const TEST__setUpQueryEditor = async (
         pluginManager={LegendQueryPluginManager.create()}
       >
         <TEST__DepotServerClientProvider>
-          <TEST__LegendQueryStoreProvider>
+          <TEST__LegendQueryBaseStoreProvider>
             <ExistingQueryEditor />
-          </TEST__LegendQueryStoreProvider>
+          </TEST__LegendQueryBaseStoreProvider>
         </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>
     </Router>,

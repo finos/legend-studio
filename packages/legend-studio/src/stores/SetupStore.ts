@@ -16,7 +16,6 @@
 
 import { observable, action, makeAutoObservable, flowResult } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import type { ApplicationStore } from '@finos/legend-application';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -34,7 +33,7 @@ import {
   Workspace,
   WorkspaceAccessType,
 } from '@finos/legend-server-sdlc';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -69,7 +68,7 @@ export interface WorkspaceIdentifier {
 }
 
 export class SetupStore {
-  applicationStore: ApplicationStore<LegendStudioConfig>;
+  applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
 
   currentProjectId?: string | undefined;
@@ -85,7 +84,7 @@ export class SetupStore {
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
 
   constructor(
-    applicationStore: ApplicationStore<LegendStudioConfig>,
+    applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
   ) {
     makeAutoObservable(this, {
