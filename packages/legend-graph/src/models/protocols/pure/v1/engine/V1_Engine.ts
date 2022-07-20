@@ -299,7 +299,9 @@ export class V1_Engine {
         lambdaId ?? '',
         undefined,
         undefined,
-        !options?.pruneSourceInformation ?? true,
+        options?.pruneSourceInformation !== undefined
+          ? !options?.pruneSourceInformation
+          : true,
       )) as unknown as V1_RawLambda;
     } catch (error) {
       assertErrorThrown(error);
