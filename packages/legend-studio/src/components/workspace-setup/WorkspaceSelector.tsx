@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WorkspaceOption } from '../../stores/SetupStore.js';
+import type { WorkspaceOption } from '../../stores/WorkspaceSetupStore.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type SelectComponent,
@@ -28,19 +28,21 @@ import {
   GitBranchIcon,
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
-import { useSetupStore } from './SetupStoreProvider.js';
+import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
-  <div className="setup__workspace__label">
-    <div className="setup__workspace__label-icon">
+  <div className="workspace-setup__workspace__label">
+    <div className="workspace-setup__workspace__label-icon">
       {option.value.workspaceType === WorkspaceType.GROUP ? (
         <UsersIcon />
       ) : (
         <UserIcon />
       )}
     </div>
-    <div className="setup__workspace__label__name">{option.label}</div>
+    <div className="workspace-setup__workspace__label__name">
+      {option.label}
+    </div>
   </div>
 );
 
@@ -53,7 +55,7 @@ export const WorkspaceSelector = observer(
     }
   >(function WorkspaceSelector(props, ref) {
     const { onChange, create } = props;
-    const setupStore = useSetupStore();
+    const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const currentWorkspaceCompositeId = setupStore.currentWorkspaceCompositeId;
     const options =
@@ -100,12 +102,12 @@ export const WorkspaceSelector = observer(
       : 'You have no workspaces. Please create one';
 
     return (
-      <div className="setup-selector">
-        <div className="setup-selector__icon-box">
-          <GitBranchIcon className="setup-selector__icon" />
+      <div className="workspace-setup-selector">
+        <div className="workspace-setup-selector__icon-box">
+          <GitBranchIcon className="workspace-setup-selector__icon" />
         </div>
         <CustomSelectorInput
-          className="setup-selector__input"
+          className="workspace-setup-selector__input"
           allowCreating={false}
           ref={ref}
           options={options}
@@ -120,7 +122,7 @@ export const WorkspaceSelector = observer(
           darkMode={true}
         />
         <button
-          className="setup-selector__action btn--dark"
+          className="workspace-setup-selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
           title="Create a Workspace"

@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.setup__create-workspace-modal {
+.workspace-setup__create-workspace-modal {
   width: 75rem;
   border: 0.1rem solid var(--color-blue-200);
   padding: 2rem;
@@ -57,7 +57,7 @@
   }
 }
 
-.setup__create-project-modal {
+.workspace-setup__create-project-modal {
   width: 75rem;
   border: 0.1rem solid var(--color-blue-200);
   padding: 0;

@@ -75,11 +75,11 @@ export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
 // TO BE REMOVED: this is currently needed for project dependency dashboard
 export {
-  SetupStoreProvider,
-  useSetupStore,
-} from './components/setup/SetupStoreProvider.js';
-export { SetupStore } from './stores/SetupStore.js';
-export { ProjectSelector } from './components/setup/ProjectSelector.js';
+  WorkspaceSetupStoreProvider as SetupStoreProvider,
+  useWorkspaceSetupStore as useSetupStore,
+} from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
+export { WorkspaceSetupStore } from './stores/WorkspaceSetupStore.js';
+export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**

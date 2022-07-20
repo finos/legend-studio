@@ -24,7 +24,7 @@ import {
   PencilIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
-import { useSetupStore } from './SetupStoreProvider.js';
+import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -42,7 +42,7 @@ enum CREATE_PROJECT_MODAL_TAB {
 }
 
 const CreateNewProjectTab = observer(() => {
-  const setupStore = useSetupStore();
+  const setupStore = useWorkspaceSetupStore();
   const applicationStore = useLegendStudioApplicationStore();
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT,
@@ -145,8 +145,8 @@ const CreateNewProjectTab = observer(() => {
 
   if (!allowCreatingNewProject) {
     return (
-      <div className="setup__create-project-modal__form panel__content__form">
-        <div className="panel__content__form__section setup__create-project-modal__form__unsupported">
+      <div className="workspace-setup__create-project-modal__form panel__content__form">
+        <div className="panel__content__form__section workspace-setup__create-project-modal__form__unsupported">
           SDLC server does not support creating new projects
         </div>
         {documentation?.markdownText && (
@@ -162,7 +162,7 @@ const CreateNewProjectTab = observer(() => {
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
-      <div className="setup__create-project-modal__form panel__content__form">
+      <div className="workspace-setup__create-project-modal__form panel__content__form">
         {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
@@ -343,7 +343,7 @@ const CreateNewProjectTab = observer(() => {
       <div className="panel__content__form__actions">
         <button
           disabled={disableSubmit}
-          className="btn btn--dark setup__create-project-modal__submit-btn"
+          className="btn btn--dark workspace-setup__create-project-modal__submit-btn"
           onClick={handleSubmit}
         >
           Create
@@ -354,7 +354,7 @@ const CreateNewProjectTab = observer(() => {
 });
 
 const ImportProjectTab = observer(() => {
-  const setupStore = useSetupStore();
+  const setupStore = useWorkspaceSetupStore();
   const applicationStore = useLegendStudioApplicationStore();
   const importProjectSuccessReport = setupStore.importProjectSuccessReport;
   const documentation = applicationStore.documentationService.getDocEntry(
@@ -457,7 +457,7 @@ const ImportProjectTab = observer(() => {
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
-      <div className="setup__create-project-modal__form panel__content__form">
+      <div className="workspace-setup__create-project-modal__form panel__content__form">
         {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
@@ -641,14 +641,14 @@ const ImportProjectTab = observer(() => {
           )}
         </div>
         {Boolean(importProjectSuccessReport) && (
-          <div className="setup__create-project-modal__success">
-            <div className="setup__create-project-modal__success__label">
-              <span className="setup__create-project-modal__success__label__text">
+          <div className="workspace-setup__create-project-modal__success">
+            <div className="workspace-setup__create-project-modal__success__label">
+              <span className="workspace-setup__create-project-modal__success__label__text">
                 The SDLC server has successfully registered your project. To
                 complete the import, please commit the following
               </span>
               <a
-                className="setup__create-project-modal__success__label__link"
+                className="workspace-setup__create-project-modal__success__label__link"
                 href={importProjectSuccessReport?.reviewUrl}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -662,7 +662,7 @@ const ImportProjectTab = observer(() => {
       <div className="panel__content__form__actions">
         <button
           disabled={disableSubmit}
-          className="btn btn--dark setup__create-project-modal__submit-btn"
+          className="btn btn--dark workspace-setup__create-project-modal__submit-btn"
           onClick={handleSubmit}
         >
           {importProjectSuccessReport ? 'Review' : 'Import'}
@@ -673,7 +673,7 @@ const ImportProjectTab = observer(() => {
 });
 
 export const CreateProjectModal = observer(() => {
-  const setupStore = useSetupStore();
+  const setupStore = useWorkspaceSetupStore();
   const allowCreatingNewProject =
     setupStore.sdlcServerClient.features.canCreateProject;
   const [selectedTab, setSelectedTab] = useState(
@@ -702,41 +702,47 @@ export const CreateProjectModal = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark setup__create-project-modal">
-        <div className="setup__create-project-modal__header">
-          <div className="setup__create-project-modal__header__label">
+      <div className="modal modal--dark workspace-setup__create-project-modal">
+        <div className="workspace-setup__create-project-modal__header">
+          <div className="workspace-setup__create-project-modal__header__label">
             Create Project
           </div>
         </div>
-        <div className="setup__create-project-modal__header__tabs">
+        <div className="workspace-setup__create-project-modal__header__tabs">
           <button
             onClick={switchTab(CREATE_PROJECT_MODAL_TAB.CREATE)}
-            className={clsx('setup__create-project-modal__header__tab', {
-              'setup__create-project-modal__header__tab--active':
-                selectedTab === CREATE_PROJECT_MODAL_TAB.CREATE,
-            })}
+            className={clsx(
+              'workspace-setup__create-project-modal__header__tab',
+              {
+                'workspace-setup__create-project-modal__header__tab--active':
+                  selectedTab === CREATE_PROJECT_MODAL_TAB.CREATE,
+              },
+            )}
           >
             Create New Project
             <DocumentationLink
-              className="setup__create-project-modal__header__tab__doc"
+              className="workspace-setup__create-project-modal__header__tab__doc"
               documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_PROJECT}
             />
           </button>
           <button
             onClick={switchTab(CREATE_PROJECT_MODAL_TAB.IMPORT)}
-            className={clsx('setup__create-project-modal__header__tab', {
-              'setup__create-project-modal__header__tab--active':
-                selectedTab === CREATE_PROJECT_MODAL_TAB.IMPORT,
-            })}
+            className={clsx(
+              'workspace-setup__create-project-modal__header__tab',
+              {
+                'workspace-setup__create-project-modal__header__tab--active':
+                  selectedTab === CREATE_PROJECT_MODAL_TAB.IMPORT,
+              },
+            )}
           >
             Import Project
             <DocumentationLink
-              className="setup__create-project-modal__header__tab__doc"
+              className="workspace-setup__create-project-modal__header__tab__doc"
               documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.IMPORT_PROJECT}
             />
           </button>
         </div>
-        <div className="setup__create-project-modal__content">
+        <div className="workspace-setup__create-project-modal__content">
           {selectedTab === CREATE_PROJECT_MODAL_TAB.CREATE && (
             <CreateNewProjectTab />
           )}

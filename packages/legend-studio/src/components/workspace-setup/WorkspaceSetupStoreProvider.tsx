@@ -16,39 +16,41 @@
 
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
-import { SetupStore } from '../../stores/SetupStore.js';
+import { WorkspaceSetupStore } from '../../stores/WorkspaceSetupStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
-const SetupStoreContext = createContext<SetupStore | undefined>(undefined);
+const WorkspaceSetupStoreContext = createContext<
+  WorkspaceSetupStore | undefined
+>(undefined);
 
-export const SetupStoreProvider: React.FC<{
+export const WorkspaceSetupStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
-    () => new SetupStore(applicationStore, sdlcServerClient),
+    () => new WorkspaceSetupStore(applicationStore, sdlcServerClient),
   );
   return (
-    <SetupStoreContext.Provider value={store}>
+    <WorkspaceSetupStoreContext.Provider value={store}>
       {children}
-    </SetupStoreContext.Provider>
+    </WorkspaceSetupStoreContext.Provider>
   );
 };
 
-export const useSetupStore = (): SetupStore =>
+export const useWorkspaceSetupStore = (): WorkspaceSetupStore =>
   guaranteeNonNullable(
-    useContext(SetupStoreContext),
-    `Can't find setup store in context`,
+    useContext(WorkspaceSetupStoreContext),
+    `Can't find workspace setup store in context`,
   );
 
-export const withSetupStore = (WrappedComponent: React.FC): React.FC =>
-  function WithSetupStore() {
+export const withWorkspaceSetupStore = (WrappedComponent: React.FC): React.FC =>
+  function WithWorkspaceSetupStore() {
     return (
-      <SetupStoreProvider>
+      <WorkspaceSetupStoreProvider>
         <WrappedComponent />
-      </SetupStoreProvider>
+      </WorkspaceSetupStoreProvider>
     );
   };

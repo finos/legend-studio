@@ -16,7 +16,7 @@
 
 import { test, jest, expect, beforeEach } from '@jest/globals';
 import { waitFor } from '@testing-library/dom';
-import { Setup } from '../../setup/Setup.js';
+import { WorkspaceSetup } from '../WorkspaceSetup.js';
 import {
   integrationTest,
   MOBX__disableSpyOrMock,
@@ -63,7 +63,7 @@ test(
           pluginManager={LegendStudioPluginManager.create()}
         >
           <TEST__SDLCServerClientProvider>
-            <Setup />
+            <WorkspaceSetup />
           </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,
@@ -92,7 +92,7 @@ test(
           pluginManager={LegendStudioPluginManager.create()}
         >
           <TEST__SDLCServerClientProvider>
-            <Setup />
+            <WorkspaceSetup />
           </TEST__SDLCServerClientProvider>
         </TEST__ApplicationStoreProvider>
       </MemoryRouter>,

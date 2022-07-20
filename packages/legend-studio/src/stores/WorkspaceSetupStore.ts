@@ -67,7 +67,7 @@ export interface WorkspaceIdentifier {
   workspaceType: WorkspaceType;
 }
 
-export class SetupStore {
+export class WorkspaceSetupStore {
   applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
 

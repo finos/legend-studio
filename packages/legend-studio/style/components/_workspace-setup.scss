@@ -16,9 +16,9 @@
 
 @use 'mixins' as *;
 
-@forward './create-project-modal';
+@forward './workspace-setup/create-project-modal';
 
-.setup {
+.workspace-setup {
   height: 100%;
   position: relative;
   background: var(--color-dark-grey-50);
@@ -154,7 +154,7 @@
   }
 }
 
-.setup-selector {
+.workspace-setup-selector {
   display: flex;
   margin-bottom: 0.5rem;
 

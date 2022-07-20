@@ -16,7 +16,7 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ProjectOption } from '../../stores/SetupStore.js';
+import type { ProjectOption } from '../../stores/WorkspaceSetupStore.js';
 import {
   type SelectComponent,
   compareLabelFn,
@@ -30,7 +30,7 @@ import {
   generateViewProjectRoute,
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
-import { useSetupStore } from './SetupStoreProvider.js';
+import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 export const ProjectSelector = observer(
@@ -42,7 +42,7 @@ export const ProjectSelector = observer(
     }
   >(function ProjectSelector(props, ref) {
     const { onChange, create } = props;
-    const setupStore = useSetupStore();
+    const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const currentProjectId = setupStore.currentProjectId;
     const options = setupStore.projectOptions.sort(compareLabelFn);
@@ -59,19 +59,21 @@ export const ProjectSelector = observer(
         );
 
       return (
-        <div className="setup__project-option">
-          <div className="setup__project-option__label">
-            <div className="setup__project-option__label__name">
+        <div className="workspace-setup__project-option">
+          <div className="workspace-setup__project-option__label">
+            <div className="workspace-setup__project-option__label__name">
               {option.label}
             </div>
           </div>
           <button
-            className="setup__project-option__visit-btn"
+            className="workspace-setup__project-option__visit-btn"
             tabIndex={-1}
             onClick={viewProject}
           >
-            <div className="setup__project-option__visit-btn__label">view</div>
-            <div className="setup__project-option__visit-btn__icon">
+            <div className="workspace-setup__project-option__visit-btn__label">
+              view
+            </div>
+            <div className="workspace-setup__project-option__visit-btn__icon">
               <ArrowCircleRightIcon />
             </div>
           </button>
@@ -114,12 +116,12 @@ export const ProjectSelector = observer(
       : 'You have no projects, please create or acquire access for at least one';
 
     return (
-      <div className="setup-selector">
-        <div className="setup-selector__icon-box">
-          <RepoIcon className="setup-selector__icon" />
+      <div className="workspace-setup-selector">
+        <div className="workspace-setup-selector__icon-box">
+          <RepoIcon className="workspace-setup-selector__icon" />
         </div>
         <CustomSelectorInput
-          className="setup-selector__input"
+          className="workspace-setup-selector__input"
           ref={ref}
           options={options}
           disabled={isLoadingOptions || !options.length}
@@ -133,7 +135,7 @@ export const ProjectSelector = observer(
           formatOptionLabel={formatOptionLabel}
         />
         <button
-          className="setup-selector__action btn--dark"
+          className="workspace-setup-selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
           title={'Create a Project'}

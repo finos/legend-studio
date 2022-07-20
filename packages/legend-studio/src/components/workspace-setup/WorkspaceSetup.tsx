@@ -30,8 +30,11 @@ import {
   MarkdownTextViewer,
   AssistantIcon,
 } from '@finos/legend-art';
-import type { ProjectOption } from '../../stores/SetupStore.js';
-import { useSetupStore, withSetupStore } from './SetupStoreProvider.js';
+import type { ProjectOption } from '../../stores/WorkspaceSetupStore.js';
+import {
+  useWorkspaceSetupStore,
+  withWorkspaceSetupStore,
+} from './WorkspaceSetupStoreProvider.js';
 import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
@@ -52,7 +55,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/L
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 
 const CreateWorkspaceModal = observer(() => {
-  const setupStore = useSetupStore();
+  const setupStore = useWorkspaceSetupStore();
   const applicationStore = useApplicationStore();
   const {
     loadProjectsState,
@@ -139,11 +142,11 @@ const CreateWorkspaceModal = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark setup__create-workspace-modal">
+      <div className="modal modal--dark workspace-setup__create-workspace-modal">
         <div className="modal__title">
           Create Workspace
           <DocumentationLink
-            className="setup__create-workspace-modal__doc__create-workspace"
+            className="workspace-setup__create-workspace-modal__doc__create-workspace"
             documentationKey={LEGEND_STUDIO_DOCUMENTATION_KEY.CREATE_WORKSPACE}
           />
         </div>
@@ -151,13 +154,13 @@ const CreateWorkspaceModal = observer(() => {
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
-          <div className="panel__content__form setup__create-workspace-modal__form setup__create-workspace-modal__form__workspace">
+          <div className="panel__content__form workspace-setup__create-workspace-modal__form workspace-setup__create-workspace-modal__form__workspace">
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Project Name
               </div>
               <CustomSelectorInput
-                className="setup-selector__input setup__workspace__selector"
+                className="workspace-setup-selector__input workspace-setup__workspace__selector"
                 ref={projectSelectorRef}
                 options={projectOptions}
                 disabled={
@@ -179,7 +182,7 @@ const CreateWorkspaceModal = observer(() => {
                 Workspace Name
               </div>
               <input
-                className="setup__create-workspace-modal__form__workspace-name__input"
+                className="workspace-setup__create-workspace-modal__form__workspace-name__input"
                 ref={workspaceNameInputRef}
                 spellCheck={false}
                 disabled={dispatchingActions}
@@ -230,8 +233,8 @@ const CreateWorkspaceModal = observer(() => {
   );
 });
 
-const SetupSelection = observer(() => {
-  const setupStore = useSetupStore();
+const WorkspaceSetupContent = observer(() => {
+  const setupStore = useWorkspaceSetupStore();
   const applicationStore = useLegendStudioApplicationStore();
   const projectSelectorRef = useRef<SelectComponent>(null);
   const workspaceSelectorRef = useRef<SelectComponent>(null);
@@ -286,8 +289,8 @@ const SetupSelection = observer(() => {
 
   return (
     <div className="app__page">
-      <div className="setup">
-        <div className="setup__body">
+      <div className="workspace-setup">
+        <div className="workspace-setup__body">
           <div className="activity-bar">
             {/*
               TODO: consider what we can put here and componentize it
@@ -297,22 +300,22 @@ const SetupSelection = observer(() => {
             <ActivityBarMenu />
           </div>
           <div
-            className="setup__content"
+            className="workspace-setup__content"
             data-testid={LEGEND_STUDIO_TEST_ID.SETUP__CONTENT}
           >
-            <div className="setup__content__main">
-              <div className="setup__title">
-                <div className="setup__title__header">
+            <div className="workspace-setup__content__main">
+              <div className="workspace-setup__title">
+                <div className="workspace-setup__title__header">
                   Setup Workspace
                   <DocumentationLink
-                    className="setup__doc__setup-workspace"
+                    className="workspace-setup__doc__setup-workspace"
                     documentationKey={
                       LEGEND_STUDIO_DOCUMENTATION_KEY.SETUP_WORKSPACE
                     }
                   />
                 </div>
                 {documentation?.markdownText && (
-                  <div className="setup__title__documentation">
+                  <div className="workspace-setup__title__documentation">
                     <MarkdownTextViewer value={documentation.markdownText} />
                   </div>
                 )}
@@ -328,10 +331,10 @@ const SetupSelection = observer(() => {
                   onChange={onWorkspaceChange}
                   create={handleCreateWorkspaceModal}
                 />
-                <div className="setup__actions">
+                <div className="workspace-setup__actions">
                   <button
                     ref={proceedButtonRef}
-                    className="setup__next-btn btn--dark"
+                    className="workspace-setup__next-btn btn--dark"
                     onClick={handleProceed}
                     disabled={disableProceedButton}
                   >
@@ -373,10 +376,10 @@ const SetupSelection = observer(() => {
   );
 });
 
-export const Setup = withSetupStore(
+export const WorkspaceSetup = withWorkspaceSetupStore(
   observer(() => {
     const params = useParams<SetupPathParams>();
-    const setupStore = useSetupStore();
+    const setupStore = useWorkspaceSetupStore();
     const applicationStore = useApplicationStore();
     useEffect(() => {
       setupStore.setCurrentProjectId(params.projectId);
@@ -398,6 +401,6 @@ export const Setup = withSetupStore(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
     );
 
-    return <SetupSelection />;
+    return <WorkspaceSetupContent />;
   }),
 );

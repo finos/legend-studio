@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 import { Switch, Route } from 'react-router';
-import { Setup } from './setup/Setup.js';
+import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { Review } from './review/Review.js';
 import { Viewer } from './viewer/Viewer.js';
@@ -165,7 +165,7 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
                 LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
               ]}
-              component={Setup}
+              component={WorkspaceSetup}
             />
             {extraApplicationPageEntries.map((entry) => (
               <Route
