@@ -289,6 +289,9 @@ export class V1_Engine {
   async transformCodeToLambda(
     code: string,
     lambdaId?: string,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Promise<V1_RawLambda> {
     try {
       return (await this.engineServerClient.grammarToJSON_lambda(
@@ -296,7 +299,7 @@ export class V1_Engine {
         lambdaId ?? '',
         undefined,
         undefined,
-        true,
+        !options?.pruneSourceInformation ?? true,
       )) as unknown as V1_RawLambda;
     } catch (error) {
       assertErrorThrown(error);

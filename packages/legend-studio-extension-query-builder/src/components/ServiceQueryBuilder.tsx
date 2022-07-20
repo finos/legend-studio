@@ -23,7 +23,7 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { StandardQueryBuilderMode } from '@finos/legend-query';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import {
   isStubbed_RawLambda,
@@ -66,6 +66,12 @@ export const ServiceQueryBuilder = observer(
             queryBuilderExtension.queryBuilderState.initialize(
               executionState.execution.func,
             );
+            queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+              hashObject(executionState.execution.func),
+            );
+            queryBuilderExtension.queryBuilderState.changeDetectionState.setIsEnabled(
+              true,
+            );
             await flowResult(
               queryBuilderExtension.setEmbeddedQueryBuilderMode({
                 actionConfigs: [
@@ -82,6 +88,9 @@ export const ServiceQueryBuilder = observer(
                             );
                             applicationStore.notifySuccess(
                               `Service execution query is updated`,
+                            );
+                            queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+                              hashObject(rawLambda),
                             );
                             queryBuilderExtension.setEmbeddedQueryBuilderMode(
                               undefined,

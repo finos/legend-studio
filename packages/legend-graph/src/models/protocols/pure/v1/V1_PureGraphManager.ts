@@ -1463,8 +1463,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async pureCodeToLambda(
     lambda: string,
     lambdaId?: string,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Promise<RawLambda> {
-    const result = await this.engine.transformCodeToLambda(lambda, lambdaId);
+    const result = await this.engine.transformCodeToLambda(
+      lambda,
+      lambdaId,
+      options,
+    );
     return new RawLambda(result.parameters, result.body);
   }
 

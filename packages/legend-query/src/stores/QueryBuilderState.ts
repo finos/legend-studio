@@ -22,6 +22,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   filterByType,
+  hashObject,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderFilterOperator,
@@ -149,6 +150,24 @@ export class StandardQueryBuilderMode extends QueryBuilderMode {
   }
 }
 
+class QueryBuilderChangeDetectionState {
+  querybuildState: QueryBuilderState;
+  queryHashCode = hashObject(new RawLambda(undefined, undefined));
+  isEnabled = false;
+
+  constructor(queryBuilderState: QueryBuilderState) {
+    this.querybuildState = queryBuilderState;
+  }
+
+  setQueryHashCode(val: string): void {
+    this.queryHashCode = val;
+  }
+
+  setIsEnabled(val: boolean): void {
+    this.isEnabled = val;
+  }
+}
+
 export class QueryBuilderState {
   applicationStore: ApplicationStore<LegendApplicationConfig>;
   graphManagerState: GraphManagerState;
@@ -207,6 +226,7 @@ export class QueryBuilderState {
   showFunctionPanel = false;
   showParameterPanel = false;
   showPostFilterPanel = false;
+  changeDetectionState: QueryBuilderChangeDetectionState;
 
   constructor(
     applicationStore: ApplicationStore<LegendApplicationConfig>,
@@ -231,6 +251,7 @@ export class QueryBuilderState {
       showFunctionPanel: observable,
       showParameterPanel: observable,
       showPostFilterPanel: observable,
+      changeDetectionState: observable,
       setMode: action,
       resetQueryBuilder: action,
       resetQuerySetup: action,
@@ -266,6 +287,7 @@ export class QueryBuilderState {
     this.observableContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
+    this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
   setMode(val: QueryBuilderMode): void {
