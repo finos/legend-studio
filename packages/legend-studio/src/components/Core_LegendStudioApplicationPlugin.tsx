@@ -16,7 +16,7 @@
 
 import {
   collectContextualDocumnetationEntries,
-  type LegendApplicationContextualDocumentationEntry,
+  type ContextualDocumentationEntry,
 } from '@finos/legend-application';
 import packageJson from '../../package.json';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/LegendStudioApplicationNavigationContext.js';
@@ -68,7 +68,7 @@ export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationP
     ];
   }
 
-  override getExtraContextualDocumentationEntries(): LegendApplicationContextualDocumentationEntry[] {
+  override getExtraContextualDocumentationEntries(): ContextualDocumentationEntry[] {
     return collectContextualDocumnetationEntries(
       CORE_CONTEXTUAL_DOCUMENTATION_CONFIG,
     );

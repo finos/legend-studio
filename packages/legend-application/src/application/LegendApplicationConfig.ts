@@ -18,16 +18,16 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import type { LegendApplicationConfigurationInput } from '../application/LegendApplication.js';
+import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
   collectContextualDocumnetationEntries,
-  type LegendApplicationKeyedDocumentationEntry,
-  type LegendApplicationDocumentationConfigEntry,
-  type LegendApplicationContextualDocumentationConfig,
-  type LegendApplicationContextualDocumentationEntry,
-  type LegendApplicationDocumentationRegistryEntry,
-} from './LegendApplicationDocumentationService.js';
+  type KeyedDocumentationEntry,
+  type DocumentationConfigEntry,
+  type ContextualDocumentationConfig,
+  type ContextualDocumentationEntry,
+  type DocumentationRegistryEntry,
+} from '../stores/DocumentationService.js';
 
 export interface LegendApplicationVersionData {
   buildTime: string;
@@ -40,9 +40,9 @@ export interface LegendApplicationConfigurationData {
   env: string;
   documentation?: {
     url: string;
-    registry?: LegendApplicationDocumentationRegistryEntry[];
-    entries?: Record<string, LegendApplicationDocumentationConfigEntry>;
-    contextualEntries?: LegendApplicationContextualDocumentationConfig;
+    registry?: DocumentationRegistryEntry[];
+    entries?: Record<string, DocumentationConfigEntry>;
+    contextualEntries?: ContextualDocumentationConfig;
   };
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
@@ -57,12 +57,9 @@ export abstract class LegendApplicationConfig {
 
   // documentation
   readonly documentationUrl: string | undefined;
-  readonly documentationRegistryEntries: LegendApplicationDocumentationRegistryEntry[] =
-    [];
-  readonly keyedDocumentationEntries: LegendApplicationKeyedDocumentationEntry[] =
-    [];
-  readonly contextualDocEntries: LegendApplicationContextualDocumentationEntry[] =
-    [];
+  readonly documentationRegistryEntries: DocumentationRegistryEntry[] = [];
+  readonly keyedDocumentationEntries: KeyedDocumentationEntry[] = [];
+  readonly contextualDocEntries: ContextualDocumentationEntry[] = [];
 
   // version
   readonly appVersion: string;

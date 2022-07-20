@@ -50,7 +50,7 @@ import {
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
 } from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -162,7 +162,7 @@ export class DSLDataSpace_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         parserKeyword: string,
         elementKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
@@ -180,7 +180,7 @@ export class DSLDataSpace_LegendStudioApplicationPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DATA_SPACE_PARSER_NAME) {
           return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,

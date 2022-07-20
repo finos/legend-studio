@@ -15,7 +15,7 @@
  */
 
 import { useEffect } from 'react';
-import { ApplicationNavigationContextData } from '../stores/LegendApplicationNavigationContextService.js';
+import { ApplicationNavigationContextData } from '../stores/ApplicationNavigationContextService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 
 /**

@@ -65,7 +65,7 @@ export class ApplicationNavigationContextData {
   }
 }
 
-export class LegendApplicationNavigationContextService {
+export class ApplicationNavigationContextService {
   applicationStore: GenericLegendApplicationStore;
   contextStack: ApplicationNavigationContextData[] = [];
 

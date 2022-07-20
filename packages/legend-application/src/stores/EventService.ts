@@ -19,7 +19,7 @@ import type {
   EventNotifierPlugin,
 } from '@finos/legend-shared';
 
-export class LegendApplicationEventService {
+export class EventService {
   private notifierPlugins: EventNotifierPlugin[] = [];
 
   registerEventNotifierPlugins(plugins: EventNotifierPlugin[]): void {

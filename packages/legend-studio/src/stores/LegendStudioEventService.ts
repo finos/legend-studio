@@ -16,19 +16,17 @@
 
 import {
   APPLICATION_EVENT,
-  type LegendApplicationEventService,
+  type EventService,
 } from '@finos/legend-application';
 
 export class LegendStudioEventService {
-  private eventService!: LegendApplicationEventService;
+  private eventService!: EventService;
 
-  private constructor(eventService: LegendApplicationEventService) {
+  private constructor(eventService: EventService) {
     this.eventService = eventService;
   }
 
-  static create(
-    eventService: LegendApplicationEventService,
-  ): LegendStudioEventService {
+  static create(eventService: EventService): LegendStudioEventService {
     return new LegendStudioEventService(eventService);
   }
 

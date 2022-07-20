@@ -15,7 +15,7 @@
  */
 
 import { action, makeObservable, observable, computed } from 'mobx';
-import type { LegendApplicationDocumentationEntry } from './LegendApplicationDocumentationService.js';
+import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 import { Fuse } from './CJS__Fuse.cjs';
 import {
@@ -39,7 +39,7 @@ export class VirtualAssistantDocumentationEntry {
   url?: string | undefined;
   isOpen = false;
 
-  constructor(docEntry: LegendApplicationDocumentationEntry) {
+  constructor(docEntry: DocumentationEntry) {
     makeObservable(this, {
       isOpen: observable,
       setIsOpen: action,
@@ -66,7 +66,7 @@ export class VirtualAssistantContextualDocumentationEntry {
 
   constructor(
     context: string,
-    docEntry: LegendApplicationDocumentationEntry,
+    docEntry: DocumentationEntry,
     related: VirtualAssistantDocumentationEntry[],
   ) {
     this.context = context;
@@ -77,9 +77,9 @@ export class VirtualAssistantContextualDocumentationEntry {
   }
 }
 
-export class LegendApplicationAssistantService {
+export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
-  private readonly searchEngine: Fuse<LegendApplicationDocumentationEntry>;
+  private readonly searchEngine: Fuse<DocumentationEntry>;
   /**
    * This key is used to allow programmatic re-rendering of the assistant panel
    */

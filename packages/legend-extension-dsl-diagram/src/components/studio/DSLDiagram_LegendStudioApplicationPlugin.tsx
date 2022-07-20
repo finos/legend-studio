@@ -53,7 +53,7 @@ import {
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
 } from './DSLDiagram_CodeSnippets.js';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLDiagram_LegendStudioApplicationNavigationContext.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
@@ -201,7 +201,7 @@ export class DSLDiagram_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         parserKeyword: string,
         elementKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
@@ -219,7 +219,7 @@ export class DSLDiagram_LegendStudioApplicationPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_DIAGRAM_PARSER_NAME) {
           return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_DIAGRAM_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,

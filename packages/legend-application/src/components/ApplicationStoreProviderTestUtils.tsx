@@ -18,7 +18,7 @@ import { jest } from '@jest/globals';
 import { createMemoryHistory } from 'history';
 import { ApplicationStore } from '../stores/ApplicationStore.js';
 import { WebApplicationNavigator } from '../stores/WebApplicationNavigator.js';
-import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
+import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import { ApplicationStoreProvider } from './ApplicationStoreProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';

@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../package.json';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { MeteorIcon, PuzzlePieceIcon } from '@finos/legend-art';
 import type { PackageableElement } from '@finos/legend-graph';
 import {
@@ -170,7 +170,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         parserKeyword: string,
         elementKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
@@ -195,7 +195,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_PERSISTENCE_PARSER_NAME) {
           return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_PERSISTENCE_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,

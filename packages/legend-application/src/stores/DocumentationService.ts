@@ -32,7 +32,7 @@ import {
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
 
-export type LegendApplicationDocumentationRegistryEntry = {
+export type DocumentationRegistryEntry = {
   url: string;
   /**
    * Sometimes, we don't need to expose an endpoint to get the documentation data
@@ -50,11 +50,11 @@ export type LegendApplicationDocumentationRegistryEntry = {
   simple?: boolean | undefined;
 };
 
-export type LegendApplicationDocumentationRegistryData = {
-  entries: Record<string, LegendApplicationDocumentationConfigEntry>;
+export type DocumentationRegistryData = {
+  entries: Record<string, DocumentationConfigEntry>;
 };
 
-export type LegendApplicationDocumentationConfigEntry = {
+export type DocumentationConfigEntry = {
   markdownText?: MarkdownText | undefined;
   title?: string | undefined;
   text?: string | undefined;
@@ -62,7 +62,7 @@ export type LegendApplicationDocumentationConfigEntry = {
   related?: string[] | undefined;
 };
 
-export class LegendApplicationDocumentationEntry {
+export class DocumentationEntry {
   readonly _documentationKey!: string;
 
   markdownText?: MarkdownText | undefined;
@@ -72,7 +72,7 @@ export class LegendApplicationDocumentationEntry {
   related?: string[] | undefined;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(LegendApplicationDocumentationEntry, {
+    createModelSchema(DocumentationEntry, {
       markdownText: custom(
         (val) => val,
         (val) => (val.value ? val : undefined),
@@ -85,54 +85,47 @@ export class LegendApplicationDocumentationEntry {
   );
 
   static create(
-    json: PlainObject<LegendApplicationDocumentationEntry>,
+    json: PlainObject<DocumentationEntry>,
     documentationKey: string,
-  ): LegendApplicationDocumentationEntry {
-    const entry =
-      LegendApplicationDocumentationEntry.serialization.fromJson(json);
-    (entry as Writable<LegendApplicationDocumentationEntry>)._documentationKey =
+  ): DocumentationEntry {
+    const entry = DocumentationEntry.serialization.fromJson(json);
+    (entry as Writable<DocumentationEntry>)._documentationKey =
       documentationKey;
     return entry;
   }
 }
 
-export interface LegendApplicationKeyedDocumentationEntry {
+export interface KeyedDocumentationEntry {
   key: string;
-  content: LegendApplicationDocumentationEntry;
+  content: DocumentationEntry;
 }
 
 export const collectKeyedDocumnetationEntriesFromConfig = (
-  rawEntries: Record<string, LegendApplicationDocumentationConfigEntry>,
-): LegendApplicationKeyedDocumentationEntry[] =>
+  rawEntries: Record<string, DocumentationConfigEntry>,
+): KeyedDocumentationEntry[] =>
   Object.entries(rawEntries).map((entry) => ({
     key: entry[0],
-    content: LegendApplicationDocumentationEntry.create(entry[1], entry[0]),
+    content: DocumentationEntry.create(entry[1], entry[0]),
   }));
 
-export type LegendApplicationContextualDocumentationConfig = Record<
-  string,
-  string
->;
-export type LegendApplicationContextualDocumentationEntry = {
+export type ContextualDocumentationConfig = Record<string, string>;
+export type ContextualDocumentationEntry = {
   context: string;
   documentationKey: string;
 };
 export const collectContextualDocumnetationEntries = (
-  config: LegendApplicationContextualDocumentationConfig,
-): LegendApplicationContextualDocumentationEntry[] =>
+  config: ContextualDocumentationConfig,
+): ContextualDocumentationEntry[] =>
   Object.entries(config).map((entry) => ({
     context: entry[0],
     documentationKey: entry[1],
   }));
 
-export class LegendApplicationDocumentationService {
+export class DocumentationService {
   url?: string | undefined;
 
-  private docRegistry = new Map<string, LegendApplicationDocumentationEntry>();
-  private contextualDocIndex = new Map<
-    string,
-    LegendApplicationDocumentationEntry
-  >();
+  private docRegistry = new Map<string, DocumentationEntry>();
+  private contextualDocIndex = new Map<string, DocumentationEntry>();
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     // set the main documenation site url
@@ -234,7 +227,7 @@ export class LegendApplicationDocumentationService {
     });
   }
 
-  getDocEntry(key: string): LegendApplicationDocumentationEntry | undefined {
+  getDocEntry(key: string): DocumentationEntry | undefined {
     return this.docRegistry.get(key);
   }
 
@@ -242,9 +235,7 @@ export class LegendApplicationDocumentationService {
     return this.docRegistry.has(key);
   }
 
-  getContextualDocEntry(
-    key: string,
-  ): LegendApplicationDocumentationEntry | undefined {
+  getContextualDocEntry(key: string): DocumentationEntry | undefined {
     return this.contextualDocIndex.get(key);
   }
 
@@ -252,25 +243,20 @@ export class LegendApplicationDocumentationService {
     return this.contextualDocIndex.has(key);
   }
 
-  getAllDocEntries(): LegendApplicationDocumentationEntry[] {
+  getAllDocEntries(): DocumentationEntry[] {
     return Array.from(this.docRegistry.values());
   }
 
-  publishDocRegistry(): Record<
-    string,
-    LegendApplicationDocumentationConfigEntry
-  > {
-    const result: Record<string, LegendApplicationDocumentationConfigEntry> =
-      {};
+  publishDocRegistry(): Record<string, DocumentationConfigEntry> {
+    const result: Record<string, DocumentationConfigEntry> = {};
     this.docRegistry.forEach((value, key) => {
-      result[key] =
-        LegendApplicationDocumentationEntry.serialization.toJson(value);
+      result[key] = DocumentationEntry.serialization.toJson(value);
     });
     return result;
   }
 
-  publishContextualDocIndex(): LegendApplicationContextualDocumentationConfig {
-    const result: LegendApplicationContextualDocumentationConfig = {};
+  publishContextualDocIndex(): ContextualDocumentationConfig {
+    const result: ContextualDocumentationConfig = {};
     this.contextualDocIndex.forEach((value, key) => {
       result[key] = value._documentationKey;
     });

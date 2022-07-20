@@ -20,7 +20,7 @@ import {
   ApplicationStore,
   type GenericLegendApplicationStore,
 } from '../stores/ApplicationStore.js';
-import type { LegendApplicationConfig } from '../stores/LegendApplicationConfig.js';
+import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useWebApplicationNavigator } from './WebApplicationNavigatorProvider.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';

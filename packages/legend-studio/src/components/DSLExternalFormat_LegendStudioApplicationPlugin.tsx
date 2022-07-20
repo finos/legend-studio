@@ -73,7 +73,7 @@ import {
   externalFormat_Binding_setContentType,
   externalFormat_urlStream_setUrl,
 } from '../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLExternalFormat_LegendStudioDocumentation.js';
 import {
   BASIC_BINDING_SNIPPET,
@@ -348,7 +348,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         parserKeyword: string,
         elementKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_BINDING_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
@@ -372,7 +372,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_EXTERNAL_FORMAT_PARSER_NAME) {
           return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_EXTERNAL_FORMAT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,

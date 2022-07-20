@@ -42,7 +42,7 @@ import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   useApplicationStore,
-  type LegendApplicationDocumentationEntry,
+  type DocumentationEntry,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { useResizeDetector } from 'react-resize-detector';
@@ -138,7 +138,7 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
 const getParserDocumetation = (
   editorStore: EditorStore,
   parserKeyword: string,
-): LegendApplicationDocumentationEntry | undefined => {
+): DocumentationEntry | undefined => {
   switch (parserKeyword) {
     case PURE_PARSER.PURE: {
       return editorStore.applicationStore.documentationService.getDocEntry(
@@ -209,7 +209,7 @@ const getParserElementDocumentation = (
   editorStore: EditorStore,
   parserKeyword: string,
   elementKeyword: string,
-): LegendApplicationDocumentationEntry | undefined => {
+): DocumentationEntry | undefined => {
   switch (parserKeyword) {
     case PURE_PARSER.PURE: {
       if (elementKeyword === PURE_ELEMENT_NAME.CLASS) {

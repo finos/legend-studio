@@ -28,7 +28,7 @@ import type {
   Testable,
 } from '@finos/legend-graph';
 import {
-  type LegendApplicationDocumentationEntry,
+  type DocumentationEntry,
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
@@ -165,13 +165,13 @@ export type ElementProjectExplorerDnDTypeGetter = (
 export type PureGrammarParserDocumentationGetter = (
   editorStore: EditorStore,
   parserKeyword: string,
-) => LegendApplicationDocumentationEntry | undefined;
+) => DocumentationEntry | undefined;
 
 export type PureGrammarParserElementDocumentationGetter = (
   editorStore: EditorStore,
   parserKeyword: string,
   elementKeyword: string,
-) => LegendApplicationDocumentationEntry | undefined;
+) => DocumentationEntry | undefined;
 
 /**
  * This snippet suggestion is meant for an embedded content of an element
@@ -212,7 +212,7 @@ export interface PureGrammarTextSuggestion {
   /**
    * Detailed documentation that explains/elaborates the suggestion item.
    */
-  documentation?: LegendApplicationDocumentationEntry | undefined;
+  documentation?: DocumentationEntry | undefined;
   /**
    * A string or snippet that should be inserted when selecting this suggestion.
    *

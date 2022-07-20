@@ -48,7 +48,7 @@ import {
   PLAIN_TEXT_SNIPPET,
 } from './DSLText_CodeSnippets.js';
 import { create_TextElement } from '../../helper/DSLText_Helper.js';
-import type { LegendApplicationDocumentationEntry } from '@finos/legend-application';
+import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
@@ -166,7 +166,7 @@ export class DSLText_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         parserKeyword: string,
         elementKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
           if (elementKeyword === PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL) {
             return editorStore.applicationStore.documentationService.getDocEntry(
@@ -184,7 +184,7 @@ export class DSLText_LegendStudioApplicationPlugin
       (
         editorStore: EditorStore,
         parserKeyword: string,
-      ): LegendApplicationDocumentationEntry | undefined => {
+      ): DocumentationEntry | undefined => {
         if (parserKeyword === PURE_GRAMMAR_TEXT_PARSER_NAME) {
           return editorStore.applicationStore.documentationService.getDocEntry(
             DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY.GRAMMAR_PARSER,

@@ -21,7 +21,7 @@ import type {
   LegendApplicationConfig,
   LegendApplicationConfigurationData,
   LegendApplicationVersionData,
-} from '../stores/LegendApplicationConfig.js';
+} from './LegendApplicationConfig.js';
 import {
   type AbstractPlugin,
   type AbstractPreset,
@@ -39,10 +39,10 @@ import type { LegendApplicationPluginManager } from './LegendApplicationPluginMa
 import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
 import {
   collectKeyedDocumnetationEntriesFromConfig,
-  type LegendApplicationDocumentationConfigEntry,
-  type LegendApplicationDocumentationRegistryData,
-  type LegendApplicationDocumentationRegistryEntry,
-} from '../stores/LegendApplicationDocumentationService.js';
+  type DocumentationConfigEntry,
+  type DocumentationRegistryData,
+  type DocumentationRegistryEntry,
+} from '../stores/DocumentationService.js';
 import type { LegendApplicationPlugin } from '../stores/LegendApplicationPlugin.js';
 
 export abstract class LegendApplicationLogger {
@@ -140,7 +140,7 @@ export interface LegendApplicationConfigurationInput<
   baseUrl: string;
   configData: T;
   versionData: LegendApplicationVersionData;
-  docEntries?: Record<string, LegendApplicationDocumentationConfigEntry>;
+  docEntries?: Record<string, DocumentationConfigEntry>;
 }
 
 export abstract class LegendApplication {
@@ -259,8 +259,7 @@ export abstract class LegendApplication {
   async loadDocumentationRegistryData(
     config: LegendApplicationConfig,
   ): Promise<void> {
-    const entries: Record<string, LegendApplicationDocumentationConfigEntry> =
-      {};
+    const entries: Record<string, DocumentationConfigEntry> = {};
 
     await Promise.all(
       [
@@ -270,13 +269,13 @@ export abstract class LegendApplication {
           .flatMap(
             (plugin) => plugin.getExtraDocumentationRegistryEntries?.() ?? [],
           ),
-      ].map(async (entry: LegendApplicationDocumentationRegistryEntry) => {
+      ].map(async (entry: DocumentationRegistryEntry) => {
         try {
           const client = new NetworkClient(
             entry.simple
               ? {
                   /**
-                   * NOTE: see the documentation for `simple` flag {@link LegendApplicationDocumentationRegistryEntry}
+                   * NOTE: see the documentation for `simple` flag {@link DocumentationRegistryEntry}
                    * here, basically, we expect to fetch just the JSON from an endpoint where `Access-Control-Allow-Origin", "*"` is set
                    * as such, we must not include the credential in our request
                    * See https://stackoverflow.com/questions/19743396/cors-cannot-use-wildcard-in-access-control-allow-origin-when-credentials-flag-i
@@ -287,13 +286,12 @@ export abstract class LegendApplication {
                 }
               : {},
           );
-          const docData =
-            await client.get<LegendApplicationDocumentationRegistryData>(
-              guaranteeNonEmptyString(
-                entry.url,
-                `Can't load documentation registry: 'url' field is missing or empty`,
-              ),
-            );
+          const docData = await client.get<DocumentationRegistryData>(
+            guaranteeNonEmptyString(
+              entry.url,
+              `Can't load documentation registry: 'url' field is missing or empty`,
+            ),
+          );
           assertNonNullable(
             docData.entries,
             `Can't load documentation registry data: 'entries' field is missing`,
