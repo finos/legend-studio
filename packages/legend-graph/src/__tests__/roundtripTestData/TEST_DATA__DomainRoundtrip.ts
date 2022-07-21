@@ -1012,3 +1012,308 @@ export const TEST_DATA__MilestonedClassRoundtrip = [
     classifierPath: 'meta::pure::metamodel::type::Class',
   },
 ];
+
+export const TEST_DATA__FunctionTestRoundtrip = [
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: ['my::Patch', 'trial2::hello', 'trial2::parseIntegerMultipleTest', 'trial4::sendPatch'],
+          imports: [],
+          parserName: 'Pure',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+  {
+    path: 'my::Patch',
+    content: {
+      _type: 'class',
+      name: 'Patch',
+      package: 'my',
+      properties: [
+         {
+            multiplicity: {
+               lowerBound: 1,
+               upperBound: 1
+            },
+            name: 'version',
+            type: 'Integer'
+         }
+      ],
+
+    },
+    classifierPath:
+    'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'trial2::hello',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'func',
+          function: 'plus',
+          parameters: [
+            {
+              _type: 'collection',
+              multiplicity: {
+                lowerBound: 2,
+                upperBound: 2,
+              },
+              values: [
+                {
+                  _type: 'string',
+                  multiplicity: {
+                    lowerBound: 1,
+                    upperBound: 1,
+                  },
+                  values: ['Hello, '],
+                },
+                {
+                  _type: 'var',
+                  name: 'name',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      name: 'hello',
+      package: 'trial2',
+      parameters: [
+        {
+          _type: 'var',
+          class: 'String',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+        },
+      ],
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      returnType: 'String',
+
+      tests: [
+        {
+          _type: 'functionTest',
+          assertions: [
+            {
+              _type: 'equalTo',
+              expected: {
+                _type: 'string',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+
+                values: ['Hello, Sharvani'],
+              },
+              id: 'test1_assertion',
+            },
+          ],
+          id: 'test1',
+          parameters: [
+            {
+              _type: 'functionTestParameterPrimitiveValue',
+              name: 'name',
+              value: {
+                _type: 'string',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+
+                values: ['Sharvani'],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+  {
+    path: 'trial2::parseIntegerMultipleTest',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'func',
+          function: 'parseInteger',
+          parameters: [
+            {
+              _type: 'var',
+              name: 'var1',
+            }
+          ],
+        }
+      ],
+      name: 'parseIntegerMultipleTest',
+      package: 'trial2',
+      parameters: [
+        {
+          _type: 'var',
+          class: 'String',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1
+          },
+          name: 'var1'
+        }
+      ],
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1
+      },
+      returnType: 'Integer',
+      tests: [
+        {
+          _type: 'functionTest',
+          assertions: [
+            {
+              _type: 'equalTo',
+              expected: {
+                _type: 'integer',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1
+                },
+                values: [
+                  7
+                ]
+              },
+              id: 'test1_assertion'
+            }
+          ],
+          id: 'test1',
+          parameters: [
+            {
+              _type: 'functionTestParameterPrimitiveValue',
+              value: {
+                _type: 'string',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1
+                },
+                values: [
+                  '7'
+                ]
+              }
+            }
+          ]
+        },
+        {
+          _type: 'functionTest',
+          assertions: [
+            {
+              _type: 'equalTo',
+              expected: {
+                _type: 'integer',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1
+                },
+                values: [
+                  -1
+                ]
+              },
+              id: 'test2_assertion'
+            }
+          ],
+          id: 'test2',
+          parameters: [
+            {
+              _type: 'functionTestParameterPrimitiveValue',
+              value: {
+                _type: 'string',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1
+                },
+                values: [
+                  '-1'
+                ]
+              }
+            }
+          ]
+        }
+      ],
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+  {
+    path: 'trial4::sendPatch',
+    content: {
+        _type: 'function',
+        body: [
+           {
+              _type: 'var',
+              name: 'data',
+           }
+        ],
+        name: 'sendPatch',
+        package: 'trial4',
+        parameters: [
+           {
+              _type: 'var',
+              class: 'my::Patch',
+              multiplicity: {
+                 lowerBound: 1,
+                 upperBound: 1
+              },
+              name: 'data',
+           }
+        ],
+
+        returnMultiplicity: {
+           lowerBound: 1,
+           upperBound: 1
+        },
+        returnType: 'my::Patch',
+
+        tests: [
+           {
+              _type: 'functionTest',
+              assertions: [
+                 {
+                    _type: 'equalToJson',
+                    expected: {
+                       _type: 'externalFormat',
+                       contentType: 'application/json',
+                       data: ' { "version": 2 } '
+                    },
+                    id: 'test1_assertion',
+                 }
+              ],
+              id: 'test1',
+              parameters: [
+                 {
+                    _type: 'functionTestParameterComplexValue',
+                    externalFormatData: {
+                       _type: 'externalFormat',
+                       contentType: 'application/json',
+                       data: ' { "version": 2 } '
+                    }
+                 }
+              ],
+
+           }
+        ]
+     },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+];

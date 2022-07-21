@@ -23,7 +23,6 @@ import {
   serialize,
   raw,
   type ModelSchema,
-  optional,
 } from 'serializr';
 import {
   type PlainObject,
@@ -52,7 +51,6 @@ import {
   V1_runtimePointerModelSchema,
   V1_RuntimeType,
 } from './V1_RuntimeSerializationHelper.js';
-import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
@@ -65,12 +63,9 @@ import {
 import { V1_ParameterValue } from '../../../model/packageableElements/service/V1_ParameterValue.js';
 import { V1_TestData } from '../../../model/packageableElements/service/V1_TestData.js';
 import {
-  V1_AtomicTestType,
   V1_deserializeAtomicTest,
-  V1_deserializeTestAssertion,
   V1_deserializeTestSuite,
   V1_serializeAtomicTest,
-  V1_serializeTestAssertion,
   V1_serializeTestSuite,
   V1_TestSuiteType,
 } from './V1_TestSerializationHelper.js';
@@ -124,36 +119,6 @@ export const V1_testDataModelSchema = (
       usingModelSchema(V1_connectionTestDataModelSchema(plugins)),
     ),
   });
-
-export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
-  _type: usingConstantValueSchema(V1_AtomicTestType.SERVICE_TEST),
-  assertions: list(
-    custom(
-      (val) => V1_serializeTestAssertion(val),
-      (val) => V1_deserializeTestAssertion(val),
-    ),
-  ),
-  id: primitive(),
-  parameters: custom(
-    (values) =>
-      serializeArray(
-        values,
-        (value) => serialize(V1_parameterValueModelSchema, value),
-        {
-          skipIfEmpty: true,
-        },
-      ),
-    (values) =>
-      deserializeArray(
-        values,
-        (v) => deserialize(V1_parameterValueModelSchema, v),
-        {
-          skipIfEmpty: false,
-        },
-      ),
-  ),
-  serializationFormat: optional(primitive()),
-});
 
 export const V1_serviceTestSuiteModelSchema = (
   plugins: PureProtocolProcessorPlugin[],

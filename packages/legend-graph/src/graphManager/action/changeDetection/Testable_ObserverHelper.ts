@@ -16,6 +16,7 @@
 
 import { computed, makeObservable, observable } from 'mobx';
 import { ServiceTest } from '../../../DSLService_Exports.js';
+import { FunctionTest } from '../../../models/metamodels/pure/packageableElements/domain/FunctionTest.js';
 import { ServiceTestSuite } from '../../../models/metamodels/pure/packageableElements/service/ServiceTestSuite.js';
 import { EqualTo } from '../../../models/metamodels/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../models/metamodels/pure/test/assertion/EqualToJson.js';
@@ -27,6 +28,7 @@ import type {
 } from '../../../models/metamodels/pure/test/Test.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ExternalFormatData } from './DSLData_ObserverHelper.js';
+import { observe_FunctionTest } from './DomainObserverHelper.js';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
@@ -69,6 +71,8 @@ const observe_EqualToJson = skipObserved(
 export function observe_AtomicTest(metamodel: AtomicTest): AtomicTest {
   if (metamodel instanceof ServiceTest) {
     return observe_ServiceTest(metamodel);
+  } else if (metamodel instanceof FunctionTest) {
+    return observe_FunctionTest(metamodel);
   }
   return metamodel;
 }

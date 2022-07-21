@@ -29,6 +29,7 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
+  TEST_DATA__FunctionTestRoundtrip,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import {
   testConnectionRoundtrip,
@@ -93,6 +94,7 @@ describe(unitTest('Domain import resolution roundtrip'), () => {
     ['Association', TEST_DATA__AssociationRoundtrip],
     ['Function', TEST_DATA__FunctionRoundtrip],
     ['Measure', TEST_DATA__MeasureRoundtrip],
+    ['Function with tests', TEST_DATA__FunctionTestRoundtrip],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });

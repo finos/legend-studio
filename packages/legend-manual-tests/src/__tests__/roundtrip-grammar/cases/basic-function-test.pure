@@ -1,0 +1,29 @@
+Class my::Patch
+{
+  version: Integer[1];
+}
+
+function trial2::helloFunctionTestParameterWithName(name: String[1]): String[1]
+<
+   test1: {[name = 'Sharvani'], 'Hello, Sharvani'}
+>
+{
+   'Hello, ' + $name
+}
+
+function trial2::roundFloat(var1: Float[1]): Integer[1]
+<
+   test1: {[17.6], 18},
+   test2: {[17.1], 17}
+>
+{
+   $var1->round()
+}
+
+function trial4::sendPatch(data: my::Patch[1]): my::Patch[1]
+<
+   test1: {[#{ { "version": 2 } }#], #{ { "version": 2 } }#}
+>
+{
+   $data
+}

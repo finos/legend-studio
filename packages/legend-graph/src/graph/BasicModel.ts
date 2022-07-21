@@ -207,6 +207,7 @@ export abstract class BasicModel {
   get ownTestables(): Testable[] {
     return [
       ...this.ownServices,
+      ...this.ownFunctions,
       // TODO: add mappings once supported in the backend
       // ...this.ownMappings,
     ];

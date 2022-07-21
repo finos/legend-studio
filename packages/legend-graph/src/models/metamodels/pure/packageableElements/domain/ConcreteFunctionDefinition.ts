@@ -23,10 +23,12 @@ import type { Type } from './Type.js';
 import type { Multiplicity } from './Multiplicity.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import { FunctionDefinition } from './Function.js';
+import type { FunctionTest } from './FunctionTest.js';
+import type { Testable } from '../../test/Testable.js';
 
 export class ConcreteFunctionDefinition
   extends FunctionDefinition
-  implements Hashable
+  implements Hashable, Testable
 {
   returnType: PackageableElementReference<Type>;
   returnMultiplicity: Multiplicity;
@@ -42,6 +44,7 @@ export class ConcreteFunctionDefinition
    * @discrepancy model
    */
   expressionSequence: object[] = [];
+  tests: FunctionTest[] = [];
 
   constructor(
     name: string,
@@ -62,6 +65,7 @@ export class ConcreteFunctionDefinition
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashRawLambda(undefined, this.expressionSequence),
+      hashArray(this.tests),
     ]);
   }
 

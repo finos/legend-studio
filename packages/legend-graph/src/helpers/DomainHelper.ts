@@ -59,6 +59,7 @@ import type { Enum } from '../models/metamodels/pure/packageableElements/domain/
 import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint.js';
 import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType.js';
 import type { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -518,3 +519,38 @@ export const getMultiplicityDescription = (
       : `Must have at least ${multiplicity.lowerBound} values(s)`
   }`;
 };
+
+const getFunctionMultiplicityString = (
+  lowerBound: number,
+  upperBound: number | undefined,
+): string => {
+  if (lowerBound === upperBound) {
+    return lowerBound.toString();
+  } else if (lowerBound === 0 && upperBound === undefined) {
+    return 'MANY';
+  }
+  return `$${lowerBound}_${upperBound ?? 'MANY'}$`;
+};
+
+const getFunctionParameterString = (
+  cfd: ConcreteFunctionDefinition,
+): string => {
+  if (cfd.parameters.length !== 0) {
+    return `${cfd.parameters.map(
+      (p) =>
+        `${p.type.value.name}_${getFunctionMultiplicityString(
+          p.multiplicity.lowerBound,
+          p.multiplicity.upperBound,
+        )}_`).join('_')}`;
+  }
+  return '_';
+};
+
+export const getFunctionSignature = (
+  cfd: ConcreteFunctionDefinition,
+): string => `${cfd.name}_${
+  getFunctionParameterString(cfd)
+    }_${cfd.returnType.value.name}_${getFunctionMultiplicityString(
+      cfd.returnMultiplicity.lowerBound,
+      cfd.returnMultiplicity.upperBound,
+  )}_`;

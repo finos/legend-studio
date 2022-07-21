@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { UnsupportedOperationError, guaranteeType } from '@finos/legend-shared';
 import type { DerivedProperty } from '../../../../../../metamodels/pure/packageableElements/domain/DerivedProperty.js';
 import type { Constraint } from '../../../../../../metamodels/pure/packageableElements/domain/Constraint.js';
 import type {
@@ -54,6 +55,17 @@ import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
+import { V1_FunctionTest } from '../../../model/packageableElements/function/V1_FunctionTest.js';
+import type { FunctionTest } from '../../../../../../metamodels/pure/packageableElements/domain/FunctionTest.js';
+import type { V1_FunctionTestParameter } from '../../../model/packageableElements/function/V1_FunctionTestParameter.js';
+import type { FunctionTestParameter } from '../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameter.js';
+import { V1_transformTestAssertion } from './V1_TestTransformer.js';
+import { V1_FunctionTestParameterPrimitiveValue } from '../../../model/packageableElements/function/V1_FunctionTestParameterPrimitiveValue.js';
+import { FunctionTestParameterPrimitiveValue } from '../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameterPrimitiveValue.js';
+import { V1_FunctionTestParameterComplexValue } from '../../../model/packageableElements/function/V1_FunctionTestParameterComplexValue.js';
+import { FunctionTestParameterComplexValue } from '../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameterComplexValue.js';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
+import { V1_ExternalFormatData } from '../../../model/data/V1_EmbeddedData.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();
@@ -223,6 +235,60 @@ export const V1_transformAssociation = (
   return association;
 };
 
+const V1_transformFunctionTestParameterPrimitiveValue = (
+  element: FunctionTestParameterPrimitiveValue,
+): V1_FunctionTestParameterPrimitiveValue => {
+  const parameterValue = new V1_FunctionTestParameterPrimitiveValue();
+  parameterValue.name = element.name;
+  parameterValue.value = element.value;
+  return parameterValue;
+};
+
+const V1_transformFunctionTestParameterComplexValue = (
+  element: FunctionTestParameterComplexValue,
+  context: V1_GraphTransformerContext,
+): V1_FunctionTestParameterComplexValue => {
+  const parameterValue = new V1_FunctionTestParameterComplexValue();
+  parameterValue.name = element.name;
+  parameterValue.externalFormatData = guaranteeType(
+    V1_transformEmbeddedData(element.value, context),
+    V1_ExternalFormatData,
+  );
+  return parameterValue;
+};
+
+const V1_transformFunctionTestParameter = (
+  element: FunctionTestParameter,
+  context: V1_GraphTransformerContext,
+): V1_FunctionTestParameter => {
+  if (element instanceof FunctionTestParameterPrimitiveValue) {
+    const parameterValue =
+      V1_transformFunctionTestParameterPrimitiveValue(element);
+    return parameterValue;
+  } else if (element instanceof FunctionTestParameterComplexValue) {
+    const parameterValue =
+    V1_transformFunctionTestParameterComplexValue(element, context);
+    return parameterValue;
+  } else {
+    throw new UnsupportedOperationError(`Can't transform function test parameter`, element);
+  }
+};
+
+export const V1_transformFunctionTest = (
+  test: FunctionTest,
+  context: V1_GraphTransformerContext,
+): V1_FunctionTest => {
+  const _functionTest = new V1_FunctionTest();
+  _functionTest.id = test.id;
+  _functionTest.parameters = test.parameters.map((param) =>
+    V1_transformFunctionTestParameter(param, context),
+  );
+  _functionTest.assertions = test.assertions.map((assertion) =>
+    V1_transformTestAssertion(assertion),
+  );
+  return _functionTest;
+};
+
 export const V1_transformFunction = (
   element: ConcreteFunctionDefinition,
   context: V1_GraphTransformerContext,
@@ -241,6 +307,9 @@ export const V1_transformFunction = (
   _function.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
   _function.returnMultiplicity = V1_transformMultiplicity(
     element.returnMultiplicity,
+  );
+  _function.tests = element.tests.map(
+    (test) => V1_transformFunctionTest(test, context),
   );
   return _function;
 };

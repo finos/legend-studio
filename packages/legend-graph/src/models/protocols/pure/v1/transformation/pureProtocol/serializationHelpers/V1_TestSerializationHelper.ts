@@ -19,6 +19,9 @@ import {
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  deserializeArray,
+  serializeArray,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -26,9 +29,12 @@ import {
   deserialize,
   list,
   primitive,
+  raw,
   serialize,
 } from 'serializr';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
+import { V1_FunctionTest } from '../../../model/packageableElements/function/V1_FunctionTest.js';
+import type { V1_FunctionTestParameter } from '../../../model/packageableElements/function/V1_FunctionTestParameter.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import { V1_ServiceTestSuite } from '../../../model/packageableElements/service/V1_ServiceTestSuite.js';
 import { V1_AssertFail } from '../../../model/test/assertion/status/V1_AssertFail.js';
@@ -50,7 +56,11 @@ import { V1_AtomicTestId } from '../../../model/test/V1_AtomicTestId.js';
 import type { V1_TestSuite } from '../../../model/test/V1_TestSuite.js';
 import { V1_externalFormatDataModelSchema } from './V1_DataElementSerializationHelper.js';
 import {
-  V1_serviceTestModelSchema,
+  V1_deserializeFunctionTestParameter,
+  V1_serializeFunctionTestParameter,
+} from './V1_DomainSerializationHelper.js';
+import {
+  V1_parameterValueModelSchema,
   V1_serviceTestSuiteModelSchema,
 } from './V1_ServiceSerializationHelper.js';
 
@@ -62,6 +72,7 @@ enum V1_AssertionStatusType {
 
 export enum V1_AtomicTestType {
   SERVICE_TEST = 'serviceTest',
+  FUNCTION_TEST = 'functionTest',
 }
 
 enum V1_TestAssertionType {
@@ -144,7 +155,7 @@ const V1_deserializeAssertionStatus = (
 
 export const V1_equalToModelSchema = createModelSchema(V1_EqualTo, {
   _type: usingConstantValueSchema(V1_TestAssertionType.EQUAL_TO),
-  expected: primitive(),
+  expected: raw(),
   id: primitive(),
 });
 
@@ -181,6 +192,7 @@ export const V1_testPassedModelSchema = createModelSchema(V1_TestPassed, {
   atomicTestId: usingModelSchema(V1_atomicTestIdModelSchema),
   testable: primitive(),
 });
+
 export const V1_deserializeTestResult = (
   json: PlainObject<V1_TestResult>,
 ): V1_TestResult => {
@@ -191,27 +203,6 @@ export const V1_deserializeTestResult = (
       return deserialize(V1_testFailedModelSchema, json);
     case V1_TestResultType.TEST_PASSED:
       return deserialize(V1_testPassedModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize atomic test of type '${json._type}'`,
-      );
-  }
-};
-export const V1_serializeAtomicTest = (
-  protocol: V1_AtomicTest,
-): PlainObject<V1_AtomicTest> => {
-  if (protocol instanceof V1_ServiceTest) {
-    return serialize(V1_serviceTestModelSchema, protocol);
-  }
-  throw new UnsupportedOperationError(`Can't serialize atomic test`, protocol);
-};
-
-export const V1_deserializeAtomicTest = (
-  json: PlainObject<V1_AtomicTest>,
-): V1_AtomicTest => {
-  switch (json._type) {
-    case V1_AtomicTestType.SERVICE_TEST:
-      return deserialize(V1_serviceTestModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize atomic test of type '${json._type}'`,
@@ -248,6 +239,91 @@ export const V1_deserializeTestAssertion = (
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize test assertion of type '${json._type}'`,
+      );
+  }
+};
+
+export const V1_serviceTestModelSchema = createModelSchema(V1_ServiceTest, {
+  _type: usingConstantValueSchema(V1_AtomicTestType.SERVICE_TEST),
+  assertions: list(
+    custom(
+      (val) => V1_serializeTestAssertion(val),
+      (val) => V1_deserializeTestAssertion(val),
+    ),
+  ),
+  id: primitive(),
+  parameters: custom(
+    (values) =>
+      serializeArray(
+        values,
+        (value) => serialize(V1_parameterValueModelSchema, value),
+        {
+          skipIfEmpty: true,
+        },
+      ),
+    (values) =>
+      deserializeArray(
+        values,
+        (v) => deserialize(V1_parameterValueModelSchema, v),
+        {
+          skipIfEmpty: false,
+        },
+      ),
+  ),
+});
+
+export const V1_functionTestModelSchema = createModelSchema(V1_FunctionTest, {
+  _type: usingConstantValueSchema(V1_AtomicTestType.FUNCTION_TEST),
+
+  assertions: list(
+    guaranteeNonNullable(
+      custom(
+        (val) => V1_serializeTestAssertion(val),
+        (val) => V1_deserializeTestAssertion(val),
+      ),
+    ),
+  ),
+  id: primitive(),
+  parameters: custom(
+    (values) =>
+      serializeArray(
+        values,
+        guaranteeNonNullable((value: V1_FunctionTestParameter) =>
+          V1_serializeFunctionTestParameter(value),
+        ),
+        {
+          skipIfEmpty: false,
+        },
+      ),
+    (values) =>
+      deserializeArray(values, (v) => V1_deserializeFunctionTestParameter(v), {
+        skipIfEmpty: false,
+      }),
+  ),
+});
+
+export const V1_serializeAtomicTest = (
+  protocol: V1_AtomicTest,
+): PlainObject<V1_AtomicTest> => {
+  if (protocol instanceof V1_ServiceTest) {
+    return serialize(V1_serviceTestModelSchema, protocol);
+  } else if (protocol instanceof V1_FunctionTest) {
+    return serialize(V1_functionTestModelSchema, protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize atomic test`, protocol);
+};
+
+export const V1_deserializeAtomicTest = (
+  json: PlainObject<V1_AtomicTest>,
+): V1_AtomicTest => {
+  switch (json._type) {
+    case V1_AtomicTestType.SERVICE_TEST:
+      return deserialize(V1_serviceTestModelSchema, json);
+    case V1_AtomicTestType.FUNCTION_TEST:
+      return deserialize(V1_functionTestModelSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize atomic test of type '${json._type}'`,
       );
   }
 };

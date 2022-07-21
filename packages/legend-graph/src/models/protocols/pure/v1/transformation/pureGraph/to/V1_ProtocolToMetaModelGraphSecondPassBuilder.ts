@@ -49,6 +49,7 @@ import {
   V1_buildVariable,
   V1_buildUnit,
   V1_buildTaggedValue,
+  V1_buildFunctionTest,
 } from '../../../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 import {
   V1_buildServiceExecution,
@@ -251,6 +252,9 @@ export class V1_ProtocolToMetaModelGraphSecondPassBuilder
       V1_buildVariable(param, this.context),
     );
     func.expressionSequence = protocol.body;
+    func.tests = protocol.tests.map((test) =>
+      V1_buildFunctionTest(test, this.context),
+    );
   }
 
   visit_FlatData(element: V1_FlatData): void {

@@ -31,6 +31,8 @@ import {
   serializeArray,
   usingConstantValueSchema,
   usingModelSchema,
+  type PlainObject,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { V1_multiplicitySchema } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import { V1_Enumeration } from '../../../model/packageableElements/domain/V1_Enumeration.js';
@@ -54,6 +56,15 @@ import {
   V1_rawLambdaModelSchema,
   V1_rawVariableModelSchema,
 } from './V1_RawValueSpecificationSerializationHelper.js';
+import {
+  V1_deserializeAtomicTest,
+  V1_serializeAtomicTest,
+} from './V1_TestSerializationHelper.js';
+import type { V1_FunctionTestParameter } from '../../../model/packageableElements/function/V1_FunctionTestParameter.js';
+import { V1_FunctionTestParameterComplexValue } from '../../../model/packageableElements/function/V1_FunctionTestParameterComplexValue.js';
+import { V1_FunctionTestParameterPrimitiveValue } from '../../../model/packageableElements/function/V1_FunctionTestParameterPrimitiveValue.js';
+import { V1_externalFormatDataModelSchema } from './V1_DataElementSerializationHelper.js';
+import type { V1_FunctionTest } from '../../../model/packageableElements/function/V1_FunctionTest.js';
 
 export const V1_CLASS_ELEMENT_PROTOCOL_TYPE = 'class';
 export const V1_PROFILE_ELEMENT_PROTOCOL_TYPE = 'profile';
@@ -62,6 +73,11 @@ export const V1_MEASURE_ELEMENT_PROTOCOL_TYPE = 'measure';
 export const V1_UNIT_ELEMENT_PROTOCOL_TYPE = 'unit';
 export const V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE = 'association';
 export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
+
+export enum V1_FunctionTestParameterType {
+  PRIMITIVE_VALUE = 'functionTestParameterPrimitiveValue',
+  COMPLEX_VALUE = 'functionTestParameterComplexValue',
+}
 
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
@@ -507,5 +523,71 @@ export const V1_functionSchema = createModelSchema(
           skipIfEmpty: false,
         }),
     ),
+    tests: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value: V1_FunctionTest) => V1_serializeAtomicTest(value),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(values, (v) => V1_deserializeAtomicTest(v), {
+          skipIfEmpty: false,
+        }),
+    ),
   },
 );
+
+// ------------------------------------- Function Test helpers -------------------------------------
+
+export const V1_FunctionTestParameterPrimitiveValueSchema = createModelSchema(
+  V1_FunctionTestParameterPrimitiveValue,
+  {
+    _type: usingConstantValueSchema(
+      V1_FunctionTestParameterType.PRIMITIVE_VALUE,
+    ),
+    name: primitive(),
+    value: raw(),
+  },
+);
+
+export const V1_FunctionTestParameterComplexValueSchema = createModelSchema(
+  V1_FunctionTestParameterComplexValue,
+  {
+    _type: usingConstantValueSchema(V1_FunctionTestParameterType.COMPLEX_VALUE),
+    externalFormatData: usingModelSchema(V1_externalFormatDataModelSchema),
+    name: primitive(),
+  },
+);
+
+export const V1_serializeFunctionTestParameter = (
+  protocol: V1_FunctionTestParameter,
+): PlainObject<V1_FunctionTestParameter> => {
+  if (protocol instanceof V1_FunctionTestParameterPrimitiveValue) {
+    return serialize(V1_FunctionTestParameterPrimitiveValueSchema, protocol);
+  } else if (protocol instanceof V1_FunctionTestParameterComplexValue) {
+    return serialize(V1_FunctionTestParameterComplexValueSchema, protocol);
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize Function test parameter value`,
+    protocol,
+  );
+};
+
+export const V1_deserializeFunctionTestParameter = (
+  json: PlainObject<V1_FunctionTestParameter>,
+): V1_FunctionTestParameter => {
+  switch (json._type) {
+    case V1_FunctionTestParameterType.PRIMITIVE_VALUE:
+      return deserialize(V1_FunctionTestParameterPrimitiveValueSchema, json);
+    case V1_FunctionTestParameterType.COMPLEX_VALUE:
+      return deserialize(V1_FunctionTestParameterComplexValueSchema, json);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deeserialize Function Test Parameter value of type '${json._type}'`,
+      );
+  }
+};

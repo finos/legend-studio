@@ -66,6 +66,14 @@ import {
   observe_RawLambda,
   observe_RawVariableExpression,
 } from './RawValueSpecificationObserver.js';
+import type { FunctionTest } from '../../../models/metamodels/pure/packageableElements/domain/FunctionTest.js';
+import {
+  observe_AtomicTest,
+  observe_TestAssertion,
+} from './Testable_ObserverHelper.js';
+import type { FunctionTestParameter } from '../../../models/metamodels/pure/packageableElements/domain/FunctionTestParameter.js';
+import { FunctionTestParameterPrimitiveValue } from '../../../models/metamodels/pure/packageableElements/domain/FunctionTestParameterPrimitiveValue.js';
+import { FunctionTestParameterComplexValue } from '../../../models/metamodels/pure/packageableElements/domain/FunctionTestParameterComplexValue.js';
 
 const _observe_Abstract_Package = (metamodel: Package): void => {
   observe_Abstract_PackageableElement(metamodel);
@@ -462,6 +470,7 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
       stereotypes: observable,
       taggedValues: observable,
       _elementHashCode: override,
+      tests: observable,
     });
 
     metamodel.parameters.forEach(observe_RawVariableExpression);
@@ -469,6 +478,62 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
     observe_Multiplicity(metamodel.returnMultiplicity);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
+    metamodel.tests.forEach(observe_AtomicTest);
+
+    return metamodel;
+  },
+);
+
+// ----------------------------------- Function test --------------------------------
+
+export const observe_FunctionTestParameterPrimitiveValue = skipObserved(
+  (
+    metamodel: FunctionTestParameterPrimitiveValue,
+  ): FunctionTestParameterPrimitiveValue => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_FunctionTestParameterComplexValue = skipObserved(
+  (
+    metamodel: FunctionTestParameterComplexValue,
+  ): FunctionTestParameterComplexValue => {
+    makeObservable(metamodel, {
+      name: observable,
+      value: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_FunctionTestParameter = skipObserved(
+  (metamodel: FunctionTestParameter): FunctionTestParameter => {
+    if (metamodel instanceof FunctionTestParameterPrimitiveValue) {
+      return observe_FunctionTestParameterPrimitiveValue(metamodel);
+    } else if (metamodel instanceof FunctionTestParameterComplexValue) {
+      return observe_FunctionTestParameterComplexValue(metamodel);
+    }
+    return metamodel;
+  },
+);
+
+export const observe_FunctionTest = skipObserved(
+  (metamodel: FunctionTest): FunctionTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      assertions: observable,
+      parameters: observable,
+      hashCode: computed,
+    });
+
+    metamodel.parameters.forEach(observe_FunctionTestParameter);
+    metamodel.assertions.forEach(observe_TestAssertion);
 
     return metamodel;
   },

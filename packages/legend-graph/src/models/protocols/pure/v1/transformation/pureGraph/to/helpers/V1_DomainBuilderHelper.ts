@@ -20,6 +20,8 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   assertTrue,
+  UnsupportedOperationError,
+  guaranteeType,
 } from '@finos/legend-shared';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import type { Association } from '../../../../../../../metamodels/pure/packageableElements/domain/Association.js';
@@ -54,6 +56,17 @@ import {
   getAllClassProperties,
   getOrCreateGraphPackage,
 } from '../../../../../../../../helpers/DomainHelper.js';
+import { FunctionTest } from '../../../../../../../metamodels/pure/packageableElements/domain/FunctionTest.js';
+import type { V1_FunctionTest } from '../../../../model/packageableElements/function/V1_FunctionTest.js';
+import type { V1_FunctionTestParameter } from '../../../../model/packageableElements/function/V1_FunctionTestParameter.js';
+import { V1_FunctionTestParameterPrimitiveValue } from '../../../../model/packageableElements/function/V1_FunctionTestParameterPrimitiveValue.js';
+import { V1_FunctionTestParameterComplexValue } from '../../../../model/packageableElements/function/V1_FunctionTestParameterComplexValue.js';
+import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
+import type { FunctionTestParameter } from '../../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameter.js';
+import { FunctionTestParameterPrimitiveValue } from '../../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameterPrimitiveValue.js';
+import { FunctionTestParameterComplexValue } from '../../../../../../../metamodels/pure/packageableElements/domain/FunctionTestParameterComplexValue.js';
+import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
+import { ExternalFormatData } from '../../../../../../../metamodels/pure/data/EmbeddedData.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -285,4 +298,58 @@ export const V1_getAppliedProperty = (
     property,
     `Property '${name}' not found in class '${parentClass.path}'`,
   );
+};
+
+const V1_buildFunctionTestParameterPrimitiveValue = (
+  element: V1_FunctionTestParameterPrimitiveValue,
+): FunctionTestParameterPrimitiveValue => {
+  const parameterValue = new FunctionTestParameterPrimitiveValue();
+  parameterValue.name = element.name;
+  parameterValue.value = element.value;
+  return parameterValue;
+};
+
+const V1_buildFunctionTestParameterComplexValue = (
+  element: V1_FunctionTestParameterComplexValue,
+  context: V1_GraphBuilderContext,
+): FunctionTestParameterComplexValue => {
+  const parameterValue = new FunctionTestParameterComplexValue();
+  parameterValue.name = element.name;
+  parameterValue.value = guaranteeType(
+    element.externalFormatData.accept_EmbeddedDataVisitor(
+      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context)
+    ),
+    ExternalFormatData,
+  );
+  return parameterValue;
+};
+
+export const V1_buildFunctionTestParameter = (
+  param: V1_FunctionTestParameter,
+  context: V1_GraphBuilderContext,
+): FunctionTestParameter => {
+  if (param instanceof V1_FunctionTestParameterPrimitiveValue) {
+    const parameterValue = V1_buildFunctionTestParameterPrimitiveValue(param);
+    return parameterValue;
+  } else if (param instanceof V1_FunctionTestParameterComplexValue) {
+    const parameterValue = V1_buildFunctionTestParameterComplexValue(param, context);
+    return parameterValue;
+  } else {
+    throw new UnsupportedOperationError(`Can't build function test parameter`, param);
+  }
+};
+
+export const V1_buildFunctionTest = (
+  protocol: V1_FunctionTest,
+  context: V1_GraphBuilderContext,
+): FunctionTest => {
+  const functionTest = new FunctionTest();
+  functionTest.id = protocol.id;
+  functionTest.parameters = protocol.parameters.map((param) =>
+    V1_buildFunctionTestParameter(param, context),
+  );
+  functionTest.assertions = protocol.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, functionTest, context),
+  );
+  return functionTest;
 };
