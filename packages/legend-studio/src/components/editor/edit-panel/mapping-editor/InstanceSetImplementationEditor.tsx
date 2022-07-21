@@ -86,7 +86,7 @@ import {
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -104,7 +104,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         : undefined;
     const srcElement = getMappingElementSource(
       setImplementation,
-      editorStore.pluginManager.getStudioPlugins(),
+      editorStore.pluginManager.getApplicationPlugins(),
     );
     const sourceLabel = getSourceElementLabel(srcElement);
     // `null` is when we want to open the modal using the existing source
@@ -267,11 +267,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
     }
     const extraInstanceSetImplementationBlockingErrorCheckers =
       editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraInstanceSetImplementationBlockingErrorCheckers?.() ?? [],
         );
     let hasParseError = false;

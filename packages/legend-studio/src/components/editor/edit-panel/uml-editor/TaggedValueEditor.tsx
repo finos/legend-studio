@@ -25,7 +25,6 @@ import {
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
 } from '@finos/legend-art';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type TaggedValue,
@@ -37,6 +36,7 @@ import {
   taggedValue_setValue,
   taggedValue_setTag,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import type { PackageableElementOption } from '@finos/legend-application';
 
 interface TagOption {
   label: string;

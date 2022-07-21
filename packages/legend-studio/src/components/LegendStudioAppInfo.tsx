@@ -30,8 +30,6 @@ import {
   type TreeNodeContainerProps,
   type TreeNodeData,
 } from '@finos/legend-art';
-import { useApplicationStore } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 import {
   addUniqueEntry,
   isNonNullable,
@@ -39,6 +37,7 @@ import {
   PresetInfo,
   type PluginManagerInfo,
 } from '@finos/legend-shared';
+import { useLegendStudioApplicationStore } from './LegendStudioBaseStoreProvider.js';
 
 class AppExtensionInfoTreeNodeData implements TreeNodeData {
   id: string;
@@ -154,7 +153,7 @@ export const LegendStudioAppInfo: React.FC<{
   closeModal: () => void;
 }> = (props) => {
   const { open, closeModal } = props;
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const config = applicationStore.config;
   const copyInfo = (): void => {
     applicationStore

@@ -18,7 +18,6 @@
 
 // metamodels
 export * from './models/metamodels/pure/Reference.js';
-export * from './models/metamodels/pure/packageableElements/connection/Connection.js';
 export * from './models/metamodels/pure/packageableElements/PackageableElement.js';
 export * from './models/metamodels/pure/packageableElements/PackageableElementReference.js';
 export { SectionIndex } from './models/metamodels/pure/packageableElements/section/SectionIndex.js';
@@ -71,6 +70,8 @@ export {
   RuntimePointer,
   StoreConnections,
 } from './models/metamodels/pure/packageableElements/runtime/Runtime.js';
+// relational packageable elements
+export { Database } from './models/metamodels/pure/packageableElements/store/relational/model/Database.js';
 // metamodel external formats
 export { Binding } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
 export { ModelUnit } from './models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
@@ -184,7 +185,10 @@ export * from './graph/PureGraphPlugin.js';
 
 export { type GraphPluginManager } from './GraphPluginManager.js';
 export { CorePureGraphManagerPlugin } from './graphManager/CorePureGraphManagerPlugin.js';
-export { GraphManagerState } from './GraphManagerState.js';
+export {
+  BasicGraphManagerState,
+  GraphManagerState,
+} from './GraphManagerState.js';
 export * from './GraphManagerStateProvider.js';
 export * from './GraphManagerTestUtils.js';
 export {
@@ -219,14 +223,6 @@ export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecu
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
-export {
-  MappingModelCoverageAnalysisResult,
-  MappedEntity,
-  MappedProperty,
-  EntityMappedProperty,
-  EnumMappedProperty,
-} from './graphManager/action/analytics/MappingAnalytics.js';
-export { V1_MappingModelCoverageAnalysisResult } from './models/protocols/pure/v1/engine/analytics/V1_MappingAnalytics.js';
 export * from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
@@ -245,7 +241,6 @@ export * from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1
 export * from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ElementBuilder.js';
 export { V1_RawLambda } from './models/protocols/pure/v1/model/rawValueSpecification/V1_RawLambda.js';
 export { V1_ProcessingContext } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
-export { V1_ProtocolToMetaModelConnectionBuilder } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_ProtocolToMetaModelConnectionBuilder.js';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_GraphTransformerContext.js';
 export * from './models/protocols/pure/v1/transformation/pureGraph/from/V1_CoreTransformerHelper.js';
 export {
@@ -253,20 +248,15 @@ export {
   V1_transformRawLambda,
 } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 export {
-  V1_deserializeConnectionValue,
-  V1_serializeConnectionValue,
-} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ConnectionSerializationHelper.js';
-export { V1_runtimePointerModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-export {
   V1_rawLambdaModelSchema,
   V1_deserializeRawValueSpecification,
   V1_serializeRawValueSpecification,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 export { V1_transformPropertyReference } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
-export { V1_buildEngineRuntime } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_RuntimeBuilderHelper.js';
 export { V1_EngineServerClient } from './models/protocols/pure/v1/engine/V1_EngineServerClient.js';
 export { V1_Engine } from './models/protocols/pure/v1/engine/V1_Engine.js';
 export {
+  V1_PureModelContextType,
   V1_entitiesToPureModelContextData,
   V1_deserializePureModelContextData,
 } from './models/protocols/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
@@ -275,8 +265,13 @@ export {
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
-export { V1_serializeValueSpecification } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 export {
+  V1_deserializeValueSpecification,
+  V1_serializeValueSpecification,
+} from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+export { V1_transformRootValueSpecification } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_ValueSpecificationTransformer.js';
+export {
+  V1_buildValueSpecification,
   V1_ValueSpecificationBuilder,
   V1_buildGenericFunctionExpression,
   V1_buildBaseSimpleFunctionExpression,

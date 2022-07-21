@@ -20,7 +20,7 @@ import {
 } from '../application/AbstractPluginManager.js';
 
 export interface TraceData {
-  spanName: string;
+  name: string;
   tags?: Record<PropertyKey, unknown>;
 }
 

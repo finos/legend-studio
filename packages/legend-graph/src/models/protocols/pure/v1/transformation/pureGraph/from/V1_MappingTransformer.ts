@@ -235,7 +235,7 @@ export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
       return V1_ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
-        `Encountered unsupproted object input type '${type}'`,
+        `Encountered unsupported object input type '${type}'`,
       );
   }
 };

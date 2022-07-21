@@ -27,6 +27,11 @@ import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel.js';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel.js';
 import { FETCH_STRUCTURE_MODE } from '../stores/QueryBuilderFetchStructureState.js';
 import { QueryBuilderPostFilterState } from '../stores/QueryBuilderPostFilterState.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {
@@ -51,6 +56,7 @@ export const QueryBuilderFetchStructurePanel = observer(
     const { queryBuilderState } = props;
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const fetchStructureStateMode = fetchStructureState.fetchStructureMode;
+    const applicationStore = useApplicationStore();
     const openResultSetModifierEditor = (): void =>
       queryBuilderState.resultSetModifierState.setShowModal(true);
     const addNewBlankDerivation = (): void =>
@@ -82,13 +88,49 @@ export const QueryBuilderFetchStructurePanel = observer(
       (fetchMode: FETCH_STRUCTURE_MODE): (() => void) =>
       (): void => {
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
-          fetchStructureState.setFetchStructureMode(fetchMode);
           // TODO: might want to add alert modal to alert user changing fetch structure resets state
-          queryBuilderState.changeFetchStructure();
-          queryBuilderState.postFilterState = new QueryBuilderPostFilterState(
-            queryBuilderState,
-            queryBuilderState.postFilterOperators,
-          );
+          if (
+            fetchMode === FETCH_STRUCTURE_MODE.GRAPH_FETCH &&
+            queryBuilderState.showPostFilterPanel &&
+            queryBuilderState.postFilterState.nodes.size > 0
+          ) {
+            applicationStore.setActionAlertInfo({
+              message:
+                'With graph fetch, post filter is not supported. Current post filters will be lost when switching to the graph fetch panel. Do you still want to proceed?',
+              type: ActionAlertType.CAUTION,
+              actions: [
+                {
+                  label: 'Proceed',
+                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                  handler: applicationStore.guardUnhandledError(async () => {
+                    fetchStructureState.setFetchStructureMode(fetchMode);
+                    queryBuilderState.changeFetchStructure();
+                    queryBuilderState.postFilterState =
+                      new QueryBuilderPostFilterState(
+                        queryBuilderState,
+                        queryBuilderState.postFilterOperators,
+                      );
+                    queryBuilderState.setShowPostFilterPanel(false);
+                  }),
+                },
+                {
+                  label: 'Cancel',
+                  type: ActionAlertActionType.PROCEED,
+                  default: true,
+                },
+              ],
+            });
+          } else {
+            fetchStructureState.setFetchStructureMode(fetchMode);
+            queryBuilderState.changeFetchStructure();
+            queryBuilderState.postFilterState = new QueryBuilderPostFilterState(
+              queryBuilderState,
+              queryBuilderState.postFilterOperators,
+            );
+            if (fetchMode === FETCH_STRUCTURE_MODE.GRAPH_FETCH) {
+              queryBuilderState.setShowPostFilterPanel(false);
+            }
+          }
         }
       };
 

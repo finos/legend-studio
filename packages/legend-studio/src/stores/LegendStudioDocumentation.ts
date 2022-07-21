@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationContextualDocumentationMapConfig } from '@finos/legend-application';
+import type { ContextualDocumentationConfig } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from './LegendStudioApplicationNavigationContext.js';
 
 export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
@@ -73,7 +73,7 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   CONTEXT_CLASS_EDITOR = 'context.class-editor',
 }
 
-export const CORE_CONTEXTUAL_DOCUMENTATION_MAP: LegendApplicationContextualDocumentationMapConfig =
+export const CORE_CONTEXTUAL_DOCUMENTATION_CONFIG: ContextualDocumentationConfig =
   {
     [LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.CLASS_EDITOR]:
       LEGEND_STUDIO_DOCUMENTATION_KEY.CONTEXT_CLASS_EDITOR,

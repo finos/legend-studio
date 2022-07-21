@@ -1,5 +1,11 @@
 # @finos/legend-studio
 
+## 11.0.3
+
+### Patch Changes
+
+- [#1318](https://github.com/finos/legend-studio/pull/1318) [`a8707451`](https://github.com/finos/legend-studio/commit/a87074512560809111c03bad9921023ad3655f67) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle `MultiExecutionServiceTestResult` in service test editor.
+
 ## 11.0.2
 
 ### Patch Changes
@@ -399,7 +405,7 @@
 
 - [#663](https://github.com/finos/legend-studio/pull/663) [`44115178`](https://github.com/finos/legend-studio/commit/44115178fa3bad5d3f2225aa8b1330e89f721993) ([@gayathrir11](https://github.com/gayathrir11)) - Fix bug in `FileGenerationEditor` not resetting while changing elements ([#142](https://github.com/finos/legend-studio/issues/142)]).
 
-* [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `StudioPlugin` to `LegendStudioPlugin`. This change applies for other extension-related classes as well, e.g. `LegendStudioPluginManager`, `*_LegendStudioPreset`, `*_LegendStudioPlugin`, etc.
+* [#685](https://github.com/finos/legend-studio/pull/685) [`1ae0553b`](https://github.com/finos/legend-studio/commit/1ae0553b7af88217a8642492cab2252a589ab091) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `StudioPlugin` to `LegendStudioPlugin`. This change applies for other extension-related classes as well, e.g. `LegendStudioPluginManager`, `*_LegendStudioPreset`, `*_LegendStudioApplicationPlugin`, etc.
 
 ## 1.0.0
 

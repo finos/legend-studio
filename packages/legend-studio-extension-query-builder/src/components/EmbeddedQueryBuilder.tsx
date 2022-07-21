@@ -25,10 +25,12 @@ import {
 } from '@finos/legend-art';
 import { useEditorStore } from '@finos/legend-studio';
 import { flowResult } from 'mobx';
-import { noop } from '@finos/legend-shared';
+import { hashObject, noop } from '@finos/legend-shared';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import {
   useApplicationNavigationContext,
+  ActionAlertActionType,
+  ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
 import { QueryBuilder } from '@finos/legend-query';
@@ -56,6 +58,40 @@ const QueryBuilderDialog = observer(() => {
   useApplicationNavigationContext(
     QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
   );
+
+  const confirmCloseQueryBuilder = (): void => {
+    // NOTE: This is poor-man change detection for query
+    // in the future, we could consider a similar approach to how we do change detection in Studio
+    if (
+      queryBuilderExtensionState.queryBuilderState.changeDetectionState
+        .isEnabled &&
+      queryBuilderExtensionState.queryBuilderState.changeDetectionState
+        .queryHashCode !==
+        hashObject(queryBuilderExtensionState.queryBuilderState.getQuery())
+    ) {
+      applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: applicationStore.guardUnhandledError(async () =>
+              closeQueryBuilder(),
+            ),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      closeQueryBuilder();
+    }
+  };
 
   return (
     <Dialog
@@ -93,7 +129,7 @@ const QueryBuilderDialog = observer(() => {
             <button
               className="query-builder__dialog__header__action"
               tabIndex={-1}
-              onClick={closeQueryBuilder}
+              onClick={confirmCloseQueryBuilder}
             >
               <TimesIcon />
             </button>

@@ -63,7 +63,7 @@ import {
   getRawGenericType,
   OptionalEnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   enumMapping_setEnumValueMappings,
@@ -89,22 +89,25 @@ export const getDecoratedSetImplementationPropertyMappings = <
     property: Property,
   ) => T[],
 ): T[] => {
-  const propertyMappingMap = new Map<string, T[]>();
+  const propertyMappingIndex = new Map<string, T[]>();
   (setImp.propertyMappings as T[]).forEach((pm) => {
-    const propertyMapping = propertyMappingMap.get(pm.property.value.name);
+    const propertyMapping = propertyMappingIndex.get(pm.property.value.name);
     if (propertyMapping) {
       propertyMapping.push(pm);
     } else {
-      propertyMappingMap.set(pm.property.value.name, [pm]);
+      propertyMappingIndex.set(pm.property.value.name, [pm]);
     }
   });
   getAllClassProperties(setImp.class.value).forEach((property) => {
-    propertyMappingMap.set(
+    propertyMappingIndex.set(
       property.name,
-      decoratePropertyMapping(propertyMappingMap.get(property.name), property),
+      decoratePropertyMapping(
+        propertyMappingIndex.get(property.name),
+        property,
+      ),
     );
   });
-  return Array.from(propertyMappingMap.values()).flat();
+  return Array.from(propertyMappingIndex.values()).flat();
 };
 
 export const getLeafSetImplementationsForClass = (
@@ -633,11 +636,11 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
 
   visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorators = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
     for (const decorator of extraSetImplementationDecorators) {
@@ -774,11 +777,11 @@ export class MappingElementDecorationCleaner
   visit_SetImplementation(setImplementation: SetImplementation): void {
     const extraSetImplementationDecorationCleaners =
       this.editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationDecorationCleaners?.() ?? [],
         );
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {

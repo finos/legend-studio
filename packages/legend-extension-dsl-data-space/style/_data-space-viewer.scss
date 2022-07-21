@@ -201,22 +201,6 @@
       &__container {
         padding: 0.3rem;
       }
-
-      &__option {
-        @include flexVCenter;
-      }
-
-      &__option__tag {
-        @include flexVCenter;
-
-        background: var(--color-blue-200);
-        height: 1.8rem;
-        padding: 0 0.5rem;
-        margin-left: 0.5rem;
-        border-radius: 0.2rem;
-        font-size: 1.2rem;
-        color: var(--color-light-grey-100);
-      }
     }
   }
 

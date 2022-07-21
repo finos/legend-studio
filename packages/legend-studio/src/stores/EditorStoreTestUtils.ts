@@ -23,9 +23,9 @@ import {
   TEST_DATA__applicationVersion,
   TEST__getTestApplicationStore,
 } from '@finos/legend-application';
-import { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 
-export const TEST_DATA__studioConfig = {
+const TEST_DATA__appConfig = {
   appName: 'test-studio-app',
   env: 'test-env',
   sdlc: {
@@ -42,12 +42,12 @@ export const TEST_DATA__studioConfig = {
   },
 };
 
-export const TEST__getTestStudioConfig = (
+export const TEST__getLegendStudioApplicationConfig = (
   extraConfigData = {},
-): LegendStudioConfig => {
-  const config = new LegendStudioConfig({
+): LegendStudioApplicationConfig => {
+  const config = new LegendStudioApplicationConfig({
     configData: {
-      ...TEST_DATA__studioConfig,
+      ...TEST_DATA__appConfig,
       ...extraConfigData,
     },
     versionData: TEST_DATA__applicationVersion,
@@ -60,7 +60,7 @@ export const TEST__getTestEditorStore = (
   pluginManager = LegendStudioPluginManager.create(),
 ): EditorStore => {
   const applicationStore = TEST__getTestApplicationStore(
-    TEST__getTestStudioConfig(),
+    TEST__getLegendStudioApplicationConfig(),
     pluginManager,
   );
   return new EditorStore(

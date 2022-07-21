@@ -289,11 +289,11 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
 
   *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
-    const propertyMappingsMap = new Map<string, PurePropertyMappingState>();
+    const index = new Map<string, PurePropertyMappingState>();
     this.propertyMappingStates.forEach((pm) => {
       if (!isStubbed_RawLambda(pm.propertyMapping.transform)) {
         lambdas.set(pm.lambdaId, pm.propertyMapping.transform);
-        propertyMappingsMap.set(pm.lambdaId, pm);
+        index.set(pm.lambdaId, pm);
       }
     });
     if (lambdas.size) {
@@ -304,7 +304,7 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
-          const purePropertyMapping = propertyMappingsMap.get(key);
+          const purePropertyMapping = index.get(key);
           purePropertyMapping?.setLambdaString(
             purePropertyMapping.extractLambdaString(grammarText),
           );

@@ -44,7 +44,7 @@ import {
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const OperatorSelector = observer(
   (props: {
@@ -147,11 +147,11 @@ export const ClassMappingEditor = observer(
         break;
       default: {
         const extraMappingSourceTypeInfoGetters = editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLMapping_LegendStudioPlugin_Extension
+                plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
               ).getExtraMappingSourceTypeInfoGetters?.() ?? [],
           );
         for (const sourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {

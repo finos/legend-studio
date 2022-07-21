@@ -115,7 +115,6 @@ export const QueryBuilder = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const isQuerySupported = queryBuilderState.isQuerySupported();
-    const postFilterState = queryBuilderState.postFilterState;
 
     // Hotkeys
     const keyMap = {
@@ -142,8 +141,8 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowPostFilterPanel = (): void => {
-      postFilterState.setShowPostFilterPanel(
-        !postFilterState.showPostFilterPanel,
+      queryBuilderState.setShowPostFilterPanel(
+        !queryBuilderState.showPostFilterPanel,
       );
     };
 
@@ -174,7 +173,7 @@ export const QueryBuilder = observer(
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Functions Explorer Panel
+                      Show Function(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
                   <MenuContentItem onClick={toggleShowParameterPanel}>
@@ -184,17 +183,20 @@ export const QueryBuilder = observer(
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Parameter Panel
+                      Show Parameter(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
-                  <MenuContentItem onClick={toggleShowPostFilterPanel}>
+                  <MenuContentItem
+                    onClick={toggleShowPostFilterPanel}
+                    disabled={queryBuilderState.fetchStructureState.isGraphFetchMode()}
+                  >
                     <MenuContentItemIcon>
-                      {postFilterState.showPostFilterPanel ? (
+                      {queryBuilderState.showPostFilterPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
                     <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Post-Filter Panel
+                      Show Post-Filter
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>
@@ -321,12 +323,12 @@ export const QueryBuilder = observer(
                       </ResizablePanel>
                       <ResizablePanelSplitter />
                       <ResizablePanel minSize={300}>
-                        {!postFilterState.showPostFilterPanel && (
+                        {!queryBuilderState.showPostFilterPanel && (
                           <QueryBuilderFilterPanel
                             queryBuilderState={queryBuilderState}
                           />
                         )}
-                        {postFilterState.showPostFilterPanel && (
+                        {queryBuilderState.showPostFilterPanel && (
                           <ResizablePanelGroup orientation="horizontal">
                             <ResizablePanel minSize={300}>
                               <QueryBuilderFilterPanel

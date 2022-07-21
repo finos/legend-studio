@@ -28,11 +28,11 @@ import type { EditorStore } from '../../../../stores/EditorStore.js';
 const packageRootChildren = ['ui'];
 
 let renderResult: RenderResult;
-let mockedEditorStore: EditorStore;
+let MOCK__editorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__m2mGraphEntities,
   });
 });
@@ -42,7 +42,7 @@ test(integrationTest('Package Explorer'), async () => {
   const explorerTitle = explorerTitleLabel.parentElement as HTMLElement;
   getByText(
     explorerTitle,
-    guaranteeNonNullable(mockedEditorStore.sdlcState.currentWorkspace)
+    guaranteeNonNullable(MOCK__editorStore.sdlcState.currentWorkspace)
       .workspaceId,
   );
   packageRootChildren.forEach((p) =>

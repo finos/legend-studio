@@ -20,22 +20,24 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
+import { MultiExecutionServiceTestResult } from '../../../../../../../metamodels/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
 import { AssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/AssertFail.js';
 import type { AssertionStatus } from '../../../../../../../metamodels/pure/test/assertion/status/AssertionStatus.js';
 import { AssertPass } from '../../../../../../../metamodels/pure/test/assertion/status/AssertPass.js';
 import { EqualToJsonAssertFail } from '../../../../../../../metamodels/pure/test/assertion/status/EqualToJsonAssertFail.js';
 import { AtomicTestId } from '../../../../../../../metamodels/pure/test/result/AtomicTestId.js';
 import {
+  type TestResult,
   TestError,
   TestFailed,
   TestPassed,
-  type TestResult,
 } from '../../../../../../../metamodels/pure/test/result/TestResult.js';
 import {
   AtomicTest,
   TestSuite,
 } from '../../../../../../../metamodels/pure/test/Test.js';
 import type { Testable } from '../../../../../../../metamodels/pure/test/Testable.js';
+import { V1_MultiExecutionServiceTestResult } from '../../../../model/packageableElements/service/V1_MultiExecutionServiceTestResult.js';
 import { V1_AssertFail } from '../../../../model/test/assertion/status/V1_AssertFail.js';
 import type { V1_AssertionStatus } from '../../../../model/test/assertion/status/V1_AssertionStatus.js';
 import { V1_AssertPass } from '../../../../model/test/assertion/status/V1_AssertPass.js';
@@ -150,16 +152,35 @@ export const V1_buildTestPassed = (
   return testPassed;
 };
 
-export const V1_buildTestResult = (
+export const V1_buildMultiExecutionServiceTestResult = (
+  element: V1_MultiExecutionServiceTestResult,
+  testable: Testable,
+): MultiExecutionServiceTestResult => {
+  const multi = new MultiExecutionServiceTestResult();
+  multi.testable = testable;
+  multi.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
+  multi.keyIndexedTestResults = new Map<string, TestResult>();
+  Array.from(element.keyIndexedTestResults.entries()).forEach((result) => {
+    multi.keyIndexedTestResults.set(
+      result[0],
+      V1_buildTestResult(result[1], testable),
+    );
+  });
+  return multi;
+};
+
+export function V1_buildTestResult(
   element: V1_TestResult,
   testable: Testable,
-): TestResult | undefined => {
+): TestResult {
   if (element instanceof V1_TestPassed) {
     return V1_buildTestPassed(element, testable);
   } else if (element instanceof V1_TestFailed) {
     return V1_buildTestFailed(element, testable);
   } else if (element instanceof V1_TestError) {
     return V1_buildTestError(element, testable);
+  } else if (element instanceof V1_MultiExecutionServiceTestResult) {
+    return V1_buildMultiExecutionServiceTestResult(element, testable);
   }
   throw new UnsupportedOperationError(`Can't build test result`, element);
-};
+}

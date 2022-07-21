@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LegendApplicationEventService } from '@finos/legend-application';
+import type { EventService } from '@finos/legend-application';
 
 const QUERY_CREATE = 'query_created';
 type QueryCreated_EventData = {
@@ -22,15 +22,13 @@ type QueryCreated_EventData = {
 };
 
 export class LegendQueryEventService {
-  private eventService!: LegendApplicationEventService;
+  private eventService!: EventService;
 
-  private constructor(eventService: LegendApplicationEventService) {
+  private constructor(eventService: EventService) {
     this.eventService = eventService;
   }
 
-  static create(
-    eventService: LegendApplicationEventService,
-  ): LegendQueryEventService {
+  static create(eventService: EventService): LegendQueryEventService {
     return new LegendQueryEventService(eventService);
   }
 

@@ -17,7 +17,6 @@
 import { GRAPH_MANAGER_EVENT } from '../../../../graphManager/GraphManagerEvent.js';
 import {
   CORE_PURE_PATH,
-  ELEMENT_PATH_DELIMITER,
   PackageableElementPointerType,
 } from '../../../../MetaModelConst.js';
 import {
@@ -35,13 +34,13 @@ import {
   assertErrorThrown,
   promisify,
   StopWatch,
-  filterByType,
   isNonNullable,
   addUniqueEntry,
   uuid,
   deleteEntry,
   assertType,
   uniq,
+  IllegalStateError,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graphManager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -72,7 +71,6 @@ import type {
   GenerationConfigurationDescription,
   GenerationMode,
 } from '../../../../graphManager/action/generation/GenerationConfigurationDescription.js';
-import type { DEPRECATED__ServiceTestResult } from '../../../../graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 import type { ServiceRegistrationResult } from '../../../../graphManager/action/service/ServiceRegistrationResult.js';
 import type { ExecutionResult } from '../../../../graphManager/action/execution/ExecutionResult.js';
 import type { GenerationOutput } from '../../../../graphManager/action/generation/GenerationOutput.js';
@@ -104,12 +102,12 @@ import {
   type V1_PackageableElementVisitor,
   V1_PackageableElementPointer,
 } from './model/packageableElements/V1_PackageableElement.js';
-import { V1_ProtocolToMetaModelGraphFirstPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFirstPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphSecondPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphSecondPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphThirdPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphThirdPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphFourthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFourthPassBuilder.js';
-import { V1_ProtocolToMetaModelGraphFifthPassBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelGraphFifthPassBuilder.js';
-import { V1_ProtocolToMetaModelRawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_ProtocolToMetaModelRawValueSpecificationBuilder.js';
+import { V1_ElementFirstPassBuilder } from './transformation/pureGraph/to/V1_ElementFirstPassBuilder.js';
+import { V1_ElementSecondPassBuilder } from './transformation/pureGraph/to/V1_ElementSecondPassBuilder.js';
+import { V1_ElementThirdPassBuilder } from './transformation/pureGraph/to/V1_ElementThirdPassBuilder.js';
+import { V1_ElementFourthPassBuilder } from './transformation/pureGraph/to/V1_ElementFourthPassBuilder.js';
+import { V1_ElementFifthPassBuilder } from './transformation/pureGraph/to/V1_ElementFifthPassBuilder.js';
+import { V1_RawValueSpecificationBuilder } from './transformation/pureGraph/to/V1_RawValueSpecificationBuilder.js';
 import { V1_RawBaseExecutionContext } from './model/rawValueSpecification/V1_RawExecutionContext.js';
 import {
   type V1_GraphBuilderContext,
@@ -165,8 +163,6 @@ import {
 import { V1_transformRelationalDatabaseConnection } from './transformation/pureGraph/from/V1_ConnectionTransformer.js';
 import { V1_FlatData } from './model/packageableElements/store/flatData/model/V1_FlatData.js';
 import { V1_Database } from './model/packageableElements/store/relational/model/V1_Database.js';
-import type { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
-import type { V1_RawVariable } from './model/rawValueSpecification/V1_RawVariable.js';
 import { V1_setupDatabaseSerialization } from './transformation/pureProtocol/serializationHelpers/V1_DatabaseSerializationHelper.js';
 import {
   V1_setupEngineRuntimeSerialization,
@@ -198,7 +194,6 @@ import type {
 } from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
-  V1_buildLegacyServiceTestResult,
   V1_buildServiceRegistrationResult,
   V1_transformQuery,
   V1_buildGenerationOutput,
@@ -237,6 +232,7 @@ import { V1_buildTestsResult } from './engine/test/V1_RunTestsResult.js';
 import {
   type TestResult,
   TestFailed,
+  TestError,
 } from '../../../metamodels/pure/test/result/TestResult.js';
 import type { Service } from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../metamodels/pure/test/Testable.js';
@@ -255,38 +251,13 @@ import {
   V1_buildModelCoverageAnalysisResult,
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
-} from './engine/analytics/V1_MappingAnalytics.js';
+} from './engine/analytics/V1_MappingModelCoverageAnalysis.js';
 import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
-} from '../../../../graphManager/action/analytics/MappingAnalytics.js';
+} from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-
-const V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE = 'MANY';
-
-const getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
-  if (multiplicity.lowerBound === multiplicity.upperBound) {
-    return multiplicity.lowerBound.toString();
-  } else if (
-    multiplicity.lowerBound === 0 &&
-    multiplicity.upperBound === undefined
-  ) {
-    return V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE;
-  }
-  return `$${multiplicity.lowerBound}_${
-    multiplicity.upperBound ?? V1_FUNCTION_SUFFIX_MULTIPLICITY_INFINITE
-  }$`;
-};
-
-const getVariableSuffix = (variable: V1_RawVariable): string =>
-  `${variable.class
-    .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${getMultiplicitySuffix(variable.multiplicity)}_`;
-
-const getFunctionSuffix = (fn: V1_ConcreteFunctionDefinition): string =>
-  `${fn.parameters.map((p) => getVariableSuffix(p)).join('_')}_${fn.returnType
-    .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${getMultiplicitySuffix(fn.returnMultiplicity)}_`;
+import { V1_getFunctionSuffix } from './helper/V1_DomainHelper.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -334,7 +305,7 @@ const mergePureModelContextData = (
   return mergedData;
 };
 
-const indexPureModelContextData = (
+export const V1_indexPureModelContextData = (
   report: GraphBuilderReport,
   data: V1_PureModelContextData,
   extensions: V1_GraphBuilderExtensions,
@@ -439,7 +410,7 @@ const indexPureModelContextData = (
 // NOTE: this interface is somewhat naive since `model` is of type `BasicModel`,
 // so this can only be used for pre-processing/indexing
 // we might need to change model to PureModel in the future when we support other use case
-interface V1_GraphBuilderInput {
+interface V1_PureGraphBuilderInput {
   model: BasicModel;
   data: V1_PureModelContextDataIndex;
 }
@@ -454,7 +425,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // Organizing these constants will help with configuring
   // target protocol version in the future
   // See https://github.com/finos/legend-studio/issues/475
-  private static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
+  static readonly TARGET_PROTOCOL_VERSION = PureClientVersion.VX_X_X;
 
   engine: V1_Engine;
   graphBuilderExtensions: V1_GraphBuilderExtensions;
@@ -544,7 +515,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       const buildInputs = [
         {
           model: systemModel,
-          data: indexPureModelContextData(
+          data: V1_indexPureModelContextData(
             report,
             systemData,
             this.graphBuilderExtensions,
@@ -585,7 +556,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     coreModel: CoreModel,
     systemModel: SystemModel,
     dependencyManager: DependencyManager,
-    dependencyEntitiesMap: Map<string, Entity[]>,
+    dependencyEntitiesIndex: Map<string, Entity[]>,
     buildState: ActionState,
     options?: GraphBuilderOptions,
   ): Promise<GraphBuilderReport> {
@@ -602,16 +573,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph.dependencyManager = dependencyManager;
 
     try {
-      dependencyManager.initialize(dependencyEntitiesMap);
+      dependencyManager.initialize(dependencyEntitiesIndex);
 
       // deserialize
       buildState.setMessage(`Partitioning and deserializing elements...`);
-      const dependencyDataMap = new Map<string, V1_PureModelContextData>();
+      const dependencyGraphDataIndex = new Map<
+        string,
+        V1_PureModelContextData
+      >();
       await Promise.all(
-        Array.from(dependencyEntitiesMap.entries()).map(
+        Array.from(dependencyEntitiesIndex.entries()).map(
           ([dependencyKey, entities]) => {
             const projectModelData = new V1_PureModelContextData();
-            dependencyDataMap.set(dependencyKey, projectModelData);
+            dependencyGraphDataIndex.set(dependencyKey, projectModelData);
             return V1_entitiesToPureModelContextData(
               entities,
               projectModelData,
@@ -623,11 +597,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = Array.from(
-        dependencyDataMap.entries(),
+      const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
+        dependencyGraphDataIndex.entries(),
       ).map(([dependencyKey, dependencyData]) => ({
         model: graph.dependencyManager.getModel(dependencyKey),
-        data: indexPureModelContextData(
+        data: V1_indexPureModelContextData(
           report,
           dependencyData,
           this.graphBuilderExtensions,
@@ -645,7 +619,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.projectCount = dependencyEntitiesMap.size;
+      report.otherStats.projectCount = dependencyEntitiesIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -686,10 +660,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = [
+      const buildInputs: V1_PureGraphBuilderInput[] = [
         {
           model: graph,
-          data: indexPureModelContextData(
+          data: V1_indexPureModelContextData(
             report,
             data,
             this.graphBuilderExtensions,
@@ -755,12 +729,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     try {
       // deserialize
       buildState.setMessage(`Deserializing elements...`);
-      const generatedDataMap = new Map<string, V1_PureModelContextData>();
+      const generationGraphDataIndex = new Map<
+        string,
+        V1_PureModelContextData
+      >();
       await Promise.all(
         Array.from(generatedEntities.entries()).map(
           ([generationParentPath, entities]) => {
             const generatedData = new V1_PureModelContextData();
-            generatedDataMap.set(generationParentPath, generatedData);
+            generationGraphDataIndex.set(generationParentPath, generatedData);
             return V1_entitiesToPureModelContextData(
               entities,
               generatedData,
@@ -772,11 +749,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_ELEMENTS_DESERIALIZED);
 
       // prepare build inputs
-      const buildInputs: V1_GraphBuilderInput[] = Array.from(
-        generatedDataMap.entries(),
+      const buildInputs: V1_PureGraphBuilderInput[] = Array.from(
+        generationGraphDataIndex.entries(),
       ).map(([generationParentPath, generatedData]) => ({
         model: generatedModel,
-        data: indexPureModelContextData(
+        data: V1_indexPureModelContextData(
           report,
           generatedData,
           this.graphBuilderExtensions,
@@ -794,7 +771,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       );
 
       buildState.pass();
-      report.otherStats.generationCount = generatedDataMap.size;
+      report.otherStats.generationCount = generationGraphDataIndex.size;
       report.timings = {
         ...Object.fromEntries(stopWatch.records),
         [GRAPH_MANAGER_EVENT.GRAPH_BUILDER_COMPLETED]: stopWatch.elapsed,
@@ -821,7 +798,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildGraphFromInputs(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     report: GraphBuilderReport,
     stopWatch: StopWatch,
     graphBuilderState: ActionState,
@@ -906,7 +883,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
    */
   private async initializeAndIndexElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // create the element path cache for faster duplication check
@@ -927,7 +904,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           input.data.nativeElements.map((element) =>
             this.visitWithGraphBuilderErrorHandling(
               element,
-              new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+              new V1_ElementFirstPassBuilder(
                 this.getBuilderContext(graph, input.model, element, options),
                 packageCache,
                 elementPathCache,
@@ -942,7 +919,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFirstPassBuilder(
+                    new V1_ElementFirstPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -962,7 +939,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildTypes(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // Second pass
@@ -971,7 +948,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.profiles.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -983,7 +960,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -995,7 +972,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.enumerations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1007,7 +984,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.measures.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1019,7 +996,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.functions.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1032,7 +1009,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1044,7 +1021,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.associations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1057,7 +1034,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1069,7 +1046,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.associations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1082,7 +1059,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.classes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+            new V1_ElementFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1093,7 +1070,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildStores(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1101,7 +1078,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1113,7 +1090,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1125,7 +1102,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1137,7 +1114,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.stores.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+            new V1_ElementFifthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1148,7 +1125,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildMappings(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1156,7 +1133,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1168,7 +1145,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+            new V1_ElementThirdPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1180,7 +1157,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.mappings.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+            new V1_ElementFourthPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1191,7 +1168,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildConnectionsAndRuntimes(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     // NOTE: connections must be built before runtimes
@@ -1200,7 +1177,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.connections.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1212,7 +1189,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.runtimes.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1223,7 +1200,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildServices(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1231,7 +1208,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.services.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1242,7 +1219,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildDataElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1250,7 +1227,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.dataElements.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1261,7 +1238,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildFileGenerations(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1269,7 +1246,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.fileGenerations.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1280,7 +1257,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildGenerationSpecifications(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1288,7 +1265,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.generationSpecifications.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1299,7 +1276,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildSectionIndices(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1307,7 +1284,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input.data.sectionIndices.map((element) =>
           this.visitWithGraphBuilderErrorHandling(
             element,
-            new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+            new V1_ElementSecondPassBuilder(
               this.getBuilderContext(graph, input.model, element, options),
             ),
           ),
@@ -1318,7 +1295,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   private async buildOtherElements(
     graph: PureModel,
-    inputs: V1_GraphBuilderInput[],
+    inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
     await Promise.all(
@@ -1330,7 +1307,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphSecondPassBuilder(
+                    new V1_ElementSecondPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1348,7 +1325,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphThirdPassBuilder(
+                    new V1_ElementThirdPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1366,7 +1343,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFourthPassBuilder(
+                    new V1_ElementFourthPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1384,7 +1361,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
                 (element) =>
                   this.visitWithGraphBuilderErrorHandling(
                     element,
-                    new V1_ProtocolToMetaModelGraphFifthPassBuilder(
+                    new V1_ElementFifthPassBuilder(
                       this.getBuilderContext(
                         graph,
                         input.model,
@@ -1463,8 +1440,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async pureCodeToLambda(
     lambda: string,
     lambdaId?: string,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Promise<RawLambda> {
-    const result = await this.engine.transformCodeToLambda(lambda, lambdaId);
+    const result = await this.engine.transformCodeToLambda(
+      lambda,
+      lambdaId,
+      options,
+    );
     return new RawLambda(result.parameters, result.body);
   }
 
@@ -1734,6 +1718,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ),
       );
       const result = results[0];
+      if (result instanceof TestError) {
+        throw new IllegalStateError(result.error);
+      }
       assertType(result, TestFailed);
       const status = result.assertStatuses.find(
         (e) => e.assertion === baseAssertion,
@@ -1781,7 +1768,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // deserialize json and builds metamodal raw value spec
     const rawValueSpecification = V1_deserializeRawValueSpecification(json);
     return rawValueSpecification.accept_RawValueSpecificationVisitor(
-      new V1_ProtocolToMetaModelRawValueSpecificationBuilder(
+      new V1_RawValueSpecificationBuilder(
         new V1_GraphBuilderContextBuilder(
           graph,
           graph,
@@ -1969,10 +1956,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   async executeMapping(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
     options?: ExecutionOptions,
   ): Promise<ExecutionResult> {
     return V1_buildExecutionResult(
@@ -1990,11 +1977,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateExecuteTestData(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
-    runtime: Runtime,
     parameters: (string | number | boolean)[],
+    mapping: Mapping,
+    runtime: Runtime,
+    graph: PureModel,
     options?: {
       anonymizeGeneratedData?: boolean;
     },
@@ -2017,10 +2004,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateExecutionPlan(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<RawExecutionPlan> {
     return this.engine.generateExecutionPlan(
       this.createExecutionInput(
@@ -2034,10 +2021,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   async debugExecutionPlanGeneration(
-    graph: PureModel,
-    mapping: Mapping,
     lambda: RawLambda,
+    mapping: Mapping,
     runtime: Runtime,
+    graph: PureModel,
   ): Promise<{ plan: RawExecutionPlan; debug: string }> {
     const result = await this.engine.debugExecutionPlanGeneration(
       this.createExecutionInput(
@@ -2097,34 +2084,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // --------------------------------------------- Service ---------------------------------------------
 
-  async runLegacyServiceTests(
-    service: Service,
-    graph: PureModel,
-  ): Promise<DEPRECATED__ServiceTestResult[]> {
-    const protocolGraph = this.getFullGraphModelData(graph);
-    const targetService = guaranteeNonNullable(
-      protocolGraph.elements
-        .filter(filterByType(V1_Service))
-        .find((element) => element.path === service.path),
-      `Can't run service test: service '${service.path}' not found`,
-    );
-    protocolGraph.elements = protocolGraph.elements.filter(
-      (element) => !(element instanceof V1_Service),
-    );
-    protocolGraph.elements.push(targetService);
-    return (await this.engine.runLegacyServiceTests(protocolGraph)).map(
-      V1_buildLegacyServiceTestResult,
-    );
-  }
-
   async registerService(
-    graph: PureModel,
     service: Service,
-    groupdId: string,
+    graph: PureModel,
+    groupId: string,
     artifactId: string,
+    version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    version: string | undefined,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2141,7 +2108,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
-        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         // data
         const data = new V1_PureModelContextData();
@@ -2178,7 +2145,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         break;
       }
       case ServiceExecutionMode.PROD: {
-        const sdlcInfo = new V1_AlloySDLC(groupdId, artifactId, version);
+        const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
         sdlcInfo.packageableElementPointers = [
           new V1_PackageableElementPointer(
@@ -2243,78 +2210,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       await this.engine.getQuery(queryId),
       this.engine.getCurrentUserId(),
     );
-  }
-
-  // TODO: we could potentially reshape this method to build light graph with just indexing
-  // and return a slightly more complicated object instead: separating the graph and the dependencies part instead of
-  // return a list of `V1_GraphBuilderInput`. This method would be useful for any other light graph builder algo.
-  async indexEntitiesWithDependencyIntoGraph(
-    graph: PureModel,
-    _entities: Entity[],
-    dependencyEntities: Map<string, Entity[]>,
-    entityFilterFunc?: (entity: Entity) => boolean,
-  ): Promise<V1_GraphBuilderInput[]> {
-    let entities = _entities;
-    graph.dependencyManager.initialize(dependencyEntities);
-    if (entityFilterFunc) {
-      Array.from(dependencyEntities.entries()).forEach(
-        ([dependencyKey, dEntities]) => {
-          dependencyEntities.set(
-            dependencyKey,
-            dEntities.filter(entityFilterFunc),
-          );
-        },
-      );
-      entities = _entities.filter(entityFilterFunc);
-    }
-    const report = new GraphBuilderReport();
-    // build dependency pmcd models
-    const dependencyDataMap = new Map<string, V1_PureModelContextData>();
-    await Promise.all(
-      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
-        const projectModelData = new V1_PureModelContextData();
-        dependencyDataMap.set(dependencyKey, projectModelData);
-        return V1_entitiesToPureModelContextData(
-          value,
-          projectModelData,
-
-          this.pluginManager.getPureProtocolProcessorPlugins(),
-        );
-      }),
-    );
-    const dependencyGraphBuilderInput: V1_GraphBuilderInput[] = Array.from(
-      dependencyDataMap.entries(),
-    ).map(([dependencyKey, dependencyData]) => ({
-      data: indexPureModelContextData(
-        report,
-        dependencyData,
-        this.graphBuilderExtensions,
-      ),
-      model: graph.dependencyManager.getModel(dependencyKey),
-    }));
-    // build main pmcd
-    const data = new V1_PureModelContextData();
-    await V1_entitiesToPureModelContextData(
-      entities,
-      data,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    );
-    const mainGraphBuilderInput: V1_GraphBuilderInput[] = [
-      {
-        model: graph,
-        data: indexPureModelContextData(
-          report,
-          data,
-          this.graphBuilderExtensions,
-        ),
-      },
-    ];
-    const graphBuilderInput = [
-      ...dependencyGraphBuilderInput,
-      ...mainGraphBuilderInput,
-    ];
-    await this.initializeAndIndexElements(graph, graphBuilderInput);
-    return graphBuilderInput;
   }
 
   // --------------------------------------------- Query ------------------------------------------------------
@@ -2403,18 +2298,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   };
 
   async analyzeMappingModelCoverage(
-    graph: PureModel,
     mapping: Mapping,
+    graph: PureModel,
   ): Promise<MappingModelCoverageAnalysisResult> {
-    const modelCoverageAnalysisInput =
-      new V1_MappingModelCoverageAnalysisInput();
-    modelCoverageAnalysisInput.clientVersion =
-      V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
-    modelCoverageAnalysisInput.mapping = mapping.path;
-    modelCoverageAnalysisInput.model =
-      this.buildMappingModelCoverageAnalysisInputContextData(graph);
+    const input = new V1_MappingModelCoverageAnalysisInput();
+    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
+    input.mapping = mapping.path;
+    input.model = this.buildMappingModelCoverageAnalysisInputContextData(graph);
     return V1_buildModelCoverageAnalysisResult(
-      await this.engine.analyzeMappingModelCoverage(modelCoverageAnalysisInput),
+      await this.engine.analyzeMappingModelCoverage(input),
     );
   }
 
@@ -2429,22 +2321,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  // --------------------------------------------- Utilities ---------------------------------------------
-
-  elementToEntity = (
-    element: PackageableElement,
-    options?: {
-      pruneSourceInformation?: boolean;
-    },
-  ): Entity => {
-    const entity = this.elementProtocolToEntity(
-      this.elementToProtocol<V1_PackageableElement>(element),
-    );
-    if (options?.pruneSourceInformation) {
-      entity.content = pruneSourceInformation(entity.content);
-    }
-    return entity;
-  };
+  // --------------------------------------------- Database ---------------------------------------------
 
   async buildDatabase(input: DatabaseBuilderInput): Promise<Entity[]> {
     const dbBuilderInput = new V1_DatabaseBuilderInput();
@@ -2589,21 +2466,125 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  // --------------------------------------------- Utilities ---------------------------------------------
+
+  elementToEntity = (
+    element: PackageableElement,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
+  ): Entity => {
+    const entity = this.elementProtocolToEntity(
+      this.elementToProtocol<V1_PackageableElement>(element),
+    );
+    if (options?.pruneSourceInformation) {
+      entity.content = pruneSourceInformation(entity.content);
+    }
+    return entity;
+  };
+
   // --------------------------------------------- Shared ---------------------------------------------
 
-  private async entitiesToPureModelContextData(
+  /**
+   * This method helps indexing the graph from graph and dependencies' entities
+   * This will produce a _light_ graph with empty unprocesed elements, they are just indexed in the graph
+   * and the Pure model context data which can be used to further build the graph
+   *
+   * There are a few simple analytics we want to do on the graph which does not necessarily
+   * require us to build the full-graph, in fact, doing so would be too costly. In those scenarios,
+   * we need to build the _light_ graph, hence the existence of this utility method
+   *
+   * TODO?: do we need to account for system elements?
+   */
+  async indexLightGraph(
+    graph: PureModel,
     entities: Entity[],
-  ): Promise<V1_PureModelContextData> {
-    const graphData = new V1_PureModelContextData();
+    dependencyEntities: Map<string, Entity[]>,
+    entityFilterFn?: ((entity: Entity) => boolean) | undefined,
+    entityProcessorFn?: ((entity: Entity) => Entity) | undefined,
+  ): Promise<V1_PureGraphBuilderInput[]> {
+    const report = new GraphBuilderReport();
+
+    // build main graph builder input
+    const data = new V1_PureModelContextData();
     await V1_entitiesToPureModelContextData(
-      entities,
-      graphData,
+      entities
+        .filter((entity) => {
+          // never exclude section index as it could be used for path resolution when building the graph later
+          if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+            return true;
+          }
+          if (entityFilterFn) {
+            return entityFilterFn(entity);
+          }
+          return true;
+        })
+        .map((entity) =>
+          entityProcessorFn ? entityProcessorFn(entity) : entity,
+        ),
+      data,
       this.pluginManager.getPureProtocolProcessorPlugins(),
     );
-    return graphData;
+    const mainGraphBuilderInput: V1_PureGraphBuilderInput[] = [
+      {
+        model: graph,
+        data: V1_indexPureModelContextData(
+          report,
+          data,
+          this.graphBuilderExtensions,
+        ),
+      },
+    ];
+
+    // build dependencies graph builder input
+    graph.dependencyManager.initialize(dependencyEntities);
+    const dependencyGraphDataIndex = new Map<string, V1_PureModelContextData>();
+    await Promise.all(
+      Array.from(dependencyEntities.entries()).map(([dependencyKey, value]) => {
+        const projectModelData = new V1_PureModelContextData();
+        dependencyGraphDataIndex.set(dependencyKey, projectModelData);
+        return V1_entitiesToPureModelContextData(
+          value
+            .filter((entity) => {
+              // never exclude section index as it could be used for path resolution when building the graph later
+              if (entity.classifierPath === CORE_PURE_PATH.SECTION_INDEX) {
+                return true;
+              }
+              if (entityFilterFn) {
+                return entityFilterFn(entity);
+              }
+              return true;
+            })
+            .map((entity) =>
+              entityProcessorFn ? entityProcessorFn(entity) : entity,
+            ),
+          projectModelData,
+          this.pluginManager.getPureProtocolProcessorPlugins(),
+        );
+      }),
+    );
+    const dependencyGraphBuilderInput: V1_PureGraphBuilderInput[] = Array.from(
+      dependencyGraphDataIndex.entries(),
+    ).map(([dependencyKey, dependencyData]) => ({
+      data: V1_indexPureModelContextData(
+        report,
+        dependencyData,
+        this.graphBuilderExtensions,
+      ),
+      model: graph.dependencyManager.getModel(dependencyKey),
+    }));
+
+    // index simplified graph
+    const graphBuilderInput = [
+      ...dependencyGraphBuilderInput,
+      ...mainGraphBuilderInput,
+    ];
+    await this.initializeAndIndexElements(graph, graphBuilderInput);
+
+    return graphBuilderInput;
   }
 
-  private getFullGraphModelData(
+  getFullGraphModelData(
     graph: PureModel,
     options?: { keepSourceInformation?: boolean | undefined } | undefined,
   ): V1_PureModelContextData {
@@ -2616,6 +2597,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ...contextData2.elements,
     ];
     return contextData1;
+  }
+
+  elementProtocolToEntity = (
+    elementProtocol: V1_PackageableElement,
+  ): Entity => ({
+    path: this.getElementPath(elementProtocol),
+    content: V1_serializePackageableElement(
+      elementProtocol,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    ),
+    classifierPath: this.getElementClassiferPath(elementProtocol),
+  });
+
+  private async entitiesToPureModelContextData(
+    entities: Entity[],
+  ): Promise<V1_PureModelContextData> {
+    const graphData = new V1_PureModelContextData();
+    await V1_entitiesToPureModelContextData(
+      entities,
+      graphData,
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    );
+    return graphData;
   }
 
   private elementToProtocol = <T extends V1_PackageableElement>(
@@ -2639,17 +2643,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.elementProtocolToEntity(element),
     );
 
-  private elementProtocolToEntity = (
-    elementProtocol: V1_PackageableElement,
-  ): Entity => ({
-    path: this.getElementPath(elementProtocol),
-    content: V1_serializePackageableElement(
-      elementProtocol,
-      this.pluginManager.getPureProtocolProcessorPlugins(),
-    ),
-    classifierPath: this.getElementClassiferPath(elementProtocol),
-  });
-
   private getElementPath = (elementProtocol: V1_PackageableElement): string => {
     let name = elementProtocol.name;
     // These functions calculation the function suffix and are used to identify if an
@@ -2658,7 +2651,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // TODO: to be revised when we support function overloading
     if (elementProtocol instanceof V1_ConcreteFunctionDefinition) {
       const suffixIndex = elementProtocol.name.indexOf(
-        getFunctionSuffix(elementProtocol),
+        V1_getFunctionSuffix(elementProtocol),
       );
       if (suffixIndex > 0) {
         name = elementProtocol.name.substring(0, suffixIndex - 1);

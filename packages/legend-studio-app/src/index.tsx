@@ -16,33 +16,34 @@
 
 import {
   LegendStudio,
-  type LegendStudioPlugin,
-  DSLExternalFormat_LegendStudioPlugin,
+  DSLExternalFormat_LegendStudioApplicationPlugin,
+  type LegendStudioApplicationPlugin,
 } from '@finos/legend-studio';
 import { type AbstractPreset, WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
-import { DSLText_LegendStudioPlugin } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_LegendStudioPlugin } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_LegendStudioPlugin } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_LegendStudioPlugin } from '@finos/legend-extension-dsl-persistence';
-import { ESService_LegendStudioPlugin } from '@finos/legend-extension-external-store-service';
-import { ELMorphir_LegendStudioPlugin } from '@finos/legend-extension-external-language-morphir';
+import { DSLText_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram';
+import { DSLDataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence';
+import { ESService_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-store-service';
+import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 
 export const getLegendStudioPresetCollection = (): AbstractPreset[] => [
   ...getLegendGraphExtensionCollection(),
   new QueryBuilder_LegendStudioPreset(),
 ];
 
-export const getLegendStudioPluginCollection = (): LegendStudioPlugin[] => [
-  new DSLText_LegendStudioPlugin(),
-  new DSLDiagram_LegendStudioPlugin(),
-  new DSLDataSpace_LegendStudioPlugin(),
-  new DSLExternalFormat_LegendStudioPlugin(),
-  new DSLPersistence_LegendStudioPlugin(),
-  new ESService_LegendStudioPlugin(),
-  new ELMorphir_LegendStudioPlugin(),
-];
+export const getLegendStudioPluginCollection =
+  (): LegendStudioApplicationPlugin[] => [
+    new DSLText_LegendStudioApplicationPlugin(),
+    new DSLDiagram_LegendStudioApplicationPlugin(),
+    new DSLDataSpace_LegendStudioApplicationPlugin(),
+    new DSLExternalFormat_LegendStudioApplicationPlugin(),
+    new DSLPersistence_LegendStudioApplicationPlugin(),
+    new ESService_LegendStudioApplicationPlugin(),
+    new ELMorphir_LegendStudioApplicationPlugin(),
+  ];
 
 export class LegendStudioWebApplication {
   static run(baseUrl: string): void {

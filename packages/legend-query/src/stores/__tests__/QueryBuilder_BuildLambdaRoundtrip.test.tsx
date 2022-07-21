@@ -72,7 +72,7 @@ import {
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import {
   integrationTest,
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
 import {
   QueryBuilderState,
@@ -80,7 +80,7 @@ import {
 } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
-import { TEST__getTestQueryConfig } from '../LegendQueryStoreTestUtils.js';
+import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,
@@ -347,7 +347,7 @@ describe(
         const pluginManager = LegendQueryPluginManager.create();
         pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
         const applicationStore = TEST__getTestApplicationStore(
-          TEST__getTestQueryConfig(),
+          TEST__getTestLegendQueryApplicationConfig(),
           LegendQueryPluginManager.create(),
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
@@ -366,7 +366,7 @@ describe(
           graphManagerState.graphManager.serializeRawValueSpecification(
             queryBuilderState.getQuery(),
           );
-        (expect([lambda]) as TEMPORARRY__JestMatcher).toIncludeSameMembers([
+        (expect([lambda]) as TEMPORARY__JestMatcher).toIncludeSameMembers([
           jsonQuery,
         ]);
       },

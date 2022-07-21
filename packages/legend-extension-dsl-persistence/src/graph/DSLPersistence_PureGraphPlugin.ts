@@ -16,6 +16,7 @@
 
 import packageJson from '../../package.json';
 import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 
@@ -25,6 +26,6 @@ export class DSLPersistence_PureGraphPlugin extends PureGraphPlugin {
   }
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
-    return [Persistence];
+    return [Persistence, PersistenceContext];
   }
 }

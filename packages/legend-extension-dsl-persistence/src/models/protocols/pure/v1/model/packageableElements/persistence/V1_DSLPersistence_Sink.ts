@@ -23,11 +23,15 @@ export abstract class V1_Sink implements Hashable {
 }
 
 export class V1_RelationalSink extends V1_Sink implements Hashable {
+  //TODO: ledav -- make required once persistence changes are rolled out in engine
+  database?: string;
+  //TODO: ledav -- remove once persistence changes are rolled out in engine
   connection?: V1_Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
+      this.database ?? '',
       this.connection ?? '',
     ]);
   }
@@ -35,13 +39,14 @@ export class V1_RelationalSink extends V1_Sink implements Hashable {
 
 export class V1_ObjectStorageSink extends V1_Sink implements Hashable {
   binding!: string;
-  connection!: V1_Connection;
+  //TODO: ledav -- remove once persistence changes are rolled out in engine
+  connection?: V1_Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
       this.binding,
-      this.connection,
+      this.connection ?? '',
     ]);
   }
 }

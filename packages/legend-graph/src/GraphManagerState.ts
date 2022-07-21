@@ -49,74 +49,16 @@ import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/meta
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { getGraphManager } from './models/protocols/pure/Pure.js';
 
-export class GraphManagerState {
+export class BasicGraphManagerState {
   pluginManager: GraphPluginManager;
   log: Log;
 
-  coreModel: CoreModel;
-  systemModel: SystemModel;
-  graph: PureModel;
   graphManager: AbstractPureGraphManager;
 
-  systemBuildState = ActionState.create();
-  dependenciesBuildState = ActionState.create();
-  graphBuildState = ActionState.create();
-  generationsBuildState = ActionState.create();
-
   constructor(pluginManager: GraphPluginManager, log: Log) {
-    makeObservable(this, {
-      graph: observable,
-      resetGraph: action,
-    });
-
     this.pluginManager = pluginManager;
     this.log = log;
-
-    const extensionElementClasses = this.pluginManager
-      .getPureGraphPlugins()
-      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
-    this.systemModel = new SystemModel(extensionElementClasses);
-    this.coreModel = new CoreModel(extensionElementClasses);
-    this.graph = this.createEmptyGraph();
     this.graphManager = getGraphManager(this.pluginManager, log);
-
-    this.systemBuildState.setMessageFormatter(
-      (message: string) => `[system] ${message}`,
-    );
-    this.dependenciesBuildState.setMessageFormatter(
-      (message: string) => `[dependency] ${message}`,
-    );
-    this.generationsBuildState.setMessageFormatter(
-      (message: string) => `[generation] ${message}`,
-    );
-  }
-
-  /**
-   * NOTE: this is temporary. System entities might eventually be collected from a metadata project.
-   * Right now the essential profiles have been extracted from Pure to load the minimum system models.
-   * We might add more system entities as needed until the system model project(s) are setup.
-   */
-  async initializeSystem(options?: GraphBuilderOptions): Promise<void> {
-    if (!this.systemBuildState.isInInitialState) {
-      // NOTE: we must not build system again
-      return;
-    }
-    try {
-      await this.graphManager.buildSystem(
-        this.coreModel,
-        this.systemModel,
-        this.systemBuildState,
-        options,
-      );
-      this.systemModel.initializeAutoImports();
-    } catch (error) {
-      assertErrorThrown(error);
-      throw error;
-    }
-  }
-
-  resetGraph(): void {
-    this.graph = this.createEmptyGraph();
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
@@ -131,34 +73,6 @@ export class GraphManagerState {
    * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
    * methods here so that we can load plugins.
    */
-
-  createEmptyGraph(): PureModel {
-    return new PureModel(
-      this.coreModel,
-      this.systemModel,
-      this.pluginManager.getPureGraphPlugins(),
-    );
-  }
-
-  createEmptyDependencyManager(): DependencyManager {
-    return new DependencyManager(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
-    );
-  }
-
-  createEmptyGenerationModel(): GenerationModel {
-    return new GenerationModel(
-      this.pluginManager
-        .getPureGraphPlugins()
-        .flatMap(
-          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
-        ),
-    );
-  }
 
   isInstanceSetImplementation(
     setImplementation:
@@ -244,5 +158,102 @@ export class GraphManagerState {
 
   isElementReadOnly(element: PackageableElement): boolean {
     return getElementRootPackage(element).name !== ROOT_PACKAGE_NAME.MAIN;
+  }
+}
+
+export class GraphManagerState extends BasicGraphManagerState {
+  coreModel: CoreModel;
+  systemModel: SystemModel;
+  graph: PureModel;
+
+  systemBuildState = ActionState.create();
+  dependenciesBuildState = ActionState.create();
+  graphBuildState = ActionState.create();
+  generationsBuildState = ActionState.create();
+
+  constructor(pluginManager: GraphPluginManager, log: Log) {
+    super(pluginManager, log);
+
+    makeObservable(this, {
+      graph: observable,
+      resetGraph: action,
+    });
+
+    this.pluginManager = pluginManager;
+    this.log = log;
+
+    const extensionElementClasses = this.pluginManager
+      .getPureGraphPlugins()
+      .flatMap((plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? []);
+    this.systemModel = new SystemModel(extensionElementClasses);
+    this.coreModel = new CoreModel(extensionElementClasses);
+    this.graph = this.createEmptyGraph();
+    this.graphManager = getGraphManager(this.pluginManager, log);
+
+    this.systemBuildState.setMessageFormatter(
+      (message: string) => `[system] ${message}`,
+    );
+    this.dependenciesBuildState.setMessageFormatter(
+      (message: string) => `[dependency] ${message}`,
+    );
+    this.generationsBuildState.setMessageFormatter(
+      (message: string) => `[generation] ${message}`,
+    );
+  }
+
+  /**
+   * NOTE: this is temporary. System entities might eventually be collected from a metadata project.
+   * Right now the essential models have been extracted from Pure to load the minimum system.
+   * We might add more system entities as needed until the system model project(s) are setup.
+   */
+  async initializeSystem(options?: GraphBuilderOptions): Promise<void> {
+    if (!this.systemBuildState.isInInitialState) {
+      // NOTE: we must not build system again
+      return;
+    }
+    try {
+      await this.graphManager.buildSystem(
+        this.coreModel,
+        this.systemModel,
+        this.systemBuildState,
+        options,
+      );
+      this.systemModel.initializeAutoImports();
+    } catch (error) {
+      assertErrorThrown(error);
+      throw error;
+    }
+  }
+
+  resetGraph(): void {
+    this.graph = this.createEmptyGraph();
+  }
+
+  createEmptyGraph(): PureModel {
+    return new PureModel(
+      this.coreModel,
+      this.systemModel,
+      this.pluginManager.getPureGraphPlugins(),
+    );
+  }
+
+  createEmptyDependencyManager(): DependencyManager {
+    return new DependencyManager(
+      this.pluginManager
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
+    );
+  }
+
+  createEmptyGenerationModel(): GenerationModel {
+    return new GenerationModel(
+      this.pluginManager
+        .getPureGraphPlugins()
+        .flatMap(
+          (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
+        ),
+    );
   }
 }

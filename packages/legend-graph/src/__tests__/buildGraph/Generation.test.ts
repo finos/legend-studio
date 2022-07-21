@@ -16,7 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import {
-  type TEMPORARRY__JestMatcher,
+  type TEMPORARY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -63,11 +63,11 @@ const testGeneratedElements = async (
 
   expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
   // build generation graph
-  const generatedEntitiesMap = new Map<string, Entity[]>();
-  generatedEntitiesMap.set(PARENT_ELEMENT_PATH, generatedEntities);
+  const generatedEntitiesIndex = new Map<string, Entity[]>();
+  generatedEntitiesIndex.set(PARENT_ELEMENT_PATH, generatedEntities);
   await graphManagerState.graphManager.buildGenerations(
     graphManagerState.graph,
-    generatedEntitiesMap,
+    generatedEntitiesIndex,
     graphManagerState.generationsBuildState,
   );
 
@@ -97,7 +97,7 @@ const testGeneratedElements = async (
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>
     graphManagerState.graphManager.elementToEntity(el),
   );
-  (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+  (expect(entities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
     transformedEntities,
   );
   // Ensure generated elements are not transformed

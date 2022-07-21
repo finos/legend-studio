@@ -44,13 +44,12 @@ import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   ActionAlertType,
   ActionAlertActionType,
-  useApplicationStore,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../../../application/LegendStudioConfig.js';
+import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 export const WorkspaceUpdater = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const sdlcState = editorStore.sdlcState;
   const currentEditorState = editorStore.currentEditorState;
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;

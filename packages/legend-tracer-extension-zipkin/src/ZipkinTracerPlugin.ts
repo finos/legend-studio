@@ -99,9 +99,7 @@ export class ZipkinTracerPlugin extends TracerServicePlugin<ZipkinSpan> {
   }
 
   createClientSpan(traceData: TraceData): ZipkinSpan {
-    const clientSpan = this.spanBuilder.startSpan(
-      traceData.spanName,
-    ) as ZipkinSpan;
+    const clientSpan = this.spanBuilder.startSpan(traceData.name) as ZipkinSpan;
     if (traceData.tags) {
       Object.entries(traceData.tags).forEach(([tag, value]) => {
         if (isNonNullable(value)) {

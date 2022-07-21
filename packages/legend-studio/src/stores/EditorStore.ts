@@ -33,7 +33,7 @@ import {
   GraphBuilderStatus,
 } from './EditorGraphState.js';
 import { ChangeDetectionState } from './ChangeDetectionState.js';
-import { NewElementState } from './NewElementState.js';
+import { NewElementState } from './editor/NewElementState.js';
 import { WorkspaceUpdaterState } from './sidebar-state/WorkspaceUpdaterState.js';
 import { ProjectOverviewState } from './sidebar-state/ProjectOverviewState.js';
 import { WorkspaceReviewState } from './sidebar-state/WorkspaceReviewState.js';
@@ -86,11 +86,7 @@ import {
   NonBlockingDialogState,
   PanelDisplayState,
 } from '@finos/legend-art';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-} from './shared/PackageableElementOptionUtil.js';
-import type { DSL_LegendStudioPlugin_Extension } from './LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-model-storage';
 import {
   ProjectConfiguration,
@@ -126,15 +122,15 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
   type ActionAlertInfo,
-  type ApplicationStore,
   type BlockingAlertInfo,
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
+  buildElementOption,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
 import type { EditorMode } from './editor/EditorMode.js';
 import { StandardEditorMode } from './editor/StandardEditorMode.js';
 import { WorkspaceUpdateConflictResolutionState } from './sidebar-state/WorkspaceUpdateConflictResolutionState.js';
@@ -146,6 +142,7 @@ import {
 } from './graphModifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -156,7 +153,7 @@ export abstract class EditorExtensionState {
 }
 
 export class EditorStore {
-  applicationStore: ApplicationStore<LegendStudioConfig>;
+  applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
@@ -238,7 +235,7 @@ export class EditorStore {
   isDevToolEnabled = true;
 
   constructor(
-    applicationStore: ApplicationStore<LegendStudioConfig>,
+    applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
@@ -324,7 +321,7 @@ export class EditorStore {
     );
     // extensions
     this.editorExtensionStates = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) => plugin.getExtraEditorExtensionStateCreators?.() ?? [],
       )
@@ -529,7 +526,7 @@ export class EditorStore {
   }
 
   /**
-   * This is the entry of the app logic where initialization of editor states happens
+   * This is the entry of the app logic where the initialization of editor states happens
    * Here, we ensure the order of calls after checking existence of current project and workspace
    * If either of them does not exist, we cannot proceed.
    */
@@ -1061,11 +1058,11 @@ export class EditorStore {
       return new PackageableDataEditorState(this, element);
     }
     const extraElementEditorStateCreators = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorStateCreators?.() ?? [],
       );
     for (const creator of extraElementEditorStateCreators) {
@@ -1165,11 +1162,11 @@ export class EditorStore {
     graph_deleteElement(this.graphManagerState.graph, element);
 
     const extraElementEditorPostDeleteActions = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorPostDeleteActions?.() ?? [],
       );
     for (const postDeleteAction of extraElementEditorPostDeleteActions) {
@@ -1201,11 +1198,11 @@ export class EditorStore {
     );
 
     const extraElementEditorPostRenameActions = this.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSL_LegendStudioPlugin_Extension
+            plugin as DSL_LegendStudioApplicationPlugin_Extension
           ).getExtraElementEditorPostRenameActions?.() ?? [],
       );
     for (const postRenameAction of extraElementEditorPostRenameActions) {
@@ -1351,9 +1348,7 @@ export class EditorStore {
   get enumerationOptions(): PackageableElementOption<Enumeration>[] {
     return this.graphManagerState.graph.ownEnumerations
       .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
-      );
+      .map(buildElementOption);
   }
 
   get classOptions(): PackageableElementOption<Class>[] {
@@ -1364,7 +1359,7 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
+      .map(buildElementOption);
   }
 
   get associationOptions(): PackageableElementOption<Association>[] {
@@ -1375,9 +1370,7 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.associations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Association>,
-      );
+      .map(buildElementOption);
   }
 
   get profileOptions(): PackageableElementOption<Profile>[] {
@@ -1388,13 +1381,13 @@ export class EditorStore {
         ),
       )
       .concat(this.graphManagerState.graph.dependencyManager.profiles)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Profile>);
+      .map(buildElementOption);
   }
 
   get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
     return this.graphManagerState.graph.primitiveTypes
       .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Type>)
+      .map(buildElementOption)
       .concat(
         this.graphManagerState.graph.ownTypes
           .concat(
@@ -1403,43 +1396,38 @@ export class EditorStore {
             ),
           )
           .concat(this.graphManagerState.graph.dependencyManager.types)
-          .map((e) => buildElementOption(e) as PackageableElementOption<Type>),
+          .map(buildElementOption),
       );
   }
 
   get mappingOptions(): PackageableElementOption<Mapping>[] {
     return this.graphManagerState.graph.ownMappings
       .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Mapping>);
+      .map(buildElementOption);
   }
 
   get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
     return this.graphManagerState.graph.ownRuntimes
       .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(
-        (e) =>
-          buildElementOption(e) as PackageableElementOption<PackageableRuntime>,
-      );
+      .map(buildElementOption);
   }
 
   get serviceOptions(): PackageableElementOption<Service>[] {
     return this.graphManagerState.graph.ownServices
       .concat(this.graphManagerState.graph.dependencyManager.services)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Service>);
+      .map(buildElementOption);
   }
 
   get storeOptions(): PackageableElementOption<Store>[] {
     return this.graphManagerState.graph.ownStores
       .concat(this.graphManagerState.graph.dependencyManager.stores)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Store>);
+      .map(buildElementOption);
   }
 
   get dataOptions(): PackageableElementOption<DataElement>[] {
     return this.graphManagerState.graph.ownDataElements
       .concat(this.graphManagerState.graph.dependencyManager.dataElements)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<DataElement>,
-      );
+      .map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {
@@ -1463,11 +1451,11 @@ export class EditorStore {
       ] as string[]
     ).concat(
       this.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraSupportedElementTypes?.() ?? [],
         ),
     );

@@ -17,20 +17,19 @@
 import {
   type ClassView,
   type DiagramRenderer,
-  Diagram,
+  type Diagram,
   DIAGRAM_INTERACTION_MODE,
 } from '@finos/legend-extension-dsl-diagram';
-import type {
-  GraphManagerState,
-  PackageableElementReference,
-  PackageableRuntime,
-} from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { PackageableRuntime } from '@finos/legend-graph';
+import {
+  getNullableFirstElement,
+  guaranteeNonNullable,
+} from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import type {
-  DataSpace,
-  DataSpaceExecutionContext,
-} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+  DataSpaceAnalysisResult,
+  DataSpaceExecutionContextAnalysisResult,
+} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   MODELS_OVERVIEW = 'MODELS_OVERVIEW',
@@ -43,15 +42,14 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 }
 
 export class DataSpaceViewerState {
-  graphManagerState: GraphManagerState;
   groupId: string;
   artifactId: string;
   versionId: string;
-  dataSpace: DataSpace;
+  dataSpaceAnalysisResult: DataSpaceAnalysisResult;
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: Diagram | undefined;
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_OVERVIEW;
-  currentExecutionContext: DataSpaceExecutionContext;
+  currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
   viewProject?:
     | ((
@@ -64,11 +62,10 @@ export class DataSpaceViewerState {
   onDiagramClassDoubleClick?: ((classView: ClassView) => void) | undefined;
 
   constructor(
-    graphManagerState: GraphManagerState,
     groupId: string,
     artifactId: string,
     versionId: string,
-    dataSpace: DataSpace,
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult,
     options?: {
       viewProject?: (
         groupId: string,
@@ -93,22 +90,16 @@ export class DataSpaceViewerState {
       setCurrentRuntime: action,
     });
 
-    this.graphManagerState = graphManagerState;
-    this.dataSpace = dataSpace;
+    this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
-    this.currentExecutionContext = this.dataSpace.defaultExecutionContext;
-    this.currentRuntime =
-      this.dataSpace.defaultExecutionContext.defaultRuntime.value;
-    this.currentDiagram = this.dataSpace.featuredDiagrams?.length
-      ? (
-          this.dataSpace
-            .featuredDiagrams[0] as PackageableElementReference<Diagram>
-        ).value
-      : this.diagrams.length
-      ? this.diagrams[0]
-      : undefined;
+    this.currentExecutionContext =
+      dataSpaceAnalysisResult.defaultExecutionContext;
+    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
+    this.currentDiagram = getNullableFirstElement(
+      this.dataSpaceAnalysisResult.featuredDiagrams,
+    );
     this.viewProject = options?.viewProject;
     this.onDiagramClassDoubleClick = options?.onDiagramClassDoubleClick;
   }
@@ -122,30 +113,6 @@ export class DataSpaceViewerState {
 
   get isDiagramRendererInitialized(): boolean {
     return Boolean(this._renderer);
-  }
-
-  get featuredDiagrams(): Diagram[] {
-    return this.dataSpace.featuredDiagrams?.map((ref) => ref.value) ?? [];
-  }
-
-  get diagrams(): Diagram[] {
-    return this.graphManagerState.graph
-      .getExtensionElements(Diagram)
-      .concat(
-        this.graphManagerState.graph.dependencyManager.getExtensionElements(
-          Diagram,
-        ),
-      );
-  }
-
-  get runtimes(): PackageableRuntime[] {
-    return this.graphManagerState.graph.ownRuntimes
-      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .filter((runtime) =>
-        runtime.runtimeValue.mappings
-          .map((mapping) => mapping.value)
-          .includes(this.currentExecutionContext.mapping.value),
-      );
   }
 
   // NOTE: we have tried to use React to control the cursor and
@@ -183,9 +150,11 @@ export class DataSpaceViewerState {
     this.currentActivity = val;
   }
 
-  setCurrentExecutionContext(val: DataSpaceExecutionContext): void {
+  setCurrentExecutionContext(
+    val: DataSpaceExecutionContextAnalysisResult,
+  ): void {
     this.currentExecutionContext = val;
-    this.currentRuntime = val.defaultRuntime.value;
+    this.currentRuntime = val.defaultRuntime;
   }
 
   setCurrentRuntime(val: PackageableRuntime): void {

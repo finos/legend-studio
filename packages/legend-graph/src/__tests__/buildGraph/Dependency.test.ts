@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
+import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils.js';
 import { DependencyManager } from '../../graph/DependencyManager.js';
 import type { Entity } from '@finos/legend-model-storage';
@@ -96,15 +96,15 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
-    dependencyEntitiesMap.set(firstDependencyKey, firstDependencyEntities);
-    dependencyEntitiesMap.set(secondDependencyKey, secondDependencyEntities);
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+    dependencyEntitiesIndex.set(firstDependencyKey, firstDependencyEntities);
+    dependencyEntitiesIndex.set(secondDependencyKey, secondDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);
@@ -115,7 +115,7 @@ test(
       graphManagerState.graphBuildState,
     );
     expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true);
-    Array.from(dependencyEntitiesMap.keys()).forEach((k) =>
+    Array.from(dependencyEntitiesIndex.keys()).forEach((k) =>
       expect(dependencyManager.getModel(k)).toBeDefined(),
     );
 
@@ -129,7 +129,7 @@ test(
     const transformedEntities = graphManagerState.graph.allOwnElements.map(
       (el) => graphManagerState.graphManager.elementToEntity(el),
     );
-    (expect(entities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+    (expect(entities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
       transformedEntities,
     );
   },
@@ -142,14 +142,14 @@ test(
 
     await graphManagerState.initializeSystem();
     const dependencyManager = new DependencyManager([]);
-    const dependencyEntitiesMap = new Map<string, Entity[]>();
-    dependencyEntitiesMap.set('dep', firstDependencyEntities);
+    const dependencyEntitiesIndex = new Map<string, Entity[]>();
+    dependencyEntitiesIndex.set('dep', firstDependencyEntities);
     graphManagerState.graph.dependencyManager = dependencyManager;
     await graphManagerState.graphManager.buildDependencies(
       graphManagerState.coreModel,
       graphManagerState.systemModel,
       dependencyManager,
-      dependencyEntitiesMap,
+      dependencyEntitiesIndex,
       graphManagerState.dependenciesBuildState,
     );
     expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true);

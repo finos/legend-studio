@@ -51,7 +51,7 @@ export class V1_StoreConnections implements Hashable {
 
 export class V1_EngineRuntime extends V1_Runtime implements Hashable {
   mappings: V1_PackageableElementPointer[] = [];
-  connections!: V1_StoreConnections[];
+  connections: V1_StoreConnections[] = [];
 
   get hashCode(): string {
     return hashArray([

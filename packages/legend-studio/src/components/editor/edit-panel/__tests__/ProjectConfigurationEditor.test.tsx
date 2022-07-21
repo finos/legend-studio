@@ -108,11 +108,11 @@ const TEST_DATA__DependencyEntities = [
 
 const TEST_DATA__latestProjectStructure = { version: 11, extensionVersion: 1 };
 
-let mockedEditorStore: EditorStore;
+let MOCK__editorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: [],
     projectConfiguration: TEST_DATA__ProjectConfiguration,
     latestProjectStructureVersion: TEST_DATA__latestProjectStructure,
@@ -157,7 +157,7 @@ test(integrationTest('Test Project Dependency'), async () => {
   await waitFor(() => getByText(editPanel, 'org.finos.legend:prod-2'));
   await waitFor(() => getByText(editPanel, '3.0.0'));
 
-  const configState = mockedEditorStore.projectConfigurationEditorState;
+  const configState = MOCK__editorStore.projectConfigurationEditorState;
   const projectDependenciesToAdd =
     configState.currentProjectConfiguration.projectDependencies.filter(
       (dep) =>

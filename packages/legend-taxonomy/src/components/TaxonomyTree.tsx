@@ -17,10 +17,6 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  type TaxonomyTreeNodeData,
-  TaxonomyNodeViewerState,
-} from '../stores/LegendTaxonomyStore.js';
-import {
   type TreeData,
   type TreeNodeContainerProps,
   ContextMenu,
@@ -33,11 +29,12 @@ import {
   clsx,
   TreeView,
 } from '@finos/legend-art';
-import { useLegendTaxonomyStore } from './LegendTaxonomyStoreProvider.js';
 import { isNonNullable } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
 import { generateExploreTaxonomyTreeNodeRoute } from '../stores/LegendTaxonomyRouter.js';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
+import { useTaxonomyExplorerStore } from './TaxonomyExplorerStoreProvider.js';
+import type { TaxonomyTreeNodeData } from '../stores/TaxonomyExplorerStore.js';
+import { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
 
 const TaxonomyTreeNodeContainer = observer(
   (
@@ -52,8 +49,8 @@ const TaxonomyTreeNodeContainer = observer(
     const { treeData } = innerProps;
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
-    const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
-    const taxonomyStore = useLegendTaxonomyStore();
+    const applicationStore = useLegendTaxonomyApplicationStore();
+    const explorerStore = useTaxonomyExplorerStore();
     const expandIcon = !node.childrenIds.length ? (
       <div />
     ) : node.isOpen ? (
@@ -68,7 +65,7 @@ const TaxonomyTreeNodeContainer = observer(
       if (node.childrenIds.length) {
         node.isOpen = !node.isOpen;
       }
-      taxonomyStore.setTreeData({
+      explorerStore.setTreeData({
         ...treeData,
       });
     };
@@ -128,7 +125,7 @@ const TaxonomyTreeNodeContainer = observer(
             {
               'taxonomy-tree__node__container--selected':
                 node ===
-                taxonomyStore.currentTaxonomyNodeViewerState?.taxonomyNode,
+                explorerStore.currentTaxonomyNodeViewerState?.taxonomyNode,
             },
           )}
           onClick={selectNode}
@@ -164,13 +161,13 @@ const TaxonomyTreeNodeContainer = observer(
 export const TaxonomyTree = observer(
   (props: { treeData: TreeData<TaxonomyTreeNodeData> }) => {
     const { treeData } = props;
-    const taxonomyStore = useLegendTaxonomyStore();
+    const explorerStore = useTaxonomyExplorerStore();
 
     const onNodeSelect = (node: TaxonomyTreeNodeData): void => {
-      taxonomyStore.setCurrentTaxonomyNodeViewerState(
-        new TaxonomyNodeViewerState(taxonomyStore, node),
+      explorerStore.setCurrentTaxonomyNodeViewerState(
+        new TaxonomyNodeViewerState(explorerStore, node),
       );
-      taxonomyStore.setTreeData({ ...treeData });
+      explorerStore.setTreeData({ ...treeData });
     };
 
     const getChildNodes = (

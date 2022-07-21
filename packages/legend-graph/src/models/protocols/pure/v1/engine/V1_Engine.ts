@@ -46,7 +46,6 @@ import {
   V1_serializePureModelContext,
   V1_serializePureModelContextData,
 } from '../transformation/pureProtocol/V1_PureProtocolSerialization.js';
-import { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
@@ -98,7 +97,7 @@ import { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
-} from './analytics/V1_MappingAnalytics.js';
+} from './analytics/V1_MappingModelCoverageAnalysis.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -289,6 +288,9 @@ export class V1_Engine {
   async transformCodeToLambda(
     code: string,
     lambdaId?: string,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Promise<V1_RawLambda> {
     try {
       return (await this.engineServerClient.grammarToJSON_lambda(
@@ -296,7 +298,9 @@ export class V1_Engine {
         lambdaId ?? '',
         undefined,
         undefined,
-        true,
+        options?.pruneSourceInformation !== undefined
+          ? !options.pruneSourceInformation
+          : true,
       )) as unknown as V1_RawLambda;
     } catch (error) {
       assertErrorThrown(error);
@@ -636,16 +640,6 @@ export class V1_Engine {
 
   async getServerServiceInfo(): Promise<V1_ServiceConfigurationInfo> {
     return (await this.engineServerClient.getServerServiceInfo()) as unknown as V1_ServiceConfigurationInfo;
-  }
-
-  async runLegacyServiceTests(
-    model: V1_PureModelContextData,
-  ): Promise<V1_DEPRECATED__ServiceTestResult[]> {
-    return (
-      await this.engineServerClient.runServiceTests(
-        V1_serializePureModelContextData(model),
-      )
-    ).map((v) => V1_DEPRECATED__ServiceTestResult.serialization.fromJson(v));
   }
 
   async registerService(

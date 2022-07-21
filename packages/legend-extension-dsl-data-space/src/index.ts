@@ -15,8 +15,8 @@
  */
 
 export * from './DSLDataSpace_Extension.js';
-export { DSLDataSpace_LegendStudioPlugin } from './components/studio/DSLDataSpace_LegendStudioPlugin.js';
-export { DSLDataSpace_LegendQueryPlugin } from './components/query/DSLDataSpace_LegendQueryPlugin.js';
+export { DSLDataSpace_LegendStudioApplicationPlugin } from './components/studio/DSLDataSpace_LegendStudioApplicationPlugin.js';
+export { DSLDataSpace_LegendQueryApplicationPlugin } from './components/query/DSLDataSpace_LegendQueryApplicationPlugin.js';
 
 export { DataSpaceViewer } from './components/DataSpaceViewer.js';
 
@@ -28,3 +28,5 @@ export {
 export { DataSpaceViewerState } from './stores/DataSpaceViewerState.js';
 
 export * from './graphManager/DSLDataSpace_GraphManagerHelper.js';
+export { getDSLDataSpaceGraphManagerExtension } from './graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
+export { DataSpaceAnalysisResult } from './graphManager/action/analytics/DataSpaceAnalysis.js';

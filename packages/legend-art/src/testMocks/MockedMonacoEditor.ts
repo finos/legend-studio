@@ -17,8 +17,8 @@
 export {
   MockedMonacoEditorKeyCode as KeyCode,
   MockedMonacoEditorMarkerSeverity as MarkerSeverity,
-  MockedMonacoEditorModel as mockedMonacoEditorModel,
-  MockedMonacoEditorInstance as mockedMonacoEditorInstance,
+  MockedMonacoEditorModel as MOCK__MonacoEditorModel,
+  MockedMonacoEditorInstance as MOCK__MonacoEditorInstance,
   MockedMonacoEditorAPI as editor,
   MockedMonacoEditorLanguagesAPI as languages,
 } from './MonacoEditorMockUtils.js';

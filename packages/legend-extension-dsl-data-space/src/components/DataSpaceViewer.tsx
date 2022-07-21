@@ -39,16 +39,16 @@ import {
   type Diagram,
   DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram';
+import { DataSpaceSupportEmail } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import {
-  DataSpaceSupportEmail,
-  type DataSpaceExecutionContext,
-  type DataSpaceSupportInfo,
-} from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import type { PackageableRuntime } from '@finos/legend-graph';
+  extractElementNameFromPath,
+  type PackageableRuntime,
+} from '@finos/legend-graph';
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
 } from '../stores/DataSpaceViewerState.js';
+import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -113,16 +113,12 @@ const buildDiagramOption = (diagram: Diagram): DiagramOption => ({
 const DataSpaceModelsOverview = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
     // diagram selector
     const diagramCanvasRef = useRef<HTMLDivElement>(null);
-    const diagramOptions = dataSpaceViewerState.featuredDiagrams
-      .concat(
-        dataSpaceViewerState.diagrams.filter(
-          (diagram) => !dataSpaceViewerState.featuredDiagrams.includes(diagram),
-        ),
-      )
-      .map(buildDiagramOption);
+    const diagramOptions =
+      analysisResult.featuredDiagrams.map(buildDiagramOption);
     const selectedDiagramOption = dataSpaceViewerState.currentDiagram
       ? buildDiagramOption(dataSpaceViewerState.currentDiagram)
       : null;
@@ -131,22 +127,8 @@ const DataSpaceModelsOverview = observer(
         dataSpaceViewerState.setCurrentDiagram(option.value);
       }
     };
-    const formatDiagramOptionLabel = (
-      option: DiagramOption,
-    ): React.ReactNode => (
-      <div className="data-space__viewer__diagrams__dropdown__option">
-        <div className="data-space__viewer__diagrams__dropdown__option__label">
-          {option.label}
-        </div>
-        {dataSpaceViewerState.featuredDiagrams.includes(option.value) && (
-          <div className="data-space__viewer__diagrams__dropdown__option__tag">
-            featured
-          </div>
-        )}
-      </div>
-    );
 
-    if (dataSpaceViewerState.diagrams.length === 0) {
+    if (analysisResult.featuredDiagrams.length === 0) {
       return <BlankPanelContent>No diagrams available</BlankPanelContent>;
     }
     return (
@@ -159,7 +141,6 @@ const DataSpaceModelsOverview = observer(
             value={selectedDiagramOption}
             placeholder="Search for a diagram"
             darkMode={true}
-            formatOptionLabel={formatDiagramOptionLabel}
           />
         </div>
         <div className="data-space__viewer__diagrams__content">
@@ -186,10 +167,10 @@ const DataSpaceModelsOverview = observer(
 
 type ExecutionContextOption = {
   label: string;
-  value: DataSpaceExecutionContext;
+  value: DataSpaceExecutionContextAnalysisResult;
 };
 const buildExecutionContextOption = (
-  value: DataSpaceExecutionContext,
+  value: DataSpaceExecutionContextAnalysisResult,
 ): ExecutionContextOption => ({
   label: value.name,
   value: value,
@@ -207,12 +188,15 @@ const buildRuntimeOption = (value: PackageableRuntime): RuntimeOption => ({
 const DataSpaceExecutionViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const executionContexts = Array.from(
+      dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+    );
 
     // execution
-    const executionContextOptions =
-      dataSpaceViewerState.dataSpace.executionContexts.map(
-        buildExecutionContextOption,
-      );
+    const executionContextOptions = executionContexts.map(
+      buildExecutionContextOption,
+    );
     const selectedExecutionContextOption = buildExecutionContextOption(
       dataSpaceViewerState.currentExecutionContext,
     );
@@ -230,8 +214,7 @@ const DataSpaceExecutionViewer = observer(
         <div className="data-space__viewer__execution__entry__content__dropdown__option__label">
           {option.label}
         </div>
-        {option.value ===
-          dataSpaceViewerState.dataSpace.defaultExecutionContext && (
+        {option.value === analysisResult.defaultExecutionContext && (
           <div className="data-space__viewer__execution__entry__content__dropdown__option__tag">
             default
           </div>
@@ -241,7 +224,9 @@ const DataSpaceExecutionViewer = observer(
 
     // runtime
     const runtimeOptions =
-      dataSpaceViewerState.runtimes.map(buildRuntimeOption);
+      dataSpaceViewerState.currentExecutionContext.compatibleRuntimes.map(
+        buildRuntimeOption,
+      );
     const selectedRuntimeOption = buildRuntimeOption(
       dataSpaceViewerState.currentRuntime,
     );
@@ -258,7 +243,7 @@ const DataSpaceExecutionViewer = observer(
           {option.label}
         </div>
         {option.value ===
-          dataSpaceViewerState.currentExecutionContext.defaultRuntime.value && (
+          dataSpaceViewerState.currentExecutionContext.defaultRuntime && (
           <div className="data-space__viewer__execution__entry__content__dropdown__option__tag">
             default
           </div>
@@ -298,7 +283,7 @@ const DataSpaceExecutionViewer = observer(
             <PURE_MappingIcon />
           </div>
           <div className="data-space__viewer__execution__entry__content data-space__viewer__execution__entry__content__text">
-            {dataSpaceViewerState.currentExecutionContext.mapping.value.path}
+            {dataSpaceViewerState.currentExecutionContext.mapping.path}
           </div>
         </div>
         <div className="data-space__viewer__execution__entry">
@@ -324,8 +309,7 @@ const DataSpaceExecutionViewer = observer(
 const DataSpaceTags = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
-
-    const dataSpace = dataSpaceViewerState.dataSpace;
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
 
     return (
       <div className="data-space__viewer__tags">
@@ -333,24 +317,26 @@ const DataSpaceTags = observer(
           <div className="data-space__viewer__tags__section__title">
             Tagged Values
           </div>
-          {dataSpace.taggedValues.length !== 0 &&
-            dataSpace.taggedValues.map((taggedValue) => (
+          {analysisResult.taggedValues.length !== 0 &&
+            analysisResult.taggedValues.map((taggedValue) => (
               <div
                 key={taggedValue._UUID}
                 className="data-space__viewer__tags__section__entry"
               >
                 <div
                   className="data-space__viewer__tags__tagged-value__tag"
-                  title={`${taggedValue.tag.ownerReference.value.name}.${taggedValue.tag.value.value}`}
+                  title={`${taggedValue.profile}.${taggedValue.tag}`}
                 >
-                  {taggedValue.tag.value.value}
+                  {`${extractElementNameFromPath(taggedValue.profile)}.${
+                    taggedValue.tag
+                  }`}
                 </div>
                 <div className="data-space__viewer__tags__tagged-value__value">
                   {taggedValue.value}
                 </div>
               </div>
             ))}
-          {dataSpace.taggedValues.length === 0 && (
+          {analysisResult.taggedValues.length === 0 && (
             <div className="data-space__viewer__tags__section__placeholder">
               (empty)
             </div>
@@ -360,19 +346,21 @@ const DataSpaceTags = observer(
           <div className="data-space__viewer__tags__section__title">
             Stereotypes
           </div>
-          {dataSpace.stereotypes.length !== 0 &&
-            dataSpace.stereotypes.map((stereotype) => (
+          {analysisResult.stereotypes.length !== 0 &&
+            analysisResult.stereotypes.map((stereotype) => (
               <div
-                key={stereotype.value._UUID}
+                key={stereotype._UUID}
                 className="data-space__viewer__tags__section__entry"
-                title={`${stereotype.ownerReference.value.name}.${stereotype.value.value}`}
+                title={`${stereotype.profile}.${stereotype.value}`}
               >
                 <div className="data-space__viewer__tags__steoreotype">
-                  {stereotype.value.value}
+                  {`${extractElementNameFromPath(stereotype.profile)}.${
+                    stereotype.value
+                  }`}
                 </div>
               </div>
             ))}
-          {dataSpace.stereotypes.length === 0 && (
+          {analysisResult.stereotypes.length === 0 && (
             <div className="data-space__viewer__tags__section__placeholder">
               (empty)
             </div>
@@ -409,18 +397,18 @@ const DataSpaceSupportEmailViewer = observer(
 );
 
 const DataSpaceSupportInfoViewerInner = observer(
-  (props: {
-    dataSpaceViewerState: DataSpaceViewerState;
-    dataSpaceSupportInfo: DataSpaceSupportInfo | undefined;
-  }) => {
-    const { dataSpaceViewerState, dataSpaceSupportInfo } = props;
-    if (dataSpaceSupportInfo === undefined) {
+  (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
+    const { dataSpaceViewerState } = props;
+    const supportInfo =
+      dataSpaceViewerState.dataSpaceAnalysisResult.supportInfo;
+
+    if (supportInfo === undefined) {
       return <BlankPanelContent>No support info available</BlankPanelContent>;
-    } else if (dataSpaceSupportInfo instanceof DataSpaceSupportEmail) {
+    } else if (supportInfo instanceof DataSpaceSupportEmail) {
       return (
         <DataSpaceSupportEmailViewer
           dataSpaceViewerState={dataSpaceViewerState}
-          dataSpaceSupportEmail={dataSpaceSupportInfo}
+          dataSpaceSupportEmail={supportInfo}
         />
       );
     }
@@ -433,7 +421,7 @@ const DataSpaceSupportInfoViewerInner = observer(
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
-    const dataSpace = dataSpaceViewerState.dataSpace;
+    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
       (): void =>
@@ -482,7 +470,7 @@ export const DataSpaceViewer = observer(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
-        dataSpace.path,
+        analysisResult.path,
       );
 
     return (
@@ -495,7 +483,7 @@ export const DataSpaceViewer = observer(
             onClick={viewProject}
           >
             <div className="data-space__viewer__path__label">
-              {dataSpace.path}
+              {analysisResult.path}
             </div>
             <div className="data-space__viewer__path__link">
               <ExternalLinkSquareIcon />
@@ -503,10 +491,13 @@ export const DataSpaceViewer = observer(
           </button>
           <div
             className={clsx('data-space__viewer__description', {
-              'data-space__viewer__description--empty': !dataSpace.description,
+              'data-space__viewer__description--empty':
+                !analysisResult.description,
             })}
           >
-            {dataSpace.description ? dataSpace.description : 'No description'}
+            {analysisResult.description
+              ? analysisResult.description
+              : 'No description'}
           </div>
         </div>
         <div className="data-space__viewer__content">
@@ -569,7 +560,6 @@ export const DataSpaceViewer = observer(
                 <div className="data-space__viewer__main-panel__content data-space__viewer__support-info">
                   <DataSpaceSupportInfoViewerInner
                     dataSpaceViewerState={dataSpaceViewerState}
-                    dataSpaceSupportInfo={dataSpace.supportInfo}
                   />
                 </div>
               )}

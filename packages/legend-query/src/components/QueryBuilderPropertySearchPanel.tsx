@@ -164,7 +164,7 @@ const QueryBuilderTreeNodeViewer = observer(
               property,
               node,
               guaranteeNonNullable(
-                queryBuilderState.querySetupState
+                queryBuilderState.explorerState
                   .mappingModelCoverageAnalysisResult,
               ),
             );

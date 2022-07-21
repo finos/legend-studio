@@ -69,11 +69,11 @@ const createNewElementOnRootPackage = (
 };
 
 let renderResult: RenderResult;
-let mockedEditorStore: EditorStore;
+let MOCK__editorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore);
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore);
 });
 
 test(
@@ -123,35 +123,35 @@ test(integrationTest('Create elements with no drivers'), async () => {
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.getProfile(
+      MOCK__editorStore.graphManagerState.graph.getProfile(
         `${ROOT_PACKAGE_NAME}::ProfileExtension`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.getEnumeration(
+      MOCK__editorStore.graphManagerState.graph.getEnumeration(
         `${ROOT_PACKAGE_NAME}::MyEnumeration`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.getClass(
+      MOCK__editorStore.graphManagerState.graph.getClass(
         `${ROOT_PACKAGE_NAME}::Person`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.getMapping(
+      MOCK__editorStore.graphManagerState.graph.getMapping(
         `${ROOT_PACKAGE_NAME}::MyMapping`,
       ),
     ).toBeDefined(),
   );
   await waitFor(() =>
     expect(
-      mockedEditorStore.graphManagerState.graph.getService(
+      MOCK__editorStore.graphManagerState.graph.getService(
         `${ROOT_PACKAGE_NAME}::MyService`,
       ),
     ).toBeDefined(),

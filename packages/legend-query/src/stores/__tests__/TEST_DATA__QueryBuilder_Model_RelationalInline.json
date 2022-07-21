@@ -1,0 +1,332 @@
+[
+  {
+    "path": "Oct::models::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "Oct::models",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "Oct::models::Person",
+    "content": {
+      "_type": "class",
+      "name": "Person",
+      "package": "Oct::models",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firm",
+          "type": "Oct::models::Firm"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "Oct::stores::ChildStore",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "ChildStore",
+      "package": "Oct::stores",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "NAME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                },
+                {
+                  "name": "FIRMID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "name": "PERSONTABLE",
+              "primaryKey": []
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "Oct::stores::ParentStore",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": ["Oct::stores::ChildStore"],
+      "joins": [
+        {
+          "name": "FRIM_PERSON",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "FIRMTABLE"
+                },
+                "tableAlias": "FIRMTABLE"
+              },
+              {
+                "_type": "column",
+                "column": "FIRMID",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "PERSONTABLE"
+                },
+                "tableAlias": "PERSONTABLE"
+              }
+            ]
+          }
+        },
+        {
+          "name": "FRIM_CEO",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "FIRMTABLE"
+                },
+                "tableAlias": "FIRMTABLE"
+              },
+              {
+                "_type": "column",
+                "column": "FIRMID",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "PERSONTABLE"
+                },
+                "tableAlias": "PERSONTABLE"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "ParentStore",
+      "package": "Oct::stores",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "NAME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                }
+              ],
+              "name": "FIRMTABLE",
+              "primaryKey": []
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "Oct::mappings::simpleRelationalMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "Oct::models::Firm",
+          "distinct": false,
+          "id": "testInlineMapping",
+          "mainTable": {
+            "_type": "Table",
+            "database": "Oct::stores::ParentStore",
+            "mainTableDb": "Oct::stores::ParentStore",
+            "schema": "default",
+            "table": "FIRMTABLE"
+          },
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "Oct::models::Firm",
+                "property": "id"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "FIRMTABLE"
+                },
+                "tableAlias": "FIRMTABLE"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "Oct::models::Firm",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "NAME",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ParentStore",
+                  "mainTableDb": "Oct::stores::ParentStore",
+                  "schema": "default",
+                  "table": "FIRMTABLE"
+                },
+                "tableAlias": "FIRMTABLE"
+              }
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "Oct::models::Person",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "Oct::stores::ParentStore",
+            "mainTableDb": "Oct::stores::ParentStore",
+            "schema": "default",
+            "table": "PERSONTABLE"
+          },
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "Oct::models::Person",
+                "property": "fName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "NAME",
+                "table": {
+                  "_type": "Table",
+                  "database": "Oct::stores::ChildStore",
+                  "mainTableDb": "Oct::stores::ChildStore",
+                  "schema": "default",
+                  "table": "PERSONTABLE"
+                },
+                "tableAlias": "PERSONTABLE"
+              }
+            },
+            {
+              "_type": "inlineEmbeddedPropertyMapping",
+              "property": {
+                "class": "Oct::models::Person",
+                "property": "firm"
+              },
+              "setImplementationId": "testInlineMapping"
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "simpleRelationalMapping",
+      "package": "Oct::mappings",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

@@ -30,9 +30,9 @@ import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
-  type LegendTaxonomyConfigurationData,
-  LegendTaxonomyConfig,
-} from './LegendTaxonomyConfig.js';
+  type LegendTaxonomyApplicationConfigurationData,
+  LegendTaxonomyApplicationConfig,
+} from './LegendTaxonomyApplicationConfig.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   configureReactHotkeys({
@@ -44,7 +44,7 @@ export const setupLegendQueryUILibrary = async (): Promise<void> => {
 };
 
 export class LegendTaxonomy extends LegendApplication {
-  declare config: LegendTaxonomyConfig;
+  declare config: LegendTaxonomyApplicationConfig;
   declare pluginManager: LegendTaxonomyPluginManager;
 
   static create(): LegendTaxonomy {
@@ -56,9 +56,9 @@ export class LegendTaxonomy extends LegendApplication {
   }
 
   async configureApplication(
-    input: LegendApplicationConfigurationInput<LegendTaxonomyConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendTaxonomyApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendTaxonomyConfig(input);
+    return new LegendTaxonomyApplicationConfig(input);
   }
 
   async loadApplication(): Promise<void> {

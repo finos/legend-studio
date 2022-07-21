@@ -242,7 +242,7 @@ export const V1_buildElementWithJoinsJoinTreeNode = (
 export const V1_buildRelationalOperationElement = (
   operationalElement: V1_RelationalOperationElement,
   context: V1_GraphBuilderContext,
-  aliasMap: Map<string, TableAlias>,
+  tableAliasIndex: Map<string, TableAlias>,
   selfJoinTargets: TableAliasColumn[],
 ): RelationalOperationElement => {
   if (operationalElement instanceof V1_TableAliasColumn) {
@@ -254,18 +254,20 @@ export const V1_buildRelationalOperationElement = (
     }
     const relation = context.resolveRelation(operationalElement.table);
     const aliasName = `${operationalElement.table.schema}.${operationalElement.tableAlias}`;
-    if (!aliasMap.has(aliasName)) {
+    if (!tableAliasIndex.has(aliasName)) {
       const tAlias = new TableAlias();
       tAlias.relation = relation;
       tAlias.name = operationalElement.tableAlias;
-      aliasMap.set(aliasName, tAlias);
+      tableAliasIndex.set(aliasName, tAlias);
     }
     const columnReference = ColumnImplicitReference.create(
       context.resolveDatabase(operationalElement.table.database),
       getColumn(relation.value, operationalElement.column),
     );
     const tableAliasColumn = new TableAliasColumn();
-    tableAliasColumn.alias = guaranteeNonNullable(aliasMap.get(aliasName));
+    tableAliasColumn.alias = guaranteeNonNullable(
+      tableAliasIndex.get(aliasName),
+    );
     tableAliasColumn.column = columnReference;
     tableAliasColumn.columnName = columnReference.value.name;
     return tableAliasColumn;
@@ -291,7 +293,7 @@ export const V1_buildRelationalOperationElement = (
       V1_buildRelationalOperationElement(
         parameter,
         context,
-        aliasMap,
+        tableAliasIndex,
         selfJoinTargets,
       ),
     );
@@ -303,7 +305,7 @@ export const V1_buildRelationalOperationElement = (
         V1_buildRelationalOperationElement(
           value,
           context,
-          aliasMap,
+          tableAliasIndex,
           selfJoinTargets,
         ),
       );
@@ -317,7 +319,7 @@ export const V1_buildRelationalOperationElement = (
           V1_buildRelationalOperationElement(
             value,
             context,
-            aliasMap,
+            tableAliasIndex,
             selfJoinTargets,
           ),
         );
@@ -569,18 +571,18 @@ export const V1_buildDatabaseJoin = (
   database: Database,
 ): Join => {
   assertNonEmptyString(srcJoin.name, `Join 'name' field is missing or empty`);
-  const aliasMap = new Map<string, TableAlias>();
+  const tableAliasIndex = new Map<string, TableAlias>();
   const selfJoinTargets: TableAliasColumn[] = [];
   const join = new Join(
     srcJoin.name,
     V1_buildRelationalOperationElement(
       srcJoin.operation,
       context,
-      aliasMap,
+      tableAliasIndex,
       selfJoinTargets,
     ),
   );
-  const aliases = Array.from(aliasMap.values());
+  const aliases = Array.from(tableAliasIndex.values());
   assertTrue(aliases.length > 0, `Can't build join with no table`);
   assertTrue(
     aliases.length <= 2,
@@ -647,11 +649,11 @@ export const V1_buildDatabaseFilter = (
     srcFilter.name,
     `Filter 'name' field is missing or empty`,
   );
-  const aliasMap = new Map<string, TableAlias>();
+  const tableAliasIndex = new Map<string, TableAlias>();
   const op = V1_buildRelationalOperationElement(
     srcFilter.operation,
     context,
-    aliasMap,
+    tableAliasIndex,
     [],
   );
   // TODO handle multi-grain filters?

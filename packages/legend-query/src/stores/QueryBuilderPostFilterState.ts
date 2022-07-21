@@ -367,7 +367,6 @@ export class PostFilterConditionState {
 export class QueryBuilderPostFilterState
   implements TreeData<QueryBuilderPostFilterTreeNodeData>
 {
-  showPostFilterPanel = false;
   queryBuilderState: QueryBuilderState;
   lambdaParameterName = DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME;
   selectedNode?: QueryBuilderPostFilterTreeNodeData | undefined;
@@ -386,7 +385,6 @@ export class QueryBuilderPostFilterState
       setLambdaParameterName: action,
       setSelectedNode: action,
       addNodeFromNode: action,
-      setShowPostFilterPanel: action,
       addGroupConditionNodeFromNode: action,
       newGroupWithConditionFromNode: action,
       removeNodeAndPruneBranch: action,
@@ -410,12 +408,10 @@ export class QueryBuilderPostFilterState
     this._suppressClickawayEventListener = true;
   }
 
-  setShowPostFilterPanel(val: boolean): void {
-    this.showPostFilterPanel = val;
-  }
   setSelectedNode(val: QueryBuilderPostFilterTreeNodeData | undefined): void {
     this.selectedNode = val;
   }
+
   getNode(id: string): QueryBuilderPostFilterTreeNodeData {
     return guaranteeNonNullable(
       this.nodes.get(id),

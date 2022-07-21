@@ -15,8 +15,8 @@
  */
 
 export * from './DSLDiagram_Extension.js';
-export { DSLDiagram_LegendStudioPlugin } from './components/studio/DSLDiagram_LegendStudioPlugin.js';
-export * from './components/studio/DSLDiagram_LegendStudioPlugin_Extension.js';
+export { DSLDiagram_LegendStudioApplicationPlugin } from './components/studio/DSLDiagram_LegendStudioApplicationPlugin.js';
+export * from './components/studio/DSLDiagram_LegendStudioApplicationPlugin_Extension.js';
 
 export { DiagramEditorState } from './stores/studio/DiagramEditorState.js';
 

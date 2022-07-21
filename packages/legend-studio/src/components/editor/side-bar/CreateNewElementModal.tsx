@@ -26,12 +26,11 @@ import {
   CONNECTION_TYPE,
   NewDataElementDriver,
   NewServiceDriver,
-} from '../../../stores/NewElementState.js';
+} from '../../../stores/editor/NewElementState.js';
 import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { PackageableElementOption } from '../../../stores/shared/PackageableElementOptionUtil.js';
-import type { DSL_LegendStudioPlugin_Extension } from '../../../stores/LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type Mapping,
@@ -44,9 +43,10 @@ import { flowResult } from 'mobx';
 import {
   getPackageableElementOptionalFormatter,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
-import type { DSLData_LegendStudioPlugin_Extension } from '../../../stores/DSLData_LegendStudioPlugin_Extension.js';
+import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
 
@@ -82,11 +82,11 @@ export const getElementTypeLabel = (
     default: {
       if (type) {
         const extraElementTypeLabelGetters = editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSL_LegendStudioPlugin_Extension
+                plugin as DSL_LegendStudioApplicationPlugin_Extension
               ).getExtraElementTypeLabelGetters?.() ?? [],
           );
         for (const typeLabelGetter of extraElementTypeLabelGetters) {
@@ -123,11 +123,11 @@ const NewDataElementDriverEditor = observer(() => {
       }
     : undefined;
   const extraOptionTypes = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLData_LegendStudioPlugin_Extension
+          plugin as DSLData_LegendStudioApplicationPlugin_Extension
         ).getExtraEmbeddedDataTypeOptions?.() ?? [],
     );
   let options: EmbeddedDataTypeOption[] = Object.values(EmbeddedDataType)
@@ -390,11 +390,11 @@ const renderNewElementDriver = (
       return <NewServiceDriverEditor />;
     default: {
       const extraNewElementDriverEditorCreators = editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSL_LegendStudioPlugin_Extension
+              plugin as DSL_LegendStudioApplicationPlugin_Extension
             ).getExtraNewElementDriverEditorRenderers?.() ?? [],
         );
       for (const creator of extraNewElementDriverEditorCreators) {

@@ -38,7 +38,7 @@ import {
   type ServiceRegistrationResult,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioConfig.js';
+import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
@@ -69,7 +69,7 @@ interface ServiceVersionOption {
 }
 
 export enum SERVICE_REGISTRATION_PHASE {
-  REGISTRATING_SERVICE = 'REGISTRATING_SERVICE',
+  REGISTERING_SERVICE = 'REGISTERING_SERVICE',
   ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
 }
 
@@ -212,17 +212,17 @@ export class ServiceRegistrationState {
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
       this.registrationState.setMessage(
-        SERVICE_REGISTRATION_PHASE.REGISTRATING_SERVICE,
+        SERVICE_REGISTRATION_PHASE.REGISTERING_SERVICE,
       );
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
-          this.editorStore.graphManagerState.graph,
           this.serviceEditorState.service,
+          this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
+          versionInput,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
-          versionInput,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
         this.registrationState.setMessage(

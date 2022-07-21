@@ -15,17 +15,29 @@
  */
 
 export * from './DSLPersistence_Extension.js';
-export { DSLPersistence_LegendStudioPlugin } from './components/studio/DSLPersistence_LegendStudioPlugin.js';
+export { DSLPersistence_LegendStudioApplicationPlugin } from './components/studio/DSLPersistence_LegendStudioApplicationPlugin.js';
 
 // ---------- PACKAGEABLE ELEMENT ----------
 
 // metamodels
 export { Persistence } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+export { PersistenceContext } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+export { PersistencePlatform } from './models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
 
 // v1 protocols
 export { V1_Persistence } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
+export { V1_PersistenceContext } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
+export { V1_PersistencePlatform } from './models/protocols/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
 
 // ---------- TRANSFORMATION ----------
 
-export { V1_transformPersistence } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+// extension
+export * from './models/protocols/pure/DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
+
+// builders
 export { V1_buildPersistence } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
+export { V1_buildPersistenceContext } from './models/protocols/pure/v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';
+
+// transformers
+export { V1_transformPersistence } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+export { V1_transformPersistenceContext } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';

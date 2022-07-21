@@ -101,7 +101,7 @@ export abstract class BasicModel {
   root: Package;
   readonly extensions: PureGraphExtension<PackageableElement>[] = [];
 
-  private elementSectionMap = new Map<string, Section>();
+  private elementSectionIndex = new Map<string, Section>();
 
   private sectionIndicesIndex = new Map<string, SectionIndex>();
   private readonly profilesIndex = new Map<string, Profile>();
@@ -237,7 +237,7 @@ export abstract class BasicModel {
   }
 
   getOwnNullableSection = (path: string): Section | undefined =>
-    this.elementSectionMap.get(path);
+    this.elementSectionIndex.get(path);
 
   getOwnNullableSectionIndex = (path: string): SectionIndex | undefined =>
     this.sectionIndicesIndex.get(path);
@@ -385,7 +385,7 @@ export abstract class BasicModel {
   }
 
   setOwnSection(path: string, val: Section): void {
-    this.elementSectionMap.set(path, val);
+    this.elementSectionIndex.set(path, val);
   }
   setOwnSectionIndex(path: string, val: SectionIndex): void {
     this.sectionIndicesIndex.set(path, val);
@@ -776,6 +776,6 @@ export abstract class BasicModel {
     // as such `this.sectionIndicesIndex.delete(sectionIndex.path)` won't work because the path
     // is without the package
     this.sectionIndicesIndex = new Map<string, SectionIndex>();
-    this.elementSectionMap = new Map<string, Section>();
+    this.elementSectionIndex = new Map<string, Section>();
   }
 }

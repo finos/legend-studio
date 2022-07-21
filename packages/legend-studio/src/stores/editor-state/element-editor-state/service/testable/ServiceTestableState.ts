@@ -27,6 +27,7 @@ import {
   DEFAULT_TEST_SUITE_PREFIX,
   DEFAULT_TEST_PREFIX,
   TestError,
+  MultiExecutionServiceTestResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -37,6 +38,7 @@ import {
   deleteEntry,
   isNonNullable,
   generateEnumerableNameFromToken,
+  getNullableFirstElement,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -208,16 +210,17 @@ export class ServiceTestSuiteState {
 
   get testPassed(): number {
     return this.testStates.filter(
-      (e) => e.testResultState.result instanceof TestPassed,
+      (e) =>
+        e.testResultState.result instanceof TestPassed ||
+        (e.testResultState.result instanceof MultiExecutionServiceTestResult &&
+          Array.from(
+            e.testResultState.result.keyIndexedTestResults.values(),
+          ).every((kv) => kv instanceof TestPassed)),
     ).length;
   }
 
   get testFailed(): number {
-    return this.testStates.filter(
-      (e) =>
-        e.testResultState.result &&
-        !(e.testResultState.result instanceof TestPassed),
-    ).length;
+    return this.testCount - this.testPassed;
   }
 }
 
@@ -268,7 +271,9 @@ export class ServiceTestableState {
   }
 
   initSuites(): void {
-    const serviceSuite = this.serviceEditorState.service.tests[0];
+    const serviceSuite = getNullableFirstElement(
+      this.serviceEditorState.service.tests,
+    );
     if (serviceSuite instanceof ServiceTestSuite) {
       this.selectedSuiteState = new ServiceTestSuiteState(serviceSuite, this);
     } else {

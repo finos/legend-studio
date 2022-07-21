@@ -22,6 +22,7 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   filterByType,
+  hashObject,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderFilterOperator,
@@ -43,10 +44,7 @@ import {
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
-  type Enumeration,
   type GraphManagerState,
-  type Mapping,
-  type PackageableRuntime,
   type ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
@@ -94,11 +92,8 @@ import {
 } from './filterOperators/QueryBuilderFilterOperator_In.js';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
-  buildElementOption,
   LambdaParameterState,
-  type ApplicationStore,
-  type LegendApplicationConfig,
-  type PackageableElementOption,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
 import {
@@ -149,8 +144,26 @@ export class StandardQueryBuilderMode extends QueryBuilderMode {
   }
 }
 
+class QueryBuilderChangeDetectionState {
+  querybuildState: QueryBuilderState;
+  queryHashCode = hashObject(new RawLambda(undefined, undefined));
+  isEnabled = false;
+
+  constructor(queryBuilderState: QueryBuilderState) {
+    this.querybuildState = queryBuilderState;
+  }
+
+  setQueryHashCode(val: string): void {
+    this.queryHashCode = val;
+  }
+
+  setIsEnabled(val: boolean): void {
+    this.isEnabled = val;
+  }
+}
+
 export class QueryBuilderState {
-  applicationStore: ApplicationStore<LegendApplicationConfig>;
+  applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
   mode: QueryBuilderMode;
@@ -206,9 +219,11 @@ export class QueryBuilderState {
   backdrop = false;
   showFunctionPanel = false;
   showParameterPanel = false;
+  showPostFilterPanel = false;
+  changeDetectionState: QueryBuilderChangeDetectionState;
 
   constructor(
-    applicationStore: ApplicationStore<LegendApplicationConfig>,
+    applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     queryBuilderMode: QueryBuilderMode,
   ) {
@@ -229,6 +244,8 @@ export class QueryBuilderState {
       mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
+      showPostFilterPanel: observable,
+      changeDetectionState: observable,
       setMode: action,
       resetQueryBuilder: action,
       resetQuerySetup: action,
@@ -237,6 +254,7 @@ export class QueryBuilderState {
       setBackdrop: action,
       setShowFunctionPanel: action,
       setShowParameterPanel: action,
+      setShowPostFilterPanel: action,
       changeClass: action,
       changeFetchStructure: action,
       compileQuery: flow,
@@ -263,6 +281,7 @@ export class QueryBuilderState {
     this.observableContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
+    this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
   setMode(val: QueryBuilderMode): void {
@@ -276,8 +295,13 @@ export class QueryBuilderState {
   setShowFunctionPanel(val: boolean): void {
     this.showFunctionPanel = val;
   }
+
   setShowParameterPanel(val: boolean): void {
     this.showParameterPanel = val;
+  }
+
+  setShowPostFilterPanel(val: boolean): void {
+    this.showPostFilterPanel = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
@@ -532,36 +556,5 @@ export class QueryBuilderState {
     if (!treeData) {
       this.fetchStructureState.graphFetchTreeState.initialize();
     }
-  }
-
-  get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphManagerState.graph.ownClasses
-      .concat(
-        this.graphManagerState.filterSystemElementOptions(
-          this.graphManagerState.graph.systemModel.ownClasses,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map((e) => buildElementOption(e) as PackageableElementOption<Class>);
-  }
-
-  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphManagerState.graph.ownEnumerations
-      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(
-        (e) => buildElementOption(e) as PackageableElementOption<Enumeration>,
-      );
-  }
-
-  get mappings(): Mapping[] {
-    return this.graphManagerState.graph.ownMappings.concat(
-      this.graphManagerState.graph.dependencyManager.mappings,
-    );
-  }
-
-  get runtimes(): PackageableRuntime[] {
-    return this.graphManagerState.graph.ownRuntimes.concat(
-      this.graphManagerState.graph.dependencyManager.runtimes,
-    );
   }
 }

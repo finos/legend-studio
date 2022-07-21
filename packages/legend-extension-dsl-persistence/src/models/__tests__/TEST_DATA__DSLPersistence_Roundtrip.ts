@@ -136,6 +136,19 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'org::dxl::ZooDb',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'ZooDb',
+      package: 'org::dxl',
+      schemas: [],
+    },
+  },
+  {
     path: 'org::dxl::Mapping',
     classifierPath: 'meta::pure::mapping::Mapping',
     content: {
@@ -207,6 +220,27 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+    path: 'org::dxl::ZooDbConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
+      },
+      name: 'ZooDbConnection',
+      package: 'org::dxl',
+    },
+  },
+  {
     path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
@@ -256,11 +290,6 @@ export const TEST_DATA__roundtrip = [
         sink: {
           _type: 'objectStorageSink',
           binding: 'org::dxl::ZooBinding',
-          connection: {
-            _type: 'JsonModelConnection',
-            class: 'org::dxl::Animal',
-            url: 'file:///foo',
-          },
         },
         targetShape: {
           _type: 'multiFlatTarget',
@@ -299,6 +328,85 @@ export const TEST_DATA__roundtrip = [
       service: 'org::dxl::ZooService',
       trigger: {
         _type: 'manualTrigger',
+      },
+    },
+  },
+  {
+    path: 'org::dxl::ZooPersistenceContext',
+    classifierPath: 'meta::pure::persistence::metamodel::PersistenceContext',
+    content: {
+      _type: 'persistenceContext',
+      name: 'ZooPersistenceContext',
+      package: 'org::dxl',
+      persistence: 'org::dxl::ZooPersistence',
+      platform: {
+        _type: 'default',
+      },
+      serviceParameters: [
+        {
+          name: 'connection',
+          value: {
+            _type: 'connectionValue',
+            connection: {
+              _type: 'connectionPointer',
+              connection: 'org::dxl::ZooDbConnection',
+            },
+          },
+        },
+        {
+          name: 'foo',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: ['Hello'],
+            },
+          },
+        },
+        {
+          name: 'bar',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'integer',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [29],
+            },
+          },
+        },
+        {
+          name: 'qux',
+          value: {
+            _type: 'primitiveTypeValue',
+            primitiveType: {
+              _type: 'float',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: [27.5],
+            },
+          },
+        },
+      ],
+      sinkConnection: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'h2Default',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'h2Local',
+        },
+        element: 'org::dxl::ZooDb',
+        type: 'H2',
       },
     },
   },

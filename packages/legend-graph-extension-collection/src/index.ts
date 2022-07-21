@@ -20,6 +20,7 @@ import type { AbstractPreset } from '@finos/legend-shared';
 import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
 import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLPersistenceCloud_GraphPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 
@@ -29,6 +30,7 @@ export const getLegendGraphExtensionCollection = (): AbstractPreset[] => [
   new DSLDataSpace_GraphPreset(),
   new DSLExternalFormat_GraphPreset(),
   new DSLPersistence_GraphPreset(),
+  new DSLPersistenceCloud_GraphPreset(),
   new EFJSONSchema_GraphPreset(),
   new ESService_GraphPreset(),
 ];

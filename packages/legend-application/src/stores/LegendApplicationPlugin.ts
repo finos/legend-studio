@@ -17,14 +17,27 @@
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
 import type {
-  LegendApplicationContextualDocumentationEntry,
-  LegendApplicationDocumentationRegistryEntry,
-  LegendApplicationKeyedDocumentationEntry,
-} from './LegendApplicationDocumentationService.js';
+  ContextualDocumentationEntry,
+  DocumentationRegistryEntry,
+  KeyedDocumentationEntry,
+} from './DocumentationService.js';
 
-export type LegendApplicationSetup = (
-  pluginManager: LegendApplicationPluginManager,
+export type LegendApplicationSetup = <T extends LegendApplicationPlugin>(
+  pluginManager: LegendApplicationPluginManager<T>,
 ) => Promise<void>;
+
+/**
+ * Prefix URL patterns coming from extensions with `/extensions/`
+ * to avoid potential conflicts with main routes.
+ */
+export const generateExtensionUrlPattern = (pattern: string): string =>
+  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
+
+export type ApplicationPageEntry = {
+  key: string;
+  urlPatterns: string[];
+  renderer: React.FC | React.ReactElement;
+};
 
 export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
@@ -35,15 +48,20 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
   getExtraApplicationSetups?(): LegendApplicationSetup[];
 
   /**
+   * Get the list of application page entries to be rendered.
+   */
+  getExtraApplicationPageEntries?(): ApplicationPageEntry[];
+
+  /**
    * Get the list of documentation registry entries from which the application can fetch
    * documentation config data and load the documentation registry
    */
-  getExtraDocumentationRegistryEntries?(): LegendApplicationDocumentationRegistryEntry[];
+  getExtraDocumentationRegistryEntries?(): DocumentationRegistryEntry[];
 
   /**
    * Get the list of keyed documentation entries to be registered with documentation service.
    */
-  getExtraKeyedDocumentationEntries?(): LegendApplicationKeyedDocumentationEntry[];
+  getExtraKeyedDocumentationEntries?(): KeyedDocumentationEntry[];
 
   /**
    * Get the list of documentation keys whose corresponding documentation entry is required
@@ -55,7 +73,7 @@ export abstract class LegendApplicationPlugin extends AbstractPlugin {
   /**
    * Get the list of contextual documentation entries to be registered with documentation service.
    */
-  getExtraContextualDocumentationEntries?(): LegendApplicationContextualDocumentationEntry[];
+  getExtraContextualDocumentationEntries?(): ContextualDocumentationEntry[];
 
   /**
    * Get the list of application context keys for which the application will log event for
