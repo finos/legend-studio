@@ -34,11 +34,6 @@ import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStu
 import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import {
-  EDITOR_LANGUAGE,
-  buildElementOption,
-  type PackageableElementOption,
-} from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
@@ -96,6 +91,11 @@ import {
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import {
+  EDITOR_LANGUAGE,
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
+import {
   type RelationalDatabaseConnectionValueState,
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
@@ -121,10 +121,6 @@ import {
   PackageableElementExplicitReference,
   SpannerDatasourceSpecification,
 } from '@finos/legend-graph';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '../../../../stores/shared/PackageableElementOptionUtil.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
