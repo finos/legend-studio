@@ -210,6 +210,9 @@ export abstract class AbstractPureGraphManager {
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,
+    options?: {
+      pruneSourceInformation?: boolean;
+    },
   ): Promise<RawLambda>;
   abstract lambdaToPureCode(
     lambda: RawLambda,

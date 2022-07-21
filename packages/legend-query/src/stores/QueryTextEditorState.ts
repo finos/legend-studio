@@ -105,6 +105,7 @@ export class QueryTextEditorState extends LambdaEditorState {
           (yield this.queryBuilderState.graphManagerState.graphManager.pureCodeToLambda(
             this.fullLambdaString,
             this.lambdaId,
+            { pruneSourceInformation: true },
           )) as RawLambda;
         this.setParserError(undefined);
         this.rawLambdaState.setLambda(lambda);
