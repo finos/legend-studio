@@ -74,8 +74,8 @@ import {
   observe_EngineRuntime,
   getEnumValueNames,
   getEnumValue,
-  observe_OptionalEnumerationMappingReference,
-  type OptionalEnumerationMappingReference,
+  observe_EnumerationMappingReference,
+  type EnumerationMappingReference,
   type SourceValueType,
 } from '@finos/legend-graph';
 import {
@@ -433,9 +433,11 @@ export const pureInstanceSetImpl_setMappingFilter = action(
 export const purePropertyMapping_setTransformer = action(
   (
     val: PurePropertyMapping,
-    value: OptionalEnumerationMappingReference,
+    value: EnumerationMappingReference | undefined,
   ): void => {
-    val.transformer = observe_OptionalEnumerationMappingReference(value);
+    val.transformer = value
+      ? observe_EnumerationMappingReference(value)
+      : undefined;
   },
 );
 

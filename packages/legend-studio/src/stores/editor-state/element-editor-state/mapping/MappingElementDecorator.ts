@@ -19,6 +19,7 @@ import {
   assertTrue,
   assertType,
   UnsupportedOperationError,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   type SetImplementationVisitor,
@@ -61,7 +62,7 @@ import {
   getLeafSetImplementations,
   getAllClassProperties,
   getRawGenericType,
-  OptionalEnumerationMappingExplicitReference,
+  EnumerationMappingExplicitReference,
   SetImplementationExplicitReference,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
@@ -258,20 +259,17 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           if (existingEnumerationMappings.length === 1) {
             purePropertyMapping_setTransformer(
               epm,
-              OptionalEnumerationMappingExplicitReference.create(
-                existingEnumerationMappings[0],
+              EnumerationMappingExplicitReference.create(
+                guaranteeNonNullable(existingEnumerationMappings[0]),
               ),
             );
           } else if (
             existingEnumerationMappings.length === 0 ||
             !existingEnumerationMappings.find(
-              (eem) => eem === epm.transformer.value,
+              (eem) => eem === epm.transformer?.value,
             )
           ) {
-            purePropertyMapping_setTransformer(
-              epm,
-              OptionalEnumerationMappingExplicitReference.create(undefined),
-            );
+            purePropertyMapping_setTransformer(epm, undefined);
           }
         });
         return enumerationPropertyMapping;
@@ -411,18 +409,16 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.transformer =
-              OptionalEnumerationMappingExplicitReference.create(
-                existingEnumerationMappings[0],
-              );
+            epm.transformer = EnumerationMappingExplicitReference.create(
+              guaranteeNonNullable(existingEnumerationMappings[0]),
+            );
           } else if (
             existingEnumerationMappings.length === 0 ||
             !existingEnumerationMappings.find(
-              (eem) => eem === epm.transformer.value,
+              (eem) => eem === epm.transformer?.value,
             )
           ) {
-            epm.transformer =
-              OptionalEnumerationMappingExplicitReference.create(undefined);
+            epm.transformer = undefined;
           }
         });
         return ePropertyMapping;
@@ -550,18 +546,16 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           // If there is only 1 enumeration mapping, make it the transformer of the property mapping
           // Else, delete current transformer if it's not in the list of extisting enumeration mappings
           if (existingEnumerationMappings.length === 1) {
-            epm.transformer =
-              OptionalEnumerationMappingExplicitReference.create(
-                existingEnumerationMappings[0],
-              );
+            epm.transformer = EnumerationMappingExplicitReference.create(
+              guaranteeNonNullable(existingEnumerationMappings[0]),
+            );
           } else if (
             existingEnumerationMappings.length === 0 ||
             !existingEnumerationMappings.find(
-              (eem) => eem === epm.transformer.value,
+              (eem) => eem === epm.transformer?.value,
             )
           ) {
-            epm.transformer =
-              OptionalEnumerationMappingExplicitReference.create(undefined);
+            epm.transformer = undefined;
           }
         });
         return ePropertyMapping;

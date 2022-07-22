@@ -98,7 +98,7 @@ import {
 } from '../../../../../../../helpers/DomainHelper.js';
 import { SetImplementationImplicitReference } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
-import { OptionalEnumerationMappingExplicitReference } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
+import { EnumerationMappingExplicitReference } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm
@@ -304,8 +304,9 @@ export class V1_PropertyMappingBuilder
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${topParent._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
-      purePropertyMapping.transformer =
-        OptionalEnumerationMappingExplicitReference.create(enumerationMapping);
+      purePropertyMapping.transformer = enumerationMapping
+        ? EnumerationMappingExplicitReference.create(enumerationMapping)
+        : undefined;
     }
     purePropertyMapping.localMappingProperty = localMapping;
     return purePropertyMapping;
@@ -400,8 +401,9 @@ export class V1_PropertyMappingBuilder
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path} (perhaps because we haven't supported included mappings)`,
         );
       }
-      flatDataPropertyMapping.transformer =
-        OptionalEnumerationMappingExplicitReference.create(enumerationMapping);
+      flatDataPropertyMapping.transformer = enumerationMapping
+        ? EnumerationMappingExplicitReference.create(enumerationMapping)
+        : undefined;
     }
     return flatDataPropertyMapping;
   }
@@ -674,8 +676,9 @@ export class V1_PropertyMappingBuilder
           `Can't find enumeration mapping with ID '${protocol.enumMappingId}' in mapping '${this.topParent?._PARENT.path}' (perhaps because we haven't supported included mappings)`,
         );
       }
-      relationalPropertyMapping.transformer =
-        OptionalEnumerationMappingExplicitReference.create(enumerationMapping);
+      relationalPropertyMapping.transformer = enumerationMapping
+        ? EnumerationMappingExplicitReference.create(enumerationMapping)
+        : undefined;
     }
     relationalPropertyMapping.localMappingProperty = localMapping;
     return relationalPropertyMapping;

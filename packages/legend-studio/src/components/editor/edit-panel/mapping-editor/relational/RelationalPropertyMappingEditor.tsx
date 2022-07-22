@@ -43,7 +43,7 @@ import {
   RelationalPropertyMapping,
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
-  OptionalEnumerationMappingExplicitReference,
+  EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor.js';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
@@ -106,18 +106,20 @@ const EnumerationPropertyMappingEditor = observer(
       mappingEditorState.mapping,
       enumeration,
     ).map((em) => ({ value: em, label: em.id.value }));
-    const transformerLabel = propertyMapping.transformer.valueForSerialization;
+    const transformerLabel = propertyMapping.transformer?.valueForSerialization;
     const handleSelectionChange = (
       val: { label: string; value: EnumerationMapping } | null,
     ): void =>
       relationalPropertyMapping_setTransformer(
         propertyMapping,
-        OptionalEnumerationMappingExplicitReference.create(val?.value),
+        val?.value
+          ? EnumerationMappingExplicitReference.create(val.value)
+          : undefined,
       );
     // Walker
     const visit = (): void => {
       const currentTransformerEnumerationMapping =
-        propertyMapping.transformer.value;
+        propertyMapping.transformer?.value;
       if (currentTransformerEnumerationMapping) {
         mappingEditorState.openMappingElement(
           currentTransformerEnumerationMapping,
@@ -135,7 +137,7 @@ const EnumerationPropertyMappingEditor = observer(
               if (newEnumerationMapping instanceof EnumerationMapping) {
                 relationalPropertyMapping_setTransformer(
                   propertyMapping,
-                  OptionalEnumerationMappingExplicitReference.create(
+                  EnumerationMappingExplicitReference.create(
                     newEnumerationMapping,
                   ),
                 );

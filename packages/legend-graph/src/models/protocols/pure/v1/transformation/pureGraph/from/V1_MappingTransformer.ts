@@ -382,7 +382,7 @@ const transformSimpleFlatDataPropertyMapping = (
 ): V1_FlatDataPropertyMapping => {
   const flatDataPropertyMapping = new V1_FlatDataPropertyMapping();
   flatDataPropertyMapping.enumMappingId =
-    element.transformer.valueForSerialization;
+    element.transformer?.valueForSerialization;
   flatDataPropertyMapping.property = V1_transformPropertyReference(
     element.property,
   );
@@ -426,7 +426,8 @@ const transformPurePropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_PurePropertyMapping => {
   const purePropertyMapping = new V1_PurePropertyMapping();
-  purePropertyMapping.enumMappingId = element.transformer.valueForSerialization;
+  purePropertyMapping.enumMappingId =
+    element.transformer?.valueForSerialization;
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
     {
@@ -458,7 +459,7 @@ const transformRelationalPropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalPropertyMapping => {
   const propertyMapping = new V1_RelationalPropertyMapping();
-  propertyMapping.enumMappingId = element.transformer.valueForSerialization;
+  propertyMapping.enumMappingId = element.transformer?.valueForSerialization;
   propertyMapping.property = V1_transformPropertyReference(element.property, {
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,

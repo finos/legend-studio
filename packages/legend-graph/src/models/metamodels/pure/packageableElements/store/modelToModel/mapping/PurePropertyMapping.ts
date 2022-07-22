@@ -23,11 +23,11 @@ import {
 import type { PropertyReference } from '../../../domain/PropertyReference.js';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
-import { OptionalEnumerationMappingExplicitReference } from '../../../mapping/EnumerationMappingReference.js';
+import type { EnumerationMappingReference } from '../../../mapping/EnumerationMappingReference.js';
 import type { SetImplementationReference } from '../../../mapping/SetImplementationReference.js';
 
 export class PurePropertyMapping extends PropertyMapping implements Hashable {
-  transformer = OptionalEnumerationMappingExplicitReference.create(undefined);
+  transformer?: EnumerationMappingReference | undefined;
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -53,7 +53,7 @@ export class PurePropertyMapping extends PropertyMapping implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_PROPERTY_MAPPING,
       super.hashCode,
-      this.transformer.valueForSerialization ?? '',
+      this.transformer?.valueForSerialization ?? '',
       this.transform,
       Boolean(this.explodeProperty).toString(),
     ]);

@@ -55,7 +55,9 @@ export class EnumerationMapping implements Hashable {
       this.enumValueMappings.filter(
         // TODO: use `isStubbed_EnumValueMapping` when we refactor hashing
         (enumValueMapping) =>
-          enumValueMapping.sourceValues.filter(isNonNullable).length,
+          enumValueMapping.sourceValues.filter((sourceValue) =>
+            isNonNullable(sourceValue.value),
+          ).length,
       ).length
         ? this.sourceType.valueForSerialization ?? ''
         : '', // default source value when there is no element
@@ -63,7 +65,9 @@ export class EnumerationMapping implements Hashable {
         this.enumValueMappings.filter(
           // TODO: use `isStubbed_EnumValueMapping` when we refactor hashing
           (enumValueMapping) =>
-            enumValueMapping.sourceValues.filter(isNonNullable).length,
+            enumValueMapping.sourceValues.filter((sourceValue) =>
+              isNonNullable(sourceValue.value),
+            ).length,
         ),
       ),
     ]);

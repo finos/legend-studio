@@ -25,7 +25,7 @@ import type { AggregationAwarePropertyMapping } from '../../../models/metamodels
 import type { AggregationAwareSetImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import type { AssociationImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
 import type { EnumerationMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
-import type { OptionalEnumerationMappingReference } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
+import type { EnumerationMappingReference } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 import type {
   EnumValueMapping,
   SourceValue,
@@ -131,10 +131,8 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
 // ------------------------------------- Mapping -------------------------------------
 
-export const observe_OptionalEnumerationMappingReference = skipObserved(
-  (
-    metamodel: OptionalEnumerationMappingReference,
-  ): OptionalEnumerationMappingReference => {
+export const observe_EnumerationMappingReference = skipObserved(
+  (metamodel: EnumerationMappingReference): EnumerationMappingReference => {
     makeObservable(metamodel, {
       value: observable,
       valueForSerialization: computed,
@@ -204,7 +202,9 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
       hashCode: computed,
     });
 
-    observe_OptionalEnumerationMappingReference(metamodel.transformer);
+    if (metamodel.transformer) {
+      observe_EnumerationMappingReference(metamodel.transformer);
+    }
     observe_RawLambda(metamodel.transform);
 
     return metamodel;
