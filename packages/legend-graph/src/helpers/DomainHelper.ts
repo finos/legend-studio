@@ -23,6 +23,7 @@ import {
   MILESTONING_STEREOTYPE,
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
+  PURE_DEPRECATED_STEREOTYPE,
 } from '../MetaModelConst.js';
 import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
@@ -59,6 +60,7 @@ import type { Enum } from '../models/metamodels/pure/packageableElements/domain/
 import type { Constraint } from '../models/metamodels/pure/packageableElements/domain/Constraint.js';
 import type { GenericType } from '../models/metamodels/pure/packageableElements/domain/GenericType.js';
 import type { Multiplicity } from '../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
+import type { AnnotatedElement } from '../models/metamodels/pure/packageableElements/domain/AnnotatedElement.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -518,3 +520,15 @@ export const getMultiplicityDescription = (
       : `Must have at least ${multiplicity.lowerBound} values(s)`
   }`;
 };
+
+export const isElementDeprecated = (
+  element: AnnotatedElement | Class,
+  graph: PureModel,
+): boolean =>
+  element.stereotypes.some(
+    (st) =>
+      st.value ===
+      graph
+        .getProfile(CORE_PURE_PATH.PROFILE_DOC)
+        .p_stereotypes.find((s) => s.value === PURE_DEPRECATED_STEREOTYPE),
+  );

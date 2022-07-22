@@ -23,6 +23,7 @@ import {
   PURE_RuntimeIcon,
   EyeIcon,
   ClockIcon,
+  clsx,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -41,6 +42,7 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
   VARIABLE_REFERENCE_TOKEN,
+  isElementDeprecated,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -79,6 +81,12 @@ const generateClassLabel = (
     val,
     queryBuilderState.graphManagerState.graph,
   );
+
+  const isDeprecatedClass = isElementDeprecated(
+    val,
+    queryBuilderState.graphManagerState.graph,
+  );
+
   if (milestoneStereotype) {
     let milestoningParameterValues;
     switch (milestoneStereotype) {
@@ -105,7 +113,15 @@ const generateClassLabel = (
 
     return (
       <div className="query-builder__setup__config__item__class-label">
-        <div className="query-builder__setup__config__item__class-label__content">
+        <div
+          className={clsx(
+            'query-builder__setup__config__item__class-label__content',
+            {
+              ' query-builder__setup__config__item__class-label--deprecated':
+                isDeprecatedClass,
+            },
+          )}
+        >
           {val.name}
         </div>
         <EyeIcon
@@ -115,7 +131,21 @@ const generateClassLabel = (
       </div>
     );
   }
-  return val.name;
+  return (
+    <div className="query-builder__setup__config__item__class-label">
+      <div
+        className={clsx(
+          'query-builder__setup__config__item__class-label__content',
+          {
+            ' query-builder__setup__config__item__class-label--deprecated':
+              isDeprecatedClass,
+          },
+        )}
+      >
+        {val.name}
+      </div>
+    </div>
+  );
 };
 
 export const QueryBuilderSetupPanel = observer(
@@ -132,7 +162,12 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = querySetupState.classes.map(buildElementOption);
+    const classOptions = queryBuilderState.querySetupState.classes.map(
+      (_class) => ({
+        value: _class,
+        label: generateClassLabel(_class, queryBuilderState),
+      }),
+    );
     const selectedClassOption = querySetupState._class
       ? {
           value: querySetupState._class,

@@ -32,7 +32,6 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   AbstractPropertyExpression,
   Class,
-  DerivedProperty,
   VariableExpression,
   GenericType,
   GenericTypeExplicitReference,
@@ -50,6 +49,7 @@ import {
   Enum,
   EntityMappedProperty,
   Enumeration,
+  DerivedProperty,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
