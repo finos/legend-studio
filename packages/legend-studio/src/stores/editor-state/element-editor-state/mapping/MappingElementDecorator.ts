@@ -62,8 +62,8 @@ import {
   getAllClassProperties,
   getRawGenericType,
   OptionalEnumerationMappingExplicitReference,
+  SetImplementationExplicitReference,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   enumMapping_setEnumValueMappings,
@@ -75,6 +75,7 @@ import {
   purePropertyMapping_setTransformer,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation
@@ -219,7 +220,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 setImplementation,
                 PropertyExplicitReference.create(property),
                 stub_RawLambda(),
-                setImplementation,
+                SetImplementationExplicitReference.create(setImplementation),
+                undefined,
               ),
             ];
       } else if (propertyType instanceof Enumeration) {
@@ -236,7 +238,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 setImplementation,
                 PropertyExplicitReference.create(property),
                 stub_RawLambda(),
-                setImplementation,
+                SetImplementationExplicitReference.create(setImplementation),
+                undefined,
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
@@ -293,22 +296,20 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             .map(
               (setImp) =>
                 existingPropertyMappings.find(
-                  (pm) => pm.targetSetImplementation === setImp,
+                  (pm) => pm.targetSetImplementation?.value === setImp,
                 ) ??
                 new PurePropertyMapping(
                   setImplementation,
                   PropertyExplicitReference.create(property),
                   stub_RawLambda(),
-                  setImplementation,
-                  setImp,
+                  SetImplementationExplicitReference.create(setImplementation),
+                  SetImplementationExplicitReference.create(setImp),
                 ),
             )
             // sort these property mappings by id of their set implementations
             .sort((a, b) =>
-              (
-                a.targetSetImplementation as SetImplementation
-              ).id.value.localeCompare(
-                (b.targetSetImplementation as SetImplementation).id.value,
+              (a.targetSetImplementation?.value.id.value ?? '').localeCompare(
+                b.targetSetImplementation?.value.id.value ?? '',
               ),
             )
         );
@@ -369,7 +370,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 setImplementation,
                 PropertyExplicitReference.create(property),
                 stub_RawLambda(),
-                setImplementation,
+                SetImplementationExplicitReference.create(setImplementation),
+                undefined,
               ),
             ];
       } else if (propertyType instanceof Enumeration) {
@@ -386,7 +388,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
                 setImplementation,
                 PropertyExplicitReference.create(property),
                 stub_RawLambda(),
-                setImplementation,
+                SetImplementationExplicitReference.create(setImplementation),
+                undefined,
               ),
             ];
         // Find existing enumeration mappings for the property enumeration
@@ -500,7 +503,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         const newPropertyMapping = new RelationalPropertyMapping(
           setImplementation,
           PropertyExplicitReference.create(property),
-          setImplementation,
+          SetImplementationExplicitReference.create(setImplementation),
+          undefined,
         );
         newPropertyMapping.relationalOperation =
           stub_RawRelationalOperationElement();
@@ -520,7 +524,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           const newPropertyMapping = new RelationalPropertyMapping(
             setImplementation,
             PropertyExplicitReference.create(property),
-            setImplementation,
+            SetImplementationExplicitReference.create(setImplementation),
+            undefined,
           );
           newPropertyMapping.relationalOperation =
             stub_RawRelationalOperationElement();
@@ -577,7 +582,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             // leaf set implementation of the class property
             .map((setImp) => {
               const existingPropertyMapping = existingPropertyMappings.find(
-                (pm) => pm.targetSetImplementation === setImp,
+                (pm) => pm.targetSetImplementation?.value === setImp,
               );
               if (existingPropertyMapping) {
                 return existingPropertyMapping;
@@ -585,8 +590,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               const newPropertyMapping = new RelationalPropertyMapping(
                 setImplementation,
                 PropertyExplicitReference.create(property),
-                setImplementation,
-                setImp,
+                SetImplementationExplicitReference.create(setImplementation),
+                SetImplementationExplicitReference.create(setImp),
               );
               newPropertyMapping.relationalOperation =
                 stub_RawRelationalOperationElement();
@@ -594,10 +599,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
             })
             // sort these property mappings by id of their set implementations
             .sort((a, b) =>
-              (
-                a.targetSetImplementation as SetImplementation
-              ).id.value.localeCompare(
-                (b.targetSetImplementation as SetImplementation).id.value,
+              (a.targetSetImplementation?.value.id.value ?? '').localeCompare(
+                b.targetSetImplementation?.value.id.value ?? '',
               ),
             );
         }

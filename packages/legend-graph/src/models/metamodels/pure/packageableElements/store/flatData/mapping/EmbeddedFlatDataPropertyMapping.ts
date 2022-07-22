@@ -22,10 +22,7 @@ import type {
   PropertyMapping,
   PropertyMappingVisitor,
 } from '../../../mapping/PropertyMapping.js';
-import type {
-  SetImplementationVisitor,
-  SetImplementation,
-} from '../../../mapping/SetImplementation.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type { Class } from '../../../domain/Class.js';
 import type { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
@@ -35,6 +32,7 @@ import type { PackageableElementReference } from '../../../PackageableElementRef
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot.js';
 import type { MappingClass } from '../../../mapping/MappingClass.js';
 import { FlatDataPropertyMapping } from './FlatDataPropertyMapping.js';
+import type { SetImplementationReference } from '../../../mapping/SetImplementationReference.js';
 
 /**
  * We can think of embedded property mappings as a 'gateway' from one set of property mappings to another. They are in a sense
@@ -45,7 +43,7 @@ import { FlatDataPropertyMapping } from './FlatDataPropertyMapping.js';
  * 1. Javascript only support single inheritance unlike Pure
  * 2. In the general mental model, it is more sensible to think of embedded property mapping as a property mapping rather than a class mapping because
  * despite the fact that it has the shape similar to a class mapping and it can contain multiple property mappings, it itselt is not a class mapping, it must
- * exsit "embedded" within a property mapping.
+ * exist "embedded" within a property mapping.
  */
 export class EmbeddedFlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
@@ -65,10 +63,10 @@ export class EmbeddedFlatDataPropertyMapping
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
     rootInstanceSetImplementation: InstanceSetImplementation,
-    source: SetImplementation,
+    source: SetImplementationReference,
     _class: PackageableElementReference<Class>,
     id: InferableMappingElementIdValue,
-    target?: SetImplementation,
+    target: SetImplementationReference | undefined,
   ) {
     super(owner, property, source, target);
     this.class = _class;

@@ -126,7 +126,9 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   expect(propertyMapping.property.ownerReference.value).toBe(
     graph.getClass('meta::pure::tests::model::simple::PersonExtension'),
   );
-  expect(propertyMapping.sourceSetImplementation).toBe(firmExtensionSetImpl);
+  expect(propertyMapping.sourceSetImplementation.value).toBe(
+    firmExtensionSetImpl,
+  );
   expect(propertyMapping.property.value.genericType.value.rawType).toBe(
     graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
   );

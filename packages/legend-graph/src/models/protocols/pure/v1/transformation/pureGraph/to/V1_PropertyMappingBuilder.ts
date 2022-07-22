@@ -96,6 +96,7 @@ import {
   getOwnProperty,
   getClassProperty,
 } from '../../../../../../../helpers/DomainHelper.js';
+import { SetImplementationImplicitReference } from '../../../../../../metamodels/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 import { OptionalEnumerationMappingExplicitReference } from '../../../../../../metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 
@@ -280,8 +281,16 @@ export class V1_PropertyMappingBuilder
         protocol.transform.body,
         this.context,
       ),
-      sourceSetImplementation ?? topParent,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation ?? topParent,
+        protocol.source,
+      ),
+      targetSetImplementation
+        ? SetImplementationImplicitReference.create(
+            targetSetImplementation,
+            protocol.target,
+          )
+        : undefined,
       protocol.explodeProperty,
     );
     if (protocol.enumMappingId) {
@@ -369,8 +378,16 @@ export class V1_PropertyMappingBuilder
         protocol.transform.body,
         this.context,
       ),
-      sourceSetImplementation,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      targetSetImplementation
+        ? SetImplementationImplicitReference.create(
+            targetSetImplementation,
+            protocol.target,
+          )
+        : undefined,
     );
     if (protocol.enumMappingId) {
       const enumerationMapping = this.allEnumerationMappings.find(
@@ -448,7 +465,10 @@ export class V1_PropertyMappingBuilder
         property,
       ),
       guaranteeNonNullable(this.topParent),
-      sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
       _class,
       InferableMappingElementIdExplicitValue.create(
         `${sourceSetImplementation.id.value}.${property.name}`,
@@ -456,7 +476,12 @@ export class V1_PropertyMappingBuilder
       ),
       undefined,
     );
-    embeddedPropertyMapping.targetSetImplementation = embeddedPropertyMapping;
+    embeddedPropertyMapping.targetSetImplementation = protocol.target
+      ? SetImplementationImplicitReference.create(
+          embeddedPropertyMapping,
+          protocol.target,
+        )
+      : undefined;
     embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(
@@ -585,8 +610,16 @@ export class V1_PropertyMappingBuilder
         ),
         property,
       ),
-      sourceSetImplementation,
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      targetSetImplementation
+        ? SetImplementationImplicitReference.create(
+            targetSetImplementation,
+            protocol.target,
+          )
+        : undefined,
     );
     if (protocol.bindingTransformer?.binding) {
       const bindingTransformer = new BindingTransformer();
@@ -705,9 +738,13 @@ export class V1_PropertyMappingBuilder
         property,
       ),
       guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
       _class,
       InferableMappingElementIdExplicitValue.create(id, ''),
+      undefined,
     );
     inline.inlineSetImplementation =
       TEMPORARY__getClassMappingByIdOrReturnUnresolved(
@@ -744,9 +781,13 @@ export class V1_PropertyMappingBuilder
         property.property,
       ),
       guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-      property.sourceSetImplementation,
+      SetImplementationImplicitReference.create(
+        property.sourceSetImplementation,
+        protocol.source,
+      ),
       property._class,
       InferableMappingElementIdExplicitValue.create(`${property.id.value}`, ''),
+      undefined,
     );
     embedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_buildRelationalOperationElement(
@@ -801,12 +842,16 @@ export class V1_PropertyMappingBuilder
           property.property,
         ),
         guaranteeType(this.topParent, RootRelationalInstanceSetImplementation),
-        property.sourceSetImplementation,
+        SetImplementationImplicitReference.create(
+          property.sourceSetImplementation,
+          protocol.source,
+        ),
         property._class,
         InferableMappingElementIdExplicitValue.create(
           `${property.id.value}`,
           '',
         ),
+        undefined,
       );
     otherwiseEmbedded.primaryKey = protocol.classMapping.primaryKey.map((key) =>
       V1_buildRelationalOperationElement(
@@ -873,8 +918,9 @@ export class V1_PropertyMappingBuilder
     );
     const _association = xStoreParent.association.value;
     const property = getOwnProperty(_association, protocol.property.property);
-    const sourceSetImplementation = this.allClassMappings.find(
-      (c) => c.id.value === protocol.source,
+    const sourceSetImplementation = guaranteeNonNullable(
+      this.allClassMappings.find((c) => c.id.value === protocol.source),
+      `Can't find XStore property mapping source implementation with ID '${protocol.source}'`,
     );
     const targetSetImplementation = this.allClassMappings.find(
       (c) => c.id.value === protocol.target,
@@ -888,8 +934,16 @@ export class V1_PropertyMappingBuilder
         ),
         property,
       ),
-      guaranteeNonNullable(sourceSetImplementation),
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        sourceSetImplementation,
+        protocol.source,
+      ),
+      targetSetImplementation
+        ? SetImplementationImplicitReference.create(
+            targetSetImplementation,
+            protocol.target,
+          )
+        : undefined,
     );
     xStorePropertyMapping.crossExpression = V1_buildRawLambdaWithResolvedPaths(
       protocol.crossExpression.parameters,
@@ -938,8 +992,16 @@ export class V1_PropertyMappingBuilder
     const aggregationAwarePropertyMapping = new AggregationAwarePropertyMapping(
       this.topParent ?? this.immediateParent,
       property,
-      guaranteeNonNullable(sourceSetImplementation),
-      targetSetImplementation,
+      SetImplementationImplicitReference.create(
+        guaranteeNonNullable(sourceSetImplementation),
+        protocol.source,
+      ),
+      targetSetImplementation
+        ? SetImplementationImplicitReference.create(
+            targetSetImplementation,
+            protocol.target,
+          )
+        : undefined,
     );
 
     if (

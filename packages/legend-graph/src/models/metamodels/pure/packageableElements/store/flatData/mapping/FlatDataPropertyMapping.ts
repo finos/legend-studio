@@ -18,11 +18,11 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
 import { AbstractFlatDataPropertyMapping } from './AbstractFlatDataPropertyMapping.js';
-import type { SetImplementation } from '../../../mapping/SetImplementation.js';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
 import type { PropertyReference } from '../../../domain/PropertyReference.js';
 import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping.js';
 import { OptionalEnumerationMappingExplicitReference } from '../../../mapping/EnumerationMappingReference.js';
+import type { SetImplementationReference } from '../../../mapping/SetImplementationReference.js';
 
 export class FlatDataPropertyMapping
   extends AbstractFlatDataPropertyMapping
@@ -40,8 +40,8 @@ export class FlatDataPropertyMapping
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
     transform: RawLambda,
-    source: SetImplementation,
-    target?: SetImplementation,
+    source: SetImplementationReference,
+    target: SetImplementationReference | undefined,
   ) {
     super(owner, property, source, target);
     this.transform = transform;

@@ -123,5 +123,5 @@ test(unitTest('Relational Mapping with property from association'), () => {
     findPropertyMapping(personClassMapping, 'firm', undefined),
     RelationalPropertyMapping,
   );
-  expect(firmProperty.targetSetImplementation).toBe(firmClassMapping);
+  expect(firmProperty.targetSetImplementation?.value).toBe(firmClassMapping);
 });

@@ -184,8 +184,10 @@ export const observe_Abstract_PropertyMapping = (
   });
 
   observe_PropertyReference(metamodel.property);
-  // TODO: source
-  // TODO: target
+  observe_SetImplementationReference(metamodel.sourceSetImplementation);
+  if (metamodel.targetSetImplementation) {
+    observe_SetImplementationReference(metamodel.targetSetImplementation);
+  }
   if (metamodel.localMappingProperty) {
     observe_LocalMappingPropertyInfo(metamodel.localMappingProperty);
   }

@@ -49,6 +49,7 @@ import {
   buildSourceInformationSourceId,
   stub_RawLambda,
   isStubbed_RawLambda,
+  SetImplementationExplicitReference,
 } from '@finos/legend-graph';
 import { MAPPING_ELEMENT_TYPE } from './MappingEditorState.js';
 
@@ -255,7 +256,7 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       this.mappingElement,
       PropertyExplicitReference.create(property),
       rootInstanceSetImplementation,
-      this.mappingElement,
+      SetImplementationExplicitReference.create(this.mappingElement),
       PackageableElementExplicitReference.create(_class),
       InferableMappingElementIdExplicitValue.create(
         `${this.mappingElement.id.value}.${property.name}`,
@@ -263,7 +264,8 @@ export abstract class FlatDataInstanceSetImplementationState extends InstanceSet
       ),
       undefined,
     );
-    embeddedPropertyMapping.targetSetImplementation = embeddedPropertyMapping;
+    embeddedPropertyMapping.targetSetImplementation =
+      SetImplementationExplicitReference.create(embeddedPropertyMapping);
     this.mappingElement.propertyMappings.push(embeddedPropertyMapping);
     return embeddedPropertyMapping;
   }
