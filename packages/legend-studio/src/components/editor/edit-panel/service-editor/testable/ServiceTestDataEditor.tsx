@@ -377,7 +377,7 @@ export const ServiceTestDataEditor = observer(
               <div className="binding-editor__header">
                 <div className="binding-editor__header__title">
                   <div className="binding-editor__header__title__label">
-                    connections
+                    connections test data
                   </div>
                 </div>
                 <div className="panel__header__actions">
