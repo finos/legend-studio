@@ -56,8 +56,9 @@ import {
   type PackageableElement,
   type SourceValue,
   type EnumerationMapping,
-  type OptionalPackageableElementReference,
+  type PackageableElementReference,
   getEnumValueNames,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   enumMapping_updateSourceType,
@@ -97,7 +98,7 @@ const EnumerationMappingSourceSelectorModal = observer(
         option: PackageableElementOption<PackageableElement>,
       ): string => option.value.path,
     });
-    const sourceType = enumerationMapping.sourceType.value;
+    const sourceType = enumerationMapping.sourceType?.value;
     const selectedSourceType = sourceType
       ? { value: sourceType, label: sourceType.name }
       : null;
@@ -106,7 +107,10 @@ const EnumerationMappingSourceSelectorModal = observer(
     ): void => {
       const value = val?.value;
       if (!value || value instanceof Type) {
-        enumMapping_updateSourceType(enumerationMapping, value);
+        enumMapping_updateSourceType(
+          enumerationMapping,
+          value ? PackageableElementExplicitReference.create(value) : undefined,
+        );
       }
       if (value) {
         closeModal();
@@ -256,7 +260,7 @@ const EnumValueMappingEditor = observer(
   (props: {
     enumValue: Enum;
     enumerationMapping: EnumerationMapping;
-    sourceType: OptionalPackageableElementReference<Type>;
+    sourceType: PackageableElementReference<Type> | undefined;
     isReadOnly: boolean;
   }) => {
     const { enumValue, enumerationMapping, sourceType, isReadOnly } = props;
@@ -293,13 +297,13 @@ const EnumValueMappingEditor = observer(
                 key={sourceValue._UUID}
                 isReadOnly={isReadOnly}
                 sourceValue={sourceValue}
-                expectedType={sourceType.value}
+                expectedType={sourceType?.value}
                 updateSourceValue={(val: Enum | string | undefined): void =>
                   enumValueMapping_updateSourceValue(
                     matchingEnumValueMapping,
                     idx,
                     val,
-                    sourceType.value,
+                    sourceType?.value,
                   )
                 }
                 deleteSourceValue={(): void =>
@@ -341,7 +345,7 @@ export const EnumerationMappingEditor = observer(
       Object.keys(mappingEditorState.mappingElementsWithSimilarTarget).length >
       1;
     // Source
-    const sourceType = enumerationMapping.sourceType.value;
+    const sourceType = enumerationMapping.sourceType?.value;
     const [openSourceSelectorModal, setOpenSourceSelectorModal] =
       useState(false);
     const showSourceSelectorModal = (): void =>
@@ -353,7 +357,9 @@ export const EnumerationMappingEditor = observer(
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
           enumMapping_updateSourceType(
             enumerationMapping,
-            item.data.packageableElement,
+            PackageableElementExplicitReference.create(
+              item.data.packageableElement,
+            ),
           );
         }
       },

@@ -820,7 +820,7 @@ const transformPureInstanceSetImplementation = (
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.root = element.root.valueForSerialization;
-  classMapping.srcClass = element.srcClass.valueForSerialization;
+  classMapping.srcClass = element.srcClass?.valueForSerialization;
   return classMapping;
 };
 

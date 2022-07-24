@@ -428,7 +428,7 @@ export function V1_transformGraphFetchTree(
       ),
     );
     _propertyGraphTree.property = value.property.value.name;
-    _propertyGraphTree.subType = value.subType.value?.path;
+    _propertyGraphTree.subType = value.subType?.value.path;
     _propertyGraphTree.subTrees = value.subTrees.map((e) =>
       V1_transformGraphFetchTree(
         e,

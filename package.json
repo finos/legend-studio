@@ -24,7 +24,7 @@
     "check:ts": "tsc --build && node ./scripts/workflow/checkProjectReferenceConfigs.js",
     "check:update": "yarn upgrade-interactive",
     "clean": "rimraf \"build\" \"@(fixtures|packages)/**/@(lib|dist|build)\"",
-    "clean:cache": "rimraf \"build\" \"@(fixtures|packages)/**/build\"",
+    "clean:cache": "rimraf \"build\" \"@(fixtures|packages)/**/build\" && yarn jest --clearCache",
     "dev": "yarn dev:studio",
     "dev:mock-server": "yarn workspace @finos/legend-fixture-mock-server dev",
     "dev:query": "yarn workspace @finos/legend-query-deployment dev",

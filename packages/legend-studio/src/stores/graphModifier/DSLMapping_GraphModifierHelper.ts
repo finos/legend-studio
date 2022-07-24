@@ -64,7 +64,6 @@ import {
   observe_PackageableElementReference,
   observe_PackageableRuntime,
   observe_PropertyMapping,
-  observe_Type,
   observe_EnumValueMapping,
   observe_InputData,
   observe_RawLambda,
@@ -176,8 +175,13 @@ export const enumMapping_setId = action(
 );
 
 export const enumMapping_setSourceType = action(
-  (eM: EnumerationMapping, value: Type | undefined): void => {
-    eM.sourceType.value = value ? observe_Type(value) : undefined;
+  (
+    eM: EnumerationMapping,
+    value: PackageableElementReference<Type> | undefined,
+  ): void => {
+    eM.sourceType = value
+      ? observe_PackageableElementReference(value)
+      : undefined;
   },
 );
 
@@ -187,9 +191,12 @@ export const enumMapping_setEnumValueMappings = action(
   },
 );
 export const enumMapping_updateSourceType = action(
-  (eM: EnumerationMapping, type: Type | undefined): void => {
-    if (eM.sourceType.value !== type) {
-      enumMapping_setSourceType(eM, type);
+  (
+    eM: EnumerationMapping,
+    value: PackageableElementReference<Type> | undefined,
+  ): void => {
+    if (eM.sourceType?.value !== value?.value) {
+      enumMapping_setSourceType(eM, value);
       eM.enumValueMappings = eM.enumValueMappings.map((enumValueMapping) => {
         enumValueMapping.sourceValues = [];
         enumValueMapping.sourceValues.push(
@@ -419,8 +426,13 @@ export const pureInstanceSetImpl_setPropertyMappings = action(
 );
 
 export const pureInstanceSetImpl_setSrcClass = action(
-  (val: PureInstanceSetImplementation, value: Class | undefined): void => {
-    val.srcClass.value = value ? observe_Class(value) : undefined;
+  (
+    val: PureInstanceSetImplementation,
+    value: PackageableElementReference<Class> | undefined,
+  ): void => {
+    val.srcClass = value
+      ? observe_PackageableElementReference(value)
+      : undefined;
   },
 );
 

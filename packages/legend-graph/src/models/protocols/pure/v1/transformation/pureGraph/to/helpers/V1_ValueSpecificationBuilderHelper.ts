@@ -66,10 +66,7 @@ import {
 import { Multiplicity } from '../../../../../../../metamodels/pure/packageableElements/domain/Multiplicity.js';
 import type { Type } from '../../../../../../../metamodels/pure/packageableElements/domain/Type.js';
 import { PropertyExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/PropertyReference.js';
-import {
-  OptionalPackageableElementExplicitReference,
-  PackageableElementExplicitReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { PackageableElementExplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type {
   V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
@@ -770,11 +767,11 @@ function buildPropertyGraphFetchTree(
   }
   const _propertyGraphFetchTree = new PropertyGraphFetchTree(
     PropertyExplicitReference.create(property),
+    undefined,
   );
   _propertyGraphFetchTree.parameters = pureParameters;
   _propertyGraphFetchTree.alias = propertyGraphFetchTree.alias;
-  _propertyGraphFetchTree.subType =
-    OptionalPackageableElementExplicitReference.create<Class>(_subType?.value);
+  _propertyGraphFetchTree.subType = _subType;
   _propertyGraphFetchTree.subTrees = children;
   return _propertyGraphFetchTree;
 }

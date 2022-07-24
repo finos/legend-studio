@@ -84,7 +84,6 @@ import {
   FlatDataInputData,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
-  OptionalPackageableElementExplicitReference,
   RootFlatDataRecordTypeExplicitReference,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
@@ -266,11 +265,11 @@ export const getMappingElementSource = (
     // in the mapping, so if we use this method on all class mappings of a mapping, we don't miss anything
     return undefined;
   } else if (mappingElement instanceof EnumerationMapping) {
-    return mappingElement.sourceType.value;
+    return mappingElement.sourceType?.value;
   } else if (mappingElement instanceof AssociationImplementation) {
     throw new UnsupportedOperationError();
   } else if (mappingElement instanceof PureInstanceSetImplementation) {
-    return mappingElement.srcClass.value;
+    return mappingElement.srcClass?.value;
   } else if (mappingElement instanceof FlatDataInstanceSetImplementation) {
     return mappingElement.sourceRootRecordType.value;
   } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
@@ -358,7 +357,7 @@ export const createClassMapping = (
         mapping,
         PackageableElementExplicitReference.create(_class),
         InferableMappingElementRootExplicitValue.create(false),
-        OptionalPackageableElementExplicitReference.create<Class>(undefined),
+        undefined,
       );
       break;
     default:
@@ -383,7 +382,7 @@ export const createEnumerationMapping = (
     InferableMappingElementIdExplicitValue.create(id, enumeration.path),
     PackageableElementExplicitReference.create(enumeration),
     mapping,
-    OptionalPackageableElementExplicitReference.create(sourceType),
+    PackageableElementExplicitReference.create(sourceType),
   );
   mapping_addEnumerationMapping(mapping, enumMapping);
   return enumMapping;
@@ -909,7 +908,12 @@ export class MappingEditorState extends ElementEditorState {
       let sourceUpdated = false;
       if (setImplementation instanceof PureInstanceSetImplementation) {
         if (newSource instanceof Class || newSource === undefined) {
-          pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
+          pureInstanceSetImpl_setSrcClass(
+            setImplementation,
+            newSource
+              ? PackageableElementExplicitReference.create(newSource)
+              : undefined,
+          );
           sourceUpdated = true;
         }
       } else if (
@@ -959,7 +963,9 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             setImplementation.class,
             setImplementation.root,
-            OptionalPackageableElementExplicitReference.create(newSource),
+            newSource
+              ? PackageableElementExplicitReference.create(newSource)
+              : undefined,
           );
         } else if (newSource instanceof RootFlatDataRecordType) {
           newSetImp = new FlatDataInstanceSetImplementation(

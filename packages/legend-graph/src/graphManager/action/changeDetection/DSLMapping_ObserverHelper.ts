@@ -92,7 +92,6 @@ import {
   skipObserved,
   skipObservedWithContext,
   observe_Multiplicity,
-  observe_OptionalPackageableElementReference,
 } from './CoreObserverHelper.js';
 import {
   observe_EnumValueReference,
@@ -138,7 +137,7 @@ export const observe_EnumerationMappingReference = skipObserved(
       valueForSerialization: computed,
     });
 
-    observe_OptionalPackageableElementReference(metamodel.ownerReference);
+    observe_PackageableElementReference(metamodel.ownerReference);
 
     return metamodel;
   },
@@ -427,7 +426,9 @@ export const observe_PureInstanceSetImplementation = skipObservedWithContext(
       hashCode: computed,
     });
 
-    observe_OptionalPackageableElementReference(metamodel.srcClass);
+    if (metamodel.srcClass) {
+      observe_PackageableElementReference(metamodel.srcClass);
+    }
     if (metamodel.filter) {
       observe_RawLambda(metamodel.filter);
     }
@@ -597,7 +598,9 @@ export const observe_EnumerationMapping = skipObserved(
 
     observe_PackageableElementReference(metamodel.enumeration);
     observe_InferableMappingElementIdValue(metamodel.id);
-    observe_OptionalPackageableElementReference(metamodel.sourceType);
+    if (metamodel.sourceType) {
+      observe_PackageableElementReference(metamodel.sourceType);
+    }
     metamodel.enumValueMappings.forEach(observe_EnumValueMapping);
 
     return metamodel;

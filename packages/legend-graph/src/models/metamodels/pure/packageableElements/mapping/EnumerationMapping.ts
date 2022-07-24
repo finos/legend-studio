@@ -16,10 +16,7 @@
 
 import { hashArray, isNonNullable, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
-import type {
-  PackageableElementReference,
-  OptionalPackageableElementReference,
-} from '../PackageableElementReference.js';
+import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Mapping } from './Mapping.js';
 import type { Enumeration } from '../domain/Enumeration.js';
 import type { EnumValueMapping } from './EnumValueMapping.js';
@@ -31,14 +28,14 @@ export class EnumerationMapping implements Hashable {
 
   enumeration: PackageableElementReference<Enumeration>;
   id: InferableMappingElementIdValue;
-  sourceType: OptionalPackageableElementReference<Type>;
+  sourceType?: PackageableElementReference<Type> | undefined;
   enumValueMappings: EnumValueMapping[] = [];
 
   constructor(
     id: InferableMappingElementIdValue,
     enumeration: PackageableElementReference<Enumeration>,
     parent: Mapping,
-    sourceType: OptionalPackageableElementReference<Type>,
+    sourceType: PackageableElementReference<Type> | undefined,
   ) {
     this.id = id;
     this.enumeration = enumeration;
@@ -59,7 +56,7 @@ export class EnumerationMapping implements Hashable {
             isNonNullable(sourceValue.value),
           ).length,
       ).length
-        ? this.sourceType.valueForSerialization ?? ''
+        ? this.sourceType?.valueForSerialization ?? ''
         : '', // default source value when there is no element
       hashArray(
         this.enumValueMappings.filter(

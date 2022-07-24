@@ -67,7 +67,7 @@ export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
 ): Type | undefined => {
   if (targetSetImplementation instanceof PureInstanceSetImplementation) {
-    return targetSetImplementation.srcClass.value;
+    return targetSetImplementation.srcClass?.value;
   } else if (targetSetImplementation instanceof OperationSetImplementation) {
     return targetSetImplementation.class.value;
   } else {

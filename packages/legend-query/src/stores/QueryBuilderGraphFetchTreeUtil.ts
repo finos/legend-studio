@@ -24,7 +24,7 @@ import {
   PropertyExplicitReference,
   Class,
   PropertyGraphFetchTree,
-  OptionalPackageableElementExplicitReference,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -90,7 +90,7 @@ const buildGraphFetchSubTree = (
     'Graph fetch sub-tree must be a property graph fetch tree',
   );
   const property = tree.property.value;
-  const subType = tree.subType.value;
+  const subType = tree.subType?.value;
   const parentNodeId = parentNode?.id;
   const node = new QueryBuilderGraphFetchTreeNodeData(
     generateNodeId(property, subType, parentNodeId),
@@ -186,7 +186,10 @@ export const addQueryBuilderPropertyNode = (
   // traverse the property node all the way to the root and resolve the
   // chain of property that leads to this property node
   const propertyGraphFetchTrees: PropertyGraphFetchTree[] = [
-    new PropertyGraphFetchTree(PropertyExplicitReference.create(node.property)),
+    new PropertyGraphFetchTree(
+      PropertyExplicitReference.create(node.property),
+      undefined,
+    ),
   ];
   let parentExplorerTreeNode = explorerTreeData.nodes.get(node.parentId);
   while (
@@ -194,14 +197,13 @@ export const addQueryBuilderPropertyNode = (
       QueryBuilderExplorerTreePropertyNodeData ||
     parentExplorerTreeNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
   ) {
-    let subType =
-      OptionalPackageableElementExplicitReference.create<Class>(undefined);
+    let subType = undefined;
     let subtypeAssigned = false;
     while (
       parentExplorerTreeNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
     ) {
       if (!subtypeAssigned) {
-        subType = OptionalPackageableElementExplicitReference.create(
+        subType = PackageableElementExplicitReference.create(
           parentExplorerTreeNode.subclass,
         );
         subtypeAssigned = true;
@@ -248,7 +250,7 @@ export const addQueryBuilderPropertyNode = (
   for (const propertyGraphFetchTree of propertyGraphFetchTrees) {
     currentNodeId = generateNodeId(
       propertyGraphFetchTree.property.value,
-      propertyGraphFetchTree.subType.value,
+      propertyGraphFetchTree.subType?.value,
       currentNodeId,
     );
     const existingGraphFetchNode = treeData.nodes.get(currentNodeId);

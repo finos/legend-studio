@@ -39,10 +39,7 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/packagea
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
-import {
-  type PackageableElementImplicitReference,
-  optionalizePackageableElementReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
 import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore.js';
@@ -166,7 +163,7 @@ export const V1_buildEnumerationMapping = (
     ),
     targetEnumeration,
     parentMapping,
-    optionalizePackageableElementReference(sourceTypeReference),
+    sourceTypeReference,
   );
   enumerationMapping.enumValueMappings =
     srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>

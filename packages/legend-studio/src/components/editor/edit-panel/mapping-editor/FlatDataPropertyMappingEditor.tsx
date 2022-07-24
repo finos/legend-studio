@@ -124,7 +124,7 @@ const EnumerationPropertyMappingEditor = observer(
       Enumeration,
     );
     const expectedType =
-      propertyMapping.transformer?.value.sourceType.value ?? enumeration;
+      propertyMapping.transformer?.value.sourceType?.value ?? enumeration;
     const onExpectedTypeLabelSelect = (): void =>
       propertyMappingState.instanceSetImplementationState.setSelectedType(
         expectedType,
