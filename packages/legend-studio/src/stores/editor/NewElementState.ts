@@ -119,6 +119,53 @@ export const resolvePackageAndElementName = (
   return [packagePath, elementName];
 };
 
+export const handlePostCreateAction = async (
+  element: PackageableElement,
+  editorStore: EditorStore,
+): Promise<void> => {
+  // post creation handling
+  if (
+    element instanceof FileGenerationSpecification ||
+    element instanceof ModelGenerationSpecification
+  ) {
+    const generationElement = element;
+    const generationSpecifications =
+      editorStore.graphManagerState.graph.ownGenerationSpecifications;
+    let generationSpec: GenerationSpecification;
+    if (generationSpecifications.length) {
+      // TODO? handle case when more than one generation specification
+      generationSpec = generationSpecifications[0] as GenerationSpecification;
+    } else {
+      generationSpec = new GenerationSpecification(
+        DEFAULT_GENERATION_SPECIFICATION_NAME,
+      );
+      await flowResult(
+        editorStore.addElement(
+          generationSpec,
+          guaranteeNonNullable(generationElement.package).path,
+          false,
+        ),
+      );
+    }
+    generationSpecification_addGenerationElement(
+      generationSpec,
+      generationElement,
+    );
+  }
+
+  const extraElementEditorPostCreateActions = editorStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as DSL_LegendStudioApplicationPlugin_Extension
+        ).getExtraElementEditorPostCreateActions?.() ?? [],
+    );
+  for (const postCreateAction of extraElementEditorPostCreateActions) {
+    postCreateAction(editorStore, element);
+  }
+};
+
 export abstract class NewElementDriver<T extends PackageableElement> {
   editorStore: EditorStore;
 
@@ -486,8 +533,8 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   get isValid(): boolean {
-    return !this.editorStore.graphManagerState.graph
-      .ownGenerationSpecifications;
+    return !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
+      .length;
   }
 
   createElement(name: string): GenerationSpecification {
@@ -686,49 +733,7 @@ export class NewElementState {
         );
 
         // post creation handling
-        if (
-          element instanceof FileGenerationSpecification ||
-          element instanceof ModelGenerationSpecification
-        ) {
-          const generationElement = element;
-          const generationSpecifications =
-            this.editorStore.graphManagerState.graph
-              .ownGenerationSpecifications;
-          let generationSpec: GenerationSpecification;
-          if (generationSpecifications.length) {
-            // TODO? handle case when more than one generation specification
-            generationSpec =
-              generationSpecifications[0] as GenerationSpecification;
-          } else {
-            generationSpec = new GenerationSpecification(
-              DEFAULT_GENERATION_SPECIFICATION_NAME,
-            );
-            yield flowResult(
-              this.editorStore.addElement(
-                generationSpec,
-                guaranteeNonNullable(generationElement.package).path,
-                false,
-              ),
-            );
-          }
-          generationSpecification_addGenerationElement(
-            generationSpec,
-            generationElement,
-          );
-        }
-
-        const extraElementEditorPostCreateActions =
-          this.editorStore.pluginManager
-            .getApplicationPlugins()
-            .flatMap(
-              (plugin) =>
-                (
-                  plugin as DSL_LegendStudioApplicationPlugin_Extension
-                ).getExtraElementEditorPostCreateActions?.() ?? [],
-            );
-        for (const postCreateAction of extraElementEditorPostCreateActions) {
-          postCreateAction(this.editorStore, element);
-        }
+        yield handlePostCreateAction(element, this.editorStore);
       }
     }
     this.closeModal();
