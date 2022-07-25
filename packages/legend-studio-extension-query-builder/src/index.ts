@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './QueryBuilder_LegendStudioPreset.js';
+export * from './QueryBuilder_LegendStudioApplicationPreset.js';

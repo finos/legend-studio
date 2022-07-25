@@ -79,7 +79,7 @@ import {
   StandardQueryBuilderMode,
 } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
@@ -345,7 +345,9 @@ describe(
       ) => {
         const { entities } = context;
         const pluginManager = LegendQueryPluginManager.create();
-        pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+        pluginManager
+          .usePresets([new QueryBuilder_GraphManagerPreset()])
+          .install();
         const applicationStore = TEST__getTestApplicationStore(
           TEST__getTestLegendQueryApplicationConfig(),
           LegendQueryPluginManager.create(),

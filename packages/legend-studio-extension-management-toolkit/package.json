@@ -74,6 +74,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "studioPlugin": "@finos/legend-studio-plugin-management-toolkit"
+    "applicationStudioPlugin": "@finos/legend-plugin-management-toolkit-application-studio"
   }
 }

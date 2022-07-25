@@ -60,11 +60,11 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-core-pure-graph-manager",
-    "dsl_external_format_graphPreset": "@finos/legend-graph-preset-dsl-external-format",
-    "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-protocol-processor",
-    "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph-manager",
-    "dsl_external_format_pureGraphPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph"
+    "pureGraphManagerPlugin": "@finos/legend-plugin-core-pure-graph-manager",
+    "dsl_external_format_graphPreset": "@finos/legend-preset-dsl-external-format-graph",
+    "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-external-format-pure-protocol-processor",
+    "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-plugin-dsl-external-format-pure-graph-manager",
+    "dsl_external_format_pureGraphPlugin": "@finos/legend-plugin-dsl-external-format-pure-graph"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

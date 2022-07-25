@@ -20,11 +20,11 @@ import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA__DSLExternalFormat_Roundtrip.js';
 import {
   TEST__checkBuildingElementsRoundtrip,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
 } from '../../GraphManagerTestUtils.js';
 import { DSLExternalFormat_GraphPreset } from '../../graph/DSLExternalFormat_Extension.js';
 
-const pluginManager = new TEST__GraphPluginManager();
+const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();
 
 test(unitTest('DSL External Format import resolution roundtrip'), async () => {

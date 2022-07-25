@@ -69,7 +69,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-persistence-cloud",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-persistence-cloud-protocol-processor"
+    "graphManagerPreset": "@finos/legend-preset-dsl-persistence-cloud-graph-manager",
+    "pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-persistence-cloud-pure-protocol-processor-graph"
   }
 }

@@ -17,7 +17,7 @@
 import { LegendApplicationPluginManager } from '@finos/legend-application';
 import {
   CorePureGraphManagerPlugin,
-  type GraphPluginManager,
+  type GraphManagerPluginManager,
   type PureGraphManagerPlugin,
   type PureGraphPlugin,
   type PureProtocolProcessorPlugin,
@@ -27,7 +27,7 @@ import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplic
 
 export class LegendStudioPluginManager
   extends LegendApplicationPluginManager<LegendStudioApplicationPlugin>
-  implements GraphPluginManager
+  implements GraphManagerPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];

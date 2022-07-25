@@ -45,7 +45,7 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
 
 test(
   integrationTest(
@@ -53,7 +53,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -111,7 +111,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -169,7 +169,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -227,7 +227,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -285,7 +285,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -343,7 +343,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -401,7 +401,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -459,7 +459,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -517,7 +517,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -575,7 +575,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -633,7 +633,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
@@ -691,7 +691,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });

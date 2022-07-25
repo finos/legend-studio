@@ -48,11 +48,11 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 
 const pluginManager = LegendQueryPluginManager.create();
-pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
 
 type RoundtripTestCase = [
   string,

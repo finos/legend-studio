@@ -78,10 +78,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-diagram",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-diagram"
+    "graphManagerPreset": "@finos/legend-preset-dsl-diagram-graph-manager",
+    "pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-diagram-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-plugin-dsl-diagram-pure-graph-manager",
+    "pureGraphPlugin": "@finos/legend-plugin-dsl-diagram-pure-graph",
+    "applicationStudioPlugin": "@finos/legend-plugin-dsl-diagram-application-studio"
   }
 }

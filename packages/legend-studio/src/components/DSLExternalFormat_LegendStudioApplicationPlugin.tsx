@@ -103,7 +103,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
 {
   constructor() {
     super(
-      packageJson.extensions.dsl_external_format_studioPlugin,
+      packageJson.extensions.dsl_external_format_applicationStudioPlugin,
       packageJson.version,
     );
   }

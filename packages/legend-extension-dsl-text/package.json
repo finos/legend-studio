@@ -73,10 +73,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-text",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-text-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-text-pure-graph",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-text"
+    "graphManagerPreset": "@finos/legend-preset-dsl-text-graph-manager",
+    "pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-text-pure-protocol-processor",
+    "pureGraphManagerPlugin": "@finos/legend-plugin-dsl-text-pure-graph-manager",
+    "pureGraphPlugin": "@finos/legend-plugin-dsl-text-pure-graph",
+    "applicationStudioPlugin": "@finos/legend-plugin-dsl-text-application-studio"
   }
 }

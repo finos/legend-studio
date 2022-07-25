@@ -18,17 +18,17 @@ import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA__ESService_Roundtrip.js';
-import { ESService_GraphPreset } from '../../ESService_Extension.js';
+import { ESService_GraphManagerPreset } from '../../ESService_Extension.js';
 import {
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
   DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 
-const pluginManager = new TEST__GraphPluginManager();
+const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
   .usePresets([
-    new ESService_GraphPreset(),
+    new ESService_GraphManagerPreset(),
     new DSLExternalFormat_GraphPreset(),
   ])
   .install();

@@ -35,7 +35,7 @@ import { extractElementNameFromPath } from '@finos/legend-graph';
 
 export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
-    super(packageJson.extensions.queryPlugin, packageJson.version);
+    super(packageJson.extensions.queryApplicationPlugin, packageJson.version);
   }
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {

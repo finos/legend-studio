@@ -19,9 +19,9 @@ import { AbstractPreset } from '@finos/legend-shared';
 import { QueryBuilder_PureProtocolProcessorPlugin } from './protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 import { QueryBuilder_PureGraphManagerPlugin } from '../graphManager/QueryBuilder_GraphManagerPlugin.js';
 
-export class QueryBuilder_GraphPreset extends AbstractPreset {
+export class QueryBuilder_GraphManagerPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version, [
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
       new QueryBuilder_PureGraphManagerPlugin(),
       new QueryBuilder_PureProtocolProcessorPlugin(),
     ]);

@@ -19,7 +19,7 @@ import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import { getByDisplayValue, waitFor } from '@testing-library/dom';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
 import {
   TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
@@ -35,7 +35,7 @@ test(
   ),
   async () => {
     const pluginManager = LegendQueryPluginManager.create();
-    pluginManager.usePresets([new QueryBuilder_GraphPreset()]).install();
+    pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });

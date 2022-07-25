@@ -18,14 +18,14 @@ import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-model-storage';
 import { unitTest } from '@finos/legend-shared';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSLDataSpace_Roundtrip.js';
-import { DSLDataSpace_GraphPreset } from '../../DSLDataSpace_Extension.js';
+import { DSLDataSpace_GraphManagerPreset } from '../../DSLDataSpace_Extension.js';
 import {
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-graph';
 
-const pluginManager = new TEST__GraphPluginManager();
-pluginManager.usePresets([new DSLDataSpace_GraphPreset()]).install();
+const pluginManager = new TEST__GraphManagerPluginManager();
+pluginManager.usePresets([new DSLDataSpace_GraphManagerPreset()]).install();
 
 test(unitTest('Data space import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(

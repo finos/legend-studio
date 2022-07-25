@@ -90,8 +90,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "core_studioPlugin": "@finos/legend-studio-plugin-core",
-    "dsl_external_format_studioPlugin": "@finos/legend-studio-plugin-dsl-external-format"
+    "applicationStudioPlugin": "@finos/legend-plugin-core-application-studio",
+    "dsl_external_format_applicationStudioPlugin": "@finos/legend-plugin-dsl-external-format-application-studio"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

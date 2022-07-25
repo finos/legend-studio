@@ -21,7 +21,7 @@ import {
 } from '@finos/legend-studio';
 import { type AbstractPreset, WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
-import { QueryBuilder_LegendStudioPreset } from '@finos/legend-studio-extension-query-builder';
+import { QueryBuilder_LegendStudioApplicationPreset } from '@finos/legend-studio-extension-query-builder';
 import { DSLText_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space';
@@ -31,7 +31,7 @@ import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension
 
 export const getLegendStudioPresetCollection = (): AbstractPreset[] => [
   ...getLegendGraphExtensionCollection(),
-  new QueryBuilder_LegendStudioPreset(),
+  new QueryBuilder_LegendStudioApplicationPreset(),
 ];
 
 export const getLegendStudioPluginCollection =

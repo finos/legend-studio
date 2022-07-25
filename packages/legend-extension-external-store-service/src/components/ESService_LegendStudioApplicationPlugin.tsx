@@ -88,7 +88,7 @@ export class ESService_LegendStudioApplicationPlugin
     DSLData_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

@@ -19,7 +19,7 @@ import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin.js';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
 
-export interface GraphPluginManager extends AbstractPluginManager {
+export interface GraphManagerPluginManager extends AbstractPluginManager {
   getPureGraphPlugins(): PureGraphPlugin[];
   registerPureGraphPlugin(plugin: PureGraphPlugin): void;
 

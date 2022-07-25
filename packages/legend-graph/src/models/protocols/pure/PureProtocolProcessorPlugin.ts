@@ -28,7 +28,7 @@ import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1
 import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
 import type { SimpleFunctionExpression } from '../../metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
 import type { ValueSpecification } from '../../metamodels/pure/valueSpecification/ValueSpecification.js';
-import type { GraphPluginManager } from '../../../GraphPluginManager.js';
+import type { GraphManagerPluginManager } from '../../../GraphManagerPluginManager.js';
 import type { Type } from '../../metamodels/pure/packageableElements/domain/Type.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
@@ -95,7 +95,7 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    */
   private readonly _$nominalTypeBrand!: 'PureProtocolProcessorPlugin';
 
-  install(pluginManager: GraphPluginManager): void {
+  install(pluginManager: GraphManagerPluginManager): void {
     pluginManager.registerPureProtocolProcessorPlugin(this);
   }
 

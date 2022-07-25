@@ -37,7 +37,7 @@ import {
   HttpHeader,
 } from '@finos/legend-shared';
 import {
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
@@ -158,7 +158,7 @@ const defaultOptions = {
 const profileRoundtrip = async (
   options: ProfileRoundtripOptions,
 ): Promise<void> => {
-  const pluginManager = new TEST__GraphPluginManager();
+  const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager
     .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);

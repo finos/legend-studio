@@ -34,13 +34,15 @@ import {
 } from '@finos/legend-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_LegendStudioPreset } from '../../QueryBuilder_LegendStudioPreset.js';
+import { QueryBuilder_LegendStudioApplicationPreset } from '../../QueryBuilder_LegendStudioApplicationPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 
 const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = LegendStudioPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_LegendStudioPreset()]).install();
+  pluginManager
+    .usePresets([new QueryBuilder_LegendStudioApplicationPreset()])
+    .install();
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(

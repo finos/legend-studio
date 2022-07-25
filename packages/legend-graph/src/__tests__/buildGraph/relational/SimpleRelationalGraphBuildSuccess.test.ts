@@ -27,7 +27,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__checkBuildingElementsRoundtrip,
   TEST__getTestGraphManagerState,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
 } from '../../../GraphManagerTestUtils.js';
 import { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
 import { RootRelationalInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
@@ -134,7 +134,7 @@ test(unitTest('Relational Mapping is loaded properly'), () => {
   );
 });
 
-const pluginManager = new TEST__GraphPluginManager();
+const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();
 
 test(unitTest('SemiStructured relational type roundtrip'), async () => {

@@ -20,9 +20,9 @@ import { DSLDiagram_PureGraphManagerPlugin } from './graphManager/DSLDiagram_Pur
 import { DSLDiagram_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin.js';
 import { DSLDiagram_PureGraphPlugin } from './graph/DSLDiagram_PureGraphPlugin.js';
 
-export class DSLDiagram_GraphPreset extends AbstractPreset {
+export class DSLDiagram_GraphManagerPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version, [
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
       new DSLDiagram_PureGraphPlugin(),
       new DSLDiagram_PureGraphManagerPlugin(),
       new DSLDiagram_PureProtocolProcessorPlugin(),

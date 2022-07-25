@@ -62,7 +62,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

@@ -160,7 +160,7 @@ export class QueryBuilder_LegendStudioApplicationPlugin
     DSLService_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraApplicationSetups(): LegendApplicationSetup[] {

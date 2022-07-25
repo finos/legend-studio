@@ -24,7 +24,7 @@ import type { ApplicationPageEntry } from '@finos/legend-application';
 
 export class Management_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {

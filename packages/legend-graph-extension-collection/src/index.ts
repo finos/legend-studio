@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { DSLText_GraphPreset } from '@finos/legend-extension-dsl-text';
-import { EFJSONSchema_GraphPreset } from '@finos/legend-extension-external-format-json-schema';
 import type { AbstractPreset } from '@finos/legend-shared';
-import { DSLDiagram_GraphPreset } from '@finos/legend-extension-dsl-diagram';
-import { DSLDataSpace_GraphPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
-import { DSLPersistenceCloud_GraphPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { ESService_GraphPreset } from '@finos/legend-extension-external-store-service';
+import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 
 export const getLegendGraphExtensionCollection = (): AbstractPreset[] => [
-  new DSLText_GraphPreset(),
-  new DSLDiagram_GraphPreset(),
-  new DSLDataSpace_GraphPreset(),
+  new DSLText_GraphManagerPreset(),
+  new DSLDiagram_GraphManagerPreset(),
+  new DSLDataSpace_GraphManagerPreset(),
   new DSLExternalFormat_GraphPreset(),
-  new DSLPersistence_GraphPreset(),
-  new DSLPersistenceCloud_GraphPreset(),
-  new EFJSONSchema_GraphPreset(),
-  new ESService_GraphPreset(),
+  new DSLPersistence_GraphManagerPreset(),
+  new DSLPersistenceCloud_GraphManagerPreset(),
+  new EFJSONSchema_GraphManagerPreset(),
+  new ESService_GraphManagerPreset(),
 ];

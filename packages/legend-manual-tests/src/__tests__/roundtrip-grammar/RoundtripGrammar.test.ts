@@ -39,7 +39,7 @@ import {
 } from '@finos/legend-shared';
 import {
   type V1_PackageableElement,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
@@ -114,7 +114,7 @@ const checkGrammarRoundtrip = async (
   filePath: string,
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
-  const pluginManager = new TEST__GraphPluginManager();
+  const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager
     .usePresets(getLegendGraphExtensionCollection())
     .usePlugins([new WebConsole()]);

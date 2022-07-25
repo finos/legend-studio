@@ -15,22 +15,22 @@
  */
 
 import { test } from '@jest/globals';
-import { DSLPersistenceCloud_GraphPreset } from '../../DSLPersistenceCloud_Extension.js';
+import { DSLPersistenceCloud_GraphManagerPreset } from '../../DSLPersistenceCloud_Extension.js';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSLPersistenceCloud_Roundtrip.js';
-import { DSLPersistence_GraphPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import {
   DSLExternalFormat_GraphPreset,
   TEST__checkBuildingElementsRoundtrip,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
 
-const pluginManager = new TEST__GraphPluginManager();
+const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
   .usePresets([
-    new DSLPersistence_GraphPreset(),
-    new DSLPersistenceCloud_GraphPreset(),
+    new DSLPersistence_GraphManagerPreset(),
+    new DSLPersistenceCloud_GraphManagerPreset(),
     new DSLExternalFormat_GraphPreset(),
   ])
   .install();

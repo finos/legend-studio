@@ -33,7 +33,7 @@ export class MappingGeneration_LegendStudioApplicationPlugin
   implements DSLMapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraModelLoaderExtensionConfigurations(): ModelLoaderExtensionConfiguration[] {

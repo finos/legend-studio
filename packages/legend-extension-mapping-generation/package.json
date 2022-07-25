@@ -69,8 +69,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-mapping-generation",
-    "studioPlugin": "@finos/legend-studio-plugin-mapping-generation-extension",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-mapping-generation-pure-protocol-processor"
+    "graphManagerPreset": "@finos/legend-preset-mapping-generation-graph-manager",
+    "pureProtocolProcessorPlugin": "@finos/legend-plugin-mapping-generation-pure-protocol-processor",
+    "applicationStudioPlugin": "@finos/legend-plugin-mapping-generation-extension-application-studio"
   }
 }

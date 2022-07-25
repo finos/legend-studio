@@ -212,7 +212,7 @@ import {
   SystemGraphBuilderError,
 } from '../../../../graphManager/GraphManagerUtils.js';
 import { PackageableElementReference } from '../../../metamodels/pure/packageableElements/PackageableElementReference.js';
-import type { GraphPluginManager } from '../../../../GraphPluginManager.js';
+import type { GraphManagerPluginManager } from '../../../../GraphManagerPluginManager.js';
 import type { QuerySearchSpecification } from '../../../../graphManager/action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from '../../../../graphManager/action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../../../metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -430,7 +430,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   engine: V1_Engine;
   graphBuilderExtensions: V1_GraphBuilderExtensions;
 
-  constructor(pluginManager: GraphPluginManager, log: Log) {
+  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     super(pluginManager, log);
     this.engine = new V1_Engine({}, log);
 

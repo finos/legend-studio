@@ -27,7 +27,7 @@ import {
 import { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
 export class Core_LegendStudioApplicationPlugin extends LegendStudioApplicationPlugin {
-  static NAME = packageJson.extensions.core_studioPlugin;
+  static NAME = packageJson.extensions.applicationStudioPlugin;
 
   constructor() {
     super(Core_LegendStudioApplicationPlugin.NAME, packageJson.version);

@@ -17,10 +17,10 @@
 import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-model-storage';
-import { DSLDiagram_GraphPreset } from '../../DSLDiagram_Extension.js';
+import { DSLDiagram_GraphManagerPreset } from '../../DSLDiagram_Extension.js';
 import {
   TEST__getTestGraphManagerState,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph';
 
 const TEST_DATA__MissingClassInDiagram = [
@@ -77,8 +77,8 @@ const TEST_DATA__MissingClassInDiagram = [
 ];
 
 test(unitTest('Missing class in diagram class view'), async () => {
-  const pluginManager = new TEST__GraphPluginManager();
-  pluginManager.usePresets([new DSLDiagram_GraphPreset()]).install();
+  const pluginManager = new TEST__GraphManagerPluginManager();
+  pluginManager.usePresets([new DSLDiagram_GraphManagerPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 
   await expect(() =>

@@ -51,7 +51,7 @@ export class ELMorphir_LegendStudioApplicationPlugin
   private _linterAppUrl?: string | undefined;
 
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
     this.networkClient = new NetworkClient();
   }
 

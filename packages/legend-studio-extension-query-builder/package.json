@@ -80,7 +80,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "studioPreset": "@finos/legend-studio-preset-query-builder",
-    "studioPlugin": "@finos/legend-studio-plugin-query-builder"
+    "applicationStudioPreset": "@finos/legend-preset-query-builder-application-studio",
+    "applicationStudioPlugin": "@finos/legend-plugin-query-builder-application-studio"
   }
 }

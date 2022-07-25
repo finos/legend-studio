@@ -20,9 +20,9 @@ import { DSLPersistence_PureGraphPlugin } from './graph/DSLPersistence_PureGraph
 import { DSLPersistence_PureGraphManagerPlugin } from './graphManager/DSLPersistence_PureGraphManagerPlugin.js';
 import { DSLPersistence_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLPersistence_PureProtocolProcessorPlugin.js';
 
-export class DSLPersistence_GraphPreset extends AbstractPreset {
+export class DSLPersistence_GraphManagerPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version, [
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
       new DSLPersistence_PureGraphPlugin(),
       new DSLPersistence_PureGraphManagerPlugin(),
       new DSLPersistence_PureProtocolProcessorPlugin(),

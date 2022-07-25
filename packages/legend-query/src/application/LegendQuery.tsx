@@ -29,7 +29,7 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { QueryBuilder_GraphPreset } from '../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../models/QueryBuilder_GraphPreset.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
@@ -56,7 +56,7 @@ export class LegendQuery extends LegendApplication {
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
     application.withBasePlugins([new CorePureGraphManagerPlugin()]);
-    application.withBasePresets([new QueryBuilder_GraphPreset()]);
+    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     return application;
   }
 
