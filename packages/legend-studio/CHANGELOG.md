@@ -1,5 +1,17 @@
 # @finos/legend-studio
 
+## 12.0.0
+
+### Major Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `getExtraApplicationPageRenderEntries()` to `getExtraApplicationPageEntries()` and move this plugin method to `@finos/legend-application` as it applies for more generic use cases.
+
+* [#1323](https://github.com/finos/legend-studio/pull/1323) [`dbbbd63b`](https://github.com/finos/legend-studio/commit/dbbbd63b3dda4229e7bf36fb59a0c7b3d525d775) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LegendStudioStore` to `LegendStudioBaseStore`, `LegendStudioPlugin` to `LegendStudioApplicationPlugin`, `LegendStudioConfig` to `LegendStudioApplicationConfig`. We also unified `LegendStudioApplicationPlugin` and `LegendApplicationPlugin` in `LegendStudioPluginManager` so we have removed `getStudioPlugins()` method, use `getApplicationPlugins()` instead. We also renamed page/screen components in `Legend Studio` codebase to make them spell out better what they do, this change includes renaming `Setup` to `WorkspaceSetup`, `Viewer` to `ProjectViewer`, and `Review` to `WorkspaceReview`.
+
+### Patch Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - Expose (Higher-Order Component)[https://reactjs.org/docs/higher-order-components.html] wrappers for simple store providers such as `withEditorStore()`, `withSetupStore()`, etc.
+
 ## 11.0.3
 
 ### Patch Changes

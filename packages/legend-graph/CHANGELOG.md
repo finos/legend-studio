@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 11.0.0
+
+### Major Changes
+
+- [#1323](https://github.com/finos/legend-studio/pull/1323) [`dbbbd63b`](https://github.com/finos/legend-studio/commit/dbbbd63b3dda4229e7bf36fb59a0c7b3d525d775) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** We no longer expose `V1_ProtocolToMetaModelConnectionBuilder` and `V1_ProtocolToMetaModelEmbeddedDataBuilder`. Instead, we directly expose the builder helper `V1_buildConnection()` and `V1_buildEmbeddedData()`.
+
+* [#1324](https://github.com/finos/legend-studio/pull/1324) [`a3896c1f`](https://github.com/finos/legend-studio/commit/a3896c1f5969544d7139ceb1648ccd2d6060f2e0) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Use `SetImplementationReference` for `sourceImplementation` and `targetImplementation` in `PropertyMapping`.
+
+- [#1324](https://github.com/finos/legend-studio/pull/1324) [`a3896c1f`](https://github.com/finos/legend-studio/commit/a3896c1f5969544d7139ceb1648ccd2d6060f2e0) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed all `OptionalReference` to simplify reference system. Removed `OptionalPackageableElementReference`, use `PackageableElementReference | undefined` instead. As a result, `PureInstanceSetImplementation.srcClass`, `PropertyGraphFetchTree.subType`, `Binding.schemaSet` are now adjusted to use `PackageableElementReference` accordingly.
+
+* [#1324](https://github.com/finos/legend-studio/pull/1324) [`a3896c1f`](https://github.com/finos/legend-studio/commit/a3896c1f5969544d7139ceb1648ccd2d6060f2e0) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `OptionalEnumerationMappingReference`, use `EnumerationMappingReference | undefined` instead.
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reordered parameters for execution-related method in `AbstractPureGraphManager` (before we had: `graph, mapping, query, runtime`, now we have `query, mapping, runtime, graph`) to make this more consistent with other methods.
+
 ## 10.1.2
 
 ## 10.1.1

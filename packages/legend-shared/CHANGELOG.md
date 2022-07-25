@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 5.0.0
+
+### Major Changes
+
+- [#1323](https://github.com/finos/legend-studio/pull/1323) [`dbbbd63b`](https://github.com/finos/legend-studio/commit/dbbbd63b3dda4229e7bf36fb59a0c7b3d525d775) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `TEMPORARRY__JestMatcher` to `TEMPORARY__JestMatcher` to fix the typo.
+
 ## 4.0.3
 
 ## 4.0.2
