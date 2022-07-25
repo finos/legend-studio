@@ -48,6 +48,7 @@ import {
   SnowflakeDatasourceSpecification,
   RedshiftDatasourceSpecification,
   BigQueryDatasourceSpecification,
+  SpannerDatasourceSpecification,
 } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 import type { ModelChainConnection } from '../../../../../../metamodels/pure/packageableElements/store/modelToModel/connection/ModelChainConnection.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
@@ -61,6 +62,7 @@ import {
   V1_DatabricksDatasourceSpecification,
   V1_StaticDatasourceSpecification,
   V1_RedshiftDatasourceSpecification,
+  V1_SpannerDatasourceSpecification,
 } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
 import {
   type V1_AuthenticationStrategy,
@@ -87,8 +89,6 @@ import { V1_transformPostProcessor } from './V1_PostProcessorTransformer.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import { V1_SpannerDatasourceSpecification } from '../../../model/packageableElements/store/relational/connection/V1_DatasourceSpecification.js';
-import { SpannerDatasourceSpecification } from '../../../../../../metamodels/pure/packageableElements/store/relational/connection/DatasourceSpecification.js';
 
 const transformStaticDatasourceSpecification = (
   metamodel: StaticDatasourceSpecification,
