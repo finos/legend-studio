@@ -192,6 +192,8 @@ export class QueryBuilderSetupState {
       this.setProcessingDate(undefined);
       if (stereotype) {
         this.initializeQueryMilestoningParameters(stereotype);
+        // Show the parameter panel because we populate paramaters state with milestoning parameters
+        this.queryBuilderState.setShowParameterPanel(true);
       }
     }
   }

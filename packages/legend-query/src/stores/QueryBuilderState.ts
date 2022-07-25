@@ -330,6 +330,7 @@ export class QueryBuilderState {
     this.resultState = resultState;
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
+    this.setShowParameterPanel(false);
   }
 
   resetQuerySetup(): void {
