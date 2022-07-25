@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-shared",
-  "version": "4.0.3",
+  "version": "5.0.0",
   "description": "Legend Studio shared utilities and helpers",
   "keywords": [
     "legend",

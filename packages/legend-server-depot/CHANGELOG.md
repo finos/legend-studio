@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 3.0.0
+
+### Major Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed a client method `getLatestDependencyEntities` to `getLatestRevisionDependencyEntities()` and `getProjectVersionsDependencyEntities()` to `collectDependencyEntities()` to better describe their functionality. Also introduce a new composite client method `getIndexedDependencyEntities()` which accepts `version aliases` (such as `HEAD`, `latest`) and has logic to pick the right client methods to fetch and index the corresponding dependency entities and index them. Besides, we also cleaned up method signatures to make a distinction between `version` and `versionId` in client methods where the latter includes the former and `version aliases`.
+
 ## 2.0.6
 
 ## 2.0.5

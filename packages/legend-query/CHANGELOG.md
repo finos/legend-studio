@@ -1,5 +1,34 @@
 # @finos/legend-query
 
+## 4.0.0
+
+### Major Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove logic from `LegendQueryStore` to separate between query setup and edit.
+
+* [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change the URL patterns for query editor to use [GAV coordinate](https://help.sonatype.com/repomanager3/using-nexus-repository/repository-manager-concepts/an-example---maven-repository-format#AnExampleMavenRepositoryFormat-ComponentCoordinatesandtheRepositoryFormat) `{groupId}:{artifactId}:{versionId}` instead of these separated by slashes `{groupId}/{artifactId}/{versionId}`. As such the following routes are impacted:
+
+  ```
+  1. creating query from a pair mapping and runtime
+  before: /query/create/{groupId}/{artifactId}/{versionId}/{mappingPath}/{runtimePath}
+  after: /query/create/{groupId}:{artifactId}:{versionId}/{mappingPath}/{runtimePath}
+  example: /query/create/org.finos.legend/test-project/1.0.0/model::MyMapping/model::MyRuntime -> /query/create/org.finos.legend:test-project:1.0.0/model::MyMapping/model::MyRuntime
+
+  2. creating query from a service execution context
+  before: /query/service/{groupId}/{artifactId}/{versionId}/{servicePath}
+  after: /query/service/{groupId}:{artifactId}:{versionId}/{servicePath}
+  example: /query/service/org.finos.legend/test-project/1.0.0/model::MyService -> /query/service/org.finos.legend:test-project:1.0.0/model::MyService
+
+  ```
+
+- [#1323](https://github.com/finos/legend-studio/pull/1323) [`dbbbd63b`](https://github.com/finos/legend-studio/commit/dbbbd63b3dda4229e7bf36fb59a0c7b3d525d775) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LegendQueryStore` to `LegendQueryBaseStore`, `LegendQueryPlugin` to `LegendQueryApplicationPlugin`, `LegendQueryConfig` to `LegendQueryApplicationConfig`. We also unified `LegendQueryApplicationPlugin` and `LegendApplicationPlugin` in `LegendQueryPluginManager` so we have removed `getQueryPlugins()` method, use `getApplicationPlugins()` instead.
+
+### Patch Changes
+
+- [#1326](https://github.com/finos/legend-studio/pull/1326) [`97cac68f`](https://github.com/finos/legend-studio/commit/97cac68f07b5cb8f6c5f52bdd39c161e8070ced0) ([@gayathrir11](https://github.com/gayathrir11)) - Show parameter panel when we query from milestoned classes
+
+* [#1310](https://github.com/finos/legend-studio/pull/1310) [`725aa76b`](https://github.com/finos/legend-studio/commit/725aa76b0b5ef8b433603698808d92f6b4699a36) ([@gayathrir11](https://github.com/gayathrir11)) - Show deprecated classes as strike through in query builder explorer tree
+
 ## 3.2.3
 
 ### Patch Changes
