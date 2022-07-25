@@ -16,11 +16,7 @@
 
 import type { Class } from '../packageableElements/domain/Class.js';
 import type { PropertyReference } from '../packageableElements/domain/PropertyReference.js';
-import {
-  OptionalPackageableElementExplicitReference,
-  type OptionalPackageableElementReference,
-  type PackageableElementReference,
-} from '../packageableElements/PackageableElementReference.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import type {
   ValueSpecification,
   ValueSpecificationVisitor,
@@ -48,17 +44,15 @@ export class PropertyGraphFetchTree extends GraphFetchTree {
   property: PropertyReference;
   alias?: string | undefined;
   parameters: ValueSpecification[] = []; //TODO
-  subType: OptionalPackageableElementReference<Class>;
+  subType?: PackageableElementReference<Class> | undefined;
 
   constructor(
     property: PropertyReference,
-    val?: OptionalPackageableElementReference<Class>,
+    subType: PackageableElementReference<Class> | undefined,
   ) {
     super();
     this.property = property;
-    this.subType =
-      val ??
-      OptionalPackageableElementExplicitReference.create<Class>(undefined);
+    this.subType = subType;
   }
 }
 

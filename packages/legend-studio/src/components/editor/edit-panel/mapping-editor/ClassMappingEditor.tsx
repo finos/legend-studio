@@ -117,7 +117,7 @@ export const ClassMappingEditor = observer(
       case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
         sourceType = CLASS_MAPPING_SOURCE_TYPE.CLASS;
         sourceName = (setImplementation as PureInstanceSetImplementation)
-          .srcClass.value?.name;
+          .srcClass?.value.name;
         break;
       }
       case SET_IMPLEMENTATION_TYPE.FLAT_DATA: {

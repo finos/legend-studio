@@ -57,7 +57,7 @@ const QueryBuilderGraphFetchTreeNodeContainer: React.FC<
   const { removeNode } = innerProps;
   const property = node.tree.property.value;
   const type = property.genericType.value.rawType;
-  const subType = node.tree.subType.value;
+  const subType = node.tree.subType?.value;
   const isExpandable = Boolean(node.childrenIds.length);
   const nodeExpandIcon = isExpandable ? (
     node.isOpen ? (

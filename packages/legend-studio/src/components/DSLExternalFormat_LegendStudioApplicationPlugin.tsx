@@ -21,7 +21,6 @@ import {
   type Connection,
   type PackageableElement,
   type Store,
-  OptionalPackageableElementExplicitReference,
   PackageableElementExplicitReference,
   SchemaSet,
   Binding,
@@ -189,10 +188,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
             binding,
             guaranteeNonNullable(externalFormatState.formatContentTypes[0]),
           );
-          binding.schemaSet =
-            OptionalPackageableElementExplicitReference.create<SchemaSet>(
-              undefined,
-            );
+          binding.schemaSet = undefined;
           const modelUnit = new ModelUnit();
           binding.modelUnit = modelUnit;
           return binding;

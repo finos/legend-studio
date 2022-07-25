@@ -18,7 +18,6 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../MetaModelConst.js';
 import type { PropertyReference } from '../domain/PropertyReference.js';
 import type { PropertyMappingsImplementation } from './PropertyMappingsImplementation.js';
-import type { SetImplementation } from './SetImplementation.js';
 import type { PurePropertyMapping } from '../store/modelToModel/mapping/PurePropertyMapping.js';
 import type { FlatDataPropertyMapping } from '../store/flatData/mapping/FlatDataPropertyMapping.js';
 import type { EmbeddedFlatDataPropertyMapping } from '../store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
@@ -29,6 +28,7 @@ import type { InlineEmbeddedRelationalInstanceSetImplementation } from '../store
 import type { AggregationAwarePropertyMapping } from './aggregationAware/AggregationAwarePropertyMapping.js';
 import type { XStorePropertyMapping } from './xStore/XStorePropertyMapping.js';
 import type { LocalMappingPropertyInfo } from './LocalMappingPropertyInfo.js';
+import type { SetImplementationReference } from './SetImplementationReference.js';
 
 export interface PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: PropertyMapping): T;
@@ -64,41 +64,45 @@ export abstract class PropertyMapping implements Hashable {
 
   property: PropertyReference;
   /**
-   * NOTE: in case the holder of this property mapping is an embedded property mapping,
-   * that embedded property mapping is considered the source otherwise, it is always
-   * the top/root `InstanceSetImplementation` that is considered the source implementation
+   * In Pure, these fields are defined as string and not properly resolved, perhaps because of
+   * the fact that in Pure, we allow mappings which contain class mapping IDs pointing at
+   * another mapping's class mappings. In Pure/Engine, we let this pass compilation phase.
+   * In Studio, we disallow this. This makes it hard for users to migrate to Studio.
+   * We should think of a strategy to make things loadable in Studio, but disallow users
+   * to make changes if they have this kind of error in their graph.
    *
-   * TODO: change this to use `SetImplemenetationReference`
-   */
-  sourceSetImplementation: SetImplementation;
-  /**
-   * NOTE: in Pure, we actually only store `targetId` and `sourceId` instead of the
-   * reference but for convenience and graph completeness validation purpose we will
-   * resolve to the actual set implementations here
+   * See https://github.com/finos/legend-studio/issues/880
    *
-   * TODO: change this to use `OptionalSetImplemenetationReference`
+   * NOTE: We might not be able to resolve `targetSetImplementation` for all `target` IDs hence
+   * defined as optional for now. We might need to come back and re-visit this decision. Note that
+   * one quirky thing is that the metamodel in Pure has these fields as string pointers, even
+   * when these are not resolvable, the field is set to empty string. We should solidify our
+   * understand about these fields.
+   *
+   * @discrepancy model
    */
-  targetSetImplementation?: SetImplementation | undefined;
+  sourceSetImplementation: SetImplementationReference;
+  targetSetImplementation?: SetImplementationReference | undefined;
   localMappingProperty?: LocalMappingPropertyInfo | undefined;
   // store?: Store | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
-    source: SetImplementation,
-    target?: SetImplementation,
+    source: SetImplementationReference,
+    target: SetImplementationReference | undefined,
   ) {
     this._OWNER = owner;
     this.sourceSetImplementation = source;
-    this.targetSetImplementation = target;
     this.property = property;
+    this.targetSetImplementation = target;
   }
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_MAPPING,
       this.property.pointerHashCode,
-      this.targetSetImplementation?.id.value ?? '',
+      this.targetSetImplementation?.value.id.value ?? '',
       this.localMappingProperty ?? '',
     ]);
   }

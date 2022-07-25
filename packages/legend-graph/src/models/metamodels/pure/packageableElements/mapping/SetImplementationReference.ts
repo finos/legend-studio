@@ -15,19 +15,12 @@
  */
 
 import {
-  type PackageableElementImplicitReference,
-  type OptionalPackageableElementImplicitReference,
   type PackageableElementReference,
-  type OptionalPackageableElementReference,
   PackageableElementExplicitReference,
-  OptionalPackageableElementExplicitReference,
 } from '../PackageableElementReference.js';
 import type { Mapping } from './Mapping.js';
 import type { SetImplementation } from './SetImplementation.js';
-import {
-  OptionalReferenceWithOwner,
-  ReferenceWithOwner,
-} from '../../Reference.js';
+import { ReferenceWithOwner } from '../../Reference.js';
 
 export abstract class SetImplementationReference extends ReferenceWithOwner {
   override readonly ownerReference: PackageableElementReference<Mapping>;
@@ -41,6 +34,8 @@ export abstract class SetImplementationReference extends ReferenceWithOwner {
     this.ownerReference = ownerReference;
     this.value = value;
   }
+
+  abstract get valueForSerialization(): string | undefined;
 }
 
 export class SetImplementationExplicitReference extends SetImplementationReference {
@@ -57,77 +52,33 @@ export class SetImplementationExplicitReference extends SetImplementationReferen
   static create(value: SetImplementation): SetImplementationExplicitReference {
     return new SetImplementationExplicitReference(value);
   }
+
+  get valueForSerialization(): string | undefined {
+    return this.value.id.value;
+  }
 }
 
 export class SetImplementationImplicitReference extends SetImplementationReference {
-  override readonly ownerReference: PackageableElementImplicitReference<Mapping>;
+  override readonly ownerReference: PackageableElementReference<Mapping>;
+  readonly input?: string | undefined;
 
-  private constructor(
-    ownerReference: PackageableElementImplicitReference<Mapping>,
-    value: SetImplementation,
-  ) {
+  private constructor(value: SetImplementation, input: string | undefined) {
+    const ownerReference = PackageableElementExplicitReference.create(
+      value._PARENT,
+    );
     super(ownerReference, value);
     this.ownerReference = ownerReference;
+    this.input = input;
   }
 
   static create(
-    ownerReference: PackageableElementImplicitReference<Mapping>,
     value: SetImplementation,
+    input: string | undefined,
   ): SetImplementationImplicitReference {
-    return new SetImplementationImplicitReference(ownerReference, value);
-  }
-}
-
-export abstract class OptionalSetImplementationReference extends OptionalReferenceWithOwner {
-  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
-  value?: SetImplementation | undefined;
-
-  protected constructor(
-    ownerReference: OptionalPackageableElementReference<Mapping>,
-    value: SetImplementation | undefined,
-  ) {
-    super(ownerReference);
-    this.ownerReference = ownerReference;
-    this.value = value;
-  }
-}
-
-export class OptionalSetImplementationExplicitReference extends OptionalSetImplementationReference {
-  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
-
-  private constructor(value: SetImplementation | undefined) {
-    const ownerReference = OptionalPackageableElementExplicitReference.create(
-      value?._PARENT,
-    );
-    super(ownerReference, value);
-    this.ownerReference = ownerReference;
+    return new SetImplementationImplicitReference(value, input);
   }
 
-  static create(
-    value: SetImplementation,
-  ): OptionalSetImplementationExplicitReference {
-    return new OptionalSetImplementationExplicitReference(value);
-  }
-}
-
-export class OptionalSetImplementationImplicitReference extends OptionalSetImplementationReference {
-  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
-
-  private constructor(
-    ownerReference: OptionalPackageableElementImplicitReference<Mapping>,
-    value: SetImplementation | undefined,
-  ) {
-    super(ownerReference, value);
-    this.ownerReference = ownerReference;
-  }
-
-  static create(
-    ownerReference: PackageableElementImplicitReference<Mapping>,
-    value: SetImplementation,
-  ): OptionalSetImplementationImplicitReference {
-    return new OptionalSetImplementationImplicitReference(
-      ownerReference,
-      value,
-    );
+  get valueForSerialization(): string | undefined {
+    return this.input;
   }
 }

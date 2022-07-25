@@ -15,20 +15,20 @@
  */
 
 import {
-  type OptionalPackageableElementReference,
-  OptionalPackageableElementExplicitReference,
+  type PackageableElementReference,
+  PackageableElementExplicitReference,
 } from '../PackageableElementReference.js';
 import type { Mapping } from './Mapping.js';
 import type { EnumerationMapping } from './EnumerationMapping.js';
-import { OptionalReferenceWithOwner } from '../../Reference.js';
+import { ReferenceWithOwner } from '../../Reference.js';
 
-export abstract class OptionalEnumerationMappingReference extends OptionalReferenceWithOwner {
-  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
-  value?: EnumerationMapping | undefined;
+export abstract class EnumerationMappingReference extends ReferenceWithOwner {
+  override readonly ownerReference: PackageableElementReference<Mapping>;
+  value: EnumerationMapping;
 
   protected constructor(
-    ownerReference: OptionalPackageableElementReference<Mapping>,
-    value: EnumerationMapping | undefined,
+    ownerReference: PackageableElementReference<Mapping>,
+    value: EnumerationMapping,
   ) {
     super(ownerReference);
     this.ownerReference = ownerReference;
@@ -38,24 +38,24 @@ export abstract class OptionalEnumerationMappingReference extends OptionalRefere
   abstract get valueForSerialization(): string | undefined;
 }
 
-export class OptionalEnumerationMappingExplicitReference extends OptionalEnumerationMappingReference {
-  override readonly ownerReference: OptionalPackageableElementReference<Mapping>;
+export class EnumerationMappingExplicitReference extends EnumerationMappingReference {
+  override readonly ownerReference: PackageableElementReference<Mapping>;
 
-  private constructor(value: EnumerationMapping | undefined) {
-    const ownerReference = OptionalPackageableElementExplicitReference.create(
-      value?._PARENT,
+  private constructor(value: EnumerationMapping) {
+    const ownerReference = PackageableElementExplicitReference.create(
+      value._PARENT,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;
   }
 
   static create(
-    value: EnumerationMapping | undefined,
-  ): OptionalEnumerationMappingExplicitReference {
-    return new OptionalEnumerationMappingExplicitReference(value);
+    value: EnumerationMapping,
+  ): EnumerationMappingExplicitReference {
+    return new EnumerationMappingExplicitReference(value);
   }
 
-  get valueForSerialization(): string | undefined {
-    return this.value?.id.value;
+  get valueForSerialization(): string {
+    return this.value.id.value;
   }
 }

@@ -339,7 +339,7 @@ const MappingElementTreeNodeContainer = observer(
     const mappingElementTarget = getMappingElementTarget(mappingElement);
     const mappingElementTooltipText =
       mappingElement instanceof PropertyMapping && mappingElement._isEmbedded
-        ? `Embedded class mapping '${mappingElement.id.value}' for property '${mappingElement.property.value.name}' (${mappingElement.property.value.genericType.value.rawType.name}) of type '${mappingElement.sourceSetImplementation.class.value.name}'`
+        ? `Embedded class mapping '${mappingElement.id.value}' for property '${mappingElement.property.value.name}' (${mappingElement.property.value.genericType.value.rawType.name}) of type '${mappingElement.sourceSetImplementation.value.class.value.name}'`
         : `${toSentenceCase(
             getMappingElementType(mappingElement).toLowerCase(),
           )} mapping '${mappingElement.id.value}' for '${

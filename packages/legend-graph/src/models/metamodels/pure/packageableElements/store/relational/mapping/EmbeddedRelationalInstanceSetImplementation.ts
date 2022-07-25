@@ -25,10 +25,7 @@ import type { RelationalOperationElement } from '../model/RelationalOperationEle
 import type { EmbeddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation.js';
 import type { Class } from '../../../domain/Class.js';
 import type { Mapping } from '../../../mapping/Mapping.js';
-import type {
-  SetImplementationVisitor,
-  SetImplementation,
-} from '../../../mapping/SetImplementation.js';
+import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type { PropertyMappingsImplementation } from '../../../mapping/PropertyMappingsImplementation.js';
 import {
   type PropertyMappingVisitor,
@@ -42,6 +39,7 @@ import type { RelationalInstanceSetImplementation } from './RelationalInstanceSe
 import { InferableMappingElementRootExplicitValue } from '../../../mapping/InferableMappingElementRoot.js';
 import type { MappingClass } from '../../../mapping/MappingClass.js';
 import { RelationalPropertyMapping } from './RelationalPropertyMapping.js';
+import type { SetImplementationReference } from '../../../mapping/SetImplementationReference.js';
 
 export class EmbeddedRelationalInstanceSetImplementation
   extends PropertyMapping
@@ -65,10 +63,10 @@ export class EmbeddedRelationalInstanceSetImplementation
     owner: PropertyMappingsImplementation,
     property: PropertyReference,
     rootInstanceSetImplementation: RootRelationalInstanceSetImplementation,
-    source: SetImplementation,
+    source: SetImplementationReference,
     _class: PackageableElementReference<Class>,
     id: InferableMappingElementIdValue,
-    target?: SetImplementation,
+    target: SetImplementationReference | undefined,
   ) {
     super(owner, property, source, target);
     this.class = _class;
