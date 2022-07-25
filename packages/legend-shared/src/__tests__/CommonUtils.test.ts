@@ -20,6 +20,7 @@ import {
   mergeObjects,
   getClass,
   getSuperclass,
+  sortObjectKeys,
 } from '../CommonUtils.js';
 import { unitTest } from '../application/TestUtils.js';
 
@@ -50,27 +51,57 @@ test(unitTest('Merge objects'), () => {
     b: [{ o: 'oValue' }, { p: 'pValue' }],
   };
   const obj3 = { c: { a: [1, 2, 3, 4] } };
-  expect({
+  expect(mergeObjects(obj1, obj2, true)).toEqual({
     a: 'oneOverride',
     b: [{ m: 'mValue' }, { n: 'nValue' }, { o: 'oValue' }, { p: 'pValue' }],
     c: { a: [1, 2] },
-  }).toEqual(mergeObjects(obj1, obj2, true));
-  expect({
+  });
+  expect(mergeObjects(obj1, obj3, true)).toEqual({
     a: 'one',
     b: [{ m: 'mValue' }, { n: 'nValue' }],
     c: { a: [1, 2, 1, 2, 3, 4] },
-  }).toEqual(mergeObjects(obj1, obj3, true));
+  });
   // Check the mutation behavior of `merge`
-  expect({
+  expect(mergeObjects(obj1, obj3, false)).toEqual({
     a: 'one',
     b: [{ m: 'mValue' }, { n: 'nValue' }],
     c: { a: [1, 2, 1, 2, 3, 4] },
-  }).toEqual(mergeObjects(obj1, obj3, false));
-  expect({
+  });
+});
+
+test(unitTest('Sort object keys alphabetically'), () => {
+  const obj1 = {
+    // check sorting for objects within array
+    b: [{ m: 'mValue' }, { n: 'nValue', a: 'val' }],
+    // check sorting for objects within nested array
+    y: [
+      [{ m: 'mValue' }, { n: 'nValue', a: 'val' }],
+      [{ 456: 'val', 123: 'nValue' }],
+    ],
     a: 'one',
-    b: [{ m: 'mValue' }, { n: 'nValue' }],
-    c: { a: [1, 2, 1, 2, 3, 4] },
-  }).toEqual(obj1);
+    z: { a: [1, 2] },
+    1234: { a: [1, 2] },
+    _1234: 'a',
+    c: { a: [1, 2] },
+  };
+  const obj2 = {
+    a: 'oneOverride',
+    b: [{ o: 'oValue' }, { p: 'pValue' }],
+  };
+  expect(sortObjectKeys(obj1)).toEqual({
+    '1234': { a: [1, 2] },
+    _1234: 'a',
+    a: 'one',
+    b: [{ m: 'mValue' }, { a: 'val', n: 'nValue' }],
+    c: { a: [1, 2] },
+    y: [
+      [{ m: 'mValue' }, { a: 'val', n: 'nValue' }],
+      [{ 123: 'nValue', 456: 'val' }],
+    ],
+    z: { a: [1, 2] },
+  });
+  expect(sortObjectKeys(obj2)).toEqual(obj2);
+  expect(sortObjectKeys({})).toEqual({});
 });
 
 class A {}

@@ -30,6 +30,7 @@ import {
   useApplicationStore,
   EDITOR_LANGUAGE,
 } from '@finos/legend-application';
+import { sortObjectKeys } from '@finos/legend-shared';
 
 const getDiffItemTitle = (diff: EntityDiff): string | undefined => {
   switch (diff.entityChangeType) {
@@ -158,7 +159,16 @@ export const EntityDiffView = observer(
             />
           )}
           {diffEditorState.diffMode === DIFF_VIEW_MODE.JSON && (
-            <JsonDiffView from={fromEntity?.content} to={toEntity?.content} />
+            <JsonDiffView
+              from={
+                fromEntity?.content
+                  ? sortObjectKeys(fromEntity.content)
+                  : undefined
+              }
+              to={
+                toEntity?.content ? sortObjectKeys(toEntity.content) : undefined
+              }
+            />
           )}
         </div>
       </div>
