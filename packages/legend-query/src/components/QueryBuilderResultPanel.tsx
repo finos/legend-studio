@@ -208,7 +208,7 @@ const QueryBuilderResultContextMenu = observer(
           (conditionState.value instanceof EnumValueInstanceValue
             ? conditionState.value.values.map((ef) => ef.value.name)
             : conditionState.value.values
-          ).includes(event?.value);
+          ).includes(event?.value ?? '');
         if (!doesValueAlreadyExist) {
           const currentValueSpecificaton = conditionState.value;
           const newValueSpecification =
@@ -235,7 +235,7 @@ const QueryBuilderResultContextMenu = observer(
                 : (v as InstanceValue).values,
             )
             .flat()
-            .includes(event?.value);
+            .includes(event?.value ?? '');
         if (!doesValueAlreadyExist) {
           const newValueSpecification = (
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
