@@ -32,7 +32,7 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
   type PureGrammarParserElementDocumentationGetter,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import { TextElementEditor } from './TextElementEditor.js';

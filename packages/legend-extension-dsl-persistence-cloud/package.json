@@ -42,11 +42,11 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "react": "18.2.0",

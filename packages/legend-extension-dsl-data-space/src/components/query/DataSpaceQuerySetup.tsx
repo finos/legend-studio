@@ -27,7 +27,7 @@ import {
   CustomSelectorInput,
   SearchIcon,
 } from '@finos/legend-art';
-import { useQuerySetupStore } from '@finos/legend-query';
+import { useQuerySetupStore } from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';

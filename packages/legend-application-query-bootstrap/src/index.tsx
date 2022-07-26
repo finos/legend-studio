@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LegendQuery } from '@finos/legend-query';
+import { LegendQuery } from '@finos/legend-application-query';
 import {
   type AbstractPreset,
   type AbstractPlugin,

@@ -14,6 +14,6 @@
     { "path": "../legend-graph" },
     { "path": "../legend-storage" },
     { "path": "../legend-shared" },
-    { "path": "../legend-studio" }
+    { "path": "../legend-application-studio" }
   ]
 }

@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-application-studio-query-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
@@ -56,7 +57,6 @@
     "@finos/legend-extension-external-language-morphir": "workspace:*",
     "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
     "@types/react": "18.0.15",
     "react": "18.2.0"
   },

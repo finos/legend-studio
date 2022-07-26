@@ -81,7 +81,7 @@ jobs:
         #
         # This change has some limtation in that, if somehow Docker publish step failed, there is
         # no quick way to rerun this step, but to do a bump in a dependent modules (e.g.
-        # `@finos/legend-studio` in order to trigger a version bump in `@finos/legend-application-studio-deployment`
+        # `@finos/legend-application-studio` in order to trigger a version bump in `@finos/legend-application-studio-deployment`
         if: steps.changesets.outputs.published == 'true'
         run: |
           yarn workspace @finos/legend-application-studio-deployment publish:docker

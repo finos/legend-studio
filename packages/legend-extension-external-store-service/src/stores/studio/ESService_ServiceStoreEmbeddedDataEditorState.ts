@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { type EditorStore, EmbeddedDataState } from '@finos/legend-studio';
+import {
+  type EditorStore,
+  EmbeddedDataState,
+} from '@finos/legend-application-studio';
 import { action, makeObservable, observable } from 'mobx';
 import type { ServiceStoreEmbeddedData } from '../../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
 import type { ServiceStubMapping } from '../../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';

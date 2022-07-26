@@ -13,6 +13,6 @@
     { "path": "../legend-server-sdlc" },
     { "path": "../legend-application" },
     { "path": "../legend-art" },
-    { "path": "../legend-studio" }
+    { "path": "../legend-application-studio" }
   ]
 }

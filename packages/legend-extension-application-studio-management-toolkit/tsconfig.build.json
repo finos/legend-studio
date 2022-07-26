@@ -11,6 +11,6 @@
     { "path": "../legend-server-sdlc/tsconfig.build.json" },
     { "path": "../legend-application/tsconfig.build.json" },
     { "path": "../legend-art/tsconfig.build.json" },
-    { "path": "../legend-studio/tsconfig.build.json" }
+    { "path": "../legend-application-studio/tsconfig.build.json" }
   ]
 }

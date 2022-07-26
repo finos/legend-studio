@@ -47,7 +47,7 @@ import {
   type EmbeddedDataEditorRenderer,
   type EmbeddedDataCreator,
   type MappingElementSource,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
   Connection,

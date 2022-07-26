@@ -17,12 +17,12 @@
 import {
   type MappingExecutionState,
   useEditorStore,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { QueryBuilderMode } from '@finos/legend-query';
+import { QueryBuilderMode } from '@finos/legend-application-query';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';

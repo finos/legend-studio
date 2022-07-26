@@ -21,7 +21,7 @@ import {
   type QuerySetupStore,
   QuerySetupState,
   generateStudioProjectViewUrl,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import {
   type StoredEntity,
   DepotScope,

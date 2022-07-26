@@ -11,12 +11,12 @@
 '@finos/legend-extension-mapping-generation': patch
 '@finos/legend-graph': patch
 '@finos/legend-manual-tests': patch
-'@finos/legend-query': patch
+'@finos/legend-application-query': patch
 '@finos/legend-shared': patch
-'@finos/legend-studio': patch
+'@finos/legend-application-studio': patch
 '@finos/legend-application-studio-bootstrap': patch
 '@finos/legend-extension-application-studio-management-toolkit': patch
 '@finos/legend-extension-application-studio-query-builder': patch
-'@finos/legend-taxonomy': patch
+'@finos/legend-application-taxonomy': patch
 '@finos/legend-extension-tracer-zipkin': patch
 ---

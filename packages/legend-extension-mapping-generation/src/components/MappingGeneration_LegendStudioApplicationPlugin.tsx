@@ -22,7 +22,7 @@ import {
   type DSLMapping_LegendStudioApplicationPlugin_Extension,
   type ModelLoaderExtensionConfiguration,
   LegendStudioApplicationPlugin,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import type { Entity } from '@finos/legend-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 

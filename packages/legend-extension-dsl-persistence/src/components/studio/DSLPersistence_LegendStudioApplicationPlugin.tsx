@@ -35,7 +35,7 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import { PersistenceContext } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import {

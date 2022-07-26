@@ -44,7 +44,7 @@ import {
   useEditorStore,
   ExternalFormatDataState,
   StudioTextInputEditor,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { observer } from 'mobx-react-lite';
 import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
 import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern.js';

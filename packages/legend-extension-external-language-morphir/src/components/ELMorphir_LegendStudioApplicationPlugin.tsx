@@ -22,7 +22,7 @@ import {
   type FileGenerationState,
   type FileGenerationResultViewerActionConfiguration,
   type FileGenerationScopeFilterConfiguration,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import {
   NetworkClient,
   guaranteeNonEmptyString,

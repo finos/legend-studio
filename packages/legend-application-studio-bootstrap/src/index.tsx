@@ -17,7 +17,7 @@
 import {
   LegendStudio,
   DSLExternalFormat_LegendStudioApplicationPlugin,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import {
   type AbstractPreset,
   type AbstractPlugin,

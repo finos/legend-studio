@@ -32,7 +32,7 @@ import {
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { SquareIcon } from '@finos/legend-art';
 import {
   PackageableElementExplicitReference,

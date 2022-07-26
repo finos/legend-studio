@@ -31,8 +31,8 @@ import {
   TEST__getLegendStudioApplicationConfig,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
-} from '@finos/legend-studio';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query';
+} from '@finos/legend-application-studio';
+import { QUERY_BUILDER_TEST_ID } from '@finos/legend-application-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
 import { QueryBuilder_LegendStudioApplicationPreset } from '../../QueryBuilder_LegendStudioApplicationPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';

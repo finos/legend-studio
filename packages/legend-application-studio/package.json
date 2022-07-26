@@ -1,21 +1,22 @@
 {
-  "name": "@finos/legend-query",
-  "version": "4.0.0",
-  "description": "Legend Query core",
+  "name": "@finos/legend-application-studio",
+  "version": "12.0.0",
+  "description": "Legend Studio application core",
   "keywords": [
     "legend",
     "legend-application",
-    "legend-query",
-    "query builder"
+    "legend-studio",
+    "modelling",
+    "editor"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-query",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-studio",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-query"
+    "directory": "packages/legend-application-studio"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -43,13 +44,11 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "28.0.2",
-    "@ag-grid-community/core": "28.0.2",
-    "@ag-grid-community/react": "28.0.0",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
+    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "13.3.0",
@@ -60,14 +59,18 @@
     "history": "5.3.0",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
+    "mobx-utils": "6.0.5",
     "monaco-editor": "0.33.0",
+    "node-diff3": "3.1.2",
     "react": "18.2.0",
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",
     "react-dom": "18.2.0",
     "react-hotkeys": "2.0.0",
+    "react-resize-detector": "7.1.2",
     "react-router": "5.3.3",
-    "react-router-dom": "5.3.3"
+    "react-router-dom": "5.3.3",
+    "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -88,9 +91,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-query-builder-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-query-builder-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-query-builder-pure-graph-manager"
+    "applicationStudioPlugin": "@finos/legend-plugin-core-application-studio",
+    "dsl_external_format_applicationStudioPlugin": "@finos/legend-plugin-dsl-external-format-application-studio"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

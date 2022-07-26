@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LegendTaxonomy } from '@finos/legend-taxonomy';
+import { LegendTaxonomy } from '@finos/legend-application-taxonomy';
 import {
   type AbstractPlugin,
   type AbstractPreset,

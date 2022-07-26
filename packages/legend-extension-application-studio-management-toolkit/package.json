@@ -45,10 +45,10 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",

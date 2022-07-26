@@ -15,7 +15,7 @@
  */
 
 import { action, flow, makeObservable, observable } from 'mobx';
-import type { EditorStore } from '@finos/legend-studio';
+import type { EditorStore } from '@finos/legend-application-studio';
 import type {
   Mapping,
   ModelGenerationConfiguration,

@@ -23,7 +23,7 @@ import {
   WindowMaximizeIcon,
   EmptyWindowRestoreIcon,
 } from '@finos/legend-art';
-import { useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
 import { hashObject, noop } from '@finos/legend-shared';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
@@ -33,7 +33,7 @@ import {
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilder } from '@finos/legend-query';
+import { QueryBuilder } from '@finos/legend-application-query';
 import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 /**

@@ -74,7 +74,7 @@ export const setup = (outputDir) => {
           ],
         },
         extensions: {
-          '@finos/legend-studio-plugin-external-language-morphir': {
+          '@finos/legend-plugin-external-language-morphir-application-studio': {
             visualizer: { url: 'http://localhost:8092' },
             linterServer: { url: 'http://localhost:8091' },
             linterApp: { url: 'http://localhost:8090' },

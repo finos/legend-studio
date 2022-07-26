@@ -24,7 +24,7 @@ import {
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import type {
   DepotServerClient,
   ProjectGAVCoordinates,

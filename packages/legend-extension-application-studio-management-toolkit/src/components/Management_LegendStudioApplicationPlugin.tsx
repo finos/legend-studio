@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { LegendStudioApplicationPlugin } from '@finos/legend-studio';
+import { LegendStudioApplicationPlugin } from '@finos/legend-application-studio';
 import {
   PATH_PARAM_TOKEN_REDIRECT_URL,
   URLRedirector,

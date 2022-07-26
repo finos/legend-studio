@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { useParams } from 'react-router';
 import { useApplicationStore } from '@finos/legend-application';
-import { useLegendStudioBaseStore } from '@finos/legend-studio';
+import { useLegendStudioBaseStore } from '@finos/legend-application-studio';
 
 const MARKETING_LINK_ACCESS = 'marketing_link_accessed';
 type MarketingLinkAccess_TelemetryData = {

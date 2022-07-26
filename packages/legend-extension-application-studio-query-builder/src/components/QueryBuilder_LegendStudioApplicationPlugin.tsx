@@ -39,7 +39,7 @@ import {
   LegendStudioApplicationPlugin,
   service_initNewService,
   service_setExecution,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { MenuContentItem } from '@finos/legend-art';
 import { EmbeddedQueryBuilder } from './EmbeddedQueryBuilder.js';
 import { ServiceQueryBuilder } from './ServiceQueryBuilder.js';
@@ -57,7 +57,7 @@ import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_Editor
 import {
   setupLegendQueryUILibrary,
   StandardQueryBuilderMode,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
