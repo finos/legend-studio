@@ -1995,6 +1995,7 @@ __metadata:
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.15
     cross-env: 7.0.3
@@ -2087,6 +2088,7 @@ __metadata:
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-language-morphir": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.15
     cross-env: 7.0.3
@@ -2179,6 +2181,7 @@ __metadata:
     "@finos/legend-extension-dsl-text": "workspace:*"
     "@finos/legend-extension-external-format-json-schema": "workspace:*"
     "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@types/react": 18.0.15
     cross-env: 7.0.3

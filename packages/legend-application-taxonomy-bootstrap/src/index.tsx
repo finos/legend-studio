@@ -32,6 +32,7 @@ import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-p
 export class LegendTaxonomyWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
+      // graph managers
       new DSLText_GraphManagerPreset(),
       new DSLDiagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),

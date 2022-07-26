@@ -35,6 +35,7 @@ import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-p
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
+      // graph managers
       new DSLText_GraphManagerPreset(),
       new DSLDiagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
@@ -48,7 +49,9 @@ export class LegendQueryWebApplication {
 
   static getPluginCollection(): AbstractPlugin[] {
     return [
+      // application
       new DSLDataSpace_LegendQueryApplicationPlugin(),
+
       // loggers
       new WebConsole(),
     ];

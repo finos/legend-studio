@@ -56,6 +56,7 @@
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
     "@finos/legend-extension-external-language-morphir": "workspace:*",
     "@finos/legend-extension-external-store-service": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.0.15",
     "react": "18.2.0"

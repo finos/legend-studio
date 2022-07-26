@@ -47,10 +47,12 @@ import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { QueryBuilder_LegendStudioApplicationPreset } from '@finos/legend-extension-application-studio-query-builder';
 
 export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
+      // graph managers
       new DSLText_GraphManagerPreset(),
       new DSLDiagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
@@ -59,11 +61,15 @@ export class LegendStudioWebApplication {
       new DSLPersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
+
+      // application
+      new QueryBuilder_LegendStudioApplicationPreset(),
     ];
   }
 
   static getPluginCollection(): AbstractPlugin[] {
     return [
+      // application
       new DSLText_LegendStudioApplicationPlugin(),
       new DSLDiagram_LegendStudioApplicationPlugin(),
       new DSLDataSpace_LegendStudioApplicationPlugin(),
@@ -71,6 +77,7 @@ export class LegendStudioWebApplication {
       new DSLPersistence_LegendStudioApplicationPlugin(),
       new ESService_LegendStudioApplicationPlugin(),
       new ELMorphir_LegendStudioApplicationPlugin(),
+
       // loggers
       new WebConsole(),
     ];
