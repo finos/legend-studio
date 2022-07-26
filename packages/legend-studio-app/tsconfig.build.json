@@ -24,6 +24,6 @@
     {
       "path": "../legend-extension-external-store-service/tsconfig.build.json"
     },
-    { "path": "../legend-studio-extension-query-builder/tsconfig.build.json" }
+    { "path": "../legend-extension-application-studio-query-builder/tsconfig.build.json" }
   ]
 }

@@ -1,11 +1,11 @@
 {
   "name": "@finos/legend-graph",
   "version": "11.0.0",
-  "description": "Legend metamodel graph",
+  "description": "Legend graph and graph manager",
   "keywords": [
     "legend",
     "legend-graph",
-    "metamodel",
+    "legend-graph-manager",
     "graph",
     "graph-manager"
   ],

@@ -14,10 +14,10 @@
     { "path": "packages/legend-studio/tsconfig.build.json" },
     { "path": "packages/legend-studio-app/tsconfig.build.json" },
     {
-      "path": "packages/legend-studio-extension-management-toolkit/tsconfig.build.json"
+      "path": "packages/legend-extension-application-studio-management-toolkit/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-studio-extension-query-builder/tsconfig.build.json"
+      "path": "packages/legend-extension-application-studio-query-builder/tsconfig.build.json"
     },
     // query
     { "path": "packages/legend-query/tsconfig.build.json" },

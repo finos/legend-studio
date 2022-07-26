@@ -4,8 +4,10 @@
   "description": "Legend Depot server client",
   "keywords": [
     "legend",
+    "legend-server",
     "legend-server-depot",
-    "depot"
+    "storage",
+    "package-registry"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-server-depot",
   "bugs": {

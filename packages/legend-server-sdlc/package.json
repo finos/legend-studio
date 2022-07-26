@@ -4,6 +4,7 @@
   "description": "Legend SDLC server client",
   "keywords": [
     "legend",
+    "legend-server",
     "legend-server-sdlc",
     "storage",
     "sdlc"

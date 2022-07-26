@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestDOMProjectConfig(
   packageJson.name,
-  'packages/legend-studio-extension-query-builder',
+  'packages/legend-extension-application-studio-query-builder',
 );

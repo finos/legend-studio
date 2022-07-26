@@ -2114,6 +2114,68 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-application-studio-management-toolkit@workspace:packages/legend-extension-application-studio-management-toolkit":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-application-studio-management-toolkit@workspace:packages/legend-extension-application-studio-management-toolkit"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-server-sdlc": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.3
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    jest: 28.1.3
+    mobx: 6.6.1
+    mobx-react-lite: 3.4.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    react-router: 5.3.3
+    rimraf: 3.0.2
+    sass: 1.54.0
+    typescript: 4.7.4
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-extension-application-studio-query-builder@workspace:*, @finos/legend-extension-application-studio-query-builder@workspace:packages/legend-extension-application-studio-query-builder":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-application-studio-query-builder@workspace:packages/legend-extension-application-studio-query-builder"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-query": "workspace:*"
+    "@finos/legend-server-depot": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@jest/globals": 28.1.3
+    "@testing-library/dom": 8.16.0
+    "@testing-library/react": 13.3.0
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    jest: 28.1.3
+    mobx: 6.6.1
+    mobx-react-lite: 3.4.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    react-dom: 18.2.0
+    rimraf: 3.0.2
+    sass: 1.54.0
+    typescript: 4.7.4
+  peerDependencies:
+    react: ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-extension-dsl-data-space@workspace:*, @finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space":
   version: 0.0.0-use.local
   resolution: "@finos/legend-extension-dsl-data-space@workspace:packages/legend-extension-dsl-data-space"
@@ -2664,6 +2726,7 @@ __metadata:
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-application-studio-query-builder": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
@@ -2674,7 +2737,6 @@ __metadata:
     "@finos/legend-extension-external-store-service": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-studio": "workspace:*"
-    "@finos/legend-studio-extension-query-builder": "workspace:*"
     "@types/react": 18.0.15
     cross-env: 7.0.3
     eslint: 8.20.0
@@ -2702,68 +2764,6 @@ __metadata:
     webpack-bundle-analyzer: 4.5.0
     webpack-cli: 4.10.0
     webpack-dev-server: 4.9.3
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-extension-management-toolkit@workspace:packages/legend-studio-extension-management-toolkit":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-extension-management-toolkit@workspace:packages/legend-studio-extension-management-toolkit"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-server-sdlc": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@jest/globals": 28.1.3
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    jest: 28.1.3
-    mobx: 6.6.1
-    mobx-react-lite: 3.4.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    react-router: 5.3.3
-    rimraf: 3.0.2
-    sass: 1.54.0
-    typescript: 4.7.4
-  peerDependencies:
-    react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-studio-extension-query-builder@workspace:*, @finos/legend-studio-extension-query-builder@workspace:packages/legend-studio-extension-query-builder":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-extension-query-builder@workspace:packages/legend-studio-extension-query-builder"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-graph": "workspace:*"
-    "@finos/legend-query": "workspace:*"
-    "@finos/legend-server-depot": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-storage": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@jest/globals": 28.1.3
-    "@testing-library/dom": 8.16.0
-    "@testing-library/react": 13.3.0
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    jest: 28.1.3
-    mobx: 6.6.1
-    mobx-react-lite: 3.4.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    react-dom: 18.2.0
-    rimraf: 3.0.2
-    sass: 1.54.0
-    typescript: 4.7.4
-  peerDependencies:
-    react: ^18.0.0
   languageName: unknown
   linkType: soft
 

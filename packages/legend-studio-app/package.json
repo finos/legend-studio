@@ -45,6 +45,7 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-application-studio-query-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
@@ -55,7 +56,6 @@
     "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-studio": "workspace:*",
-    "@finos/legend-studio-extension-query-builder": "workspace:*",
     "@types/react": "18.0.15",
     "react": "18.2.0"
   },

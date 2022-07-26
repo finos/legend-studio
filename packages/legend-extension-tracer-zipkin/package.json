@@ -5,6 +5,7 @@
   "keywords": [
     "legend",
     "legend-extension",
+    "legend-extension-tracer",
     "tracer",
     "opentracing",
     "zipkin"

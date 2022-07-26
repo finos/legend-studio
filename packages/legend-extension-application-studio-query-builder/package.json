@@ -1,22 +1,22 @@
 {
-  "name": "@finos/legend-studio-extension-management-toolkit",
+  "name": "@finos/legend-extension-application-studio-query-builder",
   "version": "2.0.11",
-  "description": "Legend Studio extension for management/admin tooling",
+  "description": "Legend extension Studio preset for query builder",
   "keywords": [
     "legend",
+    "legend-extension",
+    "legend-extension-application-studio",
     "legend-studio",
-    "legend-studio-extension",
-    "studio",
-    "management-toolkit"
+    "query builder"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio-extension-management-toolkit",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-application-studio-query-builder",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-studio-extension-management-toolkit"
+    "directory": "packages/legend-extension-application-studio-query-builder"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -46,18 +46,24 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
+    "@finos/legend-extension-dsl-diagram": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-query": "workspace:*",
+    "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@finos/legend-studio": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
     "react": "18.2.0",
-    "react-router": "5.3.3"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "28.1.3",
+    "@testing-library/dom": "8.16.0",
+    "@testing-library/react": "13.3.0",
     "cross-env": "7.0.3",
     "eslint": "8.20.0",
     "jest": "28.1.3",
@@ -73,6 +79,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationStudioPlugin": "@finos/legend-plugin-management-toolkit-application-studio"
+    "applicationStudioPreset": "@finos/legend-preset-query-builder-application-studio",
+    "applicationStudioPlugin": "@finos/legend-plugin-query-builder-application-studio"
   }
 }
