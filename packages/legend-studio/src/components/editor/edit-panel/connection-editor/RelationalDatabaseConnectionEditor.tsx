@@ -1016,7 +1016,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
     );
   },
 );
-
+// Middle Tier Username Password Authentication Strategy obtains credentials(username and password) from the provided vault reference
 const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
   (props: {
     authSpec: MiddleTierUsernamePasswordAuthenticationStrategy;
