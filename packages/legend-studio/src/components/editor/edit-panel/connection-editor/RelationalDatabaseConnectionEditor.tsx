@@ -15,25 +15,56 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import {
+  type RelationalDatabaseConnectionValueState,
+  CORE_AUTHENTICATION_STRATEGY_TYPE,
+  CORE_DATASOURCE_SPEC_TYPE,
+  RELATIONAL_DATABASE_TAB_TYPE,
+} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useState } from 'react';
 import {
-  CheckSquareIcon,
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizablePanelSplitter,
   clsx,
   CustomSelectorInput,
-  ErrorIcon,
-  PencilIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
+  CheckSquareIcon,
   SquareIcon,
   TimesIcon,
+  ErrorIcon,
+  PencilIcon,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
+import {
+  type RelationalDatabaseConnection,
+  type Store,
+  DatabaseType,
+  DelegatedKerberosAuthenticationStrategy,
+  OAuthAuthenticationStrategy,
+  SnowflakePublicAuthenticationStrategy,
+  ApiTokenAuthenticationStrategy,
+  UsernamePasswordAuthenticationStrategy,
+  GCPWorkloadIdentityFederationAuthenticationStrategy,
+  EmbeddedH2DatasourceSpecification,
+  LocalH2DatasourceSpecification,
+  SnowflakeDatasourceSpecification,
+  DatabricksDatasourceSpecification,
+  StaticDatasourceSpecification,
+  BigQueryDatasourceSpecification,
+  RedshiftDatasourceSpecification,
+  PackageableElementExplicitReference,
+  SpannerDatasourceSpecification,
+} from '@finos/legend-graph';
 import { runInAction } from 'mobx';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
+import {
+  EDITOR_LANGUAGE,
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import {
@@ -52,8 +83,6 @@ import {
   embeddedH2DatasourceSpecification_setAutoServerMode,
   embeddedH2DatasourceSpecification_setDatabaseName,
   embeddedH2DatasourceSpecification_setDirectory,
-  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
-  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   oAuthAuthenticationStrategy_setOauthKey,
   oAuthAuthenticationStrategy_setScopeName,
@@ -89,38 +118,9 @@ import {
   usernamePasswordAuthenticationStrategy_setBaseVaultReference,
   usernamePasswordAuthenticationStrategy_setPasswordVaultReference,
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
+  gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
-import {
-  EDITOR_LANGUAGE,
-  buildElementOption,
-  type PackageableElementOption,
-} from '@finos/legend-application';
-import {
-  type RelationalDatabaseConnectionValueState,
-  CORE_AUTHENTICATION_STRATEGY_TYPE,
-  CORE_DATASOURCE_SPEC_TYPE,
-  RELATIONAL_DATABASE_TAB_TYPE,
-} from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import {
-  type RelationalDatabaseConnection,
-  type Store,
-  DatabaseType,
-  DelegatedKerberosAuthenticationStrategy,
-  OAuthAuthenticationStrategy,
-  SnowflakePublicAuthenticationStrategy,
-  ApiTokenAuthenticationStrategy,
-  UsernamePasswordAuthenticationStrategy,
-  GCPWorkloadIdentityFederationAuthenticationStrategy,
-  EmbeddedH2DatasourceSpecification,
-  LocalH2DatasourceSpecification,
-  SnowflakeDatasourceSpecification,
-  DatabricksDatasourceSpecification,
-  StaticDatasourceSpecification,
-  BigQueryDatasourceSpecification,
-  RedshiftDatasourceSpecification,
-  PackageableElementExplicitReference,
-  SpannerDatasourceSpecification,
-} from '@finos/legend-graph';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
