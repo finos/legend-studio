@@ -12,5 +12,5 @@
     "src/**/*.json",
     "taxonomy.config.js"
   ],
-  "references": [{ "path": "../legend-taxonomy-app" }]
+  "references": [{ "path": "../legend-application-taxonomy-bootstrap" }]
 }

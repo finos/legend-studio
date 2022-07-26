@@ -4,8 +4,8 @@
   "description": "Legend Query core",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-query",
-    "query",
     "query builder"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-query",

@@ -5,11 +5,9 @@
   "description": "Legend Studio web application deployment",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-studio",
-    "studio",
-    "app",
-    "deployment",
-    "webapp"
+    "deployment"
   ],
   "repository": {
     "type": "git",
@@ -36,7 +34,7 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
   "dependencies": {
-    "@finos/legend-studio-app": "workspace:*"
+    "@finos/legend-application-studio-bootstrap": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

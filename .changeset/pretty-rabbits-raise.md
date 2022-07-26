@@ -14,7 +14,7 @@
 '@finos/legend-query': patch
 '@finos/legend-shared': patch
 '@finos/legend-studio': patch
-'@finos/legend-studio-app': patch
+'@finos/legend-application-studio-bootstrap': patch
 '@finos/legend-extension-application-studio-management-toolkit': patch
 '@finos/legend-extension-application-studio-query-builder': patch
 '@finos/legend-taxonomy': patch

@@ -4,8 +4,11 @@
   "description": "Legend Taxonomy core",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-taxonomy",
-    "taxonomy"
+    "taxonomy",
+    "explorer",
+    "data-space"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-taxonomy",
   "bugs": {

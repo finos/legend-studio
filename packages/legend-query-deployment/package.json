@@ -5,11 +5,9 @@
   "description": "Legend Query web application deployment",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-query",
-    "query",
-    "app",
-    "deployment",
-    "webapp"
+    "deployment"
   ],
   "repository": {
     "type": "git",
@@ -36,7 +34,7 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
   "dependencies": {
-    "@finos/legend-query-app": "workspace:*"
+    "@finos/legend-application-query-bootstrap": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

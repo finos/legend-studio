@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { setup } from '@finos/legend-taxonomy-app/scripts/setup.js';
+import { setup } from '@finos/legend-application-taxonomy-bootstrap/scripts/setup.js';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 

@@ -16,8 +16,8 @@
 
 import { LegendTaxonomy } from '@finos/legend-taxonomy';
 import {
-  AbstractPlugin,
-  AbstractPreset,
+  type AbstractPlugin,
+  type AbstractPreset,
   WebConsole,
 } from '@finos/legend-shared';
 import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';

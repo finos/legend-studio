@@ -1,22 +1,23 @@
 {
-  "name": "@finos/legend-taxonomy-app",
+  "name": "@finos/legend-application-studio-bootstrap",
   "version": "6.8.0",
-  "description": "Legend Taxonomy web application",
+  "description": "Legend Studio application bootrap",
   "keywords": [
     "legend",
-    "legend-taxonomy",
-    "taxonomy",
+    "legend-application",
+    "legend-studio",
+    "bootstrap",
     "app",
     "webapp"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-taxonomy-app",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-studio-bootstrap",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-taxonomy-app"
+    "directory": "packages/legend-application-studio-bootstrap"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -45,15 +46,17 @@
   "dependencies": {
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
+    "@finos/legend-extension-application-studio-query-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
     "@finos/legend-extension-dsl-persistence-cloud": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
+    "@finos/legend-extension-external-language-morphir": "workspace:*",
     "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-taxonomy": "workspace:*",
+    "@finos/legend-studio": "workspace:*",
     "@types/react": "18.0.15",
     "react": "18.2.0"
   },

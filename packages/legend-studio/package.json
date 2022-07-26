@@ -4,9 +4,10 @@
   "description": "Legend Studio core",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-studio",
-    "studio",
-    "legend-studio-core"
+    "modelling",
+    "editor"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-studio",
   "bugs": {

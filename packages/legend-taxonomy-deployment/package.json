@@ -5,11 +5,9 @@
   "description": "Legend Taxonomy web application deployment",
   "keywords": [
     "legend",
+    "legend-application",
     "legend-taxonomy",
-    "taxonomy",
-    "app",
-    "deployment",
-    "webapp"
+    "deployment"
   ],
   "repository": {
     "type": "git",
@@ -36,7 +34,7 @@
     "setup": "rimraf \"dev\" && yarn node ./scripts/setup.js ./dev"
   },
   "dependencies": {
-    "@finos/legend-taxonomy-app": "workspace:*"
+    "@finos/legend-application-taxonomy-bootstrap": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LegendTaxonomyWebApplication } from '@finos/legend-taxonomy-app';
+import { LegendTaxonomyWebApplication } from '@finos/legend-application-taxonomy-bootstrap';
 import config from '../taxonomy.config.js';
 import './index.scss';
 

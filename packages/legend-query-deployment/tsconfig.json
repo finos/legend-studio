@@ -12,5 +12,5 @@
     "src/**/*.json",
     "query.config.js"
   ],
-  "references": [{ "path": "../legend-query-app" }]
+  "references": [{ "path": "../legend-application-query-bootstrap" }]
 }

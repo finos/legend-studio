@@ -1982,6 +1982,89 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-query-bootstrap@workspace:*, @finos/legend-application-query-bootstrap@workspace:packages/legend-application-query-bootstrap":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-query-bootstrap@workspace:packages/legend-application-query-bootstrap"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-persistence": "workspace:*"
+    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-query": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    sass: 1.54.0
+    typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-application-studio-bootstrap@workspace:*, @finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-application-studio-query-builder": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-persistence": "workspace:*"
+    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-language-morphir": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-studio": "workspace:*"
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    sass: 1.54.0
+    typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-application-taxonomy-bootstrap@workspace:*, @finos/legend-application-taxonomy-bootstrap@workspace:packages/legend-application-taxonomy-bootstrap":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-taxonomy-bootstrap@workspace:packages/legend-application-taxonomy-bootstrap"
+  dependencies:
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-extension-dsl-data-space": "workspace:*"
+    "@finos/legend-extension-dsl-diagram": "workspace:*"
+    "@finos/legend-extension-dsl-persistence": "workspace:*"
+    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
+    "@finos/legend-extension-dsl-text": "workspace:*"
+    "@finos/legend-extension-external-format-json-schema": "workspace:*"
+    "@finos/legend-extension-external-store-service": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-taxonomy": "workspace:*"
+    "@types/react": 18.0.15
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    rimraf: 3.0.2
+    sass: 1.54.0
+    typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application@workspace:*, @finos/legend-application@workspace:packages/legend-application":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application@workspace:packages/legend-application"
@@ -2536,39 +2619,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-query-app@workspace:*, @finos/legend-query-app@workspace:packages/legend-query-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
-    "@finos/legend-query": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 3.0.2
-    sass: 1.54.0
-    typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-query-deployment@workspace:packages/legend-query-deployment":
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-deployment@workspace:packages/legend-query-deployment"
   dependencies:
+    "@finos/legend-application-query-bootstrap": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-query-app": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
     eslint: 8.20.0
@@ -2719,41 +2775,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-app@workspace:*, @finos/legend-studio-app@workspace:packages/legend-studio-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-app@workspace:packages/legend-studio-app"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-application-studio-query-builder": "workspace:*"
-    "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
-    "@finos/legend-extension-external-language-morphir": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-studio": "workspace:*"
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 3.0.2
-    sass: 1.54.0
-    typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment"
   dependencies:
+    "@finos/legend-application-studio-bootstrap": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-studio-app": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
     eslint: 8.20.0
@@ -2813,39 +2840,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-taxonomy-app@workspace:*, @finos/legend-taxonomy-app@workspace:packages/legend-taxonomy-app":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-taxonomy-app@workspace:packages/legend-taxonomy-app"
-  dependencies:
-    "@finos/legend-application": "workspace:*"
-    "@finos/legend-art": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-extension-dsl-data-space": "workspace:*"
-    "@finos/legend-extension-dsl-diagram": "workspace:*"
-    "@finos/legend-extension-dsl-persistence": "workspace:*"
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
-    "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-format-json-schema": "workspace:*"
-    "@finos/legend-extension-external-store-service": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@finos/legend-taxonomy": "workspace:*"
-    "@types/react": 18.0.15
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    react: 18.2.0
-    rimraf: 3.0.2
-    sass: 1.54.0
-    typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-taxonomy-deployment@workspace:packages/legend-taxonomy-deployment":
   version: 0.0.0-use.local
   resolution: "@finos/legend-taxonomy-deployment@workspace:packages/legend-taxonomy-deployment"
   dependencies:
+    "@finos/legend-application-taxonomy-bootstrap": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-taxonomy-app": "workspace:*"
     copy-webpack-plugin: 11.0.0
     cross-env: 7.0.3
     eslint: 8.20.0

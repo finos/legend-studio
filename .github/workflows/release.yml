@@ -40,7 +40,7 @@ jobs:
       - name: Generate new release PR title
         id: generate-new-release-pr-title
         env:
-          MAIN_PACKAGE: '@finos/legend-studio-app'
+          MAIN_PACKAGE: '@finos/legend-application-studio-bootstrap'
         run: node ./scripts/release/createNewReleasePRTitle.js
       - name: Create new release pull request or Publish to NPM
         id: changesets
@@ -65,7 +65,7 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAIN_PACKAGE: '@finos/legend-studio-app'
+          MAIN_PACKAGE: '@finos/legend-application-studio-bootstrap'
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: node ./scripts/release/concludeNewRelease.js
       - name: Login to Docker Hub

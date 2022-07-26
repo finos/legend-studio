@@ -1,22 +1,23 @@
 {
-  "name": "@finos/legend-query-app",
+  "name": "@finos/legend-application-taxonomy-bootstrap",
   "version": "6.8.0",
-  "description": "Legend Query web application",
+  "description": "Legend Taxonomy application bootstrap",
   "keywords": [
     "legend",
-    "legend-query",
-    "query",
+    "legend-application",
+    "legend-taxonomy",
+    "bootstrap",
     "app",
     "webapp"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-query-app",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-taxonomy-bootstrap",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-query-app"
+    "directory": "packages/legend-application-taxonomy-bootstrap"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -52,8 +53,8 @@
     "@finos/legend-extension-dsl-text": "workspace:*",
     "@finos/legend-extension-external-format-json-schema": "workspace:*",
     "@finos/legend-extension-external-store-service": "workspace:*",
-    "@finos/legend-query": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-taxonomy": "workspace:*",
     "@types/react": "18.0.15",
     "react": "18.2.0"
   },

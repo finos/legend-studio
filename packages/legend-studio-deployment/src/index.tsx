@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { LegendStudioWebApplication } from '@finos/legend-studio-app';
+import { LegendStudioWebApplication } from '@finos/legend-application-studio-bootstrap';
 import config from '../studio.config.js';
 import './index.scss';
 
