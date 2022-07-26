@@ -40,6 +40,14 @@
     }
   }
 
+  &__node__container:hover {
+    background: var(--color-dark-blue-shade-100);
+
+    svg {
+      color: var(--color-light-grey-400);
+    }
+  }
+
   &__content {
     height: calc(100% - 4.4rem);
     overflow-y: auto;
@@ -67,7 +75,7 @@
 
   &__expand-icon svg {
     font-size: 1rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-light-grey-200) !important;
   }
 
   &__node__label {
@@ -120,7 +128,7 @@
 
     svg {
       font-size: 1.3rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-dark-blue-shade-100);
     }
 
     &:hover svg {

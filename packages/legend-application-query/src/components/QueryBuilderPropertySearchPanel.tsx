@@ -192,7 +192,7 @@ const QueryBuilderTreeNodeViewer = observer(
     return (
       <div>
         <div
-          className="tree-view__node__container"
+          className="tree-view__node__container query-builder-property-search-panel__node__container"
           ref={dragConnector}
           style={{
             paddingLeft: `${(level - 1) * stepPaddingInRem + 0.5}rem`,
