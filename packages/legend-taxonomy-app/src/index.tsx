@@ -15,18 +15,46 @@
  */
 
 import { LegendTaxonomy } from '@finos/legend-taxonomy';
-import { WebConsole } from '@finos/legend-shared';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import {
+  AbstractPlugin,
+  AbstractPreset,
+  WebConsole,
+} from '@finos/legend-shared';
+import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
+import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
+import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 
 export class LegendTaxonomyWebApplication {
+  static getPresetCollection(): AbstractPreset[] {
+    return [
+      new DSLText_GraphManagerPreset(),
+      new DSLDiagram_GraphManagerPreset(),
+      new DSLDataSpace_GraphManagerPreset(),
+      new DSLExternalFormat_GraphPreset(),
+      new DSLPersistence_GraphManagerPreset(),
+      new DSLPersistenceCloud_GraphManagerPreset(),
+      new EFJSONSchema_GraphManagerPreset(),
+      new ESService_GraphManagerPreset(),
+    ];
+  }
+
+  static getPluginCollection(): AbstractPlugin[] {
+    return [
+      // loggers
+      new WebConsole(),
+    ];
+  }
+
   static run(baseUrl: string): void {
     LegendTaxonomy.create()
       .setup({ baseUrl })
-      .withPresets(getLegendGraphExtensionCollection())
-      .withPlugins([
-        // loggers
-        new WebConsole(),
-      ])
+      .withPresets(LegendTaxonomyWebApplication.getPresetCollection())
+      .withPlugins(LegendTaxonomyWebApplication.getPluginCollection())
       .start()
       .catch((e: unknown) => {
         throw e;

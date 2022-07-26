@@ -27,9 +27,6 @@
     { "path": "packages/legend-taxonomy-app/tsconfig.build.json" },
     // extensions
     {
-      "path": "packages/legend-graph-extension-collection/tsconfig.build.json"
-    },
-    {
       "path": "packages/legend-extension-dsl-text/tsconfig.build.json"
     },
     {

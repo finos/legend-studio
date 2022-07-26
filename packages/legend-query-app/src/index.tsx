@@ -14,33 +14,51 @@
  * limitations under the License.
  */
 
+import { LegendQuery } from '@finos/legend-query';
 import {
-  LegendQuery,
-  type LegendQueryApplicationPlugin,
-} from '@finos/legend-query';
-import { type AbstractPreset, WebConsole } from '@finos/legend-shared';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
-import { DSLDataSpace_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-data-space';
-
-export const getLegendQueryPresetCollection = (): AbstractPreset[] => [
-  ...getLegendGraphExtensionCollection(),
-];
-
-export const getLegendQueryPluginCollection =
-  (): LegendQueryApplicationPlugin[] => [
-    new DSLDataSpace_LegendQueryApplicationPlugin(),
-  ];
+  type AbstractPreset,
+  type AbstractPlugin,
+  WebConsole,
+} from '@finos/legend-shared';
+import {
+  DSLDataSpace_GraphManagerPreset,
+  DSLDataSpace_LegendQueryApplicationPlugin,
+} from '@finos/legend-extension-dsl-data-space';
+import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
+import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
+import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 
 export class LegendQueryWebApplication {
+  static getPresetCollection(): AbstractPreset[] {
+    return [
+      new DSLText_GraphManagerPreset(),
+      new DSLDiagram_GraphManagerPreset(),
+      new DSLDataSpace_GraphManagerPreset(),
+      new DSLExternalFormat_GraphPreset(),
+      new DSLPersistence_GraphManagerPreset(),
+      new DSLPersistenceCloud_GraphManagerPreset(),
+      new EFJSONSchema_GraphManagerPreset(),
+      new ESService_GraphManagerPreset(),
+    ];
+  }
+
+  static getPluginCollection(): AbstractPlugin[] {
+    return [
+      new DSLDataSpace_LegendQueryApplicationPlugin(),
+      // loggers
+      new WebConsole(),
+    ];
+  }
+
   static run(baseUrl: string): void {
     LegendQuery.create()
       .setup({ baseUrl })
-      .withPresets([...getLegendQueryPresetCollection()])
-      .withPlugins([
-        ...getLegendQueryPluginCollection(),
-        // loggers
-        new WebConsole(),
-      ])
+      .withPresets(LegendQueryWebApplication.getPresetCollection())
+      .withPlugins(LegendQueryWebApplication.getPluginCollection())
       .start()
       .catch((e: unknown) => {
         throw e;

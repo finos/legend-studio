@@ -10,7 +10,6 @@
 '@finos/legend-extension-external-store-service': patch
 '@finos/legend-extension-mapping-generation': patch
 '@finos/legend-graph': patch
-'@finos/legend-graph-extension-collection': patch
 '@finos/legend-manual-tests': patch
 '@finos/legend-query': patch
 '@finos/legend-shared': patch

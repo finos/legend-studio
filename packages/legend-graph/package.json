@@ -6,7 +6,8 @@
     "legend",
     "legend-graph",
     "metamodel",
-    "graph"
+    "graph",
+    "graph-manager"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-graph",
   "bugs": {

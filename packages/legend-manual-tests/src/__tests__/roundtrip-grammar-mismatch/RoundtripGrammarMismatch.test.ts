@@ -23,7 +23,6 @@ import {
   TEST__GraphManagerPluginManager,
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import {
   ContentType,
   HttpHeader,
@@ -98,7 +97,6 @@ const checkGrammarRoundtripMismatch = async (
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
-  pluginManager.usePresets(getLegendGraphExtensionCollection());
   pluginManager.install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 

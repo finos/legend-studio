@@ -38,9 +38,6 @@
     { "path": "packages/legend-taxonomy-deployment" },
     // extensions
     {
-      "path": "packages/legend-graph-extension-collection"
-    },
-    {
       "path": "packages/legend-extension-dsl-text"
     },
     {

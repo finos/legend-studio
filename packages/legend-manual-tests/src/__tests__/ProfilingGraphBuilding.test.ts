@@ -43,10 +43,14 @@ import {
   GRAPH_MANAGER_EVENT,
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+
+// NOTE: when we reorganize manual tests, i.e. when we remove this module
+// we should consider moving this performance test to another module, maybe
+// the one where we put the end-to-end tests
+// See https://github.com/finos/legend-studio/issues/820
 
 const engineConfig = JSON.parse(
-  fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
+  fs.readFileSync(resolve(__dirname, '../../engine-config.json'), {
     encoding: 'utf-8',
   }),
 ) as object;
@@ -97,7 +101,7 @@ function generateBatchPureCode(
   return result;
 }
 
-function generatePureCode(options: ProfileRoundtripOptions): string {
+function generatePureCode(options: ProfilingConfiguration): string {
   let pureCode = '';
   pureCode = `${
     pureCode +
@@ -138,7 +142,7 @@ const logSuccess = (
   }
 };
 
-type ProfileRoundtripOptions = {
+type ProfilingConfiguration = {
   name: string;
   classes: number;
   enums: number;
@@ -155,30 +159,27 @@ const defaultOptions = {
   mappings: DEFAULT_GENERATIONS,
   debug: true,
 };
-const profileRoundtrip = async (
-  options: ProfileRoundtripOptions,
-): Promise<void> => {
+
+const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
   const pluginManager = new TEST__GraphManagerPluginManager();
-  pluginManager
-    .usePresets(getLegendGraphExtensionCollection())
-    .usePlugins([new WebConsole()]);
+  pluginManager.usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();
   log.registerPlugins(pluginManager.getLoggerPlugins());
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager, log);
 
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create(
-        `Profile test case ${options.name}. [classes: ${options.classes}]`,
+        `Profile test case ${config.name}. [classes: ${config.classes}]`,
       ),
     );
   }
 
   // Phase 1: Engine Grammar to Json
   let phase = Profile_TEST_PHASE.ENGINE_GRAMMAR_TO_JSON;
-  logPhase(phase, log, options.debug);
-  const grammarText = generatePureCode(options);
+  logPhase(phase, log, config.debug);
+  const grammarText = generatePureCode(config);
 
   // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
@@ -193,7 +194,7 @@ const profileRoundtrip = async (
       returnSourceInformation: false,
     },
   });
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create('engine.grammar.grammar-to-json'),
       Date.now() - startTime,
@@ -203,7 +204,7 @@ const profileRoundtrip = async (
   const entities = graphManagerState.graphManager.pureProtocolTextToEntities(
     JSON.stringify(transformGrammarToJsonResult.data),
   );
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_ENTITIES_FETCHED),
       `[entities: ${entities.length}]`,
@@ -212,12 +213,12 @@ const profileRoundtrip = async (
 
   // Phase 2: Build Graph
   phase = Profile_TEST_PHASE.GRAPH_BUILDING;
-  logPhase(phase, log, options.debug);
+  logPhase(phase, log, config.debug);
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__preserveSectionIndex: true,
   });
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_INITIALIZED),
       Date.now() - startTime,
@@ -230,18 +231,18 @@ const profileRoundtrip = async (
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),
   );
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_PROTOCOL_SERIALIZED),
       Date.now() - startTime,
       'ms',
     );
   }
-  logPhase(phase, log, options.debug);
+  logPhase(phase, log, config.debug);
 
   // Phase 3: grammar roundtrip check
   phase = Profile_TEST_PHASE.ENGINE_JSON_TO_GRAMMAR;
-  logPhase(phase, log, options.debug);
+  logPhase(phase, log, config.debug);
   // compose grammar and compare that with original grammar text
   // NOTE: this is optional test as `grammar text <-> protocol` test should be covered
   // in engine already.
@@ -269,7 +270,7 @@ const profileRoundtrip = async (
       },
     },
   );
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create('engine.grammar.json-to-grammar'),
       Date.now() - startTime,
@@ -278,7 +279,7 @@ const profileRoundtrip = async (
   }
   // Phase 4: Compilation check using serialized protocol
   phase = Profile_TEST_PHASE.ENGINE_COMPILATION;
-  logPhase(phase, log, options.debug);
+  logPhase(phase, log, config.debug);
 
   // Test successful compilation with graph from serialization
   startTime = Date.now();
@@ -286,7 +287,7 @@ const profileRoundtrip = async (
     unknown,
     AxiosResponse<{ message: string }>
   >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
-  if (options.debug) {
+  if (config.debug) {
     log.info(
       LogEvent.create('engine.compilation'),
       Date.now() - startTime,
@@ -295,16 +296,16 @@ const profileRoundtrip = async (
   }
   expect(compileResult.status).toBe(200);
   expect(compileResult.data.message).toEqual('OK');
-  logSuccess(phase, log, options.debug);
+  logSuccess(phase, log, config.debug);
 };
 
-const cases: [ProfileRoundtripOptions] = [defaultOptions];
+const cases: ProfilingConfiguration[] = [defaultOptions];
 
 describe.skip('Profiling Graph Building test', () => {
   test.each(cases)(
     '%s',
     async (option) => {
-      await profileRoundtrip(option);
+      await runProfiling(option);
     },
     100000,
   );

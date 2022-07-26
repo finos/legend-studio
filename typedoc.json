@@ -21,7 +21,6 @@
     "**/packages/legend-art",
     // "**/packages/legend-application-*",
     "**/packages/legend-extension-*",
-    "**/packages/legend-graph-extension-collection",
     "**/packages/legend-studio-*",
     "**/packages/legend-query-*",
     "**/packages/legend-taxonomy-*",
