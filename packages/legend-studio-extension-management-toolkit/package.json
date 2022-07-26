@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-studio-extension-management-toolkit",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Legend Studio extension for management/admin tooling",
   "keywords": [
     "legend",
@@ -64,7 +64,7 @@
     "jest": "28.1.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
-    "sass": "1.53.0",
+    "sass": "1.54.0",
     "typescript": "4.7.4"
   },
   "peerDependencies": {

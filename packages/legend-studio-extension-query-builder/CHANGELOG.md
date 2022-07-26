@@ -1,5 +1,11 @@
 # @finos/legend-studio-extension-query-builder
 
+## 2.0.11
+
+### Patch Changes
+
+- [#1278](https://github.com/finos/legend-studio/pull/1278) [`8d17d394`](https://github.com/finos/legend-studio/commit/8d17d3944cae682cbe2f65a97065dc5f118e5c3e) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Warn users that they lose their query changes when exiting query builder ([#1274](https://github.com/finos/legend-studio/issues/1274)).
+
 ## 2.0.10
 
 ## 2.0.9

@@ -39,7 +39,7 @@ import {
   type UsernamePasswordAuthenticationStrategy,
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
   type ObserverContext,
-  type OptionalEnumerationMappingReference,
+  type EnumerationMappingReference,
   type TableAlias,
   type SpannerDatasourceSpecification,
   getRelationalInputType,
@@ -47,7 +47,7 @@ import {
   observe_AuthenticationStrategy,
   observe_BindingTransformer,
   observe_PropertyMapping,
-  observe_OptionalEnumerationMappingReference,
+  observe_EnumerationMappingReference,
   observe_TableAlias,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
@@ -402,9 +402,11 @@ export const relationalInputData_setInputType = action(
 export const relationalPropertyMapping_setTransformer = action(
   (
     v: RelationalPropertyMapping,
-    value: OptionalEnumerationMappingReference,
+    value: EnumerationMappingReference | undefined,
   ): void => {
-    v.transformer = observe_OptionalEnumerationMappingReference(value);
+    v.transformer = value
+      ? observe_EnumerationMappingReference(value)
+      : undefined;
   },
 );
 export const relationalPropertyMapping_setBindingTransformer = action(

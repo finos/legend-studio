@@ -58,7 +58,6 @@ import type { V1_AggregationAwareClassMapping } from '../../../model/packageable
 import { V1_getInferredClassMappingId } from './helpers/V1_MappingBuilderHelper.js';
 import { AggregationAwareSetImplementation } from '../../../../../../metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import type { V1_AggregateSetImplementationContainer } from '../../../model/packageableElements/store/relational/mapping/aggregationAware/V1_AggregateSetImplementationContainer.js';
-import { PackageableElementImplicitReference } from '../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import {
   extractClassMappingsFromAggregationAwareClassMappings,
   getAllClassMappings,
@@ -125,8 +124,8 @@ export class V1_ClassMappingSecondPassBuilder
         }
         return new SetImplementationContainer(
           SetImplementationImplicitReference.create(
-            PackageableElementImplicitReference.create(this.parent, ''),
             setImplementation,
+            undefined,
           ),
         );
       })

@@ -21,8 +21,8 @@ import {
   type FlatDataPropertyMapping,
   type FlatDataConnection,
   observe_RootFlatDataRecordType,
-  observe_OptionalEnumerationMappingReference,
-  type OptionalEnumerationMappingExplicitReference,
+  observe_EnumerationMappingReference,
+  type EnumerationMappingReference,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
@@ -45,9 +45,11 @@ export const flatData_setData = action(
 export const flatDataPropertyMapping_setTransformer = action(
   (
     val: FlatDataPropertyMapping,
-    value: OptionalEnumerationMappingExplicitReference,
+    value: EnumerationMappingReference | undefined,
   ): void => {
-    val.transformer = observe_OptionalEnumerationMappingReference(value);
+    val.transformer = value
+      ? observe_EnumerationMappingReference(value)
+      : undefined;
   },
 );
 

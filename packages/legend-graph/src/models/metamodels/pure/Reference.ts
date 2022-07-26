@@ -31,8 +31,8 @@
  * (let's say the user put in an import statement and expect the pointer to just have name of class instead of its full-path,
  * we would like to keep the pointer as is during serialization if the class has not been changed).
  *
- * As such, this class `Reference` is kept to be as generic as possible, because we can extend it to have many various
- * information. But only one thing we know for sure that is a refernece must have a `value`, which is the actual
+ * As such, this class `Reference` is kept to be as generic as possible, because we can extend it hold more
+ * information. But regardless, only one thing we know for sure that is a reference must have a `value`, which is the actual
  * object-reference
  *
  * Given such meaning for reference, below are some guideline on how we modify the reference while modifying the metamodel:
@@ -40,44 +40,35 @@
  *    NEVER change the reference instance: only change the value of the reference so other information (inference context)
  *    are kept, so we can do proper serialization
  * 2. For property which is optional and single (multiplicity: [0..1]):
- *    NEVER change the reference instance. Turn this into a required single property of `OptionalReference`
- *    so the value can be `undefined`. This way we can keep the inference context.
+ *    NEVER change the reference instance, unless the reference is removed (i.e. set to `undefined`).
+ *    If the reference is unset, and later on re-established, we will create a fresh new reference, even if it has the
+ *    same as the original's. This is intended so the behavior is consistent with case (3) below.
+ *    NOTE: We have considered another alternative to always keep the reference, just like case (1) using the
+ *    construct `OptionalReference`; this way we can keep the inference context. However, there are a few downsides to this:
+ *      i. it is complicated, it makes the code for reference complex for a small gain
+ *      ii. it makes our treatment of reference diverging from Pure and would make it hard to code-generate the metamodels
+ *      iii. it makes case (2) and case (3) treatment seem inconsistent.
  * 3. For property which can be multiple (multiplicity: [*] or similar):
- *    ALWAYS change the reference instance, for DELETE or ADD, this is obvious, but for MODIFY, we can follow case 1,
+ *    ALWAYS change the reference instance, for DELETE or ADD, this is obvious, but for MODIFY, we can follow case (1),
  *    but for simplicity sake, we will just swap out to use new a new reference
  */
 export abstract class Reference {
-  abstract value?: unknown | undefined;
-}
-
-export abstract class OptionalReference extends Reference {}
-
-export abstract class RequiredReference extends Reference {
-  abstract override value: unknown;
+  abstract value: unknown;
 }
 
 /**
- * This is intended for information derived from a reference, such as property pointer, enum-value pointer, etc.
- * since those references we resolve after we resolve the reference to the class or enumeration they belong to.
+ * This can be used for references to sub-elements, such as property pointer, enum-value pointer, etc.
+ * since those references are often resolved after we resolve the reference to the class or enumeration they belong to.
  * In other words, these reference has an owner reference.
  *
  * The rule for modifying these references is similar to that of `Reference` with one addition. That is
  * if we modify the child, we should ALWAYS modify the owner reference accordingly (except when we have a list, we will
  * trash the reference)
  */
-export abstract class ReferenceWithOwner extends RequiredReference {
-  readonly ownerReference: RequiredReference;
+export abstract class ReferenceWithOwner extends Reference {
+  readonly ownerReference: Reference;
 
-  protected constructor(ownerReference: RequiredReference) {
-    super();
-    this.ownerReference = ownerReference;
-  }
-}
-
-export abstract class OptionalReferenceWithOwner extends OptionalReference {
-  readonly ownerReference: OptionalReference;
-
-  protected constructor(ownerReference: OptionalReference) {
+  protected constructor(ownerReference: Reference) {
     super();
     this.ownerReference = ownerReference;
   }

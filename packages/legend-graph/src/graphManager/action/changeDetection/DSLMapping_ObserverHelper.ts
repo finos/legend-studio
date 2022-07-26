@@ -25,7 +25,7 @@ import type { AggregationAwarePropertyMapping } from '../../../models/metamodels
 import type { AggregationAwareSetImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 import type { AssociationImplementation } from '../../../models/metamodels/pure/packageableElements/mapping/AssociationImplementation.js';
 import type { EnumerationMapping } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMapping.js';
-import type { OptionalEnumerationMappingReference } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
+import type { EnumerationMappingReference } from '../../../models/metamodels/pure/packageableElements/mapping/EnumerationMappingReference.js';
 import type {
   EnumValueMapping,
   SourceValue,
@@ -92,7 +92,6 @@ import {
   skipObserved,
   skipObservedWithContext,
   observe_Multiplicity,
-  observe_OptionalPackageableElementReference,
 } from './CoreObserverHelper.js';
 import {
   observe_EnumValueReference,
@@ -131,16 +130,14 @@ export const observe_Abstract_Store = (metamodel: Store): void => {
 
 // ------------------------------------- Mapping -------------------------------------
 
-export const observe_OptionalEnumerationMappingReference = skipObserved(
-  (
-    metamodel: OptionalEnumerationMappingReference,
-  ): OptionalEnumerationMappingReference => {
+export const observe_EnumerationMappingReference = skipObserved(
+  (metamodel: EnumerationMappingReference): EnumerationMappingReference => {
     makeObservable(metamodel, {
       value: observable,
       valueForSerialization: computed,
     });
 
-    observe_OptionalPackageableElementReference(metamodel.ownerReference);
+    observe_PackageableElementReference(metamodel.ownerReference);
 
     return metamodel;
   },
@@ -184,8 +181,10 @@ export const observe_Abstract_PropertyMapping = (
   });
 
   observe_PropertyReference(metamodel.property);
-  // TODO: source
-  // TODO: target
+  observe_SetImplementationReference(metamodel.sourceSetImplementation);
+  if (metamodel.targetSetImplementation) {
+    observe_SetImplementationReference(metamodel.targetSetImplementation);
+  }
   if (metamodel.localMappingProperty) {
     observe_LocalMappingPropertyInfo(metamodel.localMappingProperty);
   }
@@ -202,7 +201,9 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
       hashCode: computed,
     });
 
-    observe_OptionalEnumerationMappingReference(metamodel.transformer);
+    if (metamodel.transformer) {
+      observe_EnumerationMappingReference(metamodel.transformer);
+    }
     observe_RawLambda(metamodel.transform);
 
     return metamodel;
@@ -425,7 +426,9 @@ export const observe_PureInstanceSetImplementation = skipObservedWithContext(
       hashCode: computed,
     });
 
-    observe_OptionalPackageableElementReference(metamodel.srcClass);
+    if (metamodel.srcClass) {
+      observe_PackageableElementReference(metamodel.srcClass);
+    }
     if (metamodel.filter) {
       observe_RawLambda(metamodel.filter);
     }
@@ -595,7 +598,9 @@ export const observe_EnumerationMapping = skipObserved(
 
     observe_PackageableElementReference(metamodel.enumeration);
     observe_InferableMappingElementIdValue(metamodel.id);
-    observe_OptionalPackageableElementReference(metamodel.sourceType);
+    if (metamodel.sourceType) {
+      observe_PackageableElementReference(metamodel.sourceType);
+    }
     metamodel.enumValueMappings.forEach(observe_EnumValueMapping);
 
     return metamodel;

@@ -470,7 +470,6 @@ export const MappingTestsExplorer = observer(
             {Boolean(mappingEditorState.mappingTestStates.length) &&
               mappingEditorState.mappingTestStates
                 .slice()
-                .sort((a, b) => a.test.name.localeCompare(b.test.name))
                 .map((testState) => (
                   <MappingTestExplorer
                     key={testState.test._UUID}

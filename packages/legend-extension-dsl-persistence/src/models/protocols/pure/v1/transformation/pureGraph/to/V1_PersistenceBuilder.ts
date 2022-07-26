@@ -160,7 +160,6 @@ import {
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
   V1_buildFullPath,
-  optionalizePackageableElementReference,
   V1_buildConnection,
 } from '@finos/legend-graph';
 import {
@@ -501,10 +500,9 @@ export const V1_buildFlatTarget = (
   context: V1_GraphBuilderContext,
 ): FlatTarget => {
   const targetShape = new FlatTarget();
-  targetShape.modelClass = optionalizePackageableElementReference(
-    modelClass ? context.resolveClass(modelClass) : undefined,
-  );
-
+  targetShape.modelClass = modelClass
+    ? context.resolveClass(modelClass)
+    : undefined;
   targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
   targetShape.partitionFields = protocol.partitionFields;
   targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(

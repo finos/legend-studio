@@ -25,7 +25,6 @@ import type { ModelUnit } from '../../../models/metamodels/pure/packageableEleme
 import {
   observe_PackageableElementReference,
   skipObserved,
-  observe_OptionalPackageableElementReference,
   observe_Abstract_PackageableElement,
 } from './CoreObserverHelper.js';
 import {
@@ -65,7 +64,9 @@ export const observe_Binding = skipObserved((metamodel: Binding): Binding => {
     _elementHashCode: override,
   });
 
-  observe_OptionalPackageableElementReference(metamodel.schemaSet);
+  if (metamodel.schemaSet) {
+    observe_PackageableElementReference(metamodel.schemaSet);
+  }
   observe_ModelUnit(metamodel.modelUnit);
 
   return metamodel;

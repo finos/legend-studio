@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-dev-utils",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Legend Studio development utilities, helpers, and scripts",
   "keywords": [
     "legend",
@@ -50,14 +50,14 @@
   },
   "dependencies": {
     "@babel/core": "7.18.9",
-    "@changesets/assemble-release-plan": "5.1.3",
-    "@changesets/changelog-github": "0.4.5",
-    "@changesets/config": "2.0.1",
-    "@changesets/get-release-plan": "3.0.10",
-    "@changesets/git": "1.3.2",
+    "@changesets/assemble-release-plan": "5.2.0",
+    "@changesets/changelog-github": "0.4.6",
+    "@changesets/config": "2.1.0",
+    "@changesets/get-release-plan": "3.0.12",
+    "@changesets/git": "1.4.1",
     "@changesets/logger": "0.0.5",
-    "@changesets/read": "0.5.5",
-    "@changesets/write": "0.1.8",
+    "@changesets/read": "0.5.7",
+    "@changesets/write": "0.1.9",
     "@jest/globals": "28.1.3",
     "@juggle/resize-observer": "3.3.1",
     "@manypkg/get-packages": "1.1.3",
@@ -85,10 +85,10 @@
     "postcss-loader": "7.0.1",
     "react-refresh": "0.14.0",
     "resolve": "1.22.1",
-    "sass": "1.53.0",
+    "sass": "1.54.0",
     "sass-loader": "13.0.2",
     "typescript": "4.7.4",
-    "webpack": "5.73.0"
+    "webpack": "5.74.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",

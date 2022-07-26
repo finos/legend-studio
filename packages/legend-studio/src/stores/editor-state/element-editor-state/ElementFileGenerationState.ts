@@ -27,6 +27,7 @@ import {
   createObservableFileGeneration,
   fileGeneration_setType,
 } from '../../graphModifier/DSLGeneration_GraphModifierHelper.js';
+import { handlePostCreateAction } from '../../editor/NewElementState.js';
 
 export class ElementFileGenerationState {
   readonly uuid = uuid();
@@ -66,6 +67,7 @@ export class ElementFileGenerationState {
     yield flowResult(
       this.editorStore.addElement(fileGeneration, packagePath, true),
     );
+    yield handlePostCreateAction(fileGeneration, this.editorStore);
     // reset file generation state so since the current file generation is promoted to a packageable element in the graph
     // otherwise if we keep this reference, editing this element generation state will also modify the packageable element
     const newFileGeneration = new FileGenerationSpecification('');
