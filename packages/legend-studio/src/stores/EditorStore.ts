@@ -87,7 +87,7 @@ import {
   PanelDisplayState,
 } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
   type SDLCServerClient,

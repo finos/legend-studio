@@ -33,10 +33,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { mergeDiff3 } from 'node-diff3';
-import {
-  type Entity,
-  extractEntityNameFromPath,
-} from '@finos/legend-model-storage';
+import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import { EntityChangeConflictResolution } from '@finos/legend-server-sdlc';
 import { ParserError } from '@finos/legend-graph';
 import type { AbstractConflictResolutionState } from '../../AbstractConflictResolutionState.js';

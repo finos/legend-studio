@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,

@@ -25,7 +25,7 @@ import {
 import { makeAutoObservable, action, flowResult } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { Project, Review } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';

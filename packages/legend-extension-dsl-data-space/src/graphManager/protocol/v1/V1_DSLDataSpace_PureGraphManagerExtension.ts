@@ -28,7 +28,7 @@ import {
   V1_PackageableRuntime,
   V1_EngineRuntime,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   ActionState,
   guaranteeNonEmptyString,

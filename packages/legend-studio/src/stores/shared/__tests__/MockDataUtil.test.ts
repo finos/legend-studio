@@ -19,7 +19,7 @@ import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.js
 import { classHasCycle, createMockClassInstance } from '../MockDataUtil.js';
 import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { TEST__buildGraphWithEntities } from '@finos/legend-graph';
 
 const editorStore = TEST__getTestEditorStore();

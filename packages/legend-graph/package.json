@@ -39,8 +39,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "date-fns": "2.29.1",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",

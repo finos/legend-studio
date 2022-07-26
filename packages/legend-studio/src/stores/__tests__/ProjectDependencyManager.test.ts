@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
   ProjectVersionEntities,

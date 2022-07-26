@@ -27,7 +27,7 @@ import { GraphManagerState } from './GraphManagerState.js';
 import { GraphManagerStateProvider } from './GraphManagerStateProvider.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst.js';
 import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager.js';
 import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';

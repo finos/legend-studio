@@ -1,20 +1,20 @@
 {
-  "name": "@finos/legend-model-storage",
+  "name": "@finos/legend-storage",
   "version": "2.0.7",
-  "description": "Legend storage models",
+  "description": "Legend storage",
   "keywords": [
     "legend",
-    "legend-model",
+    "legend-storage",
     "storage"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-model-storage",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-storage",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-model-storage"
+    "directory": "packages/legend-storage"
   },
   "license": "Apache-2.0",
   "sideEffects": false,

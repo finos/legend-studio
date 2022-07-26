@@ -7,6 +7,6 @@
   "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
   "references": [
     { "path": "../legend-shared/tsconfig.build.json" },
-    { "path": "../legend-model-storage/tsconfig.build.json" }
+    { "path": "../legend-storage/tsconfig.build.json" }
   ]
 }

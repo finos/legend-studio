@@ -47,7 +47,7 @@ import { LegendQueryPluginManager } from '../application/LegendQueryPluginManage
 import { ExistingQueryEditor } from './QueryEditor.js';
 import { generateExistingQueryEditorRoute } from '../stores/LegendQueryRouter.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';

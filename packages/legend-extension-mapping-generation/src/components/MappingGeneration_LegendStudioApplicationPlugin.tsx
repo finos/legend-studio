@@ -23,7 +23,7 @@ import {
   type ModelLoaderExtensionConfiguration,
   LegendStudioApplicationPlugin,
 } from '@finos/legend-studio';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;

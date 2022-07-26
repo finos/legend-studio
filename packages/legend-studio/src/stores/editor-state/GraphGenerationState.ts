@@ -50,7 +50,7 @@ import { FileGenerationViewerState } from './FileGenerationViewerState.js';
 import type { EditorState } from './EditorState.js';
 import { ElementEditorState } from './element-editor-state/ElementEditorState.js';
 import { ElementFileGenerationState } from './element-editor-state/ElementFileGenerationState.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type GenerationConfigurationDescription,
   type GenerationOutput,

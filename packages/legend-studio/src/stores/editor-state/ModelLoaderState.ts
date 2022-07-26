@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { EditorStore } from '../EditorStore.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type ImportConfigurationDescription,
   ImportMode,

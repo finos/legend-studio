@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestProjectConfig(
   packageJson.name,
-  'packages/legend-model-storage',
+  'packages/legend-storage',
 );

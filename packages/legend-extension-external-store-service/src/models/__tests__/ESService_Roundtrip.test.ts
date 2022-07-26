@@ -15,7 +15,7 @@
  */
 
 import { test } from '@jest/globals';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared';
 import { roundtripTestData } from './TEST_DATA__ESService_Roundtrip.js';
 import { ESService_GraphManagerPreset } from '../../ESService_Extension.js';

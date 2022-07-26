@@ -8,6 +8,6 @@
   "references": [
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-shared/tsconfig.build.json" },
-    { "path": "../legend-model-storage/tsconfig.build.json" }
+    { "path": "../legend-storage/tsconfig.build.json" }
   ]
 }

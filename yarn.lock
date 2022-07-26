@@ -2123,10 +2123,10 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
@@ -2157,8 +2157,8 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@testing-library/react": 13.3.0
@@ -2191,8 +2191,8 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-persistence": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
@@ -2218,8 +2218,8 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
@@ -2246,8 +2246,8 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
@@ -2292,10 +2292,10 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     cross-env: 7.0.3
@@ -2316,8 +2316,8 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
@@ -2345,10 +2345,10 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     cross-env: 7.0.3
@@ -2386,8 +2386,8 @@ __metadata:
   resolution: "@finos/legend-graph@workspace:packages/legend-graph"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     cross-env: 7.0.3
     date-fns: 2.29.1
@@ -2453,23 +2453,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-model-storage@workspace:*, @finos/legend-model-storage@workspace:packages/legend-model-storage":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-model-storage@workspace:packages/legend-model-storage"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@jest/globals": 28.1.3
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    jest: 28.1.3
-    lodash: 4.17.21
-    npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-query-app@workspace:*, @finos/legend-query-app@workspace:packages/legend-query-app":
   version: 0.0.0-use.local
   resolution: "@finos/legend-query-app@workspace:packages/legend-query-app"
@@ -2527,9 +2510,9 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     "@testing-library/dom": 8.16.0
     "@testing-library/react": 13.3.0
@@ -2565,8 +2548,8 @@ __metadata:
   resolution: "@finos/legend-server-depot@workspace:packages/legend-server-depot"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     cross-env: 7.0.3
     eslint: 8.20.0
@@ -2586,8 +2569,8 @@ __metadata:
   resolution: "@finos/legend-server-sdlc@workspace:packages/legend-server-sdlc"
   dependencies:
     "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     cross-env: 7.0.3
     eslint: 8.20.0
@@ -2633,6 +2616,23 @@ __metadata:
     serializr: 2.0.5
     typescript: 4.7.4
     uuid: 8.3.2
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-storage@workspace:*, @finos/legend-storage@workspace:packages/legend-storage":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-storage@workspace:packages/legend-storage"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.3
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    jest: 28.1.3
+    lodash: 4.17.21
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.7.4
   languageName: unknown
   linkType: soft
 
@@ -2721,10 +2721,10 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-query": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@finos/legend-studio": "workspace:*"
     "@jest/globals": 28.1.3
     "@testing-library/dom": 8.16.0
@@ -2754,10 +2754,10 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     "@testing-library/dom": 8.16.0
     "@testing-library/react": 13.3.0
@@ -2847,9 +2847,9 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-extension-dsl-data-space": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-model-storage": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/react": 18.0.15
     "@types/react-dom": 18.0.6

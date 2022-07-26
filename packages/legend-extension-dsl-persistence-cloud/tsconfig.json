@@ -12,7 +12,7 @@
     { "path": "../legend-application" },
     { "path": "../legend-extension-dsl-persistence" },
     { "path": "../legend-graph" },
-    { "path": "../legend-model-storage" },
+    { "path": "../legend-storage" },
     { "path": "../legend-shared" },
     { "path": "../legend-studio" }
   ]

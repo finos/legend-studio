@@ -41,7 +41,7 @@ import {
   type DepotServerClient,
   ProjectData,
 } from '@finos/legend-server-depot';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';

@@ -15,7 +15,7 @@
  */
 
 import { test } from '@jest/globals';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSLDiagram_Roundtrip.js';
 import { DSLDiagram_GraphManagerPreset } from '../../DSLDiagram_Extension.js';

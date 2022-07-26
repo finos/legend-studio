@@ -26,7 +26,7 @@ import {
   LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import type { PackageableElementOption } from '@finos/legend-application';
 
 const MAPPING_GENERATION_LOG_EVENT_TYPE = 'MAPPING_GENERATION_FAILURE';

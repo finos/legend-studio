@@ -44,7 +44,7 @@ import {
   ExternalFormatSchema as Schema,
   SchemaSet,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';

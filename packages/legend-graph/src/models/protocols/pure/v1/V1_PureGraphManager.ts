@@ -201,10 +201,7 @@ import {
   V1_transformQuerySearchSpecification,
 } from './engine/V1_EngineHelper.js';
 import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
-import {
-  type Entity,
-  ENTITY_PATH_DELIMITER,
-} from '@finos/legend-model-storage';
+import { type Entity, ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 import {
   DependencyGraphBuilderError,
   GraphBuilderError,

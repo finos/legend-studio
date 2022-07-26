@@ -11,7 +11,7 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph" },
     { "path": "../legend-shared" },
-    { "path": "../legend-model-storage" },
+    { "path": "../legend-storage" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-application" },
     { "path": "../legend-art" }

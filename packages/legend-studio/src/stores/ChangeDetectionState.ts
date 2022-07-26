@@ -38,7 +38,7 @@ import {
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
 import type { EditorGraphState } from './EditorGraphState.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type EntityChangeConflictResolution,
   EntityChangeConflict,

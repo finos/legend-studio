@@ -20,7 +20,7 @@ import {
   getDSLDataSpaceGraphManagerExtension,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { ProjectData } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,

@@ -57,7 +57,7 @@ import {
 } from './QueryBuilderState.js';
 import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type DepotServerClient,
   type ProjectGAVCoordinates,

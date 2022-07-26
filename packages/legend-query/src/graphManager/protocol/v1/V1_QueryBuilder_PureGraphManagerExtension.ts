@@ -35,7 +35,7 @@ import {
   CORE_PURE_PATH,
   getAllIncludedMappings,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   assertErrorThrown,
   filterByType,

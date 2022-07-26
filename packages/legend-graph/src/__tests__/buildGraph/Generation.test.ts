@@ -27,7 +27,7 @@ import {
 } from '../roundtripTestData/TEST_DATA__GenericRoundtrip.js';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { TEST_DATA__SimpleGraph } from './TEST_DATA__Core.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,

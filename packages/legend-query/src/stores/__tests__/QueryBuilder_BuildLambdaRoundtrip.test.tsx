@@ -63,7 +63,7 @@ import {
   TEST_DATA__lambda_input_projectionWithFullPathFunctions,
   TEST_DATA__lambda_output_projectionWithFullPathFunctions,
 } from './TEST_DATA__QueryBuilder_TestQueriesWithFullPathFunctions.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   RawLambda,
   TEST__buildGraphWithEntities,

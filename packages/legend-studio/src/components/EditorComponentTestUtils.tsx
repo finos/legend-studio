@@ -35,7 +35,7 @@ import {
   MOBX__enableSpyOrMock,
 } from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type Project,
   type ProjectConfiguration,

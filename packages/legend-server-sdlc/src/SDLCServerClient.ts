@@ -35,7 +35,7 @@ import {
   guaranteeNonNullable,
   HttpHeader,
 } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import type {
   CreateProjectCommand,
   ImportProjectCommand,

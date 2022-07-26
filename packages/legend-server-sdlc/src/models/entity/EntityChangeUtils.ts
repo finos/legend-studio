@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { EntityDiff } from '../comparison/EntityDiff.js';
 import { type EntityChange, EntityChangeType } from './EntityChange.js';

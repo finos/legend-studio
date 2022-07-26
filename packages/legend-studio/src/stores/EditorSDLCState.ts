@@ -28,10 +28,7 @@ import {
 } from '@finos/legend-shared';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { EDITOR_MODE, ACTIVITY_MODE } from './EditorConfig.js';
-import {
-  type Entity,
-  extractEntityNameFromPath,
-} from '@finos/legend-model-storage';
+import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import {
   type EntityDiff,
   type WorkspaceType,

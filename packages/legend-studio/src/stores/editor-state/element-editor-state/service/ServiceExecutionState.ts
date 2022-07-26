@@ -66,7 +66,7 @@ import {
   stub_PackageableRuntime,
   stub_Mapping,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { parseGACoordinates } from '@finos/legend-server-depot';
 import { runtime_addMapping } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';

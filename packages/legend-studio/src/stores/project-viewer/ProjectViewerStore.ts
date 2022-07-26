@@ -32,7 +32,7 @@ import {
   generateViewRevisionRoute,
   generateViewProjectRoute,
 } from '../LegendStudioRouter.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
   Revision,

@@ -16,7 +16,7 @@
     { "path": "packages/legend-manual-tests" },
     { "path": "packages/legend-shared" },
     { "path": "packages/legend-tracer-extension-zipkin" },
-    { "path": "packages/legend-model-storage" },
+    { "path": "packages/legend-storage" },
     { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
