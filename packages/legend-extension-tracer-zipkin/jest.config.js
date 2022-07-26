@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestProjectConfig(
   packageJson.name,
-  'packages/legend-tracer-extension-zipkin',
+  'packages/legend-extension-tracer-zipkin',
 );

@@ -3,7 +3,7 @@
   "files": [],
   "references": [
     { "path": "packages/legend-shared/tsconfig.build.json" },
-    { "path": "packages/legend-tracer-extension-zipkin/tsconfig.build.json" },
+    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     { "path": "packages/legend-storage/tsconfig.build.json" },
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     { "path": "packages/legend-server-depot/tsconfig.build.json" },

@@ -18,5 +18,5 @@
 '@finos/legend-studio-extension-management-toolkit': patch
 '@finos/legend-studio-extension-query-builder': patch
 '@finos/legend-taxonomy': patch
-'@finos/legend-tracer-extension-zipkin': patch
+'@finos/legend-extension-tracer-zipkin': patch
 ---

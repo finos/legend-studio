@@ -2365,6 +2365,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-extension-tracer-zipkin@workspace:packages/legend-extension-tracer-zipkin":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-extension-tracer-zipkin@workspace:packages/legend-extension-tracer-zipkin"
+  dependencies:
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@jest/globals": 28.1.3
+    "@types/zipkin-javascript-opentracing": 1.6.0
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    jest: 28.1.3
+    npm-run-all: 4.1.5
+    opentracing: 0.14.7
+    rimraf: 3.0.2
+    typescript: 4.7.4
+    zipkin: 0.22.0
+    zipkin-javascript-opentracing: 3.0.0
+    zipkin-transport-http: 0.22.0
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server":
   version: 0.0.0-use.local
   resolution: "@finos/legend-fixture-mock-server@workspace:fixtures/legend-mock-server"
@@ -2873,27 +2894,6 @@ __metadata:
     typescript: 4.7.4
   peerDependencies:
     react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-tracer-extension-zipkin@workspace:packages/legend-tracer-extension-zipkin":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-tracer-extension-zipkin@workspace:packages/legend-tracer-extension-zipkin"
-  dependencies:
-    "@finos/legend-dev-utils": "workspace:*"
-    "@finos/legend-shared": "workspace:*"
-    "@jest/globals": 28.1.3
-    "@types/zipkin-javascript-opentracing": 1.6.0
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    jest: 28.1.3
-    npm-run-all: 4.1.5
-    opentracing: 0.14.7
-    rimraf: 3.0.2
-    typescript: 4.7.4
-    zipkin: 0.22.0
-    zipkin-javascript-opentracing: 3.0.0
-    zipkin-transport-http: 0.22.0
   languageName: unknown
   linkType: soft
 
