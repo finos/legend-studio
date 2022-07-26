@@ -16,15 +16,11 @@
     "**/packages/babel-preset",
     "**/packages/eslint-plugin",
     "**/packages/stylelint-config",
-    "**/packages/legend-manual-tests",
     "**/packages/legend-dev-utils",
+    "**/packages/legend-manual-tests", // to be removed post https://github.com/finos/legend-studio/issues/820
     "**/packages/legend-art",
-    // "**/packages/legend-application-*",
-    "**/packages/legend-extension-*",
-    "**/packages/legend-studio-*",
-    "**/packages/legend-query-*",
-    "**/packages/legend-taxonomy-*",
-    "**/packages/legend-tracer-*"
+    "**/packages/legend-application-*",
+    "**/packages/legend-extension-*"
   ],
   "plugin": ["./scripts/typedoc-theme/lib/index.js"],
   "intentionallyNotExported": [],

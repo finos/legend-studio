@@ -2009,6 +2009,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-query-deployment@workspace:packages/legend-application-query-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-query-deployment@workspace:packages/legend-application-query-deployment"
+  dependencies:
+    "@finos/legend-application-query-bootstrap": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    copy-webpack-plugin: 11.0.0
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.7.4
+    webpack: 5.74.0
+    webpack-bundle-analyzer: 4.5.0
+    webpack-cli: 4.10.0
+    webpack-dev-server: 4.9.3
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-studio-bootstrap@workspace:*, @finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-studio-bootstrap@workspace:packages/legend-application-studio-bootstrap"
@@ -2038,6 +2057,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@finos/legend-application-studio-deployment@workspace:packages/legend-application-studio-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-studio-deployment@workspace:packages/legend-application-studio-deployment"
+  dependencies:
+    "@finos/legend-application-studio-bootstrap": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    copy-webpack-plugin: 11.0.0
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.7.4
+    webpack: 5.74.0
+    webpack-bundle-analyzer: 4.5.0
+    webpack-cli: 4.10.0
+    webpack-dev-server: 4.9.3
+  languageName: unknown
+  linkType: soft
+
 "@finos/legend-application-taxonomy-bootstrap@workspace:*, @finos/legend-application-taxonomy-bootstrap@workspace:packages/legend-application-taxonomy-bootstrap":
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-taxonomy-bootstrap@workspace:packages/legend-application-taxonomy-bootstrap"
@@ -2062,6 +2100,25 @@ __metadata:
     rimraf: 3.0.2
     sass: 1.54.0
     typescript: 4.7.4
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-application-taxonomy-deployment@workspace:packages/legend-application-taxonomy-deployment":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-application-taxonomy-deployment@workspace:packages/legend-application-taxonomy-deployment"
+  dependencies:
+    "@finos/legend-application-taxonomy-bootstrap": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    copy-webpack-plugin: 11.0.0
+    cross-env: 7.0.3
+    eslint: 8.20.0
+    npm-run-all: 4.1.5
+    rimraf: 3.0.2
+    typescript: 4.7.4
+    webpack: 5.74.0
+    webpack-bundle-analyzer: 4.5.0
+    webpack-cli: 4.10.0
+    webpack-dev-server: 4.9.3
   languageName: unknown
   linkType: soft
 
@@ -2619,25 +2676,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-query-deployment@workspace:packages/legend-query-deployment":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-query-deployment@workspace:packages/legend-query-deployment"
-  dependencies:
-    "@finos/legend-application-query-bootstrap": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    copy-webpack-plugin: 11.0.0
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.7.4
-    webpack: 5.74.0
-    webpack-bundle-analyzer: 4.5.0
-    webpack-cli: 4.10.0
-    webpack-dev-server: 4.9.3
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-query@workspace:*, @finos/legend-query@workspace:packages/legend-query":
   version: 0.0.0-use.local
   resolution: "@finos/legend-query@workspace:packages/legend-query"
@@ -2775,25 +2813,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-studio-deployment@workspace:packages/legend-studio-deployment"
-  dependencies:
-    "@finos/legend-application-studio-bootstrap": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    copy-webpack-plugin: 11.0.0
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.7.4
-    webpack: 5.74.0
-    webpack-bundle-analyzer: 4.5.0
-    webpack-cli: 4.10.0
-    webpack-dev-server: 4.9.3
-  languageName: unknown
-  linkType: soft
-
 "@finos/legend-studio@workspace:*, @finos/legend-studio@workspace:packages/legend-studio":
   version: 0.0.0-use.local
   resolution: "@finos/legend-studio@workspace:packages/legend-studio"
@@ -2837,25 +2856,6 @@ __metadata:
     typescript: 4.7.4
   peerDependencies:
     react: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
-"@finos/legend-taxonomy-deployment@workspace:packages/legend-taxonomy-deployment":
-  version: 0.0.0-use.local
-  resolution: "@finos/legend-taxonomy-deployment@workspace:packages/legend-taxonomy-deployment"
-  dependencies:
-    "@finos/legend-application-taxonomy-bootstrap": "workspace:*"
-    "@finos/legend-dev-utils": "workspace:*"
-    copy-webpack-plugin: 11.0.0
-    cross-env: 7.0.3
-    eslint: 8.20.0
-    npm-run-all: 4.1.5
-    rimraf: 3.0.2
-    typescript: 4.7.4
-    webpack: 5.74.0
-    webpack-bundle-analyzer: 4.5.0
-    webpack-cli: 4.10.0
-    webpack-dev-server: 4.9.3
   languageName: unknown
   linkType: soft
 

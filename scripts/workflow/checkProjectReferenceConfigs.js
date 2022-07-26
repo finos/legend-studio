@@ -39,7 +39,7 @@ checkProjectReferenceConfig({
   tsConfigFileName: 'tsconfig.build.json',
   excludePackagePatterns: [
     '@finos/legend-manual-tests',
-    '@finos/legend-*-deployment',
+    '@finos/legend-application-*-deployment',
     '@finos/legend-internal-typedoc-theme',
   ],
   excludeReferencePatterns: ['**/tsconfig.package.json'],

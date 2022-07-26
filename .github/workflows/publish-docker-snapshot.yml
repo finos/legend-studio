@@ -15,11 +15,11 @@ jobs:
       matrix:
         include:
           - image: finos/legend-studio
-            package: '@finos/legend-studio-deployment'
+            package: '@finos/legend-application-studio-deployment'
           - image: finos/legend-query
-            package: '@finos/legend-query-deployment'
+            package: '@finos/legend-application-query-deployment'
           - image: finos/legend-taxonomy
-            package: '@finos/legend-taxonomy-deployment'
+            package: '@finos/legend-application-taxonomy-deployment'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
