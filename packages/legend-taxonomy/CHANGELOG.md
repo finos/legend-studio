@@ -1,5 +1,17 @@
 # @finos/legend-taxonomy
 
+## 5.0.0
+
+### Major Changes
+
+- [#1323](https://github.com/finos/legend-studio/pull/1323) [`dbbbd63b`](https://github.com/finos/legend-studio/commit/dbbbd63b3dda4229e7bf36fb59a0c7b3d525d775) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `LegendTaxonomyStore` to `LegendTaxonomyBaseStore`, `LegendTaxonomyPlugin` to `LegendTaxonomyApplicationPlugin`, `LegendTaxonomyConfig` to `LegendTaxonomyApplicationConfig`. We also unified `LegendTaxonomyApplicationPlugin` and `LegendApplicationPlugin` in `LegendTaxonomyPluginManager` so we have removed `getTaxonomyPlugins()` method, use `getApplicationPlugins()` instead.
+
+### Minor Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - Make use of data space analytics API to render the data spaces for better performance. Also improved loading mechanism to avoid memory leaks.
+
+## 4.0.10
+
 ## 4.0.9
 
 ## 4.0.8

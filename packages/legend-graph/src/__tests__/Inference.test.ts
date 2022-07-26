@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { type TEMPORARRY__JestMatcher, unitTest } from '@finos/legend-shared';
+import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import {
   TEST_DATA__InferenceDefaultMappingElementID,
   TEST_DATA__ImportResolutionMultipleMatchesFound,
@@ -39,7 +39,7 @@ test(unitTest('Infer default mapping element ID'), async () => {
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
     (element) => graphManagerState.graphManager.elementToEntity(element),
   );
-  (expect(transformedEntities) as TEMPORARRY__JestMatcher).toIncludeSameMembers(
+  (expect(transformedEntities) as TEMPORARY__JestMatcher).toIncludeSameMembers(
     TEST__excludeSectionIndex(
       TEST_DATA__InferenceDefaultMappingElementID as Entity[],
     ),
@@ -77,7 +77,7 @@ test(
       (element) => graphManagerState.graphManager.elementToEntity(element),
     );
     (
-      expect(transformedEntities) as TEMPORARRY__JestMatcher
+      expect(transformedEntities) as TEMPORARY__JestMatcher
     ).toIncludeSameMembers(TEST_DATA__ReferenceWithoutSection.withoutSection);
   },
 );
@@ -108,7 +108,7 @@ test(
         graphManagerState.graph.allOwnElements.map((element) =>
           graphManagerState.graphManager.elementToEntity(element),
         ),
-      ) as TEMPORARRY__JestMatcher
+      ) as TEMPORARY__JestMatcher
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
         TEST_DATA__ReferenceModification.sameProfileModification as Entity[],
@@ -137,7 +137,7 @@ test(
         graphManagerState.graph.allOwnElements.map((element) =>
           graphManagerState.graphManager.elementToEntity(element),
         ),
-      ) as TEMPORARRY__JestMatcher
+      ) as TEMPORARY__JestMatcher
     ).toIncludeSameMembers(
       TEST__excludeSectionIndex(
         TEST_DATA__ReferenceModification.differentProfileModification as Entity[],

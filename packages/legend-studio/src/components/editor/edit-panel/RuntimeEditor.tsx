@@ -69,10 +69,6 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { ConnectionEditorState } from '../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import {
-  buildElementOption,
-  type PackageableElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElementReference,
@@ -97,8 +93,10 @@ import {
 import {
   useApplicationNavigationContext,
   useApplicationStore,
+  buildElementOption,
+  type PackageableElementOption,
 } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
@@ -125,11 +123,11 @@ const getConnectionTooltipText = (
     return `Model chain connection \u2022`;
   }
   const extraConnectionToolTipTexts = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_LegendStudioPlugin_Extension
+          plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
         ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
     );
   for (const builder of extraConnectionToolTipTexts) {

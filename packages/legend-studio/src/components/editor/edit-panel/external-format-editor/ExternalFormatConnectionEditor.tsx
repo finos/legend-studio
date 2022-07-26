@@ -23,7 +23,7 @@ import {
 import { computed, makeObservable } from 'mobx';
 import { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
-import { NewConnectionValueDriver } from '../../../../stores/NewElementState.js';
+import { NewConnectionValueDriver } from '../../../../stores/editor/NewElementState.js';
 import { externalFormat_urlStream_setUrl } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
 
 export class ExternalFormatConnectionValueState extends ConnectionValueState {

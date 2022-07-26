@@ -25,7 +25,6 @@ import {
   type BindingTransformer,
   observe_ExternalFormatSchema,
   observe_PackageableElementReference,
-  observe_SchemaSet,
   observe_ModelUnit,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
@@ -75,8 +74,13 @@ export const externalFormat_BindingTransformer_setBinding = action(
   },
 );
 export const externalFormat_Binding_setSchemaSet = action(
-  (binding: Binding, value: SchemaSet | undefined): void => {
-    binding.schemaSet.value = value ? observe_SchemaSet(value) : undefined;
+  (
+    binding: Binding,
+    value: PackageableElementReference<SchemaSet> | undefined,
+  ): void => {
+    binding.schemaSet = value
+      ? observe_PackageableElementReference(value)
+      : undefined;
   },
 );
 export const externalFormat_Binding_setSchemaId = action(

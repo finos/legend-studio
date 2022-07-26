@@ -39,10 +39,7 @@ import { FlatDataInputData } from '../../../../../../../metamodels/pure/packagea
 import { ExpectedOutputMappingTestAssert } from '../../../../../../../metamodels/pure/packageableElements/mapping/ExpectedOutputMappingTestAssert.js';
 import type { Class } from '../../../../../../../metamodels/pure/packageableElements/domain/Class.js';
 import { InferableMappingElementIdImplicitValue } from '../../../../../../../metamodels/pure/packageableElements/mapping/InferableMappingElementId.js';
-import {
-  type PackageableElementImplicitReference,
-  optionalizePackageableElementReference,
-} from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableElementImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import { EnumValueImplicitReference } from '../../../../../../../metamodels/pure/packageableElements/domain/EnumValueReference.js';
 import { MappingInclude } from '../../../../../../../metamodels/pure/packageableElements/mapping/MappingInclude.js';
 import { SubstituteStore } from '../../../../../../../metamodels/pure/packageableElements/mapping/SubstituteStore.js';
@@ -166,7 +163,7 @@ export const V1_buildEnumerationMapping = (
     ),
     targetEnumeration,
     parentMapping,
-    optionalizePackageableElementReference(sourceTypeReference),
+    sourceTypeReference,
   );
   enumerationMapping.enumValueMappings =
     srcEnumerationMapping.enumValueMappings.map((enumValueMapping) =>
@@ -292,19 +289,19 @@ export const V1_buildMappingTest = (
 };
 
 export const V1_resolveClassMappingRoot = (mapping: Mapping): void => {
-  const classToSetImplMap = new Map<Class, Set<SetImplementation>>();
+  const index = new Map<Class, Set<SetImplementation>>();
   getAllClassMappings(mapping).forEach((setImpl) => {
     const targetClass = guaranteeNonNullable(setImpl.class.value);
-    const setImplsWithTargetClass = classToSetImplMap.get(targetClass);
+    const setImplsWithTargetClass = index.get(targetClass);
     if (setImplsWithTargetClass) {
       setImplsWithTargetClass.add(setImpl);
     } else {
       const _set = new Set<SetImplementation>();
       _set.add(setImpl);
-      classToSetImplMap.set(targetClass, _set);
+      index.set(targetClass, _set);
     }
   });
-  Array.from(classToSetImplMap.entries()).forEach((entries) => {
+  Array.from(index.entries()).forEach((entries) => {
     const _classMappings = entries[1];
     if (_classMappings.size === 1) {
       const classMapping = Array.from(

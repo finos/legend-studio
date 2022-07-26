@@ -36,7 +36,7 @@ const observe_PureGraphExtension = skipObserved(
 const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
   makeObservable<
     BasicModel,
-    | 'elementSectionMap'
+    | 'elementSectionIndex'
     | 'sectionIndicesIndex'
     | 'profilesIndex'
     | 'typesIndex'
@@ -51,7 +51,7 @@ const observe_Abstract_BasicModel = (metamodel: BasicModel): void => {
     | 'fileGenerationsIndex'
     | 'dataElementsIndex'
   >(metamodel, {
-    elementSectionMap: observable,
+    elementSectionIndex: observable,
     extensions: observable,
 
     sectionIndicesIndex: observable,

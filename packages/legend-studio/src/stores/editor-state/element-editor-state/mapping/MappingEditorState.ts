@@ -84,7 +84,6 @@ import {
   FlatDataInputData,
   RootFlatDataRecordType,
   PackageableElementExplicitReference,
-  OptionalPackageableElementExplicitReference,
   RootFlatDataRecordTypeExplicitReference,
   RootRelationalInstanceSetImplementation,
   EmbeddedRelationalInstanceSetImplementation,
@@ -102,10 +101,10 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
-  DSLMapping_LegendStudioPlugin_Extension,
+  DSLMapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
-import type { LegendStudioPlugin } from '../../../LegendStudioPlugin.js';
+} from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
 import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
@@ -224,11 +223,11 @@ export const getMappingElementLabel = (
     }
     const extraSetImplementationMappingElementLabelInfoBuilders =
       editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioPlugin_Extension
+              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
             [],
         );
@@ -259,18 +258,18 @@ export const getMappingElementLabel = (
 
 export const getMappingElementSource = (
   mappingElement: MappingElement,
-  plugins: LegendStudioPlugin[],
+  plugins: LegendStudioApplicationPlugin[],
 ): MappingElementSource | undefined => {
   if (mappingElement instanceof OperationSetImplementation) {
     // NOTE: we don't need to resolve operation union because at the end of the day, it uses other class mappings
     // in the mapping, so if we use this method on all class mappings of a mapping, we don't miss anything
     return undefined;
   } else if (mappingElement instanceof EnumerationMapping) {
-    return mappingElement.sourceType.value;
+    return mappingElement.sourceType?.value;
   } else if (mappingElement instanceof AssociationImplementation) {
     throw new UnsupportedOperationError();
   } else if (mappingElement instanceof PureInstanceSetImplementation) {
-    return mappingElement.srcClass.value;
+    return mappingElement.srcClass?.value;
   } else if (mappingElement instanceof FlatDataInstanceSetImplementation) {
     return mappingElement.sourceRootRecordType.value;
   } else if (mappingElement instanceof EmbeddedFlatDataPropertyMapping) {
@@ -298,7 +297,7 @@ export const getMappingElementSource = (
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_LegendStudioPlugin_Extension
+        plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
       ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
   for (const extractor of extraMappingElementSourceExtractors) {
@@ -358,7 +357,7 @@ export const createClassMapping = (
         mapping,
         PackageableElementExplicitReference.create(_class),
         InferableMappingElementRootExplicitValue.create(false),
-        OptionalPackageableElementExplicitReference.create<Class>(undefined),
+        undefined,
       );
       break;
     default:
@@ -383,7 +382,7 @@ export const createEnumerationMapping = (
     InferableMappingElementIdExplicitValue.create(id, enumeration.path),
     PackageableElementExplicitReference.create(enumeration),
     mapping,
-    OptionalPackageableElementExplicitReference.create(sourceType),
+    PackageableElementExplicitReference.create(sourceType),
   );
   mapping_addEnumerationMapping(mapping, enumMapping);
   return enumMapping;
@@ -897,7 +896,7 @@ export class MappingEditorState extends ElementEditorState {
   ): GeneratorFn<void> {
     const currentSource = getMappingElementSource(
       setImplementation,
-      this.editorStore.pluginManager.getStudioPlugins(),
+      this.editorStore.pluginManager.getApplicationPlugins(),
     );
     if (currentSource !== newSource) {
       // first, we check if the current class mapping is compatible with the new source
@@ -909,7 +908,12 @@ export class MappingEditorState extends ElementEditorState {
       let sourceUpdated = false;
       if (setImplementation instanceof PureInstanceSetImplementation) {
         if (newSource instanceof Class || newSource === undefined) {
-          pureInstanceSetImpl_setSrcClass(setImplementation, newSource);
+          pureInstanceSetImpl_setSrcClass(
+            setImplementation,
+            newSource
+              ? PackageableElementExplicitReference.create(newSource)
+              : undefined,
+          );
           sourceUpdated = true;
         }
       } else if (
@@ -935,11 +939,11 @@ export class MappingEditorState extends ElementEditorState {
       } else {
         const extraInstanceSetImplementationSourceUpdaters =
           this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLMapping_LegendStudioPlugin_Extension
+                  plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
                 ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
         for (const updater of extraInstanceSetImplementationSourceUpdaters) {
@@ -959,7 +963,9 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             setImplementation.class,
             setImplementation.root,
-            OptionalPackageableElementExplicitReference.create(newSource),
+            newSource
+              ? PackageableElementExplicitReference.create(newSource)
+              : undefined,
           );
         } else if (newSource instanceof RootFlatDataRecordType) {
           newSetImp = new FlatDataInstanceSetImplementation(
@@ -1150,11 +1156,11 @@ export class MappingEditorState extends ElementEditorState {
       );
     }
     const extraMappingElementStateCreators = this.editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioPlugin_Extension
+            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingElementStateCreators?.() ?? [],
       );
     for (const elementStateCreator of extraMappingElementStateCreators) {
@@ -1467,7 +1473,7 @@ export class MappingEditorState extends ElementEditorState {
       );
     const source = getMappingElementSource(
       setImplementation,
-      this.editorStore.pluginManager.getStudioPlugins(),
+      this.editorStore.pluginManager.getApplicationPlugins(),
     );
     if (setImplementation instanceof OperationSetImplementation) {
       this.editorStore.applicationStore.notifyWarning(

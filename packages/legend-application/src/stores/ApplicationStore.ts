@@ -27,13 +27,14 @@ import {
 } from '@finos/legend-shared';
 import { makeAutoObservable, action } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
-import type { LegendApplicationConfig } from './LegendApplicationConfig.js';
+import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
 import type { LegendApplicationPluginManager } from '../application/LegendApplicationPluginManager.js';
-import { LegendApplicationDocumentationService } from './LegendApplicationDocumentationService.js';
-import { LegendApplicationAssistantService } from './LegendApplicationAssistantService.js';
-import { LegendApplicationEventService } from './LegendApplicationEventService.js';
-import { LegendApplicationNavigationContextService } from './LegendApplicationNavigationContextService.js';
+import { DocumentationService } from './DocumentationService.js';
+import { AssistantService } from './AssistantService.js';
+import { EventService } from './EventService.js';
+import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
+import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -102,13 +103,21 @@ export class Notification {
   }
 }
 
-export class ApplicationStore<T extends LegendApplicationConfig> {
-  pluginManager: LegendApplicationPluginManager;
+export type GenericLegendApplicationStore = ApplicationStore<
+  LegendApplicationConfig,
+  LegendApplicationPlugin
+>;
+
+export class ApplicationStore<
+  T extends LegendApplicationConfig,
+  V extends LegendApplicationPlugin,
+> {
+  pluginManager: LegendApplicationPluginManager<V>;
   config: T;
 
   // navigation
   navigator: WebApplicationNavigator;
-  navigationContextService: LegendApplicationNavigationContextService;
+  navigationContextService: ApplicationNavigationContextService;
 
   // TODO: refactor this to `NotificationService` including notifications and alerts
   notification?: Notification | undefined;
@@ -119,18 +128,18 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
   log: Log = new Log();
 
   // documentation & help
-  documentationService: LegendApplicationDocumentationService;
-  assistantService: LegendApplicationAssistantService;
+  documentationService: DocumentationService;
+  assistantService: AssistantService;
 
   // communication
-  eventService = new LegendApplicationEventService();
+  eventService = new EventService();
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
   constructor(
     config: T,
     navigator: WebApplicationNavigator,
-    pluginManager: LegendApplicationPluginManager,
+    pluginManager: LegendApplicationPluginManager<V>,
   ) {
     makeAutoObservable(this, {
       navigator: false,
@@ -150,10 +159,11 @@ export class ApplicationStore<T extends LegendApplicationConfig> {
     // NOTE: set the logger first so other loading could use the configured logger
     this.log.registerPlugins(pluginManager.getLoggerPlugins());
 
-    this.navigationContextService =
-      new LegendApplicationNavigationContextService(this);
-    this.documentationService = new LegendApplicationDocumentationService(this);
-    this.assistantService = new LegendApplicationAssistantService(this);
+    this.navigationContextService = new ApplicationNavigationContextService(
+      this,
+    );
+    this.documentationService = new DocumentationService(this);
+    this.assistantService = new AssistantService(this);
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );

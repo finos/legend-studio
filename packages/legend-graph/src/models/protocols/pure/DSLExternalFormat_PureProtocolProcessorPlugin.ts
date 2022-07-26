@@ -31,10 +31,7 @@ import {
 import type { Connection } from '../../metamodels/pure/packageableElements/connection/Connection.js';
 import type { Mapping } from '../../metamodels/pure/packageableElements/mapping/Mapping.js';
 import type { PackageableElement } from '../../metamodels/pure/packageableElements/PackageableElement.js';
-import {
-  PackageableElementReference,
-  optionalizePackageableElementReference,
-} from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
+import { PackageableElementReference } from '../../metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { Runtime } from '../../metamodels/pure/packageableElements/runtime/Runtime.js';
 import { ExternalFormatConnection } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
 import { UrlStream } from '../../metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
@@ -133,11 +130,9 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           );
           const element = getOwnBinding(path, context.currentSubGraph);
           element.schemaId = elementProtocol.schemaId;
-          element.schemaSet = optionalizePackageableElementReference(
-            elementProtocol.schemaSet
-              ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
-              : undefined,
-          );
+          element.schemaSet = elementProtocol.schemaSet
+            ? V1_resolveSchemaSet(elementProtocol.schemaSet, context)
+            : undefined;
 
           element.contentType = guaranteeNonEmptyString(
             elementProtocol.contentType,
@@ -262,7 +257,7 @@ export class DSLExternalFormat_PureProtocolProcessorPlugin
           protocol.name = metamodel.name;
           protocol.package = metamodel.package?.path ?? '';
           protocol.schemaId = metamodel.schemaId;
-          protocol.schemaSet = metamodel.schemaSet.valueForSerialization;
+          protocol.schemaSet = metamodel.schemaSet?.valueForSerialization;
           protocol.contentType = metamodel.contentType;
           const modelUnit = new V1_ModelUnit();
           modelUnit.packageableElementExcludes =

@@ -21,16 +21,15 @@ import type {
   PureGraphPlugin,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
-import type { LegendQueryPlugin } from '../stores/LegendQueryPlugin.js';
+import type { LegendQueryApplicationPlugin } from '../stores/LegendQueryApplicationPlugin.js';
 
 export class LegendQueryPluginManager
-  extends LegendApplicationPluginManager
+  extends LegendApplicationPluginManager<LegendQueryApplicationPlugin>
   implements GraphPluginManager
 {
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
   private pureGraphManagerPlugins: PureGraphManagerPlugin[] = [];
   private pureGraphPlugins: PureGraphPlugin[] = [];
-  private queryPlugins: LegendQueryPlugin[] = [];
 
   private constructor() {
     super();
@@ -54,10 +53,6 @@ export class LegendQueryPluginManager
     this.pureGraphPlugins.push(plugin);
   }
 
-  registerQueryPlugin(plugin: LegendQueryPlugin): void {
-    this.queryPlugins.push(plugin);
-  }
-
   getPureGraphManagerPlugins(): PureGraphManagerPlugin[] {
     return [...this.pureGraphManagerPlugins];
   }
@@ -68,9 +63,5 @@ export class LegendQueryPluginManager
 
   getPureGraphPlugins(): PureGraphPlugin[] {
     return [...this.pureGraphPlugins];
-  }
-
-  getQueryPlugins(): LegendQueryPlugin[] {
-    return [...this.queryPlugins];
   }
 }

@@ -21,10 +21,7 @@ import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplement
 import type { PurePropertyMapping } from './PurePropertyMapping.js';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type { RawLambda } from '../../../../rawValueSpecification/RawLambda.js';
-import type {
-  PackageableElementReference,
-  OptionalPackageableElementReference,
-} from '../../../PackageableElementReference.js';
+import type { PackageableElementReference } from '../../../PackageableElementReference.js';
 import type { InferableMappingElementIdValue } from '../../../mapping/InferableMappingElementId.js';
 import type { Mapping } from '../../../mapping/Mapping.js';
 import type { InferableMappingElementRoot } from '../../../mapping/InferableMappingElementRoot.js';
@@ -34,7 +31,7 @@ export class PureInstanceSetImplementation
   implements Hashable
 {
   declare propertyMappings: PurePropertyMapping[];
-  srcClass: OptionalPackageableElementReference<Class>;
+  srcClass?: PackageableElementReference<Class> | undefined;
   /**
    * Studio does not process value specification, they are left in raw JSON form
    *
@@ -47,7 +44,7 @@ export class PureInstanceSetImplementation
     parent: Mapping,
     _class: PackageableElementReference<Class>,
     root: InferableMappingElementRoot,
-    srcClass: OptionalPackageableElementReference<Class>,
+    srcClass: PackageableElementReference<Class> | undefined,
   ) {
     super(id, parent, _class, root);
     this.srcClass = srcClass;
@@ -57,7 +54,7 @@ export class PureInstanceSetImplementation
     return hashArray([
       CORE_HASH_STRUCTURE.PURE_INSTANCE_SET_IMPLEMENTATION,
       super.hashCode,
-      this.srcClass.valueForSerialization ?? '',
+      this.srcClass?.valueForSerialization ?? '',
       this.filter ?? '',
       hashArray(
         this.propertyMappings.filter(

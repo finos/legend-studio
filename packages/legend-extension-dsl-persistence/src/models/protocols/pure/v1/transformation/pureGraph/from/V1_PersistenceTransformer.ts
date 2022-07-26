@@ -192,6 +192,9 @@ export const V1_transformRelationalSink = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalSink => {
   const protocol = new V1_RelationalSink();
+  if (element.database) {
+    protocol.database = element.database.value.path;
+  }
   if (element.connection) {
     protocol.connection = V1_transformConnection(
       element.connection,
@@ -207,12 +210,14 @@ export const V1_transformObjectStorageSink = (
   context: V1_GraphTransformerContext,
 ): V1_ObjectStorageSink => {
   const protocol = new V1_ObjectStorageSink();
-  protocol.connection = V1_transformConnection(
-    element.connection,
-    true,
-    context,
-  );
   protocol.binding = element.binding.value.path;
+  if (element.connection) {
+    protocol.connection = V1_transformConnection(
+      element.connection,
+      true,
+      context,
+    );
+  }
   return protocol;
 };
 
@@ -489,7 +494,7 @@ export const V1_transformFlatTarget = (
   context: V1_GraphTransformerContext,
 ): V1_FlatTarget => {
   const protocol = new V1_FlatTarget();
-  protocol.modelClass = element.modelClass.valueForSerialization;
+  protocol.modelClass = element.modelClass?.valueForSerialization;
   protocol.targetName = element.targetName;
   protocol.partitionFields = element.partitionFields;
   protocol.deduplicationStrategy = V1_transformDeduplicationStrategy(

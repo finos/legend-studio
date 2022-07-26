@@ -28,11 +28,11 @@ import {
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
-import {
-  type PackageableElementOption,
-  buildElementOption,
-} from '../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 
 export const ProjectSearchCommand = observer(() => {
   const editorStore = useEditorStore();

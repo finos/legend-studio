@@ -116,7 +116,7 @@ import {
 } from '@finos/legend-studio';
 import { cleanUpDeadReferencesInDiagram } from '../../helpers/DSLDiagram_Helper.js';
 import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import type { DSLDiagram_LegendStudioPlugin_Extension } from './DSLDiagram_LegendStudioPlugin_Extension.js';
+import type { DSLDiagram_LegendStudioApplicationPlugin_Extension } from './DSLDiagram_LegendStudioApplicationPlugin_Extension.js';
 import {
   classView_setHideProperties,
   classView_setHideStereotypes,
@@ -136,11 +136,11 @@ const DiagramEditorContextMenu = observer(
     const extraClassViewContextMenuItems =
       diagramEditorState.contextMenuClassView
         ? editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLDiagram_LegendStudioPlugin_Extension
+                  plugin as DSLDiagram_LegendStudioApplicationPlugin_Extension
                 ).getExtraClassViewContextMenuItemRendererConfigurations?.() ??
                 [],
             )
@@ -694,11 +694,10 @@ const DiagramEditorOverlay = observer(
             {
               classes: ['diagram-editor__overlay__panel'],
               onStopResize: resizeSidePanel,
+              size: diagramEditorState.sidePanelDisplayState.size,
             },
           )}
-          flex={0}
           direction={-1}
-          size={diagramEditorState.sidePanelDisplayState.size}
         >
           <div className="panel diagram-editor__side-panel">
             {sidePanelState instanceof
@@ -717,7 +716,7 @@ const DiagramEditorOverlay = observer(
   },
 );
 
-const DiagramEditorInlineClassRenamerInner = observer(
+const DiagramEditorInlineClassRenamerContent = observer(
   (props: {
     inlineClassRenamerState: DiagramEditorInlineClassRenamerState;
   }) => {
@@ -824,7 +823,7 @@ const DiagramEditorInlineClassRenamer = observer(
       >
         <div className="diagram-editor__inline-class-creator__container">
           {inlineClassRenamerState && (
-            <DiagramEditorInlineClassRenamerInner
+            <DiagramEditorInlineClassRenamerContent
               inlineClassRenamerState={inlineClassRenamerState}
             />
           )}
@@ -834,7 +833,7 @@ const DiagramEditorInlineClassRenamer = observer(
   },
 );
 
-const DiagramEditorInlineClassCreatorInner = observer(
+const DiagramEditorInlineClassCreatorContent = observer(
   (props: {
     inlineClassCreatorState: DiagramEditorInlineClassCreatorState;
   }) => {
@@ -954,7 +953,7 @@ const DiagramEditorInlineClassCreator = observer(
       >
         <div className="diagram-editor__inline-class-creator__container">
           {inlineClassCreatorState && (
-            <DiagramEditorInlineClassCreatorInner
+            <DiagramEditorInlineClassCreatorContent
               inlineClassCreatorState={inlineClassCreatorState}
             />
           )}
@@ -1029,7 +1028,7 @@ const DiagramEditorInlinePropertyMultiplicityEditor = observer(
   },
 );
 
-const DiagramEditorInlinePropertyEditorInner = observer(
+const DiagramEditorInlinePropertyEditorContent = observer(
   (props: {
     inlinePropertyEditorState: DiagramEditorInlinePropertyEditorState;
   }) => {
@@ -1158,7 +1157,7 @@ const DiagramEditorInlinePropertyEditor = observer(
       >
         <div className="diagram-editor__inline-property-editor__container">
           {inlinePropertyEditorState && (
-            <DiagramEditorInlinePropertyEditorInner
+            <DiagramEditorInlinePropertyEditorContent
               inlinePropertyEditorState={inlinePropertyEditorState}
             />
           )}

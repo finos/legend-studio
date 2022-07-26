@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,
@@ -22,18 +22,17 @@ import {
 } from '../stores/LegendTaxonomyRouter.js';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { LegendTaxonomyStoreProvider } from './LegendTaxonomyStoreProvider.js';
-import { GraphManagerStateProvider } from '@finos/legend-graph';
-import {
-  LegendApplicationComponentFrameworkProvider,
-  useApplicationStore,
-} from '@finos/legend-application';
-import type { LegendTaxonomyConfig } from '../application/LegendTaxonomyConfig.js';
-import { TaxonomyViewer } from './TaxonomyViewer.js';
+import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
+import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
+import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';
+import {
+  LegendTaxonomyBaseStoreProvider,
+  useLegendTaxonomyApplicationStore,
+} from './LegendTaxonomyBaseStoreProvider.js';
 
 export const LegendTaxonomyApplicationRoot = observer(() => {
-  const applicationStore = useApplicationStore<LegendTaxonomyConfig>();
+  const applicationStore = useLegendTaxonomyApplicationStore();
 
   return (
     <div className="app">
@@ -45,11 +44,11 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
             LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE,
             LEGEND_TAXONOMY_ROUTE_PATTERN.EXPLORE_TAXONOMY_TREE_NODE_DATA_SPACE,
           ]}
-          component={TaxonomyViewer}
+          component={TaxonomyExplorer}
         />
         <Route
           exact={true}
-          path={LEGEND_TAXONOMY_ROUTE_PATTERN.VIEW_DATA_SPACE}
+          path={LEGEND_TAXONOMY_ROUTE_PATTERN.STANDALONE_DATA_SPACE_VIEWER}
           component={StandaloneDataSpaceViewer}
         />
         <Redirect
@@ -64,11 +63,10 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
 
 export const LegendTaxonomyApplication = observer(
   (props: {
-    config: LegendTaxonomyConfig;
+    config: LegendTaxonomyApplicationConfig;
     pluginManager: LegendTaxonomyPluginManager;
   }) => {
     const { config, pluginManager } = props;
-    const applicationStore = useApplicationStore();
 
     return (
       <DepotServerClientProvider
@@ -78,16 +76,11 @@ export const LegendTaxonomyApplication = observer(
             config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <GraphManagerStateProvider
-          pluginManager={pluginManager}
-          log={applicationStore.log}
-        >
-          <LegendTaxonomyStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendTaxonomyApplicationRoot />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendTaxonomyStoreProvider>
-        </GraphManagerStateProvider>
+        <LegendTaxonomyBaseStoreProvider pluginManager={pluginManager}>
+          <LegendApplicationComponentFrameworkProvider>
+            <LegendTaxonomyApplicationRoot />
+          </LegendApplicationComponentFrameworkProvider>
+        </LegendTaxonomyBaseStoreProvider>
       </DepotServerClientProvider>
     );
   },

@@ -147,12 +147,12 @@ export class ProjectConfigurationEditorState extends EditorState {
           if (!dependency.isLegacyDependency) {
             return;
           }
-          const projectData = Array.from(this.projects.values()).find(
+          const project = Array.from(this.projects.values()).find(
             (e) => e.projectId === dependency.projectId,
           );
           // re-write to new format
-          if (projectData) {
-            dependency.setProjectId(projectData.coordinates);
+          if (project) {
+            dependency.setProjectId(project.coordinates);
           }
         },
       );

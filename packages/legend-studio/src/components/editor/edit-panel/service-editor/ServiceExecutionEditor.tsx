@@ -57,7 +57,6 @@ import {
   ArrowsSplitIcon,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type KeyedExecutionParameter,
@@ -69,6 +68,7 @@ import {
   validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { PackageableElementOption } from '@finos/legend-application';
 
 const PureExecutionContextConfigurationEditor = observer(
   (props: {

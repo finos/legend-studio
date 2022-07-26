@@ -384,14 +384,14 @@ export abstract class WorkflowManagerState {
         .filter(filterByType(WorkflowTreeNodeData))
         .filter((node) => node.isOpen)
         .map((node) => node.workflow.id);
-      const workflowToJobsMap = new Map<string, WorkflowJob[]>();
+      const jobsIndex = new Map<string, WorkflowJob[]>();
       yield Promise.all(
         workflows
           .filter((workflow) => openWorkflowIds.includes(workflow.id))
           // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
           .map((workflow) =>
             flowResult(this.getJobs(workflow.id)).then((jobs: WorkflowJob[]) =>
-              workflowToJobsMap.set(
+              jobsIndex.set(
                 workflow.id,
                 jobs
                   .slice()
@@ -408,7 +408,7 @@ export abstract class WorkflowManagerState {
             this.editorStore,
             this,
             workflow,
-            workflowToJobsMap.get(workflow.id),
+            jobsIndex.get(workflow.id),
           ),
       );
       this.fetchWorkflowsState.pass();

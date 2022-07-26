@@ -76,8 +76,8 @@ export class DependencyManager {
   /**
    * Here we create and index a graph for each dependency
    */
-  initialize(dependencyEntitiesMap: Map<string, Entity[]>): void {
-    Array.from(dependencyEntitiesMap.keys()).forEach((dependencyKey) => {
+  initialize(dependencyEntitiesIndex: Map<string, Entity[]>): void {
+    Array.from(dependencyEntitiesIndex.keys()).forEach((dependencyKey) => {
       // NOTE: all dependency models will share the dependency manager root package.
       this.projectDependencyModelsIndex.set(
         dependencyKey,

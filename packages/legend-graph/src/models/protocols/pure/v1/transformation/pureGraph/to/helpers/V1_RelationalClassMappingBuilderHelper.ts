@@ -33,7 +33,7 @@ import { FilterMapping } from '../../../../../../../metamodels/pure/packageableE
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { V1_RelationalClassMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_RelationalClassMapping.js';
 import type { V1_FilterMapping } from '../../../../model/packageableElements/store/relational/mapping/V1_FilterMapping.js';
-import { V1_ProtocolToMetaModelPropertyMappingBuilder } from '../../../../transformation/pureGraph/to/V1_ProtocolToMetaModelPropertyMappingBuilder.js';
+import { V1_PropertyMappingBuilder } from '../V1_PropertyMappingBuilder.js';
 import {
   V1_buildElementWithJoinsJoinTreeNode,
   V1_buildRelationalOperationElement,
@@ -47,24 +47,24 @@ export const V1_buildRelationalClassMapping = (
   parentMapping: Mapping,
   embeddedRelationalPropertyMappings: EmbeddedRelationalInstanceSetImplementation[],
   enumerationMappings: EnumerationMapping[],
-  tableAliasMap: Map<string, TableAlias>,
+  tableAliasIndex: Map<string, TableAlias>,
 ): SetImplementation => {
   const pureClass = relationalClassMapping.class
     ? context.resolveClass(relationalClassMapping.class)
     : immediateParent.class;
   // TODO localMappingProperties
   immediateParent.primaryKey = relationalClassMapping.primaryKey.map((key) =>
-    V1_buildRelationalOperationElement(key, context, tableAliasMap, []),
+    V1_buildRelationalOperationElement(key, context, tableAliasIndex, []),
   );
   immediateParent.propertyMappings =
     relationalClassMapping.propertyMappings.map((propertyMapping) =>
       propertyMapping.accept_PropertyMappingVisitor(
-        new V1_ProtocolToMetaModelPropertyMappingBuilder(
+        new V1_PropertyMappingBuilder(
           context,
           immediateParent,
           topParent,
           enumerationMappings,
-          tableAliasMap,
+          tableAliasIndex,
         ),
       ),
     ) as RelationalPropertyMapping[];

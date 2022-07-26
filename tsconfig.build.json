@@ -42,6 +42,9 @@
       "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-dsl-persistence-cloud/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
     },
     {

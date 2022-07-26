@@ -21,21 +21,31 @@ export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
 export { QueryBuilder_PureProtocolProcessorPlugin } from './models/protocols/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 
 export { QueryBuilder } from './components/QueryBuilder.js';
-export { useQuerySetupStore } from './components/LegendQuerySetupStoreProvider.js';
-export { useLegendQueryStore } from './components/LegendQueryStoreProvider.js';
+export {
+  QueryEditorStoreContext,
+  useQueryEditorStore,
+} from './components/QueryEditorStoreProvider.js';
+export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
+export {
+  useLegendQueryBaseStore,
+  useLegendQueryApplicationStore,
+} from './components/LegendQueryBaseStoreProvider.js';
+export { QueryEditor } from './components/QueryEditor.js';
 
 export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
 
-export * from './stores/LegendQueryPlugin.js';
+export * from './stores/LegendQueryApplicationPlugin.js';
 export * from './stores/LegendQueryRouter.js';
+export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
+export { LegendQueryApplicationConfig } from './application/LegendQueryApplicationConfig.js';
 export {
-  QuerySetupState,
-  QuerySetupStore,
-} from './stores/LegendQuerySetupStore.js';
+  QueryEditorStore,
+  type QueryExportConfiguration,
+} from './stores/QueryEditorStore.js';
 export {
-  LegendQueryStore,
-  CreateQueryInfoState,
-} from './stores/LegendQueryStore.js';
+  LegendQueryBaseStore,
+  type LegendQueryApplicationStore,
+} from './stores/LegendQueryBaseStore.js';
 export {
   QueryBuilderMode,
   StandardQueryBuilderMode,

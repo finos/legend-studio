@@ -17,13 +17,16 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { SchemaSet } from '../schemaSet/DSLExternalFormat_SchemaSet.js';
 import { Store } from '../../store/Store.js';
-import type { OptionalPackageableElementReference } from '../../PackageableElementReference.js';
 import type { ModelUnit } from './DSLExternalFormat_ModelUnit.js';
 import type { PackageableElementVisitor } from '../../PackageableElement.js';
 import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import type { PackageableElementReference } from '../../PackageableElementReference.js';
 
+// NOTE: in the metamodel, `Binding` extends `ModelStore`, we could consider doing the same
+// although this might not be trivial as we have a fair amount of logic around the special
+// handling of `ModelStore`
 export class Binding extends Store implements Hashable {
-  schemaSet!: OptionalPackageableElementReference<SchemaSet>;
+  schemaSet?: PackageableElementReference<SchemaSet> | undefined;
   schemaId?: string | undefined;
   contentType!: string;
   modelUnit!: ModelUnit;
@@ -32,7 +35,7 @@ export class Binding extends Store implements Hashable {
     return hashArray([
       DSL_EXTERNAL_FORMAT_HASH_STRUCTURE.BINDING,
       this.path,
-      this.schemaSet.valueForSerialization ?? '',
+      this.schemaSet?.valueForSerialization ?? '',
       this.schemaId ?? '',
       this.contentType,
       this.modelUnit,

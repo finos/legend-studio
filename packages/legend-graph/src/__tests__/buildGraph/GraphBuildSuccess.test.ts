@@ -101,7 +101,7 @@ test(unitTest('Mapping is loaded properly'), () => {
   ) as PureInstanceSetImplementation;
   expect(pureInstanceMapping).toBeDefined();
   expect(pureInstanceMapping.class.value).toEqual(targetClass);
-  expect(pureInstanceMapping.srcClass.value).toEqual(
+  expect(pureInstanceMapping.srcClass?.value).toEqual(
     graph.getClass('ui::test1::Source_Something'),
   );
   expect(pureInstanceMapping.propertyMappings.length).toBe(3);

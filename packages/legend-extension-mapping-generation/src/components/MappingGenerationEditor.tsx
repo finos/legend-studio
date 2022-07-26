@@ -30,14 +30,11 @@ import {
   PanelLoadingIndicator,
   ErrorIcon,
 } from '@finos/legend-art';
-import {
-  type EditorStore,
-  StudioTextInputEditor,
-  type PackageableElementOption,
-} from '@finos/legend-studio';
+import { type EditorStore, StudioTextInputEditor } from '@finos/legend-studio';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import type { MappingGenerationEditorState } from '../stores/MappingGenerationEditorState.js';
 import { flowResult, runInAction } from 'mobx';

@@ -17,24 +17,25 @@
 import { createContext, useContext } from 'react';
 import { useLocalObservable } from 'mobx-react-lite';
 import { EditorStore } from '../../stores/EditorStore.js';
-import { useApplicationStore } from '@finos/legend-application';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useLegendStudioStore } from '../LegendStudioStoreProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioBaseStoreProvider.js';
 import { useGraphManagerState } from '@finos/legend-graph';
-import type { LegendStudioConfig } from '../../application/LegendStudioConfig.js';
 
 const EditorStoreContext = createContext<EditorStore | undefined>(undefined);
 
 export const EditorStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
+  const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
   const graphManagerState = useGraphManagerState();
-  const studioStore = useLegendStudioStore();
+  const baseStore = useLegendStudioBaseStore();
   const store = useLocalObservable(
     () =>
       new EditorStore(
@@ -42,7 +43,7 @@ export const EditorStoreProvider: React.FC<{
         sdlcServerClient,
         depotServerClient,
         graphManagerState,
-        studioStore.pluginManager,
+        baseStore.pluginManager,
       ),
   );
   return (
@@ -57,3 +58,12 @@ export const useEditorStore = (): EditorStore =>
     useContext(EditorStoreContext),
     `Can't find editor store in context`,
   );
+
+export const withEditorStore = (WrappedComponent: React.FC): React.FC =>
+  function WithEditorStore() {
+    return (
+      <EditorStoreProvider>
+        <WrappedComponent />
+      </EditorStoreProvider>
+    );
+  };

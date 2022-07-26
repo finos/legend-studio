@@ -48,7 +48,6 @@ import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
-import type { PackageableElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -88,9 +87,10 @@ import {
   getPackageableElementOptionalFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
-import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioPlugin.js';
+import type { ClassPreviewRenderer } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import {
   class_addProperty,
   class_deleteDerivedProperty,
@@ -1478,10 +1478,11 @@ export const ClassFormEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!editorState.selectedProperty)}
-            flex={0}
+            {...getControlledResizablePanelProps(
+              !editorState.selectedProperty,
+              { size: 250 },
+            )}
             direction={-1}
-            size={editorState.selectedProperty ? 250 : 0}
           >
             {editorState.selectedProperty ? (
               <PropertyEditor
@@ -1507,7 +1508,7 @@ export const ClassEditor = observer((props: { _class: Class }) => {
   const editorState = editorStore.getCurrentEditorState(ClassEditorState);
 
   const classPreviewRenderers = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraClassPreviewRenderers?.() ?? [])
     .filter(isNonNullable);
 

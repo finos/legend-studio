@@ -61,13 +61,13 @@ import {
   getClassPropertyType,
   SET_IMPLEMENTATION_TYPE,
 } from '../../../../stores/shared/ModelUtil.js';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
 ): Type | undefined => {
   if (targetSetImplementation instanceof PureInstanceSetImplementation) {
-    return targetSetImplementation.srcClass.value;
+    return targetSetImplementation.srcClass?.value;
   } else if (targetSetImplementation instanceof OperationSetImplementation) {
     return targetSetImplementation.class.value;
   } else {
@@ -289,11 +289,11 @@ export const PropertyMappingsEditor = observer(
               default: {
                 const extraPropertyMappingEditorRenderers =
                   editorStore.pluginManager
-                    .getStudioPlugins()
+                    .getApplicationPlugins()
                     .flatMap(
                       (plugin) =>
                         (
-                          plugin as DSLMapping_LegendStudioPlugin_Extension
+                          plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
                         ).getExtraPropertyMappingEditorRenderers?.() ?? [],
                     );
                 for (const renderer of extraPropertyMappingEditorRenderers) {

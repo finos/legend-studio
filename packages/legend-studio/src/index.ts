@@ -15,15 +15,14 @@
  */
 
 // application
-export * from './components/LegendStudioStoreProvider.js';
+export * from './components/LegendStudioBaseStoreProvider.js';
 export * from './application/LegendStudio.js';
-export * from './application/LegendStudioConfig.js';
+export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
-export * from './stores/shared/PackageableElementOptionUtil.js';
 export * from './stores/LegendStudioAppEvent.js';
 
 // stores
-export * from './stores/LegendStudioPlugin.js';
+export * from './stores/LegendStudioApplicationPlugin.js';
 export * from './stores/EditorStore.js';
 export * from './stores/EditorConfig.js';
 export { ClassEditorState } from './stores/editor-state/element-editor-state/ClassEditorState.js';
@@ -33,7 +32,7 @@ export {
   NewElementState,
   NewElementDriver,
   NewConnectionValueDriver,
-} from './stores/NewElementState.js';
+} from './stores/editor/NewElementState.js';
 export {
   CORE_DND_TYPE,
   ElementDragSource,
@@ -44,9 +43,9 @@ export {
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
 export * from './stores/graphModifier/GraphModifierHelper.js';
 export * from './stores/graphModifier/DomainGraphModifierHelper.js';
-export * from './stores/DSLMapping_LegendStudioPlugin_Extension.js';
-export * from './stores/DSLService_LegendStudioPlugin_Extension.js';
-export * from './stores/DSLData_LegendStudioPlugin_Extension.js';
+export * from './stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/DSLService_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
 export * from './stores/graphModifier/DSLService_GraphModifierHelper.js';
 
@@ -76,11 +75,11 @@ export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
 // TO BE REMOVED: this is currently needed for project dependency dashboard
 export {
-  SetupStoreProvider,
-  useSetupStore,
-} from './components/setup/SetupStoreProvider.js';
-export { SetupStore } from './stores/SetupStore.js';
-export { ProjectSelector } from './components/setup/ProjectSelector.js';
+  WorkspaceSetupStoreProvider as SetupStoreProvider,
+  useWorkspaceSetupStore as useSetupStore,
+} from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
+export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
+export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**
@@ -93,15 +92,15 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
-export * from './stores/DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
+export * from './stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
 
-export * from './stores/StoreRelational_LegendStudioPlugin_Extension.js';
+export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
 export { GenerationFile } from './stores/shared/FileGenerationTreeUtil.js';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
-export { DSLExternalFormat_LegendStudioPlugin } from './components/DSLExternalFormat_LegendStudioPlugin.js';
+export { DSLExternalFormat_LegendStudioApplicationPlugin } from './components/DSLExternalFormat_LegendStudioApplicationPlugin.js';
 export {
   externalFormatData_setData,
   externalFormatData_setContentType,

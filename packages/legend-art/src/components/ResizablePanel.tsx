@@ -52,7 +52,7 @@ export const ResizablePanelGroup =
 
 const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
 /**
- * NOTE: there is a small problem with `react-reflex` that is when a panel
+ * NOTE: there is a problem with `react-reflex` that is when a panel
  * is minimized, due to `flex-grow` not being set/round to 0, there is a little
  * of the panel still being shown. We are waiting to see when how we could address
  * this issue programmatically. But the following is an attempt to do this when
@@ -69,6 +69,7 @@ export const getControlledResizablePanelProps = (
     classes?: ClassValue[];
     onStartResize?: (handleProps: ResizablePanelHandlerProps) => void;
     onStopResize?: (handleProps: ResizablePanelHandlerProps) => void;
+    size?: number;
   },
 ): ReflexElementProps => ({
   className: clsx(...(options?.classes ?? []), {
@@ -91,6 +92,16 @@ export const getControlledResizablePanelProps = (
     }
     options?.onStopResize?.(handleProps);
   },
+  size: !minimizeCondition && options?.size ? options.size : 0,
+  /**
+   * NOTE: When the panel is minimized we want to programatically
+   * set `flex=0`, however, when minimization does not occur
+   * we want to let `react-reflex` calculate the `flex` value
+   * so that the panel is shown properly
+   *
+   * See https://github.com/finos/legend-studio/issues/1316
+   */
+  flex: !minimizeCondition ? (undefined as unknown as number) : 0,
 });
 
 export const ResizablePanel =

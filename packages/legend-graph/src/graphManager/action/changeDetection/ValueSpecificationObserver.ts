@@ -60,7 +60,6 @@ import {
   type ObserverContext,
   skipObservedWithContext,
   skipObserved,
-  observe_OptionalPackageableElementReference,
   observe_Multiplicity,
   observe_PackageableElementReference,
 } from './CoreObserverHelper.js';
@@ -511,7 +510,9 @@ function _observe_PropertyGraphFetchTree(
   metamodel.parameters.forEach((value) =>
     observe_ValueSpecification(value, context),
   );
-  observe_OptionalPackageableElementReference(metamodel.subType);
+  if (metamodel.subType) {
+    observe_PackageableElementReference(metamodel.subType);
+  }
 
   return metamodel;
 }

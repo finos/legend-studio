@@ -33,9 +33,9 @@ import { QueryBuilder_GraphPreset } from '../models/QueryBuilder_GraphPreset.js'
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
-  type LegendQueryConfigurationData,
-  LegendQueryConfig,
-} from './LegendQueryConfig.js';
+  type LegendQueryApplicationConfigurationData,
+  LegendQueryApplicationConfig,
+} from './LegendQueryApplicationConfig.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`
@@ -50,7 +50,7 @@ export const setupLegendQueryUILibrary = async (): Promise<void> => {
 };
 
 export class LegendQuery extends LegendApplication {
-  declare config: LegendQueryConfig;
+  declare config: LegendQueryApplicationConfig;
   declare pluginManager: LegendQueryPluginManager;
 
   static create(): LegendQuery {
@@ -61,9 +61,9 @@ export class LegendQuery extends LegendApplication {
   }
 
   async configureApplication(
-    input: LegendApplicationConfigurationInput<LegendQueryConfigurationData>,
+    input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
   ): Promise<LegendApplicationConfig> {
-    return new LegendQueryConfig(input);
+    return new LegendQueryApplicationConfig(input);
   }
 
   async loadApplication(): Promise<void> {

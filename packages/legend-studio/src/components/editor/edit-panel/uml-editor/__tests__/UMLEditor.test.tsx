@@ -42,8 +42,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../../LegendStudioTestID.js';
 let renderResult: RenderResult;
 
 beforeEach(async () => {
-  const mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+  const MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__m2mGraphEntities,
   });
 });

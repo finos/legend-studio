@@ -329,14 +329,14 @@ export class ClassState {
 
   *convertConstraintLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
-    const constraintStateMap = new Map<string, ConstraintState>();
+    const index = new Map<string, ConstraintState>();
     this.constraintStates.forEach((constraintState) => {
       if (!isStubbed_RawLambda(constraintState.constraint.functionDefinition)) {
         lambdas.set(
           constraintState.lambdaId,
           constraintState.constraint.functionDefinition,
         );
-        constraintStateMap.set(constraintState.lambdaId, constraintState);
+        index.set(constraintState.lambdaId, constraintState);
       }
     });
     if (lambdas.size) {
@@ -347,7 +347,7 @@ export class ClassState {
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
-          const constraintState = constraintStateMap.get(key);
+          const constraintState = index.get(key);
           constraintState?.setLambdaString(
             constraintState.extractLambdaString(grammarText),
           );
@@ -366,7 +366,7 @@ export class ClassState {
 
   *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
-    const derivedPropertyStateMap = new Map<string, DerivedPropertyState>();
+    const index = new Map<string, DerivedPropertyState>();
     this.derivedPropertyStates.forEach((state) => {
       const lambda = new RawLambda(
         state.derivedProperty.parameters,
@@ -374,7 +374,7 @@ export class ClassState {
       );
       if (!isStubbed_RawLambda(lambda)) {
         lambdas.set(state.lambdaId, lambda);
-        derivedPropertyStateMap.set(state.lambdaId, state);
+        index.set(state.lambdaId, state);
       }
     });
     if (lambdas.size) {
@@ -385,7 +385,7 @@ export class ClassState {
             lambdas,
           )) as Map<string, string>;
         isolatedLambdas.forEach((grammarText, key) => {
-          const derivedPropertyState = derivedPropertyStateMap.get(key);
+          const derivedPropertyState = index.get(key);
           derivedPropertyState?.setLambdaString(
             derivedPropertyState.extractLambdaString(grammarText),
           );

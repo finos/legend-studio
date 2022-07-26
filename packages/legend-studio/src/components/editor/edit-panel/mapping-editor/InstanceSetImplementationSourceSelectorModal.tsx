@@ -41,9 +41,11 @@ import {
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { buildElementOption } from '../../../../stores/shared/PackageableElementOptionUtil.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  buildElementOption,
+} from '@finos/legend-application';
 
 export const getMappingElementSourceFilterText = (
   option: MappingElementSourceSelectOption,
@@ -168,7 +170,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
       sourceElementToSelect ??
         getMappingElementSource(
           setImplementation,
-          editorStore.pluginManager.getStudioPlugins(),
+          editorStore.pluginManager.getApplicationPlugins(),
         ),
     );
     const changeSourceType = (

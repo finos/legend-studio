@@ -27,6 +27,7 @@ export enum GRAPH_MANAGER_EVENT {
   GRAPH_BUILDER_OTHER_ELEMENTS_BUILT = 'graph-manager.graph-builder.build-other-elements.success',
   GRAPH_BUILDER_COMPLETED = 'graph-manager.graph-builder.success',
 
+  GRAPH_SYSTEM_INITIALIZED = 'graph-manager.system-initialization.success',
   GRAPH_INITIALIZED = 'graph-manager.graph-initialization.success',
   GRAPH_DEPENDENCIES_FETCHED = 'graph-manager.fetch-dependencies.success',
   GRAPH_ENTITIES_FETCHED = 'graph-manager.entities-dependencies.success',

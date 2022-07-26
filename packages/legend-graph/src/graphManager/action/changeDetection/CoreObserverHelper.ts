@@ -22,10 +22,7 @@ import {
   observable,
 } from 'mobx';
 import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type {
-  OptionalPackageableElementReference,
-  PackageableElementReference,
-} from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
 import type { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
 import type { InferableValue } from '../../../models/metamodels/pure/InferableValue.js';
 import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
@@ -74,16 +71,6 @@ export const observe_PackageableElementReference = skipObserved(
   <T extends PackageableElement>(
     metamodel: PackageableElementReference<T>,
   ): PackageableElementReference<T> =>
-    makeObservable(metamodel, {
-      value: observable,
-      valueForSerialization: computed,
-    }),
-);
-
-export const observe_OptionalPackageableElementReference = skipObserved(
-  <T extends PackageableElement>(
-    metamodel: OptionalPackageableElementReference<T>,
-  ): OptionalPackageableElementReference<T> =>
     makeObservable(metamodel, {
       value: observable,
       valueForSerialization: computed,

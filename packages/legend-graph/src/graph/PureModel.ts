@@ -144,8 +144,12 @@ export class SystemModel extends BasicModel {
 
   /**
    * NOTE: auto imports are for special types and profiles from system model
-   * such as `Any` or `doc` profiles.
-   * We prefer to initialize these only once
+   * such as `Any` or `doc` profiles. We don't actually build the packages here
+   * just resolving them, so we have to make sure whatever package we have as
+   * auto imports, we must have built some elements with such package, e.g.
+   *
+   * `meta::pure::metamodel::type::Any` covers `meta::pure::metamodel::type`
+   * `meta::pure::profiles::doc` covers `meta::pure::profiles`
    */
   initializeAutoImports(): void {
     this.autoImports = AUTO_IMPORTS.map((_package) =>
@@ -535,6 +539,10 @@ export class PureModel extends BasicModel {
     returnUndefOnError(() => this.getClass(path));
   getNullableMapping = (path: string): Mapping | undefined =>
     returnUndefOnError(() => this.getMapping(path));
+  getNullableService = (path: string): Service | undefined =>
+    returnUndefOnError(() => this.getService(path));
+  getNullableRuntime = (path: string): PackageableRuntime | undefined =>
+    returnUndefOnError(() => this.getRuntime(path));
   getNullableFileGeneration = (
     path: string,
   ): FileGenerationSpecification | undefined =>

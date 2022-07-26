@@ -16,13 +16,13 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { QueryBuilder_LegendStudioPlugin } from './components/QueryBuilder_LegendStudioPlugin.js';
+import { QueryBuilder_LegendStudioApplicationPlugin } from './components/QueryBuilder_LegendStudioApplicationPlugin.js';
 import { QueryBuilder_PureProtocolProcessorPlugin } from '@finos/legend-query';
 
 export class QueryBuilder_LegendStudioPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.studioPreset, packageJson.version, [
-      new QueryBuilder_LegendStudioPlugin(),
+      new QueryBuilder_LegendStudioApplicationPlugin(),
       new QueryBuilder_PureProtocolProcessorPlugin(),
     ]);
   }

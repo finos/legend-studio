@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.review {
+.workspace-review {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -44,7 +44,7 @@
   }
 }
 
-.review-panel {
+.workspace-review-panel {
   .panel {
     &__header {
       background: var(--color-dark-grey-100);
@@ -216,7 +216,7 @@
   }
 }
 
-.review__status-bar {
+.workspace-review__status-bar {
   @include flexVCenter;
   @include flexHSpaceBetween;
 
@@ -329,7 +329,7 @@
   }
 }
 
-.review__side-bar {
+.workspace-review__side-bar {
   &__header__title {
     width: calc(100% - 3.4rem);
   }

@@ -24,9 +24,6 @@ import {
   type Runtime,
   type Service,
   type ServiceExecution,
-  type DEPRECATED__ServiceTest,
-  type DEPRECATED__SingleExecutionTest,
-  type DEPRECATED__TestContainer,
   type ObserverContext,
   type ServiceTestSuite,
   type ServiceTest,
@@ -38,11 +35,9 @@ import {
   DEFAULT_SERVICE_PATTERN,
   observe_ServiceExecution,
   observe_KeyedExecutionParameter,
-  observe_TestContainer,
   observe_Mapping,
   observe_RawLambda,
   observe_Runtime,
-  observe_ServiceTest_Legacy,
   observe_ServiceTestSuite,
   observe_ServiceTest,
   observe_EmbeddedData,
@@ -158,11 +153,6 @@ export const service_setExecution = action(
     service.execution = observe_ServiceExecution(value, observerContext);
   },
 );
-export const service_setLegacyTest = action(
-  (service: Service, value: DEPRECATED__ServiceTest): void => {
-    service.test = observe_ServiceTest_Legacy(value);
-  },
-);
 export const service_setPattern = action(
   (service: Service, value: string): void => {
     service.pattern = value;
@@ -249,28 +239,5 @@ export const pureMultiExecution_addExecutionParameter = action(
 export const pureMultiExecution_deleteExecutionParameter = action(
   (pe: PureMultiExecution, value: KeyedExecutionParameter): void => {
     deleteEntry(pe.executionParameters, value);
-  },
-);
-export const singleExecTest_setData = action(
-  (val: DEPRECATED__SingleExecutionTest, value: string): void => {
-    val.data = value;
-  },
-);
-
-export const singleExecTest_addAssert = action(
-  (
-    val: DEPRECATED__SingleExecutionTest,
-    value: DEPRECATED__TestContainer,
-  ): void => {
-    addUniqueEntry(val.asserts, observe_TestContainer(value));
-  },
-);
-
-export const singleExecTest_deleteAssert = action(
-  (
-    val: DEPRECATED__SingleExecutionTest,
-    value: DEPRECATED__TestContainer,
-  ): void => {
-    deleteEntry(val.asserts, observe_TestContainer(value));
   },
 );

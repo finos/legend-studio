@@ -196,13 +196,16 @@ const BindingGeneralEditor = observer(
       value: SchemaSet;
     }): void => {
       externalFormat_Binding_setSchemaId(binding, undefined);
-      return externalFormat_Binding_setSchemaSet(binding, val.value);
+      return externalFormat_Binding_setSchemaSet(
+        binding,
+        PackageableElementExplicitReference.create(val.value),
+      );
     };
     const selectedSchemaSet = {
       value: binding.schemaSet,
-      label: binding.schemaSet.valueForSerialization,
+      label: binding.schemaSet?.valueForSerialization,
     };
-    const schemaIdOptions = selectedSchemaSet.value.value?.schemas.map((e) => ({
+    const schemaIdOptions = selectedSchemaSet.value?.value.schemas.map((e) => ({
       value: e.id,
       label: e.id,
     }));

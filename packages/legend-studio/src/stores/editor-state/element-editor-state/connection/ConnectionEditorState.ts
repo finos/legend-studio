@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
-import type { StoreRelational_LegendStudioPlugin_Extension } from '../../../StoreRelational_LegendStudioPlugin_Extension.js';
+import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
@@ -53,7 +53,7 @@ import {
   createValidationError,
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioPlugin_Extension } from '../../../DSLMapping_LegendStudioPlugin_Extension.js';
+import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
@@ -153,11 +153,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     }
     const extraDatasourceSpecificationTypeGetters =
       this.editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
             ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
@@ -215,11 +215,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       default: {
         const extraDatasourceSpecificationCreators =
           this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -272,11 +272,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
 
     const extraAuthenticationStrategyTypeGetters =
       this.editorStore.pluginManager
-        .getStudioPlugins()
+        .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioPlugin_Extension
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
             ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
         );
     for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
@@ -339,11 +339,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       default: {
         const extraAuthenticationStrategyCreators =
           this.editorStore.pluginManager
-            .getStudioPlugins()
+            .getApplicationPlugins()
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioPlugin_Extension
+                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {
@@ -429,11 +429,11 @@ export class ConnectionEditorState {
     } else {
       const extraConnectionValueEditorStateBuilders =
         this.editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLMapping_LegendStudioPlugin_Extension
+                plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
               ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
           );
       for (const stateBuilder of extraConnectionValueEditorStateBuilders) {

@@ -435,9 +435,7 @@ export const GlobalTestRunner = observer(
           <div className="panel side-bar__panel">
             <div className="panel__header">
               <div className="panel__header__title">
-                <div className="panel__header__title__content">
-                  TESTABLES (WIP)
-                </div>
+                <div className="panel__header__title__content">TESTABLES</div>
               </div>
               <div
                 className="side-bar__panel__header__changes-count"

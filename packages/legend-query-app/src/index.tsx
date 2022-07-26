@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import { LegendQuery, type LegendQueryPlugin } from '@finos/legend-query';
+import {
+  LegendQuery,
+  type LegendQueryApplicationPlugin,
+} from '@finos/legend-query';
 import { type AbstractPreset, WebConsole } from '@finos/legend-shared';
 import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
-import { DSLDataSpace_LegendQueryPlugin } from '@finos/legend-extension-dsl-data-space';
+import { DSLDataSpace_LegendQueryApplicationPlugin } from '@finos/legend-extension-dsl-data-space';
 
 export const getLegendQueryPresetCollection = (): AbstractPreset[] => [
   ...getLegendGraphExtensionCollection(),
 ];
 
-export const getLegendQueryPluginCollection = (): LegendQueryPlugin[] => [
-  new DSLDataSpace_LegendQueryPlugin(),
-];
+export const getLegendQueryPluginCollection =
+  (): LegendQueryApplicationPlugin[] => [
+    new DSLDataSpace_LegendQueryApplicationPlugin(),
+  ];
 
 export class LegendQueryWebApplication {
   static run(baseUrl: string): void {

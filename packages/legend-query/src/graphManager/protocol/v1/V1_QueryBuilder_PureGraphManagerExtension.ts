@@ -17,28 +17,23 @@
 import {
   EngineRuntime,
   GraphBuilderError,
-  KeyedExecutionParameter,
   MappingInclude,
-  PackageableElementExplicitReference,
-  PureMultiExecution,
-  PureSingleExecution,
-  stub_Mapping,
-  stub_RawLambda,
   V1_getIncludedMappingPath,
   V1_GraphBuilderContextBuilder,
   V1_Mapping,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
   V1_PureMultiExecution,
-  V1_PureSingleExecution,
   V1_Service,
-  V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
   V1_PackageableRuntime,
   type V1_PackageableElement,
   type PureModel,
   V1_PureGraphManager,
   PureClientVersion,
   type AbstractPureGraphManager,
+  type V1_EngineRuntime,
+  CORE_PURE_PATH,
+  getAllIncludedMappings,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-model-storage';
 import {
@@ -48,6 +43,8 @@ import {
   guaranteeType,
   type PlainObject,
 } from '@finos/legend-shared';
+import { MappingRuntimeCompatibilityAnalysisResult } from '../../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+import { ServiceExecutionAnalysisResult } from '../../action/analytics/ServiceExecutionAnalysis.js';
 import { QueryBuilder_PureGraphManagerExtension } from '../QueryBuilder_PureGraphManagerExtension.js';
 
 export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_PureGraphManagerExtension {
@@ -69,18 +66,16 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     dependencyEntities: Map<string, Entity[]>,
   ): Promise<void> {
     try {
-      const graphBuilderInput =
-        await this.graphManager.indexEntitiesWithDependencyIntoGraph(
-          graph,
-          entities,
-          dependencyEntities,
-          (entity: Entity): boolean =>
-            ((entity.content as PlainObject<V1_PackageableElement>)
-              ._type as string) === V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
-            ((entity.content as PlainObject<V1_PackageableElement>)
-              ._type as string) ===
-              V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
-        );
+      const graphBuilderInput = await this.graphManager.indexLightGraph(
+        graph,
+        entities,
+        dependencyEntities,
+        (entity: Entity): boolean =>
+          ((entity.content as PlainObject<V1_PackageableElement>)
+            ._type as string) === V1_MAPPING_ELEMENT_PROTOCOL_TYPE ||
+          ((entity.content as PlainObject<V1_PackageableElement>)
+            ._type as string) === V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
+      );
       // handle mapping includes
       const mappings = [
         ...graph.ownMappings,
@@ -143,71 +138,159 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
     }
   }
 
-  // We could optimize this further by omitting parts of the entities we don't need
-  // i.e service entity would only keep execution
-  async buildGraphForServiceQuerySetup(
-    graph: PureModel,
+  async surveyMappingRuntimeCompatibility(
     entities: Entity[],
     dependencyEntities: Map<string, Entity[]>,
-  ): Promise<void> {
-    try {
-      const graphBuilderInput =
-        await this.graphManager.indexEntitiesWithDependencyIntoGraph(
-          graph,
-          entities,
-          dependencyEntities,
-          (entity: Entity): boolean =>
-            ((entity.content as PlainObject<V1_PackageableElement>)
-              ._type as string) === V1_SERVICE_ELEMENT_PROTOCOL_TYPE,
-        );
-      // handle servicess
-      const services = [
-        ...graph.ownServices,
-        ...graph.dependencyManager.services,
-      ];
-      const v1Services = graphBuilderInput
-        .map((e) => e.data.elements.filter(filterByType(V1_Service)))
-        .flat();
-      // build service multi execution keys
-      v1Services.forEach((element) => {
-        const service = services.find((e) => e.path === element.path);
-        if (service) {
-          const serviceExecution = element.execution;
-          if (serviceExecution instanceof V1_PureMultiExecution) {
-            const execution = new PureMultiExecution(
-              serviceExecution.executionKey,
-              stub_RawLambda(),
-              service,
-            );
-            execution.executionParameters =
-              serviceExecution.executionParameters.map(
-                (keyedExecutionParameter) =>
-                  new KeyedExecutionParameter(
-                    keyedExecutionParameter.key,
-                    PackageableElementExplicitReference.create(stub_Mapping()),
-                    new EngineRuntime(),
+  ): Promise<MappingRuntimeCompatibilityAnalysisResult[]> {
+    const result: MappingRuntimeCompatibilityAnalysisResult[] = [];
+    const graph = await this.graphManager.createEmptyGraph({
+      initializeSystem: false,
+    });
+
+    const graphBuilderInput = await this.graphManager.indexLightGraph(
+      graph,
+      entities,
+      dependencyEntities,
+      (entity: Entity): boolean =>
+        ([CORE_PURE_PATH.MAPPING, CORE_PURE_PATH.RUNTIME] as string[]).includes(
+          entity.classifierPath,
+        ),
+      // NOTE: small optimization since we only need to survey runtimes and mappings
+      (entity: Entity): Entity => {
+        if (entity.classifierPath === CORE_PURE_PATH.MAPPING) {
+          entity.content = {
+            _type: entity.content._type,
+            name: entity.content.name,
+            package: entity.content.package,
+            includes: entity.content.includes,
+          };
+        } else if (entity.classifierPath === CORE_PURE_PATH.RUNTIME) {
+          entity.content = {
+            _type: entity.content._type,
+            name: entity.content.name,
+            package: entity.content.package,
+            runtimeValue: {
+              mappings: (
+                entity.content.runtimeValue as
+                  | PlainObject<V1_EngineRuntime>
+                  | undefined
+              )?.mappings,
+            },
+          };
+        }
+        return entity;
+      },
+    );
+
+    const context = new V1_GraphBuilderContextBuilder(
+      graph,
+      graph,
+      this.graphManager.graphBuilderExtensions,
+      this.graphManager.log,
+    ).build();
+
+    graphBuilderInput
+      .map((element) => element.data.elements.filter(filterByType(V1_Mapping)))
+      .flat()
+      .forEach((element) => {
+        const mapping = graph.getNullableMapping(element.path);
+        if (mapping) {
+          mapping.includes = element.includedMappings.map(
+            (include) =>
+              new MappingInclude(
+                mapping,
+                context.resolveMapping(
+                  guaranteeNonEmptyString(
+                    V1_getIncludedMappingPath(include),
+                    `Mapping include path is missing or empty`,
                   ),
-              );
-            service.execution = execution;
-          } else if (serviceExecution instanceof V1_PureSingleExecution) {
-            service.execution = new PureSingleExecution(
-              stub_RawLambda(),
-              service,
-              PackageableElementExplicitReference.create(stub_Mapping()),
-              new EngineRuntime(),
-            );
-          }
+                ),
+              ),
+          );
         }
       });
-    } catch (error) {
-      assertErrorThrown(error);
-      /**
-       * Wrap all error with `GraphBuilderError`, as we throw a lot of assertion error in the graph builder
-       * But we might want to rethink this decision in the future and throw appropriate type of error
-       */
-      throw error instanceof GraphBuilderError
-        ? error
-        : new GraphBuilderError(error);
-    }
+
+    graphBuilderInput
+      .map((element) =>
+        element.data.elements.filter(filterByType(V1_PackageableRuntime)),
+      )
+      .flat()
+      .forEach((element) => {
+        const runtime = graph.getNullableRuntime(element.path);
+        if (runtime) {
+          const runtimeValue = new EngineRuntime();
+          runtime.runtimeValue = runtimeValue;
+          runtimeValue.mappings = element.runtimeValue.mappings.map((mapping) =>
+            context.resolveMapping(mapping.path),
+          );
+        }
+      });
+
+    graph.mappings.forEach((mapping) => {
+      const mappingRuntimeCompatibilityAnalysisResult =
+        new MappingRuntimeCompatibilityAnalysisResult();
+      mappingRuntimeCompatibilityAnalysisResult.mapping = mapping;
+      mappingRuntimeCompatibilityAnalysisResult.runtimes =
+        // If the runtime claims to cover some mappings which include the specified mapping,
+        // then we deem the runtime to be compatible with the such mapping
+        graph.runtimes.filter((runtime) =>
+          runtime.runtimeValue.mappings
+            .map((mappingReference) => [
+              mappingReference.value,
+              ...getAllIncludedMappings(mappingReference.value),
+            ])
+            .flat()
+            .includes(mapping),
+        );
+      result.push(mappingRuntimeCompatibilityAnalysisResult);
+    });
+
+    return result;
+  }
+
+  async surveyServiceExecution(
+    entities: Entity[],
+    dependencyEntities: Map<string, Entity[]>,
+  ): Promise<ServiceExecutionAnalysisResult[]> {
+    const result: ServiceExecutionAnalysisResult[] = [];
+    const graph = await this.graphManager.createEmptyGraph({
+      initializeSystem: false,
+    });
+
+    const graphBuilderInput = await this.graphManager.indexLightGraph(
+      graph,
+      entities,
+      dependencyEntities,
+      (entity: Entity): boolean =>
+        entity.classifierPath === CORE_PURE_PATH.SERVICE,
+      // NOTE: small optimization since we only need to inspect services' execution context
+      (entity: Entity): Entity => {
+        if (entity.classifierPath === CORE_PURE_PATH.SERVICE) {
+          entity.content = {
+            _type: entity.content._type,
+            name: entity.content.name,
+            package: entity.content.package,
+            execution: entity.content.execution,
+          };
+        }
+        return entity;
+      },
+    );
+    graphBuilderInput
+      .map((element) => element.data.elements.filter(filterByType(V1_Service)))
+      .flat()
+      .forEach((protocol) => {
+        const service = graph.getNullableService(protocol.path);
+        if (service) {
+          const serviceAnalysisResult = new ServiceExecutionAnalysisResult();
+          serviceAnalysisResult.service = service;
+          if (protocol.execution instanceof V1_PureMultiExecution) {
+            serviceAnalysisResult.executionKeys =
+              protocol.execution.executionParameters.map((param) => param.key);
+          }
+          result.push(serviceAnalysisResult);
+        }
+      });
+    return result;
   }
 }

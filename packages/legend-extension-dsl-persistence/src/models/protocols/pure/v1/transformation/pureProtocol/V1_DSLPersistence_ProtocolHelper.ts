@@ -16,29 +16,6 @@
 
 import { V1_Persistence } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 import {
-  type PureProtocolProcessorPlugin,
-  V1_deserializeConnectionValue,
-  V1_serializeConnectionValue,
-} from '@finos/legend-graph';
-import {
-  deserializeArray,
-  type PlainObject,
-  serializeArray,
-  UnsupportedOperationError,
-  usingConstantValueSchema,
-} from '@finos/legend-shared';
-import {
-  createModelSchema,
-  custom,
-  deserialize,
-  list,
-  type ModelSchema,
-  optional,
-  primitive,
-  serialize,
-  SKIP,
-} from 'serializr';
-import {
   V1_CronTrigger,
   V1_ManualTrigger,
   type V1_Trigger,
@@ -106,6 +83,25 @@ import {
   type V1_Persister,
   V1_StreamingPersister,
 } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persister.js';
+import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
+import {
+  deserializeArray,
+  type PlainObject,
+  serializeArray,
+  UnsupportedOperationError,
+  usingConstantValueSchema,
+} from '@finos/legend-shared';
+import {
+  createModelSchema,
+  custom,
+  deserialize,
+  list,
+  type ModelSchema,
+  optional,
+  primitive,
+  serialize,
+  SKIP,
+} from 'serializr';
 
 /**********
  * notifier
@@ -695,10 +691,7 @@ const V1_relationalSinkModelSchema = (
 ): ModelSchema<V1_RelationalSink> =>
   createModelSchema(V1_RelationalSink, {
     _type: usingConstantValueSchema(V1_SinkType.RELATIONAL_SINK),
-    connection: custom(
-      (val) => (val ? V1_serializeConnectionValue(val, true, plugins) : SKIP),
-      (val) => V1_deserializeConnectionValue(val, true, plugins),
-    ),
+    database: optional(primitive()),
   });
 
 const V1_objectStorageSinkModelSchema = (
@@ -707,10 +700,6 @@ const V1_objectStorageSinkModelSchema = (
   createModelSchema(V1_ObjectStorageSink, {
     _type: usingConstantValueSchema(V1_SinkType.OBJECT_STORAGE_SINK),
     binding: optional(primitive()),
-    connection: custom(
-      (val) => V1_serializeConnectionValue(val, true, plugins),
-      (val) => V1_deserializeConnectionValue(val, true, plugins),
-    ),
   });
 
 export const V1_serializeSink = (

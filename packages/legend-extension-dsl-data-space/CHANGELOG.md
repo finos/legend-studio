@@ -1,5 +1,24 @@
 # @finos/legend-extension-dsl-data-space
 
+## 5.0.0
+
+### Major Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Change `DataSpaceViewer` to read from data space `analysis result` instead of a data space `metamodel`. Reading from the analysis result is an optimization we do to not have to build the full graph to view the data space ([#936](https://github.com/finos/legend-studio/issues/936)).
+
+### Minor Changes
+
+- [#1295](https://github.com/finos/legend-studio/pull/1295) [`8b17cfa3`](https://github.com/finos/legend-studio/commit/8b17cfa3902686d539b819532c75666f80419648) ([@akphi](https://github.com/akphi)) - Added a new query creation mode from data space, this will mode can be accessed from `Legend Query` using the `url pattern`
+
+  ```
+  /query/extensions/{groupId}:{artifactId}:{versionId}/{dataSpacePath}/{executionContext}/{runtimePath}?
+  e.g. /query/extensions/org.finos.legend:test-project:1.0.0/model::MyDataSpace/context1
+  ```
+
+  Data space viewer and query setup will also point at this new URL when users try to create a query from there.
+
+## 4.0.5
+
 ## 4.0.4
 
 ## 4.0.3

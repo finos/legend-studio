@@ -20,6 +20,7 @@ import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
   type TooltipPlacement,
+  type TreeData,
   Tooltip,
   clsx,
   Dialog,
@@ -68,6 +69,7 @@ import { prettyPropertyName } from '../stores/QueryBuilderPropertyEditorState.js
 import {
   type Type,
   type Multiplicity,
+  type PureModel,
   Class,
   DerivedProperty,
   PrimitiveType,
@@ -78,12 +80,38 @@ import {
   getMultiplicityDescription,
   getAllClassProperties,
   getAllOwnClassProperties,
+  isElementDeprecated,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { getClassPropertyIcon } from './shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
+
+const checkForDeprecatedNode = (
+  node: QueryBuilderExplorerTreeNodeData,
+  graph: PureModel,
+  treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
+): boolean => {
+  if (node.type instanceof Class && isElementDeprecated(node.type, graph)) {
+    return true;
+  }
+  if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
+    if (isElementDeprecated(node.property, graph)) {
+      return true;
+    }
+  }
+  if (node instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
+    const parentNode = treeData.nodes.get(node.parentId);
+    if (
+      parentNode?.type instanceof Class &&
+      isElementDeprecated(parentNode.type, graph)
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
@@ -483,11 +511,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
     }, [dragPreviewConnector]);
 
-    if (
-      !node.mappingData.mapped &&
-      !explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
-    ) {
+    if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
       return null;
     }
     return (
@@ -569,13 +593,28 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                   },
                 )}
               >
-                {explorerState.humanizePropertyName
-                  ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                    ? TYPE_CAST_TOKEN + prettyPropertyName(node.label)
-                    : prettyPropertyName(node.label)
-                  : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
-                  ? TYPE_CAST_TOKEN + node.label
-                  : node.label}
+                <div
+                  className={clsx(
+                    'query-builder-explorer-tree__node__label--property--name',
+                    {
+                      'query-builder-explorer-tree__node__label--deprecated':
+                        checkForDeprecatedNode(
+                          node,
+                          explorerState.queryBuilderState.graphManagerState
+                            .graph,
+                          explorerState.nonNullableTreeData,
+                        ),
+                    },
+                  )}
+                >
+                  {explorerState.humanizePropertyName
+                    ? node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                      ? TYPE_CAST_TOKEN + prettyPropertyName(node.label)
+                      : prettyPropertyName(node.label)
+                    : node instanceof QueryBuilderExplorerTreeSubTypeNodeData
+                    ? TYPE_CAST_TOKEN + node.label
+                    : node.label}
+                </div>
                 {isDerivedProperty && (
                   <div
                     className="query-builder-explorer-tree__node__label__derived-property"
@@ -660,8 +699,7 @@ const QueryBuilderExplorerTreeNodeView = observer(
 
     if (
       !node.mappingData.mapped &&
-      !queryBuilderState.explorerState.showUnmappedProperties &&
-      queryBuilderState.querySetupState.isMappingCompatible
+      !queryBuilderState.explorerState.showUnmappedProperties
     ) {
       return null;
     }
@@ -736,8 +774,7 @@ const QueryBuilderExplorerTree = observer(
               property,
               node,
               guaranteeNonNullable(
-                explorerState.queryBuilderState.querySetupState
-                  .mappingModelCoverageAnalysisResult,
+                explorerState.mappingModelCoverageAnalysisResult,
               ),
             );
             treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
@@ -747,8 +784,7 @@ const QueryBuilderExplorerTree = observer(
               subclass,
               node,
               guaranteeNonNullable(
-                explorerState.queryBuilderState.querySetupState
-                  .mappingModelCoverageAnalysisResult,
+                explorerState.mappingModelCoverageAnalysisResult,
               ),
             );
             treeData.nodes.set(subTypeTreeNodeData.id, subTypeTreeNodeData);
@@ -834,12 +870,12 @@ export const QueryBuilderExplorerPanel = observer(
     };
 
     useEffect(() => {
-      flowResult(
-        queryBuilderState.querySetupState.analyzeMappingModelCoverage(),
-      ).catch(applicationStore.alertUnhandledError);
+      flowResult(explorerState.analyzeMappingModelCoverage()).catch(
+        applicationStore.alertUnhandledError,
+      );
     }, [
       applicationStore,
-      queryBuilderState,
+      explorerState,
       queryBuilderState.querySetupState.mapping,
     ]);
 
@@ -933,25 +969,25 @@ export const QueryBuilderExplorerPanel = observer(
           <QueryBuilderExplorerPropertyDragLayer
             queryBuilderState={queryBuilderState}
           />
-          {!explorerState.treeData &&
-            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
-              <BlankPanelContent>
-                {explorerState.mappingModelCoverageAnalysisState.message}
-              </BlankPanelContent>
-            ) : (
-              <BlankPanelContent>
-                Specify the class, mapping, and connection to start building
-                query
-              </BlankPanelContent>
-            ))}
-          {explorerState.treeData &&
-            (explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
-              <BlankPanelContent>
-                {explorerState.mappingModelCoverageAnalysisState.message}
-              </BlankPanelContent>
-            ) : (
-              <QueryBuilderExplorerTree queryBuilderState={queryBuilderState} />
-            ))}
+          {explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
+            <BlankPanelContent>
+              {explorerState.mappingModelCoverageAnalysisState.message}
+            </BlankPanelContent>
+          ) : (
+            <>
+              {!explorerState.treeData && (
+                <BlankPanelContent>
+                  Specify the class, mapping, and runtime to start building
+                  query
+                </BlankPanelContent>
+              )}
+              {explorerState.treeData && (
+                <QueryBuilderExplorerTree
+                  queryBuilderState={queryBuilderState}
+                />
+              )}
+            </>
+          )}
           <QueryBuilderExplorerPreviewDataModal
             queryBuilderState={queryBuilderState}
           />

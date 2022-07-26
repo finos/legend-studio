@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import { assertType } from '@finos/legend-shared';
 import type { PackageableElement } from './PackageableElement.js';
 import type { Section } from './section/Section.js';
-import { RequiredReference, OptionalReference } from '../Reference.js';
+import { Reference } from '../Reference.js';
 
 export abstract class PackageableElementReference<
   T extends PackageableElement,
-> extends RequiredReference {
+> extends Reference {
   value: T;
 
   protected constructor(value: T) {
@@ -141,131 +140,3 @@ export class PackageableElementImplicitReference<
     return currentElementPath;
   }
 }
-
-export abstract class OptionalPackageableElementReference<
-  T extends PackageableElement,
-> extends OptionalReference {
-  value?: T | undefined;
-
-  protected constructor(value: T | undefined) {
-    super();
-    this.value = value;
-  }
-
-  abstract get valueForSerialization(): string | undefined;
-}
-
-export class OptionalPackageableElementExplicitReference<
-  T extends PackageableElement,
-> extends OptionalPackageableElementReference<T> {
-  private constructor(value: T | undefined) {
-    super(value);
-  }
-
-  static create<V extends PackageableElement>(
-    value: V | undefined,
-  ): OptionalPackageableElementExplicitReference<V> {
-    return new OptionalPackageableElementExplicitReference(value);
-  }
-
-  get valueForSerialization(): string | undefined {
-    return this.value?.path;
-  }
-}
-
-export class OptionalPackageableElementImplicitReference<
-  T extends PackageableElement,
-> extends OptionalPackageableElementReference<T> {
-  readonly initialResolvedPath?: string | undefined;
-  readonly input?: string | undefined;
-  readonly parentSection?: Section | undefined;
-  readonly skipSectionCheck?: boolean | undefined;
-
-  private constructor(
-    value: T | undefined,
-    input: string | undefined,
-    parentSection: Section | undefined,
-    skipSectionCheck: boolean | undefined,
-  ) {
-    super(value);
-    this.initialResolvedPath = value?.path;
-    this.input = input;
-    this.parentSection = parentSection;
-    this.skipSectionCheck = skipSectionCheck;
-  }
-
-  static create<V extends PackageableElement>(
-    value: V | undefined,
-    input: string | undefined,
-  ): OptionalPackageableElementImplicitReference<V> {
-    return new OptionalPackageableElementImplicitReference(
-      value,
-      input,
-      undefined,
-      true,
-    );
-  }
-
-  /**
-   * Use this creator method when the reference is created by
-   * resolving imports using section majorly when building the graph.
-   */
-  static resolveFromSection<V extends PackageableElement>(
-    value: V | undefined,
-    input: string | undefined,
-    parentSection: Section | undefined,
-  ): OptionalPackageableElementImplicitReference<V> {
-    return new OptionalPackageableElementImplicitReference(
-      value,
-      input,
-      parentSection,
-      false,
-    );
-  }
-
-  get valueForSerialization(): string | undefined {
-    const currentElementPath = this.value?.path;
-    // NOTE: `skipSectionCheck` flag's effect should only kick in if the value
-    // is not different than the original value
-    if (
-      this.skipSectionCheck &&
-      this.initialResolvedPath === currentElementPath
-    ) {
-      return this.input;
-    }
-    // when the parent section does not exist or has been deleted
-    if (
-      this.parentSection === undefined ||
-      this.parentSection._OWNER.isDeleted
-    ) {
-      return currentElementPath;
-    }
-    // the current element is the same as the inferred one
-    if (this.initialResolvedPath === currentElementPath) {
-      return this.input;
-    }
-    return currentElementPath;
-  }
-}
-
-export const optionalizePackageableElementReference = <
-  V extends PackageableElement,
->(
-  reference: PackageableElementReference<V> | undefined,
-): OptionalPackageableElementReference<V> => {
-  if (!reference || reference instanceof PackageableElementExplicitReference) {
-    return OptionalPackageableElementExplicitReference.create(reference?.value);
-  }
-  assertType(reference, PackageableElementImplicitReference);
-  if (reference.skipSectionCheck) {
-    return OptionalPackageableElementImplicitReference.create(
-      reference.value,
-      reference.input,
-    );
-  }
-  return OptionalPackageableElementImplicitReference.resolveFromSection(
-    reference.value,
-    reference.input,
-    reference.parentSection,
-  );
-};

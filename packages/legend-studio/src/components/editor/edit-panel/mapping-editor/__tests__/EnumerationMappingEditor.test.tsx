@@ -35,11 +35,11 @@ import type { EditorStore } from '../../../../../stores/EditorStore.js';
 import { MappingEditorState } from '../../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 let renderResult: RenderResult;
-let mockedEditorStore: EditorStore;
+let MOCK__editorStore: EditorStore;
 
 beforeEach(async () => {
-  mockedEditorStore = TEST__provideMockedEditorStore();
-  renderResult = await TEST__setUpEditorWithDefaultSDLCData(mockedEditorStore, {
+  MOCK__editorStore = TEST__provideMockedEditorStore();
+  renderResult = await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore, {
     entities: TEST_DATA__enumerationMappingEntities,
   });
 });
@@ -136,7 +136,7 @@ test.only(
 
     // test tabs
     const mappingEditorState =
-      mockedEditorStore.getCurrentEditorState(MappingEditorState);
+      MOCK__editorStore.getCurrentEditorState(MappingEditorState);
     expect(mappingEditorState.openedTabStates).toHaveLength(3);
     const mappingTabs = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR__TABS__HEADER),

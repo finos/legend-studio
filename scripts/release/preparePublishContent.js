@@ -120,7 +120,7 @@ const preparePublishContent = async () => {
      * See https://yarnpkg.com/features/protocols
      * See https://github.com/atlassian/changesets/issues/432
      */
-    const workspaceVersionMap = new Map();
+    const workspaceVersionIndex = new Map();
     execSync('yarn workspaces list --json', {
       encoding: 'utf-8',
       cwd: ROOT_DIR,
@@ -129,7 +129,7 @@ const preparePublishContent = async () => {
       .filter(Boolean)
       .map((text) => JSON.parse(text))
       .forEach((ws) => {
-        workspaceVersionMap.set(
+        workspaceVersionIndex.set(
           ws.name,
           loadJSON(resolve(ROOT_DIR, ws.location, 'package.json')).version,
         );
@@ -140,12 +140,12 @@ const preparePublishContent = async () => {
         if (packageJson[depType]) {
           Object.keys(packageJson[depType] ?? {}).forEach((key) => {
             if (packageJson[depType][key] === 'workspace:*') {
-              if (!workspaceVersionMap.has(key)) {
+              if (!workspaceVersionIndex.has(key)) {
                 throw new Error(
                   `Yarn workspace protocol 'workspace:*' should only be used for workspace in the same monorepo project`,
                 );
               }
-              packageJson[depType][key] = workspaceVersionMap.get(key);
+              packageJson[depType][key] = workspaceVersionIndex.get(key);
             }
           });
         }

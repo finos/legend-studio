@@ -20,7 +20,7 @@ import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { MappingExecutionQueryBuilderMode } from './MappingExecutionQueryBuilder.js';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';
 
@@ -39,7 +39,7 @@ export const MappingTestQueryBuilder = observer(
         queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
           mapping,
         );
-        queryBuilderExtension.queryBuilderState.querySetupState.setRuntime(
+        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeValue(
           undefined,
         );
         queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
@@ -50,6 +50,12 @@ export const MappingTestQueryBuilder = observer(
         );
         queryBuilderExtension.queryBuilderState.initialize(
           testState.queryState.query,
+        );
+        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+          hashObject(testState.queryState.query),
+        );
+        queryBuilderExtension.queryBuilderState.changeDetectionState.setIsEnabled(
+          true,
         );
         await flowResult(
           queryBuilderExtension.setEmbeddedQueryBuilderMode({
@@ -67,6 +73,9 @@ export const MappingTestQueryBuilder = observer(
                         );
                         applicationStore.notifySuccess(
                           `Mapping test query is updated`,
+                        );
+                        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+                          hashObject(rawLambda),
                         );
                         queryBuilderExtension.setEmbeddedQueryBuilderMode(
                           undefined,

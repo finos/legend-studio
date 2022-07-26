@@ -156,11 +156,11 @@ import {
 import { getOwnPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
 import {
   type Binding,
+  type Database,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
-  V1_ProtocolToMetaModelConnectionBuilder,
   V1_buildFullPath,
-  optionalizePackageableElementReference,
+  V1_buildConnection,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -198,10 +198,14 @@ export const V1_buildRelationalSink = (
   context: V1_GraphBuilderContext,
 ): RelationalSink => {
   const sink = new RelationalSink();
+  if (protocol.database) {
+    sink.database = context.resolveElement(
+      protocol.database,
+      false,
+    ) as PackageableElementImplicitReference<Database>;
+  }
   if (protocol.connection) {
-    sink.connection = protocol.connection.accept_ConnectionVisitor(
-      new V1_ProtocolToMetaModelConnectionBuilder(context),
-    );
+    sink.connection = V1_buildConnection(protocol.connection, context);
   }
   return sink;
 };
@@ -211,13 +215,13 @@ export const V1_buildObjectStorageSink = (
   context: V1_GraphBuilderContext,
 ): ObjectStorageSink => {
   const sink = new ObjectStorageSink();
-  sink.connection = protocol.connection.accept_ConnectionVisitor(
-    new V1_ProtocolToMetaModelConnectionBuilder(context),
-  );
   sink.binding = context.resolveElement(
     protocol.binding,
     false,
   ) as PackageableElementImplicitReference<Binding>;
+  if (protocol.connection) {
+    sink.connection = V1_buildConnection(protocol.connection, context);
+  }
   return sink;
 };
 
@@ -496,10 +500,9 @@ export const V1_buildFlatTarget = (
   context: V1_GraphBuilderContext,
 ): FlatTarget => {
   const targetShape = new FlatTarget();
-  targetShape.modelClass = optionalizePackageableElementReference(
-    modelClass ? context.resolveClass(modelClass) : undefined,
-  );
-
+  targetShape.modelClass = modelClass
+    ? context.resolveClass(modelClass)
+    : undefined;
   targetShape.targetName = guaranteeNonEmptyString(protocol.targetName);
   targetShape.partitionFields = protocol.partitionFields;
   targetShape.deduplicationStrategy = V1_buildDeduplicationStrategy(

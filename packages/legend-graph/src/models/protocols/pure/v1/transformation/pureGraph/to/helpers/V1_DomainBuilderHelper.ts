@@ -269,7 +269,7 @@ export const V1_getAppliedProperty = (
   parameters: V1_ValueSpecification[] | undefined,
   name: string,
 ): AbstractProperty => {
-  // TODO: C3 Linearzation
+  // TODO?: C3 Linearzation
   let property = getAllClassProperties(parentClass).find(
     (p) => p.name === name,
   );

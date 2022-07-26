@@ -235,7 +235,7 @@ export const V1_getObjectInputType = (type: string): V1_ObjectInputType => {
       return V1_ObjectInputType.XML;
     default:
       throw new UnsupportedOperationError(
-        `Encountered unsupproted object input type '${type}'`,
+        `Encountered unsupported object input type '${type}'`,
       );
   }
 };
@@ -344,7 +344,6 @@ const transformClassMappingPropertyMappings = (
   values: PropertyMapping[],
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  isTransformingSourceId: boolean,
 ): V1_PropertyMapping[] =>
   values
     .filter((value) => {
@@ -374,7 +373,6 @@ const transformClassMappingPropertyMappings = (
         value,
         isTransformingEmbeddedPropertyMapping,
         context,
-        isTransformingSourceId,
       ),
     );
 
@@ -384,12 +382,14 @@ const transformSimpleFlatDataPropertyMapping = (
 ): V1_FlatDataPropertyMapping => {
   const flatDataPropertyMapping = new V1_FlatDataPropertyMapping();
   flatDataPropertyMapping.enumMappingId =
-    element.transformer.valueForSerialization;
+    element.transformer?.valueForSerialization;
   flatDataPropertyMapping.property = V1_transformPropertyReference(
     element.property,
   );
-  flatDataPropertyMapping.source = element.sourceSetImplementation.id.value;
-  flatDataPropertyMapping.target = element.targetSetImplementation?.id.value;
+  flatDataPropertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  flatDataPropertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
   if (!isStubbed_RawLambda(element.transform)) {
     flatDataPropertyMapping.transform =
       element.transform.accept_RawValueSpecificationVisitor(
@@ -414,11 +414,10 @@ const transformEmbeddedFlatDataPropertyMapping = (
     element.propertyMappings,
     false, // TODO: we might ned to turn this on in the future once we start working on the gramar roundtrip for flat-data
     context,
-    false,
   );
   embedded.root = false;
-  embedded.source = element.sourceSetImplementation.id.value;
-  embedded.target = element.targetSetImplementation?.id.value;
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
   return embedded;
 };
 
@@ -427,23 +426,18 @@ const transformPurePropertyMapping = (
   context: V1_GraphTransformerContext,
 ): V1_PurePropertyMapping => {
   const purePropertyMapping = new V1_PurePropertyMapping();
-  purePropertyMapping.enumMappingId = element.transformer.valueForSerialization;
+  purePropertyMapping.enumMappingId =
+    element.transformer?.valueForSerialization;
   purePropertyMapping.property = V1_transformPropertyReference(
     element.property,
     {
       isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
     },
   );
-  /**
-   * Omit this information during protocol transformation as it can be
-   * interpreted while building the graph; and will help grammar-roundtrip
-   * tests (involving engine) to pass. Ideally, this requires grammar parser
-   * and composer in engine to be more consistent.
-   *
-   * @discrepancy grammar-roundtrip
-   */
-  purePropertyMapping.source = '';
-  purePropertyMapping.target = element.targetSetImplementation?.id.value;
+  purePropertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  purePropertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
   if (!isStubbed_RawLambda(element.transform)) {
     purePropertyMapping.transform =
       element.transform.accept_RawValueSpecificationVisitor(
@@ -463,10 +457,9 @@ const transformRelationalPropertyMapping = (
   element: RelationalPropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  isTransformingSourceId: boolean,
 ): V1_RelationalPropertyMapping => {
   const propertyMapping = new V1_RelationalPropertyMapping();
-  propertyMapping.enumMappingId = element.transformer.valueForSerialization;
+  propertyMapping.enumMappingId = element.transformer?.valueForSerialization;
   propertyMapping.property = V1_transformPropertyReference(element.property, {
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
@@ -483,19 +476,10 @@ const transformRelationalPropertyMapping = (
           element.relationalOperation as Record<PropertyKey, unknown>,
         )
   ) as V1_RawRelationalOperationElement;
-  // NOTE: isTransformingSourceId is needed for the roundtrip of association relational property mapping
-  propertyMapping.source = isTransformingSourceId
-    ? element.sourceSetImplementation.id.value
-    : /**
-       * Omit this information during protocol transformation as it can be
-       * interpreted while building the graph; and will help grammar-roundtrip
-       * tests (involving engine) to pass. Ideally, this requires grammar parser
-       * and composer in engine to be more consistent.
-       *
-       * @discrepancy grammar-roundtrip
-       */
-      undefined;
-  propertyMapping.target = element.targetSetImplementation?.id.value;
+  propertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  propertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
   if (element.bindingTransformer?.binding) {
     const bindingTransformer = new V1_BindingTransformer();
     bindingTransformer.binding = guaranteeNonEmptyString(
@@ -521,16 +505,8 @@ const transformEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  /**
-   * Omit this information during protocol transformation as it can be
-   * interpreted while building the graph; and will help grammar-roundtrip
-   * tests (involving engine) to pass. Ideally, this requires grammar parser
-   * and composer in engine to be more consistent.
-   *
-   * @discrepancy grammar-roundtrip
-   */
-  embedded.source = undefined;
-  embedded.target = element.targetSetImplementation?.id.value;
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
   const classMapping = new V1_RelationalClassMapping();
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
@@ -539,7 +515,6 @@ const transformEmbeddedRelationalPropertyMapping = (
     element.propertyMappings,
     true,
     context,
-    false,
   );
   classMapping.root = element.root.valueForSerialization;
   /**
@@ -569,16 +544,8 @@ const transformInlineEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  /**
-   * Omit this information during protocol transformation as it can be
-   * interpreted while building the graph; and will help grammar-roundtrip
-   * tests (involving engine) to pass. Ideally, this requires grammar parser
-   * and composer in engine to be more consistent.
-   *
-   * @discrepancy grammar-roundtrip
-   */
-  embedded.source = undefined;
-  embedded.target = element.targetSetImplementation?.id.value;
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
   embedded.setImplementationId = element.inlineSetImplementation.id.value;
   if (element.localMappingProperty) {
     embedded.localMappingProperty = transformLocalPropertyInfo(
@@ -598,16 +565,8 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     isTransformingEmbeddedPropertyMapping:
       isTransformingEmbeddedPropertyMapping,
   });
-  /**
-   * Omit this information during protocol transformation as it can be
-   * interpreted while building the graph; and will help grammar-roundtrip
-   * tests (involving engine) to pass. Ideally, this requires grammar parser
-   * and composer in engine to be more consistent.
-   *
-   * @discrepancy grammar-roundtrip
-   */
-  embedded.source = undefined;
-  embedded.target = element.targetSetImplementation?.id.value;
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
   const classMapping = new V1_RelationalClassMapping();
   classMapping.primaryKey = element.primaryKey.map((pk) =>
     V1_transformRelationalOperationElement(pk, context),
@@ -616,7 +575,6 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     element.propertyMappings,
     true,
     context,
-    false,
   );
   classMapping.root = element.root.valueForSerialization;
   /**
@@ -633,7 +591,6 @@ const transformOtherwiseEmbeddedRelationalPropertyMapping = (
     element.otherwisePropertyMapping,
     true,
     context,
-    false,
   ) as V1_RelationalPropertyMapping;
   // use the same property as the parent otherwise
   embedded.otherwisePropertyMapping.property = embedded.property;
@@ -651,8 +608,8 @@ const transformXStorePropertyMapping = (
 ): V1_XStorePropertyMapping => {
   const xstore = new V1_XStorePropertyMapping();
   xstore.property = V1_transformPropertyReference(element.property);
-  xstore.source = element.sourceSetImplementation.id.value;
-  xstore.target = element.targetSetImplementation?.id.value;
+  xstore.source = element.sourceSetImplementation.valueForSerialization;
+  xstore.target = element.targetSetImplementation?.valueForSerialization;
   if (!isStubbed_RawLambda(element.crossExpression)) {
     xstore.crossExpression =
       element.crossExpression.accept_RawValueSpecificationVisitor(
@@ -672,8 +629,10 @@ const transformAggregationAwarePropertyMapping = (
 ): V1_AggregationAwarePropertyMapping => {
   const propertyMapping = new V1_AggregationAwarePropertyMapping();
   propertyMapping.property = V1_transformPropertyReference(element.property);
-  propertyMapping.source = element.sourceSetImplementation.id.value;
-  propertyMapping.target = element.targetSetImplementation?.id.value;
+  propertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  propertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
   if (element.localMappingProperty) {
     propertyMapping.localMappingProperty = transformLocalPropertyInfo(
       element.localMappingProperty,
@@ -686,18 +645,15 @@ class PropertyMappingTransformer
   implements PropertyMappingVisitor<V1_PropertyMapping>
 {
   isTransformingEmbeddedPropertyMapping = false;
-  isTransformingSourceId = false;
   context: V1_GraphTransformerContext;
 
   constructor(
     isTransformingEmbeddedPropertyMapping: boolean,
     context: V1_GraphTransformerContext,
-    isTransformingSourceId: boolean,
   ) {
     this.isTransformingEmbeddedPropertyMapping =
       isTransformingEmbeddedPropertyMapping;
     this.context = context;
-    this.isTransformingSourceId = isTransformingSourceId;
   }
 
   visit_PropertyMapping(propertyMapping: PropertyMapping): V1_PropertyMapping {
@@ -750,7 +706,6 @@ class PropertyMappingTransformer
       propertyMapping,
       this.isTransformingEmbeddedPropertyMapping,
       this.context,
-      this.isTransformingSourceId,
     );
   }
   visit_EmbeddedRelationalPropertyMapping(
@@ -862,11 +817,10 @@ const transformPureInstanceSetImplementation = (
     element.propertyMappings,
     true,
     context,
-    false,
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.root = element.root.valueForSerialization;
-  classMapping.srcClass = element.srcClass.valueForSerialization;
+  classMapping.srcClass = element.srcClass?.valueForSerialization;
   return classMapping;
 };
 
@@ -888,7 +842,6 @@ const transformFlatDataInstanceSetImpl = (
     element.propertyMappings,
     true,
     context,
-    false,
   );
   classMapping.root = element.root.valueForSerialization;
   classMapping.extendsClassMappingId = element.superSetImplementationId;
@@ -934,7 +887,6 @@ const transformRootRelationalSetImpl = (
     element.propertyMappings,
     false,
     context,
-    false,
   );
   classMapping.root = element.root.valueForSerialization;
   return classMapping;
@@ -953,7 +905,6 @@ const transformRelationalInstanceSetImpl = (
     element.propertyMappings,
     true,
     context,
-    false,
   );
   classMapping.root = element.root.valueForSerialization;
   /**
@@ -1054,7 +1005,6 @@ const transformAggregationAwareSetImplementation = (
     element.propertyMappings,
     false,
     context,
-    false,
   );
   classMapping.extendsClassMappingId = element.superSetImplementationId;
   classMapping.aggregateSetImplementations =
@@ -1069,13 +1019,11 @@ function transformProperyMapping(
   propertyMapping: PropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
   context: V1_GraphTransformerContext,
-  isTransformingSourceId: boolean,
 ): V1_PropertyMapping {
   return propertyMapping.accept_PropertyMappingVisitor(
     new PropertyMappingTransformer(
       isTransformingEmbeddedPropertyMapping,
       context,
-      isTransformingSourceId,
     ),
   );
 }
@@ -1212,7 +1160,6 @@ const transformRelationalAssociationImplementation = (
     element.propertyMappings,
     true,
     context,
-    true,
   );
   relationalMapping.id = mappingElementIdSerializer(element.id);
   return relationalMapping;
@@ -1231,7 +1178,6 @@ const transformXStorelAssociationImplementation = (
     element.propertyMappings,
     false,
     context,
-    false,
   );
   xStoreMapping.id = mappingElementIdSerializer(element.id);
   return xStoreMapping;

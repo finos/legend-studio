@@ -39,7 +39,7 @@ import {
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
-import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioPlugin.js';
+import type { ModelLoaderExtensionConfiguration } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 export const ModelLoader = observer(() => {

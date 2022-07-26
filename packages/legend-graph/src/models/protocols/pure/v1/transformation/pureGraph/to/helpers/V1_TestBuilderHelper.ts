@@ -32,7 +32,7 @@ import { V1_EqualToTDS } from '../../../../model/test/assertion/V1_EqualToTDS.js
 import type { V1_TestAssertion } from '../../../../model/test/assertion/V1_TestAssertion.js';
 import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
+import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 
 const buildEqualTo = (
@@ -55,9 +55,7 @@ const buildEqualToJson = (
   equalToJson.id = element.id;
   equalToJson.parentTest = parentTest;
   equalToJson.expected = guaranteeType(
-    element.expected.accept_EmbeddedDataVisitor(
-      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
-    ),
+    V1_buildEmbeddedData(element.expected, context),
     ExternalFormatData,
   );
   return equalToJson;
@@ -72,9 +70,7 @@ const buildEqualToTDS = (
   equalToTDS.id = element.id;
   equalToTDS.parentTest = parentTest;
   equalToTDS.expected = guaranteeType(
-    element.expected.accept_EmbeddedDataVisitor(
-      new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
-    ),
+    V1_buildEmbeddedData(element.expected, context),
     ExternalFormatData,
   );
   return equalToTDS;

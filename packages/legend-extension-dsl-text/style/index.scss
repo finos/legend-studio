@@ -108,7 +108,7 @@
   }
 
   &__preview-btn {
-    color: var(--color-blue-400);
+    color: var(--color-light-grey-400);
     cursor: pointer;
     font-size: 1.8rem;
     margin: auto 0.5rem auto auto;
@@ -118,7 +118,7 @@
     }
 
     &:hover {
-      background: var(--color-blue-100);
+      color: var(--color-light-grey-100);
     }
   }
 }

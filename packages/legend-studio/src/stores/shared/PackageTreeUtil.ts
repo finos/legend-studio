@@ -19,7 +19,7 @@ import type { PackageTreeNodeData } from './TreeUtil.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
 import { CORE_DND_TYPE } from './DnDUtil.js';
-import type { DSL_LegendStudioPlugin_Extension } from '../LegendStudioPlugin.js';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,
@@ -80,11 +80,11 @@ const getElementProjectExplorerDnDType = (
     return CORE_DND_TYPE.PROJECT_EXPLORER_DATA;
   }
   const extraElementProjectExplorerDnDTypeGetters = editorStore.pluginManager
-    .getStudioPlugins()
+    .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
-          plugin as DSL_LegendStudioPlugin_Extension
+          plugin as DSL_LegendStudioApplicationPlugin_Extension
         ).getExtraElementProjectExplorerDnDTypeGetters?.() ?? [],
     );
   for (const dndTypeGetter of extraElementProjectExplorerDnDTypeGetters) {

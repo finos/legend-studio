@@ -61,7 +61,7 @@ import {
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSLGenerationSpecification_LegendStudioPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioPlugin_Extension.js';
+import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
@@ -138,11 +138,11 @@ export class GraphGenerationState {
       // Note: For now we only allow classes and enumerations for all types of generations.
       const extraFileGenerationScopeFilterConfigurations =
         this.editorStore.pluginManager
-          .getStudioPlugins()
+          .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLGenerationSpecification_LegendStudioPlugin_Extension
+                plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
               ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
           );
       return this.fileGenerationConfigurations.filter((generationType) => {
@@ -295,7 +295,7 @@ export class GraphGenerationState {
   *generateFiles(): GeneratorFn<void> {
     try {
       this.emptyFileGeneration();
-      const generationResultMap = new Map<string, GenerationOutput[]>();
+      const generationOutputIndex = new Map<string, GenerationOutput[]>();
       const generationSpecs =
         this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
@@ -327,9 +327,9 @@ export class GraphGenerationState {
             `Can't generate files using specification '${fileGeneration.value.path}'. Error: ${error.message}`,
           );
         }
-        generationResultMap.set(fileGeneration.value.path, result);
+        generationOutputIndex.set(fileGeneration.value.path, result);
       }
-      this.processGenerationResult(generationResultMap);
+      this.processGenerationResult(generationOutputIndex);
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -400,7 +400,7 @@ export class GraphGenerationState {
 
   // File Generation Tree
   processGenerationResult(
-    fileGenerationOutputMap: Map<string, GenerationOutput[]>,
+    generationOutputIndex: Map<string, GenerationOutput[]>,
   ): void {
     // empty file index and the directory, we keep the open nodes to reprocess them
     this.emptyFileGeneration();
@@ -413,8 +413,8 @@ export class GraphGenerationState {
           .map((node) => node.id)
       : [];
     // we read the generation outputs and clean
-    const generationResultMap = new Map<string, GenerationOutputResult>();
-    Array.from(fileGenerationOutputMap.entries()).forEach((entry) => {
+    const generationResultIndex = new Map<string, GenerationOutputResult>();
+    Array.from(generationOutputIndex.entries()).forEach((entry) => {
       const fileGeneration =
         this.editorStore.graphManagerState.graph.getNullableFileGeneration(
           entry[0],
@@ -425,13 +425,13 @@ export class GraphGenerationState {
       const generationOutputs = entry[1];
       generationOutputs.forEach((genOutput) => {
         genOutput.cleanFileName(rootFolder);
-        if (generationResultMap.has(genOutput.fileName)) {
+        if (generationResultIndex.has(genOutput.fileName)) {
           this.editorStore.applicationStore.log.warn(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
             `Found 2 generation outputs with same path '${genOutput.fileName}'`,
           );
         }
-        generationResultMap.set(genOutput.fileName, {
+        generationResultIndex.set(genOutput.fileName, {
           generationOutput: genOutput,
           parentId: fileGeneration?.path,
         });
@@ -440,7 +440,7 @@ export class GraphGenerationState {
     // take generation outputs and put them into the root directory
     buildGenerationDirectory(
       this.rootFileDirectory,
-      generationResultMap,
+      generationResultIndex,
       this.filesIndex,
     );
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
@@ -451,7 +451,7 @@ export class GraphGenerationState {
     );
     this.editorStore.graphState.editorStore.explorerTreeState.setFileGenerationTreeData(
       this.reprocessNodeTree(
-        Array.from(generationResultMap.values()),
+        Array.from(generationResultIndex.values()),
         this.editorStore.graphState.editorStore.explorerTreeState.getFileGenerationTreeData(),
         openedNodeIds,
       ),

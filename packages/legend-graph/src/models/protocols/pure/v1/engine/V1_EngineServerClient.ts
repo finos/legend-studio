@@ -25,7 +25,6 @@ import {
 import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult.js';
-import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
@@ -51,9 +50,9 @@ import type { V1_TestResult } from '../model/test/result/V1_TestResult.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
-import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingAnalytics.js';
+import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingModelCoverageAnalysis.js';
 
-enum CORE_ENGINE_TRACER_SPAN {
+enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
   JSON_TO_GRAMMAR = 'transform protocol to Pure code',
 
@@ -125,10 +124,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
   };
 
   getTraceData = (
-    spanName: string,
+    name: string,
     tracingTags?: Record<PropertyKey, unknown>,
   ): TraceData => ({
-    spanName,
+    name,
     tags: {
       env: this.env ?? '(unknown)',
       userId: this.currentUserId ?? '(unknown)',
@@ -155,7 +154,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     returnSourceInformation?: boolean | undefined,
   ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/model`,
       input,
       {},
@@ -178,7 +177,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     returnSourceInformation?: boolean | undefined,
   ): Promise<PlainObject<V1_RawLambda>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/lambda`,
       input,
       {},
@@ -201,7 +200,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     result?: Record<string, PlainObject<V1_RawLambda>> | undefined;
   }> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/lambda/batch`,
       input,
       {},
@@ -218,7 +217,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     returnSourceInformation?: boolean | undefined,
   ): Promise<PlainObject<V1_RawRelationalOperationElement>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/relationalOperationElement`,
       input,
       {},
@@ -243,7 +242,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
       | undefined;
   }> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GRAMMAR_TO_JSON),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GRAMMAR_TO_JSON),
       `${this._grammarToJSON()}/relationalOperationElement/batch`,
       input,
       {},
@@ -259,7 +258,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     renderStyle?: V1_RenderStyle | undefined,
   ): Promise<string> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/model`,
       input,
       {},
@@ -273,7 +272,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     renderStyle?: V1_RenderStyle | undefined,
   ): Promise<string> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/lambda`,
       input,
       {},
@@ -287,7 +286,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     renderStyle?: V1_RenderStyle | undefined,
   ): Promise<Record<string, string>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/lambda/batch`,
       input,
       {},
@@ -301,7 +300,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     renderStyle?: V1_RenderStyle | undefined,
   ): Promise<string> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/relationalOperationElement`,
       input,
       {},
@@ -315,7 +314,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     renderStyle?: V1_RenderStyle | undefined,
   ): Promise<Record<string, string>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.JSON_TO_GRAMMAR),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.JSON_TO_GRAMMAR),
       `${this._JSONToGrammar()}/relationalOperationElement/batch`,
       input,
       {},
@@ -330,7 +329,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_RunTestsInput>,
   ): Promise<PlainObject<V1_TestResult[]>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_TESTS),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.RUN_TESTS),
       `${this._pure()}/testable/runTests`,
       input,
       {},
@@ -351,7 +350,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_ExternalFormatModelGenerationInput>,
   ): Promise<PlainObject<V1_GenerationOutput>[]> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_FILE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._externalFormats()}/generateModel`,
       input,
       {},
@@ -376,7 +375,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     mode: ImportMode,
   ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXTERNAL_FORMAT_TO_PROTOCOL),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXTERNAL_FORMAT_TO_PROTOCOL),
       `${this._pure()}/${mode}/${type}`,
       input,
       {},
@@ -396,7 +395,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_GenerateFileInput>,
   ): Promise<PlainObject<V1_GenerationOutput>[]> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_FILE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_FILE),
       `${this._pure()}/${mode}/${type}`,
       input,
       {},
@@ -417,7 +416,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     model: PlainObject<V1_PureModelContextData>,
   ): Promise<PlainObject<V1_CompileResult>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.COMPILE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.COMPILE),
       `${this._pure()}/compilation/compile`,
       model,
       {},
@@ -430,7 +429,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     model: PlainObject<V1_PureModelContextData>,
   ): Promise<PlainObject<V1_LambdaReturnTypeResult>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GET_LAMBDA_RETURN_TYPE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
       `${this._pure()}/compilation/lambdaReturnType`,
       { lambda, model },
       {},
@@ -451,7 +450,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   ): Promise<PlainObject<V1_ExecutionResult> | Response> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.EXECUTE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXECUTE),
       `${this._execution()}/execute`,
       input,
       {},
@@ -467,7 +466,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<PlainObject<V1_ExecutionPlan>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
       `${this._execution()}/generatePlan`,
       input,
       {},
@@ -480,7 +479,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<{ plan: PlainObject<V1_ExecutionPlan>; debug: string[] }> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
       `${this._execution()}/generatePlan/debug`,
       input,
       {},
@@ -494,7 +493,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   ): Promise<string> =>
     this.postWithTracing(
       this.getTraceData(
-        CORE_ENGINE_TRACER_SPAN.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
+        CORE_ENGINE_ACTIVITY_TRACE.GENERATE_TEST_DATA_WITH_DEFAULT_SEED,
       ),
       `${this._execution()}/testDataGeneration/generateTestData_WithDefaultSeed`,
       input,
@@ -510,7 +509,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_MappingModelCoverageAnalysisResult>,
   ): Promise<PlainObject<V1_MappingModelCoverageAnalysisResult>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.MODEL_ANALYTICS),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.MODEL_ANALYTICS),
       `${this._pure()}/analytics/mapping/modelCoverage`,
       input,
       {},
@@ -528,7 +527,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     input: PlainObject<V1_ExecuteInput>,
   ): Promise<PlainObject<V1_PureModelContextData>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GENERATE_EXECUTION_PLAN),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GENERATE_EXECUTION_PLAN),
       `${this._databaseUtilities()}/schemaExploration`,
       input,
     );
@@ -546,7 +545,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     serviceExecutionMode: string | undefined,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.REGISTER_SERVICE),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
       `${this._service(serviceServerUrl)}/register${
         serviceExecutionMode ? `_${serviceExecutionMode}` : ''
       }`,
@@ -561,7 +560,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     serviceId: string,
   ): Promise<PlainObject<V1_ServiceStorage>> =>
     this.getWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.GET_SERVICE_VERSION),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_VERSION),
       `${this._service(serviceServerUrl)}/id/${serviceId}`,
     );
   activateGenerationId = (
@@ -569,7 +568,9 @@ export class V1_EngineServerClient extends AbstractServerClient {
     generationId: string,
   ): Promise<Response> =>
     this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.ACTIVATE_SERVICE_GENERATION_ID),
+      this.getTraceData(
+        CORE_ENGINE_ACTIVITY_TRACE.ACTIVATE_SERVICE_GENERATION_ID,
+      ),
       `${this._service(
         serviceServerUrl,
       )}/generation/setActive/id/${generationId}`,
@@ -579,18 +580,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
       {},
       {},
       { skipProcessing: true },
-    );
-  runServiceTests = (
-    model: PlainObject<V1_PureModelContextData>,
-  ): Promise<PlainObject<V1_DEPRECATED__ServiceTestResult>[]> =>
-    this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.RUN_SERVICE_TESTS),
-      `${this._service()}/doTest`,
-      model,
-      {},
-      undefined,
-      undefined,
-      { enableCompression: true },
     );
 
   // ------------------------------------------- Query -------------------------------------------
@@ -609,7 +598,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
     this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.CREATE_QUERY),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.CREATE_QUERY),
       this._query(),
       query,
     );
@@ -618,13 +607,13 @@ export class V1_EngineServerClient extends AbstractServerClient {
     query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
     this.putWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.UPDATE_QUERY),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.UPDATE_QUERY),
       this._query(queryId),
       query,
     );
   deleteQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.deleteWithTracing(
-      this.getTraceData(CORE_ENGINE_TRACER_SPAN.DELETE_QUERY),
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.DELETE_QUERY),
       this._query(queryId),
     );
 }

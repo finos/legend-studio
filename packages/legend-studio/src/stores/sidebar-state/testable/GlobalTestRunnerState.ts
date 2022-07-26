@@ -32,6 +32,7 @@ import {
   AssertFail,
   PackageableElement,
   getNullableIDFromTestable,
+  MultiExecutionServiceTestResult,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -49,9 +50,9 @@ import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils.
 import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import type { EditorStore } from '../../EditorStore.js';
 import type {
-  LegendStudioPlugin,
+  LegendStudioApplicationPlugin,
   TestableMetadataGetter,
-} from '../../LegendStudioPlugin.js';
+} from '../../LegendStudioApplicationPlugin.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -270,6 +271,14 @@ export const getTestableResultFromTestResult = (
     return TESTABLE_RESULT.FAILED;
   } else if (testResult instanceof TestError) {
     return TESTABLE_RESULT.ERROR;
+  } else if (testResult instanceof MultiExecutionServiceTestResult) {
+    const result = Array.from(testResult.keyIndexedTestResults.values());
+    if (result.every((t) => t instanceof TestPassed)) {
+      return TESTABLE_RESULT.PASSED;
+    } else if (result.some((t) => t instanceof TestError)) {
+      return TESTABLE_RESULT.ERROR;
+    }
+    return TESTABLE_RESULT.FAILED;
   }
   return TESTABLE_RESULT.DID_NOT_RUN;
 };
@@ -494,9 +503,9 @@ export class GlobalTestRunnerState {
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
     this.extraTestableMetadataGetters = editorStore.pluginManager
-      .getStudioPlugins()
+      .getApplicationPlugins()
       .flatMap(
-        (plugin: LegendStudioPlugin) =>
+        (plugin: LegendStudioApplicationPlugin) =>
           plugin.getExtraTestableMetadata?.() ?? [],
       )
       .filter(isNonNullable);

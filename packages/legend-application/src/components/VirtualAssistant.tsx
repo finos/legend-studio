@@ -51,11 +51,11 @@ import { TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
-} from '../stores/LegendApplicationAssistantService.js';
+} from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
-import { ApplicationTelemetry } from '../index.js';
+import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -293,14 +293,14 @@ const VirtualAssistantSearchPanel = observer(() => {
       ContentType.APPLICATION_JSON,
     );
   };
-  const downloadContextualDocMap = (): void => {
+  const downloadContextualDocIndex = (): void => {
     downloadFileUsingDataURI(
       `documentation-registry_${format(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,
       JSON.stringify(
-        applicationStore.documentationService.publishContextualDocMap(),
+        applicationStore.documentationService.publishContextualDocIndex(),
         undefined,
         TAB_SIZE,
       ),
@@ -419,7 +419,7 @@ const VirtualAssistantSearchPanel = observer(() => {
                 <MenuContentItem onClick={downloadDocRegistry}>
                   Download documentation registry
                 </MenuContentItem>
-                <MenuContentItem onClick={downloadContextualDocMap}>
+                <MenuContentItem onClick={downloadContextualDocIndex}>
                   Download contextual documentation mapping
                 </MenuContentItem>
               </MenuContent>
@@ -519,7 +519,6 @@ const VirtualAssistantPanel = observer(
             if (event.key === 'Tab') {
               event.preventDefault();
               event.stopPropagation();
-              return;
             }
           }}
         >

@@ -1,0 +1,157 @@
+[
+  {
+    "path": "test::autoMapping::Firm",
+    "content": {
+      "_type": "class",
+      "name": "Firm",
+      "package": "test::autoMapping",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "test::autoMapping::SFrim",
+    "content": {
+      "_type": "class",
+      "name": "SFrim",
+      "package": "test::autoMapping",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "test::autoMapping::AutoMapping",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "test::autoMapping::Firm",
+          "propertyMappings": [],
+          "root": true,
+          "srcClass": "test::autoMapping::SFrim"
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "AutoMapping",
+      "package": "test::autoMapping",
+      "tests": [
+        {
+          "assert": {
+            "_type": "expectedOutputMappingTestAssert",
+            "expectedOutput": "{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\"name\\\":\\\"name 47\\\",\\\"location\\\":\\\"location 66\\\"}\"},\"value\":{}},\"value\":{\"location\":\"location 66\",\"name\":\"name 47\"}}"
+          },
+          "inputData": [
+            {
+              "_type": "object",
+              "data": "{\"name\":\"name 47\",\"location\":\"location 66\"}",
+              "inputType": "JSON",
+              "sourceClass": "test::autoMapping::SFrim"
+            }
+          ],
+          "name": "test_1",
+          "query": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "serialize",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "graphFetchChecked",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "getAll",
+                        "parameters": [
+                          {
+                            "_type": "packageableElementPtr",
+                            "fullPath": "test::autoMapping::Firm"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "rootGraphFetchTree",
+                        "class": "test::autoMapping::Firm",
+                        "subTrees": [
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "parameters": [],
+                            "property": "location",
+                            "subTrees": []
+                          },
+                          {
+                            "_type": "propertyGraphFetchTree",
+                            "parameters": [],
+                            "property": "name",
+                            "subTrees": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "rootGraphFetchTree",
+                    "class": "test::autoMapping::Firm",
+                    "subTrees": [
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "location",
+                        "subTrees": []
+                      },
+                      {
+                        "_type": "propertyGraphFetchTree",
+                        "parameters": [],
+                        "property": "name",
+                        "subTrees": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          }
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  }
+]

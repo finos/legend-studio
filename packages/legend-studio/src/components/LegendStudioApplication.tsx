@@ -15,11 +15,11 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router-dom';
-import { Setup } from './setup/Setup.js';
+import { Switch, Route } from 'react-router';
+import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
-import { Review } from './review/Review.js';
-import { Viewer } from './viewer/Viewer.js';
+import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
+import { ProjectViewer } from './project-viewer/ProjectViewer.js';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -33,16 +33,18 @@ import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
-  LegendStudioStoreProvider,
-  useLegendStudioStore,
-} from './LegendStudioStoreProvider.js';
+  LegendStudioBaseStoreProvider,
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from './LegendStudioBaseStoreProvider.js';
 import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
+  generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';
-import type { LegendStudioConfig } from '../application/LegendStudioConfig.js';
+import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumentation.js';
 
 const LegendStudioNotFoundRouteScreen = observer(() => {
@@ -102,34 +104,27 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
   );
 });
 
-/**
- * Prefix URL patterns coming from extensions with `/extensions/`
- * to avoid potential conflicts with main routes.
- */
-const generateExtensionUrlPattern = (pattern: string): string =>
-  `/extensions/${pattern}`.replace(/^\/extensions\/\//, '/extensions/');
-
 export const LegendStudioApplicationRoot = observer(() => {
-  const studioStore = useLegendStudioStore();
-  const applicationStore = useApplicationStore<LegendStudioConfig>();
-  const extraApplicationPageRenderEntries = studioStore.pluginManager
-    .getStudioPlugins()
-    .flatMap((plugin) => plugin.getExtraApplicationPageRenderEntries?.() ?? []);
+  const baseStore = useLegendStudioBaseStore();
+  const applicationStore = useLegendStudioApplicationStore();
+  const extraApplicationPageEntries = applicationStore.pluginManager
+    .getApplicationPlugins()
+    .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
 
   useEffect(() => {
-    flowResult(studioStore.initialize()).catch(
+    flowResult(baseStore.initialize()).catch(
       applicationStore.alertUnhandledError,
     );
-  }, [applicationStore, studioStore]);
+  }, [applicationStore, baseStore]);
 
   return (
     <div className="app">
-      {!studioStore.isSDLCAuthorized && (
+      {!baseStore.isSDLCAuthorized && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
       )}
-      {studioStore.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized && (
         <>
           {/* TODO: consider moving this to `LegendApplicationComponentFrameworkProvider` */}
           <VirtualAssistant />
@@ -146,12 +141,12 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
               ]}
-              component={Viewer}
+              component={ProjectViewer}
             />
             <Route
               exact={true}
               path={LEGEND_STUDIO_ROUTE_PATTERN.REVIEW}
-              component={Review}
+              component={WorkspaceReview}
             />
             <Route
               exact={true}
@@ -170,14 +165,14 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
                 LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
               ]}
-              component={Setup}
+              component={WorkspaceSetup}
             />
-            {extraApplicationPageRenderEntries.map((entry) => (
+            {extraApplicationPageEntries.map((entry) => (
               <Route
                 key={entry.key}
                 exact={true}
                 path={entry.urlPatterns.map(generateExtensionUrlPattern)}
-                component={entry.component as React.ComponentType<unknown>}
+                component={entry.renderer as React.ComponentType<unknown>}
               />
             ))}
             <Route>
@@ -192,7 +187,7 @@ export const LegendStudioApplicationRoot = observer(() => {
 
 export const LegendStudioApplication = observer(
   (props: {
-    config: LegendStudioConfig;
+    config: LegendStudioApplicationConfig;
     pluginManager: LegendStudioPluginManager;
   }) => {
     const { config, pluginManager } = props;
@@ -215,11 +210,11 @@ export const LegendStudioApplication = observer(
             pluginManager={pluginManager}
             log={applicationStore.log}
           >
-            <LegendStudioStoreProvider pluginManager={pluginManager}>
+            <LegendStudioBaseStoreProvider pluginManager={pluginManager}>
               <LegendApplicationComponentFrameworkProvider>
                 <LegendStudioApplicationRoot />
               </LegendApplicationComponentFrameworkProvider>
-            </LegendStudioStoreProvider>
+            </LegendStudioBaseStoreProvider>
           </GraphManagerStateProvider>
         </DepotServerClientProvider>
       </SDLCServerClientProvider>

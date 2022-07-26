@@ -33,7 +33,9 @@ import {
   AssertFailState,
   EqualToJsonAssertFailState,
   EqualToJsonAssertionState,
+  TestAssertionStatusState,
   TEST_ASSERTION_TAB,
+  type TestAssertionResultState,
   type TestAssertionEditorState,
   type TestAssertionState,
 } from '../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
@@ -180,10 +182,58 @@ const AssertFailViewer = observer(
 const TestAssertionResultViewer = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;
-    const statusState =
-      testAssertionEditorState.assertionResultState.statusState;
+    const parentAssertionResultState =
+      testAssertionEditorState.assertionResultState;
     const assertionResult =
       testAssertionEditorState.assertionResultState.result;
+    const renderAssertionResult = (
+      assertionResultState: TestAssertionResultState,
+    ): React.ReactNode => {
+      const _statusState = assertionResultState.statusState;
+      if (assertionResultState.testResult instanceof TestError) {
+        return <TestErrorViewer testError={assertionResultState.testResult} />;
+      } else if (_statusState instanceof TestAssertionStatusState) {
+        return _statusState instanceof AssertFailState ? (
+          <AssertFailViewer assertFailState={_statusState} />
+        ) : null;
+      }
+      return null;
+    };
+    const renderResultView = (
+      assertionResultState: TestAssertionResultState,
+    ): React.ReactNode => {
+      const _statusState = assertionResultState.statusState;
+      if (
+        _statusState === undefined ||
+        _statusState instanceof TestAssertionStatusState
+      ) {
+        return (
+          <>
+            <div className="testable-test-assertion-result__summary-info">
+              Result: {prettyCONSTName(assertionResult)}
+            </div>
+            {renderAssertionResult(assertionResultState)}
+          </>
+        );
+      } else {
+        return Array.from(_statusState.entries()).map((state) => {
+          const _key = state[0];
+          const resultState = state[1];
+          return (
+            <div
+              className="testable-test-assertion-result__summary-multi"
+              key={_key}
+            >
+              <div>{_key}</div>
+              <div className="testable-test-assertion-result__summary-info">
+                Result: {prettyCONSTName(resultState.result)}
+              </div>
+              {renderAssertionResult(resultState)}
+            </div>
+          );
+        });
+      }
+    };
 
     return (
       <>
@@ -206,11 +256,13 @@ const TestAssertionResultViewer = observer(
             <div className="testable-test-assertion-result__summary-main">
               Assertion Result Summary
             </div>
-            {assertionResult === TESTABLE_RESULT.IN_PROGRESS ? (
+            {assertionResult === TESTABLE_RESULT.IN_PROGRESS && (
               <div className="testable-test-assertion-result__summary-info">
                 Running assertion...
               </div>
-            ) : (
+            )}
+
+            {!(assertionResult === TESTABLE_RESULT.IN_PROGRESS) && (
               <>
                 <div className="testable-test-assertion-result__summary-info">
                   Id: {testAssertionEditorState.assertion.id}
@@ -218,20 +270,7 @@ const TestAssertionResultViewer = observer(
                 <div className="testable-test-assertion-result__summary-info">
                   Type: {testAssertionEditorState.assertionState.label()}
                 </div>
-                <div className="testable-test-assertion-result__summary-info">
-                  Result: {prettyCONSTName(assertionResult)}
-                </div>
-                {statusState instanceof AssertFailState && (
-                  <AssertFailViewer assertFailState={statusState} />
-                )}
-                {testAssertionEditorState.assertionResultState
-                  .testResult instanceof TestError && (
-                  <TestErrorViewer
-                    testError={
-                      testAssertionEditorState.assertionResultState.testResult
-                    }
-                  />
-                )}
+                {renderResultView(parentAssertionResultState)}
               </>
             )}
           </div>

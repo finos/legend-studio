@@ -63,7 +63,6 @@ import type { TestSuite } from '../../../../../../../metamodels/pure/test/Test.j
 import { PackageableElementPointerType } from '../../../../../../../../MetaModelConst.js';
 import type { V1_ConnectionTestData } from '../../../../model/packageableElements/service/V1_ConnectionTestData.js';
 import { ConnectionTestData } from '../../../../../../../metamodels/pure/packageableElements/service/ConnectionTestData.js';
-import { V1_ProtocolToMetaModelEmbeddedDataBuilder } from './V1_DataElementBuilderHelper.js';
 import type { V1_ParameterValue } from '../../../../model/packageableElements/service/V1_ParameterValue.js';
 import { ParameterValue } from '../../../../../../../metamodels/pure/packageableElements/service/ParameterValue.js';
 import type { V1_TestData } from '../../../../model/packageableElements/service/V1_TestData.js';
@@ -78,6 +77,7 @@ import {
   DEPRECATED__TestContainer,
   DEPRECATED__MultiExecutionTest,
 } from '../../../../../../../metamodels/pure/packageableElements/service/DEPRECATED__ServiceTest.js';
+import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 
 const buildConnectionTestData = (
   element: V1_ConnectionTestData,
@@ -85,9 +85,7 @@ const buildConnectionTestData = (
 ): ConnectionTestData => {
   const connectionTestData = new ConnectionTestData();
   connectionTestData.connectionId = element.id;
-  connectionTestData.testData = element.data.accept_EmbeddedDataVisitor(
-    new V1_ProtocolToMetaModelEmbeddedDataBuilder(context),
-  );
+  connectionTestData.testData = V1_buildEmbeddedData(element.data, context);
   return connectionTestData;
 };
 

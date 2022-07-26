@@ -21,7 +21,7 @@ export * from './application/LegendApplication.js';
 export * from './components/ApplicationStoreProvider.js';
 export * from './components/WebApplicationNavigatorProvider.js';
 export * from './components/LegendApplicationComponentFrameworkProvider.js';
-export * from './components/LegendApplicationNavigationContextServiceUtils.js';
+export * from './components/ApplicationNavigationContextServiceUtils.js';
 export * from './components/ApplicationStoreProviderTestUtils.js';
 export * from './components/WebApplicationNavigatorProviderTestUtils.js';
 // TODO: consider moving this to `LegendApplicationComponentFrameworkProvider`
@@ -31,12 +31,12 @@ export * from './components/VirtualAssistant.js';
 export * from './stores/ApplicationStore.js';
 export * from './stores/ApplicationTelemetry.js';
 export * from './stores/ApplicationEvent.js';
-export * from './stores/LegendApplicationConfig.js';
+export * from './application/LegendApplicationConfig.js';
 export { WebApplicationNavigator } from './stores/WebApplicationNavigator.js';
-export * from './stores/LegendApplicationDocumentationService.js';
-export * from './stores/LegendApplicationEventService.js';
-export * from './stores/LegendApplicationAssistantService.js';
-export * from './stores/LegendApplicationNavigationContextService.js';
+export * from './stores/DocumentationService.js';
+export * from './stores/EventService.js';
+export * from './stores/AssistantService.js';
+export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';

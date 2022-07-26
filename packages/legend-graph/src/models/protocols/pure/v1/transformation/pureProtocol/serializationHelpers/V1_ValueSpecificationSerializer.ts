@@ -234,55 +234,55 @@ const appliedPropertyModelSchema = createModelSchema(V1_AppliedProperty, {
 
 const collectionModelSchema = createModelSchema(V1_Collection, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.COLLECTION),
+  multiplicity: usingModelSchema(V1_multiplicitySchema),
   values: list(
     custom(
       (val) => V1_serializeValueSpecification(val),
       (val) => V1_deserializeValueSpecification(val),
     ),
   ),
-  multiplicity: usingModelSchema(V1_multiplicitySchema),
 });
 
 const cDecimalModelSchema = createModelSchema(V1_CDecimal, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CDECIMAL),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cIntegerModelSchema = createModelSchema(V1_CInteger, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CINTEGER),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cStringModelSchema = createModelSchema(V1_CString, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRING),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cfloatModelSchema = createModelSchema(V1_CFloat, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CFLOAT),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cDateTimeModelSchema = createModelSchema(V1_CDateTime, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CDATETIME),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cStrictTimeModelSchema = createModelSchema(V1_CStrictTime, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRICTTIME),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cStrictDateModelSchema = createModelSchema(V1_CStrictDate, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRICTDATE),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const cLatestDateModelSchema = createModelSchema(V1_CLatestDate, {
@@ -292,8 +292,8 @@ const cLatestDateModelSchema = createModelSchema(V1_CLatestDate, {
 
 const cBooleanModelSchema = createModelSchema(V1_CBoolean, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CBOOLEAN),
-  values: list(primitive()),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  values: list(primitive()),
 });
 
 const aggregationValueModelSchema = createModelSchema(V1_AggregateValue, {

@@ -263,10 +263,10 @@ export const getFileGenerationChildNodes = (
 
 export const buildGenerationDirectory = (
   rootDirectory: GenerationDirectory,
-  generationResultMap: Map<string, GenerationOutputResult>,
+  generationResultIndex: Map<string, GenerationOutputResult>,
   filesIndex: Map<string, GenerationFile>,
 ): void => {
-  Array.from(generationResultMap.values()).forEach((generationFileInfo) => {
+  Array.from(generationResultIndex.values()).forEach((generationFileInfo) => {
     const generationOutput = generationFileInfo.generationOutput;
     const filePath = generationOutput.fileName;
     const index = filePath.lastIndexOf(DIRECTORY_PATH_DELIMITER);
