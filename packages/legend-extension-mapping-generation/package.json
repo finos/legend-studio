@@ -5,8 +5,7 @@
   "keywords": [
     "legend",
     "legend-extension",
-    "mapping-generation",
-    "model-loader-extension"
+    "mapping-generation"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-mapping-generation",
   "bugs": {
