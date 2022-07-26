@@ -385,7 +385,6 @@ export const spannerDatasourceSpecification_setPort = action(
     spec.proxyPort = val;
   },
 );
-//
 
 export const relationalInputData_setData = action(
   (input: RelationalInputData, value: string): void => {

@@ -216,17 +216,17 @@ export const V1_buildDatasourceSpecification = (
     );
     return redshiftSpec;
   } else if (protocol instanceof V1_SpannerDatasourceSpecification) {
-    assertNonNullable(
+    assertNonEmptyString(
       protocol.projectId,
-      `Spanner datasource specification 'projectId' field is missing`,
+      `Spanner datasource specification 'projectId' field is missing or empty`,
     );
-    assertNonNullable(
+    assertNonEmptyString(
       protocol.instanceId,
-      `Spanner datasource specification 'istance' field is missing`,
+      `Spanner datasource specification 'istance' field is missing or empty`,
     );
-    assertNonNullable(
+    assertNonEmptyString(
       protocol.databaseId,
-      `Spanner datasource specification 'databaseId' field is missing`,
+      `Spanner datasource specification 'databaseId' field is missing or empty`,
     );
 
     const spannerSpec = new SpannerDatasourceSpecification(

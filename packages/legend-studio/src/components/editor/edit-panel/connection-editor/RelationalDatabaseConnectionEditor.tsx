@@ -867,8 +867,8 @@ const SpannerDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          propertyName={'project id'}
-          description={'Your google cloud project identifier'}
+          propertyName="project id"
+          description={'Your Google Cloud Platform (GCP) project identifier'}
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
           }
@@ -876,7 +876,7 @@ const SpannerDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.instanceId}
-          propertyName={'instance id'}
+          propertyName="instance id"
           description={'Spanner instance identifier in google cloud product'}
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setInstanceId(
@@ -901,7 +901,7 @@ const SpannerDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
           propertyName="host"
-          description="Specifies host for connection. Leave blank for google cloud defaults"
+          description="Specifies the connection host. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
@@ -910,7 +910,7 @@ const SpannerDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
           propertyName="port"
-          description="Specifies port for connection. Leave blank for google cloud defaults"
+          description="Specifies the connection port. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setPort(sourceSpec, value ?? '')
           }

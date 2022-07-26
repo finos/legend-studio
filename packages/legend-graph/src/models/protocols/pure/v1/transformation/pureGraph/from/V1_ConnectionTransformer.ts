@@ -164,7 +164,7 @@ const transformBigQueryDatasourceSpecification = (
   return source;
 };
 
-const transformSpannerQueryDatasourceSpecification = (
+const transformSpannerDatasourceSpecification = (
   metamodel: SpannerDatasourceSpecification,
 ): V1_SpannerDatasourceSpecification => {
   const source = new V1_SpannerDatasourceSpecification();
@@ -191,7 +191,7 @@ const transformDatasourceSpecification = (
   } else if (metamodel instanceof BigQueryDatasourceSpecification) {
     return transformBigQueryDatasourceSpecification(metamodel);
   } else if (metamodel instanceof SpannerDatasourceSpecification) {
-    return transformSpannerQueryDatasourceSpecification(metamodel);
+    return transformSpannerDatasourceSpecification(metamodel);
   } else if (metamodel instanceof LocalH2DatasourceSpecification) {
     const protocol = new V1_LocalH2DataSourceSpecification();
     protocol.testDataSetupCsv = metamodel.testDataSetupCsv;
