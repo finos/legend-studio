@@ -868,7 +868,7 @@ const SpannerDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
           propertyName="project id"
-          description={'Your Google Cloud Platform (GCP) project identifier'}
+          description="Your Google Cloud Platform (GCP) project identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setProjectId(sourceSpec, value ?? '')
           }
@@ -877,7 +877,7 @@ const SpannerDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.instanceId}
           propertyName="instance id"
-          description={'Spanner instance identifier in google cloud product'}
+          description="Spanner instance identifier in Google Cloud Platform (GCP)"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setInstanceId(
               sourceSpec,
@@ -889,7 +889,7 @@ const SpannerDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseId}
           propertyName="database id"
-          description="Spanner's Database identifier you want to connect to"
+          description="Spanner database identifier"
           update={(value: string | undefined): void =>
             spannerDatasourceSpecification_setDatabaseId(
               sourceSpec,
