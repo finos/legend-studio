@@ -17,32 +17,6 @@
 import { hashArray, hashObject, hashString } from '@finos/legend-shared';
 import { SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX } from './MetaModelConst.js';
 
-export const hashObjectWithoutSourceInformation = (val: object): string =>
-  hashObject(val, {
-    /**
-     * NOTE: this is over-simplification as there could be source information fields with other names
-     * see note in {@link pruneSourceInformation}
-     */
-    excludeKeys: (propKey: string) =>
-      propKey
-        .toLowerCase()
-        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
-  });
-
-export const hashRawLambda = (
-  parameters: object | undefined,
-  body: object | undefined,
-): string =>
-  hashArray([
-    parameters ? hashObjectWithoutSourceInformation(parameters) : '',
-    body ? hashObjectWithoutSourceInformation(body) : '',
-  ]);
-
-export const hashElementPointer = (pointerType: string, path: string): string =>
-  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
-    .join(',');
-
 /**
  * The main point of maintaining this enum is to keep lessen magic string in hash computation
  * so that we are less error-prone in the process of defining hash.
@@ -263,3 +237,29 @@ export enum CORE_HASH_STRUCTURE {
   RELATIONAL_TDS = 'RELATIONAL_TDS',
   RELATIONAL_CSV_DATA_TABLE = 'RELATIONAL_CSV_DATA_TABLE',
 }
+
+export const hashObjectWithoutSourceInformation = (val: object): string =>
+  hashObject(val, {
+    /**
+     * NOTE: this is over-simplification as there could be source information fields with other names
+     * see note in {@link pruneSourceInformation}
+     */
+    excludeKeys: (propKey: string) =>
+      propKey
+        .toLowerCase()
+        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
+  });
+
+export const hashRawLambda = (
+  parameters: object | undefined,
+  body: object | undefined,
+): string =>
+  hashArray([
+    parameters ? hashObjectWithoutSourceInformation(parameters) : '',
+    body ? hashObjectWithoutSourceInformation(body) : '',
+  ]);
+
+export const hashElementPointer = (pointerType: string, path: string): string =>
+  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
+    .map(hashString)
+    .join(',');

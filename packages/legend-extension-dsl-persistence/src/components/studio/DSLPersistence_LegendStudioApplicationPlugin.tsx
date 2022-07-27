@@ -35,6 +35,7 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
+  type ElementTypeLabelGetter,
 } from '@finos/legend-application-studio';
 import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
@@ -242,6 +243,17 @@ export class DSLPersistence_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraElementTypeLabelGetters(): ElementTypeLabelGetter[] {
+    return [
+      (type: string): string | undefined => {
+        if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
+          return 'Persistence Context';
+        }
+        return undefined;
+      },
     ];
   }
 }
