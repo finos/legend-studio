@@ -56,8 +56,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-external-format-json-schema-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-external-format-json-schema-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-external-format-json-schema-pure-graph-manager"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-external-format-json-schema",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-external-format-json-schema",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-external-format-json-schema"
   }
 }

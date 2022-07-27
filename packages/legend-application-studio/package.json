@@ -91,8 +91,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationStudioPlugin": "@finos/legend-plugin-core-application-studio",
-    "dsl_external_format_applicationStudioPlugin": "@finos/legend-plugin-dsl-external-format-application-studio"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-core",
+    "dsl_external_format_applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-external-format"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

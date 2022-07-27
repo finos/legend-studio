@@ -79,11 +79,11 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-dsl-data-space-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-data-space-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-dsl-data-space-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-plugin-dsl-data-space-pure-graph",
-    "applicationStudioPlugin": "@finos/legend-plugin-dsl-data-space-application-studio",
-    "queryApplicationPlugin": "@finos/legend-plugin-dsl-data-space-application-query"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-data-space",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-data-space",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-data-space",
+    "queryApplicationPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
   }
 }

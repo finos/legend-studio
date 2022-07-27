@@ -63,6 +63,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationStudioPlugin": "@finos/legend-plugin-external-language-morphir-application-studio"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-external-language-morphir"
   }
 }

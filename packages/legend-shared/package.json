@@ -73,8 +73,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "iframeEventNotifierPlugin": "@finos/legend-plugin-iframe-event-notifier",
-    "webConsoleLoggerPlugin": "@finos/legend-plugin-web-console-logger"
+    "iframeEventNotifierPlugin": "@finos/legend-event-notifier-plugin-iframe",
+    "webConsoleLoggerPlugin": "@finos/legend-logger-plugin-web-console"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

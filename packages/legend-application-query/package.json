@@ -88,9 +88,9 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-query-builder-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-query-builder-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-query-builder-pure-graph-manager"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-query-builder",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-query-builder",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-query-builder"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

@@ -72,10 +72,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-dsl-persistence-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-dsl-persistence-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-dsl-persistence-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-plugin-dsl-persistence-pure-graph",
-    "applicationStudioPlugin": "@finos/legend-plugin-dsl-persistence-application-studio"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-persistence",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-persistence",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-persistence",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-persistence",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-persistence"
   }
 }

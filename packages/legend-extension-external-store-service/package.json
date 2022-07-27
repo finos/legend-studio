@@ -74,10 +74,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-preset-external-store-service-graph-manager",
-    "pureProtocolProcessorPlugin": "@finos/legend-plugin-external-store-service-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-plugin-external-store-service-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-plugin-external-store-service-pure-graph",
-    "applicationStudioPlugin": "@finos/legend-plugin-external-store-service-application-studio"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-external-store-service",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-external-store-service",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-external-store-service",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-external-store-service",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-external-store-service"
   }
 }
