@@ -190,6 +190,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
+    // const dragProperty = (): void => editorState.setSelectedProperty(property);
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
