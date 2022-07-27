@@ -140,7 +140,7 @@ export abstract class ClassPropertyColumnState {
     makeObservable(this, {
       projectionState: false,
       isBeingDragged: observable,
-      //svp shoudl be fixed now false isbeingdragged no good
+      //svp
       columnName: observable,
       setIsBeingDragged: action,
       setColumnName: action,
