@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { act, getByText } from '@testing-library/react';
+import { act, getByText, waitFor } from '@testing-library/react';
 import {
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
@@ -36,7 +36,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import {
   TEST__provideMockedQueryEditorStore,

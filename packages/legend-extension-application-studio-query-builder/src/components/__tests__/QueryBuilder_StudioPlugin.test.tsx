@@ -15,14 +15,13 @@
  */
 
 import { test, jest } from '@jest/globals';
-import { fireEvent, getByText } from '@testing-library/react';
+import { fireEvent, getByText, waitFor } from '@testing-library/react';
 import {
   type TEMPORARY__JestMock,
   integrationTest,
   MOBX__enableSpyOrMock,
   MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
-import { waitFor } from '@testing-library/dom';
 import {
   type EditorStore,
   LegendStudioPluginManager,
