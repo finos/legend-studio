@@ -97,6 +97,7 @@ const ProjectionColumnDragLayer: React.FC = () => {
     <div className="query-builder__projection__column__drag-preview-layer">
       <div
         className="query-builder__projection__column__drag-preview"
+        //svp
         // added some offset so the mouse doesn't overlap the label too much
         style={
           !currentPosition
@@ -319,7 +320,7 @@ const QueryBuilderProjectionColumnEditor = observer(
           projectionColumnState,
         );
 
-    // Drag and Drop
+    // Drag and Drop svp
     const handleHover = useCallback(
       (
         item: QueryBuilderProjectionColumnDragSource,
@@ -376,9 +377,10 @@ const QueryBuilderProjectionColumnEditor = observer(
     dragConnector(dropConnector(ref));
 
     // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    //svp cancelled
+    // useEffect(() => {
+    //   dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    // }, [dragPreviewConnector]);
 
     return (
       <div
