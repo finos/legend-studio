@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ExternalFormatData } from '../../../models/metamodels/pure/data/EmbeddedData.js';
+import type { ExternalFormatData } from '../../../graph/metamodel/pure/data/EmbeddedData.js';
 
 export const isStubbed_ExternalFormatData = (
   value: ExternalFormatData,

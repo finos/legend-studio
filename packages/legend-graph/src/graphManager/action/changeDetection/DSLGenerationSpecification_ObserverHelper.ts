@@ -21,7 +21,7 @@ import type {
   GenerationSpecification,
   GenerationTreeNode,
 } from '../../../DSLGenerationSpecification_Exports.js';
-import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
+import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import {
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,

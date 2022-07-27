@@ -16,19 +16,19 @@
 
 import { filterByType, Pair } from '@finos/legend-shared';
 import { computed, makeObservable, observable } from 'mobx';
-import { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
-import { Runtime } from '../../../models/metamodels/pure/packageableElements/runtime/Runtime.js';
+import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import { Runtime } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import {
   type AlloySerializationConfigInstanceValue,
   AlloySerializationConfig,
-} from '../../../models/metamodels/pure/valueSpecification/AlloySerializationConfig.js';
+} from '../../../graph/metamodel/pure/valueSpecification/AlloySerializationConfig.js';
 import {
   type RootGraphFetchTreeInstanceValue,
   type PropertyGraphFetchTreeInstanceValue,
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
-} from '../../../models/metamodels/pure/valueSpecification/GraphFetchTree.js';
+} from '../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 import type {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
@@ -38,24 +38,24 @@ import type {
   PureListInstanceValue,
   CollectionInstanceValue,
   InstanceValue,
-} from '../../../models/metamodels/pure/valueSpecification/InstanceValue.js';
-import type { INTERNAL__UnknownValueSpecification } from '../../../models/metamodels/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
+} from '../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
+import type { INTERNAL__UnknownValueSpecification } from '../../../graph/metamodel/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
 import {
   type LambdaFunctionInstanceValue,
   type FunctionType,
   LambdaFunction,
-} from '../../../models/metamodels/pure/valueSpecification/LambdaFunction.js';
-import type { INTERNAL__PropagatedValue } from '../../../models/metamodels/pure/valueSpecification/INTERNAL__PropagatedValue.js';
+} from '../../../graph/metamodel/pure/valueSpecification/LambdaFunction.js';
+import type { INTERNAL__PropagatedValue } from '../../../graph/metamodel/pure/valueSpecification/INTERNAL__PropagatedValue.js';
 import type {
   FunctionExpression,
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from '../../../models/metamodels/pure/valueSpecification/SimpleFunctionExpression.js';
+} from '../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
-} from '../../../models/metamodels/pure/valueSpecification/ValueSpecification.js';
-import type { VariableExpression } from '../../../models/metamodels/pure/valueSpecification/VariableExpression.js';
+} from '../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
+import type { VariableExpression } from '../../../graph/metamodel/pure/valueSpecification/VariableExpression.js';
 import {
   type ObserverContext,
   skipObservedWithContext,

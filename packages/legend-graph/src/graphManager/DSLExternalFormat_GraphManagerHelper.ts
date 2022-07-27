@@ -17,8 +17,8 @@
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import type { BasicModel } from '../graph/BasicModel.js';
 import type { PureModel } from '../graph/PureModel.js';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
 
 export const getSchemaSet = (path: string, graph: PureModel): SchemaSet =>
   graph.getExtensionElement(path, SchemaSet, `Can't find schema set '${path}'`);

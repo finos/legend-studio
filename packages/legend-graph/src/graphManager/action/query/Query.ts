@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
-import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
 
 export class QueryTaggedValue {
   profile!: string;

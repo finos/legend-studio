@@ -15,7 +15,7 @@
  */
 
 import type { Clazz } from '@finos/legend-shared';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 
 export class PureGraphExtension<T extends PackageableElement> {
   private readonly _class: Clazz<T>;

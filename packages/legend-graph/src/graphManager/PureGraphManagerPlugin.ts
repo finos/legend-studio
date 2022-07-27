@@ -16,9 +16,9 @@
 
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
-import type { GraphManagerPluginManager } from '../GraphManagerPluginManager.js';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
+import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type {
   AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
