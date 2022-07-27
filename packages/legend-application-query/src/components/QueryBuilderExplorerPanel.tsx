@@ -259,12 +259,13 @@ const QueryBuilderExplorerPropertyDragLayer = observer(
         <div
           className="query-builder-explorer-tree__drag-preview"
           // added some offset so the mouse doesn't overlap the label too much
+          //svp
           style={
             !currentPosition
               ? { display: 'none' }
               : {
-                  transform: `translate(${currentPosition.x + 20}px, ${
-                    currentPosition.y + 10
+                  transform: `translate(${currentPosition.x + 90}px, ${
+                    currentPosition.y + 3
                   }px)`,
                 }
           }
