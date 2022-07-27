@@ -892,6 +892,7 @@ export const QueryBuilderPostFilterPanel = observer(
       }
     };
     // Drag and Drop
+    //svp
     const handleDrop = useCallback(
       async (item: QueryBuilderPostFilterDropTarget): Promise<void> => {
         let postFilterConditionState: PostFilterConditionState;

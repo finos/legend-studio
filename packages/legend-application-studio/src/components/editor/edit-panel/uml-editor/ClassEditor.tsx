@@ -153,6 +153,41 @@ enum CLASS_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
 }
 
+export interface QueryBuilderProjectionColumnDragSource {
+  columnState: ClassPropertyColumnState;
+  //svp
+}
+
+export abstract class ClassPropertyColumnState {
+  projectionState: ClassEditorState;
+  isBeingDragged = false;
+  columnName: string;
+
+  constructor(projectionState: ClassEditorState, columnName: string) {
+    makeObservable(this, {
+      projectionState: false,
+      isBeingDragged: observable,
+      //svp shoudl be fixed now false isbeingdragged no good
+      columnName: observable,
+      setIsBeingDragged: action,
+      setColumnName: action,
+    });
+
+    this.projectionState = projectionState;
+    this.columnName = columnName;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+
+  setColumnName(val: string): void {
+    this.columnName = val;
+  }
+
+  abstract getReturnType(): Type | undefined;
+}
+
 const PropertyBasicEditor = observer(
   (props: {
     _class: Class;
@@ -182,7 +217,6 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
-
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
