@@ -23,7 +23,7 @@ import {
   SystemModel,
 } from '../../../../../../../../graph/PureModel.js';
 import { TEST__GraphManagerPluginManager } from '../../../../../../../../GraphManagerTestUtils.js';
-import { getGraphManager } from '../../../../../Pure.js';
+import { buildPureGraphManager } from '../../../../../PureGraphManagerBuilder.js';
 import {
   V1_TEST_DATA__unsupportedFunctionExpression,
   V1_TEST_DATA__valueSpecificationWithLatestDate,
@@ -70,7 +70,7 @@ describe(unitTest('Lambda processing roundtrip test'), () => {
       const { errorMessage } = result;
       const graph = new PureModel(new CoreModel([]), new SystemModel([]), []);
       // setup
-      const graphManager = getGraphManager(
+      const graphManager = buildPureGraphManager(
         new TEST__GraphManagerPluginManager(),
         new Log(),
       );

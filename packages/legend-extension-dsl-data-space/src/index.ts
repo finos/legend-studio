@@ -28,5 +28,5 @@ export {
 export { DataSpaceViewerState } from './stores/DataSpaceViewerState.js';
 
 export * from './graphManager/DSLDataSpace_GraphManagerHelper.js';
-export { getDSLDataSpaceGraphManagerExtension } from './graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
+export { getDSLDataSpaceGraphManagerExtension } from './graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
 export { DataSpaceAnalysisResult } from './graphManager/action/analytics/DataSpaceAnalysis.js';

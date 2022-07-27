@@ -14,29 +14,34 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@finos/legend-storage';
 import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { DataSpaceAnalysisResult } from '../action/analytics/DataSpaceAnalysis.js';
+import type { MappingRuntimeCompatibilityAnalysisResult } from '../../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+import type { ServiceExecutionAnalysisResult } from '../../action/analytics/ServiceExecutionAnalysis.js';
 
-export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
-  abstract analyzeDataSpace(
-    dataSpacePath: string,
+export abstract class QueryBuilder_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
+  abstract surveyMappingRuntimeCompatibility(
     entities: Entity[],
     dependencyEntitiesIndex: Map<string, Entity[]>,
-  ): Promise<DataSpaceAnalysisResult>;
+  ): Promise<MappingRuntimeCompatibilityAnalysisResult[]>;
+
+  abstract surveyServiceExecution(
+    entities: Entity[],
+    dependencyEntitiesIndex: Map<string, Entity[]>,
+  ): Promise<ServiceExecutionAnalysisResult[]>;
 }
 
-export const getDSLDataSpaceGraphManagerExtension = (
+export const getQueryBuilderGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,
-): DSLDataSpace_PureGraphManagerExtension =>
+): QueryBuilder_PureGraphManagerExtension =>
   guaranteeNonNullable(
     graphManager.extensions.find(
       (extension) =>
-        extension instanceof DSLDataSpace_PureGraphManagerExtension,
+        extension instanceof QueryBuilder_PureGraphManagerExtension,
     ),
-    `Can't find DSL Data Space Pure graph manager extension`,
-  ) as DSLDataSpace_PureGraphManagerExtension;
+    `Can't find query builder Pure graph manager extension`,
+  ) as QueryBuilder_PureGraphManagerExtension;

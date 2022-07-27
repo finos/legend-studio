@@ -43,8 +43,8 @@ import {
   guaranteeType,
   type PlainObject,
 } from '@finos/legend-shared';
-import { MappingRuntimeCompatibilityAnalysisResult } from '../../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
-import { ServiceExecutionAnalysisResult } from '../../action/analytics/ServiceExecutionAnalysis.js';
+import { MappingRuntimeCompatibilityAnalysisResult } from '../../../action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+import { ServiceExecutionAnalysisResult } from '../../../action/analytics/ServiceExecutionAnalysis.js';
 import { QueryBuilder_PureGraphManagerExtension } from '../QueryBuilder_PureGraphManagerExtension.js';
 
 export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_PureGraphManagerExtension {

@@ -19,7 +19,7 @@ import {
   PureGraphManagerPlugin,
   type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
-import { QueryBuilder_buildGraphManagerExtension } from './protocol/QueryBuilder_PureGraphManagerExtensionBuilder.js';
+import { QueryBuilder_buildGraphManagerExtension } from './protocol/pure/QueryBuilder_PureGraphManagerExtensionBuilder.js';
 
 export class QueryBuilder_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {

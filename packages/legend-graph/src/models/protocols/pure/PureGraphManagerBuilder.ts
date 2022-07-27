@@ -19,7 +19,7 @@ import { V1_PureGraphManager } from './v1/V1_PureGraphManager.js';
 import type { Log } from '@finos/legend-shared';
 import type { GraphManagerPluginManager } from '../../../GraphManagerPluginManager.js';
 
-export const getGraphManager = (
+export const buildPureGraphManager = (
   pluginManager: GraphManagerPluginManager,
   log: Log,
 ): AbstractPureGraphManager =>

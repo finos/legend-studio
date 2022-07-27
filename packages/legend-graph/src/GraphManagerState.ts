@@ -47,7 +47,7 @@ import { EmbeddedFlatDataPropertyMapping } from './models/metamodels/pure/packag
 import { EmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { InlineEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/metamodels/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
-import { getGraphManager } from './models/protocols/pure/Pure.js';
+import { buildPureGraphManager } from './models/protocols/pure/PureGraphManagerBuilder.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -58,7 +58,7 @@ export class BasicGraphManagerState {
   constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
-    this.graphManager = getGraphManager(this.pluginManager, log);
+    this.graphManager = buildPureGraphManager(this.pluginManager, log);
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
@@ -190,7 +190,7 @@ export class GraphManagerState extends BasicGraphManagerState {
     this.systemModel = new SystemModel(extensionElementClasses);
     this.coreModel = new CoreModel(extensionElementClasses);
     this.graph = this.createEmptyGraph();
-    this.graphManager = getGraphManager(this.pluginManager, log);
+    this.graphManager = buildPureGraphManager(this.pluginManager, log);
 
     this.systemBuildState.setMessageFormatter(
       (message: string) => `[system] ${message}`,
