@@ -38,6 +38,7 @@ import {
   PlusIcon,
   TimesIcon,
   LongArrowRightIcon,
+  VerticalDragHandleIcon,
   ArrowCircleRightIcon,
   FireIcon,
   StickArrowCircleRightIcon,
@@ -48,7 +49,14 @@ import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
-import { flowResult } from 'mobx';
+import { action, flowResult, makeObservable, observable } from 'mobx';
+import {
+  type DropTargetMonitor,
+  type XYCoord,
+  useDragLayer,
+  useDrag,
+  useDrop,
+} from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type StereotypeReference,
@@ -118,6 +126,41 @@ import {
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
+export interface QueryBuilderProjectionColumnDragSource {
+  columnState: ClassPropertyColumnState;
+  //svp
+}
+
+export abstract class ClassPropertyColumnState {
+  projectionState: ClassEditorState;
+  isBeingDragged = false;
+  columnName: string;
+
+  constructor(projectionState: ClassEditorState, columnName: string) {
+    makeObservable(this, {
+      projectionState: false,
+      isBeingDragged: observable,
+      //svp shoudl be fixed now false isbeingdragged no good
+      columnName: observable,
+      setIsBeingDragged: action,
+      setColumnName: action,
+    });
+
+    this.projectionState = projectionState;
+    this.columnName = columnName;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+
+  setColumnName(val: string): void {
+    this.columnName = val;
+  }
+
+  abstract getReturnType(): Type | undefined;
+}
+
 const PropertyBasicEditor = observer(
   (props: {
     _class: Class;
@@ -136,6 +179,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
+    // const dragProperty = (): void => editorState.setSelectedProperty(property);
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -193,6 +237,39 @@ const PropertyBasicEditor = observer(
       setUpperBound(event.target.value);
       updateMultiplicity(lowerBound, event.target.value);
     };
+    // svp: Drag and Drop
+    // const handleHover = useCallback(
+    //   (
+    //     item: QueryBuilderProjectionColumnDragSource,
+    //     monitor: DropTargetMonitor,
+    //   ): void => {
+    //     const dragIndex = editorState.columns.findIndex(
+    //       (e) => e === item.columnState,
+    //     );
+    //     const hoverIndex = editorState.columns.findIndex(
+    //       (e) => e === projectionColumnState,
+    //     );
+    //     if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
+    //       return;
+    //     }
+    //     // move the item being hovered on when the dragged item position is beyond the its middle point
+    //     const hoverBoundingReact = ref.current?.getBoundingClientRect();
+    //     const distanceThreshold =
+    //       ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
+    //       2;
+    //     const dragDistance =
+    //       (monitor.getClientOffset() as XYCoord).y -
+    //       (hoverBoundingReact?.top ?? 0);
+    //     if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+    //       return;
+    //     }
+    //     if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
+    //       return;
+    //     }
+    //     projectionState.moveColumn(dragIndex, hoverIndex);
+    //   },
+    //   [projectionColumnState, projectionState],
+    // );
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
@@ -207,6 +284,16 @@ const PropertyBasicEditor = observer(
 
     return (
       <div className="property-basic-editor">
+        {!isIndirectProperty && (
+          <button
+            className="uml-element-editor__remove-btn"
+            onClick={selectProperty}
+            tabIndex={-1}
+            title={'Drag and drop'}
+          >
+            <VerticalDragHandleIcon />
+          </button>
+        )}
         {isIndirectProperty && (
           <div className="property-basic-editor__name--with-lock">
             <div className="property-basic-editor__name--with-lock__icon">
@@ -225,7 +312,7 @@ const PropertyBasicEditor = observer(
               value={property.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Property name`}
+              placeholder={`Property namesvp`}
               validationErrorMessage={
                 isPropertyDuplicated(property)
                   ? 'Duplicated property'
@@ -507,7 +594,6 @@ const DerivedPropertyBasicEditor = observer(
               spellCheck={false}
               className="property-basic-editor__name property-basic-editor__qualififed-property__name"
               value={derivedProperty.name}
-              placeholder="Property name"
               onChange={changeValue}
             />
           )}
