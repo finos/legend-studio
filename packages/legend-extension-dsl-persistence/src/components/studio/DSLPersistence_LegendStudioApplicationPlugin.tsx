@@ -36,8 +36,8 @@ import {
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
 } from '@finos/legend-application-studio';
-import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-import { PersistenceContext } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import {
   PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,

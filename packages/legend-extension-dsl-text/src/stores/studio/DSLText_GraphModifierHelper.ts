@@ -15,7 +15,7 @@
  */
 
 import { action } from 'mobx';
-import type { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
+import type { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
 
 export const text_setType = action((text: Text, type: string): void => {
   text.type = type;

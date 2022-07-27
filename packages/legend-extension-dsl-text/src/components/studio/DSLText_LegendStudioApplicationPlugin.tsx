@@ -37,7 +37,7 @@ import { FileIcon } from '@finos/legend-art';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import { TextElementEditor } from './TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '../../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
+import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
 import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLText_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
@@ -47,7 +47,7 @@ import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
 } from './DSLText_CodeSnippets.js';
-import { create_TextElement } from '../../helper/DSLText_Helper.js';
+import { create_TextElement } from '../../graph/helpers/DSLText_Helper.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
 

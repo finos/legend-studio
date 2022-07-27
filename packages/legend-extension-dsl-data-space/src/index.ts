@@ -23,7 +23,7 @@ export { DataSpaceViewer } from './components/DataSpaceViewer.js';
 export {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   extractDataSpaceTaxonomyNodes,
-} from './models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+} from './graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 
 export { DataSpaceViewerState } from './stores/DataSpaceViewerState.js';
 

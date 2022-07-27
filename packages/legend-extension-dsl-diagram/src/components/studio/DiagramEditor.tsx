@@ -114,8 +114,8 @@ import {
   property_setGenericType,
   property_setMultiplicity,
 } from '@finos/legend-application-studio';
-import { cleanUpDeadReferencesInDiagram } from '../../helpers/DSLDiagram_Helper.js';
-import { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import { cleanUpDeadReferencesInDiagram } from '../../graph/helpers/DSLDiagram_Helper.js';
+import { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
 import type { DSLDiagram_LegendStudioApplicationPlugin_Extension } from './DSLDiagram_LegendStudioApplicationPlugin_Extension.js';
 import {
   classView_setHideProperties,

@@ -38,7 +38,7 @@ import {
 } from '@finos/legend-application-studio';
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
-import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
 import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 import { DiagramEditor } from './DiagramEditor.js';
 import { ClassDiagramPreview } from './ClassDiagramPreview.js';

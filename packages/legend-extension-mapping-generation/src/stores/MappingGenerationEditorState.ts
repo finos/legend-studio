@@ -20,7 +20,7 @@ import type {
   Mapping,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
-import { V1_MappingGenConfiguration } from '../models/protocols/pure/v1/model/V1_MappingGenConfiguration.js';
+import { V1_MappingGenConfiguration } from '../graphManager/protocol/pure/v1/model/V1_MappingGenConfiguration.js';
 import {
   assertErrorThrown,
   LogEvent,

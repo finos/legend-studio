@@ -15,8 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import { Persistence } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-import { PersistenceContext } from '../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+import { Persistence } from '../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 

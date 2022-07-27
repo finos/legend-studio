@@ -46,14 +46,14 @@ import {
   StudioTextInputEditor,
 } from '@finos/legend-application-studio';
 import { observer } from 'mobx-react-lite';
-import { EqualToJsonPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
-import { EqualToPattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_EqualToPattern.js';
-import type { StringValuePattern } from '../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern.js';
-import { ServiceRequestPattern } from '../models/metamodels/pure/model/data/ESService_ServiceRequestPattern.js';
-import { ServiceResponseDefinition } from '../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition.js';
-import { ServiceStubMapping } from '../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';
-import { HTTP_METHOD } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
-import { V1_StringValuePatternType } from '../models/protocols/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
+import { EqualToJsonPattern } from '../graph/metamodel/pure/model/data/contentPattern/ESService_EqualToJsonPattern.js';
+import { EqualToPattern } from '../graph/metamodel/pure/model/data/contentPattern/ESService_EqualToPattern.js';
+import type { StringValuePattern } from '../graph/metamodel/pure/model/data/contentPattern/ESService_StringValuePattern.js';
+import { ServiceRequestPattern } from '../graph/metamodel/pure/model/data/ESService_ServiceRequestPattern.js';
+import { ServiceResponseDefinition } from '../graph/metamodel/pure/model/data/ESService_ServiceResponseDefinition.js';
+import { ServiceStubMapping } from '../graph/metamodel/pure/model/data/ESService_ServiceStubMapping.js';
+import { HTTP_METHOD } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
+import { V1_StringValuePatternType } from '../graphManager/protocol/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
 import {
   serviceStore_embeddedData_addServiceStubMapping,
   serviceStore_embeddedData_deleteServiceStubMapping,

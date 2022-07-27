@@ -16,21 +16,21 @@
 
 import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
-import type { AssociationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
-import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
-import type { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-import type { GeneralizationView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
+import type { AssociationView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
+import type { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import type { GeneralizationView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
 import {
   _findOrBuildPoint,
   _relationshipView_simplifyPath,
   _relationshipView_setPath,
-} from '../../helpers/DSLDiagram_Helper.js';
-import type { PropertyView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
-import type { RelationshipViewEnd } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipViewEnd.js';
-import type { RelationshipView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
-import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import type { PositionedRectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
-import type { Rectangle } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
+} from '../../graph/helpers/DSLDiagram_Helper.js';
+import type { PropertyView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+import type { RelationshipViewEnd } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_RelationshipViewEnd.js';
+import type { RelationshipView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import type { PositionedRectangle } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+import type { Rectangle } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
 import {
   observe_AssociationView,
   observe_ClassView,

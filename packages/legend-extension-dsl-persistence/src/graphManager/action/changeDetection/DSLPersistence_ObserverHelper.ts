@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Persistence } from '../../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import type { Persistence } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import {
   observe_Abstract_PackageableElement,
   skipObserved,

@@ -37,8 +37,8 @@ import {
   uniq,
   type PlainObject,
 } from '@finos/legend-shared';
-import { DataSpaceSupportEmail } from '../../../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { V1_DataSpaceSupportEmail } from '../../../../models/protocols/pure/v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
+import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
