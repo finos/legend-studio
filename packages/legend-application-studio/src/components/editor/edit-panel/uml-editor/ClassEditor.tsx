@@ -148,6 +148,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
+    // const dragProperty = (): void => editorState.setSelectedProperty(property);
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -285,7 +286,7 @@ const PropertyBasicEditor = observer(
               value={property.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Property name`}
+              placeholder={`Property namesvp`}
               validationErrorMessage={
                 isPropertyDuplicated(property)
                   ? 'Duplicated property'
@@ -567,7 +568,6 @@ const DerivedPropertyBasicEditor = observer(
               spellCheck={false}
               className="property-basic-editor__name property-basic-editor__qualififed-property__name"
               value={derivedProperty.name}
-              placeholder="Property name"
               onChange={changeValue}
             />
           )}
