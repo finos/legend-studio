@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-import { isEmpty } from '@finos/legend-shared';
-import type { RawRelationalOperationElement } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
-import { Database } from '../../../StoreRelational_Exports.js';
+import type { ExternalFormatData } from '../../metamodel/pure/data/EmbeddedData.js';
 
-export const stub_RawRelationalOperationElement =
-  (): RawRelationalOperationElement => ({});
-
-export const isStubbed_RawRelationalOperationElement = (
-  operation: RawRelationalOperationElement,
-): boolean => isEmpty(operation);
-
-export const stub_Database = (): Database => new Database('');
+export const isStubbed_ExternalFormatData = (
+  value: ExternalFormatData,
+): boolean => value.data === '';

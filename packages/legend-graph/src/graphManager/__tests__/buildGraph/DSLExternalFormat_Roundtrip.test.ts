@@ -22,7 +22,7 @@ import {
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
 } from '../../GraphManagerTestUtils.js';
-import { DSLExternalFormat_GraphPreset } from '../../../graph/DSLExternalFormat_Extension.js';
+import { DSLExternalFormat_GraphPreset } from '../../../DSLExternalFormat_Extension.js';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager.usePresets([new DSLExternalFormat_GraphPreset()]).install();

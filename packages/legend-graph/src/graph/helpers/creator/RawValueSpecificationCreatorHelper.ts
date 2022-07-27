@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Multiplicity } from '../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
-import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
-import { PackageableElementExplicitReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import { RawLambda } from '../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
-import { RawVariableExpression } from '../../../graph/metamodel/pure/rawValueSpecification/RawVariableExpression.js';
+import { Multiplicity } from '../../metamodel/pure/packageableElements/domain/Multiplicity.js';
+import type { Type } from '../../metamodel/pure/packageableElements/domain/Type.js';
+import { PackageableElementExplicitReference } from '../../metamodel/pure/packageableElements/PackageableElementReference.js';
+import { RawLambda } from '../../metamodel/pure/rawValueSpecification/RawLambda.js';
+import { RawVariableExpression } from '../../metamodel/pure/rawValueSpecification/RawVariableExpression.js';
 
 export const stub_RawVariableExpression = (type: Type): RawVariableExpression =>
   new RawVariableExpression(

@@ -144,9 +144,9 @@ import { V1_BindingTransformer } from '../../../model/packageableElements/extern
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
-import { isStubbed_EnumValueMapping } from '../../../../../../../graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
-import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
-import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graphManager/action/creation/StoreRelational_ModelCreatorHelper.js';
+import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
+import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
+import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
 
 export const V1_transformPropertyReference = (

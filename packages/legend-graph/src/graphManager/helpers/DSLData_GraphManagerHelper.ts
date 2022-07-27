@@ -15,10 +15,10 @@
  */
 
 import { isNonNullable } from '@finos/legend-shared';
-import type { PureModel } from '../PureModel.js';
-import type { PureGraphManagerPlugin } from '../../graphManager/PureGraphManagerPlugin.js';
-import { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
-import type { Testable } from '../metamodel/pure/test/Testable.js';
+import type { PureModel } from '../../graph/PureModel.js';
+import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
+import { PackageableElement } from '../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import type { Testable } from '../../graph/metamodel/pure/test/Testable.js';
 
 export const DEFAULT_TEST_SUITE_PREFIX = 'testSuite';
 export const DEFAULT_TEST_PREFIX = 'test';

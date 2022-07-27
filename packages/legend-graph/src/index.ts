@@ -80,7 +80,7 @@ export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFo
 export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
 export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
 export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
-export { DSLExternalFormat_GraphPreset } from './graph/DSLExternalFormat_Extension.js';
+export { DSLExternalFormat_GraphPreset } from './DSLExternalFormat_Extension.js';
 export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
 export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin.js';
 // V1 protocols
@@ -162,7 +162,6 @@ export * from './graph/MetaModelConst.js';
 export * from './graph/Core_HashUtils.js';
 
 export * from './graph/helpers/DomainHelper.js';
-export * from './graph/helpers/Testable_Helper.js';
 export * from './graph/helpers/DSLMapping_Helper.js';
 export * from './graph/helpers/StoreRelational_Helper.js';
 export * from './graph/helpers/StoreFlatData_Helper.js';
@@ -170,6 +169,14 @@ export * from './graph/helpers/DSLGeneration_Helper.js';
 export * from './graph/helpers/ValueSpecificationHelper.js';
 
 export * from './graph/helpers/PureLanguageHelper.js';
+
+export * from './graph/helpers/creator/DomainModelCreatorHelper.js';
+export * from './graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
+export * from './graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
+export * from './graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
+
+export * from './graphManager/helpers/DSLData_GraphManagerHelper.js';
+export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -323,13 +330,6 @@ export * from './graphManager/action/changeDetection/DSLGenerationSpecification_
 export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
-
-// --------------------------------------------- CREATOR --------------------------------------------------
-
-export * from './graphManager/action/creation/DomainModelCreatorHelper.js';
-export * from './graphManager/action/creation/DSLMapping_ModelCreatorHelper.js';
-export * from './graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
-export * from './graphManager/action/creation/StoreRelational_ModelCreatorHelper.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**

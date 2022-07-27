@@ -53,7 +53,6 @@ import { ServiceRequestPattern } from '../graph/metamodel/pure/model/data/ESServ
 import { ServiceResponseDefinition } from '../graph/metamodel/pure/model/data/ESService_ServiceResponseDefinition.js';
 import { ServiceStubMapping } from '../graph/metamodel/pure/model/data/ESService_ServiceStubMapping.js';
 import { HTTP_METHOD } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
-import { V1_StringValuePatternType } from '../graphManager/protocol/pure/v1/transformation/pureProtocol/V1_ESService_ProtocolHelper.js';
 import {
   serviceStore_embeddedData_addServiceStubMapping,
   serviceStore_embeddedData_deleteServiceStubMapping,
@@ -88,24 +87,29 @@ export type StringValuePatternOption = {
   label: string;
 };
 
+export enum StringValuePatternType {
+  EQUAL_TO_PATTERN = 'equalTo',
+  EQUAL_TO_JSON_PATTERN = 'equalToJson',
+}
+
 export const QueryParamsEditor = observer(
   (props: {
     serviceRequestPattern: ServiceRequestPattern;
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
-    const stringValuePatternOptions = Object.values(
-      V1_StringValuePatternType,
-    ).map((stringValuePatternType) => ({
-      value: stringValuePatternType,
-      label: stringValuePatternType,
-    }));
+    const stringValuePatternOptions = Object.values(StringValuePatternType).map(
+      (stringValuePatternType) => ({
+        value: stringValuePatternType,
+        label: stringValuePatternType,
+      }),
+    );
     const onStringValuePatternChange = (
       val: StringValuePatternOption,
       key: string,
     ): void => {
       let stringValuePattern: StringValuePattern;
-      if (val.value === V1_StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
+      if (val.value === StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
         stringValuePattern = new EqualToJsonPattern();
         serviceStore_stringValuePattern_setExpectedValue(
           stringValuePattern,
@@ -264,18 +268,18 @@ export const HeaderParamsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
-    const stringValuePatternOptions = Object.values(
-      V1_StringValuePatternType,
-    ).map((stringValuePatternType) => ({
-      value: stringValuePatternType,
-      label: stringValuePatternType,
-    }));
+    const stringValuePatternOptions = Object.values(StringValuePatternType).map(
+      (stringValuePatternType) => ({
+        value: stringValuePatternType,
+        label: stringValuePatternType,
+      }),
+    );
     const onStringValuePatternChange = (
       val: StringValuePatternOption,
       key: string,
     ): void => {
       let stringValuePattern: StringValuePattern;
-      if (val.value === V1_StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
+      if (val.value === StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
         stringValuePattern = new EqualToJsonPattern();
         serviceStore_stringValuePattern_setExpectedValue(
           stringValuePattern,
@@ -434,18 +438,18 @@ export const BodyPatternsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { serviceRequestPattern, isReadOnly } = props;
-    const stringValuePatternOptions = Object.values(
-      V1_StringValuePatternType,
-    ).map((stringValuePatternType) => ({
-      value: stringValuePatternType,
-      label: stringValuePatternType,
-    }));
+    const stringValuePatternOptions = Object.values(StringValuePatternType).map(
+      (stringValuePatternType) => ({
+        value: stringValuePatternType,
+        label: stringValuePatternType,
+      }),
+    );
     const onStringValuePatternChange = (
       val: StringValuePatternOption,
       index: number,
     ): void => {
       let stringValuePattern: StringValuePattern;
-      if (val.value === V1_StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
+      if (val.value === StringValuePatternType.EQUAL_TO_JSON_PATTERN) {
         stringValuePattern = new EqualToJsonPattern();
         serviceStore_stringValuePattern_setExpectedValue(
           stringValuePattern,

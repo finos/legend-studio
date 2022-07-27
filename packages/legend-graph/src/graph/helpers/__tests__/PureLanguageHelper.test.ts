@@ -19,13 +19,10 @@ import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGenera
 import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
-  TEST__buildGraphWithEntities,
-  TEST__getTestGraphManagerState,
-} from '../../../graphManager/GraphManagerTestUtils.js';
-import {
   generateFunctionCallString,
   generateFunctionSignature,
 } from '../PureLanguageHelper.js';
+import { TEST__getTestGraph } from '../../GraphTestUtils.js';
 
 afterEach(() => {
   // running all pending timers and switching to real timers using Jest
@@ -36,17 +33,13 @@ afterEach(() => {
 });
 
 test(unitTest('Generate default parameter value for type'), async () => {
-  const graphManagerState = TEST__getTestGraphManagerState();
-  await TEST__buildGraphWithEntities(
-    graphManagerState,
+  const graph = await TEST__getTestGraph(
     TEST_DATA__simpleGraphEntities as Entity[],
   );
-  // NOTE: this will leak
+  // NOTE: this could leak
   jest.useFakeTimers();
   jest.setSystemTime(new Date(2020, 10, 1));
-  const setFunction = graphManagerState.graph.getFunction(
-    'model::functions::set',
-  );
+  const setFunction = graph.getFunction('model::functions::set');
   expect(generateFunctionCallString(setFunction)).toBe(
     "model::functions::set('', model::IncType.Corp, %2020-11-01, %2020-11-01T00:00:00)",
   );

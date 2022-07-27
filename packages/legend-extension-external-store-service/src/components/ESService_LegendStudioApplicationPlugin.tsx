@@ -72,7 +72,7 @@ import {
 } from './ESService_CodeSnippets.js';
 import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
-import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData.js';
+import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedDataEditor.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';

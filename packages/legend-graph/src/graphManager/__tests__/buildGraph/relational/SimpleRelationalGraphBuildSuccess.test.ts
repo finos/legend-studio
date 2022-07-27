@@ -39,7 +39,7 @@ import { EmbeddedRelationalInstanceSetImplementation } from '../../../../graph/m
 import { RelationalPropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';
 import { PRIMITIVE_TYPE } from '../../../../graph/MetaModelConst.js';
 import { TEST_DATA__SemiStructuredRelationalTypeRoundtrip } from './TEST_DATA__SemiStructuredRelationalTypeRoundtrip.js';
-import { DSLExternalFormat_GraphPreset } from '../../../../graph/DSLExternalFormat_Extension.js';
+import { DSLExternalFormat_GraphPreset } from '../../../../DSLExternalFormat_Extension.js';
 import {
   getSchema,
   getTable,

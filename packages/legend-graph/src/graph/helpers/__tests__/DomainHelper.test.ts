@@ -21,13 +21,10 @@ import {
   getMilestoneTemporalStereotype,
   getOrCreatePackage,
 } from '../DomainHelper.js';
-import {
-  TEST__buildGraphWithEntities,
-  TEST__getTestGraphManagerState,
-} from '../../../graphManager/GraphManagerTestUtils.js';
-import { TEST_DATA__MilestonedClassRoundtrip } from '../../../graphManager/__tests__/roundtripTestData/TEST_DATA__DomainRoundtrip.js';
+import { TEST_DATA__Milestoning } from './TEST_DATA__Milestoning.js';
 import type { Entity } from '@finos/legend-storage';
 import { MILESTONING_STEREOTYPE } from '../../MetaModelConst.js';
+import { TEST__getTestGraph } from '../../GraphTestUtils.js';
 
 test(unitTest('Get or create package utility properly handle cache'), () => {
   const root = new Package('ROOT');
@@ -67,22 +64,12 @@ test(unitTest('Create valid and invalid packages on a root package'), () => {
 test(
   unitTest('Class milestoning stereotypes should be identified properly'),
   async () => {
-    const graphManagerState = TEST__getTestGraphManagerState();
-    const data = TEST_DATA__MilestonedClassRoundtrip as Entity[];
-    await TEST__buildGraphWithEntities(graphManagerState, data, {
-      TEMPORARY__preserveSectionIndex: true,
-    });
+    const graph = await TEST__getTestGraph(TEST_DATA__Milestoning as Entity[]);
     expect(
-      getMilestoneTemporalStereotype(
-        graphManagerState.graph.getClass('test::C'),
-        graphManagerState.graph,
-      ),
+      getMilestoneTemporalStereotype(graph.getClass('test::C'), graph),
     ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
     expect(
-      getMilestoneTemporalStereotype(
-        graphManagerState.graph.getClass('test::D'),
-        graphManagerState.graph,
-      ),
+      getMilestoneTemporalStereotype(graph.getClass('test::D'), graph),
     ).toBe(MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL);
   },
 );

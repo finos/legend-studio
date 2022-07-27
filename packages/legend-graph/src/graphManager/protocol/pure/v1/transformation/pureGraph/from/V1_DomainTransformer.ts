@@ -53,7 +53,7 @@ import { V1_Property } from '../../../model/packageableElements/domain/V1_Proper
 import { V1_DerivedProperty } from '../../../model/packageableElements/domain/V1_DerivedProperty.js';
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import { isStubbed_RawLambda } from '../../../../../../../graphManager/action/creation/RawValueSpecificationCreatorHelper.js';
+import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 
 export const V1_transformProfile = (element: Profile): V1_Profile => {
   const profile = new V1_Profile();

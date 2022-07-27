@@ -25,8 +25,8 @@ import {
   ObjectInputType,
 } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 import { RelationalInputData } from '../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalInputData.js';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
-import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper.js';
+import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
+import { isStubbed_RawLambda } from '../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 import { DEPRECATED__validate_FlatDataInputData } from './StoreFlatData_ValidationHelper.js';
 import { DEPRECATED__validation_RelationalInputData } from './StoreRelational_ValidationHelper.js';
 import {

@@ -235,7 +235,7 @@ import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js
 import {
   getNullableIDFromTestable,
   getNullableTestable,
-} from '../../../../graph/helpers/Testable_Helper.js';
+} from '../../../helpers/DSLData_GraphManagerHelper.js';
 import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import type { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import {

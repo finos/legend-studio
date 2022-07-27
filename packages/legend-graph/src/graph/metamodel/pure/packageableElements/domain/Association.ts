@@ -26,7 +26,7 @@ import type { AbstractProperty } from './AbstractProperty.js';
 import {
   stub_Class,
   stub_Property,
-} from '../../../../../graphManager/action/creation/DomainModelCreatorHelper.js';
+} from '../../../../../graph/helpers/creator/DomainModelCreatorHelper.js';
 
 /**
  * Assocation needs exactly 2 properties (for 2 classes, not enumeration, not primitive), e.g.

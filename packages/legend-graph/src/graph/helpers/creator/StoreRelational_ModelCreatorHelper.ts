@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-import type { ExternalFormatData } from '../../../graph/metamodel/pure/data/EmbeddedData.js';
+import { isEmpty } from '@finos/legend-shared';
+import type { RawRelationalOperationElement } from '../../metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
+import { Database } from '../../../StoreRelational_Exports.js';
 
-export const isStubbed_ExternalFormatData = (
-  value: ExternalFormatData,
-): boolean => value.data === '';
+export const stub_RawRelationalOperationElement =
+  (): RawRelationalOperationElement => ({});
+
+export const isStubbed_RawRelationalOperationElement = (
+  operation: RawRelationalOperationElement,
+): boolean => isEmpty(operation);
+
+export const stub_Database = (): Database => new Database('');

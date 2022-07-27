@@ -35,7 +35,7 @@ import {
   ObjectInputType,
 } from '../metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
 import { PackageableElementExplicitReference } from '../metamodel/pure/packageableElements/PackageableElementReference.js';
-import { stub_Class } from '../../graphManager/action/creation/DomainModelCreatorHelper.js';
+import { Class } from '../metamodel/pure/packageableElements/domain/Class.js';
 
 test(unitTest('Source information should be pruned properly'), () => {
   expect(
@@ -59,19 +59,19 @@ test(unitTest('Source information should be pruned properly'), () => {
 
 test(unitTest('JSON Object input data should be minified'), () => {
   const test1 = new ObjectInputData(
-    PackageableElementExplicitReference.create(stub_Class()),
+    PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{"a":1}',
   );
 
   const test2 = new ObjectInputData(
-    PackageableElementExplicitReference.create(stub_Class()),
+    PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{\n  "a":1\n}',
   );
 
   const test3 = new ObjectInputData(
-    PackageableElementExplicitReference.create(stub_Class()),
+    PackageableElementExplicitReference.create(new Class('')),
     ObjectInputType.JSON,
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
   );

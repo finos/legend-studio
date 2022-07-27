@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
+import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLExternalFormat_PureGraphManagerPlugin } from '../graphManager/DSLExternalFormat_PureGraphManagerPlugin.js';
-import { DSLExternalFormat_PureProtocolProcessorPlugin } from '../graphManager/protocol/pure/DSLExternalFormat_PureProtocolProcessorPlugin.js';
-import { DSLExternalFormat_PureGraphPlugin } from './DSLExternalFormat_PureGraphPlugin.js';
+import { DSLExternalFormat_PureGraphManagerPlugin } from './graphManager/DSLExternalFormat_PureGraphManagerPlugin.js';
+import { DSLExternalFormat_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSLExternalFormat_PureProtocolProcessorPlugin.js';
+import { DSLExternalFormat_PureGraphPlugin } from './graph/DSLExternalFormat_PureGraphPlugin.js';
 
 export class DSLExternalFormat_GraphPreset extends AbstractPreset {
   constructor() {

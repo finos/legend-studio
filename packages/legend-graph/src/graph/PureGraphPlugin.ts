@@ -17,7 +17,7 @@
 import { AbstractPlugin, type Clazz } from '@finos/legend-shared';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { PureModel } from './PureModel.js';
-import type { GraphManagerPluginManager } from '../graphManager/GraphManagerPluginManager.js';
+import type { GraphPluginManager } from './GraphPluginManager.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 
 export type DeadReferencesCleaner = (graph: PureModel) => void;
@@ -36,7 +36,7 @@ export abstract class PureGraphPlugin extends AbstractPlugin {
    */
   private readonly _$nominalTypeBrand!: 'PureGraphPlugin';
 
-  install(pluginManager: GraphManagerPluginManager): void {
+  install(pluginManager: GraphPluginManager): void {
     pluginManager.registerPureGraphPlugin(this);
   }
 

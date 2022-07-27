@@ -16,11 +16,12 @@
 
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '@finos/legend-application-studio';
+// eslint-disable-next-line @finos/legend-studio/enforce-module-import-hierarchy
+import { V1_MappingGenConfiguration } from '../graphManager/protocol/pure/v1/model/V1_MappingGenConfiguration.js';
 import type {
   Mapping,
   ModelGenerationConfiguration,
 } from '@finos/legend-graph';
-import { V1_MappingGenConfiguration } from '../graphManager/protocol/pure/v1/model/V1_MappingGenConfiguration.js';
 import {
   assertErrorThrown,
   LogEvent,

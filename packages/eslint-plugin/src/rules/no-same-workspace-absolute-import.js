@@ -18,8 +18,8 @@ const path = require('path');
 const fs = require('fs');
 const micromatch = require('micromatch');
 
-const sourceFileMatchPattern = '**/packages/legend-*/src/**';
-const workspacePathMatchPattern =
+const SOURCE_FILE_PATTERN = '**/packages/legend-*/src/**';
+const WORKSPACE_MATCH_PATTERN =
   /(?<workspacePath>.*?[/\\]packages[/\\]legend-[\w-]+?)[/\\]src[/\\]/u;
 
 /**
@@ -38,8 +38,8 @@ module.exports = {
   create(context) {
     const filePath = context.getFilename();
     let workspaceName;
-    if (micromatch.isMatch(filePath, [sourceFileMatchPattern])) {
-      const workspacePath = filePath.match(workspacePathMatchPattern)?.groups
+    if (micromatch.isMatch(filePath, [SOURCE_FILE_PATTERN])) {
+      const workspacePath = filePath.match(WORKSPACE_MATCH_PATTERN)?.groups
         ?.workspacePath;
       if (
         workspacePath &&

@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import { Profile } from '../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
-import { Tag } from '../../../graph/metamodel/pure/packageableElements/domain/Tag.js';
-import { Enum } from '../../../graph/metamodel/pure/packageableElements/domain/Enum.js';
-import { Stereotype } from '../../../graph/metamodel/pure/packageableElements/domain/Stereotype.js';
-import { TaggedValue } from '../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
-import { TagExplicitReference } from '../../../graph/metamodel/pure/packageableElements/domain/TagReference.js';
-import type { Enumeration } from '../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
-import { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
-import { Constraint } from '../../../graph/metamodel/pure/packageableElements/domain/Constraint.js';
+import { Profile } from '../../metamodel/pure/packageableElements/domain/Profile.js';
+import { Tag } from '../../metamodel/pure/packageableElements/domain/Tag.js';
+import { Enum } from '../../metamodel/pure/packageableElements/domain/Enum.js';
+import { Stereotype } from '../../metamodel/pure/packageableElements/domain/Stereotype.js';
+import { TaggedValue } from '../../metamodel/pure/packageableElements/domain/TaggedValue.js';
+import { TagExplicitReference } from '../../metamodel/pure/packageableElements/domain/TagReference.js';
+import type { Enumeration } from '../../metamodel/pure/packageableElements/domain/Enumeration.js';
+import { Class } from '../../metamodel/pure/packageableElements/domain/Class.js';
+import { Constraint } from '../../metamodel/pure/packageableElements/domain/Constraint.js';
 import { stub_RawLambda } from './RawValueSpecificationCreatorHelper.js';
-import type { PackageableElement } from '../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import { Multiplicity } from '../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
-import { GenericTypeExplicitReference } from '../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
-import { GenericType } from '../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
-import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
-import { DerivedProperty } from '../../../graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';
-import { Property } from '../../../graph/metamodel/pure/packageableElements/domain/Property.js';
+import type { PackageableElement } from '../../metamodel/pure/packageableElements/PackageableElement.js';
+import { Multiplicity } from '../../metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { GenericTypeExplicitReference } from '../../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import { GenericType } from '../../metamodel/pure/packageableElements/domain/GenericType.js';
+import type { Type } from '../../metamodel/pure/packageableElements/domain/Type.js';
+import { DerivedProperty } from '../../metamodel/pure/packageableElements/domain/DerivedProperty.js';
+import { Property } from '../../metamodel/pure/packageableElements/domain/Property.js';
 
 export const stub_Tag = (profile: Profile): Tag => new Tag(profile, '');
 export const stub_TaggedValue = (tag: Tag): TaggedValue =>

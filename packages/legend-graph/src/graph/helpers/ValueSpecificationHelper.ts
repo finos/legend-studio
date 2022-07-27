@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { guaranteeType, Randomizer } from '@finos/legend-shared';
+import { Randomizer } from '@finos/legend-shared';
 import type { PureModel } from '../PureModel.js';
-import type { GraphManagerState } from '../../graphManager/GraphManagerState.js';
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
@@ -28,18 +27,12 @@ import { EnumValueExplicitReference } from '../metamodel/pure/packageableElement
 import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import { GenericTypeExplicitReference } from '../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import { RawLambda } from '../metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type InstanceValue,
   CollectionInstanceValue,
   EnumValueInstanceValue,
   PrimitiveInstanceValue,
 } from '../metamodel/pure/valueSpecification/InstanceValue.js';
-import {
-  type LambdaFunction,
-  LambdaFunctionInstanceValue,
-} from '../metamodel/pure/valueSpecification/LambdaFunction.js';
-import type { ValueSpecification } from '../metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { VariableExpression } from '../metamodel/pure/valueSpecification/VariableExpression.js';
 import { getEnumValue } from './DomainHelper.js';
 import { format, addDays } from 'date-fns';
@@ -60,37 +53,6 @@ export const buildPrimitiveInstanceValue = (
   );
   instance.values = [value];
   return instance;
-};
-
-export const buildLambdaVariableExpressions = (
-  rawLambda: RawLambda,
-  graphManagerState: GraphManagerState,
-): ValueSpecification[] =>
-  ((rawLambda.parameters ?? []) as object[]).map((param) =>
-    graphManagerState.graphManager.buildValueSpecification(
-      param as Record<PropertyKey, unknown>,
-      graphManagerState.graph,
-    ),
-  );
-
-export const buildRawLambdaFromLambdaFunction = (
-  lambdaFunction: LambdaFunction,
-  graphManagerState: GraphManagerState,
-): RawLambda => {
-  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-    graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    ),
-    undefined,
-  );
-  lambdaFunctionInstanceValue.values = [lambdaFunction];
-  return guaranteeType(
-    graphManagerState.graphManager.buildRawValueSpecification(
-      lambdaFunctionInstanceValue,
-      graphManagerState.graph,
-    ),
-    RawLambda,
-  );
 };
 
 const createMockPrimitiveProperty = (
