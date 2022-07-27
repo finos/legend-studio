@@ -32,7 +32,7 @@ import {
   type PureGrammarParserElementSnippetSuggestionsGetter,
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { SquareIcon } from '@finos/legend-art';
 import {
   PackageableElementExplicitReference,
@@ -61,7 +61,7 @@ export class DSLDataSpace_LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

@@ -32,7 +32,7 @@ import type {
   AbstractPureGraphManager,
   GraphBuilderOptions,
 } from './graphManager/AbstractPureGraphManager.js';
-import type { GraphPluginManager } from './GraphPluginManager.js';
+import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import { getElementRootPackage } from './helpers/DomainHelper.js';
 import { getLeafSetImplementations } from './helpers/DSLMapping_Helper.js';
 import { ROOT_PACKAGE_NAME } from './MetaModelConst.js';
@@ -50,12 +50,12 @@ import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from './models/m
 import { getGraphManager } from './models/protocols/pure/Pure.js';
 
 export class BasicGraphManagerState {
-  pluginManager: GraphPluginManager;
+  pluginManager: GraphManagerPluginManager;
   log: Log;
 
   graphManager: AbstractPureGraphManager;
 
-  constructor(pluginManager: GraphPluginManager, log: Log) {
+  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
     this.graphManager = getGraphManager(this.pluginManager, log);
@@ -173,7 +173,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   graphBuildState = ActionState.create();
   generationsBuildState = ActionState.create();
 
-  constructor(pluginManager: GraphPluginManager, log: Log) {
+  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     super(pluginManager, log);
 
     makeObservable(this, {

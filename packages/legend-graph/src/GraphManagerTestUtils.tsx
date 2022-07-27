@@ -25,16 +25,16 @@ import {
 import type { PureGraphManagerPlugin } from './graphManager/PureGraphManagerPlugin.js';
 import { GraphManagerState } from './GraphManagerState.js';
 import { GraphManagerStateProvider } from './GraphManagerStateProvider.js';
-import type { GraphPluginManager } from './GraphPluginManager.js';
+import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PureProtocolProcessorPlugin } from './models/protocols/pure/PureProtocolProcessorPlugin.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { SECTION_INDEX_ELEMENT_PATH } from './MetaModelConst.js';
 import type { GraphBuilderOptions } from './graphManager/AbstractPureGraphManager.js';
 import type { PureGraphPlugin } from './graph/PureGraphPlugin.js';
 
-export class TEST__GraphPluginManager
+export class TEST__GraphManagerPluginManager
   extends AbstractPluginManager
-  implements GraphPluginManager
+  implements GraphManagerPluginManager
 {
   protected loggerPlugins: LoggerPlugin[] = [];
   private pureProtocolProcessorPlugins: PureProtocolProcessorPlugin[] = [];
@@ -77,17 +77,17 @@ export class TEST__GraphPluginManager
 }
 
 export const TEST__getTestGraphManagerState = (
-  pluginManager?: GraphPluginManager,
+  pluginManager?: GraphManagerPluginManager,
   log?: Log,
 ): GraphManagerState =>
   new GraphManagerState(
-    pluginManager ?? new TEST__GraphPluginManager(),
+    pluginManager ?? new TEST__GraphManagerPluginManager(),
     log ?? new Log(),
   );
 
 export const TEST__provideMockedGraphManagerState = (customization?: {
   mock?: GraphManagerState;
-  pluginManager?: GraphPluginManager;
+  pluginManager?: GraphManagerPluginManager;
 }): GraphManagerState => {
   const value =
     customization?.mock ??
@@ -102,7 +102,7 @@ export const TEST__GraphManagerStateProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
   <GraphManagerStateProvider
-    pluginManager={new TEST__GraphPluginManager()}
+    pluginManager={new TEST__GraphManagerPluginManager()}
     log={new Log()}
   >
     {children}
@@ -210,7 +210,7 @@ export const TEST__checkGraphHashUnchanged = async (
 
 export const TEST__checkBuildingElementsRoundtrip = async (
   entities: Entity[],
-  pluginManager?: GraphPluginManager,
+  pluginManager?: GraphManagerPluginManager,
 ): Promise<void> => {
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
   await TEST__buildGraphWithEntities(graphManagerState, entities, {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
 import { LATEST_VERSION_ALIAS, SNAPSHOT_VERSION_ALIAS } from './DepotUtils.js';
 import type { DepotScope } from './models/DepotScope.js';

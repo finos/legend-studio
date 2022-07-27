@@ -27,15 +27,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - application: '@finos/legend-studio-deployment'
+          - application: '@finos/legend-application-studio-deployment'
             os: ubuntu-latest
           # NOTE: here we run a build on Windows just to check how the build process work for Windows
           # developers. Setting up an OS matrix for all applications is unnecessary.
-          - application: '@finos/legend-studio-deployment'
+          - application: '@finos/legend-application-studio-deployment'
             os: windows-latest
-          - application: '@finos/legend-query-deployment'
+          - application: '@finos/legend-application-query-deployment'
             os: ubuntu-latest
-          - application: '@finos/legend-taxonomy-deployment'
+          - application: '@finos/legend-application-taxonomy-deployment'
             os: ubuntu-latest
     steps:
       - name: Checkout code

@@ -20,10 +20,9 @@ import fs from 'fs';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   type V1_PureModelContextData,
 } from '@finos/legend-graph';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
 import {
   ContentType,
   HttpHeader,
@@ -97,8 +96,7 @@ const checkGrammarRoundtripMismatch = async (
   filePath: string,
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
-  const pluginManager = new TEST__GraphPluginManager();
-  pluginManager.usePresets(getLegendGraphExtensionCollection());
+  const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
 

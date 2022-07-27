@@ -18,7 +18,7 @@ import { generateExtensionUrlPattern } from '@finos/legend-application';
 import {
   LEGEND_QUERY_PATH_PARAM_TOKEN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { generatePath } from 'react-router';
 

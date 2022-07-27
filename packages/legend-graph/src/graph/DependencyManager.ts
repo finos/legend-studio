@@ -34,7 +34,7 @@ import type { FileGenerationSpecification } from '../models/metamodels/pure/pack
 import type { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import type { Measure } from '../models/metamodels/pure/packageableElements/domain/Measure.js';
 import type { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import type { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
 import type { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement.js';
 

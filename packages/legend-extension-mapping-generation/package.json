@@ -5,8 +5,7 @@
   "keywords": [
     "legend",
     "legend-extension",
-    "mapping-generation",
-    "model-loader-extension"
+    "mapping-generation"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-mapping-generation",
   "bugs": {
@@ -42,13 +41,13 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
     "react": "18.2.0",
@@ -69,8 +68,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-mapping-generation",
-    "studioPlugin": "@finos/legend-studio-plugin-mapping-generation-extension",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-mapping-generation-pure-protocol-processor"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-mapping-generation",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-mapping-generation",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-mapping-generation-extension-"
   }
 }

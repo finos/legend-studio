@@ -16,7 +16,7 @@
 
 import { createModelSchema, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 
 export class StoredEntity {
   groupId!: string;

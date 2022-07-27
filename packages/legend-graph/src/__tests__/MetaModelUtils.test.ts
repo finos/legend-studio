@@ -42,7 +42,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../GraphManagerTestUtils.js';
 import { TEST_DATA__MilestonedClassRoundtrip } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { getMilestoneTemporalStereotype } from '../helpers/DomainHelper.js';
 import { stub_Class } from '../graphManager/action/creation/DomainModelCreatorHelper.js';
 

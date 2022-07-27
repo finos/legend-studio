@@ -40,13 +40,13 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
@@ -63,6 +63,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "studioPlugin": "@finos/legend-studio-plugin-external-language-morphir"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-external-language-morphir"
   }
 }

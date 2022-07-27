@@ -21,7 +21,7 @@ import {
   guaranteeType,
   unitTest,
 } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import type { GraphManagerState } from '../../../GraphManagerState.js';
 import {
   TEST__buildGraphWithEntities,

@@ -22,7 +22,7 @@ import {
   type FileGenerationState,
   type FileGenerationResultViewerActionConfiguration,
   type FileGenerationScopeFilterConfiguration,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import {
   NetworkClient,
   guaranteeNonEmptyString,
@@ -51,7 +51,7 @@ export class ELMorphir_LegendStudioApplicationPlugin
   private _linterAppUrl?: string | undefined;
 
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
     this.networkClient = new NetworkClient();
   }
 

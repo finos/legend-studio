@@ -16,7 +16,7 @@
 
 /* eslint-disable prefer-named-capture-group */
 import {
-  type GraphPluginManager,
+  type GraphManagerPluginManager,
   PARSER_SECTION_MARKER,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
@@ -353,7 +353,7 @@ const generateLanguageMonarch = (
   } as monacoLanguagesAPI.IMonarchLanguage);
 
 export const setupPureLanguageService = (
-  pluginManager: GraphPluginManager,
+  pluginManager: GraphManagerPluginManager,
 ): void => {
   // register Pure language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);

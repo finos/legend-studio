@@ -18,7 +18,7 @@ import {
   type AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { DataSpaceAnalysisResult } from '../action/analytics/DataSpaceAnalysis.js';
 

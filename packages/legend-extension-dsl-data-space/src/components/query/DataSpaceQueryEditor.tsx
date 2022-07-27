@@ -28,7 +28,7 @@ import {
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import { useParams } from 'react-router';
 import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
 import {

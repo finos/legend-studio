@@ -44,14 +44,14 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-query": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
-    "@finos/legend-query": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
@@ -79,11 +79,11 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-data-space",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-data-space-pure-graph",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-data-space",
-    "queryPlugin": "@finos/legend-query-plugin-dsl-data-space"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-data-space",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-data-space",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-data-space",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-data-space",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-data-space",
+    "queryApplicationPlugin": "@finos/legend-application-query-plugin-dsl-data-space"
   }
 }

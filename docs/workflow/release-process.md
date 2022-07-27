@@ -132,5 +132,5 @@ npm publish --tag <publish-tag>
 docker login
 
 # Build image and publish to Docker Hub
-yarn workspace @finos/legend-studio-deployment publish:docker
+yarn workspace @finos/legend-application-studio-deployment publish:docker
 ```

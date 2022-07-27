@@ -11,11 +11,11 @@
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph" },
     { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-studio" },
-    { "path": "../legend-query" },
+    { "path": "../legend-application-studio" },
+    { "path": "../legend-application-query" },
     { "path": "../legend-server-depot" },
     { "path": "../legend-shared" },
-    { "path": "../legend-model-storage" },
+    { "path": "../legend-storage" },
     { "path": "../legend-application" },
     { "path": "../legend-art" }
   ]

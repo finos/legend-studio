@@ -34,7 +34,7 @@ import {
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
-import type { GraphPluginManager } from '@finos/legend-graph';
+import type { GraphManagerPluginManager } from '@finos/legend-graph';
 import type { LegendApplicationPluginManager } from './LegendApplicationPluginManager.js';
 import { setupPureLanguageService } from '../stores/PureLanguageSupport.js';
 import {
@@ -90,7 +90,7 @@ export class LegendApplicationWebConsole extends LegendApplicationLogger {
 // are embedded in the function
 // See https://sgom.es/posts/2020-06-15-everything-you-never-wanted-to-know-about-side-effects/
 export const setupLegendApplicationUILibrary = async (
-  pluginManager: GraphPluginManager,
+  pluginManager: GraphManagerPluginManager,
   logger: LegendApplicationLogger,
 ): Promise<void> => {
   setupPureLanguageService(pluginManager);

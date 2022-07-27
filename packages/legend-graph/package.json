@@ -1,12 +1,13 @@
 {
   "name": "@finos/legend-graph",
   "version": "11.0.0",
-  "description": "Legend metamodel graph",
+  "description": "Legend graph and graph manager",
   "keywords": [
     "legend",
     "legend-graph",
-    "metamodel",
-    "graph"
+    "legend-graph-manager",
+    "graph",
+    "graph-manager"
   ],
   "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-graph",
   "bugs": {
@@ -38,8 +39,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "date-fns": "2.29.1",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
@@ -60,11 +61,11 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-core-pure-graph-manager",
-    "dsl_external_format_graphPreset": "@finos/legend-graph-preset-dsl-external-format",
-    "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-protocol-processor",
-    "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph-manager",
-    "dsl_external_format_pureGraphPlugin": "@finos/legend-graph-plugin-dsl-external-format-pure-graph"
+    "pureGraphManagerPlugin": "@finos/legend-graph-manager-plugin-core-pure",
+    "dsl_external_format_graphPreset": "@finos/legend-graph-manager-preset-dsl-external-format",
+    "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-external-format",
+    "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-external-format",
+    "dsl_external_format_pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-external-format"
   },
   "typedoc": {
     "entryPoint": "./src/index.ts",

@@ -45,7 +45,7 @@ const ITERATION_RELEASE_VERSION_BUMP_CHANGESET_PATH = resolve(
  * Changesets's `fixed` mode should guarantee that we do not miss any application packages
  * when we bump version as long as they follow the right patterns.
  *
- * In fact, creating a simple changeset with just a single package like `@finos/legend-studio-app`
+ * In fact, creating a simple changeset with just a single package like `@finos/legend-application-studio-bootstrap`
  * is sufficient and listing out ALL packages in the changeset is overkill, but we do this anyway
  * for completeness sake.
  */

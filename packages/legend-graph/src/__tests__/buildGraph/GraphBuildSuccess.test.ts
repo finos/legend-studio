@@ -17,7 +17,7 @@
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__m2mGraphEntities from './TEST_DATA__M2MGraphEntities.json';
 import { guaranteeNonNullable, unitTest } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
