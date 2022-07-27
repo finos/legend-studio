@@ -35,7 +35,7 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import { PersistenceContext } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import {
@@ -62,7 +62,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

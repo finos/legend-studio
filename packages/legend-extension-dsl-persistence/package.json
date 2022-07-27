@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "react": "18.2.0",
@@ -72,10 +72,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-persistence",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-persistence-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-persistence-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-persistence-pure-graph",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-persistence"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-persistence",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-persistence",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-persistence",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-persistence",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-persistence"
   }
 }

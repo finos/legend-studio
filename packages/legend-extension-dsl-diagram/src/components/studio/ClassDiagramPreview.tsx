@@ -21,7 +21,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { Class } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
 import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID.js';
-import { useEditorStore } from '@finos/legend-studio';
+import { useEditorStore } from '@finos/legend-application-studio';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;

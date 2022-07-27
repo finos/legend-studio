@@ -30,7 +30,10 @@ import {
   PanelLoadingIndicator,
   ErrorIcon,
 } from '@finos/legend-art';
-import { type EditorStore, StudioTextInputEditor } from '@finos/legend-studio';
+import {
+  type EditorStore,
+  StudioTextInputEditor,
+} from '@finos/legend-application-studio';
 import {
   EDITOR_LANGUAGE,
   useApplicationStore,

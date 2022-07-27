@@ -18,7 +18,7 @@ import { type Log, guaranteeNonNullable } from '@finos/legend-shared';
 import { useLocalObservable } from 'mobx-react-lite';
 import { createContext, useContext } from 'react';
 import { GraphManagerState } from './GraphManagerState.js';
-import type { GraphPluginManager } from './GraphPluginManager.js';
+import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 
 const GraphManagerStateContext = createContext<GraphManagerState | undefined>(
   undefined,
@@ -26,7 +26,7 @@ const GraphManagerStateContext = createContext<GraphManagerState | undefined>(
 
 export const GraphManagerStateProvider: React.FC<{
   children: React.ReactNode;
-  pluginManager: GraphPluginManager;
+  pluginManager: GraphManagerPluginManager;
   log: Log;
 }> = ({ children, pluginManager, log }) => {
   const graphManagerState = useLocalObservable(

@@ -55,7 +55,7 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import type { LightQuery, Query } from './action/query/Query.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import type { QuerySearchSpecification } from './action/query/QuerySearchSpecification.js';
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
@@ -63,7 +63,7 @@ import type { GraphBuilderReport } from './GraphBuilderReport.js';
 import type { ModelGenerationConfiguration } from '../models/ModelGenerationConfiguration.js';
 import type { RunTestsTestableInput } from '../models/metamodels/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../models/metamodels/pure/test/result/TestResult.js';
-import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { GraphManagerPluginManager } from '../GraphManagerPluginManager.js';
 import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 import type { AtomicTest } from '../models/metamodels/pure/test/Test.js';
 import type { TestAssertion } from '../models/metamodels/pure/test/assertion/TestAssertion.js';
@@ -110,10 +110,10 @@ export abstract class AbstractPureGraphManagerExtension {
 
 export abstract class AbstractPureGraphManager {
   extensions: AbstractPureGraphManagerExtension[] = [];
-  pluginManager: GraphPluginManager;
+  pluginManager: GraphManagerPluginManager;
   log: Log;
 
-  constructor(pluginManager: GraphPluginManager, log: Log) {
+  constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     this.pluginManager = pluginManager;
     this.log = log;
     this.extensions = pluginManager

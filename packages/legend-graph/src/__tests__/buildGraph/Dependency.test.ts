@@ -18,7 +18,7 @@ import { test, expect } from '@jest/globals';
 import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestGraphManagerState } from '../../GraphManagerTestUtils.js';
 import { DependencyManager } from '../../graph/DependencyManager.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 
 const entities = [
   {

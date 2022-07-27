@@ -39,13 +39,19 @@ import {
 } from '@finos/legend-shared';
 import {
   type V1_PackageableElement,
-  TEST__GraphPluginManager,
+  TEST__GraphManagerPluginManager,
   TEST__buildGraphWithEntities,
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
+  DSLExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
-import { getLegendGraphExtensionCollection } from '@finos/legend-graph-extension-collection';
+import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
+import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -114,9 +120,20 @@ const checkGrammarRoundtrip = async (
   filePath: string,
   options?: GrammarRoundtripOptions,
 ): Promise<void> => {
-  const pluginManager = new TEST__GraphPluginManager();
+  const pluginManager = new TEST__GraphManagerPluginManager();
+  // NOTE: This is temporary, when we split the test here and move them to their respective
+  // extensions, this will be updated accordingly
+  // See https://github.com/finos/legend-studio/issues/820
   pluginManager
-    .usePresets(getLegendGraphExtensionCollection())
+    .usePresets([
+      new DSLText_GraphManagerPreset(),
+      new DSLDiagram_GraphManagerPreset(),
+      new DSLDataSpace_GraphManagerPreset(),
+      new DSLExternalFormat_GraphPreset(),
+      new DSLPersistence_GraphManagerPreset(),
+      new DSLPersistenceCloud_GraphManagerPreset(),
+      new ESService_GraphManagerPreset(),
+    ])
     .usePlugins([new WebConsole()]);
   pluginManager.install();
   const log = new Log();

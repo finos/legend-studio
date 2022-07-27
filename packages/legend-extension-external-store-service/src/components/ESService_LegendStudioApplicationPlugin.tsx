@@ -47,7 +47,7 @@ import {
   type EmbeddedDataEditorRenderer,
   type EmbeddedDataCreator,
   type MappingElementSource,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { SwaggerIcon } from '@finos/legend-art';
 import type {
   Connection,
@@ -88,7 +88,7 @@ export class ESService_LegendStudioApplicationPlugin
     DSLData_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

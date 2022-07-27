@@ -22,7 +22,7 @@ import {
   TEST_DATA__ReferenceWithoutSection,
   TEST_DATA__ReferenceModification,
 } from './TEST_DATA__Inference.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__excludeSectionIndex,

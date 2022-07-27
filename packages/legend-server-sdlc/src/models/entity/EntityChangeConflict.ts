@@ -18,10 +18,7 @@ import { observable, computed, makeObservable } from 'mobx';
 import type { EntityDiff } from '../comparison/EntityDiff.js';
 import { EntityChangeType } from '../entity/EntityChange.js';
 import { IllegalStateError, shallowStringify } from '@finos/legend-shared';
-import {
-  type Entity,
-  extractEntityNameFromPath,
-} from '@finos/legend-model-storage';
+import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 
 export class EntityChangeConflictResolution {
   entityPath: string;

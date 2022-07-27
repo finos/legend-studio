@@ -1,0 +1,3 @@
+---
+'@finos/legend-shared': patch
+---

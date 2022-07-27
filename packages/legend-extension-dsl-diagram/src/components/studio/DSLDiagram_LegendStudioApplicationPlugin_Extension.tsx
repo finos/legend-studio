@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioApplicationPlugin_Extension } from '@finos/legend-studio';
+import type { DSL_LegendStudioApplicationPlugin_Extension } from '@finos/legend-application-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
 import type { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 

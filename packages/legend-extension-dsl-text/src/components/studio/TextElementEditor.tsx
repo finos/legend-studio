@@ -17,7 +17,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
+import {
+  StudioTextInputEditor,
+  useEditorStore,
+} from '@finos/legend-application-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
   OpenPreviewIcon,

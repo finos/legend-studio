@@ -60,7 +60,10 @@ import {
   rotatePointY,
 } from './helpers/DSLDiagram_Helper.js';
 import { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
-import { class_addProperty, class_addSuperType } from '@finos/legend-studio';
+import {
+  class_addProperty,
+  class_addSuperType,
+} from '@finos/legend-application-studio';
 import {
   classView_setHideProperties,
   classView_setHideStereotypes,

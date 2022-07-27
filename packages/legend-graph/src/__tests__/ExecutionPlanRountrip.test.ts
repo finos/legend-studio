@@ -15,7 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared';
 import {
   TEST__buildGraphWithEntities,

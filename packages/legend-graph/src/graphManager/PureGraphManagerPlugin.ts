@@ -16,7 +16,7 @@
 
 import { AbstractPlugin } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
-import type { GraphPluginManager } from '../GraphPluginManager.js';
+import type { GraphManagerPluginManager } from '../GraphManagerPluginManager.js';
 import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
 import type { Testable } from '../models/metamodels/pure/test/Testable.js';
 import type {
@@ -60,7 +60,7 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    */
   private readonly _$nominalTypeBrand!: 'PureGraphManagerPlugin';
 
-  install(pluginManager: GraphPluginManager): void {
+  install(pluginManager: GraphManagerPluginManager): void {
     pluginManager.registerPureGraphManagerPlugin(this);
   }
 

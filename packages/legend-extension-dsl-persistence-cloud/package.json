@@ -42,11 +42,11 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "react": "18.2.0",
@@ -69,7 +69,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-persistence-cloud",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-persistence-cloud-protocol-processor"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-persistence-cloud",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-persistence-cloud"
   }
 }

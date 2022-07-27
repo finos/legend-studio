@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "build/prod.tsbuildinfo",
+    "jsx": "react-jsx"
+  },
+  "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
+  "references": [
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-application/tsconfig.build.json" },
+    { "path": "../legend-art/tsconfig.build.json" },
+    { "path": "../legend-graph/tsconfig.build.json" },
+    { "path": "../legend-application-query/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-data-space/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-diagram/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-persistence/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-persistence-cloud/tsconfig.build.json" },
+    { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
+    {
+      "path": "../legend-extension-external-format-json-schema/tsconfig.build.json"
+    },
+    {
+      "path": "../legend-extension-external-store-service/tsconfig.build.json"
+    }
+  ]
+}

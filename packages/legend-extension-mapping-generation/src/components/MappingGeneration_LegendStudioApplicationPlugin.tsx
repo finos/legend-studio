@@ -22,8 +22,8 @@ import {
   type DSLMapping_LegendStudioApplicationPlugin_Extension,
   type ModelLoaderExtensionConfiguration,
   LegendStudioApplicationPlugin,
-} from '@finos/legend-studio';
-import type { Entity } from '@finos/legend-model-storage';
+} from '@finos/legend-application-studio';
+import type { Entity } from '@finos/legend-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 
 const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
@@ -33,7 +33,7 @@ export class MappingGeneration_LegendStudioApplicationPlugin
   implements DSLMapping_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
-    super(packageJson.extensions.studioPlugin, packageJson.version);
+    super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
   }
 
   override getExtraModelLoaderExtensionConfigurations(): ModelLoaderExtensionConfiguration[] {

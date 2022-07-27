@@ -45,7 +45,7 @@ import { V1_AlloySDLC } from '../../model/context/V1_SDLC.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_packageableElementPointerDeserializerSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import { GraphDataDeserializationError } from '../../../../../../graphManager/GraphManagerUtils.js';
 import { V1_PureModelContextText } from '../../model/context/V1_PureModelContextText.js';
 

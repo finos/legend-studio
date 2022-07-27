@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
+    "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-model-storage": "workspace:*",
     "@finos/legend-shared": "workspace:*",
-    "@finos/legend-studio": "workspace:*",
+    "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.15",
     "mobx": "6.6.1",
     "mobx-react-lite": "3.4.0",
@@ -78,10 +78,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphPreset": "@finos/legend-graph-preset-dsl-diagram",
-    "pureProtocolProcessorPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-protocol-processor",
-    "pureGraphManagerPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph-manager",
-    "pureGraphPlugin": "@finos/legend-graph-plugin-dsl-diagram-pure-graph",
-    "studioPlugin": "@finos/legend-studio-plugin-dsl-diagram"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-diagram",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-diagram",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-diagram",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-diagram",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-diagram"
   }
 }

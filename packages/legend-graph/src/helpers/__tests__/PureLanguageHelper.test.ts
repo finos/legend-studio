@@ -17,7 +17,7 @@
 import { jest, test, expect, afterEach } from '@jest/globals';
 import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json';
 import { unitTest } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-model-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,

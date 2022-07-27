@@ -42,7 +42,7 @@ import {
   ClassEditorState,
   ElementEditorState,
   class_addProperty,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
 import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
 import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
