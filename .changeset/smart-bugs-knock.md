@@ -1,3 +1,3 @@
 ---
-'@finos/legend-studio': patch
+'@finos/legend-application-studio': patch
 ---
