@@ -17,7 +17,7 @@
 import type { Notifier } from './DSLPersistence_Notifier.js';
 import type { Persister } from './DSLPersistence_Persister.js';
 import type { Trigger } from './DSLPersistence_Trigger.js';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
 import {
   PackageableElement,
   type PackageableElementReference,

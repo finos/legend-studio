@@ -16,8 +16,8 @@
 
 import {
   CORE_HASH_STRUCTURE,
-  PackageableElementPointerType,
-} from '../../../../../graph/MetaModelConst.js';
+  hashElementPointer,
+} from '../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type PackageableElementVisitor,
@@ -25,7 +25,7 @@ import {
 } from '../PackageableElement.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { FileGenerationSpecification } from '../fileGeneration/FileGenerationSpecification.js';
-import { hashElementPointer } from '../../../../../graph/MetaModelUtils.js';
+import { PackageableElementPointerType } from '../../../../MetaModelConst.js';
 
 // NOTE: As of now the tree only supports a linear order of generation. This is because the only use case is linear,
 // but the shape has been left as a tree to support 'branching' off in the future.

@@ -19,7 +19,7 @@ import {
   hashArray,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { EmbeddedRelationalInstanceSetImplementation } from './EmbeddedRelationalInstanceSetImplementation.js';
 import type { OtherwiseEmebddedSetImplementation } from '../../../mapping/EmbeddedSetImplementation.js';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';

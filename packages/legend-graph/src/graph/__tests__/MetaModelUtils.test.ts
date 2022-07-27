@@ -19,7 +19,6 @@ import {
   extractElementNameFromPath,
   fromElementPathToMappingElementId,
   matchFunctionName,
-  hashRawLambda,
   isValidFullPath,
   isValidPath,
   isValidPathIdentifier,
@@ -57,35 +56,6 @@ test(unitTest('Source information should be pruned properly'), () => {
     body: { a: 3 },
   });
 });
-
-test(
-  unitTest(
-    'Lambda hash should ignore source information and ignore object properties order',
-  ),
-  () => {
-    const lambda1 = {
-      parameters: [{ a: 1 }, { b: 2 }],
-      body: { a: 3 },
-    };
-    const lambda2 = {
-      parameters: [{ a: 1 }, { b: 2, sourceInformation: {} }],
-      body: {
-        a: 3,
-        sourceInformation: {},
-      },
-    };
-    const lambda3 = {
-      parameters: [{ b: 2 }, { a: 1 }],
-      body: { a: 3 },
-    };
-    expect(hashRawLambda(lambda1.parameters, lambda1.body)).toEqual(
-      hashRawLambda(lambda2.parameters, lambda2.body),
-    );
-    expect(hashRawLambda(lambda1.parameters, lambda1.body)).not.toEqual(
-      hashRawLambda(lambda3.parameters, lambda3.body),
-    );
-  },
-);
 
 test(unitTest('JSON Object input data should be minified'), () => {
   const test1 = new ObjectInputData(

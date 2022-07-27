@@ -31,6 +31,7 @@ export const observe_DataSpace = skipObserved(
       _elementHashCode: override,
     });
 
+    // TODO
     // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
     // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
     // if (metamodel.supportInfo) {

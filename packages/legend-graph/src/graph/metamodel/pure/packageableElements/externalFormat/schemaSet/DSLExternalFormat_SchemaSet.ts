@@ -20,7 +20,7 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_HashUtils.js';
 
 export class SchemaSet extends PackageableElement implements Hashable {
   format!: string;

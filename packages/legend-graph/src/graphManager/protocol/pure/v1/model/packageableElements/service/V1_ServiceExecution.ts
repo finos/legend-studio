@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLambda.js';
 

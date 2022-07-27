@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_SerializationFormat } from './V1_ESService_SerializationFormat.js';
 import type { V1_TypeReference } from './V1_ESService_TypeReference.js';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_HashUtils.js';
 
 export class V1_ServiceParameter implements Hashable {
   name!: string;

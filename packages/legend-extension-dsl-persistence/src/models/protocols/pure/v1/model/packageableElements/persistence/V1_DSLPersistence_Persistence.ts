@@ -22,7 +22,7 @@ import {
   type V1_PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_HashUtils.js';
 
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;

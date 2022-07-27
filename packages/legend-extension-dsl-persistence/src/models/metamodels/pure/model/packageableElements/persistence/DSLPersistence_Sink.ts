@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
 import type {
   Binding,
   Connection,

@@ -19,7 +19,7 @@ import type { SchemaSet } from '../schemaSet/DSLExternalFormat_SchemaSet.js';
 import { Store } from '../../store/Store.js';
 import type { ModelUnit } from './DSLExternalFormat_ModelUnit.js';
 import type { PackageableElementVisitor } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_HashUtils.js';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
 
 // NOTE: in the metamodel, `Binding` extends `ModelStore`, we could consider doing the same

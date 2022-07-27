@@ -15,7 +15,7 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 import { AssociationImplementation } from '../AssociationImplementation.js';
 
 export class XStoreAssociationImplementation extends AssociationImplementation {

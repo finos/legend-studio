@@ -20,7 +20,7 @@ import {
   V1_PropertyMapping,
 } from '../V1_PropertyMapping.js';
 import type { V1_RawLambda } from '../../../rawValueSpecification/V1_RawLambda.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_XStorePropertyMapping
   extends V1_PropertyMapping

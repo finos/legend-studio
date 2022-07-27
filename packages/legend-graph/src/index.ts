@@ -159,6 +159,8 @@ export { TDSResultType } from './graph/metamodel/pure/executionPlan/result/TDSRe
 export * from './graph/MetaModelUtils.js';
 export * from './graph/MetaModelConst.js';
 
+export * from './graph/Core_HashUtils.js';
+
 export * from './graph/helpers/DomainHelper.js';
 export * from './graph/helpers/Testable_Helper.js';
 export * from './graph/helpers/DSLMapping_Helper.js';

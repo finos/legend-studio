@@ -67,7 +67,7 @@ import {
 } from '../../../../../../../../graph/helpers/DSLMapping_Helper.js';
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/StoreRelational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
-import { V1_getIncludedMappingPath } from '../../../../helper/V1_DSLMapping_Helper.js';
+import { V1_getIncludedMappingPath } from '../../../../helpers/V1_DSLMapping_Helper.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,

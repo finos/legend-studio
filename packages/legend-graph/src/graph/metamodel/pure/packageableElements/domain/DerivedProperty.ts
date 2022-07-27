@@ -15,8 +15,10 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { hashRawLambda } from '../../../../../graph/MetaModelUtils.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../graph/Core_HashUtils.js';
 import type { Multiplicity } from './Multiplicity.js';
 import type { TaggedValue } from './TaggedValue.js';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';

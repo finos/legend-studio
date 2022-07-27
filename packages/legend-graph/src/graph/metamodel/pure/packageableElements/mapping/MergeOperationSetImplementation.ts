@@ -15,7 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../graph/Core_HashUtils.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { Mapping } from './Mapping.js';
 import type { Class } from '../domain/Class.js';
@@ -27,7 +30,6 @@ import {
 } from './OperationSetImplementation.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import type { SetImplementationVisitor } from './SetImplementation.js';
-import { hashRawLambda } from '../../../../../graph/MetaModelUtils.js';
 
 export class MergeOperationSetImplementation
   extends OperationSetImplementation

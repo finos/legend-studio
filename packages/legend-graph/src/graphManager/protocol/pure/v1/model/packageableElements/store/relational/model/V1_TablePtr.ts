@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class V1_TablePtr implements Hashable {

@@ -20,7 +20,7 @@ import {
   V1_Store,
 } from '@finos/legend-graph';
 import type { V1_ServiceStoreElement } from './V1_ESService_ServiceStoreElement.js';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_HashUtils.js';
 
 export class V1_ServiceStore extends V1_Store implements Hashable {
   description?: string | undefined;

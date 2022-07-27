@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../ESService_HashUtils.js';
 import type { ServiceRequestPattern } from './ESService_ServiceRequestPattern.js';
 import type { ServiceResponseDefinition } from './ESService_ServiceResponseDefinition.js';
 

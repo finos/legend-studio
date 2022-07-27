@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_CLOUD_HASH_STRUCTURE } from '../../../../../../DSLPersistenceCloud_ModelUtils.js';
+import { PERSISTENCE_CLOUD_HASH_STRUCTURE } from '../../../../../../DSLPersistenceCloud_HashUtils.js';
 import { PersistencePlatform } from '@finos/legend-extension-dsl-persistence';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 

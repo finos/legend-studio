@@ -15,7 +15,7 @@
  */
 
 import { hashArray, hashObject, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_ConfigurationProperty implements Hashable {
   name!: string;

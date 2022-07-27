@@ -15,8 +15,10 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_ParameterValue implements Hashable {
   name!: string;

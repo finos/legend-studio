@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../../../../graph/DSLExternalFormat_HashUtils.js';
 import { V1_Store } from '../../store/V1_Store.js';
 import type { V1_PackageableElementVisitor } from '../../V1_PackageableElement.js';
 import type { V1_ModelUnit } from './V1_DSLExternalFormat_ModelUnit.js';

@@ -17,7 +17,7 @@
 import type { Persistence } from './DSLPersistence_Persistence.js';
 import type { PersistencePlatform } from './DSLPersistence_PersistencePlatform.js';
 import type { ServiceParameter } from './DSLPersistence_ServiceParameter.js';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
 import {
   type Connection,
   PackageableElement,

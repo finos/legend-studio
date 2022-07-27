@@ -19,10 +19,8 @@ import {
   UnsupportedOperationError,
   type Hashable,
 } from '@finos/legend-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  PRIMITIVE_TYPE,
-} from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 
 export abstract class V1_EnumValueMappingSourceValue {
   value!: unknown; // Any

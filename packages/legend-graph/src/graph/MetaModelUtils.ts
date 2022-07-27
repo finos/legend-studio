@@ -25,14 +25,11 @@
 
 import {
   ELEMENT_PATH_DELIMITER,
-  CORE_HASH_STRUCTURE,
+  SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX,
 } from './MetaModelConst.js';
 import {
   findLast,
   guaranteeNonNullable,
-  hashArray,
-  hashObject,
-  hashString,
   isString,
   recursiveOmit,
 } from '@finos/legend-shared';
@@ -86,8 +83,6 @@ export const isValidPath = (path: string): boolean =>
 export const fromElementPathToMappingElementId = (className: string): string =>
   className.split(ELEMENT_PATH_DELIMITER).join('_');
 
-const SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX = 'sourceInformation';
-
 /**
  * Prune source information from object such as raw lambda, raw value specification, etc.
  *
@@ -113,32 +108,3 @@ export const pruneSourceInformation = (
         .toLowerCase()
         .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
   );
-
-// -------------------------------- HASHING -------------------------------------
-// TODO: this should be moved after we refactor `hashing` out of metamodels
-
-export const hashObjectWithoutSourceInformation = (val: object): string =>
-  hashObject(val, {
-    /**
-     * NOTE: this is over-simplification as there could be source information fields with other names
-     * see note in {@link pruneSourceInformation}
-     */
-    excludeKeys: (propKey: string) =>
-      propKey
-        .toLowerCase()
-        .endsWith(SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX.toLowerCase()),
-  });
-
-export const hashRawLambda = (
-  parameters: object | undefined,
-  body: object | undefined,
-): string =>
-  hashArray([
-    parameters ? hashObjectWithoutSourceInformation(parameters) : '',
-    body ? hashObjectWithoutSourceInformation(body) : '',
-  ]);
-
-export const hashElementPointer = (pointerType: string, path: string): string =>
-  [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
-    .join(',');

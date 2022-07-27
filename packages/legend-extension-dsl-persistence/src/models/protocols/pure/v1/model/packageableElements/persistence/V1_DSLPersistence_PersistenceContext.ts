@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_HashUtils.js';
 import type { V1_PersistencePlatform } from './V1_DSLPersistence_PersistencePlatform.js';
 import type { V1_ServiceParameter } from './V1_DSLPersistence_ServiceParameter.js';
 import {

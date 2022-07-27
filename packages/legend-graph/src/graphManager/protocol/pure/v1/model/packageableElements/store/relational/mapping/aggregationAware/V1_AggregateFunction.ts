@@ -16,8 +16,10 @@
 
 import type { V1_RawLambda } from '../../../../../../model/rawValueSpecification/V1_RawLambda.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/MetaModelConst.js';
-import { hashRawLambda } from '../../../../../../../../../../graph/MetaModelUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_AggregateFunction implements Hashable {
   /**

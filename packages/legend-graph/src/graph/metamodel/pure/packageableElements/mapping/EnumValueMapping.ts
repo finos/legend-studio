@@ -21,7 +21,7 @@ import {
   hashArray,
   isNonNullable,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import { Enum } from '../domain/Enum.js';
 import type { EnumValueReference } from '../domain/EnumValueReference.js';
 

@@ -20,10 +20,8 @@ import {
   IllegalStateError,
   uuid,
 } from '@finos/legend-shared';
-import {
-  CORE_HASH_STRUCTURE,
-  ELEMENT_PATH_DELIMITER,
-} from '../../../../graph/MetaModelConst.js';
+import { ELEMENT_PATH_DELIMITER } from '../../../MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../graph/Core_HashUtils.js';
 import type { Package } from './domain/Package.js';
 import type { Profile } from './domain/Profile.js';
 import type { Enumeration } from './domain/Enumeration.js';

@@ -21,7 +21,7 @@ import {
 import type { V1_PropertyMapping } from '../../../../../../model/packageableElements/mapping/V1_PropertyMapping.js';
 import type { V1_AggregateSetImplementationContainer } from './V1_AggregateSetImplementationContainer.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_AggregationAwareClassMapping
   extends V1_ClassMapping

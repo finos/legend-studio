@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import { DataType } from './DataType.js';
 import type { Enum } from './Enum.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';

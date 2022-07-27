@@ -17,7 +17,7 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { type PackageableElementVisitor, Store } from '@finos/legend-graph';
 import type { ServiceStoreElement } from './ESService_ServiceStoreElement.js';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_HashUtils.js';
 
 export class ServiceStore extends Store implements Hashable {
   description?: string | undefined;

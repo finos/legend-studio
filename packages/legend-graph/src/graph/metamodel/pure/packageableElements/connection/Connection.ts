@@ -15,7 +15,7 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { Store } from '../store/Store.js';
 import type { JsonModelConnection } from '../store/modelToModel/connection/JsonModelConnection.js';
 import type { XmlModelConnection } from '../store/modelToModel/connection/XmlModelConnection.js';

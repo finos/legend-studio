@@ -16,7 +16,7 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PropertyHolderView } from './DSLDiagram_PropertyHolderView.js';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_HashUtils.js';
 
 export class PropertyView extends PropertyHolderView implements Hashable {
   override get hashCode(): string {

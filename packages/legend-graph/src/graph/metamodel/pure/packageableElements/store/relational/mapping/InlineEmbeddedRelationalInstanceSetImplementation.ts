@@ -22,7 +22,7 @@ import type {
 } from '../../../mapping/SetImplementation.js';
 import type { PropertyMappingVisitor } from '../../../mapping/PropertyMapping.js';
 import { hashArray, UnsupportedOperationError } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 
 export class InlineEmbeddedRelationalInstanceSetImplementation
   extends EmbeddedRelationalInstanceSetImplementation

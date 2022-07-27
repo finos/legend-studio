@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_HashUtils.js';
 import type { V1_ExternalFormatData } from '@finos/legend-graph';
 
 export class V1_ServiceResponseDefinition implements Hashable {

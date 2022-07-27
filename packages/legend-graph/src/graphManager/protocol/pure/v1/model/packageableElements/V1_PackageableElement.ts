@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  CORE_HASH_STRUCTURE,
-  ELEMENT_PATH_DELIMITER,
-} from '../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { V1_Profile } from './domain/V1_Profile.js';
 import type { V1_Class } from './domain/V1_Class.js';
@@ -35,6 +32,7 @@ import type { V1_GenerationSpecification } from './generationSpecification/V1_Ge
 import type { V1_Measure } from './domain/V1_Measure.js';
 import type { V1_SectionIndex } from './section/V1_SectionIndex.js';
 import type { V1_DataElement } from './data/V1_DataElement.js';
+import { ELEMENT_PATH_DELIMITER } from '../../../../../../graph/MetaModelConst.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;

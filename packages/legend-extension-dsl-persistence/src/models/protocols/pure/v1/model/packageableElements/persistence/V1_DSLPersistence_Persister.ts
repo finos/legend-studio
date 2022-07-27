@@ -17,7 +17,7 @@
 import type { V1_IngestMode } from './V1_DSLPersistence_IngestMode.js';
 import type { V1_Sink } from './V1_DSLPersistence_Sink.js';
 import type { V1_TargetShape } from './V1_DSLPersistence_TargetShape.js';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class V1_Persister implements Hashable {

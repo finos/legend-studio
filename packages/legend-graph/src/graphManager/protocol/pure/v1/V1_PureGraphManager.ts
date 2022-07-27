@@ -253,7 +253,7 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import { V1_getFunctionSuffix } from './helper/V1_DomainHelper.js';
+import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
 import type { ModelGenerationConfiguration } from '../../../action/generation/ModelGenerationConfiguration.js';
 
 class V1_PureModelContextDataIndex {

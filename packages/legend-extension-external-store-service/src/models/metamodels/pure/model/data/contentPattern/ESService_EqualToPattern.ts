@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../ESService_HashUtils.js';
 import { StringValuePattern } from './ESService_StringValuePattern.js';
 
 export class EqualToPattern extends StringValuePattern implements Hashable {

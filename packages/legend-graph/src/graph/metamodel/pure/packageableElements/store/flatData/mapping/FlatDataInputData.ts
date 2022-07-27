@@ -17,12 +17,12 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
-  PackageableElementPointerType,
-} from '../../../../../../../graph/MetaModelConst.js';
+  hashElementPointer,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import { InputData } from '../../../mapping/InputData.js';
 import type { FlatData } from '../model/FlatData.js';
 import type { PackageableElementReference } from '../../../PackageableElementReference.js';
-import { hashElementPointer } from '../../../../../../../graph/MetaModelUtils.js';
+import { PackageableElementPointerType } from '../../../../../../MetaModelConst.js';
 
 export class FlatDataInputData extends InputData implements Hashable {
   sourceFlatData: PackageableElementReference<FlatData>;

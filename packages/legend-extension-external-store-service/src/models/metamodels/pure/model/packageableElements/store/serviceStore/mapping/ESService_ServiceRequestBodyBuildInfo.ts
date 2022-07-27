@@ -16,7 +16,7 @@
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import type { RawLambda } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_HashUtils.js';
 
 export class ServiceRequestBodyBuildInfo implements Hashable {
   transform!: RawLambda;

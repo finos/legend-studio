@@ -19,7 +19,7 @@ import { PositionedRectangle } from './geometry/DSLDiagram_PositionedRectangle.j
 import { Rectangle } from './geometry/DSLDiagram_Rectangle.js';
 import { Point } from './geometry/DSLDiagram_Point.js';
 import type { Diagram } from './DSLDiagram_Diagram.js';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_HashUtils.js';
 import type { Class, PackageableElementReference } from '@finos/legend-graph';
 
 export class ClassView extends PositionedRectangle implements Hashable {

@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, uuid, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { Enumeration } from './Enumeration.js';
 import { AnnotatedElement } from './AnnotatedElement.js';
 

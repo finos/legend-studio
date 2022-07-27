@@ -15,8 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../graph/MetaModelConst.js';
-import { hashObjectWithoutSourceInformation } from '../../../../../../graph/MetaModelUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../graph/Core_HashUtils.js';
 import type { V1_RelationalCSVData } from './V1_RelationalCSVData.js';
 
 export interface V1_EmbeddedDataVisitor<T> {

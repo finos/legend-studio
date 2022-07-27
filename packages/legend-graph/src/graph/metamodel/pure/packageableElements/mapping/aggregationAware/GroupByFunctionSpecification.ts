@@ -16,8 +16,10 @@
 
 import type { RawLambda } from '../../../rawValueSpecification/RawLambda.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../graph/MetaModelConst.js';
-import { hashRawLambda } from '../../../../../../graph/MetaModelUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../../graph/Core_HashUtils.js';
 
 export class GroupByFunctionSpecification implements Hashable {
   /**

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
 import type { Connection, ValueSpecification } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 

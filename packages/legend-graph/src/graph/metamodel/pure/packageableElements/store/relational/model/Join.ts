@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, type Pair, hashArray } from '@finos/legend-shared';
 import type { Operation, TableAlias } from './RelationalOperationElement.js';
 import type { Database } from './Database.js';

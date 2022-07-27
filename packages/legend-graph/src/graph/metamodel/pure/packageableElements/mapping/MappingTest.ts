@@ -15,7 +15,7 @@
  */
 
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { MappingTestAssert } from './MappingTestAssert.js';
 import type { InputData } from './InputData.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';

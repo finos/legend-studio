@@ -22,7 +22,7 @@ import {
   type PackageableRuntime,
   type PackageableElementVisitor,
 } from '@finos/legend-graph';
-import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_ModelUtils.js';
+import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSLDataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram';
 
 export abstract class DataSpaceSupportInfo implements Hashable {

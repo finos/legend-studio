@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray, isEmpty } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { InstanceSetImplementation } from '../../../mapping/InstanceSetImplementation.js';
 import type { SetImplementationVisitor } from '../../../mapping/SetImplementation.js';
 import type { RelationalOperationElement } from '../model/RelationalOperationElement.js';

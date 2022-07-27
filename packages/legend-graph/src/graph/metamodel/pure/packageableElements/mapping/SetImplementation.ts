@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
 import type { PropertyOwnerImplementation } from './PropertyOwnerImplementation.js';
 import type { Mapping } from './Mapping.js';

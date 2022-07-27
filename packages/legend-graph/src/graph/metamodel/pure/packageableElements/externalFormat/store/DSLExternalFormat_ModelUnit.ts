@@ -17,7 +17,7 @@
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
 import type { PackageableElement } from '../../PackageableElement.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_HashUtils.js';
 
 export class ModelUnit implements Hashable {
   packageableElementIncludes: PackageableElementReference<PackageableElement>[] =

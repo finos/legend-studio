@@ -22,7 +22,7 @@ import {
   type ConnectionVisitor,
 } from '../../connection/Connection.js';
 import type { PackageableElementReference } from '../../PackageableElementReference.js';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_HashUtils.js';
 
 export class ExternalFormatConnection extends Connection implements Hashable {
   declare store: PackageableElementReference<Binding>;

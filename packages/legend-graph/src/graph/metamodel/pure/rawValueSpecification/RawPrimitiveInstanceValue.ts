@@ -22,7 +22,7 @@ import {
   type RawValueSpecificationVisitor,
   RawValueSpecification,
 } from './RawValueSpecification.js';
-import { CORE_HASH_STRUCTURE } from '../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../graph/Core_HashUtils.js';
 
 export class RawPrimitiveInstanceValue
   extends RawValueSpecification

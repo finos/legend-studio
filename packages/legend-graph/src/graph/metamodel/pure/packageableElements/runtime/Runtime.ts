@@ -17,14 +17,14 @@
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import {
   CORE_HASH_STRUCTURE,
-  PackageableElementPointerType,
-} from '../../../../../graph/MetaModelConst.js';
+  hashElementPointer,
+} from '../../../../../graph/Core_HashUtils.js';
 import type { Connection } from '../connection/Connection.js';
 import type { PackageableRuntime } from './PackageableRuntime.js';
 import type { Mapping } from '../mapping/Mapping.js';
 import type { Store } from '../store/Store.js';
 import type { PackageableElementReference } from '../PackageableElementReference.js';
-import { hashElementPointer } from '../../../../../graph/MetaModelUtils.js';
+import { PackageableElementPointerType } from '../../../../MetaModelConst.js';
 
 export class IdentifiedConnection implements Hashable {
   readonly _UUID = uuid();

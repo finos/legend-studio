@@ -17,7 +17,7 @@
 import type { V1_ClassMapping } from '../../../../../../model/packageableElements/mapping/V1_ClassMapping.js';
 import type { V1_AggregateSpecification } from './V1_AggregateSpecification.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/Core_HashUtils.js';
 
 export class V1_AggregateSetImplementationContainer implements Hashable {
   index!: number;

@@ -16,7 +16,7 @@
 
 import { hashObjectWithoutSourceInformation } from '@finos/legend-graph';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../../ESService_HashUtils.js';
 import type { V1_ServiceStoreServicePtr } from '../model/V1_ESService_ServiceStoreServicePtr.js';
 import type { V1_ServiceRequestBuildInfo } from './V1_ESService_ServiceRequestBuildInfo.js';
 

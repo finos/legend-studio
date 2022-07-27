@@ -15,7 +15,7 @@
  */
 
 import { hashArray, uuid, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../graph/Core_HashUtils.js';
 import type { Type } from '../packageableElements/domain/Type.js';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';

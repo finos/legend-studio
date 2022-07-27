@@ -19,7 +19,7 @@ import {
   hashArray,
   tryToMinifyLosslessJSONString,
 } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { InputData } from '../../../mapping/InputData.js';
 import type { Class } from '../../../domain/Class.js';
 import type { PackageableElementReference } from '../../../PackageableElementReference.js';

@@ -20,7 +20,7 @@ import type {
   V1_TransactionMilestoning,
   V1_ValidityMilestoning,
 } from './V1_DSLPersistence_Milestoning.js';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_ModelUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../DSLPersistence_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export abstract class V1_IngestMode implements Hashable {

@@ -15,7 +15,7 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../graph/Core_HashUtils.js';
 import { V1_AssociationMapping } from '../V1_AssociationMapping.js';
 import type { V1_PropertyMapping } from '../V1_PropertyMapping.js';
 

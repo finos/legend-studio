@@ -16,7 +16,7 @@
 
 import type { V1_Mapper } from './V1_Mapper.js';
 import { V1_PostProcessor } from './V1_PostProcessor.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_MapperPostProcessor

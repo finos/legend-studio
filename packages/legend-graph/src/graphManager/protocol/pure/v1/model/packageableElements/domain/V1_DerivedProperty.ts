@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-import { hashRawLambda } from '../../../../../../../graph/MetaModelUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_Multiplicity } from './V1_Multiplicity.js';
 import type { V1_StereotypePtr } from '../../../model/packageableElements/domain/V1_StereotypePtr.js';
 import type { V1_TaggedValue } from '../../../model/packageableElements/domain/V1_TaggedValue.js';

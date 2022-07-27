@@ -19,7 +19,7 @@ import {
   InstanceSetImplementation,
   type SetImplementationVisitor,
 } from '@finos/legend-graph';
-import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_ModelUtils.js';
+import { SERVICE_STORE_HASH_STRUCTURE } from '../../../../../../../ESService_HashUtils.js';
 import type { LocalMappingProperty } from './ESService_LocalMappingProperty.js';
 import type { ServiceMapping } from './ESService_ServiceMapping.js';
 

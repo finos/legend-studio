@@ -81,7 +81,7 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
-import { V1_getIncludedMappingPath } from '../../../helper/V1_DSLMapping_Helper.js';
+import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSLMapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 
 export class V1_ElementSecondPassBuilder

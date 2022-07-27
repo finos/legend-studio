@@ -23,7 +23,7 @@ import {
   type PackageableElementVisitor,
   PackageableElement,
 } from '@finos/legend-graph';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_HashUtils.js';
 
 export class Diagram extends PackageableElement implements Hashable {
   classViews: ClassView[] = [];

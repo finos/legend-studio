@@ -15,8 +15,10 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { hashRawLambda } from '../../../../../graph/MetaModelUtils.js';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../graph/Core_HashUtils.js';
 import type { PackageableElementVisitor } from '../PackageableElement.js';
 import type { RawVariableExpression } from '../../rawValueSpecification/RawVariableExpression.js';
 import type { Type } from './Type.js';

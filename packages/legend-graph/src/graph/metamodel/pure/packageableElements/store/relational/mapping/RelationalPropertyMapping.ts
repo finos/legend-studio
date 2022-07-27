@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/MetaModelConst.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
+import {
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import {
   type PropertyMappingVisitor,
   PropertyMapping,
 } from '../../../mapping/PropertyMapping.js';
-import { hashObjectWithoutSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
 import type { RawRelationalOperationElement } from '../model/RawRelationalOperationElement.js';
 import type { BindingTransformer } from '../../../externalFormat/store/DSLExternalFormat_BindingTransformer.js';
 import type { EnumerationMappingReference } from '../../../mapping/EnumerationMappingReference.js';

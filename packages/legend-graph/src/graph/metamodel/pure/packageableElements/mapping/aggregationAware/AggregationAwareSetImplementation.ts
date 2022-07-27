@@ -23,7 +23,7 @@ import type { Class } from '../../domain/Class.js';
 import type { InferableMappingElementRoot } from '../InferableMappingElementRoot.js';
 import type { AggregateSetImplementationContainer } from './AggregateSetImplementationContainer.js';
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../graph/Core_HashUtils.js';
 
 export class AggregationAwareSetImplementation extends InstanceSetImplementation {
   aggregateSetImplementations: AggregateSetImplementationContainer[] = [];

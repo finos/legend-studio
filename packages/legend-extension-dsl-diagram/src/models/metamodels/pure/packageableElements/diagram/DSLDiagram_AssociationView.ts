@@ -18,7 +18,7 @@ import { hashArray, type Hashable } from '@finos/legend-shared';
 import { PropertyHolderView } from './DSLDiagram_PropertyHolderView.js';
 import type { ClassView } from './DSLDiagram_ClassView.js';
 import type { Diagram } from './DSLDiagram_Diagram.js';
-import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_ModelUtils.js';
+import { DIAGRAM_HASH_STRUCTURE } from '../../../../DSLDiagram_HashUtils.js';
 import type {
   Association,
   PackageableElementReference,

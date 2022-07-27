@@ -15,7 +15,7 @@
  */
 
 import { uuid, hashArray, type Hashable } from '@finos/legend-shared';
-import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_ModelUtils.js';
+import { DSL_EXTERNAL_FORMAT_HASH_STRUCTURE } from '../../../../../DSLExternalFormat_HashUtils.js';
 
 export class Schema implements Hashable {
   readonly _UUID = uuid();

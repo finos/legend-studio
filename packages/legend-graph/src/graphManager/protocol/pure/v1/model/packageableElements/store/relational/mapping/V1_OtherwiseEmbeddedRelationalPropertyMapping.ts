@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { V1_EmbeddedRelationalPropertyMapping } from './V1_EmbeddedRelationalPropertyMapping.js';
 import type { V1_RelationalPropertyMapping } from './V1_RelationalPropertyMapping.js';

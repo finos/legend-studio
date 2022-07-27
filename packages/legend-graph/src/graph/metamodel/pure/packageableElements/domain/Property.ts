@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/MetaModelConst.js';
+import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import type { GenericTypeReference } from './GenericTypeReference.js';
 import type { Multiplicity } from './Multiplicity.js';
 import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
