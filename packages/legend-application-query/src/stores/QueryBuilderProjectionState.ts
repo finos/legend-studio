@@ -116,7 +116,7 @@ export abstract class QueryBuilderProjectionColumnState {
       uuid: false,
       projectionState: false,
       isBeingDragged: observable,
-      //svp shoudl be fixed now false isbeingdragged no
+      //svp
       columnName: observable,
       setIsBeingDragged: action,
       setColumnName: action,
