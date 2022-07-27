@@ -34,7 +34,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
 import {
   QueryBuilderState,

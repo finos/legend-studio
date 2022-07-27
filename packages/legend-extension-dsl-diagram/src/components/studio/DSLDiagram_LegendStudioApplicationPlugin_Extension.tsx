@@ -15,7 +15,7 @@
  */
 
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '@finos/legend-application-studio';
-import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
 import type { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
 
 export type ClassViewContextMenuItemRendererConfiguration = {

@@ -79,7 +79,7 @@ import {
   StandardQueryBuilderMode,
 } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,

@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../package.json';
-import { DSLPersistenceCloud_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLPersistenceCloud_PureProtocolProcessorPlugin.js';
+import { DSLPersistenceCloud_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSLPersistenceCloud_PureProtocolProcessorPlugin.js';
 import { AbstractPreset } from '@finos/legend-shared';
 
 export class DSLPersistenceCloud_GraphManagerPreset extends AbstractPreset {

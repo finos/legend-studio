@@ -36,8 +36,8 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryEditorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 

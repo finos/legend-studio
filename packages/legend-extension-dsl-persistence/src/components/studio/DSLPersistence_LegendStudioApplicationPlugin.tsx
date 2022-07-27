@@ -35,9 +35,10 @@ import {
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementDocumentationGetter,
   type PureGrammarParserDocumentationGetter,
+  type ElementTypeLabelGetter,
 } from '@finos/legend-application-studio';
-import { Persistence } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
-import { PersistenceContext } from '../../models/metamodels/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+import { Persistence } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
+import { PersistenceContext } from '../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 import {
   PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL,
@@ -242,6 +243,17 @@ export class DSLPersistence_LegendStudioApplicationPlugin
               },
             ]
           : undefined,
+    ];
+  }
+
+  getExtraElementTypeLabelGetters(): ElementTypeLabelGetter[] {
+    return [
+      (type: string): string | undefined => {
+        if (type === PERSISTENCE_CONTEXT_ELEMENT_TYPE) {
+          return 'Persistence Context';
+        }
+        return undefined;
+      },
     ];
   }
 }

@@ -39,7 +39,7 @@ import {
   type Diagram,
   DiagramRenderer,
 } from '@finos/legend-extension-dsl-diagram';
-import { DataSpaceSupportEmail } from '../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import { DataSpaceSupportEmail } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import {
   extractElementNameFromPath,
   type PackageableRuntime,

@@ -28,12 +28,12 @@ import {
   observe_ServiceStubMapping,
   observe_StringValuePattern,
 } from '../../graphManager/action/changeDetection/ESService_ObserverHelper.js';
-import type { StringValuePattern } from '../../models/metamodels/pure/model/data/contentPattern/ESService_StringValuePattern.js';
-import type { ServiceRequestPattern } from '../../models/metamodels/pure/model/data/ESService_ServiceRequestPattern.js';
-import type { ServiceResponseDefinition } from '../../models/metamodels/pure/model/data/ESService_ServiceResponseDefinition.js';
-import type { ServiceStoreEmbeddedData } from '../../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
-import type { ServiceStubMapping } from '../../models/metamodels/pure/model/data/ESService_ServiceStubMapping.js';
-import { HTTP_METHOD } from '../../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
+import type { StringValuePattern } from '../../graph/metamodel/pure/model/data/contentPattern/ESService_StringValuePattern.js';
+import type { ServiceRequestPattern } from '../../graph/metamodel/pure/model/data/ESService_ServiceRequestPattern.js';
+import type { ServiceResponseDefinition } from '../../graph/metamodel/pure/model/data/ESService_ServiceResponseDefinition.js';
+import type { ServiceStoreEmbeddedData } from '../../graph/metamodel/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
+import type { ServiceStubMapping } from '../../graph/metamodel/pure/model/data/ESService_ServiceStubMapping.js';
+import { HTTP_METHOD } from '../../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStoreService.js';
 
 export const serviceStore_embeddedData_addServiceStubMapping = action(
   (

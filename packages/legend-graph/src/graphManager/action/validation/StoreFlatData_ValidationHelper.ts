@@ -15,7 +15,7 @@
  */
 
 import type { FlatDataInputData } from '../../../StoreFlatData_Exports.js';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
+import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
 import {
   type ValidationIssue,
   createValidationError,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { RelationalDatabaseConnection } from '../../../models/metamodels/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
+import type { RelationalDatabaseConnection } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/RelationalDatabaseConnection.js';
 
 export class DatabasePattern {
   schemaPattern = '';

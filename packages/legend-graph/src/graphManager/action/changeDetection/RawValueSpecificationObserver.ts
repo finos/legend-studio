@@ -15,13 +15,13 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import type { RawPrimitiveInstanceValue } from '../../../models/metamodels/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
-import type { RawLambda } from '../../../models/metamodels/pure/rawValueSpecification/RawLambda.js';
+import type { RawPrimitiveInstanceValue } from '../../../graph/metamodel/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
+import type { RawLambda } from '../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import type {
   RawValueSpecification,
   RawValueSpecificationVisitor,
-} from '../../../models/metamodels/pure/rawValueSpecification/RawValueSpecification.js';
-import type { RawVariableExpression } from '../../../models/metamodels/pure/rawValueSpecification/RawVariableExpression.js';
+} from '../../../graph/metamodel/pure/rawValueSpecification/RawValueSpecification.js';
+import type { RawVariableExpression } from '../../../graph/metamodel/pure/rawValueSpecification/RawVariableExpression.js';
 import {
   observe_PackageableElementReference,
   observe_Multiplicity,

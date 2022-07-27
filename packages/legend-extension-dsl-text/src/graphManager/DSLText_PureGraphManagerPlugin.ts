@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { Text } from '../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
+import { Text } from '../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
 import {
   PureGraphManagerPlugin,
   type ObserverContext,

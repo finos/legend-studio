@@ -43,7 +43,7 @@ import {
 import {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,

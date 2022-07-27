@@ -16,10 +16,10 @@
 
 import packageJson from '../../package.json';
 import type { Clazz } from '@finos/legend-shared';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { PureGraphPlugin } from './PureGraphPlugin.js';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 export class DSLExternalFormat_PureGraphPlugin extends PureGraphPlugin {
   constructor() {

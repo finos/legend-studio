@@ -42,7 +42,7 @@ import {
   generatePropertyNodeMappingData,
 } from '../../stores/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__provideMockedQueryEditorStore } from '../../components/QueryEditorComponentTestUtils.js';
 import {
   TEST_DATA__MappingData__ComplexM2MModel,
