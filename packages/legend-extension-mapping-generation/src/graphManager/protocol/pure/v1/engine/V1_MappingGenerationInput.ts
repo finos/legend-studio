@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-import { createModelSchema, object, primitive, raw } from 'serializr';
+import { primitive, createModelSchema, object } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { V1_GenerationInput } from '../generation/V1_GenerationInput.js';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import {
+  V1_PureModelContextData,
+  V1_GenerationInput,
+} from '@finos/legend-graph';
+import { V1_MappingGenerationConfiguration as V1_MappingGenerationConfiguration } from './V1_MappingGenerationConfiguration.js';
 
-export class V1_ExternalFormatModelGenerationInput extends V1_GenerationInput {
-  config?: Record<PropertyKey, unknown> | undefined;
+export class V1_MappingGenerationInput extends V1_GenerationInput {
+  config!: V1_MappingGenerationConfiguration;
 
   static override readonly serialization = new SerializationFactory(
-    createModelSchema(V1_ExternalFormatModelGenerationInput, {
+    createModelSchema(V1_MappingGenerationInput, {
       clientVersion: primitive(),
       model: object(V1_PureModelContextData),
-      config: raw(),
+      config: object(V1_MappingGenerationConfiguration),
     }),
   );
 }

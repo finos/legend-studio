@@ -21,12 +21,7 @@ import type {
   NewElementDriver,
   NewElementState,
 } from './editor/NewElementState.js';
-import type {
-  Class,
-  PackageableElement,
-  ModelGenerationConfiguration,
-  Testable,
-} from '@finos/legend-graph';
+import type { Class, PackageableElement, Testable } from '@finos/legend-graph';
 import {
   type DocumentationEntry,
   LegendApplicationPlugin,
@@ -55,8 +50,11 @@ export type ClassPreviewRenderer = (
 ) => React.ReactNode | undefined;
 
 export type ModelLoaderExtensionConfiguration = {
-  modelGenerationConfig: ModelGenerationConfiguration;
+  key: string;
+  label?: string | undefined;
   allowHardReplace?: boolean;
+  // TODO: document about this behavior better, right now the behavior is not well
+  // structured yet, also, model loader seems rather fragmented at the moment
   load: (editorStore: EditorStore) => Promise<void>;
   renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
 };

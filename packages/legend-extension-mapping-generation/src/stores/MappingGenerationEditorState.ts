@@ -14,105 +14,120 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '@finos/legend-application-studio';
-// eslint-disable-next-line @finos/legend-studio/enforce-module-import-hierarchy
-import { V1_MappingGenConfiguration } from '../graphManager/protocol/pure/v1/model/V1_MappingGenConfiguration.js';
-import type {
-  Mapping,
-  ModelGenerationConfiguration,
-} from '@finos/legend-graph';
+import type { Mapping } from '@finos/legend-graph';
 import {
   assertErrorThrown,
+  guaranteeNonNullable,
   LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import type { PackageableElementOption } from '@finos/legend-application';
+import { MappingGenerationConfiguration } from '../graphManager/action/generation/MappingGenerationConfiguration.js';
+import { getMappingGenerationGraphManagerExtension } from '../graphManager/protocol/pure/MappingGeneration_PureGraphManagerExtension.js';
 
 const MAPPING_GENERATION_LOG_EVENT_TYPE = 'MAPPING_GENERATION_FAILURE';
+
 export class MappingGenerationEditorState {
   editorStore: EditorStore;
-  config: ModelGenerationConfiguration;
   sourceMapping?: PackageableElementOption<Mapping> | undefined;
   mappingToRegenerate?: PackageableElementOption<Mapping> | undefined;
-  mappingNewName?: string | undefined;
-  storeNewName?: string | undefined;
-  m2mAdditionalMappings: PackageableElementOption<Mapping>[] = [];
+  resultMappingName?: string | undefined;
+  resultStoreName?: string | undefined;
+  resultIncludedMappingName?: string | undefined;
+  originalMappingName?: string | undefined;
+  m2mIntermediateMappings: PackageableElementOption<Mapping>[] = [];
   isGenerating = false;
 
-  constructor(editorStore: EditorStore, config: ModelGenerationConfiguration) {
-    this.editorStore = editorStore;
-    this.config = config;
+  constructor(editorStore: EditorStore) {
     makeObservable(this, {
       sourceMapping: observable,
       mappingToRegenerate: observable,
-      mappingNewName: observable,
-      storeNewName: observable,
-      m2mAdditionalMappings: observable,
+      resultMappingName: observable,
+      resultStoreName: observable,
+      resultIncludedMappingName: observable,
+      originalMappingName: observable,
+      m2mIntermediateMappings: observable,
       isGenerating: observable,
+      canGenerate: computed,
       setSourceMapping: action,
       setMappingToRegenerate: action,
-      setMappingName: action,
-      setStoreName: action,
-      setM2mAdditionalMappings: action,
+      setResultMappingName: action,
+      setResultStoreName: action,
+      setResultIncludedMappingName: action,
+      setOriginalMappingName: action,
+      setM2MIntermediateMappings: action,
       generate: flow,
     });
+
+    this.editorStore = editorStore;
   }
 
-  setSourceMapping(
-    sourceMapping: PackageableElementOption<Mapping> | undefined,
-  ): void {
-    this.sourceMapping = sourceMapping;
+  get canGenerate(): boolean {
+    return Boolean(this.sourceMapping && this.mappingToRegenerate);
   }
 
-  setMappingToRegenerate(
-    mappingToRegenerate: PackageableElementOption<Mapping>,
-  ): void {
-    this.mappingToRegenerate = mappingToRegenerate;
+  setSourceMapping(val: PackageableElementOption<Mapping> | undefined): void {
+    this.sourceMapping = val;
   }
 
-  setMappingName(mappingNewName: string | undefined): void {
-    this.mappingNewName = mappingNewName;
+  setMappingToRegenerate(val: PackageableElementOption<Mapping>): void {
+    this.mappingToRegenerate = val;
   }
 
-  setStoreName(storeNewName: string | undefined): void {
-    this.storeNewName = storeNewName;
+  setResultMappingName(val: string | undefined): void {
+    this.resultMappingName = val;
   }
 
-  setM2mAdditionalMappings(
-    m2mAdditionalMappings: PackageableElementOption<Mapping>[],
-  ): void {
-    this.m2mAdditionalMappings = m2mAdditionalMappings;
+  setResultStoreName(val: string | undefined): void {
+    this.resultStoreName = val;
+  }
+
+  setM2MIntermediateMappings(val: PackageableElementOption<Mapping>[]): void {
+    this.m2mIntermediateMappings = val;
+  }
+
+  setResultIncludedMappingName(val: string | undefined): void {
+    this.resultIncludedMappingName = val;
+  }
+
+  setOriginalMappingName(val: string | undefined): void {
+    this.originalMappingName = val;
   }
 
   *generate(): GeneratorFn<void> {
+    if (!this.canGenerate || this.isGenerating) {
+      return;
+    }
     try {
       this.isGenerating = true;
       this.editorStore.modelLoaderState.setModelText('');
-      const config = new V1_MappingGenConfiguration(
-        this.sourceMapping?.value.path,
-        this.mappingToRegenerate?.value.path,
-        this.mappingNewName,
-        this.storeNewName,
-        this.m2mAdditionalMappings.map((m2m) => m2m.value.path),
-        this.config.key,
-        this.config.label,
+      const config = new MappingGenerationConfiguration();
+      config.sourceMapping = guaranteeNonNullable(
+        this.sourceMapping?.value,
+        `Source mapping is not set`,
       );
-
-      const entities: Entity[] =
-        (yield this.editorStore.graphManagerState.graphManager.generateModelFromConfiguration(
-          config,
-          this.editorStore.graphManagerState.graph,
-        )) as Entity[];
-
-      const generatedModelGrammar: string =
+      config.mappingToRegenerate = guaranteeNonNullable(
+        this.mappingToRegenerate?.value,
+        `Mapping to regenerate is not set`,
+      );
+      config.resultMappingName = this.resultMappingName;
+      config.resultStoreName = this.resultStoreName;
+      config.resultIncludedMappingName = this.resultIncludedMappingName;
+      config.originalMappingName = this.originalMappingName;
+      config.m2mIntermediateMappings = this.m2mIntermediateMappings.map(
+        (val) => val.value,
+      );
+      const entities = (yield getMappingGenerationGraphManagerExtension(
+        this.editorStore.graphManagerState.graphManager,
+      ).generate(config, this.editorStore.graphManagerState.graph)) as Entity[];
+      this.editorStore.modelLoaderState.setModelText(
         (yield this.editorStore.graphManagerState.graphManager.entitiesToPureCode(
           entities,
-        )) as string;
-
-      this.editorStore.modelLoaderState.setModelText(generatedModelGrammar);
-      this.isGenerating = false;
+        )) as string,
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -120,6 +135,7 @@ export class MappingGenerationEditorState {
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
+    } finally {
       this.isGenerating = false;
     }
   }

@@ -86,13 +86,15 @@ export class ModelLoaderState extends EditorState {
   getImportConfigurationDescription(
     key: string,
   ): ImportConfigurationDescription | undefined {
-    return this.modelImportDescriptions.find((i) => i.key === key);
+    return this.modelImportDescriptions.find(
+      (description) => description.key === key,
+    );
   }
   getLoaderExtensionConfiguration(
     key: string,
   ): ModelLoaderExtensionConfiguration | undefined {
     return this.modelLoaderExtensionConfigurations.find(
-      (i) => i.modelGenerationConfig.key === key,
+      (config) => config.key === key,
     );
   }
   setReplaceFlag(val: boolean): void {

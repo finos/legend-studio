@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-import type { Mapping } from '@finos/legend-graph';
+import { SerializationFactory } from '@finos/legend-shared';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
-export class MappingGenerationConfiguration {
-  sourceMapping!: Mapping;
-  mappingToRegenerate!: Mapping;
-  m2mIntermediateMappings: Mapping[] = [];
+export class V1_MappingGenerationConfiguration {
+  sourceMapping!: string;
+  mappingToRegenerate!: string;
+  m2mIntermediateMappings: string[] = [];
   resultMappingName?: string | undefined;
   resultIncludedMappingName?: string | undefined;
   resultStoreName?: string | undefined;
   originalMappingName?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_MappingGenerationConfiguration, {
+      sourceMapping: primitive(),
+      mappingToRegenerate: primitive(),
+      m2mIntermediateMappings: list(primitive()),
+      resultMappingName: optional(primitive()),
+      resultIncludedMappingName: optional(primitive()),
+      resultStoreName: optional(primitive()),
+      originalMappingName: optional(primitive()),
+    }),
+  );
 }

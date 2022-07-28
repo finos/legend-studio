@@ -288,8 +288,6 @@ export {
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
-export * from './graphManager/action/generation/ModelGenerationConfiguration.js';
-export * from './graphManager/protocol/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
 
