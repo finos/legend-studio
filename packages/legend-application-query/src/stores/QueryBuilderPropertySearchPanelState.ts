@@ -262,7 +262,7 @@ export class QueryBuilderPropertySearchPanelState {
                 ),
               );
               if (
-                propertyTreeNodeData.mappingData.mapped &&
+                propertyTreeNodeData?.mappingData.mapped &&
                 !propertyTreeNodeData.isPartOfDerivedPropertyBranch
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);

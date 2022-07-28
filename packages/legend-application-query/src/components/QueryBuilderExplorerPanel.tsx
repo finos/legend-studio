@@ -777,7 +777,9 @@ const QueryBuilderExplorerTree = observer(
                 explorerState.mappingModelCoverageAnalysisResult,
               ),
             );
-            treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+            if (propertyTreeNodeData) {
+              treeData.nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+            }
           });
           node.type._subclasses.forEach((subclass) => {
             const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(

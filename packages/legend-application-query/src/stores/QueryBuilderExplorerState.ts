@@ -50,6 +50,8 @@ import {
   EntityMappedProperty,
   Enumeration,
   DerivedProperty,
+  Property,
+  Association,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -342,7 +344,7 @@ export const getQueryBuilderPropertyNodeData = (
   property: AbstractProperty,
   parentNode: QueryBuilderExplorerTreeNodeData,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-): QueryBuilderExplorerTreePropertyNodeData => {
+): QueryBuilderExplorerTreePropertyNodeData | undefined => {
   const mappingNodeData = generatePropertyNodeMappingData(
     property,
     parentNode.mappingData,
@@ -353,6 +355,16 @@ export const getQueryBuilderPropertyNodeData = (
     parentNode.isPartOfDerivedPropertyBranch ||
     (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
       parentNode.property instanceof DerivedProperty);
+  if (
+    property instanceof Property &&
+    parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
+    parentNode.property instanceof Property &&
+    property._OWNER instanceof Association &&
+    parentNode.property._OWNER instanceof Association &&
+    parentNode.property._OWNER === property._OWNER
+  ) {
+    return undefined;
+  }
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -455,8 +467,10 @@ const getQueryBuilderTreeData = (
         treeRootNode,
         modelCoverageAnalysisResult,
       );
-      addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
-      nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+      if (propertyTreeNodeData) {
+        addUniqueEntry(treeRootNode.childrenIds, propertyTreeNodeData.id);
+        nodes.set(propertyTreeNodeData.id, propertyTreeNodeData);
+      }
     });
   rootClass._subclasses.forEach((subclass) => {
     const subTypeTreeNodeData = getQueryBuilderSubTypeNodeData(
