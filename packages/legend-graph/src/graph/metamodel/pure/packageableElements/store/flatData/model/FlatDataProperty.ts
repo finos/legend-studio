@@ -21,9 +21,9 @@ export type FlatDataPropertyValue = boolean | string | number;
 
 export class FlatDataProperty implements Hashable {
   name: string;
-  value: FlatDataPropertyValue;
+  value: FlatDataPropertyValue[] = [];
 
-  constructor(name: string, value: FlatDataPropertyValue) {
+  constructor(name: string, value: FlatDataPropertyValue[]) {
     this.name = name;
     this.value = value;
   }
@@ -32,7 +32,7 @@ export class FlatDataProperty implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY,
       this.name,
-      this.value.toString(),
+      this.value.map((v) => v.toString()).join(','),
     ]);
   }
 }
