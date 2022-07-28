@@ -15,6 +15,8 @@
  */
 
 export * from './application/LegendQuery.js';
+export * from './components/LegendQueryBaseStoreProvider.js';
+export * from './stores/LegendQueryBaseStore.js';
 
 export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
 
@@ -26,10 +28,6 @@ export {
   useQueryEditorStore,
 } from './components/QueryEditorStoreProvider.js';
 export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
-export {
-  useLegendQueryBaseStore,
-  useLegendQueryApplicationStore,
-} from './components/LegendQueryBaseStoreProvider.js';
 export { QueryEditor } from './components/QueryEditor.js';
 
 export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
