@@ -16,7 +16,9 @@
 
 import {
   assertNonNullable,
+  assertTrue,
   guaranteeNonEmptyString,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
@@ -39,7 +41,27 @@ export interface LegendQueryApplicationConfigurationData
   };
   engine: { url: string; queryUrl?: string };
   studio: { url: string };
+  sdlc: {
+    default: string;
+    instances: {
+      url: string;
+      key: string;
+      label?: string;
+    }[];
+  };
   extensions?: Record<PropertyKey, unknown>;
+}
+
+export class SDLCInstance {
+  readonly url: string;
+  readonly key: string;
+  readonly label: string;
+
+  constructor(key: string, label: string, url: string) {
+    this.url = url;
+    this.key = key;
+    this.label = label;
+  }
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -48,6 +70,8 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly studioUrl: string;
   readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
+  readonly sdlcInstances: SDLCInstance[];
+  readonly defaultSdlc: SDLCInstance;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
@@ -70,6 +94,33 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
+    );
+    // sdlc
+    const defaultSDLCKey = guaranteeNonEmptyString(
+      input.configData.sdlc.default,
+      `Can't configure application: 'studio.sdlc.default' field is missing or empty`,
+    );
+    const _sdlcInstances = guaranteeNonNullable(
+      input.configData.sdlc.instances,
+      `Can't configure application: 'studio.sdlc.instances' field is missing or empty`,
+    );
+    assertTrue(
+      Boolean(_sdlcInstances.length),
+      `Can't configure application: 'studio.sdlc.instances' field needs at least one sdlc instances defined`,
+    );
+    this.sdlcInstances = _sdlcInstances.map((sdlc, i) => {
+      const key = guaranteeNonEmptyString(
+        `Can't configure application: 'studio.sdlc.instances[${i}].key' field is missing or empty`,
+      );
+      const label = sdlc.label ?? key;
+      const url = guaranteeNonEmptyString(
+        `Can't configure application: sdlc ${key} instance 'url' field is missing or empty`,
+      );
+      return new SDLCInstance(key, label, url);
+    });
+    this.defaultSdlc = guaranteeNonNullable(
+      this.sdlcInstances.find((sdlc) => sdlc.key === defaultSDLCKey),
+      `Can't configure application: default sdlc key does not exist`,
     );
     this.TEMPORARY__useLegacyDepotServerAPIRoutes =
       input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;

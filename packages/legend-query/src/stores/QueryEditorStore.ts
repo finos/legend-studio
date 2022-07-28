@@ -67,6 +67,8 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import { QuerySDLCState } from './QuerySDLCState.js';
+import type { QueryServiceState } from './QueryServiceState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -200,10 +202,12 @@ export abstract class QueryEditorStore {
   depotServerClient: DepotServerClient;
   pluginManager: LegendQueryPluginManager;
   graphManagerState: GraphManagerState;
-
+  sdlcState: QuerySDLCState;
   initState = ActionState.create();
   queryBuilderState: QueryBuilderState;
   exportState?: QueryExportState | undefined;
+  promoteServiceState: QueryServiceState | undefined;
+
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -229,6 +233,7 @@ export abstract class QueryEditorStore {
       this.graphManagerState,
       new StandardQueryBuilderMode(),
     );
+    this.sdlcState = new QuerySDLCState(this);
   }
 
   setExportState(val: QueryExportState | undefined): void {
@@ -316,6 +321,8 @@ export abstract class QueryEditorStore {
         artifactId,
       )) as PlainObject<ProjectData>,
     );
+
+    this.sdlcState.setDepotProject(project);
 
     // initialize system
     stopWatch.record();

@@ -238,6 +238,17 @@ const QueryEditorHeaderContent = observer(() => {
           </div>
           <div className="query-editor__header__action__label">Save</div>
         </button>
+        <button
+          className="query-editor__header__action btn--dark"
+          tabIndex={-1}
+          onClick={saveQuery}
+        >
+          <div className="query-editor__header__action__icon">
+            <SaveIcon />
+            <QueryExport />
+          </div>
+          <div className="query-editor__header__action__label">Save</div>
+        </button>
       </div>
     </div>
   );
