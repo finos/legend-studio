@@ -21,10 +21,10 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import type { PackageableElement } from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type { PackageableElementReference } from '../../../models/metamodels/pure/packageableElements/PackageableElementReference.js';
-import type { Multiplicity } from '../../../models/metamodels/pure/packageableElements/domain/Multiplicity.js';
-import type { InferableValue } from '../../../models/metamodels/pure/InferableValue.js';
+import type { PackageableElement } from '../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
+import type { Multiplicity } from '../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import type { InferableValue } from '../../../graph/metamodel/pure/InferableValue.js';
 import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
 
 export class ObserverContext {

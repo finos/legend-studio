@@ -17,24 +17,24 @@
 import type {
   PackageableElement,
   PackageableElementVisitor,
-} from '../../../models/metamodels/pure/packageableElements/PackageableElement.js';
-import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile.js';
-import type { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration.js';
-import type { Measure } from '../../../models/metamodels/pure/packageableElements/domain/Measure.js';
-import type { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class.js';
-import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association.js';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
-import type { Database } from '../../../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
-import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
-import type { Service } from '../../../models/metamodels/pure/packageableElements/service/Service.js';
-import type { PackageableRuntime } from '../../../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
-import type { PackageableConnection } from '../../../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
-import type { FileGenerationSpecification } from '../../../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
-import type { GenerationSpecification } from '../../../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
-import type { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package.js';
-import type { PrimitiveType } from '../../../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
-import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex.js';
+} from '../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import type { Profile } from '../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
+import type { Enumeration } from '../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
+import type { Measure } from '../../../graph/metamodel/pure/packageableElements/domain/Measure.js';
+import type { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
+import type { Association } from '../../../graph/metamodel/pure/packageableElements/domain/Association.js';
+import type { ConcreteFunctionDefinition } from '../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { FlatData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { Database } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { Service } from '../../../graph/metamodel/pure/packageableElements/service/Service.js';
+import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { PackageableConnection } from '../../../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
+import type { FileGenerationSpecification } from '../../../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import type { GenerationSpecification } from '../../../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { Package } from '../../../graph/metamodel/pure/packageableElements/domain/Package.js';
+import type { PrimitiveType } from '../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import type { SectionIndex } from '../../../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import {
   observe_Association,
   observe_Class,
@@ -61,7 +61,7 @@ import {
 import { observe_Service } from './DSLService_ObserverHelper.js';
 import { observe_FlatData } from './StoreFlatData_ObserverHelper.js';
 import { observe_Database } from './StoreRelational_ObserverHelper.js';
-import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement.js';
+import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { observe_DataElement } from './DSLData_ObserverHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {

@@ -17,18 +17,28 @@
 const path = require('path');
 const micromatch = require('micromatch');
 
-const metamodelFileMatchPattern = '**/src/models/metamodels/**';
-const protocolFileMatchPattern = '**/src/models/protocols/*/v*/**';
-const componentFileMatchPattern = '**/src/components/**';
-const storeFileMatchPattern = '**/src/stores/**';
+const GRAPH_FILE_PATTERN = '**/src/graph/**';
+const GRAPH_MANAGER_FILE_PATTERN = '**/src/graphManager/**';
+const PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/*/v*/**';
+const GENERIC_PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/**';
+const COMPONENT_FILE_PATTERN = '**/src/components/**';
+const STORE_FILE_PATTERN = '**/src/stores/**';
 
 /**
- * Enforce module import hierarchy so that we have the following layers (top down):
- *  1. Editor (components/stores/states)
- *  2. Protocol (protocol models/engine)
- *  3. Metamodel (metamodel models/graph)
+ * Enforce module import hierarchy for the following modules (in order):
+ *  1. Editor (components/stores)
+ *  2. Protocol (protocol)
+ *  3. Graph Manager (graph manager)
+ *  4. Graph (metamodel, graph manager)
  *
- * NOTE: the deeper layers cannot depend on the higher ones.
+ * The general rules are:
+ *  1. The lower one cannot depend on the higher ones
+ *  2. **Nothing** should depend on Protocol
+ *
+ * NOTE: the limitation of this approach is we only rely on the import path
+ * instead of the actual imported entities, so technically if we're importing
+ * entities from another packages, we could accidentally import protocol
+ * in an editor file
  */
 module.exports = {
   meta: {
@@ -41,23 +51,31 @@ module.exports = {
   create(context) {
     const EDITOR = 'EDITOR';
     const PROTOCOL = 'PROTOCOL';
-    const METAMODEL = 'METAMODEL';
+    const GRAPH = 'GRAPH';
+    const GRAPH_MANAGER = 'GRAPH MANAGER';
 
     // simplify the dependency graph by doing this for now
-    const FORBIDDEN_MODULE_DEPENDENCY = {
-      PROTOCOL: [EDITOR],
-      METAMODEL: [EDITOR, PROTOCOL],
+    const FORBIDDEN_DEPENDENCIES = {
+      [EDITOR]: [PROTOCOL],
+      [PROTOCOL]: [EDITOR],
+      [GRAPH]: [EDITOR, GRAPH_MANAGER, PROTOCOL],
+      [GRAPH_MANAGER]: [EDITOR, PROTOCOL],
     };
 
     function getModuleType(filePath) {
-      if (micromatch.isMatch(filePath, [metamodelFileMatchPattern])) {
-        return METAMODEL;
-      } else if (micromatch.isMatch(filePath, [protocolFileMatchPattern])) {
+      if (micromatch.isMatch(filePath, [PROTOCOL_FILE_PATTERN])) {
         return PROTOCOL;
+      } else if (micromatch.isMatch(filePath, [GRAPH_FILE_PATTERN])) {
+        return GRAPH;
+      } else if (
+        micromatch.isMatch(filePath, [GRAPH_MANAGER_FILE_PATTERN]) &&
+        !micromatch.isMatch(filePath, [GENERIC_PROTOCOL_FILE_PATTERN])
+      ) {
+        return GRAPH_MANAGER;
       } else if (
         micromatch.isMatch(filePath, [
-          storeFileMatchPattern,
-          componentFileMatchPattern,
+          STORE_FILE_PATTERN,
+          COMPONENT_FILE_PATTERN,
         ])
       ) {
         return EDITOR;
@@ -78,13 +96,14 @@ module.exports = {
         if (!importModuleType) {
           return;
         }
+
         if (
-          FORBIDDEN_MODULE_DEPENDENCY[fileModuleType] &&
-          FORBIDDEN_MODULE_DEPENDENCY[fileModuleType].includes(importModuleType)
+          FORBIDDEN_DEPENDENCIES[fileModuleType] &&
+          FORBIDDEN_DEPENDENCIES[fileModuleType].includes(importModuleType)
         ) {
           context.report({
             node: node.source,
-            message: `Do not import file from '${importModuleType.toLowerCase()}' module in file from '${fileModuleType.toLowerCase()}' module`,
+            message: `Do not import file from '${importModuleType.toLowerCase()}' module in a file from '${fileModuleType.toLowerCase()}' module`,
           });
         }
       },

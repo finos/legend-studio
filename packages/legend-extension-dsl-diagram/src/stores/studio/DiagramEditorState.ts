@@ -43,10 +43,10 @@ import {
   ElementEditorState,
   class_addProperty,
 } from '@finos/legend-application-studio';
-import type { ClassView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
-import type { Point } from '../../models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-import { Diagram } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-import type { PropertyHolderView } from '../../models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
+import type { ClassView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import type { PropertyHolderView } from '../../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
 
 enum DIAGRAM_EDITOR_HOTKEY {
   RECENTER = 'RECENTER',

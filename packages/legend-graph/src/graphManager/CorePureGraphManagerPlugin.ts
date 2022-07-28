@@ -16,7 +16,7 @@
 
 import packageJson from '../../package.json';
 import { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
-import { CORE_PURE_PATH } from '../MetaModelConst.js';
+import { CORE_PURE_PATH } from '../graph/MetaModelConst.js';
 
 export class CorePureGraphManagerPlugin extends PureGraphManagerPlugin {
   static NAME = packageJson.extensions.pureGraphManagerPlugin;

@@ -48,7 +48,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 
 const pluginManager = LegendQueryPluginManager.create();

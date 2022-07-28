@@ -19,7 +19,7 @@ import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
 import { getByDisplayValue, waitFor } from '@testing-library/dom';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,

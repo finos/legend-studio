@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-mapping-generation",
-  "version": "2.0.11",
+  "version": "3.0.0",
   "description": "Legend extension for mapping generation",
   "keywords": [
     "legend",

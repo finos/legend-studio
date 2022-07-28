@@ -15,9 +15,9 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { FlatDataConnection } from '../../../models/metamodels/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
-import type { FlatDataInstanceSetImplementation } from '../../../models/metamodels/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
-import type { FlatData } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
+import type { FlatDataConnection } from '../../../graph/metamodel/pure/packageableElements/store/flatData/connection/FlatDataConnection.js';
+import type { FlatDataInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataInstanceSetImplementation.js';
+import type { FlatData } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
 import {
   type FlatDataRecordField,
   type FlatDataDataType,
@@ -26,10 +26,10 @@ import {
   FlatDataDate,
   FlatDataNumber,
   FlatDataString,
-} from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
-import type { FlatDataProperty } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataProperty.js';
-import type { FlatDataSection } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/FlatDataSection.js';
-import type { RootFlatDataRecordTypeReference } from '../../../models/metamodels/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
+} from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataDataType.js';
+import type { FlatDataProperty } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataProperty.js';
+import type { FlatDataSection } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataSection.js';
+import type { RootFlatDataRecordTypeReference } from '../../../graph/metamodel/pure/packageableElements/store/flatData/model/RootFlatDataRecordTypeReference.js';
 import type {
   EmbeddedFlatDataPropertyMapping,
   FlatDataInputData,

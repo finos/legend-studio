@@ -45,7 +45,7 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 
 test(
   integrationTest(

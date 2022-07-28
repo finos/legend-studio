@@ -42,7 +42,7 @@ import {
   ProjectData,
 } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
-import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/QueryBuilder_PureGraphManagerExtension.js';
+import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';
 import type { MappingRuntimeCompatibilityAnalysisResult } from '../graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

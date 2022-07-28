@@ -20,12 +20,12 @@ import {
   ExternalFormatData,
   DataElementReference,
   ModelStoreData,
-} from '../../../models/metamodels/pure/data/EmbeddedData.js';
+} from '../../../graph/metamodel/pure/data/EmbeddedData.js';
 import {
   type RelationalCSVDataTable,
   RelationalCSVData,
-} from '../../../models/metamodels/pure/data/RelationalCSVData.js';
-import type { DataElement } from '../../../models/metamodels/pure/packageableElements/data/DataElement.js';
+} from '../../../graph/metamodel/pure/data/RelationalCSVData.js';
+import type { DataElement } from '../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { EmbeddedData_PureGraphManagerPlugin_Extension } from '../../EmbeddedData_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,

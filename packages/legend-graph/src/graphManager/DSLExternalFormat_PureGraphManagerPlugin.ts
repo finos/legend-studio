@@ -16,10 +16,10 @@
 
 import packageJson from '../../package.json';
 import type { Connection } from '../DSLMapping_Exports.js';
-import { ExternalFormatConnection } from '../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
-import { SchemaSet } from '../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
-import { Binding } from '../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
-import type { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
+import { ExternalFormatConnection } from '../graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
+import { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import { Binding } from '../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 import {
   observe_Binding,

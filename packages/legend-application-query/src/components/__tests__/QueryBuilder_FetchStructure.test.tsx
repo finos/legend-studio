@@ -58,7 +58,7 @@ import {
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
 import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../../models/QueryBuilder_GraphPreset.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState.js';
 
 test(

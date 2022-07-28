@@ -55,9 +55,9 @@ import type {
   PackageableElement,
   SetImplementation,
 } from '@finos/legend-graph';
-import { ServiceStore } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
-import { RootServiceInstanceSetImplementation } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
-import { ServiceStoreConnection } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
+import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_ServiceStore.js';
+import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/ESService_RootServiceInstanceSetImplementation.js';
+import { ServiceStoreConnection } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/connection/ESService_ServiceStoreConnection.js';
 import {
   PURE_GRAMMAR_SERVICE_STORE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_SERVICE_STORE_PARSER_NAME,
@@ -70,9 +70,9 @@ import {
   SERVICE_STORE_WITH_SERVICE,
   SERVICE_STORE_WITH_SERVICE_GROUP,
 } from './ESService_CodeSnippets.js';
-import { ServiceStoreEmbeddedData } from '../models/metamodels/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
+import { ServiceStoreEmbeddedData } from '../graph/metamodel/pure/model/data/ESService_ServiceStoreEmbeddedData.js';
 import { ServiceStoreEmbeddedDataState } from '../stores/studio/ESService_ServiceStoreEmbeddedDataEditorState.js';
-import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedData.js';
+import { ServiceStoreEmbeddedDataEditor } from './ESService_ServiceStoreEmbeddedDataEditor.js';
 import type { DocumentationEntry } from '@finos/legend-application';
 
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';

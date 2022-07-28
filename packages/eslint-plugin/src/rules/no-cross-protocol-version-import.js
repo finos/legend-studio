@@ -17,9 +17,9 @@
 const path = require('path');
 const micromatch = require('micromatch');
 
-const protocolFileMatchPattern = '**/src/models/protocols/*/v*/**';
-const protocolVersionMatchPattern =
-  /[/\\]src[/\\]models[/\\]protocols[/\\][^/\\]+[/\\]v(?<protocolVersion>.*?)[/\\]/u;
+const PROTOCOL_FILE_PATTERN = '**/src/graphManager/protocol/*/v*/**';
+const PROTOCOL_VERSION_MATCH_PATTERN =
+  /[/\\]src[/\\]graphManager[/\\]protocol[/\\][^/\\]+[/\\]v(?<protocolVersion>.*?)[/\\]/u;
 
 /**
  * Enforce files related to a specific protocol version
@@ -36,12 +36,12 @@ module.exports = {
   },
   create(context) {
     function getFileProtocolVersion(filePath) {
-      if (!micromatch.isMatch(filePath, [protocolFileMatchPattern])) {
+      if (!micromatch.isMatch(filePath, [PROTOCOL_FILE_PATTERN])) {
         return undefined;
       }
       return (
-        filePath.match(protocolVersionMatchPattern)?.groups?.protocolVersion ??
-        undefined
+        filePath.match(PROTOCOL_VERSION_MATCH_PATTERN)?.groups
+          ?.protocolVersion ?? undefined
       );
     }
     return {

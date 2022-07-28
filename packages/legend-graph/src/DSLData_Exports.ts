@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-export { DataElement } from './models/metamodels/pure/packageableElements/data/DataElement.js';
-export { V1_DataElement } from './models/protocols/pure/v1/model/packageableElements/data/V1_DataElement.js';
+export { DataElement } from './graph/metamodel/pure/packageableElements/data/DataElement.js';
+export { V1_DataElement } from './graphManager/protocol/pure/v1/model/packageableElements/data/V1_DataElement.js';
 export {
   EmbeddedData,
   ModelStoreData,
   DataElementReference,
   ExternalFormatData,
   type EmbeddedDataVisitor,
-} from './models/metamodels/pure/data/EmbeddedData.js';
+} from './graph/metamodel/pure/data/EmbeddedData.js';
 export {
   V1_EmbeddedData,
   V1_ExternalFormatData,
   type V1_EmbeddedDataVisitor,
-} from './models/protocols/pure/v1/model/data/V1_EmbeddedData.js';
-export * from './models/metamodels/pure/data/RelationalCSVData.js';
-export * from './models/protocols/pure/DSLData_PureProtocolProcessorPlugin_Extension.js';
+} from './graphManager/protocol/pure/v1/model/data/V1_EmbeddedData.js';
+export * from './graph/metamodel/pure/data/RelationalCSVData.js';
+export * from './graphManager/protocol/pure/DSLData_PureProtocolProcessorPlugin_Extension.js';
 export * from './graphManager/EmbeddedData_PureGraphManagerPlugin_Extension.js';
-export { V1_buildEmbeddedData } from './models/protocols/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
+export { V1_buildEmbeddedData } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_DataElementBuilderHelper.js';
 export {
   observe_ExternalFormatData,
   observe_EmbeddedData,
   observe_RelationalDataTable,
   observe_DataElement,
 } from './graphManager/action/changeDetection/DSLData_ObserverHelper.js';
-export { V1_transformExternalFormatData } from './models/protocols/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
-export { V1_externalFormatDataModelSchema } from './models/protocols/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
+export { V1_transformExternalFormatData } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
+export { V1_externalFormatDataModelSchema } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';

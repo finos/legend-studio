@@ -18,7 +18,7 @@ import type {
   ObserverContext,
   PureGraphManagerPlugin,
 } from '@finos/legend-graph';
-import type { SecurityScheme } from '../models/metamodels/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme.js';
+import type { SecurityScheme } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme.js';
 
 export type SecuritySchemeObserver = (
   metamodel: SecurityScheme,

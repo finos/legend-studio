@@ -16,7 +16,7 @@
 
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { Diagram } from '../models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+import { Diagram } from '../graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
 
 export const getDiagram = (path: string, graph: PureModel): Diagram =>
   graph.getExtensionElement(path, Diagram, `Can't find diagram '${path}'`);
