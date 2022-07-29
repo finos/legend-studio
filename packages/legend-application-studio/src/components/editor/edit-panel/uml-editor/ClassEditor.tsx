@@ -153,39 +153,12 @@ enum CLASS_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
 }
 
-export interface QueryBuilderProjectionColumnDragSource {
-  columnState: ClassPropertyColumnState;
-  //svp
+export interface ClassPropertyDragSource {
+  columnState: Property;
 }
 
-export abstract class ClassPropertyColumnState {
-  projectionState: ClassEditorState;
-  isBeingDragged = false;
-  columnName: string;
-
-  constructor(projectionState: ClassEditorState, columnName: string) {
-    makeObservable(this, {
-      projectionState: false,
-      isBeingDragged: observable,
-      //svp
-      columnName: observable,
-      setIsBeingDragged: action,
-      setColumnName: action,
-    });
-
-    this.projectionState = projectionState;
-    this.columnName = columnName;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
-  }
-
-  setColumnName(val: string): void {
-    this.columnName = val;
-  }
-
-  abstract getReturnType(): Type | undefined;
+export enum CLASS_PROPERTY_DND_TYPE {
+  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
 }
 
 const PropertyBasicEditor = observer(
