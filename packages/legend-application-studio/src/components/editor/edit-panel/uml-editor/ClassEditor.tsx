@@ -283,9 +283,9 @@ const PropertyBasicEditor = observer(
     return (
       <div ref={ref} className="property-basic-editor">
         {!isIndirectProperty && (
-          <button className="uml-element-editor__drag-btn" tabIndex={-1}>
+          <div className="uml-element-editor__drag-div" tabIndex={-1}>
             <VerticalDragHandleIcon />
-          </button>
+          </div>
         )}
         {isIndirectProperty && (
           <div className="property-basic-editor__name--with-lock">
