@@ -22,10 +22,12 @@ import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
 import type { AnnotatedElement } from './AnnotatedElement.js';
 import type { TaggedValue } from './TaggedValue.js';
 import type { StereotypeReference } from './StereotypeReference.js';
+import { action, makeObservable, observable } from 'mobx';
 
 export class Property implements AbstractProperty, AnnotatedElement, Hashable {
   readonly _UUID = uuid();
   readonly _OWNER: PropertyOwner;
+  isBeingDragged = false;
 
   name: string;
   multiplicity: Multiplicity;
@@ -39,10 +41,20 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
     genericType: GenericTypeReference,
     owner: PropertyOwner,
   ) {
+    makeObservable(this, {
+      _UUID: false,
+      name: observable,
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;
     this._OWNER = owner;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
   }
 
   get hashCode(): string {
