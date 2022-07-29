@@ -99,7 +99,6 @@ export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
 
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
-  //svp
 }
 
 export abstract class QueryBuilderProjectionColumnState {
@@ -116,7 +115,6 @@ export abstract class QueryBuilderProjectionColumnState {
       uuid: false,
       projectionState: false,
       isBeingDragged: observable,
-      //svp
       columnName: observable,
       setIsBeingDragged: action,
       setColumnName: action,
@@ -297,7 +295,7 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
   returnType: Type | undefined;
 
   constructor(projectionState: QueryBuilderProjectionState, lambda: RawLambda) {
-    super(projectionState, '(derivationTestingsvp)');
+    super(projectionState, '(derivation)');
 
     makeObservable(this, {
       lambda: observable,
