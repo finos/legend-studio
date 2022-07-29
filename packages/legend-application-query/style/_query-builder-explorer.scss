@@ -335,12 +335,14 @@
 
   &__expand-icon svg {
     font-size: 1rem;
-    color: var(--color-light-grey-200) !important;
+    color: var(--color-light-grey-200);
   }
 
   &__node__container:hover {
     background: var(--color-dark-blue-shade-100);
+  }
 
+  &__node__container:hover &__node__action {
     svg {
       color: var(--color-light-grey-400);
     }
@@ -459,7 +461,7 @@
   }
 
   &__icon {
-    color: var(--color-primitive) !important;
+    color: var(--color-primitive);
 
     &__boolean,
     &__number,
