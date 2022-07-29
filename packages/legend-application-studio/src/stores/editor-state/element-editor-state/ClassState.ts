@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  observable,
-  action,
-  flow,
-  makeAutoObservable,
-  makeObservable,
-} from 'mobx';
+import { observable, action, flow, makeObservable } from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
-  uuid,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore.js';
@@ -40,6 +33,7 @@ import {
   buildSourceInformationSourceId,
   stub_RawLambda,
   isStubbed_RawLambda,
+  Property,
   getAllClassConstraints,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
@@ -49,8 +43,6 @@ import {
   derivedProperty_setBody,
   derivedProperty_setParameters,
 } from '../../graphModifier/DomainGraphModifierHelper.js';
-import type { Property } from '@finos/legend-graph';
-import { findLast } from '@finos/legend-shared';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
