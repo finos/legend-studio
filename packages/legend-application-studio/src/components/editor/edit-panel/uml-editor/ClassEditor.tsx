@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import {
@@ -48,11 +48,10 @@ import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { flowResult } from 'mobx';
 import {
   type DropTargetMonitor,
   type XYCoord,
-  useDragLayer,
   useDrag,
   useDrop,
 } from 'react-dnd';
@@ -124,7 +123,6 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { useRef } from 'react';
 
 export interface ClassPropertyDragSource {
   columnState: Property;
@@ -254,7 +252,7 @@ const PropertyBasicEditor = observer(
       }),
       [handleHover],
     );
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector] = useDrag(
       () => ({
         type: CLASS_PROPERTY_DND_TYPE.PROJECTION_COLUMN,
         item: (): ClassPropertyDragSource => {
