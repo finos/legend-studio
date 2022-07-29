@@ -52,6 +52,7 @@ export class DataSpaceAnalysisResult {
   path!: string;
   taggedValues: DataSpaceTaggedValueInfo[] = [];
   stereotypes: DataSpaceStereotypeInfo[] = [];
+  title?: string | undefined;
   description?: string | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
 

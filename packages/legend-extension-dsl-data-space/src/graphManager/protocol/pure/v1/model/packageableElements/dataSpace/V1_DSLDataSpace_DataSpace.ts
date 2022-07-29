@@ -65,6 +65,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   executionContexts!: V1_DataSpaceExecutionContext[];
   defaultExecutionContext!: string;
   featuredDiagrams?: V1_PackageableElementPointer[] | undefined;
+  title?: string | undefined;
   description?: string | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
@@ -76,6 +77,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       hashArray(this.executionContexts),
       this.defaultExecutionContext,
       hashArray((this.featuredDiagrams ?? []).map((pointer) => pointer.path)),
+      this.title ?? '',
       this.description ?? '',
       this.supportInfo ?? '',
     ]);

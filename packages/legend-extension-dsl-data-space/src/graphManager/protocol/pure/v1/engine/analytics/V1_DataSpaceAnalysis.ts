@@ -79,6 +79,7 @@ export class V1_DataSpaceAnalysisResult {
   taggedValues: V1_DataSpaceTaggedValueInfo[] = [];
   stereotypes: V1_DataSpaceStereotypeInfo[] = [];
 
+  title?: string | undefined;
   description?: string | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
@@ -98,6 +99,7 @@ export class V1_DataSpaceAnalysisResult {
       taggedValues: list(object(V1_DataSpaceTaggedValueInfo)),
       stereotypes: list(object(V1_DataSpaceStereotypeInfo)),
 
+      title: optional(primitive()),
       description: optional(primitive()),
       supportInfo: optionalCustom(
         () => SKIP,

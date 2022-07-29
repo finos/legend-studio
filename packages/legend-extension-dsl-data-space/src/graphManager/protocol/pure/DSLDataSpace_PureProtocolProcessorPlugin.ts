@@ -147,6 +147,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
             ),
             `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
           );
+          element.title = elementProtocol.title;
           element.description = elementProtocol.description;
           if (elementProtocol.featuredDiagrams) {
             element.featuredDiagrams = elementProtocol.featuredDiagrams.map(
@@ -254,6 +255,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           );
           protocol.defaultExecutionContext =
             metamodel.defaultExecutionContext.name;
+          protocol.title = metamodel.title;
           protocol.description = metamodel.description;
           protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
             (diagramPath) =>

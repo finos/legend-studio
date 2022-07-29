@@ -26,6 +26,7 @@ import {
   ArrowLeftIcon,
   CustomSelectorInput,
   SearchIcon,
+  createFilter,
 } from '@finos/legend-art';
 import { useQuerySetupStore } from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
@@ -41,7 +42,7 @@ import { DataSpaceViewer } from '../DataSpaceViewer.js';
 
 type DataSpaceOption = { label: string; value: DataSpaceContext };
 const buildDataSpaceOption = (value: DataSpaceContext): DataSpaceOption => ({
-  label: value.path,
+  label: value.title ?? value.name,
   value: value,
 });
 
@@ -86,12 +87,30 @@ export const DataspaceQuerySetup = observer(
         querySetupState.setDataSpaceViewerState(undefined);
       }
     };
+    const filterOption = createFilter({
+      ignoreCase: true,
+      ignoreAccents: false,
+      stringify: (option: DataSpaceOption): string =>
+        `${option.label} - ${option.value.path}`,
+    });
     const formatQueryOptionLabel = (
       option: DataSpaceOption,
     ): React.ReactNode => (
-      <div className="query-setup__data-space__option">
+      <div
+        className="query-setup__data-space__option"
+        title={`${option.label} - ${
+          option.value.path
+        } - ${generateGAVCoordinates(
+          option.value.groupId,
+          option.value.artifactId,
+          option.value.versionId,
+        )}`}
+      >
         <div className="query-setup__data-space__option__label">
           {option.label}
+        </div>
+        <div className="query-setup__data-space__option__path">
+          {option.value.path}
         </div>
         <div className="query-setup__data-space__option__gav">
           {generateGAVCoordinates(
@@ -181,6 +200,7 @@ export const DataspaceQuerySetup = observer(
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}
+              filterOption={filterOption}
               formatOptionLabel={formatQueryOptionLabel}
             />
             <button
