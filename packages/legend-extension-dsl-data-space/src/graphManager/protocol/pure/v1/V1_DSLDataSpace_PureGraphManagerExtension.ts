@@ -27,6 +27,7 @@ import {
   V1_PureModelContextType,
   V1_PackageableRuntime,
   V1_EngineRuntime,
+  V1_Class,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -34,6 +35,7 @@ import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   uniq,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -100,6 +102,7 @@ export class V1_DSLDataSpace_PureGraphManagerExtension extends DSLDataSpace_Pure
     result.name = analysisResult.name;
     result.package = analysisResult.package;
     result.path = analysisResult.path;
+    result.title = analysisResult.title;
     result.description = analysisResult.description;
 
     result.taggedValues = analysisResult.taggedValues.map((taggedValue) => {
@@ -177,8 +180,42 @@ export class V1_DSLDataSpace_PureGraphManagerExtension extends DSLDataSpace_Pure
     });
 
     // prepare the model context data
-    // scan for models coming from system so we don't duplicate them when building the graph
     const graphEntities = analysisResult.model.elements
+      // NOTE: this is a temporary hack to fix a problem with data space analytics
+      // where the classes for properties are not properly surveyed
+      // We need to wait for the actual fix in backend to be merged and released
+      // See https://github.com/finos/legend-engine/pull/836
+      .concat(
+        uniq(
+          analysisResult.model.elements.flatMap((element) => {
+            if (element instanceof V1_Class) {
+              return element.derivedProperties
+                .map((prop) => prop.returnType)
+                .concat(element.properties.map((prop) => prop.type));
+            }
+            return [];
+          }),
+        )
+          // make sure to not include types already returned by the analysis
+          .filter(
+            (path) =>
+              !analysisResult.model.elements
+                .map((el) => el.path)
+                .includes(path),
+          )
+          .map((path) => {
+            const [pkgPath, name] = resolvePackagePathAndElementName(path);
+            if (!pkgPath) {
+              // exclude package-less elements (i.e. primitive types)
+              return undefined;
+            }
+            const _class = new V1_Class();
+            _class.name = name;
+            _class.package = pkgPath;
+            return _class;
+          })
+          .filter(isNonNullable),
+      )
       .concat(mappingModels)
       .concat(runtimeModels)
       // NOTE: if an element could be found in the graph already it means it comes from system

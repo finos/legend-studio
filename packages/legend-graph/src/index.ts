@@ -134,6 +134,7 @@ export {
 export { V1_PureGraphManager } from './graphManager/protocol/pure/v1/V1_PureGraphManager.js';
 
 // V1 protocols
+export { V1_Class } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
 export { V1_AppliedFunction } from './graphManager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
 export { V1_AppliedProperty } from './graphManager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
 export { V1_Collection } from './graphManager/protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
