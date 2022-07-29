@@ -180,6 +180,26 @@
     }
   }
 
+  &__drag-btn {
+    @include flexCenter;
+
+    flex: 0;
+    height: 2.8rem;
+    color: var(--color-dark-grey-500);
+    border-radius: 0.2rem;
+    margin-left: 0.2rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__drag-btn:hover {
+    color: var(--color-dark-grey-400);
+  }
+
+  &__drag-btn:active {
+    color: var(--color-dark-grey-200);
+  }
+
   &__remove-btn {
     @include flexCenter;
 

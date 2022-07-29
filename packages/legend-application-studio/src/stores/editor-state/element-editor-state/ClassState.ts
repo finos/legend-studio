@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-import { observable, action, flow, makeObservable } from 'mobx';
+import {
+  observable,
+  action,
+  flow,
+  makeAutoObservable,
+  makeObservable,
+} from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
   LogEvent,
+  uuid,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore.js';
@@ -42,6 +49,8 @@ import {
   derivedProperty_setBody,
   derivedProperty_setParameters,
 } from '../../graphModifier/DomainGraphModifierHelper.js';
+import type { Property } from '@finos/legend-graph';
+import { findLast } from '@finos/legend-shared';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
@@ -234,6 +243,8 @@ export class ClassState {
   class: Class;
   derivedPropertyStates: DerivedPropertyState[] = [];
   constraintStates: ConstraintState[] = [];
+  propertyColumns: Property[] = [];
+
   isConvertingConstraintLambdaObjects = false;
   isConvertingDerivedPropertyLambdaObjects = false;
 
@@ -245,6 +256,7 @@ export class ClassState {
       isConvertingConstraintLambdaObjects: observable,
       isConvertingDerivedPropertyLambdaObjects: observable,
       addConstraintState: action,
+      moveColumn: action,
       deleteConstraintState: action,
       addDerivedPropertyState: action,
       deleteDerivedPropertyState: action,
@@ -255,6 +267,8 @@ export class ClassState {
 
     this.editorStore = editorStore;
     this.class = _class;
+    this.propertyColumns = _class.properties;
+
     this.constraintStates = getAllClassConstraints(_class).map(
       (constraint) => new ConstraintState(constraint, this.editorStore),
     );
@@ -362,6 +376,25 @@ export class ClassState {
         this.isConvertingConstraintLambdaObjects = false;
       }
     }
+  }
+
+  moveColumn(sourceIndex: number, targetIndex: number): void {
+    if (
+      sourceIndex < 0 ||
+      sourceIndex >= this.propertyColumns.length ||
+      targetIndex < 0 ||
+      targetIndex >= this.propertyColumns.length
+    ) {
+      return;
+    }
+
+    const sourceColumn = guaranteeNonNullable(
+      this.propertyColumns[sourceIndex],
+    );
+
+    // move
+    this.propertyColumns.splice(sourceIndex, 1);
+    this.propertyColumns.splice(targetIndex, 0, sourceColumn);
   }
 
   *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
