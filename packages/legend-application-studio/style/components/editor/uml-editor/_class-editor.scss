@@ -42,6 +42,10 @@
   margin-top: 0.5rem;
   display: flex;
 
+  &:hover {
+    background: var(--color-light-grey-200);
+  }
+
   &__lock {
     @include flexVCenter;
 
