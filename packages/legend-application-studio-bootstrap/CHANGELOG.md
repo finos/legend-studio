@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-bootstrap
 
+## 7.1.0
+
 ## 7.0.0
 
 ### Major Changes

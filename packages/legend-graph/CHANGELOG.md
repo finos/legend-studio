@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 13.0.0
+
+### Major Changes
+
+- [#1343](https://github.com/finos/legend-studio/pull/1343) [`c7d8f47e`](https://github.com/finos/legend-studio/commit/c7d8f47ed439ee782c32fd1a85f72ab9c08ab81d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `mapping generation` related logic out of core.
+
 ## 12.0.0
 
 ### Major Changes
