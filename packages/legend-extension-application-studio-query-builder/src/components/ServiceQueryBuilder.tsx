@@ -87,7 +87,7 @@ export const ServiceQueryBuilder = observer(
                               executionState.queryState.updateLamba(rawLambda),
                             );
                             applicationStore.notifySuccess(
-                              `Service execution query is updated`,
+                              `Service query is updated`,
                             );
                             queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
                               hashObject(rawLambda),
@@ -128,7 +128,7 @@ export const ServiceQueryBuilder = observer(
           }
         }
         applicationStore.notifyWarning(
-          'Please specify a mapping and a runtime for the execution to edit with query builder',
+          'Please specify a mapping and a runtime for the execution context to edit with query builder',
         );
         executionState.setOpeningQueryEditor(false);
       },

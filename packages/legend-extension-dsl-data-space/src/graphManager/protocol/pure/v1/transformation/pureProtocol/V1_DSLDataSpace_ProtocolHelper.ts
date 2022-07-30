@@ -157,4 +157,5 @@ export const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
         skipIfEmpty: false,
       }),
   ),
+  title: optional(primitive()),
 });

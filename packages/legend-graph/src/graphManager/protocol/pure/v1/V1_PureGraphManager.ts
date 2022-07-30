@@ -215,7 +215,6 @@ import type { ExternalFormatDescription } from '../../../../graphManager/action/
 import type { ConfigurationProperty } from '../../../../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import { V1_ExternalFormatModelGenerationInput } from './engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 import { GraphBuilderReport } from '../../../../graphManager/GraphBuilderReport.js';
-import type { MappingGeneration_PureProtocolProcessorPlugin_Extension } from '../MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
 import type { Package } from '../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import { V1_DataElement } from './model/packageableElements/data/V1_DataElement.js';
 import {
@@ -254,7 +253,6 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
-import type { ModelGenerationConfiguration } from '../../../action/generation/ModelGenerationConfiguration.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1604,36 +1602,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.pureModelContextDataToEntities(generatedModel);
   }
 
-  async generateModelFromConfiguration(
-    config: ModelGenerationConfiguration,
-    graph: PureModel,
-  ): Promise<Entity[]> {
-    const model = this.getFullGraphModelData(graph);
-    let generatedModel: V1_PureModelContextData | undefined = undefined;
-    const extraModelGenerators = this.pluginManager
-      .getPureProtocolProcessorPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as MappingGeneration_PureProtocolProcessorPlugin_Extension
-          ).V1_getExtraModelGeneratorsFromConfiguration?.() ?? [],
-      );
-    for (const generator of extraModelGenerators) {
-      const _model = await generator(config, model, this.engine);
-      if (_model) {
-        generatedModel = _model;
-        break;
-      }
-    }
-    if (!generatedModel) {
-      throw new UnsupportedOperationError(
-        `Can't generate model using the specified configuration: no compatible generator available from plugins`,
-        config,
-      );
-    }
-    return this.pureModelContextDataToEntities(generatedModel);
-  }
-
   // ------------------------------------------- Test  -------------------------------------------
 
   async runTests(
@@ -1806,7 +1774,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       config[property.name] = property.value as Record<PropertyKey, unknown>;
     });
     const model = this.getFullGraphModelData(graph);
-    const input = new V1_ExternalFormatModelGenerationInput(model, config);
+    const input = new V1_ExternalFormatModelGenerationInput();
+    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
+    input.model = model;
+    input.config = config;
     return this.engine.generateModel(input);
   }
 
@@ -2607,6 +2578,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     classifierPath: this.getElementClassiferPath(elementProtocol),
   });
 
+  pureModelContextDataToEntities = (
+    graphProtocol: V1_PureModelContextData,
+  ): Entity[] =>
+    graphProtocol.elements.map((element) =>
+      this.elementProtocolToEntity(element),
+    );
+
   private async entitiesToPureModelContextData(
     entities: Entity[],
   ): Promise<V1_PureModelContextData> {
@@ -2632,13 +2610,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         .withKeepSourceInformationFlag(Boolean(options?.keepSourceInformation))
         .build(),
     ) as T;
-
-  private pureModelContextDataToEntities = (
-    graphProtocol: V1_PureModelContextData,
-  ): Entity[] =>
-    graphProtocol.elements.map((element) =>
-      this.elementProtocolToEntity(element),
-    );
 
   private getElementPath = (elementProtocol: V1_PackageableElement): string => {
     let name = elementProtocol.name;

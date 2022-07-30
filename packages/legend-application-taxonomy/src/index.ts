@@ -15,3 +15,5 @@
  */
 
 export * from './application/LegendTaxonomy.js';
+export * from './components/LegendTaxonomyBaseStoreProvider.js';
+export * from './stores/LegendTaxonomyBaseStore.js';

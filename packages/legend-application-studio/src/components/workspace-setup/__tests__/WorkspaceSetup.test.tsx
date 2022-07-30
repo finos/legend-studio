@@ -15,7 +15,7 @@
  */
 
 import { test, jest, expect, beforeEach } from '@jest/globals';
-import { waitFor } from '@testing-library/dom';
+import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
 import {
   integrationTest,
@@ -24,7 +24,6 @@ import {
 } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
 import { MemoryRouter } from 'react-router';
-import { render } from '@testing-library/react';
 import {
   type SDLCServerClient,
   TEST__SDLCServerClientProvider,

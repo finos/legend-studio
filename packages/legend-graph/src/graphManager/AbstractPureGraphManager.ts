@@ -60,7 +60,6 @@ import type { QuerySearchSpecification } from './action/query/QuerySearchSpecifi
 import type { ExternalFormatDescription } from './action/externalFormat/ExternalFormatDescription.js';
 import type { ConfigurationProperty } from '../graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 import type { GraphBuilderReport } from './GraphBuilderReport.js';
-import type { ModelGenerationConfiguration } from './action/generation/ModelGenerationConfiguration.js';
 import type { RunTestsTestableInput } from '../graph/metamodel/pure/test/result/RunTestsTestableInput.js';
 import type { TestResult } from '../graph/metamodel/pure/test/result/TestResult.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
@@ -292,10 +291,6 @@ export abstract class AbstractPureGraphManager {
   ): Promise<GenerationOutput[]>;
   abstract generateModel(
     generationElement: PackageableElement,
-    graph: PureModel,
-  ): Promise<Entity[]>;
-  abstract generateModelFromConfiguration(
-    config: ModelGenerationConfiguration,
     graph: PureModel,
   ): Promise<Entity[]>;
 

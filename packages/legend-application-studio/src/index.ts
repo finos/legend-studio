@@ -16,6 +16,7 @@
 
 // application
 export * from './components/LegendStudioBaseStoreProvider.js';
+export * from './stores/LegendStudioBaseStore.js';
 export * from './application/LegendStudio.js';
 export * from './application/LegendStudioApplicationConfig.js';
 export * from './application/LegendStudioPluginManager.js';
@@ -73,13 +74,11 @@ export { MappingElementState } from './stores/editor-state/element-editor-state/
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
-// TO BE REMOVED: this is currently needed for project dependency dashboard
-export {
-  WorkspaceSetupStoreProvider as SetupStoreProvider,
-  useWorkspaceSetupStore as useSetupStore,
-} from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
-export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
 export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
+
+// TO BE REMOVED: these setup are currently needed for project dependency dashboard, until we open source, we can remove them
+export * from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
+export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 /**

@@ -483,7 +483,7 @@ export const QueryBuilderResultPanel = observer(
               <div className="query-builder__result__execute-btn__label">
                 <PlayIcon className="query-builder__result__execute-btn__label__icon" />
                 <div className="query-builder__result__execute-btn__label__title">
-                  Execute
+                  Run Query
                 </div>
               </div>
               <DropdownMenu

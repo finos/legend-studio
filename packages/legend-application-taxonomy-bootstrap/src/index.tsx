@@ -20,27 +20,15 @@ import {
   type AbstractPreset,
   WebConsole,
 } from '@finos/legend-shared';
-import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
-import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
-import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
-import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 
 export class LegendTaxonomyWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
-      new DSLText_GraphManagerPreset(),
       new DSLDiagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
-      new DSLExternalFormat_GraphPreset(),
-      new DSLPersistence_GraphManagerPreset(),
-      new DSLPersistenceCloud_GraphManagerPreset(),
-      new EFJSONSchema_GraphManagerPreset(),
-      new ESService_GraphManagerPreset(),
     ];
   }
 

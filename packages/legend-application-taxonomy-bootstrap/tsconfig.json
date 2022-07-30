@@ -14,11 +14,6 @@
     { "path": "../legend-application-taxonomy" },
     { "path": "../legend-shared" },
     { "path": "../legend-extension-dsl-data-space" },
-    { "path": "../legend-extension-dsl-diagram" },
-    { "path": "../legend-extension-dsl-persistence" },
-    { "path": "../legend-extension-dsl-persistence-cloud" },
-    { "path": "../legend-extension-dsl-text" },
-    { "path": "../legend-extension-external-format-json-schema" },
-    { "path": "../legend-extension-external-store-service" }
+    { "path": "../legend-extension-dsl-diagram" }
   ]
 }

@@ -26,7 +26,7 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import { EntityChangeType } from '@finos/legend-server-sdlc';
 
-const GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
+const MAPPING_GENERATION_TYPE_NAME = `RELATIONAL_MAPPING_GENERATION`;
 
 export class MappingGeneration_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -39,7 +39,8 @@ export class MappingGeneration_LegendStudioApplicationPlugin
   override getExtraModelLoaderExtensionConfigurations(): ModelLoaderExtensionConfiguration[] {
     return [
       {
-        modelGenerationConfig: { key: GENERATION_TYPE_NAME },
+        key: MAPPING_GENERATION_TYPE_NAME,
+        label: 'Mapping Generation',
         load: async (editorStore: EditorStore): Promise<void> => {
           const modelLoaderState = editorStore.modelLoaderState;
           if (modelLoaderState.modelText.length > 0) {
@@ -65,14 +66,13 @@ export class MappingGeneration_LegendStudioApplicationPlugin
             );
           }
         },
-        renderer: (editorStore: EditorStore): React.ReactNode | undefined => {
-          const state = new MappingGenerationEditorState(editorStore, {
-            key: GENERATION_TYPE_NAME,
-          });
-          return (
-            <MappingGenerationEditor mappingGenerationEditorState={state} />
-          );
-        },
+        renderer: (editorStore: EditorStore): React.ReactNode | undefined => (
+          <MappingGenerationEditor
+            mappingGenerationEditorState={
+              new MappingGenerationEditorState(editorStore)
+            }
+          />
+        ),
       },
     ];
   }

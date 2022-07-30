@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { test, expect, beforeEach } from '@jest/globals';
+import { test, beforeEach, expect } from '@jest/globals';
 import {
   type RenderResult,
   waitFor,
   fireEvent,
   getByText,
   getByPlaceholderText,
+  act,
 } from '@testing-library/react';
 import { integrationTest, toTitleCase } from '@finos/legend-shared';
 import {
@@ -31,32 +32,37 @@ import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelUtil.js';
 
-const addRootPackage = (packagePath: string, result: RenderResult): void => {
+const addRootPackage = async (
+  packagePath: string,
+  result: RenderResult,
+): Promise<void> => {
   fireEvent.click(result.getByTitle('New Element...', { exact: false }));
-  const contextMenu = result.getByRole('menu');
+  const contextMenu = await waitFor(() => result.getByRole('menu'));
   fireEvent.click(getByText(contextMenu, 'New Package...'));
   const modal = result.getByTestId(LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const packageInput = getByPlaceholderText(modal, 'Enter a name', {
     exact: false,
   });
   fireEvent.change(packageInput, { target: { value: packagePath } });
-  fireEvent.click(getByText(modal, 'Create'));
+  await act(async () => {
+    fireEvent.click(getByText(modal, 'Create'));
+  });
 };
 
-const createNewElementOnRootPackage = (
-  rootPackage: string,
+const createNewElementOnRootPackage = async (
+  pkg: string,
   elementType: PACKAGEABLE_ELEMENT_TYPE,
   result: RenderResult,
   elementName?: string,
-): void => {
+): Promise<void> => {
   const packageExplorer = result.getByTestId(
     LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
   );
-  const rootPackageDiv = getByText(packageExplorer, rootPackage);
-  const rightClick = { button: 2 };
-  fireEvent.click(rootPackageDiv, rightClick);
+  const pkgContainer = getByText(packageExplorer, pkg);
+  fireEvent.contextMenu(pkgContainer);
+  const contextMenu = await waitFor(() => result.getByRole('menu'));
   fireEvent.click(
-    result.getByText(`New ${toTitleCase(elementType.toLowerCase())}...`),
+    getByText(contextMenu, `New ${toTitleCase(elementType.toLowerCase())}...`),
   );
   const modal = result.getByTestId(LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL);
   const elementInput = getByPlaceholderText(modal, 'Enter a name', {
@@ -64,7 +70,9 @@ const createNewElementOnRootPackage = (
   });
   const inputValue = elementName ?? `${elementType}Test`;
   fireEvent.change(elementInput, { target: { value: inputValue } });
-  fireEvent.click(getByText(modal, 'Create'));
+  await act(async () => {
+    fireEvent.click(getByText(modal, 'Create'));
+  });
   getByText(packageExplorer, inputValue);
 };
 
@@ -90,32 +98,32 @@ test(
 // TODO: add connection, runtime, text, etc.
 test(integrationTest('Create elements with no drivers'), async () => {
   const ROOT_PACKAGE_NAME = 'model';
-  addRootPackage(ROOT_PACKAGE_NAME, renderResult);
-  createNewElementOnRootPackage(
+  await addRootPackage(ROOT_PACKAGE_NAME, renderResult);
+  await createNewElementOnRootPackage(
     ROOT_PACKAGE_NAME,
     PACKAGEABLE_ELEMENT_TYPE.PROFILE,
     renderResult,
     'ProfileExtension',
   );
-  createNewElementOnRootPackage(
+  await createNewElementOnRootPackage(
     ROOT_PACKAGE_NAME,
     PACKAGEABLE_ELEMENT_TYPE.ENUMERATION,
     renderResult,
     'MyEnumeration',
   );
-  createNewElementOnRootPackage(
+  await createNewElementOnRootPackage(
     ROOT_PACKAGE_NAME,
     PACKAGEABLE_ELEMENT_TYPE.CLASS,
     renderResult,
     'Person',
   );
-  createNewElementOnRootPackage(
+  await createNewElementOnRootPackage(
     ROOT_PACKAGE_NAME,
     PACKAGEABLE_ELEMENT_TYPE.MAPPING,
     renderResult,
     'MyMapping',
   );
-  createNewElementOnRootPackage(
+  await createNewElementOnRootPackage(
     ROOT_PACKAGE_NAME,
     PACKAGEABLE_ELEMENT_TYPE.SERVICE,
     renderResult,

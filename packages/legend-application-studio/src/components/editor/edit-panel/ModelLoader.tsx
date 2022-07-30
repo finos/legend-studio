@@ -69,8 +69,8 @@ export const ModelLoader = observer(() => {
   const label =
     modelLoaderState.getImportConfigurationDescription(currentModelLoadType)
       ?.label ??
-    loaderExtensionConfig?.modelGenerationConfig.label ??
-    loaderExtensionConfig?.modelGenerationConfig.key ??
+    loaderExtensionConfig?.label ??
+    loaderExtensionConfig?.key ??
     currentModelLoadType;
   const allowHardReplace =
     !loaderExtensionConfig || loaderExtensionConfig.allowHardReplace;
@@ -175,16 +175,11 @@ export const ModelLoader = observer(() => {
                         {extraModelLoaderExtensionsConfigs.map(
                           (config: ModelLoaderExtensionConfiguration) => (
                             <MenuContentItem
-                              key={config.modelGenerationConfig.key}
+                              key={config.key}
                               className="model-loader__header__configs__type-option__group__option"
-                              onClick={setCurrentInputType(
-                                config.modelGenerationConfig.key,
-                              )}
+                              onClick={setCurrentInputType(config.key)}
                             >
-                              {config.modelGenerationConfig.label ??
-                                prettyCONSTName(
-                                  config.modelGenerationConfig.key,
-                                )}
+                              {config.label ?? prettyCONSTName(config.key)}
                             </MenuContentItem>
                           ),
                         )}

@@ -579,18 +579,15 @@
     &__content {
       display: flex;
       width: 100%;
-      margin-right: 0.5rem;
 
       &__label {
         @include flexCenter;
 
         background: var(--color-dark-grey-100);
-        margin-right: 0.5rem;
 
         svg {
           color: var(--color-light-grey-50);
-          height: 1.5rem;
-          width: 1.5rem;
+          font-size: 1.2rem;
         }
       }
 
@@ -600,8 +597,8 @@
         padding: 0.5rem;
         height: 2.8rem;
         width: 100%;
-        background: var(--color-dark-grey-250);
-        border: 0.1rem solid var(--color-dark-grey-250);
+        background: var(--color-dark-grey-85);
+        border: 0.1rem solid var(--color-dark-grey-100);
       }
     }
   }
@@ -613,8 +610,8 @@
     .panel {
       &__header {
         min-width: 9rem;
-        background: var(--color-dark-grey-200);
         color: var(--color-light-grey-200);
+        background: var(--color-dark-grey-100);
         padding-left: 1rem;
       }
 
@@ -646,11 +643,6 @@
 
     height: 2.4rem;
     color: var(--color-light-grey-400);
-
-    svg {
-      height: 1rem;
-      width: 1rem;
-    }
   }
 
   &__item:hover {
@@ -673,14 +665,6 @@
     background: none;
     color: inherit;
     padding-left: 1rem;
-  }
-
-  &__item__label__icon {
-    margin-right: 0.5rem;
-  }
-
-  &__item__label__text {
-    @include ellipsisTextOverflow;
   }
 
   &__item__actions {

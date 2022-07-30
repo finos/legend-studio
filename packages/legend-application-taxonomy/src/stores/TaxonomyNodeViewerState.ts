@@ -112,6 +112,8 @@ export class TaxonomyNodeViewerState {
     this.clearDataSpaceViewerState();
 
     try {
+      this.currentDataSpace = dataSpaceTaxonomyContext;
+
       // fetch project
       this.initDataSpaceViewerState.setMessage(`Fetching project...`);
       const project = ProjectData.serialization.fromJson(
@@ -173,7 +175,6 @@ export class TaxonomyNodeViewerState {
         },
       );
       this.dataSpaceViewerState = dataSpaceViewerState;
-      this.currentDataSpace = dataSpaceTaxonomyContext;
     } catch (error) {
       assertErrorThrown(error);
       this.explorerStore.applicationStore.notifyError(error);
