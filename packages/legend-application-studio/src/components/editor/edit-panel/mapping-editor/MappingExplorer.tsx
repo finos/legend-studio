@@ -108,7 +108,7 @@ export const MappingExplorerContextMenu = observer(
       }
       mappingEditorState.reprocessMappingExplorerTree();
     };
-    const executeMappingElement = (): void => {
+    const queryMappingElement = (): void => {
       if (mappingElement instanceof SetImplementation) {
         flowResult(mappingEditorState.buildExecution(mappingElement)).catch(
           applicationStore.alertUnhandledError,
@@ -173,9 +173,9 @@ export const MappingExplorerContextMenu = observer(
         {mappingElement instanceof SetImplementation && (
           <div
             className="mapping-explorer__context-menu__item"
-            onClick={executeMappingElement}
+            onClick={queryMappingElement}
           >
-            Execute
+            Query
           </div>
         )}
         {mappingElement instanceof SetImplementation && (

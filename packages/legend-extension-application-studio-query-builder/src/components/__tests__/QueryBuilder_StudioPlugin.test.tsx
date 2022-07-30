@@ -279,7 +279,7 @@ test(
     const classMappingInExplorer = getByText(mappingExplorer, 'Person');
     fireEvent.contextMenu(classMappingInExplorer);
 
-    fireEvent.click(renderResult.getByText('Execute'));
+    fireEvent.click(renderResult.getByText('Run Query'));
     await waitFor(() => renderResult.getByTitle('Edit query...'));
     fireEvent.click(renderResult.getByTitle('Edit query...'));
 

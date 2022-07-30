@@ -717,7 +717,7 @@ export const MappingExecutionBuilder = observer(
               <div className="mapping-execution-builder__execute-btn__label">
                 <PlayIcon className="mapping-execution-builder__execute-btn__label__icon" />
                 <div className="mapping-execution-builder__execute-btn__label__title">
-                  Execute
+                  Run Query
                 </div>
               </div>
               <DropdownMenu

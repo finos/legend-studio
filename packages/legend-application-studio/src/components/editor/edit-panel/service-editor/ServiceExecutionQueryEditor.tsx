@@ -290,14 +290,14 @@ export const ServiceExecutionQueryEditor = observer(
             <button
               className="service-editor__execution__execute-btn"
               onClick={handleExecute}
-              title={`Execute`}
+              title="Run Query"
               disabled={executionState.isExecuting}
               tabIndex={-1}
             >
               <div className="service-editor__execution__execute-btn__label">
                 <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
                 <div className="service-editor__execution__execute-btn__label__title">
-                  Execute
+                  Run Query
                 </div>
               </div>
               <DropdownMenu
