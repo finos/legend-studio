@@ -219,7 +219,7 @@ const entities = [
   },
 ];
 
-test(integrationTest('Open query builder by executing a class'), async () => {
+test(integrationTest('Open query builder by querying a class'), async () => {
   const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
   const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
     MOCK__editorStore,
@@ -279,7 +279,7 @@ test(
     const classMappingInExplorer = getByText(mappingExplorer, 'Person');
     fireEvent.contextMenu(classMappingInExplorer);
 
-    fireEvent.click(renderResult.getByText('Run Query'));
+    fireEvent.click(renderResult.getByText('Query'));
     await waitFor(() => renderResult.getByTitle('Edit query...'));
     fireEvent.click(renderResult.getByTitle('Edit query...'));
 
@@ -290,7 +290,7 @@ test(
 );
 
 test(
-  integrationTest('Open query builder by editing query of a mapping execution'),
+  integrationTest('Open query builder by editing query of a mapping test'),
   async () => {
     const MOCK__editorStore = TEST__buildQueryBuilderMockedEditorStore();
     const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
