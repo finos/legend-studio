@@ -42,7 +42,6 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
     owner: PropertyOwner,
   ) {
     makeObservable(this, {
-      _UUID: false,
       name: observable,
       isBeingDragged: observable,
       setIsBeingDragged: action,
