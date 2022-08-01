@@ -226,7 +226,7 @@ export class DSLPersistence_PureProtocolProcessorPlugin
           trigger.dayOfMonth = protocol.dayOfMonth;
           trigger.month = protocol.month;
           trigger.dayOfWeek = protocol.dayOfWeek;
-          return new CronTrigger();
+          return trigger;
         }
         return undefined;
       },
