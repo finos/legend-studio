@@ -55,6 +55,7 @@ import {
   fromGroupOperation,
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper.js';
+import type { QueryBuilderProjectionColumnDragSource } from './QueryBuilderProjectionState.js';
 
 export abstract class QueryBuilderFilterOperator {
   readonly uuid = uuid();
@@ -95,6 +96,7 @@ export interface QueryBuilderFilterConditionDragSource {
 
 export type QueryBuilderFilterDropTarget =
   | QueryBuilderExplorerTreeDragSource
+  | QueryBuilderProjectionColumnDragSource
   | QueryBuilderFilterConditionDragSource;
 export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
@@ -407,6 +409,11 @@ export class QueryBuilderFilterState
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
+  /**
+   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * and will be leveraged when the concepts of workflows are introduced into query builder.
+   */
+  allowDnDProjectionToFilter = true;
 
   constructor(
     queryBuilderState: QueryBuilderState,
