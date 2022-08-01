@@ -30,8 +30,11 @@ import {
   type V1_Trigger,
 } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 import {
+  V1_cronTriggerModelSchema,
+  V1_manualTriggerModelSchema,
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
+  V1_TriggerType,
 } from './v1/transformation/pureProtocol/V1_DSLPersistence_ProtocolHelper.js';
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
@@ -44,6 +47,8 @@ import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/fr
 import type {
   DSLPersistence_PureProtocolProcessorPlugin_Extension,
   V1_TriggerBuilder,
+  V1_TriggerProtocolDeserializer,
+  V1_TriggerProtocolSerializer,
   V1_TriggerTransformer,
 } from './DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
@@ -246,6 +251,34 @@ export class DSLPersistence_PureProtocolProcessorPlugin
           return protocol;
         }
         return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTriggerProtocolSerializers?(): V1_TriggerProtocolSerializer[] {
+    return [
+      (protocol: V1_Trigger): PlainObject<V1_Trigger> | undefined => {
+        if (protocol instanceof V1_ManualTrigger) {
+          return serialize(V1_manualTriggerModelSchema, protocol);
+        } else if (protocol instanceof V1_CronTrigger) {
+          return serialize(V1_cronTriggerModelSchema, protocol);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTriggerProtocolDeserializers?(): V1_TriggerProtocolDeserializer[] {
+    return [
+      (json: PlainObject<V1_Trigger>): V1_Trigger | undefined => {
+        switch (json._type) {
+          case V1_TriggerType.MANUAL_TRIGGER:
+            return deserialize(V1_manualTriggerModelSchema, json);
+          case V1_TriggerType.CRON_TRIGGER:
+            return deserialize(V1_cronTriggerModelSchema, json);
+          default:
+            return undefined;
+        }
       },
     ];
   }

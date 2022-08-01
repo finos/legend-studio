@@ -83,6 +83,7 @@ import {
   type V1_Persister,
   V1_StreamingPersister,
 } from '../../model/packageableElements/persistence/V1_DSLPersistence_Persister.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import {
   deserializeArray,
@@ -970,16 +971,16 @@ export const V1_deserializePersister = (
  * trigger
  **********/
 
-enum V1_TriggerType {
+export enum V1_TriggerType {
   MANUAL_TRIGGER = 'manualTrigger',
   CRON_TRIGGER = 'cronTrigger',
 }
 
-const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
+export const V1_manualTriggerModelSchema = createModelSchema(V1_ManualTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.MANUAL_TRIGGER),
 });
 
-const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
+export const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
   _type: usingConstantValueSchema(V1_TriggerType.CRON_TRIGGER),
   minutes: primitive(),
   hours: primitive(),
@@ -990,28 +991,45 @@ const V1_cronTriggerModelSchema = createModelSchema(V1_CronTrigger, {
 
 export const V1_serializeTrigger = (
   protocol: V1_Trigger,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_Trigger> => {
-  if (protocol instanceof V1_ManualTrigger) {
-    return serialize(V1_manualTriggerModelSchema, protocol);
-  } else if (protocol instanceof V1_CronTrigger) {
-    return serialize(V1_cronTriggerModelSchema, protocol);
+  const extraTriggerProtocolSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraTriggerProtocolSerializers) {
+    const triggerProtocolJson = serializer(protocol);
+    if (triggerProtocolJson) {
+      return triggerProtocolJson;
+    }
   }
-  throw new UnsupportedOperationError(`Can't serialize trigger`, protocol);
+  throw new UnsupportedOperationError(
+    `Can't serialize trigger: no compatible serializer available from plugins`,
+    protocol,
+  );
 };
 
 export const V1_deserializeTrigger = (
   json: PlainObject<V1_Trigger>,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_Trigger => {
-  switch (json._type) {
-    case V1_TriggerType.MANUAL_TRIGGER:
-      return deserialize(V1_manualTriggerModelSchema, json);
-    case V1_TriggerType.CRON_TRIGGER:
-      return deserialize(V1_cronTriggerModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize trigger '${json._type}'`,
-      );
+  const extraTriggerProtocolDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerProtocolDeserializers?.() ?? [],
+  );
+  for (const deserializer of extraTriggerProtocolDeserializers) {
+    const triggerProtocol = deserializer(json);
+    if (triggerProtocol) {
+      return triggerProtocol;
+    }
   }
+  throw new UnsupportedOperationError(
+    `Can't deserialize trigger of type '${json._type}': no compatible deserializer available from plugins`,
+  );
 };
 
 /**********
@@ -1038,7 +1056,7 @@ export const V1_persistenceModelSchema = (
     ),
     service: primitive(),
     trigger: custom(
-      (val) => V1_serializeTrigger(val),
-      (val) => V1_deserializeTrigger(val),
+      (val) => V1_serializeTrigger(val, plugins),
+      (val) => V1_deserializeTrigger(val, plugins),
     ),
   });
