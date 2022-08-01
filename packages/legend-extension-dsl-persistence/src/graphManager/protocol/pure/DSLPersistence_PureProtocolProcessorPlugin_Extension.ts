@@ -15,7 +15,9 @@
  */
 
 import type { V1_PersistencePlatform } from './v1/model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
+import type { V1_Trigger } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 import type { PersistencePlatform } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
+import type { Trigger } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
 import type {
   PureProtocolProcessorPlugin,
   V1_GraphBuilderContext,
@@ -43,6 +45,26 @@ export type V1_PersistencePlatformProtocolDeserializer = (
   json: PlainObject<V1_PersistencePlatform>,
 ) => V1_PersistencePlatform | undefined;
 
+// types: trigger
+
+export type V1_TriggerBuilder = (
+  protocol: V1_Trigger,
+  context: V1_GraphBuilderContext,
+) => Trigger | undefined;
+
+export type V1_TriggerTransformer = (
+  metamodel: Trigger,
+  context: V1_GraphTransformerContext,
+) => V1_Trigger | undefined;
+
+export type V1_TriggerProtocolSerializer = (
+  protocol: V1_Trigger,
+) => PlainObject<V1_Trigger> | undefined;
+
+export type V1_TriggerProtocolDeserializer = (
+  json: PlainObject<V1_Trigger>,
+) => V1_Trigger | undefined;
+
 export interface DSLPersistence_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   // extension hooks: persistence platform
@@ -54,4 +76,14 @@ export interface DSLPersistence_PureProtocolProcessorPlugin_Extension
   V1_getExtraPersistencePlatformProtocolSerializers?(): V1_PersistencePlatformProtocolSerializer[];
 
   V1_getExtraPersistencePlatformProtocolDeserializers?(): V1_PersistencePlatformProtocolDeserializer[];
+
+  // extension hooks: trigger
+
+  V1_getExtraTriggerBuilders?(): V1_TriggerBuilder[];
+
+  V1_getExtraTriggerTransformers?(): V1_TriggerTransformer[];
+
+  V1_getExtraTriggerProtocolSerializers?(): V1_TriggerProtocolSerializer[];
+
+  V1_getExtraTriggerProtocolDeserializers?(): V1_TriggerProtocolDeserializer[];
 }

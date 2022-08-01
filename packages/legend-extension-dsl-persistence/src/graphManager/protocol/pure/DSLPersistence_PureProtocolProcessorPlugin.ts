@@ -17,8 +17,18 @@
 import packageJson from '../../../../package.json';
 import { Persistence } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 import { PersistenceContext } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
+import {
+  CronTrigger,
+  ManualTrigger,
+  type Trigger,
+} from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
 import { V1_Persistence } from './v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 import { V1_PersistenceContext } from './v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
+import {
+  V1_CronTrigger,
+  V1_ManualTrigger,
+  type V1_Trigger,
+} from './v1/model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
@@ -31,6 +41,11 @@ import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_Persist
 import { V1_buildPersistenceContext } from './v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';
 import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
 import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';
+import type {
+  DSLPersistence_PureProtocolProcessorPlugin_Extension,
+  V1_TriggerBuilder,
+  V1_TriggerTransformer,
+} from './DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
@@ -53,7 +68,10 @@ export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
 export const PERSISTENCE_CONTEXT_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::PersistenceContext';
 
-export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSLPersistence_PureProtocolProcessorPlugin
+  extends PureProtocolProcessorPlugin
+  implements DSLPersistence_PureProtocolProcessorPlugin_Extension
+{
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,
@@ -182,6 +200,50 @@ export class DSLPersistence_PureProtocolProcessorPlugin extends PureProtocolProc
           return V1_transformPersistence(metamodel, context);
         } else if (metamodel instanceof PersistenceContext) {
           return V1_transformPersistenceContext(metamodel, context);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTriggerBuilders?(): V1_TriggerBuilder[] {
+    return [
+      (
+        protocol: V1_Trigger,
+        context: V1_GraphBuilderContext,
+      ): Trigger | undefined => {
+        if (protocol instanceof V1_ManualTrigger) {
+          return new ManualTrigger();
+        } else if (protocol instanceof V1_CronTrigger) {
+          const trigger = new CronTrigger();
+          trigger.minutes = protocol.minutes;
+          trigger.hours = protocol.hours;
+          trigger.dayOfMonth = protocol.dayOfMonth;
+          trigger.month = protocol.month;
+          trigger.dayOfWeek = protocol.dayOfWeek;
+          return new CronTrigger();
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraTriggerTransformers?(): V1_TriggerTransformer[] {
+    return [
+      (
+        metamodel: Trigger,
+        context: V1_GraphTransformerContext,
+      ): V1_Trigger | undefined => {
+        if (metamodel instanceof ManualTrigger) {
+          return new V1_ManualTrigger();
+        } else if (metamodel instanceof CronTrigger) {
+          const protocol = new V1_CronTrigger();
+          protocol.minutes = metamodel.minutes;
+          protocol.hours = metamodel.hours;
+          protocol.dayOfMonth = metamodel.dayOfMonth;
+          protocol.month = metamodel.month;
+          protocol.dayOfWeek = metamodel.dayOfWeek;
+          return protocol;
         }
         return undefined;
       },
