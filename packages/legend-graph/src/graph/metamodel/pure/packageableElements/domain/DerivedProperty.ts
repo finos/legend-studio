@@ -59,6 +59,7 @@ export class DerivedProperty
     owner: PropertyOwner,
   ) {
     makeObservable(this, {
+      name: observable,
       isBeingDragged: observable,
       setIsBeingDragged: action,
     });
