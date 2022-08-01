@@ -153,11 +153,11 @@ enum CLASS_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
 }
 
-export interface ClassPropertyDragSource {
+interface ClassPropertyDragSource {
   columnState: Property;
 }
 
-export enum CLASS_PROPERTY_DND_TYPE {
+enum CLASS_PROPERTY_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
 }
 
