@@ -124,11 +124,11 @@ import {
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
-export interface ClassPropertyDragSource {
+interface ClassPropertyDragSource {
   columnState: Property;
 }
 
-export enum CLASS_PROPERTY_DND_TYPE {
+enum CLASS_PROPERTY_DND_TYPE {
   PROJECTION_COLUMN = 'PROJECTION_COLUMN',
 }
 
@@ -224,7 +224,6 @@ const PropertyBasicEditor = observer(
           return;
         }
         // move the item being hovered on when the dragged item position is beyond the its middle point
-
         const hoverBoundingReact = ref.current?.getBoundingClientRect();
         const distanceThreshold =
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
@@ -265,7 +264,6 @@ const PropertyBasicEditor = observer(
       [property],
     );
     dragConnector(dropConnector(ref));
-
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
