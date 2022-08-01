@@ -150,7 +150,6 @@ import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../..
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
-  V1_transformConnection,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -189,16 +188,7 @@ export const V1_transformRelationalSink = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalSink => {
   const protocol = new V1_RelationalSink();
-  if (element.database) {
-    protocol.database = element.database.value.path;
-  }
-  if (element.connection) {
-    protocol.connection = V1_transformConnection(
-      element.connection,
-      true,
-      context,
-    );
-  }
+  protocol.database = element.database.value.path;
   return protocol;
 };
 
@@ -208,13 +198,6 @@ export const V1_transformObjectStorageSink = (
 ): V1_ObjectStorageSink => {
   const protocol = new V1_ObjectStorageSink();
   protocol.binding = element.binding.value.path;
-  if (element.connection) {
-    protocol.connection = V1_transformConnection(
-      element.connection,
-      true,
-      context,
-    );
-  }
   return protocol;
 };
 

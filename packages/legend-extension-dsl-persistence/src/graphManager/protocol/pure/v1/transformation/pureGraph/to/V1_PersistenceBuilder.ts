@@ -153,7 +153,6 @@ import {
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
   V1_buildFullPath,
-  V1_buildConnection,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -195,15 +194,10 @@ export const V1_buildRelationalSink = (
   context: V1_GraphBuilderContext,
 ): RelationalSink => {
   const sink = new RelationalSink();
-  if (protocol.database) {
-    sink.database = context.resolveElement(
-      protocol.database,
-      false,
-    ) as PackageableElementImplicitReference<Database>;
-  }
-  if (protocol.connection) {
-    sink.connection = V1_buildConnection(protocol.connection, context);
-  }
+  sink.database = context.resolveElement(
+    protocol.database,
+    false,
+  ) as PackageableElementImplicitReference<Database>;
   return sink;
 };
 
@@ -216,9 +210,6 @@ export const V1_buildObjectStorageSink = (
     protocol.binding,
     false,
   ) as PackageableElementImplicitReference<Binding>;
-  if (protocol.connection) {
-    sink.connection = V1_buildConnection(protocol.connection, context);
-  }
   return sink;
 };
 

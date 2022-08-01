@@ -692,7 +692,7 @@ const V1_relationalSinkModelSchema = (
 ): ModelSchema<V1_RelationalSink> =>
   createModelSchema(V1_RelationalSink, {
     _type: usingConstantValueSchema(V1_SinkType.RELATIONAL_SINK),
-    database: optional(primitive()),
+    database: primitive(),
   });
 
 const V1_objectStorageSinkModelSchema = (
@@ -700,7 +700,7 @@ const V1_objectStorageSinkModelSchema = (
 ): ModelSchema<V1_ObjectStorageSink> =>
   createModelSchema(V1_ObjectStorageSink, {
     _type: usingConstantValueSchema(V1_SinkType.OBJECT_STORAGE_SINK),
-    binding: optional(primitive()),
+    binding: primitive(),
   });
 
 export const V1_serializeSink = (
