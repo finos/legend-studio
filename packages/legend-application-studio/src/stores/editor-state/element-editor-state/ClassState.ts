@@ -22,6 +22,7 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../EditorStore.js';
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   type Class,
   type Constraint,
