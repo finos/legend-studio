@@ -154,7 +154,8 @@ enum CLASS_PROPERTY_DND_TYPE {
 }
 
 interface ClassPropertyDragSource {
-  columnState: Property;
+  columnEditorState: ClassEditorState;
+  columnProperty: ClassEditorState['selectedProperty'];
 }
 
 enum CLASS_PROPERTY_DND_TYPE {
