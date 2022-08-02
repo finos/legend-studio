@@ -125,12 +125,11 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 interface ClassPropertyDragSource {
-  columnEditorState: ClassEditorState;
-  columnProperty: ClassEditorState['selectedProperty'];
+  property: Property;
 }
 
 enum CLASS_PROPERTY_DND_TYPE {
-  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
+  PROPERTY = 'PROPERTY',
 }
 
 const PropertyBasicEditor = observer(
@@ -214,12 +213,13 @@ const PropertyBasicEditor = observer(
     // Drag and Drop
     const handleHover = useCallback(
       (item: ClassPropertyDragSource, monitor: DropTargetMonitor): void => {
-        const dragIndex = editorState.classState.propertyColumns.findIndex(
-          (e) => e === item.columnProperty,
+        const dragIndex = editorState.classState.propertyStateTesting.findIndex(
+          (e) => e === item.property,
         );
-        const hoverIndex = editorState.classState.propertyColumns.findIndex(
-          (e) => e === property,
-        );
+        const hoverIndex =
+          editorState.classState.propertyStateTesting.findIndex(
+            (e) => e === property,
+          );
 
         if (dragIndex === -1 || hoverIndex === -1 || dragIndex === hoverIndex) {
           return;
@@ -244,7 +244,7 @@ const PropertyBasicEditor = observer(
     );
     const [, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_PROPERTY_DND_TYPE.PROJECTION_COLUMN],
+        accept: [CLASS_PROPERTY_DND_TYPE.PROPERTY],
         hover: (
           item: ClassPropertyDragSource,
           monitor: DropTargetMonitor,
@@ -252,19 +252,7 @@ const PropertyBasicEditor = observer(
       }),
       [handleHover],
     );
-    const [, dragConnector] = useDrag(
-      () => ({
-        type: CLASS_PROPERTY_DND_TYPE.PROJECTION_COLUMN,
-        item: (): ClassPropertyDragSource => {
-          editorState.setIsBeingDragged(true);
-          return { columnProperty: property, columnEditorState: editorState };
-        },
-        end: (item: ClassPropertyDragSource | undefined): void =>
-          item?.columnEditorState.setIsBeingDragged(false),
-      }),
-      [editorState],
-    );
-    dragConnector(dropConnector(ref));
+    dropConnector(ref);
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {

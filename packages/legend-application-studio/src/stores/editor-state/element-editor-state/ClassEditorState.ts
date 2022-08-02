@@ -39,7 +39,6 @@ import {
 export class ClassEditorState extends UMLEditorState {
   classState: ClassState;
   selectedProperty: AbstractProperty | undefined;
-  isBeingDragged = false;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
@@ -47,8 +46,6 @@ export class ClassEditorState extends UMLEditorState {
     makeObservable(this, {
       classState: observable,
       selectedProperty: observable,
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
       class: computed,
       hasCompilationError: computed,
       reprocess: override,
@@ -56,10 +53,6 @@ export class ClassEditorState extends UMLEditorState {
     });
 
     this.classState = new ClassState(editorStore, this.class);
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 
   get class(): Class {
