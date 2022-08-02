@@ -125,7 +125,8 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 interface ClassPropertyDragSource {
-  columnState: Property;
+  columnEditorState: ClassEditorState;
+  columnProperty: ClassEditorState['selectedProperty'];
 }
 
 enum CLASS_PROPERTY_DND_TYPE {
@@ -214,7 +215,7 @@ const PropertyBasicEditor = observer(
     const handleHover = useCallback(
       (item: ClassPropertyDragSource, monitor: DropTargetMonitor): void => {
         const dragIndex = editorState.classState.propertyColumns.findIndex(
-          (e) => e === item.columnState,
+          (e) => e === item.columnProperty,
         );
         const hoverIndex = editorState.classState.propertyColumns.findIndex(
           (e) => e === property,
@@ -255,13 +256,13 @@ const PropertyBasicEditor = observer(
       () => ({
         type: CLASS_PROPERTY_DND_TYPE.PROJECTION_COLUMN,
         item: (): ClassPropertyDragSource => {
-          property.setIsBeingDragged(true);
-          return { columnState: property };
+          editorState.setIsBeingDragged(true);
+          return { columnProperty: property, columnEditorState: editorState };
         },
         end: (item: ClassPropertyDragSource | undefined): void =>
-          item?.columnState.setIsBeingDragged(false),
+          item?.columnEditorState.setIsBeingDragged(false),
       }),
-      [property],
+      [editorState],
     );
     dragConnector(dropConnector(ref));
     // Other
