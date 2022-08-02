@@ -65,7 +65,10 @@ import {
 } from '../stores/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
-import { assertErrorThrown } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import {
   useApplicationStore,
@@ -77,6 +80,11 @@ import {
 } from '../stores/QueryParametersState.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
 import type { ValueSpecification } from '@finos/legend-graph';
+import {
+  type QueryBuilderProjectionColumnDragSource,
+  QueryBuilderSimpleProjectionColumnState,
+  QUERY_BUILDER_PROJECTION_DND_TYPE,
+} from '../stores/QueryBuilderProjectionState.js';
 
 const FilterConditionDragLayer: React.FC = () => {
   const { itemType, item, isDragging, currentPosition } = useDragLayer(
@@ -708,18 +716,37 @@ export const QueryBuilderFilterPanel = observer(
     };
     // Drag and Drop
     const handleDrop = useCallback(
-      (item: QueryBuilderFilterDropTarget): void => {
+      (item: QueryBuilderFilterDropTarget, type: string): void => {
         let filterConditionState: FilterConditionState;
         try {
+          let propertyExpression;
+          if (type === QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN) {
+            if (
+              (item as QueryBuilderProjectionColumnDragSource)
+                .columnState instanceof QueryBuilderSimpleProjectionColumnState
+            ) {
+              propertyExpression = (
+                (item as QueryBuilderProjectionColumnDragSource)
+                  .columnState as QueryBuilderSimpleProjectionColumnState
+              ).propertyExpressionState.propertyExpression;
+            } else {
+              throw new UnsupportedOperationError(
+                `Dragging and Dropping derivation projection column is not supported.`,
+              );
+            }
+          } else {
+            propertyExpression =
+              buildPropertyExpressionFromExplorerTreeNodeData(
+                filterState.queryBuilderState.explorerState.nonNullableTreeData,
+                (item as QueryBuilderExplorerTreeDragSource).node,
+                filterState.queryBuilderState.graphManagerState.graph,
+                filterState.queryBuilderState.explorerState
+                  .propertySearchPanelState.allMappedPropertyNodes,
+              );
+          }
           filterConditionState = new FilterConditionState(
             filterState,
-            buildPropertyExpressionFromExplorerTreeNodeData(
-              filterState.queryBuilderState.explorerState.nonNullableTreeData,
-              (item as QueryBuilderExplorerTreeDragSource).node,
-              filterState.queryBuilderState.graphManagerState.graph,
-              filterState.queryBuilderState.explorerState
-                .propertySearchPanelState.allMappedPropertyNodes,
-            ),
+            propertyExpression,
           );
         } catch (error) {
           assertErrorThrown(error);
@@ -740,16 +767,22 @@ export const QueryBuilderFilterPanel = observer(
     );
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({
-        accept: [
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-          QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-        ],
+        accept: filterState.allowDnDProjectionToFilter
+          ? [
+              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+              QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
+            ]
+          : [
+              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+            ],
         drop: (
           item: QueryBuilderExplorerTreeDragSource,
           monitor: DropTargetMonitor,
         ): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item);
+            handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor): { isPropertyDragOver: boolean } => ({
