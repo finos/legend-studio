@@ -34,7 +34,6 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
   type Property,
-  getOwnClassProperty,
   getAllClassConstraints,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
@@ -47,19 +46,6 @@ import {
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';
-
-export class ClassPropertyState {
-  cpsProperty: Property;
-  cpsEditorStore: EditorStore;
-  constructor(cpsProperty: Property, cpsEditorStore: EditorStore) {
-    makeObservable(this, {
-      cpsProperty: observable,
-      cpsEditorStore: observable,
-    });
-    this.cpsProperty = cpsProperty;
-    this.cpsEditorStore = cpsEditorStore;
-  }
-}
 
 export class DerivedPropertyState extends LambdaEditorState {
   derivedProperty: DerivedProperty;
@@ -250,7 +236,6 @@ export class ClassState {
   derivedPropertyStates: DerivedPropertyState[] = [];
   constraintStates: ConstraintState[] = [];
   propertyStateTesting: Property[] = [];
-  //svp: rename propertyStateTesting to propertystate F2
 
   isConvertingConstraintLambdaObjects = false;
   isConvertingDerivedPropertyLambdaObjects = false;
@@ -274,7 +259,6 @@ export class ClassState {
 
     this.editorStore = editorStore;
     this.class = _class;
-    // this.propertyStateTesting = _class.properties;
     this.constraintStates = getAllClassConstraints(_class).map(
       (constraint) => new ConstraintState(constraint, this.editorStore),
     );
@@ -282,13 +266,6 @@ export class ClassState {
       (derivedProperty) =>
         new DerivedPropertyState(derivedProperty, this.editorStore),
     );
-    //svpcreate each new property has new propertystate maybec change delete properties and stuff
-
-    // constructor(cpsProperty: Property, cpsEditorStore: EditorStore) {
-
-    new ClassPropertyState(this.property, this.editorStore);
-
-    // new ClassPropertyState( getOwnClassProperty(_class,class.name) , this.editorStore)
   }
 
   getNullableConstraintState = (

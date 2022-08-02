@@ -49,12 +49,7 @@ import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
-import {
-  type DropTargetMonitor,
-  type XYCoord,
-  useDrag,
-  useDrop,
-} from 'react-dnd';
+import { type DropTargetMonitor, type XYCoord, useDrop } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type StereotypeReference,
