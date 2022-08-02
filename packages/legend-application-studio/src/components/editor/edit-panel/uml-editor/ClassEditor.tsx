@@ -567,6 +567,7 @@ const DerivedPropertyBasicEditor = observer(
               spellCheck={false}
               className="property-basic-editor__name property-basic-editor__qualififed-property__name"
               value={derivedProperty.name}
+              placeholder="Property name"
               onChange={changeValue}
             />
           )}
