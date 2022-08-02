@@ -480,7 +480,7 @@ export const QueryBuilderResultPanel = observer(
                 onClick={cancelQuery}
                 tabIndex={-1}
               >
-                <div className="query-builder__result__stop-btn__label">
+                <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
                   <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
                   <div className="query-builder__result__stop-btn__label__title">
                     Stop
