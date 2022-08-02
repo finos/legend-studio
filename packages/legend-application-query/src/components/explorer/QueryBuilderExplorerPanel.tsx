@@ -85,6 +85,8 @@ import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
+import type { QueryBuilderFetchStructureState } from '../../stores/fetch-structure/QueryBuilderFetchStructureState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -109,6 +111,38 @@ const checkForDeprecatedNode = (
     }
   }
   return false;
+};
+
+export const isNodeAlreadyUsed = (
+  node: QueryBuilderExplorerTreeNodeData,
+  fetchStructureState: QueryBuilderFetchStructureState,
+): boolean => {
+  if (
+    node instanceof QueryBuilderExplorerTreeRootNodeData &&
+    (fetchStructureState.projectionState.columns.filter(
+      (column) => column instanceof QueryBuilderSimpleProjectionColumnState,
+    ).length > 0 ||
+      (fetchStructureState.graphFetchTreeState.treeData !== undefined &&
+        fetchStructureState.graphFetchTreeState.treeData.rootIds.length > 0))
+  ) {
+    return true;
+  }
+  return (
+    fetchStructureState.projectionState.usedPropertyNodeIds.includes(node.id) ||
+    (fetchStructureState.graphFetchTreeState.treeData !== undefined &&
+      fetchStructureState.graphFetchTreeState.treeData.rootIds.length > 0 &&
+      (Array.from(
+        guaranteeNonNullable(
+          fetchStructureState.graphFetchTreeState.treeData,
+        ).nodes.values(),
+      ).find((n) => n.id === node.id) !== undefined ||
+        Array.from(
+          guaranteeNonNullable(
+            fetchStructureState.graphFetchTreeState.treeData,
+          ).nodes.values(),
+        ).find((n) => n.id.split(TYPE_CAST_TOKEN)[0] === node.id) !==
+          undefined))
+  );
 };
 
 export const QueryBuilderSubclassInfoTooltip: React.FC<{
@@ -429,6 +463,13 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 !node.mappingData.mapped,
               'query-builder-explorer-tree__node__container--selected':
                 node.isSelected,
+
+              'query-builder-explorer-tree__node__container--highlighted':
+                explorerState.highlightUsedProperties &&
+                isNodeAlreadyUsed(
+                  node,
+                  explorerState.queryBuilderState.fetchStructureState,
+                ),
             },
           )}
           title={
@@ -744,6 +785,10 @@ export const QueryBuilderExplorerPanel = observer(
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,
       );
+    const toggleHighlightUsedProperties = (): void =>
+      explorerState.setHighlightUsedProperties(
+        !explorerState.highlightUsedProperties,
+      );
     const togglePropertySearch = (): void => {
       if (explorerState.treeData) {
         if (!propertySearchPanelState.isSearchPanelOpen) {
@@ -821,6 +866,16 @@ export const QueryBuilderExplorerPanel = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>
                       Humanize Property Name
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={toggleHighlightUsedProperties}>
+                    <MenuContentItemIcon>
+                      {explorerState.highlightUsedProperties ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Highlight already used properties
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>

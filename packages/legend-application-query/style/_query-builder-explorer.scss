@@ -458,6 +458,13 @@
     color: var(--color-dark-grey-350);
   }
 
+  &__node__container--highlighted &__type-icon .icon,
+  &__node__container--highlighted &__type-icon .icon svg,
+  &__node__container--highlighted &__type-icon &__icon,
+  &__node__container--highlighted &__root-node__label__icon .icon {
+    color: var(--color-orange-100);
+  }
+
   &__node__info {
     cursor: help;
   }
