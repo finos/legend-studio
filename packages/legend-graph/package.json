@@ -51,7 +51,7 @@
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "28.1.3",
     "cross-env": "7.0.3",
-    "eslint": "8.20.0",
+    "eslint": "8.21.0",
     "jest": "28.1.3",
     "npm-run-all": "4.1.5",
     "rimraf": "3.0.2",
@@ -62,7 +62,7 @@
   },
   "extensions": {
     "pureGraphManagerPlugin": "@finos/legend-graph-manager-plugin-core-pure",
-    "dsl_external_format_graphPreset": "@finos/legend-graph-manager-preset-dsl-external-format",
+    "dsl_external_format_graphManagerPreset": "@finos/legend-graph-manager-preset-dsl-external-format",
     "dsl_external_format_pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-dsl-external-format",
     "dsl_external_format_pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-dsl-external-format",
     "dsl_external_format_pureGraphPlugin": "@finos/legend-pure-graph-plugin-dsl-external-format"
