@@ -25,6 +25,7 @@ import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
 import type { AnnotatedElement } from './AnnotatedElement.js';
 import type { StereotypeReference } from './StereotypeReference.js';
 import type { GenericTypeReference } from './GenericTypeReference.js';
+
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable
 {
