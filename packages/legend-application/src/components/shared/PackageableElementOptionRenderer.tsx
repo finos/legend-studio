@@ -25,12 +25,26 @@ export const getPackageableElementOptionalFormatter = (props?: {
   function PackageableElementOptionLabel(
     option: PackageableElementOption<PackageableElement>,
   ): React.ReactNode {
+    let optionType = '';
+    //if no package, label type system
+    if (
+      option.value.package === undefined ||
+      option.value.package.name === 'meta'
+    ) {
+      optionType = 'system';
+    } else {
+      optionType = 'generated';
+    }
+
     const className = props?.darkMode
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
 
     return (
       <div className={className}>
+        <span
+          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type__${optionType}`}
+        ></span>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (
           <div className={`${className}__tag`}>{option.value.path}</div>
