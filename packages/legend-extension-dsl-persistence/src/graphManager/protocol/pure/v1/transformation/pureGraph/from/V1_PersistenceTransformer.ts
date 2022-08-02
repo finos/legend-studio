@@ -79,11 +79,7 @@ import {
   type TargetShape,
   TransactionScope,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_TargetShape.js';
-import {
-  CronTrigger,
-  ManualTrigger,
-  type Trigger,
-} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
+import type { Trigger } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
 import {
   type V1_Auditing,
   V1_DateTimeAuditing,
@@ -149,15 +145,11 @@ import {
   type V1_TargetShape,
   V1_TransactionScope,
 } from '../../../model/packageableElements/persistence/V1_DSLPersistence_TargetShape.js';
-import {
-  V1_CronTrigger,
-  V1_ManualTrigger,
-  type V1_Trigger,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
+import type { V1_Trigger } from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
-  V1_transformConnection,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -169,18 +161,22 @@ export const V1_transformTrigger = (
   element: Trigger,
   context: V1_GraphTransformerContext,
 ): V1_Trigger => {
-  if (element instanceof CronTrigger) {
-    const protocol = new V1_CronTrigger();
-    protocol.minutes = element.minutes;
-    protocol.hours = element.hours;
-    protocol.dayOfMonth = element.dayOfMonth;
-    protocol.month = element.month;
-    protocol.dayOfWeek = element.dayOfWeek;
-    return protocol;
-  } else if (element instanceof ManualTrigger) {
-    return new V1_ManualTrigger();
+  const extraTriggerTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerTransformers?.() ?? [],
+  );
+  for (const transformer of extraTriggerTransformers) {
+    const protocol = transformer(element, context);
+    if (protocol) {
+      return protocol;
+    }
   }
-  throw new UnsupportedOperationError(`Can't transform trigger '${element}'`);
+  throw new UnsupportedOperationError(
+    `Can't transform trigger: no compatible transformer available from plugins`,
+    element,
+  );
 };
 
 /**********
@@ -192,16 +188,7 @@ export const V1_transformRelationalSink = (
   context: V1_GraphTransformerContext,
 ): V1_RelationalSink => {
   const protocol = new V1_RelationalSink();
-  if (element.database) {
-    protocol.database = element.database.value.path;
-  }
-  if (element.connection) {
-    protocol.connection = V1_transformConnection(
-      element.connection,
-      true,
-      context,
-    );
-  }
+  protocol.database = element.database.value.path;
   return protocol;
 };
 
@@ -211,13 +198,6 @@ export const V1_transformObjectStorageSink = (
 ): V1_ObjectStorageSink => {
   const protocol = new V1_ObjectStorageSink();
   protocol.binding = element.binding.value.path;
-  if (element.connection) {
-    protocol.connection = V1_transformConnection(
-      element.connection,
-      true,
-      context,
-    );
-  }
   return protocol;
 };
 

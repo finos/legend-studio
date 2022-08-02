@@ -17,7 +17,6 @@
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
 import type {
   Binding,
-  Connection,
   Database,
   PackageableElementReference,
 } from '@finos/legend-graph';
@@ -28,30 +27,23 @@ export abstract class Sink implements Hashable {
 }
 
 export class RelationalSink extends Sink implements Hashable {
-  //TODO: ledav -- make required once persistence changes are rolled out in engine
-  database?: PackageableElementReference<Database>;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: Connection;
+  database!: PackageableElementReference<Database>;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.RELATIONAL_SINK,
-      this.database?.valueForSerialization ?? '',
-      this.connection ?? '',
+      this.database.valueForSerialization ?? '',
     ]);
   }
 }
 
 export class ObjectStorageSink extends Sink implements Hashable {
   binding!: PackageableElementReference<Binding>;
-  //TODO: ledav -- remove once persistence changes are rolled out in engine
-  connection?: Connection;
 
   override get hashCode(): string {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.OBJECT_STORAGE_SINK,
       this.binding.valueForSerialization ?? '',
-      this.connection ?? '',
     ]);
   }
 }
