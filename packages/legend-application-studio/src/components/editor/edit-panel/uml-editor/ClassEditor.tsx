@@ -154,12 +154,11 @@ enum CLASS_PROPERTY_DND_TYPE {
 }
 
 interface ClassPropertyDragSource {
-  columnEditorState: ClassEditorState;
-  columnProperty: ClassEditorState['selectedProperty'];
+  property: Property;
 }
 
 enum CLASS_PROPERTY_DND_TYPE {
-  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
+  PROPERTY = 'PROPERTY',
 }
 
 const PropertyBasicEditor = observer(
