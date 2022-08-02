@@ -260,7 +260,6 @@ export class ClassState {
     this.editorStore = editorStore;
     this.class = _class;
     this.propertyColumns = _class.properties;
-
     this.constraintStates = getAllClassConstraints(_class).map(
       (constraint) => new ConstraintState(constraint, this.editorStore),
     );
