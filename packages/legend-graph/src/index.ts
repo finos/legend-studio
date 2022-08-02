@@ -134,6 +134,7 @@ export {
 export { V1_PureGraphManager } from './graphManager/protocol/pure/v1/V1_PureGraphManager.js';
 
 // V1 protocols
+export { V1_Class } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_Class.js';
 export { V1_AppliedFunction } from './graphManager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedFunction.js';
 export { V1_AppliedProperty } from './graphManager/protocol/pure/v1/model/valueSpecification/application/V1_AppliedProperty.js';
 export { V1_Collection } from './graphManager/protocol/pure/v1/model/valueSpecification/raw/V1_Collection.js';
@@ -288,8 +289,6 @@ export {
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
-export * from './graphManager/action/generation/ModelGenerationConfiguration.js';
-export * from './graphManager/protocol/pure/MappingGeneration_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
 

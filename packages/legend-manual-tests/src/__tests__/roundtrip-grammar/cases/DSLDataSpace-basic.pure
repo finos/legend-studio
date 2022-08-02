@@ -27,6 +27,7 @@ DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} mod
     }
   ];
   defaultExecutionContext: 'Context 1';
+  title: 'Untitled';
   description: 'some description';
   supportInfo: Email {
     address: 'someEmail@test.org';

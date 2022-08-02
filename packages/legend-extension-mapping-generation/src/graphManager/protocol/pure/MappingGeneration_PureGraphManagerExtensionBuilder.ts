@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import packageJson from '../package.json';
-import { AbstractPreset } from '@finos/legend-shared';
-import { MappingGeneration_PureGraphManagerPlugin } from './graphManager/MappingGeneration_PureGraphManagerPlugin.js';
+import type {
+  AbstractPureGraphManager,
+  AbstractPureGraphManagerExtension,
+} from '@finos/legend-graph';
+import { V1_MappingGeneration_PureGraphManagerExtension } from './v1/V1_MappingGeneration_PureGraphManagerExtension.js';
 
-export class MappingGeneration_GraphManagerPreset extends AbstractPreset {
-  constructor() {
-    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new MappingGeneration_PureGraphManagerPlugin(),
-    ]);
-  }
-}
+export const MappingGeneration_buildGraphManagerExtension = (
+  graphManager: AbstractPureGraphManager,
+): AbstractPureGraphManagerExtension =>
+  // NOTE: until we support more client versions, we always default to return V1
+  new V1_MappingGeneration_PureGraphManagerExtension(graphManager);

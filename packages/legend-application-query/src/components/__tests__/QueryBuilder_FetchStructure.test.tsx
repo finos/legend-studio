@@ -15,7 +15,14 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
+import {
+  getAllByText,
+  waitFor,
+  fireEvent,
+  getByTitle,
+  getByText,
+  act,
+} from '@testing-library/react';
 import {
   TEST_DATA__simpleProjection,
   TEST_DATA__projectionWithChainedProperty,
@@ -39,7 +46,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import { getAllByText, waitFor } from '@testing-library/dom';
 import {
   AbstractPropertyExpression,
   create_RawLambda,

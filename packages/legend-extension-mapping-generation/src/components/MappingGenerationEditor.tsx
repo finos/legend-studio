@@ -390,26 +390,7 @@ export const MappingGenerationEditor = observer(
                     </div>
                     <div className="mapping-generation-editor__configuration__content">
                       <MappingSelectorEditor
-                        description={
-                          'Pick a mapping with XStore ' +
-                          'between Pure and Relational class mapping that will be ' +
-                          'a starting point for relational mapping generation'
-                        }
-                        propertyName={'Mapping to regenerate'}
-                        selectedMapping={
-                          mappingGenerationEditorState.mappingToRegenerate
-                        }
-                        setMapping={(
-                          value: PackageableElementOption<Mapping>,
-                        ): void =>
-                          mappingGenerationEditorState.setMappingToRegenerate(
-                            value,
-                          )
-                        }
-                        editorStore={mappingGenerationEditorState.editorStore}
-                      />
-                      <MappingSelectorEditor
-                        propertyName={'Source Mapping'}
+                        propertyName="Source Mapping"
                         description={
                           'Pick a relational mapping' +
                           ' that is a ultimate source for M2M class mapping ' +
@@ -425,16 +406,35 @@ export const MappingGenerationEditor = observer(
                         }
                         editorStore={mappingGenerationEditorState.editorStore}
                       />
+                      <MappingSelectorEditor
+                        description={
+                          'Pick a mapping with XStore ' +
+                          'between Pure and Relational class mapping that will be ' +
+                          'a starting point for relational mapping generation'
+                        }
+                        propertyName="Mapping to regenerate"
+                        selectedMapping={
+                          mappingGenerationEditorState.mappingToRegenerate
+                        }
+                        setMapping={(
+                          value: PackageableElementOption<Mapping>,
+                        ): void =>
+                          mappingGenerationEditorState.setMappingToRegenerate(
+                            value,
+                          )
+                        }
+                        editorStore={mappingGenerationEditorState.editorStore}
+                      />
                       <ArrayEditor
-                        propertyName={'Additional M2M mappings'}
+                        propertyName="Intermediate M2M mappings"
                         values={
-                          mappingGenerationEditorState.m2mAdditionalMappings
+                          mappingGenerationEditorState.m2mIntermediateMappings
                         }
                         isReadOnly={false}
                         update={(
                           values: PackageableElementOption<Mapping>[],
                         ): void =>
-                          mappingGenerationEditorState.setM2mAdditionalMappings(
+                          mappingGenerationEditorState.setM2MIntermediateMappings(
                             values,
                           )
                         }
@@ -442,18 +442,32 @@ export const MappingGenerationEditor = observer(
                       />
                       <StringEditor
                         isReadOnly={false}
-                        propertyName={'Generated mapping name'}
-                        value={mappingGenerationEditorState.mappingNewName}
+                        propertyName="Result mapping name"
+                        value={mappingGenerationEditorState.resultMappingName}
                         update={(value: string | undefined): void =>
-                          mappingGenerationEditorState.setMappingName(value)
+                          mappingGenerationEditorState.setResultMappingName(
+                            value,
+                          )
                         }
                       />
                       <StringEditor
                         isReadOnly={false}
-                        propertyName={'Generated store name'}
-                        value={mappingGenerationEditorState.storeNewName}
+                        propertyName="Result store name"
+                        value={mappingGenerationEditorState.resultStoreName}
                         update={(value: string | undefined): void =>
-                          mappingGenerationEditorState.setStoreName(value)
+                          mappingGenerationEditorState.setResultStoreName(value)
+                        }
+                      />
+                      <StringEditor
+                        isReadOnly={false}
+                        propertyName="Result included mapping name"
+                        value={
+                          mappingGenerationEditorState.resultIncludedMappingName
+                        }
+                        update={(value: string | undefined): void =>
+                          mappingGenerationEditorState.setResultIncludedMappingName(
+                            value,
+                          )
                         }
                       />
                       <div className="panel__content__form__section__list__new-item__add">
@@ -461,8 +475,7 @@ export const MappingGenerationEditor = observer(
                           className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
                           disabled={
                             isGenerating ||
-                            !mappingGenerationEditorState.sourceMapping ||
-                            !mappingGenerationEditorState.mappingToRegenerate
+                            !mappingGenerationEditorState.canGenerate
                           }
                           onClick={generate}
                           tabIndex={-1}
@@ -499,7 +512,7 @@ export const MappingGenerationEditor = observer(
                           !mappingGenerationEditorState.mappingToRegenerate
                         }
                         onClick={generate}
-                        title={'Re-generate'}
+                        title="Re-generate"
                       >
                         <RefreshIcon />
                       </button>

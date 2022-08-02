@@ -15,9 +15,15 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { fireEvent, getByTitle, getByText, act } from '@testing-library/react';
+import {
+  fireEvent,
+  getByTitle,
+  getByText,
+  act,
+  getByDisplayValue,
+  waitFor,
+} from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared';
-import { getByDisplayValue, waitFor } from '@testing-library/dom';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {

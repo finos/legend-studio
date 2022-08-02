@@ -32,8 +32,9 @@ import {
   FlaskIcon,
   ExternalLinkSquareIcon,
   ShieldIcon,
-  TagsIcon,
   LightBulbIcon,
+  InfoCircleIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -49,6 +50,7 @@ import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
 } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
+import { generateGAVCoordinates } from '@finos/legend-server-depot';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -306,54 +308,106 @@ const DataSpaceExecutionViewer = observer(
   },
 );
 
-const DataSpaceTags = observer(
+const DataSpaceInfo = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const viewProject = (): void =>
+      dataSpaceViewerState.viewProject?.(
+        dataSpaceViewerState.groupId,
+        dataSpaceViewerState.artifactId,
+        dataSpaceViewerState.versionId,
+        undefined,
+      );
+    const viewDataSpaceInProject = (): void =>
+      dataSpaceViewerState.viewProject?.(
+        dataSpaceViewerState.groupId,
+        dataSpaceViewerState.artifactId,
+        dataSpaceViewerState.versionId,
+        analysisResult.path,
+      );
 
     return (
-      <div className="data-space__viewer__tags">
-        <div className="data-space__viewer__tags__section">
-          <div className="data-space__viewer__tags__section__title">
+      <div className="data-space__viewer__info">
+        <div className="data-space__viewer__info__section">
+          <div className="data-space__viewer__info__section__entry">
+            <div className="data-space__viewer__info__project-info__label">
+              Project
+            </div>
+            <button
+              className="data-space__viewer__info__project-info__value"
+              tabIndex={-1}
+              title="View Project"
+              onClick={viewProject}
+            >
+              {generateGAVCoordinates(
+                dataSpaceViewerState.groupId,
+                dataSpaceViewerState.artifactId,
+                dataSpaceViewerState.versionId,
+              )}
+            </button>
+            <div className="data-space__viewer__info__project-info__link">
+              <ExternalLinkIcon />
+            </div>
+          </div>
+          <div className="data-space__viewer__info__section__entry">
+            <div className="data-space__viewer__info__project-info__label">
+              Data Space
+            </div>
+            <button
+              className="data-space__viewer__info__project-info__value"
+              tabIndex={-1}
+              title="View Data Space"
+              onClick={viewDataSpaceInProject}
+            >
+              {analysisResult.path}
+            </button>
+            <div className="data-space__viewer__info__project-info__link">
+              <ExternalLinkIcon />
+            </div>
+          </div>
+        </div>
+        <div className="data-space__viewer__info__section">
+          <div className="data-space__viewer__info__section__title">
             Tagged Values
           </div>
           {analysisResult.taggedValues.length !== 0 &&
             analysisResult.taggedValues.map((taggedValue) => (
               <div
                 key={taggedValue._UUID}
-                className="data-space__viewer__tags__section__entry"
+                className="data-space__viewer__info__section__entry"
               >
                 <div
-                  className="data-space__viewer__tags__tagged-value__tag"
+                  className="data-space__viewer__info__tagged-value__tag"
                   title={`${taggedValue.profile}.${taggedValue.tag}`}
                 >
                   {`${extractElementNameFromPath(taggedValue.profile)}.${
                     taggedValue.tag
                   }`}
                 </div>
-                <div className="data-space__viewer__tags__tagged-value__value">
+                <div className="data-space__viewer__info__tagged-value__value">
                   {taggedValue.value}
                 </div>
               </div>
             ))}
           {analysisResult.taggedValues.length === 0 && (
-            <div className="data-space__viewer__tags__section__placeholder">
+            <div className="data-space__viewer__info__section__placeholder">
               (empty)
             </div>
           )}
         </div>
-        <div className="data-space__viewer__tags__section">
-          <div className="data-space__viewer__tags__section__title">
+        <div className="data-space__viewer__info__section">
+          <div className="data-space__viewer__info__section__title">
             Stereotypes
           </div>
           {analysisResult.stereotypes.length !== 0 &&
             analysisResult.stereotypes.map((stereotype) => (
               <div
                 key={stereotype._UUID}
-                className="data-space__viewer__tags__section__entry"
+                className="data-space__viewer__info__section__entry"
                 title={`${stereotype.profile}.${stereotype.value}`}
               >
-                <div className="data-space__viewer__tags__steoreotype">
+                <div className="data-space__viewer__info__steoreotype">
                   {`${extractElementNameFromPath(stereotype.profile)}.${
                     stereotype.value
                   }`}
@@ -361,7 +415,7 @@ const DataSpaceTags = observer(
               </div>
             ))}
           {analysisResult.stereotypes.length === 0 && (
-            <div className="data-space__viewer__tags__section__placeholder">
+            <div className="data-space__viewer__info__section__placeholder">
               (empty)
             </div>
           )}
@@ -454,9 +508,9 @@ export const DataSpaceViewer = observer(
         icon: <ShieldIcon />,
       },
       {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.TAGS,
-        title: 'Tags',
-        icon: <TagsIcon />,
+        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO,
+        title: 'Info',
+        icon: <InfoCircleIcon />,
       },
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
@@ -477,15 +531,24 @@ export const DataSpaceViewer = observer(
       <div className="data-space__viewer">
         <div className="data-space__viewer__header">
           <button
-            className="data-space__viewer__path"
+            className="data-space__viewer__title"
             tabIndex={-1}
-            title="View Project"
+            title={`View Project (${generateGAVCoordinates(
+              dataSpaceViewerState.groupId,
+              dataSpaceViewerState.artifactId,
+              dataSpaceViewerState.versionId,
+            )})`}
             onClick={viewProject}
           >
-            <div className="data-space__viewer__path__label">
-              {analysisResult.path}
+            <div
+              className="data-space__viewer__title__label"
+              title={`${analysisResult.title ?? analysisResult.name} - ${
+                analysisResult.path
+              }`}
+            >
+              {analysisResult.title ?? analysisResult.name}
             </div>
-            <div className="data-space__viewer__path__link">
+            <div className="data-space__viewer__title__link">
               <ExternalLinkSquareIcon />
             </div>
           </button>
@@ -552,8 +615,8 @@ export const DataSpaceViewer = observer(
                 </BlankPanelContent>
               )}
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.TAGS && (
-                <DataSpaceTags dataSpaceViewerState={dataSpaceViewerState} />
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.INFO && (
+                <DataSpaceInfo dataSpaceViewerState={dataSpaceViewerState} />
               )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT && (

@@ -51,7 +51,6 @@ import {
   Dialog,
   InputWithInlineValidation,
   BlankPanelPlaceholder,
-  HouseKeys,
   PlusIcon,
   ArrowsJoinIcon,
   ArrowsSplitIcon,
@@ -520,12 +519,7 @@ const KeyExecutionItem = observer(
           onClick={openKeyedExecution}
           tabIndex={-1}
         >
-          <div className="service-multi-execution-editor__item__label__icon">
-            <KeyIcon />
-          </div>
-          <div className="service-multi-execution-editor__item__label__text">
-            {keyExecutionParameter.key}
-          </div>
+          {keyExecutionParameter.key}
         </button>
       </ContextMenu>
     );
@@ -541,11 +535,11 @@ export const NewExecutionParameterModal = observer(
     const { executionState, isReadOnly } = props;
     const validationMessage =
       keyValue === ''
-        ? `Execution key value can't be empty`
+        ? `Execution context key can't be empty`
         : executionState.execution.executionParameters.find(
             (e) => e.key === keyValue,
           )
-        ? 'Execution key value already exists'
+        ? 'Execution context key already exists'
         : undefined;
 
     const closeModal = (): void =>
@@ -569,7 +563,7 @@ export const NewExecutionParameterModal = observer(
           onSubmit={handleSubmit}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">New Execution Parameter Key </div>
+          <div className="modal__title">New Execution Context</div>
           <div className="service-execution-editor__change__modal">
             <InputWithInlineValidation
               className="service-execution-editor__input input-group__input"
@@ -661,14 +655,14 @@ const MultiPureExecutionEditor = observer(
             <div className="service-multi-execution-editor__header">
               <div className="service-multi-execution-editor__header__content">
                 <div className="btn--sm service-multi-execution-editor__header__content__label">
-                  <HouseKeys />
+                  <KeyIcon />
                 </div>
                 <input
                   className="service-multi-execution-editor__header__content__input input--dark"
                   spellCheck={false}
                   value={key}
                   onChange={editReviewTitle}
-                  placeholder={'Key'}
+                  placeholder="Execution context key"
                 />
               </div>
             </div>
@@ -676,7 +670,7 @@ const MultiPureExecutionEditor = observer(
               <div className="panel__header">
                 <div className="panel__header__title">
                   <div className="panel__header__title__content">
-                    KEY VALUES
+                    Execution Contexts
                   </div>
                 </div>
                 <div className="panel__header__actions">
@@ -685,7 +679,7 @@ const MultiPureExecutionEditor = observer(
                     disabled={multiExecutionState.serviceEditorState.isReadOnly}
                     onClick={addExecutionKey}
                     tabIndex={-1}
-                    title={'Add execution key parameter'}
+                    title="Add an execution context"
                   >
                     <PlusIcon />
                   </button>
@@ -702,10 +696,10 @@ const MultiPureExecutionEditor = observer(
               ))}
               {!multiExecution.executionParameters.length && (
                 <BlankPanelPlaceholder
-                  placeholderText="Add a key"
+                  placeholderText="Add an execution context"
                   onClick={addExecutionKey}
                   clickActionType="add"
-                  tooltipText="Click to add an execution key"
+                  tooltipText="Click to add an execution context"
                 />
               )}
             </div>
@@ -745,10 +739,10 @@ const MultiPureExecutionEditor = observer(
               />
             ) : (
               <BlankPanelPlaceholder
-                placeholderText="Add a key"
+                placeholderText="Add an execution context"
                 onClick={addExecutionKey}
                 clickActionType="add"
-                tooltipText="Click to add an execution key"
+                tooltipText="Click to add an execution context"
               />
             )}
           </ResizablePanel>

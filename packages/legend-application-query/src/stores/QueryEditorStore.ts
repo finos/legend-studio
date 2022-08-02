@@ -443,22 +443,21 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       ),
     );
     if (this.classPath) {
-      this.queryBuilderState.querySetupState._class =
-        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath);
+      this.queryBuilderState.changeClass(
+        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
+      );
       this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
     } else {
-      this.queryBuilderState.querySetupState._class = getNullableFirstElement(
-        this.queryBuilderState.querySetupState.mapping
-          ? getAllClassMappings(
-              this.queryBuilderState.querySetupState.mapping,
-            ).map((classMapping) => classMapping.class.value)
-          : [],
+      this.queryBuilderState.changeClass(
+        getNullableFirstElement(
+          this.queryBuilderState.querySetupState.mapping
+            ? getAllClassMappings(
+                this.queryBuilderState.querySetupState.mapping,
+              ).map((classMapping) => classMapping.class.value)
+            : [],
+        ),
       );
     }
-
-    // initialize query builder state after setting up
-    this.queryBuilderState.resetQueryBuilder();
-    this.queryBuilderState.resetQuerySetup();
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {

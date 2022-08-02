@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-export abstract class ModelGenerationConfiguration {
-  key: string;
-  label?: string | undefined;
+import { primitive, createModelSchema, object } from 'serializr';
+import { SerializationFactory } from '@finos/legend-shared';
+import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 
-  protected constructor(key: string, label: string | undefined) {
-    this.key = key;
-    this.label = label;
-  }
+export class V1_GenerationInput {
+  clientVersion!: string;
+  model!: V1_PureModelContextData;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_GenerationInput, {
+      clientVersion: primitive(),
+      model: object(V1_PureModelContextData),
+    }),
+  );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-taxonomy-bootstrap",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Legend Taxonomy application bootstrap",
   "keywords": [
     "legend",
@@ -49,11 +49,6 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
-    "@finos/legend-extension-dsl-persistence": "workspace:*",
-    "@finos/legend-extension-dsl-persistence-cloud": "workspace:*",
-    "@finos/legend-extension-dsl-text": "workspace:*",
-    "@finos/legend-extension-external-format-json-schema": "workspace:*",
-    "@finos/legend-extension-external-store-service": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "18.0.15",

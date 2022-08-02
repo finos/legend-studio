@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-mapping-generation",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Legend extension for mapping generation",
   "keywords": [
     "legend",
@@ -69,7 +69,7 @@
   },
   "extensions": {
     "graphManagerPreset": "@finos/legend-graph-manager-preset-mapping-generation",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-mapping-generation",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-mapping-generation",
     "applicationStudioPlugin": "@finos/legend-application-studio-plugin-mapping-generation-extension-"
   }
 }
