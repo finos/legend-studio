@@ -25,8 +25,6 @@ import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
 import type { AnnotatedElement } from './AnnotatedElement.js';
 import type { StereotypeReference } from './StereotypeReference.js';
 import type { GenericTypeReference } from './GenericTypeReference.js';
-import { action, makeObservable, observable } from 'mobx';
-
 export class DerivedProperty
   implements AbstractProperty, AnnotatedElement, Hashable
 {
@@ -36,7 +34,6 @@ export class DerivedProperty
   name: string;
   genericType: GenericTypeReference;
   multiplicity: Multiplicity;
-  isBeingDragged = false;
   stereotypes: StereotypeReference[] = [];
   taggedValues: TaggedValue[] = [];
   /**
@@ -58,19 +55,10 @@ export class DerivedProperty
     genericType: GenericTypeReference,
     owner: PropertyOwner,
   ) {
-    makeObservable(this, {
-      name: observable,
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
     this.name = name;
     this.multiplicity = multiplicity;
     this.genericType = genericType;
     this._OWNER = owner;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 
   get hashCode(): string {
