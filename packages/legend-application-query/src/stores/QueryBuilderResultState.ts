@@ -53,6 +53,7 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   executionDuration?: number | undefined;
+  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -71,11 +72,19 @@ export class QueryBuilderResultState {
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
   };
+
   setExecutionDuration = (val: number | undefined): void => {
     this.executionDuration = val;
   };
+
   setPreviewLimit = (val: number): void => {
     this.previewLimit = Math.max(1, val);
+  };
+
+  setQueryRunPromise = (
+    promise: Promise<ExecutionResult> | undefined,
+  ): void => {
+    this.queryRunPromise = promise;
   };
 
   buildExecutionRawLambda(): RawLambda {
@@ -172,7 +181,9 @@ export class QueryBuilderResultState {
     }
   }
 
-  *execute(): GeneratorFn<void> {
+  async runQuery(
+    setIsRunningQuery: (value: React.SetStateAction<boolean>) => void,
+  ): Promise<void> {
     try {
       this.isExecutingQuery = true;
       const mapping = guaranteeNonNullable(
@@ -185,15 +196,21 @@ export class QueryBuilderResultState {
       );
       const query = this.buildExecutionRawLambda();
       const startTime = Date.now();
-      const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+      const promise =
+        this.queryBuilderState.graphManagerState.graphManager.executeMapping(
           query,
           mapping,
           runtime,
           this.queryBuilderState.graphManagerState.graph,
-        )) as ExecutionResult;
-      this.setExecutionResult(result);
-      this.setExecutionDuration(Date.now() - startTime);
+        );
+      this.setQueryRunPromise(promise);
+      await promise.then((result) => {
+        if (this.queryRunPromise === promise) {
+          this.setExecutionResult(result);
+          this.setExecutionDuration(Date.now() - startTime);
+          setIsRunningQuery(false);
+        }
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
