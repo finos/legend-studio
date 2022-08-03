@@ -120,6 +120,7 @@ import {
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
+
 export class ClassPropertyDragSource {
   property: Property;
   isBeingDragged = false;
@@ -249,7 +250,8 @@ const PropertyBasicEditor = observer(
         collect: (
           monitor,
         ): { isBeingDraggedProperty: Property | undefined } => ({
-          isBeingDraggedProperty: monitor.getItem()?.property,
+          isBeingDraggedProperty:
+            monitor.getItem<ClassPropertyDragSource | null>()?.property,
         }),
       }),
       [handleHover],
