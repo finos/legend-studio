@@ -229,9 +229,10 @@ import {
   TestFailed,
   TestError,
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
-import type { Service } from '../../../../DSLService_Exports.js';
-import { ServiceTest } from '../../../../DSLService_Exports.js';
-import { MultiExecutionServiceTestResult } from '../../../../DSLService_Exports.js';
+import {
+  type Service,
+  MultiExecutionServiceTestResult,
+} from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
@@ -239,8 +240,10 @@ import {
 } from '../../../helpers/DSLData_GraphManagerHelper.js';
 import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
-import type { AtomicTest } from '../../../../graph/metamodel/pure/test/Test.js';
-import { TestSuite } from '../../../../graph/metamodel/pure/test/Test.js';
+import {
+  type AtomicTest,
+  TestSuite,
+} from '../../../../graph/metamodel/pure/test/Test.js';
 import { pruneSourceInformation } from '../../../../graph/MetaModelUtils.js';
 import {
   V1_buildModelCoverageAnalysisResult,
@@ -1717,17 +1720,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       let status: AssertFail | undefined = undefined;
       if (result instanceof TestFailed) {
         status = result.assertStatuses.find(
-          (e) =>
-            e.assertion === baseAssertion && e.assertion instanceof AssertFail,
+          (aStatus) =>
+            aStatus.assertion === baseAssertion &&
+            aStatus instanceof AssertFail,
         );
       } else if (result instanceof MultiExecutionServiceTestResult) {
         status = Array.from(result.keyIndexedTestResults.values())
           .map((testResult) => {
             if (testResult instanceof TestFailed) {
               return testResult.assertStatuses.find(
-                (e) =>
-                  e.assertion === baseAssertion &&
-                  e.assertion instanceof AssertFail,
+                (aStatus) =>
+                  aStatus.assertion === baseAssertion &&
+                  aStatus instanceof AssertFail,
               );
             }
             return undefined;
