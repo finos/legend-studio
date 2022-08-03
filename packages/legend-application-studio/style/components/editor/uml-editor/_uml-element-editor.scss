@@ -180,7 +180,7 @@
     }
   }
 
-  &__drag-div {
+  &__drag-handler {
     @include flexCenter;
 
     flex: 0;
@@ -192,11 +192,11 @@
     cursor: pointer;
   }
 
-  &__drag-div:hover {
+  &__drag-handler:hover {
     color: var(--color-dark-grey-400);
   }
 
-  &__drag-div:active {
+  &__drag-handler:active {
     color: var(--color-dark-grey-200);
   }
 

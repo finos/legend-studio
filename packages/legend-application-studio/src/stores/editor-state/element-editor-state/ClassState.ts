@@ -235,7 +235,6 @@ export class ClassState {
   class: Class;
   derivedPropertyStates: DerivedPropertyState[] = [];
   constraintStates: ConstraintState[] = [];
-  propertyStateTesting: Property[] = [];
 
   isConvertingConstraintLambdaObjects = false;
   isConvertingDerivedPropertyLambdaObjects = false;
@@ -248,7 +247,6 @@ export class ClassState {
       isConvertingConstraintLambdaObjects: observable,
       isConvertingDerivedPropertyLambdaObjects: observable,
       addConstraintState: action,
-      moveColumn: action,
       deleteConstraintState: action,
       addDerivedPropertyState: action,
       deleteDerivedPropertyState: action,
@@ -368,24 +366,24 @@ export class ClassState {
     }
   }
 
-  moveColumn(sourceIndex: number, targetIndex: number): void {
-    if (
-      sourceIndex < 0 ||
-      sourceIndex >= this.propertyStateTesting.length ||
-      targetIndex < 0 ||
-      targetIndex >= this.propertyStateTesting.length
-    ) {
-      return;
-    }
+  // moveColumn(sourceIndex: number, targetIndex: number): void {
+  //   if (
+  //     sourceIndex < 0 ||
+  //     sourceIndex >= this.propertyStateTesting.length ||
+  //     targetIndex < 0 ||
+  //     targetIndex >= this.propertyStateTesting.length
+  //   ) {
+  //     return;
+  //   }
 
-    const sourceColumn = guaranteeNonNullable(
-      this.propertyStateTesting[sourceIndex],
-    );
+  //   const sourceColumn = guaranteeNonNullable(
+  //     this.propertyStateTesting[sourceIndex],
+  //   );
 
-    // move
-    this.propertyStateTesting.splice(sourceIndex, 1);
-    this.propertyStateTesting.splice(targetIndex, 0, sourceColumn);
-  }
+  //   // move
+  //   this.propertyStateTesting.splice(sourceIndex, 1);
+  //   this.propertyStateTesting.splice(targetIndex, 0, sourceColumn);
+  // }
 
   *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();

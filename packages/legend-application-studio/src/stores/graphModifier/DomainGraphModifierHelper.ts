@@ -17,7 +17,9 @@
 import {
   addUniqueEntry,
   assertTrue,
+  guaranteeNonNullable,
   deleteEntry,
+  changeEntry,
   guaranteeType,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -87,6 +89,28 @@ export const class_deleteProperty = action(
 export const class_addProperty = action(
   (_class: Class, val: Property): void => {
     addUniqueEntry(_class.properties, observe_Property(val));
+  },
+);
+
+export const class_arrangeProperty = action(
+  (_class: Class, sourceProperty: Property, targetProperty: Property): void => {
+    const sourceIndex = _class.properties.findIndex(
+      (property) => property === sourceProperty,
+    );
+    const targetIndex = _class.properties.findIndex(
+      (property) => property === targetProperty,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempProperty = targetProperty;
+      changeEntry(_class.properties, targetProperty, sourceProperty);
+      changeEntry(_class.properties, sourceProperty, tempProperty);
+    } else {
+      const tempProperty = sourceProperty;
+
+      changeEntry(_class.properties, sourceProperty, targetProperty);
+      changeEntry(_class.properties, targetProperty, tempProperty);
+    }
   },
 );
 

@@ -1,5 +1,5 @@
 ---
-'@finos/legend-application-studio': patch
+'@finos/legend-application-studio': minor
 ---
 
-Add DND for class properties ([#303](https://github.com/finos/legend-studio/pull/303)).
+Allow re-arrange class properties ([#303](https://github.com/finos/legend-studio/pull/303)).
