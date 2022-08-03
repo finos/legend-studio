@@ -78,7 +78,10 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
 } from '../stores/QueryParametersState.js';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
+import {
+  isTypeCompatibleWithConditionValueType,
+  QUERY_BUILDER_GROUP_OPERATION,
+} from '../stores/QueryBuilderOperatorsHelper.js';
 import type { ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -178,6 +181,7 @@ const QueryBuilderFilterConditionEditor = observer(
     const { node, isPropertyDragOver } = props;
     const graph =
       node.condition.filterState.queryBuilderState.graphManagerState.graph;
+    const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeProperty = (
@@ -196,9 +200,21 @@ const QueryBuilderFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        node.condition.setValue(item.variable.parameter);
+        if (
+          isTypeCompatibleWithConditionValueType(
+            item.variable.parameter.genericType?.value.rawType,
+            node.condition.propertyExpressionState.propertyExpression.func
+              .genericType.value.rawType,
+          )
+        ) {
+          node.condition.setValue(item.variable.parameter);
+        } else {
+          applicationStore.notifyWarning(
+            'Parameter type and filter condition value type mismatches.',
+          );
+        }
       },
-      [node],
+      [applicationStore, node.condition],
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop(
       () => ({

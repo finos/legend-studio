@@ -74,7 +74,10 @@ import {
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
+import {
+  isTypeCompatibleWithConditionValueType,
+  QUERY_BUILDER_GROUP_OPERATION,
+} from '../stores/QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -405,6 +408,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const { node, isPropertyDragOver } = props;
     const graph =
       node.condition.postFilterState.queryBuilderState.graphManagerState.graph;
+    const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeColumn = async (
@@ -421,9 +425,20 @@ const QueryBuilderPostFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        node.condition.setValue(item.variable.parameter);
+        if (
+          isTypeCompatibleWithConditionValueType(
+            item.variable.parameter.genericType?.value.rawType,
+            guaranteeNonNullable(node.condition.columnState.getReturnType()),
+          )
+        ) {
+          node.condition.setValue(item.variable.parameter);
+        } else {
+          applicationStore.notifyWarning(
+            'Parameter type and filter condition value type mismatches.',
+          );
+        }
       },
-      [node],
+      [applicationStore, node.condition],
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop(
       () => ({
