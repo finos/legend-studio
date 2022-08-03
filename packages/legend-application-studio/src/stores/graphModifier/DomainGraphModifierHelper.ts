@@ -113,6 +113,32 @@ export const class_arrangeProperty = action(
   },
 );
 
+export const class_arrangeDerivedProperty = action(
+  (
+    _class: Class,
+    sourceProperty: DerivedProperty,
+    targetProperty: DerivedProperty,
+  ): void => {
+    const sourceIndex = _class.derivedProperties.findIndex(
+      (property) => property === sourceProperty,
+    );
+    const targetIndex = _class.derivedProperties.findIndex(
+      (property) => property === targetProperty,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempProperty = targetProperty;
+      changeEntry(_class.derivedProperties, targetProperty, sourceProperty);
+      changeEntry(_class.derivedProperties, sourceProperty, tempProperty);
+    } else {
+      const tempProperty = sourceProperty;
+
+      changeEntry(_class.derivedProperties, sourceProperty, targetProperty);
+      changeEntry(_class.derivedProperties, targetProperty, tempProperty);
+    }
+  },
+);
+
 export const class_deleteDerivedProperty = action(
   (_class: Class, val: DerivedProperty): void => {
     deleteEntry(_class.derivedProperties, val);
