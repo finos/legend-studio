@@ -430,7 +430,7 @@ export const QueryBuilderResultPanel = observer(
       }
     };
     const cancelQuery = (): void => {
-      resultState.isRunningQuery = false;
+      resultState.setIsRunningQuery(false);
       queryBuilderState.resultState.setQueryRunPromise(undefined);
     };
     const generatePlan = applicationStore.guardUnhandledError(() =>

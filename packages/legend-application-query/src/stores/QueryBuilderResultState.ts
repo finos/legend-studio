@@ -59,6 +59,7 @@ export class QueryBuilderResultState {
     makeAutoObservable(this, {
       queryBuilderState: false,
       executionPlanState: false,
+      setIsRunningQuery: action,
       setExecutionResult: action,
     });
 
@@ -68,6 +69,10 @@ export class QueryBuilderResultState {
       this.queryBuilderState.graphManagerState,
     );
   }
+
+  setIsRunningQuery = (val: boolean): void => {
+    this.isRunningQuery = val;
+  };
 
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
@@ -215,7 +220,7 @@ export class QueryBuilderResultState {
       );
       this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
-      this.isRunningQuery = false;
+      this.setIsRunningQuery(false);
     }
   }
 
