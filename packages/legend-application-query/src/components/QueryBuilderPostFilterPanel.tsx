@@ -425,16 +425,20 @@ const QueryBuilderPostFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
+        const parameterType =
+          item.variable.parameter.genericType?.value.rawType;
+        const conditionValueType = node.condition.columnState.getReturnType();
         if (
+          conditionValueType &&
           isTypeCompatibleWithConditionValueType(
-            item.variable.parameter.genericType?.value.rawType,
-            guaranteeNonNullable(node.condition.columnState.getReturnType()),
+            parameterType,
+            conditionValueType,
           )
         ) {
           node.condition.setValue(item.variable.parameter);
         } else {
           applicationStore.notifyWarning(
-            'Parameter type and filter condition value type mismatches.',
+            `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType?.name}.`,
           );
         }
       },
