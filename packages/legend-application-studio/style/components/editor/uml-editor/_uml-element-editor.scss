@@ -30,7 +30,13 @@
 }
 
 .uml-element-dnd-placeholder-big-container {
-  padding: 4rem 1rem;
+  padding: 2rem 1rem;
+}
+
+.uml-element-dnd-placeholder-big {
+  border: 0.2rem dashed var(--color-dark-grey-250);
+  padding: 3rem 0.5rem;
+  margin: 0;
 }
 
 .uml-element-dnd-name {

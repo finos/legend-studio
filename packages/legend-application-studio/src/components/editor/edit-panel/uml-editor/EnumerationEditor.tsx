@@ -71,6 +71,7 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { ClassTaggedValueDragSource } from './ClassEditor.js';
 
 const EnumBasicEditor = observer(
   (props: {

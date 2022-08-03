@@ -225,6 +225,30 @@ export const class_deleteSubclass = action(
     deleteEntry(_class._subclasses, val);
   },
 );
+export const class_arrangeTaggedValues = action(
+  (
+    _class: Class,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = _class.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = _class.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(_class.taggedValues, targetTaggedValue, sourceTaggedValue);
+      changeEntry(_class.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(_class.taggedValues, sourceTaggedValue, targetTaggedValue);
+      changeEntry(_class.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
+  },
+);
 
 // --------------------------------------------- GenericTypeReference -------------------------------------
 
