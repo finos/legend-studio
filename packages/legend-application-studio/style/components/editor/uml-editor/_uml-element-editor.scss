@@ -16,6 +16,32 @@
 
 @use 'mixins' as *;
 
+.uml-element-dnd-placeholder {
+  border: 0.2rem dashed var(--color-dark-grey-250);
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 1rem 0.5rem 2rem;
+}
+
+.uml-element-dnd-placeholder-container {
+  height: 2.8rem !important;
+  margin: 0.5rem 0;
+}
+
+.uml-element-dnd-name {
+  position: fixed;
+  display: inline-flex;
+  color: white;
+  height: 2rem;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  margin-top: 0.5rem;
+  z-index: 100;
+  background: var(--color-blue-200);
+  border-radius: 0.2rem;
+}
+
 .uml-element-editor {
   height: 100%;
   width: 100%;
