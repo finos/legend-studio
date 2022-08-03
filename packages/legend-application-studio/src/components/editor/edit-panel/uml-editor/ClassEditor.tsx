@@ -131,6 +131,7 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
+<<<<<<< HEAD
 class ClassPropertyDragSource {
   property: Property;
   isBeingDragged = false;
@@ -154,6 +155,9 @@ enum CLASS_PROPERTY_DND_TYPE {
 }
 
 interface ClassPropertyDragSource {
+=======
+export class ClassPropertyDragSource {
+>>>>>>> 527ce46d (lint updates)
   property: Property;
   isBeingDragged = false;
 

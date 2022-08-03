@@ -33,7 +33,6 @@ import {
   buildSourceInformationSourceId,
   stub_RawLambda,
   isStubbed_RawLambda,
-  type Property,
   getAllClassConstraints,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
@@ -365,25 +364,6 @@ export class ClassState {
       }
     }
   }
-
-  // moveColumn(sourceIndex: number, targetIndex: number): void {
-  //   if (
-  //     sourceIndex < 0 ||
-  //     sourceIndex >= this.propertyStateTesting.length ||
-  //     targetIndex < 0 ||
-  //     targetIndex >= this.propertyStateTesting.length
-  //   ) {
-  //     return;
-  //   }
-
-  //   const sourceColumn = guaranteeNonNullable(
-  //     this.propertyStateTesting[sourceIndex],
-  //   );
-
-  //   // move
-  //   this.propertyStateTesting.splice(sourceIndex, 1);
-  //   this.propertyStateTesting.splice(targetIndex, 0, sourceColumn);
-  // }
 
   *convertDerivedPropertyLambdaObjects(): GeneratorFn<void> {
     const lambdas = new Map<string, RawLambda>();
