@@ -38,7 +38,6 @@ import {
   addUniqueEntry,
   uuid,
   deleteEntry,
-  assertType,
   uniq,
   IllegalStateError,
 } from '@finos/legend-shared';
@@ -229,14 +228,17 @@ import {
   TestFailed,
   TestError,
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
-import type { Service } from '../../../../DSLService_Exports.js';
+import {
+  type Service,
+  MultiExecutionServiceTestResult,
+} from '../../../../DSLService_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
 } from '../../../helpers/DSLData_GraphManagerHelper.js';
 import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import type { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
+import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import {
   type AtomicTest,
   TestSuite,
@@ -1683,13 +1685,33 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           ),
       );
       const result = results[0];
-      if (result instanceof TestError) {
+      let status: AssertFail | undefined = undefined;
+      if (result instanceof TestFailed) {
+        status = result.assertStatuses.find(
+          (aStatus) =>
+            aStatus.assertion === baseAssertion &&
+            aStatus instanceof AssertFail,
+        );
+      } else if (result instanceof MultiExecutionServiceTestResult) {
+        status = Array.from(result.keyIndexedTestResults.values())
+          .map((testResult) => {
+            if (testResult instanceof TestFailed) {
+              return testResult.assertStatuses.find(
+                (aStatus) =>
+                  aStatus.assertion === baseAssertion &&
+                  aStatus instanceof AssertFail,
+              );
+            }
+            return undefined;
+          })
+          .filter(isNonNullable)[0];
+      } else if (result instanceof TestError) {
         throw new IllegalStateError(result.error);
+      } else {
+        throw new UnsupportedOperationError(
+          'Unable to derive expected result from test result',
+        );
       }
-      assertType(result, TestFailed);
-      const status = result.assertStatuses.find(
-        (e) => e.assertion === baseAssertion,
-      );
       return guaranteeNonNullable(status);
     } catch (error) {
       assertErrorThrown(error);

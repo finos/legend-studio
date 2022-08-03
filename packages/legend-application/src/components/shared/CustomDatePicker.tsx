@@ -708,6 +708,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
           graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
         );
       }
+      setValueSpecification(valueSpecification);
     }
     setDatePickerOption(
       new DatePickerOption(
@@ -767,6 +768,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
           graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
         );
       }
+      setValueSpecification(valueSpecification);
     }
     setDatePickerOption(
       new DatePickerOption(
