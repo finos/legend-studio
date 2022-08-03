@@ -181,7 +181,7 @@ export class QueryBuilderResultState {
     }
   }
 
-  async runQuery(): Promise<void> {
+  *runQuery(): GeneratorFn<void> {
     try {
       this.isRunningQuery = true;
       const mapping = guaranteeNonNullable(
@@ -202,12 +202,11 @@ export class QueryBuilderResultState {
           this.queryBuilderState.graphManagerState.graph,
         );
       this.setQueryRunPromise(promise);
-      await promise.then((result) => {
-        if (this.queryRunPromise === promise) {
-          this.setExecutionResult(result);
-          this.setExecutionDuration(Date.now() - startTime);
-        }
-      });
+      const result = (yield promise) as ExecutionResult;
+      if (this.queryRunPromise === promise) {
+        this.setExecutionResult(result);
+        this.setExecutionDuration(Date.now() - startTime);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(

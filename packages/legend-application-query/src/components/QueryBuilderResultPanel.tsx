@@ -417,11 +417,16 @@ export const QueryBuilderResultPanel = observer(
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
-          (): Promise<void> => resultState.runQuery(),
+          (): Promise<void> =>
+            flowResult(resultState.runQuery()).catch(
+              applicationStore.alertUnhandledError,
+            ),
           PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        resultState.runQuery().catch(applicationStore.alertUnhandledError);
+        flowResult(resultState.runQuery()).catch(
+          applicationStore.alertUnhandledError,
+        );
       }
     };
     const cancelQuery = (): void => {
