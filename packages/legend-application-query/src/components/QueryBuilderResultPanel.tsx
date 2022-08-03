@@ -414,14 +414,14 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
-    const runQuery = async (): Promise<void> => {
+    const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> => resultState.runQuery(),
           PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        await resultState.runQuery();
+        resultState.runQuery().catch(applicationStore.alertUnhandledError);
       }
     };
     const cancelQuery = (): void => {
@@ -499,9 +499,6 @@ export const QueryBuilderResultPanel = observer(
                 </div>
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
-                  disabled={
-                    resultState.isRunningQuery || resultState.isGeneratingPlan
-                  }
                   content={
                     <MenuContent>
                       <MenuContentItem
