@@ -92,19 +92,69 @@ const V1_flatDataDecimalSchema = createModelSchema(V1_FlatDataDecimal, {
 });
 const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE),
-  dateFormat: optional(list(primitive())),
+  // dateFormat : optional(list(primitive())),
+  dateFormat: custom(
+    (val) =>
+      Array.isArray(val)
+        ? val.length == 1
+          ? val[0]
+          : serializeArray(val, (v) => {
+              return v;
+            })
+        : val,
+    // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
+    (val) =>
+      Array.isArray(val)
+        ? deserializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
+  ),
   timeZone: optional(primitive()),
 });
 const V1_flatDataDateTimeSchema = createModelSchema(V1_FlatDataDateTime, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE_TIME),
-  dateFormat: optional(list(primitive())),
+  // dateFormat : optional(list(primitive())),
+  dateFormat: custom(
+    (val) =>
+      Array.isArray(val)
+        ? val.length == 1
+          ? val[0]
+          : serializeArray(val, (v) => {
+              return v;
+            })
+        : val,
+    (val) =>
+      Array.isArray(val)
+        ? deserializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
+  ),
   timeZone: optional(primitive()),
 });
 const V1_flatDataStrictDateSchema = createModelSchema(V1_FlatDataStrictDate, {
   _type: usingConstantValueSchema(
     V1_FlatDataDataTypeType.FLAT_DATA_STRICT_DATE,
   ),
-  dateFormat: optional(list(primitive())),
+  // dateFormat : optional(list(primitive())),
+  dateFormat: custom(
+    (val) =>
+      Array.isArray(val)
+        ? val.length == 1
+          ? val[0]
+          : serializeArray(val, (v) => {
+              return v;
+            })
+        : val,
+    // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
+    (val) =>
+      Array.isArray(val)
+        ? deserializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
+  ),
   timeZone: optional(primitive()),
 });
 const V1_flatDataRecordTypeSchema = createModelSchema(V1_FlatDataRecordType, {
@@ -231,11 +281,12 @@ const V1_flatDataPropertyModelSchema = createModelSchema(V1_FlatDataProperty, {
   value: custom(
     (values) =>
       Array.isArray(values)
-        ? serializeArray(values, (value) => {
-            console.log('blah1 ' + value);
-            return value;
-          })
-        : [values],
+        ? values.length == 1
+          ? values[0]
+          : serializeArray(values, (value) => {
+              return value;
+            })
+        : values,
     (values) => {
       if (Array.isArray(values)) {
         return deserializeArray(values, (value) => {
@@ -245,7 +296,6 @@ const V1_flatDataPropertyModelSchema = createModelSchema(V1_FlatDataProperty, {
               typeof value === 'number',
             `Can't deserialize flat-data property value '${value}'`,
           );
-          console.log('Blah2 : ' + value);
           return value;
         });
       } else {
