@@ -333,6 +333,7 @@ const PropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
+          //tdo replace dnd scss svp
           <div className="uml-element-dnd-placeholder-container">
             <div className="uml-element-dnd-placeholder ">
               <span className="uml-element-dnd-name">{property.name}</span>
