@@ -48,7 +48,7 @@ export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
   exportDataState = ActionState.create();
   previewLimit = DEFAULT_LIMIT;
-  isExecutingQuery = false;
+  isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
@@ -181,11 +181,9 @@ export class QueryBuilderResultState {
     }
   }
 
-  async runQuery(
-    setIsRunningQuery: (value: React.SetStateAction<boolean>) => void,
-  ): Promise<void> {
+  async runQuery(): Promise<void> {
     try {
-      this.isExecutingQuery = true;
+      this.isRunningQuery = true;
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.querySetupState.mapping,
         'Mapping is required to execute query',
@@ -208,7 +206,6 @@ export class QueryBuilderResultState {
         if (this.queryRunPromise === promise) {
           this.setExecutionResult(result);
           this.setExecutionDuration(Date.now() - startTime);
-          setIsRunningQuery(false);
         }
       });
     } catch (error) {
@@ -219,7 +216,7 @@ export class QueryBuilderResultState {
       );
       this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
-      this.isExecutingQuery = false;
+      this.isRunningQuery = false;
     }
   }
 

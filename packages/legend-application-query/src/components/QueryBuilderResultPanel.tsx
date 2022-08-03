@@ -374,7 +374,6 @@ export const QueryBuilderResultPanel = observer(
     const resultState = queryBuilderState.resultState;
     const queryParametersState = queryBuilderState.queryParametersState;
     const executionResult = resultState.executionResult;
-    const [isRunningQuery, setIsRunningQuery] = useState(false);
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
     const exportQueryResults = async (
@@ -416,18 +415,17 @@ export const QueryBuilderResultPanel = observer(
       });
     };
     const runQuery = async (): Promise<void> => {
-      setIsRunningQuery(true);
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
-          (): Promise<void> => resultState.runQuery(setIsRunningQuery),
+          (): Promise<void> => resultState.runQuery(),
           PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        await resultState.runQuery(setIsRunningQuery);
+        await resultState.runQuery();
       }
     };
     const cancelQuery = (): void => {
-      setIsRunningQuery(false);
+      resultState.isRunningQuery = false;
       queryBuilderState.resultState.setQueryRunPromise(undefined);
     };
     const generatePlan = applicationStore.guardUnhandledError(() =>
@@ -474,7 +472,7 @@ export const QueryBuilderResultPanel = observer(
                 />
               </div>
             )}
-            {isRunningQuery ? (
+            {resultState.isRunningQuery ? (
               <button
                 className="query-builder__result__stop-btn"
                 onClick={cancelQuery}
@@ -502,7 +500,7 @@ export const QueryBuilderResultPanel = observer(
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
                   disabled={
-                    resultState.isExecutingQuery || resultState.isGeneratingPlan
+                    resultState.isRunningQuery || resultState.isGeneratingPlan
                   }
                   content={
                     <MenuContent>
@@ -568,8 +566,7 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__content">
           <PanelLoadingIndicator
             isLoading={
-              isRunningQuery ||
-              resultState.isExecutingQuery ||
+              resultState.isRunningQuery ||
               resultState.isGeneratingPlan ||
               resultState.exportDataState.isInProgress
             }
