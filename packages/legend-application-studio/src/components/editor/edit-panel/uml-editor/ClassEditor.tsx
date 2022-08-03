@@ -131,7 +131,6 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-<<<<<<< HEAD
 class ClassPropertyDragSource {
   property: Property;
   isBeingDragged = false;
@@ -155,9 +154,6 @@ enum CLASS_PROPERTY_DND_TYPE {
 }
 
 interface ClassPropertyDragSource {
-=======
-export class ClassPropertyDragSource {
->>>>>>> 527ce46d (lint updates)
   property: Property;
   isBeingDragged = false;
 
@@ -208,6 +204,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
+
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -333,7 +330,6 @@ const PropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          //tdo replace dnd scss svp
           <div className="uml-element-dnd-placeholder-container">
             <div className="uml-element-dnd-placeholder ">
               <span className="uml-element-dnd-name">{property.name}</span>
