@@ -112,10 +112,9 @@ const ModelGenerationItem = observer(
     specState: GenerationSpecificationEditorState;
     nodeState: GenerationTreeNodeState;
     options: PackageableElementOption<PackageableElement>[];
-    isRearrangingNodes: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { nodeState, specState, options, isRearrangingNodes } = props;
+    const { nodeState, specState, options } = props;
     const generationTreeNode = nodeState.node;
     const editorStore = useEditorStore();
     const modelGenerationRef = generationTreeNode.generationElement;
@@ -174,25 +173,26 @@ const ModelGenerationItem = observer(
       },
       [nodeState, specState],
     );
-    const [, dropConnector] = useDrop(
+    const [{ nodeBeingDragged }, dropConnector] = useDrop(
       () => ({
         accept: [CORE_DND_TYPE.GENERATION_SPEC_NODE],
         hover: (
           item: GenerationSpecNodeDragSource,
           monitor: DropTargetMonitor,
         ): void => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
+          nodeBeingDragged: monitor.getItem()?.nodeState?.node,
+        }),
       }),
       [handleHover],
     );
+    const isBeingDragged = nodeState.node === nodeBeingDragged;
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CORE_DND_TYPE.GENERATION_SPEC_NODE,
-        item: (): GenerationSpecNodeDragSource => {
-          nodeState.setIsBeingDragged(true);
-          return { nodeState };
-        },
-        end: (item: GenerationSpecNodeDragSource | undefined): void =>
-          item?.nodeState.setIsBeingDragged(false),
+        item: (): GenerationSpecNodeDragSource => ({ nodeState }),
       }),
       [nodeState],
     );
@@ -206,15 +206,13 @@ const ModelGenerationItem = observer(
         ref={ref}
         className={clsx('generation-spec-model-generation-editor__item', {
           'generation-spec-model-generation-editor__item--dragged':
-            nodeState.isBeingDragged,
-          'generation-spec-model-generation-editor__item---no-hover':
-            isRearrangingNodes,
+            isBeingDragged,
         })}
       >
-        {nodeState.isBeingDragged && (
+        {isBeingDragged && (
           <div className="generation-spec-editor__dnd__placeholder" />
         )}
-        {!nodeState.isBeingDragged && (
+        {!isBeingDragged && (
           <>
             <div className="btn--sm generation-spec-model-generation-editor__item__label">
               {getElementIcon(editorStore, modelGeneration)}
@@ -298,9 +296,6 @@ const ModelGenerationSpecifications = observer(
       }
     };
     // Drag and Drop
-    const isRearrangingNodes = specNodesStates.some(
-      (nodeState) => nodeState.isBeingDragged,
-    );
     const handleDrop = useCallback(
       (item: ElementDragSource): void =>
         specState.addGenerationTreeNode(
@@ -355,7 +350,6 @@ const ModelGenerationSpecifications = observer(
               {specNodesStates.map((nodeState) => (
                 <ModelGenerationItem
                   key={nodeState.uuid}
-                  isRearrangingNodes={isRearrangingNodes}
                   specState={specState}
                   nodeState={nodeState}
                   options={modelGenerationElementOptions}

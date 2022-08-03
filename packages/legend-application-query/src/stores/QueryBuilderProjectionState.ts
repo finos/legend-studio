@@ -96,7 +96,6 @@ export interface QueryBuilderProjectionColumnDragSource {
 export abstract class QueryBuilderProjectionColumnState {
   readonly uuid = uuid();
   projectionState: QueryBuilderProjectionState;
-  isBeingDragged = false;
   columnName: string;
 
   constructor(
@@ -106,18 +105,12 @@ export abstract class QueryBuilderProjectionColumnState {
     makeObservable(this, {
       uuid: false,
       projectionState: false,
-      isBeingDragged: observable,
       columnName: observable,
-      setIsBeingDragged: action,
       setColumnName: action,
     });
 
     this.projectionState = projectionState;
     this.columnName = columnName;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 
   setColumnName(val: string): void {

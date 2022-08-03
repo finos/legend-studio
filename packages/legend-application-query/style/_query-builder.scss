@@ -153,7 +153,7 @@
 
     &__header__action[disabled] svg,
     &__header__action[disabled]:hover svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-dark-grey-300);
     }
 
     &__header__action--toggled svg {

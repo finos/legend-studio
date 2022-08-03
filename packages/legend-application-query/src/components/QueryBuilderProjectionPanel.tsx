@@ -270,10 +270,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
 );
 
 const QueryBuilderProjectionColumnEditor = observer(
-  (props: {
-    projectionColumnState: QueryBuilderProjectionColumnState;
-    isRearrangingColumns: boolean;
-  }) => {
+  (props: { projectionColumnState: QueryBuilderProjectionColumnState }) => {
     const ref = useRef<HTMLDivElement>(null);
 
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
@@ -281,7 +278,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
-    const { projectionColumnState, isRearrangingColumns } = props;
+    const { projectionColumnState } = props;
     const queryBuilderState =
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
@@ -362,18 +359,30 @@ const QueryBuilderProjectionColumnEditor = observer(
       }),
       [handleHover],
     );
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [
+      { projectionColumnBeingDragged },
+      dragConnector,
+      dragPreviewConnector,
+    ] = useDrag(
       () => ({
         type: QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
-        item: (): QueryBuilderProjectionColumnDragSource => {
-          projectionColumnState.setIsBeingDragged(true);
-          return { columnState: projectionColumnState };
-        },
-        end: (item: QueryBuilderProjectionColumnDragSource | undefined): void =>
-          item?.columnState.setIsBeingDragged(false),
+        item: (): QueryBuilderProjectionColumnDragSource => ({
+          columnState: projectionColumnState,
+        }),
+        collect: (
+          monitor,
+        ): {
+          projectionColumnBeingDragged:
+            | QueryBuilderProjectionColumnState
+            | undefined;
+        } => ({
+          projectionColumnBeingDragged: monitor.getItem()?.columnState,
+        }),
       }),
       [projectionColumnState],
     );
+    const isBeingDragged =
+      projectionColumnState === projectionColumnBeingDragged;
     dragConnector(dropConnector(ref));
 
     // hide default HTML5 preview image
@@ -385,17 +394,15 @@ const QueryBuilderProjectionColumnEditor = observer(
       <div
         ref={ref}
         className={clsx('query-builder__projection__column', {
-          'query-builder__projection__column--dragged':
-            projectionColumnState.isBeingDragged,
-          'query-builder__projection__column--no-hover': isRearrangingColumns,
+          'query-builder__projection__column--dragged': isBeingDragged,
         })}
       >
-        {projectionColumnState.isBeingDragged && (
+        {isBeingDragged && (
           <div className="query-builder__projection__column__dnd__placeholder__container">
             <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
           </div>
         )}
-        {!projectionColumnState.isBeingDragged && (
+        {!isBeingDragged && (
           <ContextMenu
             content={
               <QueryBuilderProjectionColumnContextMenu
@@ -538,10 +545,6 @@ export const QueryBuilderProjectionPanel = observer(
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
     const projectionColumns = projectionState.columns;
-    // Drag and Drop
-    const isRearrangingColumns = projectionColumns.some(
-      (columnState) => columnState.isBeingDragged,
-    );
     const handleDrop = useCallback(
       (
         item:
@@ -655,7 +658,6 @@ export const QueryBuilderProjectionPanel = observer(
               <QueryBuilderProjectionColumnEditor
                 key={projectionColumnState.uuid}
                 projectionColumnState={projectionColumnState}
-                isRearrangingColumns={isRearrangingColumns}
               />
             ))}
           </div>
