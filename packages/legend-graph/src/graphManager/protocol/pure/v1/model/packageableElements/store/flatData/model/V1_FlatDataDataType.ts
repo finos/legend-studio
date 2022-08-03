@@ -74,7 +74,7 @@ export class V1_FlatDataDate extends V1_FlatDataDataType implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE,
-      this.dateFormat == undefined ? '' : hashArray(this.dateFormat),
+      this.dateFormat === undefined ? '' : hashArray(this.dateFormat),
       this.timeZone ?? '',
     ]);
   }
@@ -84,7 +84,7 @@ export class V1_FlatDataDateTime extends V1_FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE_TIME,
-      this.dateFormat == undefined ? '' : hashArray(this.dateFormat),
+      this.dateFormat === undefined ? '' : hashArray(this.dateFormat),
       this.timeZone ?? '',
     ]);
   }
@@ -94,7 +94,7 @@ export class V1_FlatDataStrictDate extends V1_FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_STRICT_DATE,
-      this.dateFormat == undefined ? '' : hashArray(this.dateFormat),
+      this.dateFormat === undefined ? '' : hashArray(this.dateFormat),
       this.timeZone ?? '',
     ]);
   }
