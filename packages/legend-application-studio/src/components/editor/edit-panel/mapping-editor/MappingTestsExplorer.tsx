@@ -37,6 +37,7 @@ import {
   PlusIcon,
   EmptyStopCircleIcon,
   ExclamationCircleIcon,
+  PauseCircleIcon,
 } from '@finos/legend-art';
 import {
   type MappingElementDragSource,
@@ -227,6 +228,10 @@ export const MappingTestExplorer = observer(
     const runTest = applicationStore.guardUnhandledError(() =>
       flowResult(testState.runTest()),
     );
+    const cancelTest = (): void => {
+      testState.setIsRunningTest(false);
+      testState.setTestRunPromise(undefined);
+    };
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
@@ -273,18 +278,27 @@ export const MappingTestExplorer = observer(
             )}
           </button>
           <div className="mapping-test-explorer__item__actions">
-            <button
-              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
-              onClick={runTest}
-              disabled={
-                testState.isRunningTest ||
-                testState.mappingEditorState.isRunningAllTests
-              }
-              tabIndex={-1}
-              title={`Run ${testState.test.name}`}
-            >
-              <PlayIcon />
-            </button>
+            {testState.isRunningTest ? (
+              <button
+                className="mapping-test-explorer__item__action mapping-test-explorer__stop-test-btn"
+                onClick={cancelTest}
+                disabled={testState.mappingEditorState.isRunningAllTests}
+                tabIndex={-1}
+                title={`Stop ${testState.test.name}`}
+              >
+                {<PauseCircleIcon />}
+              </button>
+            ) : (
+              <button
+                className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
+                onClick={runTest}
+                disabled={testState.mappingEditorState.isRunningAllTests}
+                tabIndex={-1}
+                title={`Run ${testState.test.name}`}
+              >
+                {<PlayIcon />}
+              </button>
+            )}
           </div>
         </div>
       </ContextMenu>

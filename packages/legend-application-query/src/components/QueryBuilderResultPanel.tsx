@@ -504,6 +504,7 @@ export const QueryBuilderResultPanel = observer(
                 </div>
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
+                  disabled={resultState.isGeneratingPlan}
                   content={
                     <MenuContent>
                       <MenuContentItem

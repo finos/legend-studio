@@ -205,6 +205,10 @@
     color: var(--color-dark-grey-400);
   }
 
+  &__stop-test-btn svg {
+    font-size: 1.4rem;
+  }
+
   &__run-test-btn svg {
     font-size: 1rem;
   }

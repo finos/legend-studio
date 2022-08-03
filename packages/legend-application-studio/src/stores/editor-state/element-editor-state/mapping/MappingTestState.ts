@@ -412,6 +412,7 @@ export class MappingTestState {
   assertionState: MappingTestAssertionState;
   isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
+  testRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -423,6 +424,7 @@ export class MappingTestState {
       editorStore: false,
       mappingEditorState: false,
       executionPlanState: false,
+      setIsRunningTest: action,
       setSelectedTab: action,
       resetTestRunStatus: action,
       setResult: action,
@@ -447,9 +449,17 @@ export class MappingTestState {
     );
   }
 
+  setIsRunningTest(val: boolean): void {
+    this.isRunningTest = val;
+  }
+
   setSelectedTab(val: MAPPING_TEST_EDITOR_TAB_TYPE): void {
     this.selectedTab = val;
   }
+
+  setTestRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+    this.testRunPromise = promise;
+  };
 
   buildQueryState(): MappingTestQueryState {
     const queryState = new MappingTestQueryState(
@@ -674,52 +684,59 @@ export class MappingTestState {
       return;
     }
     const startTime = Date.now();
+    let promise;
     try {
       const runtime = this.inputDataState.runtime;
       this.isRunningTest = true;
-      const result =
-        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
-          this.test.query,
-          this.mappingEditorState.mapping,
-          runtime,
-          this.editorStore.graphManagerState.graph,
-          {
-            useLosslessParse: true,
-          },
-        )) as ExecutionResult;
-      this.testExecutionResultText = losslessStringify(
-        extractExecutionResultValues(result),
-        undefined,
-        TAB_SIZE,
+      promise = this.editorStore.graphManagerState.graphManager.executeMapping(
+        this.test.query,
+        this.mappingEditorState.mapping,
+        runtime,
+        this.editorStore.graphManagerState.graph,
+        {
+          useLosslessParse: true,
+        },
       );
-      let assertionMatched = false;
-      if (
-        this.assertionState instanceof MappingTestExpectedOutputAssertionState
-      ) {
-        // TODO: this logic should probably be better handled in by engine mapping test runner
-        assertionMatched =
-          hashObject(extractExecutionResultValues(result)) ===
-          hashObject(losslessParse(this.assertionState.expectedResult));
-      } else {
-        throw new UnsupportedOperationError();
+      this.setTestRunPromise(promise);
+      const result = (yield promise) as ExecutionResult;
+      if (this.testRunPromise === promise) {
+        this.testExecutionResultText = losslessStringify(
+          extractExecutionResultValues(result),
+          undefined,
+          TAB_SIZE,
+        );
+        let assertionMatched = false;
+        if (
+          this.assertionState instanceof MappingTestExpectedOutputAssertionState
+        ) {
+          // TODO: this logic should probably be better handled in by engine mapping test runner
+          assertionMatched =
+            hashObject(extractExecutionResultValues(result)) ===
+            hashObject(losslessParse(this.assertionState.expectedResult));
+        } else {
+          throw new UnsupportedOperationError();
+        }
+        this.setResult(
+          assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
+        );
       }
-      this.setResult(
-        assertionMatched ? TEST_RESULT.PASSED : TEST_RESULT.FAILED,
-      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
-      this.errorRunningTest = error;
-      this.setResult(TEST_RESULT.ERROR);
+      if (this.testRunPromise === promise) {
+        this.errorRunningTest = error;
+        this.setResult(TEST_RESULT.ERROR);
+      }
     } finally {
       this.isRunningTest = false;
       this.runTime = Date.now() - startTime;
       // if the test is currently opened and ran but did not pass, switch to the result tab
       if (
         [TEST_RESULT.FAILED, TEST_RESULT.ERROR].includes(this.result) &&
+        this.testRunPromise === promise &&
         this.mappingEditorState.currentTabState === this
       ) {
         this.setSelectedTab(MAPPING_TEST_EDITOR_TAB_TYPE.RESULT);
