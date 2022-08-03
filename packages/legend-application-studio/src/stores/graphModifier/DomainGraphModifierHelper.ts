@@ -17,6 +17,7 @@
 import {
   addUniqueEntry,
   assertTrue,
+  guaranteeNonNullable,
   deleteEntry,
   changeEntry,
   guaranteeType,

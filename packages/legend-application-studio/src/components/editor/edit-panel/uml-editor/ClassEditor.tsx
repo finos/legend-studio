@@ -155,6 +155,20 @@ enum CLASS_PROPERTY_DND_TYPE {
 
 interface ClassPropertyDragSource {
   property: Property;
+  isBeingDragged = false;
+
+  constructor(property: Property) {
+    makeObservable(this, {
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
+
+    this.property = property;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
 }
 
 enum CLASS_PROPERTY_DND_TYPE {
