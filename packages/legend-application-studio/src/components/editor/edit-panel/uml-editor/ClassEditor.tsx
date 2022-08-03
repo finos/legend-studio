@@ -113,6 +113,8 @@ import {
   property_setMultiplicity,
   class_arrangeProperty,
   class_arrangeDerivedProperty,
+  class_arrangeConstraint,
+  class_arrangeSuperTypes,
   setGenericTypeReferenceValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
@@ -488,7 +490,7 @@ const PropertyBasicEditor = observer(
   },
 );
 
-export class ClassDerivedPropertyDragSource {
+class ClassDerivedPropertyDragSource {
   derivedProperty: DerivedProperty;
   isBeingDragged = false;
 
@@ -880,16 +882,46 @@ const DerivedPropertyBasicEditor = observer(
   },
 );
 
+class ClassSuperTypeDragSource {
+  superType: GenericTypeReference;
+  isBeingDragged = false;
+
+  constructor(superType: GenericTypeReference) {
+    makeObservable(this, {
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
+
+    this.superType = superType;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+}
+
+enum CLASS_SUPER_TYPE_DND_TYPE {
+  SUPER_TYPE = 'SUPER_TYPE',
+}
+
 const ConstraintEditor = observer(
   (props: {
     editorState: ClassEditorState;
     _class: Class;
     constraint: Constraint;
     deleteConstraint: () => void;
+    projectionConstraintState: ClassConstraintDragSource;
     isReadOnly: boolean;
   }) => {
-    const { constraint, _class, deleteConstraint, editorState, isReadOnly } =
-      props;
+    const ref = useRef<HTMLDivElement>(null);
+    const {
+      constraint,
+      _class,
+      deleteConstraint,
+      projectionConstraintState,
+      editorState,
+      isReadOnly,
+    } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const hasParserError = editorState.classState.constraintStates.some(
@@ -901,6 +933,59 @@ const ConstraintEditor = observer(
     // Name
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint_setName(constraint, event.target.value);
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: ClassConstraintDragSource, monitor: DropTargetMonitor): void => {
+        const draggingProperty = item.constraint;
+        const hoveredProperty = constraint;
+        class_arrangeConstraint(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, constraint],
+    );
+
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+      () => ({
+        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY],
+        hover: (
+          item: ClassConstraintDragSource,
+          monitor: DropTargetMonitor,
+        ): void => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): { isBeingDraggedProperty: Constraint | undefined } => ({
+          isBeingDraggedProperty:
+            monitor.getItem<ClassConstraintDragSource | null>()?.constraint,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged =
+      projectionConstraintState.constraint === isBeingDraggedProperty;
+
+    const [, dragConnector, dragPreviewConnector] = useDrag(
+      () => ({
+        type: CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY,
+        item: (): ClassConstraintDragSource => {
+          projectionConstraintState.setIsBeingDragged(true);
+          return {
+            constraint: constraint,
+            isBeingDragged: projectionConstraintState.isBeingDragged,
+            setIsBeingDragged: action,
+          };
+        },
+        end: (item: ClassConstraintDragSource | undefined): void =>
+          projectionConstraintState.setIsBeingDragged(false),
+      }),
+      [projectionConstraintState],
+    );
+    dragConnector(dropConnector(ref));
+
+    // hide default HTML5 preview image
+    useEffect(() => {
+      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    }, [dragPreviewConnector]);
+
     // Actions
     const onLambdaEditorFocus = (): void =>
       applicationStore.navigationContextService.push(
@@ -918,80 +1003,129 @@ const ConstraintEditor = observer(
 
     return (
       <div
+        ref={ref}
         className={clsx('constraint-editor', {
           backdrop__element: constraintState.parserError,
         })}
       >
-        <div className="constraint-editor__content">
-          {isInheritedConstraint && (
-            <div className="constraint-editor__content__name--with-lock">
-              <div className="constraint-editor__content__name--with-lock__icon">
-                <LockIcon />
+        {isBeingDragged && (
+          <div className="uml-element-dnd-placeholder-big-container">
+            <div className="uml-element-dnd-placeholder-container">
+              <div className="uml-element-dnd-placeholder ">
+                <span className="uml-element-dnd-name">{constraint.name}</span>
               </div>
-              <span className="constraint-editor__content__name--with-lock__name">
-                {constraint.name}
-              </span>
             </div>
-          )}
-          {!isInheritedConstraint && (
-            <input
-              className="constraint-editor__content__name"
-              spellCheck={false}
-              disabled={isReadOnly || isInheritedConstraint}
-              value={constraint.name}
-              onChange={changeName}
-              placeholder="Constraint name"
-            />
-          )}
-          {isInheritedConstraint && (
-            <button
-              className="uml-element-editor__visit-parent-element-btn"
-              onClick={visitOwner}
-              tabIndex={-1}
-              title={`Visit super type class ${constraint._OWNER.path}`}
-            >
-              <ArrowCircleRightIcon />
-            </button>
-          )}
-          {!isInheritedConstraint && !isReadOnly && (
-            <button
-              className="uml-element-editor__remove-btn"
-              disabled={isInheritedConstraint}
-              onClick={remove}
-              tabIndex={-1}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          )}
-        </div>
-        <div onFocus={onLambdaEditorFocus}>
-          <StudioLambdaEditor
-            disabled={
-              editorState.classState.isConvertingConstraintLambdaObjects ||
-              isReadOnly ||
-              isInheritedConstraint
-            }
-            lambdaEditorState={constraintState}
-            forceBackdrop={hasParserError}
-            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.BOOLEAN,
-            )}
-          />
-        </div>
+          </div>
+        )}
+        {!isBeingDragged && (
+          <>
+            <div className="constraint-editor__content">
+              {!isInheritedConstraint && (
+                <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+                  <VerticalDragHandleIcon />
+                </div>
+              )}
+              {isInheritedConstraint && (
+                <div className="constraint-editor__content__name--with-lock">
+                  <div className="constraint-editor__content__name--with-lock__icon">
+                    <LockIcon />
+                  </div>
+                  <span className="constraint-editor__content__name--with-lock__name">
+                    {constraint.name}
+                  </span>
+                </div>
+              )}
+              {!isInheritedConstraint && (
+                <input
+                  className="constraint-editor__content__name"
+                  spellCheck={false}
+                  disabled={isReadOnly || isInheritedConstraint}
+                  value={constraint.name}
+                  onChange={changeName}
+                  placeholder="Constraint name"
+                />
+              )}
+              {isInheritedConstraint && (
+                <button
+                  className="uml-element-editor__visit-parent-element-btn"
+                  onClick={visitOwner}
+                  tabIndex={-1}
+                  title={`Visit super type class ${constraint._OWNER.path}`}
+                >
+                  <ArrowCircleRightIcon />
+                </button>
+              )}
+              {!isInheritedConstraint && !isReadOnly && (
+                <button
+                  className="uml-element-editor__remove-btn"
+                  disabled={isInheritedConstraint}
+                  onClick={remove}
+                  tabIndex={-1}
+                  title="Remove"
+                >
+                  <TimesIcon />
+                </button>
+              )}
+            </div>
+            <div onFocus={onLambdaEditorFocus}>
+              <StudioLambdaEditor
+                disabled={
+                  editorState.classState.isConvertingConstraintLambdaObjects ||
+                  isReadOnly ||
+                  isInheritedConstraint
+                }
+                lambdaEditorState={constraintState}
+                forceBackdrop={hasParserError}
+                expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.BOOLEAN,
+                )}
+              />
+            </div>
+          </>
+        )}
       </div>
     );
   },
 );
 
+class ClassConstraintDragSource {
+  constraint: Constraint;
+  isBeingDragged = false;
+
+  constructor(constraint: Constraint) {
+    makeObservable(this, {
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
+
+    this.constraint = constraint;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+}
+
+enum CLASS_CONSTRAINT_DND_TYPE {
+  CONSTRAINT = 'CONSTRAINT',
+}
+
 const SuperTypeEditor = observer(
   (props: {
     _class: Class;
     superType: GenericTypeReference;
+    projectionSuperTypeState: ClassSuperTypeDragSource;
     deleteSuperType: () => void;
     isReadOnly: boolean;
   }) => {
-    const { superType, _class, deleteSuperType, isReadOnly } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const {
+      superType,
+      _class,
+      projectionSuperTypeState,
+      deleteSuperType,
+      isReadOnly,
+    } = props;
     const editorStore = useEditorStore();
     // Type
     const superTypeOptions = editorStore.classOptions.filter(
@@ -1004,6 +1138,59 @@ const SuperTypeEditor = observer(
         // Ensure there is no loop (might be expensive)
         !getAllSuperclasses(classOption.value).includes(_class),
     );
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: ClassSuperTypeDragSource, monitor: DropTargetMonitor): void => {
+        const draggingProperty = item.superType;
+        const hoveredProperty = superType;
+        class_arrangeSuperTypes(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, superType],
+    );
+
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+      () => ({
+        accept: [CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE],
+        hover: (
+          item: ClassSuperTypeDragSource,
+          monitor: DropTargetMonitor,
+        ): void => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): { isBeingDraggedProperty: GenericTypeReference | undefined } => ({
+          isBeingDraggedProperty:
+            monitor.getItem<ClassSuperTypeDragSource | null>()?.superType,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged =
+      projectionSuperTypeState.superType === isBeingDraggedProperty;
+
+    const [, dragConnector, dragPreviewConnector] = useDrag(
+      () => ({
+        type: CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE,
+        item: (): ClassSuperTypeDragSource => {
+          projectionSuperTypeState.setIsBeingDragged(true);
+          return {
+            superType: superType,
+            isBeingDragged: projectionSuperTypeState.isBeingDragged,
+            setIsBeingDragged: action,
+          };
+        },
+        end: (item: ClassSuperTypeDragSource | undefined): void =>
+          projectionSuperTypeState.setIsBeingDragged(false),
+      }),
+      [projectionSuperTypeState],
+    );
+    dragConnector(dropConnector(ref));
+
+    // hide default HTML5 preview image
+    useEffect(() => {
+      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    }, [dragPreviewConnector]);
+
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
       ignoreCase: true,
@@ -1017,35 +1204,49 @@ const SuperTypeEditor = observer(
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
     return (
-      <div className="super-type-editor">
-        <CustomSelectorInput
-          className="super-type-editor__class"
-          disabled={isReadOnly}
-          options={superTypeOptions}
-          onChange={changeType}
-          value={selectedType}
-          placeholder={'Choose a class'}
-          filterOption={filterOption}
-          formatOptionLabel={getPackageableElementOptionalFormatter()}
-        />
-        <button
-          className="uml-element-editor__basic__detail-btn"
-          onClick={visitDerivationSource}
-          tabIndex={-1}
-          title={'Visit super type'}
-        >
-          <LongArrowRightIcon />
-        </button>
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteSuperType}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
+      <div ref={ref}>
+        {isBeingDragged && (
+          <div className="uml-element-dnd-placeholder-container">
+            <div className="uml-element-dnd-placeholder ">
+              <span className="uml-element-dnd-name">{selectedType.label}</span>
+            </div>
+          </div>
+        )}
+        {!isBeingDragged && (
+          <div className="super-type-editor">
+            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+              <VerticalDragHandleIcon />
+            </div>
+            <CustomSelectorInput
+              className="super-type-editor__class"
+              disabled={isReadOnly}
+              options={superTypeOptions}
+              onChange={changeType}
+              value={selectedType}
+              placeholder={'Choose a class'}
+              filterOption={filterOption}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
+            />
+            <button
+              className="uml-element-editor__basic__detail-btn"
+              onClick={visitDerivationSource}
+              tabIndex={-1}
+              title={'Visit super type'}
+            >
+              <LongArrowRightIcon />
+            </button>
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteSuperType}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
@@ -1239,6 +1440,9 @@ const ConstraintsEditor = observer(
             <ConstraintEditor
               key={constraint._UUID}
               constraint={constraint}
+              projectionConstraintState={
+                new ClassConstraintDragSource(constraint)
+              }
               _class={_class}
               editorState={editorState}
               deleteConstraint={deleteConstraint(constraint)}
@@ -1316,6 +1520,7 @@ const SupertypesEditor = observer(
           <SuperTypeEditor
             key={superType.value._UUID}
             superType={superType}
+            projectionSuperTypeState={new ClassSuperTypeDragSource(superType)}
             _class={_class}
             deleteSuperType={deleteSuperType(superType)}
             isReadOnly={isReadOnly}

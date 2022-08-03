@@ -159,6 +159,30 @@ export const class_deleteConstraint = action(
     deleteEntry(_class.constraints, val);
   },
 );
+export const class_arrangeConstraint = action(
+  (
+    _class: Class,
+    sourceConstraint: Constraint,
+    targetConstraint: Constraint,
+  ): void => {
+    const sourceIndex = _class.constraints.findIndex(
+      (constraint) => constraint === sourceConstraint,
+    );
+    const targetIndex = _class.constraints.findIndex(
+      (constraint) => constraint === targetConstraint,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempConstraint = targetConstraint;
+      changeEntry(_class.constraints, targetConstraint, sourceConstraint);
+      changeEntry(_class.constraints, sourceConstraint, tempConstraint);
+    } else {
+      const tempConstraint = sourceConstraint;
+      changeEntry(_class.constraints, sourceConstraint, targetConstraint);
+      changeEntry(_class.constraints, targetConstraint, tempConstraint);
+    }
+  },
+);
 export const class_addSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
     addUniqueEntry(_class.generalizations, observe_GenericTypeReference(val));
@@ -167,6 +191,30 @@ export const class_addSuperType = action(
 export const class_deleteSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
     deleteEntry(_class.generalizations, val);
+  },
+);
+export const class_arrangeSuperTypes = action(
+  (
+    _class: Class,
+    sourceSuperType: GenericTypeReference,
+    targetSuperType: GenericTypeReference,
+  ): void => {
+    const sourceIndex = _class.generalizations.findIndex(
+      (constraint) => constraint === sourceSuperType,
+    );
+    const targetIndex = _class.generalizations.findIndex(
+      (constraint) => constraint === targetSuperType,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempConstraint = targetSuperType;
+      changeEntry(_class.generalizations, targetSuperType, sourceSuperType);
+      changeEntry(_class.generalizations, sourceSuperType, tempConstraint);
+    } else {
+      const tempConstraint = sourceSuperType;
+      changeEntry(_class.generalizations, sourceSuperType, targetSuperType);
+      changeEntry(_class.generalizations, targetSuperType, tempConstraint);
+    }
   },
 );
 export const class_addSubclass = action((_class: Class, val: Class): void => {
