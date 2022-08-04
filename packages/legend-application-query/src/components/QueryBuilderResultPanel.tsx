@@ -25,6 +25,7 @@ import {
   CaretDownIcon,
   ContextMenu,
   clsx,
+  PauseCircleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -413,20 +414,24 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
-    const execute = (): void => {
+    const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
-            flowResult(resultState.execute()).catch(
+            flowResult(resultState.runQuery()).catch(
               applicationStore.alertUnhandledError,
             ),
           PARAMETER_SUBMIT_ACTION.EXECUTE,
         );
       } else {
-        flowResult(resultState.execute()).catch(
+        flowResult(resultState.runQuery()).catch(
           applicationStore.alertUnhandledError,
         );
       }
+    };
+    const cancelQuery = (): void => {
+      resultState.setIsRunningQuery(false);
+      queryBuilderState.resultState.setQueryRunPromise(undefined);
     };
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(false)),
@@ -472,49 +477,59 @@ export const QueryBuilderResultPanel = observer(
                 />
               </div>
             )}
-            <button
-              className="query-builder__result__execute-btn"
-              onClick={execute}
-              disabled={
-                resultState.isExecutingQuery || resultState.isGeneratingPlan
-              }
-              tabIndex={-1}
-            >
-              <div className="query-builder__result__execute-btn__label">
-                <PlayIcon className="query-builder__result__execute-btn__label__icon" />
-                <div className="query-builder__result__execute-btn__label__title">
-                  Run Query
-                </div>
-              </div>
-              <DropdownMenu
-                className="query-builder__result__execute-btn__dropdown-btn"
-                disabled={
-                  resultState.isExecutingQuery || resultState.isGeneratingPlan
-                }
-                content={
-                  <MenuContent>
-                    <MenuContentItem
-                      className="query-builder__result__execute-btn__option"
-                      onClick={generatePlan}
-                    >
-                      Generate Plan
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="query-builder__result__execute-btn__option"
-                      onClick={debugPlanGeneration}
-                    >
-                      Debug
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                  transformOrigin: { vertical: 'top', horizontal: 'right' },
-                }}
+            {resultState.isRunningQuery ? (
+              <button
+                className="query-builder__result__stop-btn"
+                onClick={cancelQuery}
+                tabIndex={-1}
               >
-                <CaretDownIcon />
-              </DropdownMenu>
-            </button>
+                <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
+                  <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
+                  <div className="query-builder__result__stop-btn__label__title">
+                    Stop
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <button
+                className="query-builder__result__execute-btn"
+                onClick={runQuery}
+                tabIndex={-1}
+              >
+                <div className="query-builder__result__execute-btn__label">
+                  <PlayIcon className="query-builder__result__execute-btn__label__icon" />
+                  <div className="query-builder__result__execute-btn__label__title">
+                    Run Query
+                  </div>
+                </div>
+                <DropdownMenu
+                  className="query-builder__result__execute-btn__dropdown-btn"
+                  disabled={resultState.isGeneratingPlan}
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="query-builder__result__execute-btn__option"
+                        onClick={generatePlan}
+                      >
+                        Generate Plan
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="query-builder__result__execute-btn__option"
+                        onClick={debugPlanGeneration}
+                      >
+                        Debug
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <CaretDownIcon />
+                </DropdownMenu>
+              </button>
+            )}
             <DropdownMenu
               className="query-builder__result__export__dropdown"
               content={
@@ -554,7 +569,7 @@ export const QueryBuilderResultPanel = observer(
         <div className="panel__content">
           <PanelLoadingIndicator
             isLoading={
-              resultState.isExecutingQuery ||
+              resultState.isRunningQuery ||
               resultState.isGeneratingPlan ||
               resultState.exportDataState.isInProgress
             }

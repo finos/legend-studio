@@ -36,7 +36,7 @@ import {
   ServiceParameter,
   type ServiceParameterValue,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_ServiceParameter.js';
-import { getOwnPersistenceContext } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
+import { getOwnPersistenceContext } from '../../../../../../DSLPersistence_GraphManagerHelper.js';
 import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type PackageableElementImplicitReference,

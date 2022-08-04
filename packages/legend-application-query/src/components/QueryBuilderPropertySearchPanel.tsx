@@ -169,6 +169,7 @@ const QueryBuilderTreeNodeViewer = observer(
               ),
             );
             if (
+              propertyTreeNodeData &&
               !(propertyTreeNodeData.type instanceof Class) &&
               propertyTreeNodeData.mappingData.mapped
             ) {

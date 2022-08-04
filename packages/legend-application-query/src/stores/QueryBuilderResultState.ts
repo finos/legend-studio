@@ -48,16 +48,18 @@ export class QueryBuilderResultState {
   queryBuilderState: QueryBuilderState;
   exportDataState = ActionState.create();
   previewLimit = DEFAULT_LIMIT;
-  isExecutingQuery = false;
+  isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   executionDuration?: number | undefined;
+  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       executionPlanState: false,
+      setIsRunningQuery: action,
       setExecutionResult: action,
     });
 
@@ -68,14 +70,26 @@ export class QueryBuilderResultState {
     );
   }
 
+  setIsRunningQuery = (val: boolean): void => {
+    this.isRunningQuery = val;
+  };
+
   setExecutionResult = (val: ExecutionResult | undefined): void => {
     this.executionResult = val;
   };
+
   setExecutionDuration = (val: number | undefined): void => {
     this.executionDuration = val;
   };
+
   setPreviewLimit = (val: number): void => {
     this.previewLimit = Math.max(1, val);
+  };
+
+  setQueryRunPromise = (
+    promise: Promise<ExecutionResult> | undefined,
+  ): void => {
+    this.queryRunPromise = promise;
   };
 
   buildExecutionRawLambda(): RawLambda {
@@ -172,9 +186,9 @@ export class QueryBuilderResultState {
     }
   }
 
-  *execute(): GeneratorFn<void> {
+  *runQuery(): GeneratorFn<void> {
     try {
-      this.isExecutingQuery = true;
+      this.isRunningQuery = true;
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.querySetupState.mapping,
         'Mapping is required to execute query',
@@ -185,15 +199,19 @@ export class QueryBuilderResultState {
       );
       const query = this.buildExecutionRawLambda();
       const startTime = Date.now();
-      const result =
-        (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
+      const promise =
+        this.queryBuilderState.graphManagerState.graphManager.executeMapping(
           query,
           mapping,
           runtime,
           this.queryBuilderState.graphManagerState.graph,
-        )) as ExecutionResult;
-      this.setExecutionResult(result);
-      this.setExecutionDuration(Date.now() - startTime);
+        );
+      this.setQueryRunPromise(promise);
+      const result = (yield promise) as ExecutionResult;
+      if (this.queryRunPromise === promise) {
+        this.setExecutionResult(result);
+        this.setExecutionDuration(Date.now() - startTime);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.queryBuilderState.applicationStore.log.error(
@@ -202,7 +220,7 @@ export class QueryBuilderResultState {
       );
       this.queryBuilderState.applicationStore.notifyError(error);
     } finally {
-      this.isExecutingQuery = false;
+      this.setIsRunningQuery(false);
     }
   }
 

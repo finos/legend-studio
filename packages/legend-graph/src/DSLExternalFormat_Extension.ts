@@ -23,7 +23,7 @@ import { DSLExternalFormat_PureGraphPlugin } from './graph/DSLExternalFormat_Pur
 export class DSLExternalFormat_GraphPreset extends AbstractPreset {
   constructor() {
     super(
-      packageJson.extensions.dsl_external_format_graphPreset,
+      packageJson.extensions.dsl_external_format_graphManagerPreset,
       packageJson.version,
       [
         new DSLExternalFormat_PureGraphPlugin(),

@@ -102,7 +102,7 @@ export class ServiceExecutionParameterState extends LambdaParametersState {
     this.parameterStates = this.build(query);
     this.parameterValuesEditorState.open(
       (): Promise<void> =>
-        flowResult(this.executionState.execute()).catch(
+        flowResult(this.executionState.runQuery()).catch(
           this.executionState.editorStore.applicationStore.alertUnhandledError,
         ),
       PARAMETER_SUBMIT_ACTION.EXECUTE,
@@ -440,13 +440,14 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   declare execution: PureExecution;
   selectedExecutionContextState: ServiceExecutionContextState | undefined;
   runtimeEditorState?: RuntimeEditorState | undefined;
-  isExecuting = false;
+  isRunningQuery = false;
   isGeneratingPlan = false;
   isOpeningQueryEditor = false;
   executionResultText?: string | undefined; // NOTE: stored as lossless JSON string
   executionPlanState: ExecutionPlanState;
   parameterState: ServiceExecutionParameterState;
   showChangeExecModal = false;
+  queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -473,6 +474,10 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     return false;
   }
 
+  setIsRunningQuery(val: boolean): void {
+    this.isRunningQuery = val;
+  }
+
   setShowChangeExecModal(val: boolean): void {
     this.showChangeExecModal = val;
   }
@@ -480,11 +485,19 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   setOpeningQueryEditor(val: boolean): void {
     this.isOpeningQueryEditor = val;
   }
+
   setExecutionResultText = (executionResult: string | undefined): void => {
     this.executionResultText = executionResult;
   };
+
   setQueryState = (queryState: ServicePureExecutionQueryState): void => {
     this.queryState = queryState;
+  };
+
+  setQueryRunPromise = (
+    promise: Promise<ExecutionResult> | undefined,
+  ): void => {
+    this.queryRunPromise = promise;
   };
 
   *generatePlan(debug: boolean): GeneratorFn<void> {
@@ -538,7 +551,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   *handleExecute(): GeneratorFn<void> {
-    if (!this.selectedExecutionContextState || this.isExecuting) {
+    if (!this.selectedExecutionContextState || this.isRunningQuery) {
       return;
     }
     const query = this.queryState.query;
@@ -546,19 +559,19 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     if (parameters.length) {
       this.parameterState.openModal(query);
     } else {
-      this.execute();
+      this.runQuery();
     }
   }
 
-  *execute(): GeneratorFn<void> {
-    if (!this.selectedExecutionContextState || this.isExecuting) {
+  *runQuery(): GeneratorFn<void> {
+    if (!this.selectedExecutionContextState || this.isRunningQuery) {
       return;
     }
     try {
-      this.isExecuting = true;
+      this.isRunningQuery = true;
       const query = this.getExecutionQuery();
-      const result =
-        (yield this.editorStore.graphManagerState.graphManager.executeMapping(
+      const promise =
+        this.editorStore.graphManagerState.graphManager.executeMapping(
           query,
           this.selectedExecutionContextState.executionContext.mapping.value,
           this.selectedExecutionContextState.executionContext.runtime,
@@ -566,11 +579,15 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           {
             useLosslessParse: true,
           },
-        )) as ExecutionResult;
-      this.setExecutionResultText(
-        losslessStringify(result, undefined, TAB_SIZE),
-      );
-      this.parameterState.setParameters([]);
+        );
+      this.setQueryRunPromise(promise);
+      const result = (yield promise) as ExecutionResult;
+      if (this.queryRunPromise === promise) {
+        this.setExecutionResultText(
+          losslessStringify(result, undefined, TAB_SIZE),
+        );
+        this.parameterState.setParameters([]);
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -579,7 +596,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.isExecuting = false;
+      this.isRunningQuery = false;
     }
   }
 
@@ -611,7 +628,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   get serviceExecutionParameters():
     | { query: RawLambda; mapping: Mapping; runtime: Runtime }
     | undefined {
-    if (!this.selectedExecutionContextState || this.isExecuting) {
+    if (!this.selectedExecutionContextState || this.isRunningQuery) {
       return undefined;
     }
     const query = this.queryState.query;
@@ -701,7 +718,7 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
       queryState: observable,
       getInitiallySelectedExecutionContextState: observable,
       runtimeEditorState: observable,
-      isExecuting: observable,
+      isRunningQuery: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
       executionResultText: observable,
@@ -720,9 +737,10 @@ export class SingleServicePureExecutionState extends ServicePureExecutionState {
       changeExecution: action,
       setMultiExecutionKey: action,
       setShowChangeExecModal: action,
+      setIsRunningQuery: action,
       generatePlan: flow,
       handleExecute: flow,
-      execute: flow,
+      runQuery: flow,
     });
     this.selectedExecutionContextState =
       this.getInitiallySelectedExecutionContextState();
@@ -778,7 +796,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       queryState: observable,
       selectedExecutionContextState: observable,
       runtimeEditorState: observable,
-      isExecuting: observable,
+      isRunningQuery: observable,
       isGeneratingPlan: observable,
       isOpeningQueryEditor: observable,
       executionResultText: observable,
@@ -804,9 +822,10 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
       changeKeyValue: action,
       setSingleExecutionKey: action,
       setShowChangeExecModal: action,
+      setIsRunningQuery: action,
       changeExecution: action,
       generatePlan: flow,
-      execute: flow,
+      runQuery: flow,
     });
 
     this.execution = execution;

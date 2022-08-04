@@ -79,11 +79,7 @@ import {
   type V1_TargetShape,
   V1_TransactionScope,
 } from '../../../model/packageableElements/persistence/V1_DSLPersistence_TargetShape.js';
-import {
-  V1_CronTrigger,
-  V1_ManualTrigger,
-  type V1_Trigger,
-} from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
+import type { V1_Trigger } from '../../../model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 import {
   type Auditing,
   DateTimeAuditing,
@@ -148,19 +144,15 @@ import {
   type TargetShape,
   TransactionScope,
 } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_TargetShape.js';
-import {
-  CronTrigger,
-  ManualTrigger,
-  type Trigger,
-} from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
-import { getOwnPersistence } from '../../../../../../../graphManager/DSLPersistence_GraphManagerHelper.js';
+import type { Trigger } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
+import { getOwnPersistence } from '../../../../../../DSLPersistence_GraphManagerHelper.js';
+import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSLPersistence_PureProtocolProcessorPlugin_Extension.js';
 import {
   type Binding,
   type Database,
   type PackageableElementImplicitReference,
   type V1_GraphBuilderContext,
   V1_buildFullPath,
-  V1_buildConnection,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -175,18 +167,22 @@ export const V1_buildTrigger = (
   protocol: V1_Trigger,
   context: V1_GraphBuilderContext,
 ): Trigger => {
-  if (protocol instanceof V1_CronTrigger) {
-    const trigger = new CronTrigger();
-    trigger.minutes = protocol.minutes;
-    trigger.hours = protocol.hours;
-    trigger.dayOfMonth = protocol.dayOfMonth;
-    trigger.month = protocol.month;
-    trigger.dayOfWeek = protocol.dayOfWeek;
-    return new CronTrigger();
-  } else if (protocol instanceof V1_ManualTrigger) {
-    return new ManualTrigger();
+  const extraTriggerBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSLPersistence_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTriggerBuilders?.() ?? [],
+  );
+  for (const builder of extraTriggerBuilders) {
+    const metamodel = builder(protocol, context);
+    if (metamodel) {
+      return metamodel;
+    }
   }
-  throw new UnsupportedOperationError(`Can't build trigger`, protocol);
+  throw new UnsupportedOperationError(
+    `Can't build trigger: no compatible builder available from plugins`,
+    protocol,
+  );
 };
 
 /**********
@@ -198,15 +194,10 @@ export const V1_buildRelationalSink = (
   context: V1_GraphBuilderContext,
 ): RelationalSink => {
   const sink = new RelationalSink();
-  if (protocol.database) {
-    sink.database = context.resolveElement(
-      protocol.database,
-      false,
-    ) as PackageableElementImplicitReference<Database>;
-  }
-  if (protocol.connection) {
-    sink.connection = V1_buildConnection(protocol.connection, context);
-  }
+  sink.database = context.resolveElement(
+    protocol.database,
+    false,
+  ) as PackageableElementImplicitReference<Database>;
   return sink;
 };
 
@@ -219,9 +210,6 @@ export const V1_buildObjectStorageSink = (
     protocol.binding,
     false,
   ) as PackageableElementImplicitReference<Binding>;
-  if (protocol.connection) {
-    sink.connection = V1_buildConnection(protocol.connection, context);
-  }
   return sink;
 };
 

@@ -23,11 +23,13 @@ export { DSLPersistence_LegendStudioApplicationPlugin } from './components/studi
 export { Persistence } from './graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Persistence.js';
 export { PersistenceContext } from './graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceContext.js';
 export { PersistencePlatform } from './graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistencePlatform.js';
+export { Trigger } from './graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_Trigger.js';
 
 // v1 protocols
 export { V1_Persistence } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Persistence.js';
 export { V1_PersistenceContext } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceContext.js';
 export { V1_PersistencePlatform } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_PersistencePlatform.js';
+export { V1_Trigger } from './graphManager/protocol/pure/v1/model/packageableElements/persistence/V1_DSLPersistence_Trigger.js';
 
 // ---------- TRANSFORMATION ----------
 
