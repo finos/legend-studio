@@ -88,7 +88,10 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import { AllTaggedValueDragSource } from './uml-editor/ClassEditor.js';
+import {
+  AllStereotypeDragSource,
+  AllTaggedValueDragSource,
+} from './uml-editor/ClassEditor.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -828,6 +831,10 @@ export const FunctionEditor = observer(() => {
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
+                    _parentType={functionElement}
+                    projectionStereotypeState={
+                      new AllStereotypeDragSource(stereotype)
+                    }
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

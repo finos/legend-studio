@@ -85,6 +85,7 @@ import {
   getAllClassDerivedProperties,
   isStubbed_PackageableElement,
   Tag,
+  Stereotype,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
@@ -132,28 +133,6 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../st
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 class ClassPropertyDragSource {
-  property: Property;
-  isBeingDragged = false;
-
-  constructor(property: Property) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
-    this.property = property;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
-  }
-}
-
-enum CLASS_PROPERTY_DND_TYPE {
-  PROPERTY = 'PROPERTY',
-}
-
-interface ClassPropertyDragSource {
   property: Property;
   isBeingDragged = false;
 
@@ -1635,6 +1614,24 @@ const TaggedValuesEditor = observer(
   },
 );
 
+export class AllStereotypeDragSource {
+  stereotype: StereotypeReference;
+  isBeingDragged = false;
+
+  constructor(stereotype: StereotypeReference) {
+    makeObservable(this, {
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
+
+    this.stereotype = stereotype;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+}
+
 const StereotypesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {
     const { _class, editorState } = props;
@@ -1680,6 +1677,8 @@ const StereotypesEditor = observer(
         {_class.stereotypes.map((stereotype) => (
           <StereotypeSelector
             key={stereotype.value._UUID}
+            _parentType={_class}
+            projectionStereotypeState={new AllStereotypeDragSource(stereotype)}
             stereotype={stereotype}
             deleteStereotype={deleteStereotype(stereotype)}
             isReadOnly={isReadOnly}

@@ -71,7 +71,10 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { AllTaggedValueDragSource } from './ClassEditor.js';
+import {
+  AllStereotypeDragSource,
+  AllTaggedValueDragSource,
+} from './ClassEditor.js';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -305,6 +308,10 @@ const EnumEditor = observer(
                 {_enum.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
+                    _parentType={_enum}
+                    projectionStereotypeState={
+                      new AllStereotypeDragSource(stereotype)
+                    }
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
@@ -571,6 +578,10 @@ export const EnumerationEditor = observer(
                     {enumeration.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}
+                        _parentType={enumeration}
+                        projectionStereotypeState={
+                          new AllStereotypeDragSource(stereotype)
+                        }
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

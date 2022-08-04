@@ -29,6 +29,7 @@ import {
   observe_RelationalDataTable,
   PackageableElementExplicitReference,
   TaggedValue,
+  StereotypeReference,
 } from '@finos/legend-graph';
 import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -72,6 +73,39 @@ export const dataElement_arrangeTaggedValues = action(
         targetTaggedValue,
       );
       changeEntry(dataElement.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
+  },
+);
+
+export const dataElement_arrangeStereotypeReferences = action(
+  (
+    dataElement: DataElement,
+    sourceStereotypes: StereotypeReference,
+    targetStereotypes: StereotypeReference,
+  ): void => {
+    const sourceIndex = dataElement.stereotypes.findIndex(
+      (stereotype) => stereotype === sourceStereotypes,
+    );
+    const targetIndex = dataElement.stereotypes.findIndex(
+      (stereotype) => stereotype === targetStereotypes,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempstereotype = targetStereotypes;
+      changeEntry(
+        dataElement.stereotypes,
+        targetStereotypes,
+        sourceStereotypes,
+      );
+      changeEntry(dataElement.stereotypes, sourceStereotypes, tempstereotype);
+    } else {
+      const tempstereotype = sourceStereotypes;
+      changeEntry(
+        dataElement.stereotypes,
+        sourceStereotypes,
+        targetStereotypes,
+      );
+      changeEntry(dataElement.stereotypes, targetStereotypes, tempstereotype);
     }
   },
 );
