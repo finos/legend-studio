@@ -41,8 +41,6 @@ import {
   ArrowCircleRightIcon,
   FireIcon,
   StickArrowCircleRightIcon,
-  LongArrowAltUpIcon,
-  MoreVerticalIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -83,9 +81,6 @@ import {
   getAllSuperclasses,
   getAllClassConstraints,
   getAllClassDerivedProperties,
-  isStubbed_PackageableElement,
-  Tag,
-  Stereotype,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
@@ -120,10 +115,7 @@ import {
   class_arrangeDerivedProperty,
   class_arrangeConstraint,
   class_arrangeSuperTypes,
-  class_arrangeTaggedValues,
   setGenericTypeReferenceValue,
-  taggedValue_setValue,
-  taggedValue_setTag,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
@@ -166,9 +158,9 @@ const PropertyBasicEditor = observer(
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const {
-      projectionPropertyState,
       property,
       _class,
+      projectionPropertyState,
       editorState,
       deleteProperty,
       isReadOnly,

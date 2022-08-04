@@ -223,7 +223,9 @@
     height: 2.8rem;
     color: var(--color-dark-grey-500);
     border-radius: 0.2rem;
-    margin-left: 0.2rem;
+    margin-left: 0;
+    padding-top: 0.1rem;
+    padding-left: 0.5rem;
     margin-right: 0.5rem;
     cursor: pointer;
   }

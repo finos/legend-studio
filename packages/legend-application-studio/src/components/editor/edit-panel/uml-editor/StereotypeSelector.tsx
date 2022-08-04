@@ -36,35 +36,25 @@ import {
   Enum,
   Enumeration,
   Property,
-  TaggedValue,
 } from '@finos/legend-graph';
 import {
   association_arrangeStereotypeReferences,
-  association_arrangeTaggedValues,
   class_arrangeStereotypeReferences,
-  class_arrangeTaggedValues,
   enumeration_arrangeStereotypeReferences,
-  enumeration_arrangeTaggedValues,
   enum_arrangeStereotypeReferences,
-  enum_arrangeTaggedValues,
   function_arrangeStereotypeReferences,
-  function_arrangeTaggedValues,
   property_arrangeStereotypeReferences,
-  property_arrangeTaggedValues,
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
 import {
-  AllStereotypeDragSource,
+  type AllStereotypeDragSource,
   CLASS_TAGGED_VALUE_DND_TYPE,
 } from './ClassEditor.js';
 import { action } from 'mobx';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import {
-  dataElement_arrangeStereotypeReferences,
-  dataElement_arrangeTaggedValues,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
+import { dataElement_arrangeStereotypeReferences } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
 
 interface StereotypeOption {
   label: string;

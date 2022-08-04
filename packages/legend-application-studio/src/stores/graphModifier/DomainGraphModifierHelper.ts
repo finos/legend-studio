@@ -455,6 +455,52 @@ export const profile_deleteStereotype = action(
   },
 );
 
+export const profile_arrangeTags = action(
+  (_profile: Profile, sourceTag: Tag, targetTag: Tag): void => {
+    const sourceIndex = _profile.p_tags.findIndex(
+      (taggedValue) => taggedValue === sourceTag,
+    );
+    const targetIndex = _profile.p_tags.findIndex(
+      (taggedValue) => taggedValue === targetTag,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTag = targetTag;
+      changeEntry(_profile.p_tags, targetTag, sourceTag);
+      changeEntry(_profile.p_tags, sourceTag, tempTag);
+    } else {
+      const tempTag = sourceTag;
+      changeEntry(_profile.p_tags, sourceTag, targetTag);
+      changeEntry(_profile.p_tags, targetTag, tempTag);
+    }
+  },
+);
+
+export const profile_arrangeStereotypes = action(
+  (
+    _profile: Profile,
+    sourceStereotype: Stereotype,
+    targetStereotype: Stereotype,
+  ): void => {
+    const sourceIndex = _profile.p_stereotypes.findIndex(
+      (taggedValue) => taggedValue === sourceStereotype,
+    );
+    const targetIndex = _profile.p_stereotypes.findIndex(
+      (taggedValue) => taggedValue === targetStereotype,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempStereotype = targetStereotype;
+      changeEntry(_profile.p_stereotypes, targetStereotype, sourceStereotype);
+      changeEntry(_profile.p_stereotypes, sourceStereotype, tempStereotype);
+    } else {
+      const tempStereotype = sourceStereotype;
+      changeEntry(_profile.p_stereotypes, sourceStereotype, targetStereotype);
+      changeEntry(_profile.p_stereotypes, targetStereotype, tempStereotype);
+    }
+  },
+);
+
 // --------------------------------------------- Function -------------------------------------
 
 export const function_deleteParameter = action(
@@ -475,6 +521,32 @@ export const function_setReturnType = action(
 export const function_setReturnMultiplicity = action(
   (_func: ConcreteFunctionDefinition, val: Multiplicity): void => {
     _func.returnMultiplicity = observe_Multiplicity(val);
+  },
+);
+
+export const function_arrangeParameter = action(
+  (
+    _func: ConcreteFunctionDefinition,
+    sourceParameter: RawVariableExpression,
+    targetParameter: RawVariableExpression,
+  ): void => {
+    const sourceIndex = _func.parameters.findIndex(
+      (parameter) => parameter === sourceParameter,
+    );
+    const targetIndex = _func.parameters.findIndex(
+      (parameter) => parameter === targetParameter,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempProperty = targetParameter;
+      changeEntry(_func.parameters, targetParameter, sourceParameter);
+      changeEntry(_func.parameters, sourceParameter, tempProperty);
+    } else {
+      const tempProperty = sourceParameter;
+
+      changeEntry(_func.parameters, sourceParameter, targetParameter);
+      changeEntry(_func.parameters, targetParameter, tempProperty);
+    }
   },
 );
 
@@ -547,6 +619,23 @@ export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
     packageableElementReference_setValue(ref.ownerReference, value._OWNER);
+  },
+);
+
+export const enum_arrangeValues = action(
+  (_enum: Enum[], sourceEnum: Enum, targetEnum: Enum): void => {
+    const sourceIndex = _enum.findIndex((values) => values === sourceEnum);
+    const targetIndex = _enum.findIndex((values) => values === targetEnum);
+
+    if (sourceIndex < targetIndex) {
+      const tempvalues = targetEnum;
+      changeEntry(_enum, targetEnum, sourceEnum);
+      changeEntry(_enum, sourceEnum, tempvalues);
+    } else {
+      const tempvalues = sourceEnum;
+      changeEntry(_enum, sourceEnum, targetEnum);
+      changeEntry(_enum, targetEnum, tempvalues);
+    }
   },
 );
 

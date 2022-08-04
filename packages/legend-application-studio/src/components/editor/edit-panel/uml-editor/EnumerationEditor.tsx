@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
-import { useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
@@ -42,6 +42,7 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
+  VerticalDragHandleIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
@@ -68,6 +69,7 @@ import {
   annotatedElement_deleteTaggedValue,
   enum_deleteValue,
   enum_addValue,
+  enum_arrangeValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
@@ -75,15 +77,49 @@ import {
   AllStereotypeDragSource,
   AllTaggedValueDragSource,
 } from './ClassEditor.js';
+import { action, makeObservable, observable } from 'mobx';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+
+export class EnumValueDragSource {
+  _enum: Enum;
+  isBeingDragged = false;
+
+  constructor(_enum: Enum) {
+    makeObservable(this, {
+      isBeingDragged: observable,
+      setIsBeingDragged: action,
+    });
+
+    this._enum = _enum;
+  }
+
+  setIsBeingDragged(val: boolean): void {
+    this.isBeingDragged = val;
+  }
+}
+
+enum ENUEMRATION_VALUE_DND_TYPE {
+  ENUMERATION = 'ENUMERATION',
+}
 
 const EnumBasicEditor = observer(
   (props: {
+    _parentEnumerations: Enum[];
     _enum: Enum;
     selectValue: () => void;
     deleteValue: () => void;
     isReadOnly: boolean;
+    projectionEnumerationState: EnumValueDragSource;
   }) => {
-    const { _enum, selectValue, deleteValue, isReadOnly } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const {
+      _enum,
+      _parentEnumerations,
+      selectValue,
+      deleteValue,
+      isReadOnly,
+      projectionEnumerationState,
+    } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       enum_setName(_enum, event.target.value);
     };
@@ -91,37 +127,106 @@ const EnumBasicEditor = observer(
       _enum._OWNER.values.filter((value) => value.name === val.name).length >=
       2;
 
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: EnumValueDragSource, monitor: DropTargetMonitor): void => {
+        const draggingEnumeration = item._enum;
+        const hoveredEnumeration = _enum;
+        enum_arrangeValues(
+          _parentEnumerations,
+          draggingEnumeration,
+          hoveredEnumeration,
+        );
+      },
+      [_parentEnumerations, _enum],
+    );
+
+    const [{ isBeingDraggedEnumeration }, dropConnector] = useDrop(
+      () => ({
+        accept: [ENUEMRATION_VALUE_DND_TYPE.ENUMERATION],
+        hover: (item: EnumValueDragSource, monitor: DropTargetMonitor): void =>
+          handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): { isBeingDraggedEnumeration: Enum | undefined } => ({
+          isBeingDraggedEnumeration:
+            monitor.getItem<EnumValueDragSource | null>()?._enum,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged =
+      projectionEnumerationState._enum === isBeingDraggedEnumeration;
+
+    const [, dragConnector, dragPreviewConnector] = useDrag(
+      () => ({
+        type: ENUEMRATION_VALUE_DND_TYPE.ENUMERATION,
+        item: (): EnumValueDragSource => {
+          projectionEnumerationState.setIsBeingDragged(true);
+          return {
+            _enum: _enum,
+            isBeingDragged: projectionEnumerationState.isBeingDragged,
+            setIsBeingDragged: action,
+          };
+        },
+        end: (item: EnumValueDragSource | undefined): void =>
+          projectionEnumerationState.setIsBeingDragged(false),
+      }),
+      [projectionEnumerationState],
+    );
+    dragConnector(dropConnector(ref));
+
+    // hide default HTML5 preview image
+    useEffect(() => {
+      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    }, [dragPreviewConnector]);
+
     return (
-      <div className="enum-basic-editor">
-        <InputWithInlineValidation
-          className="enum-basic-editor__name input-group__input"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={_enum.name}
-          onChange={changeValue}
-          placeholder={`Enum name`}
-          validationErrorMessage={
-            isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
-          }
-        />
-        <button
-          className="uml-element-editor__basic__detail-btn"
-          onClick={selectValue}
-          tabIndex={-1}
-          title={'See detail'}
-        >
-          <LongArrowRightIcon />
-        </button>
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteValue}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
+      <div ref={ref}>
+        {isBeingDragged && (
+          <div className="uml-element-dnd-placeholder-container">
+            <div className="uml-element-dnd-placeholder ">
+              <span className="uml-element-dnd-name">{_enum.name}</span>
+            </div>
+          </div>
+        )}
+
+        {!isBeingDragged && (
+          <div className="enum-basic-editor">
+            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+              <VerticalDragHandleIcon />
+            </div>
+            <InputWithInlineValidation
+              className="enum-basic-editor__name input-group__input"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={_enum.name}
+              onChange={changeValue}
+              placeholder={`Enum name`}
+              validationErrorMessage={
+                isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
+              }
+            />
+            <button
+              className="uml-element-editor__basic__detail-btn"
+              onClick={selectValue}
+              tabIndex={-1}
+              title={'See detail'}
+            >
+              <LongArrowRightIcon />
+            </button>
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteValue}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
@@ -445,6 +550,7 @@ export const EnumerationEditor = observer(
       }),
       [handleDropStereotype],
     );
+
     // Generation
     const generationParentElementPath =
       editorStore.graphState.graphGenerationState.findGenerationParentPath(
@@ -538,6 +644,10 @@ export const EnumerationEditor = observer(
                       <EnumBasicEditor
                         key={enumValue._UUID}
                         _enum={enumValue}
+                        projectionEnumerationState={
+                          new EnumValueDragSource(enumValue)
+                        }
+                        _parentEnumerations={enumeration.values}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
                         isReadOnly={isReadOnly}

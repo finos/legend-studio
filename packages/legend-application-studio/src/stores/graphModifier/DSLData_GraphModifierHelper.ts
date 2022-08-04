@@ -28,8 +28,8 @@ import {
   observe_DataElement,
   observe_RelationalDataTable,
   PackageableElementExplicitReference,
-  TaggedValue,
-  StereotypeReference,
+  type TaggedValue,
+  type StereotypeReference,
 } from '@finos/legend-graph';
 import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
