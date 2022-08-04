@@ -33,6 +33,7 @@ import {
   MenuContent,
   CaretDownIcon,
   MenuContentItem,
+  PauseCircleIcon,
 } from '@finos/legend-art';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -251,10 +252,16 @@ export const ServiceExecutionQueryEditor = observer(
     const importQuery = (): void => {
       queryState.setOpenQueryImporter(true);
     };
-    // execute
-    const handleExecute = applicationStore.guardUnhandledError(() =>
+
+    const runQuery = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.handleExecute()),
     );
+
+    const cancelQuery = (): void => {
+      executionState.setIsRunningQuery(false);
+      executionState.setQueryRunPromise(undefined);
+    };
+
     const generatePlan = applicationStore.guardUnhandledError(() =>
       flowResult(executionState.generatePlan(false)),
     );
@@ -287,55 +294,68 @@ export const ServiceExecutionQueryEditor = observer(
             >
               <ArrowCircleDownIcon />
             </button>
-            <button
-              className="service-editor__execution__execute-btn"
-              onClick={handleExecute}
-              title="Run Query"
-              disabled={executionState.isExecuting}
-              tabIndex={-1}
-            >
-              <div className="service-editor__execution__execute-btn__label">
-                <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
-                <div className="service-editor__execution__execute-btn__label__title">
-                  Run Query
-                </div>
-              </div>
-              <DropdownMenu
-                className="service-editor__execution__execute-btn__dropdown-btn"
-                disabled={
-                  executionState.isExecuting || executionState.isGeneratingPlan
-                }
-                content={
-                  <MenuContent>
-                    <MenuContentItem
-                      className="service-editor__execution__execute-btn__option"
-                      onClick={generatePlan}
-                    >
-                      Generate Plan
-                    </MenuContentItem>
-                    <MenuContentItem
-                      className="service-editor__execution__execute-btn__option"
-                      onClick={debugPlanGeneration}
-                    >
-                      Debug
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                  transformOrigin: { vertical: 'top', horizontal: 'right' },
-                }}
+            {executionState.isRunningQuery ? (
+              <button
+                className="service-editor__execution__stop-btn"
+                onClick={cancelQuery}
+                tabIndex={-1}
               >
-                <CaretDownIcon />
-              </DropdownMenu>
-            </button>
+                <div className="btn--dark btn--caution service-editor__execution__stop-btn__label">
+                  <PauseCircleIcon className="service-editor__execution__stop-btn__label__icon" />
+                  <div className="service-editor__execution__stop-btn__label__title">
+                    Stop
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <button
+                className="service-editor__execution__execute-btn"
+                onClick={runQuery}
+                title="Run Query"
+                disabled={executionState.isRunningQuery}
+                tabIndex={-1}
+              >
+                <div className="service-editor__execution__execute-btn__label">
+                  <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
+                  <div className="service-editor__execution__execute-btn__label__title">
+                    Run Query
+                  </div>
+                </div>
+                <DropdownMenu
+                  className="service-editor__execution__execute-btn__dropdown-btn"
+                  disabled={executionState.isGeneratingPlan}
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="service-editor__execution__execute-btn__option"
+                        onClick={generatePlan}
+                      >
+                        Generate Plan
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="service-editor__execution__execute-btn__option"
+                        onClick={debugPlanGeneration}
+                      >
+                        Debug
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <CaretDownIcon />
+                </DropdownMenu>
+              </button>
+            )}
           </div>
         </div>
         <div className="panel__content property-mapping-editor__entry__container">
           <PanelLoadingIndicator
             isLoading={
               executionState.isOpeningQueryEditor ||
-              executionState.isExecuting ||
+              executionState.isRunningQuery ||
               executionState.isGeneratingPlan
             }
           />
