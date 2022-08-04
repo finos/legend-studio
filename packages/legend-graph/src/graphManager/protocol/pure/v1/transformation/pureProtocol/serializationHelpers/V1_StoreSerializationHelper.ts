@@ -96,12 +96,10 @@ const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
-        ? val.length == 1
-          ? val[0]
-          : serializeArray(val, (v) => {
-              return v;
-            })
-        : val,
+        ? serializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
     // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
     (val) =>
       Array.isArray(val)
@@ -118,12 +116,10 @@ const V1_flatDataDateTimeSchema = createModelSchema(V1_FlatDataDateTime, {
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
-        ? val.length == 1
-          ? val[0]
-          : serializeArray(val, (v) => {
-              return v;
-            })
-        : val,
+        ? serializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
     (val) =>
       Array.isArray(val)
         ? deserializeArray(val, (v) => {
@@ -141,12 +137,10 @@ const V1_flatDataStrictDateSchema = createModelSchema(V1_FlatDataStrictDate, {
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
-        ? val.length == 1
-          ? val[0]
-          : serializeArray(val, (v) => {
-              return v;
-            })
-        : val,
+        ? serializeArray(val, (v) => {
+            return v;
+          })
+        : [val],
     // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
     (val) =>
       Array.isArray(val)
@@ -281,12 +275,10 @@ const V1_flatDataPropertyModelSchema = createModelSchema(V1_FlatDataProperty, {
   value: custom(
     (values) =>
       Array.isArray(values)
-        ? values.length == 1
-          ? values[0]
-          : serializeArray(values, (value) => {
-              return value;
-            })
-        : values,
+        ? serializeArray(values, (value) => {
+            return value;
+          })
+        : [values],
     (values) => {
       if (Array.isArray(values)) {
         return deserializeArray(values, (value) => {
