@@ -87,6 +87,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { AllTaggedValueDragSource } from './ClassEditor.js';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -512,6 +513,10 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
+                        _whoKnows={association}
+                        projectionTaggedValueState={
+                          new AllTaggedValueDragSource(taggedValue)
+                        }
                         key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}

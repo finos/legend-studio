@@ -28,8 +28,9 @@ import {
   observe_DataElement,
   observe_RelationalDataTable,
   PackageableElementExplicitReference,
+  TaggedValue,
 } from '@finos/legend-graph';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const dataElement_setEmbeddedData = action(
@@ -39,6 +40,39 @@ export const dataElement_setEmbeddedData = action(
     context: ObserverContext,
   ): void => {
     dataElement.data = observe_EmbeddedData(value, context);
+  },
+);
+
+export const dataElement_arrangeTaggedValues = action(
+  (
+    dataElement: DataElement,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = dataElement.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = dataElement.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(
+        dataElement.taggedValues,
+        targetTaggedValue,
+        sourceTaggedValue,
+      );
+      changeEntry(dataElement.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(
+        dataElement.taggedValues,
+        sourceTaggedValue,
+        targetTaggedValue,
+      );
+      changeEntry(dataElement.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
   },
 );
 

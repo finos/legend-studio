@@ -45,6 +45,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import { AllTaggedValueDragSource } from './ClassEditor.js';
 
 export const PropertyEditor = observer(
   (props: {
@@ -205,6 +206,10 @@ export const PropertyEditor = observer(
               >
                 {property.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
+                    _whoKnows={property}
+                    projectionTaggedValueState={
+                      new AllTaggedValueDragSource(taggedValue)
+                    }
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}

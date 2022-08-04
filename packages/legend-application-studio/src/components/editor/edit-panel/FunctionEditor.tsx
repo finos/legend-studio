@@ -88,6 +88,7 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { AllTaggedValueDragSource } from './uml-editor/ClassEditor.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -804,6 +805,10 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
+                    _whoKnows={functionElement}
+                    projectionTaggedValueState={
+                      new AllTaggedValueDragSource(taggedValue)
+                    }
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}

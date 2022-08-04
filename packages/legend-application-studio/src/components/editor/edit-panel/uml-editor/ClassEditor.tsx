@@ -47,7 +47,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
-// import { TaggedValueEditor } from './TaggedValueEditor.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { action, flowResult, makeObservable, observable } from 'mobx';
@@ -1556,7 +1556,7 @@ const SupertypesEditor = observer(
   },
 );
 
-export class ClassTaggedValueDragSource {
+export class AllTaggedValueDragSource {
   taggedValue: TaggedValue;
   isBeingDragged = false;
 
@@ -1577,243 +1577,6 @@ export class ClassTaggedValueDragSource {
 export enum CLASS_TAGGED_VALUE_DND_TYPE {
   TAGGED_VALUE = 'TAGGED_VALUE',
 }
-
-interface TagOption {
-  label: string;
-  value: Tag;
-}
-
-const TaggedValueClassEditor = observer(
-  (props: {
-    _class: Class;
-    taggedValue: TaggedValue;
-    projectionTaggedValueState: ClassTaggedValueDragSource;
-    deleteValue: () => void;
-    isReadOnly: boolean;
-    darkTheme?: boolean;
-  }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const {
-      _class,
-      taggedValue,
-      projectionTaggedValueState,
-      deleteValue,
-      isReadOnly,
-      darkTheme,
-    } = props;
-    const editorStore = useEditorStore();
-    // Name
-    const changeValue: React.ChangeEventHandler<
-      HTMLTextAreaElement | HTMLInputElement
-    > = (event) => taggedValue_setValue(taggedValue, event.target.value);
-    // Profile
-    const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.p_tags.length,
-    );
-    const profileFilterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: PackageableElementOption<Profile>): string =>
-        option.value.path,
-    });
-    const [selectedProfile, setSelectedProfile] = useState<
-      PackageableElementOption<Profile>
-    >({
-      value: taggedValue.tag.value._OWNER,
-      label: taggedValue.tag.value._OWNER.name,
-    });
-    const changeProfile = (val: PackageableElementOption<Profile>): void => {
-      if (val.value.p_tags.length) {
-        setSelectedProfile(val);
-        taggedValue_setTag(taggedValue, val.value.p_tags[0] as Tag);
-      }
-    };
-    const visitProfile = (): void =>
-      editorStore.openElement(selectedProfile.value);
-    // Tag
-    const tagOptions = selectedProfile.value.p_tags.map((tag) => ({
-      label: tag.value,
-      value: tag,
-    }));
-    const inferableTag = taggedValue.tag;
-    const tagFilterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: TagOption): string => option.label,
-    });
-    const selectedTag = {
-      value: inferableTag.value,
-      label: inferableTag.value.value,
-    };
-    const changeTag = (val: TagOption): void =>
-      taggedValue_setTag(taggedValue, val.value);
-    // Value
-    const [isExpanded, setIsExpanded] = useState(false);
-    const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);
-
-    // Drag and Drop
-    const handleHover = useCallback(
-      (item: ClassTaggedValueDragSource, monitor: DropTargetMonitor): void => {
-        const draggingProperty = item.taggedValue;
-        const hoveredProperty = taggedValue;
-        class_arrangeTaggedValues(_class, draggingProperty, hoveredProperty);
-      },
-      [_class, taggedValue],
-    );
-
-    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
-      () => ({
-        accept: [CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
-        hover: (
-          item: ClassTaggedValueDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedTaggedValue: TaggedValue | undefined } => ({
-          isBeingDraggedTaggedValue:
-            monitor.getItem<ClassTaggedValueDragSource | null>()?.taggedValue,
-        }),
-      }),
-      [handleHover],
-    );
-    const isBeingDragged =
-      projectionTaggedValueState.taggedValue === isBeingDraggedTaggedValue;
-
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): ClassTaggedValueDragSource => {
-          projectionTaggedValueState.setIsBeingDragged(true);
-          return {
-            taggedValue: taggedValue,
-            isBeingDragged: projectionTaggedValueState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: ClassTaggedValueDragSource | undefined): void =>
-          projectionTaggedValueState.setIsBeingDragged(false),
-      }),
-      [projectionTaggedValueState],
-    );
-    dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
-
-    return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-big-container">
-            <div className="uml-element-dnd-placeholder-big ">
-              <span className="uml-element-dnd-name">{taggedValue.value}</span>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
-          <div className="tagged-value-editor">
-            <div
-              className={`tagged-value-editor__profile ${
-                darkTheme ? 'tagged-value-editor-dark-theme' : ''
-              }`}
-            >
-              <div className="uml-element-editor__drag-handler" tabIndex={-1}>
-                <VerticalDragHandleIcon />
-              </div>
-              <CustomSelectorInput
-                className="tagged-value-editor__profile__selector"
-                disabled={isReadOnly}
-                options={profileOptions}
-                onChange={changeProfile}
-                value={selectedProfile}
-                placeholder={'Choose a profile'}
-                filterOption={profileFilterOption}
-                darkMode={darkTheme ?? false}
-              />
-              <button
-                className={`tagged-value-editor__profile__visit-btn ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
-                disabled={isStubbed_PackageableElement(
-                  taggedValue.tag.value._OWNER,
-                )}
-                onClick={visitProfile}
-                tabIndex={-1}
-                title={'Visit profile'}
-              >
-                <ArrowCircleRightIcon />
-              </button>
-            </div>
-            <CustomSelectorInput
-              className="tagged-value-editor__tag"
-              disabled={isReadOnly}
-              options={tagOptions}
-              onChange={changeTag}
-              value={selectedTag}
-              placeholder={'Choose a tag'}
-              filterOption={tagFilterOption}
-              darkMode={Boolean(darkTheme)}
-            />
-            {!isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isReadOnly}
-                onClick={deleteValue}
-                tabIndex={-1}
-                title={'Remove'}
-              >
-                <TimesIcon />
-              </button>
-            )}
-            <div
-              className={clsx('tagged-value-editor__value', {
-                'tagged-value-editor__value__expanded': isExpanded,
-              })}
-            >
-              {isExpanded && (
-                <textarea
-                  className={`tagged-value-editor__value__input ${
-                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                  }`}
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={taggedValue.value}
-                  onChange={changeValue}
-                  placeholder={`Value`}
-                />
-              )}
-              {!isExpanded && (
-                <input
-                  className={`tagged-value-editor__value__input ${
-                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                  }`}
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={taggedValue.value}
-                  onChange={changeValue}
-                  placeholder={`Value`}
-                />
-              )}
-              <button
-                className={`tagged-value-editor__value__expand-btn ${
-                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
-                }`}
-                onClick={toggleExpandedMode}
-                tabIndex={-1}
-                title={'Expand/Collapse'}
-              >
-                {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  },
-);
 
 const TaggedValuesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {
@@ -1856,13 +1619,13 @@ const TaggedValuesEditor = observer(
         })}
       >
         {_class.taggedValues.map((taggedValue) => (
-          <TaggedValueClassEditor
-            _class={_class}
+          <TaggedValueEditor
+            _whoKnows={_class}
             key={taggedValue._UUID}
             taggedValue={taggedValue}
             deleteValue={deleteTaggedValue(taggedValue)}
             projectionTaggedValueState={
-              new ClassTaggedValueDragSource(taggedValue)
+              new AllTaggedValueDragSource(taggedValue)
             }
             isReadOnly={isReadOnly}
           />

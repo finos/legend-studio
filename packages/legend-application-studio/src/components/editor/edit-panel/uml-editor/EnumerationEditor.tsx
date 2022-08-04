@@ -71,7 +71,7 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { ClassTaggedValueDragSource } from './ClassEditor.js';
+import { AllTaggedValueDragSource } from './ClassEditor.js';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -282,6 +282,10 @@ const EnumEditor = observer(
               >
                 {_enum.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
+                    _whoKnows={_enum}
+                    projectionTaggedValueState={
+                      new AllTaggedValueDragSource(taggedValue)
+                    }
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -544,6 +548,10 @@ export const EnumerationEditor = observer(
                   >
                     {enumeration.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
+                        _whoKnows={enumeration}
+                        projectionTaggedValueState={
+                          new AllTaggedValueDragSource(taggedValue)
+                        }
                         key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}

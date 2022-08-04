@@ -78,6 +78,33 @@ export const packageableElementReference_setValue = action(
   },
 );
 
+// -------------------------------------- Test Tagged Values -----------------------------
+
+// export const class_arrangeTaggedValues = action(
+//   (
+//     _class: Class,
+//     sourceTaggedValue: TaggedValue,
+//     targetTaggedValue: TaggedValue,
+//   ): void => {
+//     const sourceIndex = _class.taggedValues.findIndex(
+//       (taggedValue) => taggedValue === sourceTaggedValue,
+//     );
+//     const targetIndex = _class.taggedValues.findIndex(
+//       (taggedValue) => taggedValue === targetTaggedValue,
+//     );
+
+//     if (sourceIndex < targetIndex) {
+//       const tempTaggedValue = targetTaggedValue;
+//       changeEntry(_class.taggedValues, targetTaggedValue, sourceTaggedValue);
+//       changeEntry(_class.taggedValues, sourceTaggedValue, tempTaggedValue);
+//     } else {
+//       const tempTaggedValue = sourceTaggedValue;
+//       changeEntry(_class.taggedValues, sourceTaggedValue, targetTaggedValue);
+//       changeEntry(_class.taggedValues, targetTaggedValue, tempTaggedValue);
+//     }
+//   },
+// );
+
 // --------------------------------------------- Class -------------------------------------
 
 export const class_deleteProperty = action(
@@ -288,6 +315,30 @@ export const stereotypeReference_setValue = action(
   },
 );
 
+export const property_arrangeTaggedValues = action(
+  (
+    _property: Property,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = _property.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = _property.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(_property.taggedValues, targetTaggedValue, sourceTaggedValue);
+      changeEntry(_property.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(_property.taggedValues, sourceTaggedValue, targetTaggedValue);
+      changeEntry(_property.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
+  },
+);
 // --------------------------------------------- AnnotatedElement -------------------------------------
 
 export const annotatedElement_addTaggedValue = action(
@@ -404,6 +455,31 @@ export const function_setReturnMultiplicity = action(
   },
 );
 
+export const function_arrangeTaggedValues = action(
+  (
+    _func: ConcreteFunctionDefinition,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = _func.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = _func.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(_func.taggedValues, targetTaggedValue, sourceTaggedValue);
+      changeEntry(_func.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(_func.taggedValues, sourceTaggedValue, targetTaggedValue);
+      changeEntry(_func.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
+  },
+);
+
 // --------------------------------------------- Enumeration -------------------------------------
 
 export const enum_setName = action((val: Enum, value: string): void => {
@@ -423,6 +499,64 @@ export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
     packageableElementReference_setValue(ref.ownerReference, value._OWNER);
+  },
+);
+
+export const enum_arrangeTaggedValues = action(
+  (
+    _enum: Enum,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = _enum.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = _enum.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(_enum.taggedValues, targetTaggedValue, sourceTaggedValue);
+      changeEntry(_enum.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(_enum.taggedValues, sourceTaggedValue, targetTaggedValue);
+      changeEntry(_enum.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
+  },
+);
+
+export const enumeration_arrangeTaggedValues = action(
+  (
+    enumeration: Enumeration,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = enumeration.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = enumeration.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(
+        enumeration.taggedValues,
+        targetTaggedValue,
+        sourceTaggedValue,
+      );
+      changeEntry(enumeration.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(
+        enumeration.taggedValues,
+        sourceTaggedValue,
+        targetTaggedValue,
+      );
+      changeEntry(enumeration.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
   },
 );
 
@@ -453,6 +587,39 @@ export const association_changePropertyType = action(
     const _genType = new GenericType(type);
     property.genericType.value = _genType;
     property.genericType.ownerReference.value = _genType.rawType;
+  },
+);
+
+export const association_arrangeTaggedValues = action(
+  (
+    association: Association,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    const sourceIndex = association.taggedValues.findIndex(
+      (taggedValue) => taggedValue === sourceTaggedValue,
+    );
+    const targetIndex = association.taggedValues.findIndex(
+      (taggedValue) => taggedValue === targetTaggedValue,
+    );
+
+    if (sourceIndex < targetIndex) {
+      const tempTaggedValue = targetTaggedValue;
+      changeEntry(
+        association.taggedValues,
+        targetTaggedValue,
+        sourceTaggedValue,
+      );
+      changeEntry(association.taggedValues, sourceTaggedValue, tempTaggedValue);
+    } else {
+      const tempTaggedValue = sourceTaggedValue;
+      changeEntry(
+        association.taggedValues,
+        sourceTaggedValue,
+        targetTaggedValue,
+      );
+      changeEntry(association.taggedValues, targetTaggedValue, tempTaggedValue);
+    }
   },
 );
 
