@@ -54,7 +54,7 @@ export const TEST_DATA__FlatDataRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'date',
-                  dateFormat: 'MM-DD-EE',
+                  dateFormat: ['MM-DD-EE'],
                 },
                 label: 'HEADING4',
                 optional: false,
@@ -97,7 +97,7 @@ export const TEST_DATA__FlatDataRoundtrip = [
                 address: '4',
                 flatDataDataType: {
                   _type: 'date',
-                  dateFormat: 'MM-DD-EE',
+                  dateFormat: ['MM-DD-EE'],
                 },
                 label: 'HEADING4',
                 optional: false,
@@ -147,7 +147,7 @@ export const TEST_DATA__FlatDataRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'date',
-                  dateFormat: 'MM-DD-EE',
+                  dateFormat: ['MM-DD-EE'],
                 },
                 label: 'HEADING4',
                 optional: false,
@@ -157,27 +157,27 @@ export const TEST_DATA__FlatDataRoundtrip = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'quoteChar',
-              value: "'",
+              value: ["'"],
             },
             {
               name: 'escapingChar',
-              value: "'",
+              value: ["'"],
             },
             {
               name: 'nullString',
-              value: 'null',
+              value: ['null'],
             },
           ],
         },
@@ -271,19 +271,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
           ],
         },
