@@ -1029,6 +1029,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
           propertyName={'vault reference'}
+          description="Specifies the cred vault reference containing connection credentials"
           update={(value: string | undefined): void =>
             middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
               authSpec,
