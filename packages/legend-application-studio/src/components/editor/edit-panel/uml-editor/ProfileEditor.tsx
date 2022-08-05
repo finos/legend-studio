@@ -141,9 +141,9 @@ const TagBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{tag.value}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">{tag.value}</div>
             </div>
           </div>
         )}
@@ -280,9 +280,11 @@ const StereotypeBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{stereotype.value}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
+                {stereotype.value}
+              </div>
             </div>
           </div>
         )}

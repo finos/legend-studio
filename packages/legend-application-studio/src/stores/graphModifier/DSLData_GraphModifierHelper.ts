@@ -28,10 +28,8 @@ import {
   observe_DataElement,
   observe_RelationalDataTable,
   PackageableElementExplicitReference,
-  type TaggedValue,
-  type StereotypeReference,
 } from '@finos/legend-graph';
-import { addUniqueEntry, changeEntry, deleteEntry } from '@finos/legend-shared';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const dataElement_setEmbeddedData = action(
@@ -41,72 +39,6 @@ export const dataElement_setEmbeddedData = action(
     context: ObserverContext,
   ): void => {
     dataElement.data = observe_EmbeddedData(value, context);
-  },
-);
-
-export const dataElement_arrangeTaggedValues = action(
-  (
-    dataElement: DataElement,
-    sourceTaggedValue: TaggedValue,
-    targetTaggedValue: TaggedValue,
-  ): void => {
-    const sourceIndex = dataElement.taggedValues.findIndex(
-      (taggedValue) => taggedValue === sourceTaggedValue,
-    );
-    const targetIndex = dataElement.taggedValues.findIndex(
-      (taggedValue) => taggedValue === targetTaggedValue,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempTaggedValue = targetTaggedValue;
-      changeEntry(
-        dataElement.taggedValues,
-        targetTaggedValue,
-        sourceTaggedValue,
-      );
-      changeEntry(dataElement.taggedValues, sourceTaggedValue, tempTaggedValue);
-    } else {
-      const tempTaggedValue = sourceTaggedValue;
-      changeEntry(
-        dataElement.taggedValues,
-        sourceTaggedValue,
-        targetTaggedValue,
-      );
-      changeEntry(dataElement.taggedValues, targetTaggedValue, tempTaggedValue);
-    }
-  },
-);
-
-export const dataElement_arrangeStereotypeReferences = action(
-  (
-    dataElement: DataElement,
-    sourceStereotypes: StereotypeReference,
-    targetStereotypes: StereotypeReference,
-  ): void => {
-    const sourceIndex = dataElement.stereotypes.findIndex(
-      (stereotype) => stereotype === sourceStereotypes,
-    );
-    const targetIndex = dataElement.stereotypes.findIndex(
-      (stereotype) => stereotype === targetStereotypes,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempstereotype = targetStereotypes;
-      changeEntry(
-        dataElement.stereotypes,
-        targetStereotypes,
-        sourceStereotypes,
-      );
-      changeEntry(dataElement.stereotypes, sourceStereotypes, tempstereotype);
-    } else {
-      const tempstereotype = sourceStereotypes;
-      changeEntry(
-        dataElement.stereotypes,
-        sourceStereotypes,
-        targetStereotypes,
-      );
-      changeEntry(dataElement.stereotypes, targetStereotypes, tempstereotype);
-    }
   },
 );
 

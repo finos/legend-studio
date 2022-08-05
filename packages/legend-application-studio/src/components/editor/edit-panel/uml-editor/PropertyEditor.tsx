@@ -209,7 +209,7 @@ export const PropertyEditor = observer(
               >
                 {property.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _whoKnows={property}
+                    _annotatedElement={property}
                     projectionTaggedValueState={
                       new AllTaggedValueDragSource(taggedValue)
                     }
@@ -232,7 +232,7 @@ export const PropertyEditor = observer(
                 {property.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _parentType={property}
+                    _annotatedElement={property}
                     projectionStereotypeState={
                       new AllStereotypeDragSource(stereotype)
                     }

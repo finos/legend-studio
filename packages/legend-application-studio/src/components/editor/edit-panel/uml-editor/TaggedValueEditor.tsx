@@ -32,23 +32,12 @@ import {
   type Tag,
   type Profile,
   isStubbed_PackageableElement,
-  Class,
-  Enum,
-  Enumeration,
-  Association,
-  ConcreteFunctionDefinition,
-  DataElement,
-  Property,
+  type AnnotatedElement,
 } from '@finos/legend-graph';
 import {
   taggedValue_setValue,
   taggedValue_setTag,
-  class_arrangeTaggedValues,
-  enum_arrangeTaggedValues,
-  enumeration_arrangeTaggedValues,
-  association_arrangeTaggedValues,
-  function_arrangeTaggedValues,
-  property_arrangeTaggedValues,
+  annotatedElement_arrangeTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { action } from 'mobx';
@@ -58,7 +47,6 @@ import {
   type AllTaggedValueDragSource,
   CLASS_TAGGED_VALUE_DND_TYPE,
 } from './ClassEditor.js';
-import { dataElement_arrangeTaggedValues } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
 
 interface TagOption {
   label: string;
@@ -67,7 +55,7 @@ interface TagOption {
 
 export const TaggedValueEditor = observer(
   (props: {
-    _whoKnows: unknown;
+    _annotatedElement: AnnotatedElement;
     taggedValue: TaggedValue;
     projectionTaggedValueState: AllTaggedValueDragSource;
     deleteValue: () => void;
@@ -76,7 +64,7 @@ export const TaggedValueEditor = observer(
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const {
-      _whoKnows,
+      _annotatedElement,
       taggedValue,
       projectionTaggedValueState,
       deleteValue,
@@ -138,53 +126,13 @@ export const TaggedValueEditor = observer(
       (item: AllTaggedValueDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.taggedValue;
         const hoveredProperty = taggedValue;
-        if (_whoKnows instanceof Class) {
-          class_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof Enum) {
-          enum_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof Enumeration) {
-          enumeration_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof Association) {
-          association_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof ConcreteFunctionDefinition) {
-          function_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof DataElement) {
-          dataElement_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_whoKnows instanceof Property) {
-          property_arrangeTaggedValues(
-            _whoKnows,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else {
-          //taggedvalueeditor parent class is something else
-        }
+        annotatedElement_arrangeTaggedValues(
+          _annotatedElement,
+          draggingProperty,
+          hoveredProperty,
+        );
       },
-      [_whoKnows, taggedValue],
+      [_annotatedElement, taggedValue],
     );
 
     const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
@@ -232,9 +180,11 @@ export const TaggedValueEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-big-container">
-            <div className="uml-element-dnd-placeholder-big ">
-              <span className="uml-element-dnd-name">{taggedValue.value}</span>
+          <div className="uml-element-editor__dnd__big">
+            <div className="uml-element-editor__dnd__big-container ">
+              <div className="uml-element-editor__dnd__name">
+                {taggedValue.value}
+              </div>
             </div>
           </div>
         )}

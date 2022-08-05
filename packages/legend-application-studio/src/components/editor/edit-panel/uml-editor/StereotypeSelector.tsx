@@ -29,21 +29,10 @@ import {
   type StereotypeReference,
   type Stereotype,
   isStubbed_PackageableElement,
-  Association,
-  Class,
-  ConcreteFunctionDefinition,
-  DataElement,
-  Enum,
-  Enumeration,
-  Property,
+  type AnnotatedElement,
 } from '@finos/legend-graph';
 import {
-  association_arrangeStereotypeReferences,
-  class_arrangeStereotypeReferences,
-  enumeration_arrangeStereotypeReferences,
-  enum_arrangeStereotypeReferences,
-  function_arrangeStereotypeReferences,
-  property_arrangeStereotypeReferences,
+  annotatedElement_arrangeStereotypes,
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
@@ -54,7 +43,6 @@ import {
 import { action } from 'mobx';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { dataElement_arrangeStereotypeReferences } from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
 
 interface StereotypeOption {
   label: string;
@@ -63,7 +51,7 @@ interface StereotypeOption {
 
 export const StereotypeSelector = observer(
   (props: {
-    _parentType: unknown;
+    _annotatedElement: AnnotatedElement;
     stereotype: StereotypeReference;
     projectionStereotypeState: AllStereotypeDragSource;
     deleteStereotype: () => void;
@@ -72,7 +60,7 @@ export const StereotypeSelector = observer(
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const {
-      _parentType,
+      _annotatedElement,
       stereotype,
       projectionStereotypeState,
       deleteStereotype,
@@ -126,53 +114,13 @@ export const StereotypeSelector = observer(
       (item: AllStereotypeDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.stereotype;
         const hoveredProperty = stereotype;
-        if (_parentType instanceof Class) {
-          class_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof Enum) {
-          enum_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof Enumeration) {
-          enumeration_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof Association) {
-          association_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof ConcreteFunctionDefinition) {
-          function_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof DataElement) {
-          dataElement_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else if (_parentType instanceof Property) {
-          property_arrangeStereotypeReferences(
-            _parentType,
-            draggingProperty,
-            hoveredProperty,
-          );
-        } else {
-          //stereotype editor parent class is something else
-        }
+        annotatedElement_arrangeStereotypes(
+          _annotatedElement,
+          draggingProperty,
+          hoveredProperty,
+        );
       },
-      [_parentType, stereotype],
+      [_annotatedElement, stereotype],
     );
 
     const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
@@ -220,11 +168,11 @@ export const StereotypeSelector = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
                 {selectedStereotype.label}
-              </span>
+              </div>
             </div>
           </div>
         )}

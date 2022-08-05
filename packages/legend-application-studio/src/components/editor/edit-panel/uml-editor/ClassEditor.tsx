@@ -301,9 +301,11 @@ const PropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{property.name}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
+                {property.name}
+              </div>
             </div>
           </div>
         )}
@@ -608,6 +610,23 @@ const DerivedPropertyBasicEditor = observer(
       ): void => {
         const draggingProperty = item.derivedProperty;
         const hoveredProperty = derivedProperty;
+
+        const dragIndex = _class.derivedProperties.findIndex(
+          (e) => e === item.derivedProperty,
+        );
+        const hoverIndex = _class.derivedProperties.findIndex(
+          (e) => e === derivedProperty,
+        );
+        // move the item being hovered on when the dragged item position is beyond the its middle point
+        const hoverBoundingReact = ref.current?.getBoundingClientRect();
+        const distanceThreshold =
+          ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
+          2;
+        const dragDistance =
+          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
+        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+          return;
+        }
         class_arrangeDerivedProperty(_class, draggingProperty, hoveredProperty);
       },
       [_class, derivedProperty],
@@ -680,11 +699,11 @@ const DerivedPropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-big-container">
-            <div className="uml-element-dnd-placeholder-big ">
-              <span className="uml-element-dnd-name">
+          <div className="uml-element-editor__dnd__big">
+            <div className="uml-element-editor__dnd__big-container">
+              <div className="uml-element-editor__dnd__name">
                 {derivedProperty.name}
-              </span>
+              </div>
             </div>
           </div>
         )}
@@ -1011,9 +1030,11 @@ const ConstraintEditor = observer(
         })}
       >
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-big-container">
-            <div className="uml-element-dnd-placeholder-big ">
-              <span className="uml-element-dnd-name">{constraint.name}</span>
+          <div className="uml-element-editor__dnd__tall">
+            <div className="uml-element-editor__dnd__big-container ">
+              <div className="uml-element-editor__dnd__name">
+                {constraint.name}
+              </div>
             </div>
           </div>
         )}
@@ -1202,9 +1223,11 @@ const SuperTypeEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{selectedType.label}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
+                {selectedType.label}
+              </div>
             </div>
           </div>
         )}
@@ -1591,7 +1614,7 @@ const TaggedValuesEditor = observer(
       >
         {_class.taggedValues.map((taggedValue) => (
           <TaggedValueEditor
-            _whoKnows={_class}
+            _annotatedElement={_class}
             key={taggedValue._UUID}
             taggedValue={taggedValue}
             deleteValue={deleteTaggedValue(taggedValue)}
@@ -1669,7 +1692,7 @@ const StereotypesEditor = observer(
         {_class.stereotypes.map((stereotype) => (
           <StereotypeSelector
             key={stereotype.value._UUID}
-            _parentType={_class}
+            _annotatedElement={_class}
             projectionStereotypeState={new AllStereotypeDragSource(stereotype)}
             stereotype={stereotype}
             deleteStereotype={deleteStereotype(stereotype)}

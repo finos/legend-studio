@@ -322,7 +322,7 @@ export const DataElementEditor = observer(() => {
                   {dataElement.stereotypes.map((stereotype) => (
                     <StereotypeSelector
                       key={stereotype.value._UUID}
-                      _parentType={dataElement}
+                      _annotatedElement={dataElement}
                       projectionStereotypeState={
                         new AllStereotypeDragSource(stereotype)
                       }
@@ -373,7 +373,7 @@ export const DataElementEditor = observer(() => {
                 >
                   {dataElement.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
-                      _whoKnows={dataElement}
+                      _annotatedElement={dataElement}
                       projectionTaggedValueState={
                         new AllTaggedValueDragSource(taggedValue)
                       }

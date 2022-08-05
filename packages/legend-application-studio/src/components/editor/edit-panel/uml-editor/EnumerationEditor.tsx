@@ -184,9 +184,9 @@ const EnumBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{_enum.name}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">{_enum.name}</div>
             </div>
           </div>
         )}
@@ -390,7 +390,7 @@ const EnumEditor = observer(
               >
                 {_enum.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _whoKnows={_enum}
+                    _annotatedElement={_enum}
                     projectionTaggedValueState={
                       new AllTaggedValueDragSource(taggedValue)
                     }
@@ -413,7 +413,7 @@ const EnumEditor = observer(
                 {_enum.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _parentType={_enum}
+                    _annotatedElement={_enum}
                     projectionStereotypeState={
                       new AllStereotypeDragSource(stereotype)
                     }
@@ -665,7 +665,7 @@ export const EnumerationEditor = observer(
                   >
                     {enumeration.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        _whoKnows={enumeration}
+                        _annotatedElement={enumeration}
                         projectionTaggedValueState={
                           new AllTaggedValueDragSource(taggedValue)
                         }
@@ -688,7 +688,7 @@ export const EnumerationEditor = observer(
                     {enumeration.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}
-                        _parentType={enumeration}
+                        _annotatedElement={enumeration}
                         projectionStereotypeState={
                           new AllStereotypeDragSource(stereotype)
                         }

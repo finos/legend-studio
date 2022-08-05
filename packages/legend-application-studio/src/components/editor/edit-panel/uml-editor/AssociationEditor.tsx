@@ -516,7 +516,7 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        _whoKnows={association}
+                        _annotatedElement={association}
                         projectionTaggedValueState={
                           new AllTaggedValueDragSource(taggedValue)
                         }
@@ -539,7 +539,7 @@ export const AssociationEditor = observer(
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}
-                        _parentType={association}
+                        _annotatedElement={association}
                         projectionStereotypeState={
                           new AllStereotypeDragSource(stereotype)
                         }

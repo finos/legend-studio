@@ -278,9 +278,11 @@ const ParameterBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-dnd-placeholder-container">
-            <div className="uml-element-dnd-placeholder ">
-              <span className="uml-element-dnd-name">{parameter.name}</span>
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
+                {parameter.name}
+              </div>
             </div>
           </div>
         )}
@@ -918,7 +920,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _whoKnows={functionElement}
+                    _annotatedElement={functionElement}
                     projectionTaggedValueState={
                       new AllTaggedValueDragSource(taggedValue)
                     }
@@ -941,7 +943,7 @@ export const FunctionEditor = observer(() => {
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _parentType={functionElement}
+                    _annotatedElement={functionElement}
                     projectionStereotypeState={
                       new AllStereotypeDragSource(stereotype)
                     }
