@@ -70,7 +70,7 @@ const CreateWorkspaceModal = observer(() => {
     setupStore.currentProjectId,
   );
   const [workspaceName, setWorkspaceName] = useState('');
-  const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(false);
+  const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
   const workspaceType = isGroupWorkspace
     ? WorkspaceType.GROUP
     : WorkspaceType.USER;
