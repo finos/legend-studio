@@ -699,8 +699,8 @@ const DerivedPropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-editor__dnd__big">
-            <div className="uml-element-editor__dnd__big-container">
+          <div className="uml-element-editor__dnd--big">
+            <div className="uml-element-editor__dnd--big-container">
               <div className="uml-element-editor__dnd__name">
                 {derivedProperty.name}
               </div>
@@ -1030,8 +1030,8 @@ const ConstraintEditor = observer(
         })}
       >
         {isBeingDragged && (
-          <div className="uml-element-editor__dnd__tall">
-            <div className="uml-element-editor__dnd__big-container ">
+          <div className="uml-element-editor__dnd--tall">
+            <div className="uml-element-editor__dnd--big-container ">
               <div className="uml-element-editor__dnd__name">
                 {constraint.name}
               </div>

@@ -28,16 +28,16 @@
     margin: 0.5rem 0;
   }
 
-  &__big {
+  &--big {
     padding: 1rem;
   }
 
-  &__big-container {
+  &--big-container {
     border: 0.2rem dashed var(--color-dark-grey-250);
     padding: 1rem;
   }
 
-  &__tall {
+  &--tall {
     height: 7rem !important;
     padding-top: 1rem;
   }
