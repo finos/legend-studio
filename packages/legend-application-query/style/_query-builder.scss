@@ -306,6 +306,10 @@
       &:not(:focus) {
         border: 0.1rem solid var(--color-dark-grey-250);
       }
+
+      &[disabled] {
+        cursor: not-allowed;
+      }
     }
   }
 
