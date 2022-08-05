@@ -32,7 +32,7 @@ const SomeComponent = observer(function SomeComponent(props: ...) { ... });
 To speed up development with `Webpack`, we have [disabled source-mapping](https://github.com/finos/legend-studio/pull/707/commits/e237a87be41030a23c185d8aac7984e9ee4e6192). If you need source-mapping to properly use browser debugger tool, you could re-enable `source-mapping` by running `Webpack` in `debug` mode, do so by using `dev:webpack:debug` script for each application workspace.
 
 ```sh
-yarn workspace @finos/legend-studio-deployment dev:webpack:debug
+yarn workspace @finos/legend-application-studio-deployment dev:webpack:debug
 ```
 
 ## Troubleshooting

@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 13.0.0
+
+### Major Changes
+
+- [#1343](https://github.com/finos/legend-studio/pull/1343) [`c7d8f47e`](https://github.com/finos/legend-studio/commit/c7d8f47ed439ee782c32fd1a85f72ab9c08ab81d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `mapping generation` related logic out of core.
+
+## 12.0.0
+
+### Major Changes
+
+- [#1332](https://github.com/finos/legend-studio/pull/1332) [`5f0c6f6b`](https://github.com/finos/legend-studio/commit/5f0c6f6b40ece8a3b87c32b52f15f542fe68f7d4) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `GraphPluginManager` to `GraphManagerPluginManager`
+
 ## 11.0.0
 
 ### Major Changes

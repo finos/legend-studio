@@ -15,31 +15,30 @@
   "references": [
     { "path": "packages/legend-manual-tests" },
     { "path": "packages/legend-shared" },
-    { "path": "packages/legend-tracer-extension-zipkin" },
-    { "path": "packages/legend-model-storage" },
+    { "path": "packages/legend-extension-tracer-zipkin" },
+    { "path": "packages/legend-storage" },
     { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-art" },
     { "path": "packages/legend-application" },
     // studio
-    { "path": "packages/legend-studio" },
-    { "path": "packages/legend-studio-app" },
-    { "path": "packages/legend-studio-deployment" },
-    { "path": "packages/legend-studio-extension-management-toolkit" },
-    { "path": "packages/legend-studio-extension-query-builder" },
-    // query
-    { "path": "packages/legend-query" },
-    { "path": "packages/legend-query-app" },
-    { "path": "packages/legend-query-deployment" },
-    // taxonomy
-    { "path": "packages/legend-taxonomy" },
-    { "path": "packages/legend-taxonomy-app" },
-    { "path": "packages/legend-taxonomy-deployment" },
-    // extensions
+    { "path": "packages/legend-application-studio" },
+    { "path": "packages/legend-application-studio-bootstrap" },
+    { "path": "packages/legend-application-studio-deployment" },
     {
-      "path": "packages/legend-graph-extension-collection"
+      "path": "packages/legend-extension-application-studio-management-toolkit"
     },
+    { "path": "packages/legend-extension-application-studio-query-builder" },
+    // query
+    { "path": "packages/legend-application-query" },
+    { "path": "packages/legend-application-query-bootstrap" },
+    { "path": "packages/legend-application-query-deployment" },
+    // taxonomy
+    { "path": "packages/legend-application-taxonomy" },
+    { "path": "packages/legend-application-taxonomy-bootstrap" },
+    { "path": "packages/legend-application-taxonomy-deployment" },
+    // extensions
     {
       "path": "packages/legend-extension-dsl-text"
     },
@@ -63,9 +62,6 @@
     },
     {
       "path": "packages/legend-extension-external-language-morphir"
-    },
-    {
-      "path": "packages/legend-extension-mapping-generation"
     },
     // fixtures
     {

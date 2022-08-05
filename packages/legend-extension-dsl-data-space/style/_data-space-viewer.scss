@@ -31,21 +31,25 @@
     height: 13rem;
   }
 
-  &__path {
+  &__title {
     @include flexCenter;
 
     height: 3.4rem;
+    max-width: 100%;
     background: var(--color-blue-150);
 
     &__label {
-      @include flexCenter;
+      @include ellipsisTextOverflow;
 
       height: 100%;
+      width: calc(100% - 3.4rem);
       font-family: 'Roboto Mono', monospace;
       font-size: 1.6rem;
       padding: 0 1rem;
       user-select: none;
       color: var(--color-light-grey-0);
+      line-height: 3.4rem;
+      text-align: left;
     }
 
     &__link {
@@ -301,8 +305,48 @@
     }
   }
 
-  &__tags {
+  &__info {
     padding: 2rem;
+
+    &__project-info__label {
+      @include ellipsisTextOverflow;
+
+      height: 100%;
+      width: 15rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      padding: 0 1rem;
+      line-height: 2.8rem;
+      background: var(--color-blue-100);
+      color: var(--color-dark-grey-100);
+      font-weight: 500;
+    }
+
+    &__project-info__value {
+      @include ellipsisTextOverflow;
+
+      height: 100%;
+      width: calc(100% - 17.8rem);
+      padding: 0 1rem;
+      background: var(--color-dark-grey-100);
+      font-weight: 500;
+      color: var(--color-blue-50);
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__project-info__link {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.8rem;
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-shade-100);
+      border-radius: 0 0.2rem 0.2rem 0;
+      border-left: 0.1rem solid var(--color-dark-shade-250);
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
 
     &__section {
       cursor: default;

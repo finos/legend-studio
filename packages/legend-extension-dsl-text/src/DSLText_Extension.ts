@@ -17,12 +17,12 @@
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { DSLText_PureGraphManagerPlugin } from './graphManager/DSLText_PureGraphManagerPlugin.js';
-import { DSLText_PureProtocolProcessorPlugin } from './models/protocols/pure/DSLText_PureProtocolProcessorPlugin.js';
+import { DSLText_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSLText_PureProtocolProcessorPlugin.js';
 import { DSLText_PureGraphPlugin } from './graph/DSLText_PureGraphPlugin.js';
 
-export class DSLText_GraphPreset extends AbstractPreset {
+export class DSLText_GraphManagerPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version, [
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
       new DSLText_PureGraphPlugin(),
       new DSLText_PureGraphManagerPlugin(),
       new DSLText_PureProtocolProcessorPlugin(),

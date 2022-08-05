@@ -22,37 +22,37 @@ import {
   observable,
   override,
 } from 'mobx';
-import type { Association } from '../../../models/metamodels/pure/packageableElements/domain/Association.js';
-import { Class } from '../../../models/metamodels/pure/packageableElements/domain/Class.js';
-import type { ConcreteFunctionDefinition } from '../../../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import type { Constraint } from '../../../models/metamodels/pure/packageableElements/domain/Constraint.js';
-import type { DataType } from '../../../models/metamodels/pure/packageableElements/domain/DataType.js';
-import type { DerivedProperty } from '../../../models/metamodels/pure/packageableElements/domain/DerivedProperty.js';
-import type { Enum } from '../../../models/metamodels/pure/packageableElements/domain/Enum.js';
-import { Enumeration } from '../../../models/metamodels/pure/packageableElements/domain/Enumeration.js';
-import type { EnumValueReference } from '../../../models/metamodels/pure/packageableElements/domain/EnumValueReference.js';
-import type { GenericType } from '../../../models/metamodels/pure/packageableElements/domain/GenericType.js';
-import type { GenericTypeReference } from '../../../models/metamodels/pure/packageableElements/domain/GenericTypeReference.js';
+import type { Association } from '../../../graph/metamodel/pure/packageableElements/domain/Association.js';
+import { Class } from '../../../graph/metamodel/pure/packageableElements/domain/Class.js';
+import type { ConcreteFunctionDefinition } from '../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import type { Constraint } from '../../../graph/metamodel/pure/packageableElements/domain/Constraint.js';
+import type { DataType } from '../../../graph/metamodel/pure/packageableElements/domain/DataType.js';
+import type { DerivedProperty } from '../../../graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';
+import type { Enum } from '../../../graph/metamodel/pure/packageableElements/domain/Enum.js';
+import { Enumeration } from '../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
+import type { EnumValueReference } from '../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
+import type { GenericType } from '../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { GenericTypeReference } from '../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import {
   Measure,
   Unit,
-} from '../../../models/metamodels/pure/packageableElements/domain/Measure.js';
-import { Package } from '../../../models/metamodels/pure/packageableElements/domain/Package.js';
-import type { Profile } from '../../../models/metamodels/pure/packageableElements/domain/Profile.js';
-import type { Property } from '../../../models/metamodels/pure/packageableElements/domain/Property.js';
-import type { PropertyReference } from '../../../models/metamodels/pure/packageableElements/domain/PropertyReference.js';
-import type { Stereotype } from '../../../models/metamodels/pure/packageableElements/domain/Stereotype.js';
-import type { StereotypeReference } from '../../../models/metamodels/pure/packageableElements/domain/StereotypeReference.js';
-import type { Tag } from '../../../models/metamodels/pure/packageableElements/domain/Tag.js';
-import type { TaggedValue } from '../../../models/metamodels/pure/packageableElements/domain/TaggedValue.js';
-import type { TagReference } from '../../../models/metamodels/pure/packageableElements/domain/TagReference.js';
-import type { Type } from '../../../models/metamodels/pure/packageableElements/domain/Type.js';
+} from '../../../graph/metamodel/pure/packageableElements/domain/Measure.js';
+import { Package } from '../../../graph/metamodel/pure/packageableElements/domain/Package.js';
+import type { Profile } from '../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
+import type { Property } from '../../../graph/metamodel/pure/packageableElements/domain/Property.js';
+import type { PropertyReference } from '../../../graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
+import type { Stereotype } from '../../../graph/metamodel/pure/packageableElements/domain/Stereotype.js';
+import type { StereotypeReference } from '../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
+import type { Tag } from '../../../graph/metamodel/pure/packageableElements/domain/Tag.js';
+import type { TaggedValue } from '../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
+import type { TagReference } from '../../../graph/metamodel/pure/packageableElements/domain/TagReference.js';
+import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import {
   DefaultCodeSection,
   ImportAwareCodeSection,
   type Section,
-} from '../../../models/metamodels/pure/packageableElements/section/Section.js';
-import type { SectionIndex } from '../../../models/metamodels/pure/packageableElements/section/SectionIndex.js';
+} from '../../../graph/metamodel/pure/packageableElements/section/Section.js';
+import type { SectionIndex } from '../../../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import {
   observe_Multiplicity,
   observe_Abstract_PackageableElement,

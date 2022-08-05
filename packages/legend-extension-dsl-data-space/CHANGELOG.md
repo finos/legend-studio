@@ -1,5 +1,21 @@
 # @finos/legend-extension-dsl-data-space
 
+## 6.1.0
+
+### Minor Changes
+
+- [#1343](https://github.com/finos/legend-studio/pull/1343) [`c7d8f47e`](https://github.com/finos/legend-studio/commit/c7d8f47ed439ee782c32fd1a85f72ab9c08ab81d) ([@akphi](https://github.com/akphi)) - Support `title` field in data space. Show title when possible in data space viewer.
+
+### Patch Changes
+
+- [#1327](https://github.com/finos/legend-studio/pull/1327) [`f278124`](https://github.com/finos/legend-studio/commit/f278124133d77345ba06a1d67a664b957a475d6b) ([@gayathrir11](https://github.com/gayathrir11)) - Fix creating new milestoned query from dataspace ([#1315](https://github.com/finos/legend-studio/pull/1325)).
+
+## 6.0.0
+
+### Major Changes
+
+- [#1332](https://github.com/finos/legend-studio/pull/1332) [`5f0c6f6b`](https://github.com/finos/legend-studio/commit/5f0c6f6b40ece8a3b87c32b52f15f542fe68f7d4) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `*_GraphPreset` to `*_GraphManagerPreset`
+
 ## 5.0.0
 
 ### Major Changes
@@ -154,7 +170,7 @@
 
 ### Major Changes
 
-- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move enterprise model explorer out to `@finos/legend-taxonomy` and create a new application `Legend Taxonomy`.
+- [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move enterprise model explorer out to `@finos/legend-application-taxonomy` and create a new application `Legend Taxonomy`.
 
 * [#692](https://github.com/finos/legend-studio/pull/692) [`caab0e67`](https://github.com/finos/legend-studio/commit/caab0e6772181e514b246fe6030a02e7169952cc) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Remove `LegendStudioPreset` and `LegendQueryPreset` and expose `LegendStudioPlugin` and `LegendQueryPlugin` respectively as we now prefer the usage of `@finos/legend-graph-extension-collection` to better manage graph presets.
 

@@ -175,8 +175,34 @@ export const pruneNullValues = (
     unknown
   >;
 
-// Stringify object shallowly
-// See https://stackoverflow.com/questions/16466220/limit-json-stringification-depth
+/**
+ * Recursively sort object keys alphabetically
+ */
+export const sortObjectKeys = (
+  value: Record<PropertyKey, unknown>,
+): Record<PropertyKey, unknown> => {
+  const _sort = (obj: unknown): unknown => {
+    if (Array.isArray(obj)) {
+      return obj.map(sortObjectKeys);
+    } else if (typeof obj === 'object') {
+      const oldObj = obj as Record<PropertyKey, unknown>;
+      const newObj: Record<PropertyKey, unknown> = {};
+      Object.keys(oldObj)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((key) => {
+          newObj[key] = _sort(oldObj[key]);
+        });
+      return newObj;
+    }
+    return obj;
+  };
+  return _sort(value) as Record<PropertyKey, unknown>;
+};
+
+/**
+ * Stringify object shallowly
+ * See https://stackoverflow.com/questions/16466220/limit-json-stringification-depth
+ */
 export const shallowStringify = (object: unknown): string =>
   JSON.stringify(object, (key, val) =>
     key && val && typeof val !== 'number'
@@ -206,6 +232,9 @@ export const generateEnumerableNameFromToken = (
   return `${token}_${maxCounter + 1}`;
 };
 
+/**
+ * NOTE: This is a small tool to workaround Typescript strictness check with the flag --noUncheckedIndexedAccess enabled
+ */
 export const getNullableFirstElement = <T>(array: T[]): T | undefined =>
   array.length ? array[0] : undefined;
 

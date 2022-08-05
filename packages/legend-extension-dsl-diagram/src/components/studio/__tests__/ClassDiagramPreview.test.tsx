@@ -22,9 +22,9 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
   TEST__openElementFromExplorerTree,
   LegendStudioPluginManager,
-} from '@finos/legend-studio';
+} from '@finos/legend-application-studio';
 import { DSL_DIAGRAM_TEST_ID } from '../DSLDiagram_TestID.js';
-import { DSLDiagram_GraphPreset } from '../../../DSLDiagram_Extension.js';
+import { DSLDiagram_GraphManagerPreset } from '../../../DSLDiagram_Extension.js';
 import { DSLDiagram_LegendStudioApplicationPlugin } from '../DSLDiagram_LegendStudioApplicationPlugin.js';
 
 const TEST_DATA__dummyModel = [
@@ -51,7 +51,7 @@ const TEST_DATA__dummyModel = [
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
-  .usePresets([new DSLDiagram_GraphPreset()])
+  .usePresets([new DSLDiagram_GraphManagerPreset()])
   .usePlugins([new DSLDiagram_LegendStudioApplicationPlugin()])
   .install();
 

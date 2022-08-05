@@ -1,7 +1,12 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://finosfoundation.atlassian.net/wiki/display/FINOS/Incubating)
-[![npm](https://img.shields.io/npm/v/@finos/legend-studio-app?cacheSeconds=3600)](https://www.npmjs.com/package/@finos/legend-studio-app)
 ![build](https://github.com/finos/legend-studio/actions/workflows/check-build.yml/badge.svg)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=legend-studio&metric=security_rating&token=1649412014267d7d7a6833643cb3133afe0137b0)](https://sonarcloud.io/dashboard?id=legend-studio)
+[![GitHub license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/finos/legend-studio/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/finos/legend-studio/blob/master/CONTRIBUTING.md)
+[![npm](https://img.shields.io/npm/v/@finos/legend-application-studio-bootstrap)](https://www.npmjs.com/package/@finos/legend-application-studio-bootstrap)
+[![docker](https://img.shields.io/docker/v/finos/legend-studio?label=finos%2Flegend-studio&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-studio)
+[![docker](https://img.shields.io/docker/v/finos/legend-query?label=finos%2Flegend-query&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-query)
+[![docker](https://img.shields.io/docker/v/finos/legend-taxonomy?label=finos%2Flegend-taxonomy&logo=docker&logoColor=docker&sort=semver)](https://hub.docker.com/r/finos/legend-taxonomy)
 
 # legend-studio
 

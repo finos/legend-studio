@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import type { Connection } from '../models/metamodels/pure/packageableElements/connection/Connection.js';
-import type { InputData } from '../models/metamodels/pure/packageableElements/mapping/InputData.js';
-import type { PropertyMapping } from '../models/metamodels/pure/packageableElements/mapping/PropertyMapping.js';
-import type { SetImplementation } from '../models/metamodels/pure/packageableElements/mapping/SetImplementation.js';
+import type { Connection } from '../graph/metamodel/pure/packageableElements/connection/Connection.js';
+import type { InputData } from '../graph/metamodel/pure/packageableElements/mapping/InputData.js';
+import type { PropertyMapping } from '../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
+import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 

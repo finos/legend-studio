@@ -17,7 +17,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { StudioTextInputEditor, useEditorStore } from '@finos/legend-studio';
+import {
+  StudioTextInputEditor,
+  useEditorStore,
+} from '@finos/legend-application-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
   OpenPreviewIcon,
@@ -40,7 +43,7 @@ import {
   text_setContent,
   text_setType,
 } from '../../stores/studio/DSLText_GraphModifierHelper.js';
-import { TEXT_TYPE } from '../../helper/DSLText_Helper.js';
+import { TEXT_TYPE } from '../../graph/helpers/DSLText_Helper.js';
 import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
 
 const getTextElementEditorLanguage = (

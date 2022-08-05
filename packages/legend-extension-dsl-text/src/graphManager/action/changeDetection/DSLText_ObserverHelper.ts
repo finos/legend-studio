@@ -19,7 +19,7 @@ import {
   skipObserved,
 } from '@finos/legend-graph';
 import { makeObservable, observable, override } from 'mobx';
-import type { Text } from '../../../models/metamodels/pure/model/packageableElements/text/DSLText_Text.js';
+import type { Text } from '../../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
 
 export const observe_Text = skipObserved((metamodel: Text): Text => {
   observe_Abstract_PackageableElement(metamodel);

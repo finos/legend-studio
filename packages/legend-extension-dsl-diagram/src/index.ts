@@ -25,17 +25,17 @@ export {
   DIAGRAM_INTERACTION_MODE,
 } from './DiagramRenderer.js';
 
-export { Diagram } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
-export { ClassView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
-export { RelationshipView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
-export { PropertyHolderView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
-export { PropertyView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
-export { AssociationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
-export { GeneralizationView } from './models/metamodels/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
-export { Point } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
-export { Rectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
-export { PositionedRectangle } from './models/metamodels/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
+export { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_Diagram.js';
+export { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_ClassView.js';
+export { RelationshipView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_RelationshipView.js';
+export { PropertyHolderView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyHolderView.js';
+export { PropertyView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_PropertyView.js';
+export { AssociationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_AssociationView.js';
+export { GeneralizationView } from './graph/metamodel/pure/packageableElements/diagram/DSLDiagram_GeneralizationView.js';
+export { Point } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Point.js';
+export { Rectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_Rectangle.js';
+export { PositionedRectangle } from './graph/metamodel/pure/packageableElements/diagram/geometry/DSLDiagram_PositionedRectangle.js';
 
-export * from './helpers/DSLDiagram_Helper.js';
+export * from './graph/helpers/DSLDiagram_Helper.js';
 export * from './graphManager/DSLDiagram_GraphManagerHelper.js';
-export { V1_DSLDiagram_PackageableElementPointerType } from './models/protocols/pure/DSLDiagram_PureProtocolProcessorPlugin.js';
+export { V1_DSLDiagram_PackageableElementPointerType } from './graphManager/protocol/pure/DSLDiagram_PureProtocolProcessorPlugin.js';

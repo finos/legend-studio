@@ -26,7 +26,7 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
-import { ENTITY_PATH_DELIMITER } from '@finos/legend-model-storage';
+import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 

@@ -15,13 +15,13 @@
  */
 
 import { computed, makeObservable, observable, override } from 'mobx';
-import type { ExternalFormatConnection } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
-import type { UrlStream } from '../../../models/metamodels/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
-import type { Schema } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
-import type { SchemaSet } from '../../../models/metamodels/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
-import type { Binding } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
-import type { BindingTransformer } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
-import type { ModelUnit } from '../../../models/metamodels/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
+import type { ExternalFormatConnection } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
+import type { UrlStream } from '../../../graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
+import type { Schema } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
+import type { SchemaSet } from '../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { Binding } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
+import type { BindingTransformer } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+import type { ModelUnit } from '../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
 import {
   observe_PackageableElementReference,
   skipObserved,

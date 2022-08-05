@@ -15,13 +15,13 @@ module.exports = {
     // `parserOptions.project` is required for generating parser service to run specific Typescript rules
     project: ['packages/*/tsconfig.json'],
   },
-  plugins: ['@finos/legend-studio'],
+  plugins: ['@finos/legend-application-studio'],
   extends: [
-    'plugin:@finos/legend-studio/recommended',
-    'plugin:@finos/legend-studio/computationally-expensive',
-    'plugin:@finos/legend-studio/scripts-override',
+    'plugin:@finos/legend-application-studio/recommended',
+    'plugin:@finos/legend-application-studio/computationally-expensive',
+    'plugin:@finos/legend-application-studio/scripts-override',
   ].filter(Boolean),
 };
 ```
 
-> Note that for the imports, we can use either `@finos/legend-studio/` or `@finos/eslint-plugin-legend-studio/` as prefix and the rules, configs, and plugin will be picked up by ESLint just fine.
+> Note that for the imports, we can use either `@finos/legend-application-studio/` or `@finos/eslint-plugin-legend-studio/` as prefix and the rules, configs, and plugin will be picked up by ESLint just fine.

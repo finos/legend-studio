@@ -16,12 +16,12 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-model-storage';
+import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 import {
   type QuerySetupStore,
   QuerySetupState,
   generateStudioProjectViewUrl,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import {
   type StoredEntity,
   DepotScope,
@@ -33,11 +33,12 @@ import {
   type PlainObject,
   ActionState,
   assertErrorThrown,
+  isString,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/DSLDataSpace_PureGraphManagerExtension.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../models/protocols/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
+import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryEditorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 
@@ -45,6 +46,8 @@ export interface DataSpaceContext {
   groupId: string;
   artifactId: string;
   versionId: string;
+  title: string | undefined;
+  name: string;
   path: string;
 }
 
@@ -107,6 +110,10 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           ? SNAPSHOT_VERSION_ALIAS
           : storedEntity.versionId,
         path: storedEntity.entity.path,
+        name: extractEntityNameFromPath(storedEntity.entity.path),
+        title: isString(storedEntity.entity.content.title)
+          ? storedEntity.entity.content.title
+          : undefined,
       }));
       this.loadDataSpacesState.pass();
     } catch (error) {

@@ -3,32 +3,35 @@
   "files": [],
   "references": [
     { "path": "packages/legend-shared/tsconfig.build.json" },
-    { "path": "packages/legend-tracer-extension-zipkin/tsconfig.build.json" },
-    { "path": "packages/legend-model-storage/tsconfig.build.json" },
+    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
+    { "path": "packages/legend-storage/tsconfig.build.json" },
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
     { "path": "packages/legend-graph/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },
     // studio
-    { "path": "packages/legend-studio/tsconfig.build.json" },
-    { "path": "packages/legend-studio-app/tsconfig.build.json" },
+    { "path": "packages/legend-application-studio/tsconfig.build.json" },
     {
-      "path": "packages/legend-studio-extension-management-toolkit/tsconfig.build.json"
+      "path": "packages/legend-application-studio-bootstrap/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-studio-extension-query-builder/tsconfig.build.json"
+      "path": "packages/legend-extension-application-studio-management-toolkit/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-application-studio-query-builder/tsconfig.build.json"
     },
     // query
-    { "path": "packages/legend-query/tsconfig.build.json" },
-    { "path": "packages/legend-query-app/tsconfig.build.json" },
-    // taxonomy
-    { "path": "packages/legend-taxonomy/tsconfig.build.json" },
-    { "path": "packages/legend-taxonomy-app/tsconfig.build.json" },
-    // extensions
+    { "path": "packages/legend-application-query/tsconfig.build.json" },
     {
-      "path": "packages/legend-graph-extension-collection/tsconfig.build.json"
+      "path": "packages/legend-application-query-bootstrap/tsconfig.build.json"
     },
+    // taxonomy
+    { "path": "packages/legend-application-taxonomy/tsconfig.build.json" },
+    {
+      "path": "packages/legend-application-taxonomy-bootstrap/tsconfig.build.json"
+    },
+    // extensions
     {
       "path": "packages/legend-extension-dsl-text/tsconfig.build.json"
     },
@@ -52,9 +55,6 @@
     },
     {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-mapping-generation/tsconfig.build.json"
     },
     // fixtures
     {

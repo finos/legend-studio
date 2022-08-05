@@ -15,10 +15,10 @@
  */
 
 import { addUniqueEntry } from '@finos/legend-shared';
-import type { Mapping } from '../../../models/metamodels/pure/packageableElements/mapping/Mapping.js';
-import type { PureExecution } from '../../../models/metamodels/pure/packageableElements/service/ServiceExecution.js';
-import { isStubbed_PackageableElement } from '../creation/DomainModelCreatorHelper.js';
-import { isStubbed_RawLambda } from '../creation/RawValueSpecificationCreatorHelper.js';
+import type { Mapping } from '../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import type { PureExecution } from '../../../graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
+import { isStubbed_PackageableElement } from '../../../graph/helpers/creator/DomainModelCreatorHelper.js';
+import { isStubbed_RawLambda } from '../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 import {
   type ValidationIssue,
   createValidationError,

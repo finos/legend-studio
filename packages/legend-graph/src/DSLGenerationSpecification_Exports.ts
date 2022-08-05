@@ -15,14 +15,17 @@
  */
 
 // metamodels
-export { ModelGenerationSpecification } from './models/metamodels/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
+export { ModelGenerationSpecification } from './graph/metamodel/pure/packageableElements/generationSpecification/ModelGenerationSpecification.js';
 export {
   GenerationSpecification,
   GenerationTreeNode,
-} from './models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
-export { FileGenerationSpecification } from './models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
-export { ConfigurationProperty } from './models/metamodels/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
+} from './graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+export { FileGenerationSpecification } from './graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+export { ConfigurationProperty } from './graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 
 // protocols
-export * from './models/protocols/pure/DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
-export { V1_ModelGenerationSpecification } from './models/protocols/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification.js';
+export * from './graphManager/protocol/pure/DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+export { V1_ModelGenerationSpecification } from './graphManager/protocol/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification.js';
+
+export { V1_GenerationInput } from './graphManager/protocol/pure/v1/engine/generation/V1_GenerationInput.js';
+export { V1_GenerationOutput } from './graphManager/protocol/pure/v1/engine/generation/V1_GenerationOutput.js';

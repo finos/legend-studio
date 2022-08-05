@@ -21,7 +21,7 @@ import {
   skipObserved,
 } from '@finos/legend-graph';
 import { makeObservable, override } from 'mobx';
-import type { DataSpace } from '../../../models/metamodels/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import type { DataSpace } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
@@ -31,6 +31,7 @@ export const observe_DataSpace = skipObserved(
       _elementHashCode: override,
     });
 
+    // TODO
     // metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
     // observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
     // if (metamodel.supportInfo) {

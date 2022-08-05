@@ -24,7 +24,7 @@ import {
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
-} from '@finos/legend-query';
+} from '@finos/legend-application-query';
 import type {
   DepotServerClient,
   ProjectGAVCoordinates,
@@ -111,15 +111,17 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
     );
 
     if (this.classPath) {
-      this.queryBuilderState.querySetupState._class =
-        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath);
+      this.queryBuilderState.changeClass(
+        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
+      );
       this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
-    }
-    // TODO?: should we set the class here automatically?
+    } else {
+      // TODO?: should we set the class here automatically?
 
-    // initialize query builder state after setting up
-    this.queryBuilderState.resetQueryBuilder();
-    this.queryBuilderState.resetQuerySetup();
+      // initialize query builder state after setting up
+      this.queryBuilderState.resetQueryBuilder();
+      this.queryBuilderState.resetQuerySetup();
+    }
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {

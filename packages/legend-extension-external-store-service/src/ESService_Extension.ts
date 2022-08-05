@@ -17,12 +17,12 @@
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
 import { ESService_PureGraphManagerPlugin } from './graphManager/ESService_PureGraphManagerPlugin.js';
-import { ESService_PureProtocolProcessorPlugin } from './models/protocols/pure/ESService_PureProtocolProcessorPlugin.js';
+import { ESService_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/ESService_PureProtocolProcessorPlugin.js';
 import { ESService_PureGraphPlugin } from './graph/ESService_PureGraphPlugin.js';
 
-export class ESService_GraphPreset extends AbstractPreset {
+export class ESService_GraphManagerPreset extends AbstractPreset {
   constructor() {
-    super(packageJson.extensions.graphPreset, packageJson.version, [
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
       new ESService_PureGraphPlugin(),
       new ESService_PureGraphManagerPlugin(),
       new ESService_PureProtocolProcessorPlugin(),

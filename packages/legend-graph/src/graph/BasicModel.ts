@@ -25,46 +25,46 @@ import {
   guaranteeNonNullable,
   guaranteeType,
 } from '@finos/legend-shared';
-import type { ROOT_PACKAGE_NAME } from '../MetaModelConst.js';
-import { Package } from '../models/metamodels/pure/packageableElements/domain/Package.js';
-import { Type } from '../models/metamodels/pure/packageableElements/domain/Type.js';
-import { Association } from '../models/metamodels/pure/packageableElements/domain/Association.js';
-import { Mapping } from '../models/metamodels/pure/packageableElements/mapping/Mapping.js';
-import { Class } from '../models/metamodels/pure/packageableElements/domain/Class.js';
-import { Enumeration } from '../models/metamodels/pure/packageableElements/domain/Enumeration.js';
-import { PackageableElement } from '../models/metamodels/pure/packageableElements/PackageableElement.js';
-import { Profile } from '../models/metamodels/pure/packageableElements/domain/Profile.js';
-import { Service } from '../models/metamodels/pure/packageableElements/service/Service.js';
-import { ConcreteFunctionDefinition } from '../models/metamodels/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
-import { Store } from '../models/metamodels/pure/packageableElements/store/Store.js';
-import { FlatData } from '../models/metamodels/pure/packageableElements/store/flatData/model/FlatData.js';
-import { PackageableRuntime } from '../models/metamodels/pure/packageableElements/runtime/PackageableRuntime.js';
-import { PackageableConnection } from '../models/metamodels/pure/packageableElements/connection/PackageableConnection.js';
-import { FileGenerationSpecification } from '../models/metamodels/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
-import { GenerationSpecification } from '../models/metamodels/pure/packageableElements/generationSpecification/GenerationSpecification.js';
+import type { ROOT_PACKAGE_NAME } from '../graph/MetaModelConst.js';
+import { Package } from '../graph/metamodel/pure/packageableElements/domain/Package.js';
+import { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
+import { Association } from '../graph/metamodel/pure/packageableElements/domain/Association.js';
+import { Mapping } from '../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
+import { Class } from '../graph/metamodel/pure/packageableElements/domain/Class.js';
+import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
+import { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
+import { Profile } from '../graph/metamodel/pure/packageableElements/domain/Profile.js';
+import { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
+import { ConcreteFunctionDefinition } from '../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
+import { Store } from '../graph/metamodel/pure/packageableElements/store/Store.js';
+import { FlatData } from '../graph/metamodel/pure/packageableElements/store/flatData/model/FlatData.js';
+import { PackageableRuntime } from '../graph/metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import { PackageableConnection } from '../graph/metamodel/pure/packageableElements/connection/PackageableConnection.js';
+import { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
+import { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
 import {
   Unit,
   Measure,
-} from '../models/metamodels/pure/packageableElements/domain/Measure.js';
-import { Database } from '../models/metamodels/pure/packageableElements/store/relational/model/Database.js';
-import { SectionIndex } from '../models/metamodels/pure/packageableElements/section/SectionIndex.js';
-import type { Section } from '../models/metamodels/pure/packageableElements/section/Section.js';
+} from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
+import { Database } from '../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
+import { SectionIndex } from '../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
+import type { Section } from '../graph/metamodel/pure/packageableElements/section/Section.js';
 import { PureGraphExtension } from './PureGraphExtension.js';
-import { PrimitiveType } from '../models/metamodels/pure/packageableElements/domain/PrimitiveType.js';
-import { DataType } from '../models/metamodels/pure/packageableElements/domain/DataType.js';
+import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { DataType } from '../graph/metamodel/pure/packageableElements/domain/DataType.js';
 import {
   isValidFullPath,
   isValidPath,
   resolvePackagePathAndElementName,
-} from '../MetaModelUtils.js';
+} from '../graph/MetaModelUtils.js';
 import {
   addElementToPackage,
   deleteElementFromPackage,
   getOrCreateGraphPackage,
   getOrCreatePackage,
-} from '../helpers/DomainHelper.js';
-import { DataElement } from '../models/metamodels/pure/packageableElements/data/DataElement.js';
-import type { Testable } from '../models/metamodels/pure/test/Testable.js';
+} from '../graph/helpers/DomainHelper.js';
+import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
