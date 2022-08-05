@@ -74,7 +74,10 @@ import {
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../stores/QueryBuilderOperatorsHelper.js';
+import {
+  isTypeCompatibleWithConditionValueType,
+  QUERY_BUILDER_GROUP_OPERATION,
+} from '../stores/QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -405,6 +408,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const { node, isPropertyDragOver } = props;
     const graph =
       node.condition.postFilterState.queryBuilderState.graphManagerState.graph;
+    const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
     const changeColumn = async (
@@ -421,9 +425,24 @@ const QueryBuilderPostFilterConditionEditor = observer(
     // Drag and Drop on filter condition value
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        node.condition.setValue(item.variable.parameter);
+        const parameterType =
+          item.variable.parameter.genericType?.value.rawType;
+        const conditionValueType = node.condition.columnState.getReturnType();
+        if (
+          conditionValueType &&
+          isTypeCompatibleWithConditionValueType(
+            parameterType,
+            conditionValueType,
+          )
+        ) {
+          node.condition.setValue(item.variable.parameter);
+        } else {
+          applicationStore.notifyWarning(
+            `Incompatible parameter type ${parameterType?.name}. ${parameterType?.name} is not compatible with type ${conditionValueType?.name}.`,
+          );
+        }
       },
-      [node],
+      [applicationStore, node.condition],
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop(
       () => ({
