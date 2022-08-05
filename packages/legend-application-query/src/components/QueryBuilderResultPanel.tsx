@@ -474,6 +474,7 @@ export const QueryBuilderResultPanel = observer(
                   type="number"
                   value={resultState.previewLimit}
                   onChange={changeLimit}
+                  disabled={!queryBuilderState.isValidQueryBuilderState()}
                 />
               </div>
             )}
@@ -482,6 +483,7 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__stop-btn"
                 onClick={cancelQuery}
                 tabIndex={-1}
+                disabled={!queryBuilderState.isValidQueryBuilderState()}
               >
                 <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
                   <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
@@ -495,6 +497,7 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__execute-btn"
                 onClick={runQuery}
                 tabIndex={-1}
+                disabled={!queryBuilderState.isValidQueryBuilderState()}
               >
                 <div className="query-builder__result__execute-btn__label">
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
@@ -557,12 +560,17 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__export__dropdown__label"
                 tabIndex={-1}
                 title="Export"
+                disabled={!queryBuilderState.isValidQueryBuilderState()}
               >
                 Export
               </button>
-              <div className="query-builder__result__export__dropdown__trigger">
+              <button
+                className="query-builder__result__export__dropdown__trigger"
+                tabIndex={-1}
+                disabled={!queryBuilderState.isValidQueryBuilderState()}
+              >
                 <CaretDownIcon />
-              </div>
+              </button>
             </DropdownMenu>
           </div>
         </div>
