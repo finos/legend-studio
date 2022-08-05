@@ -362,9 +362,11 @@ export const annotatedElement_arrangeStereotypes = action(
       (stereotype) => stereotype === targetStereotype,
     );
 
-    //user is able to select duplicate stereotype values for now
-    //that breaks drag and drop so we are exiting
-    //until we add fail in compilation error for users
+    /**
+     * NOTE: this is temporary. user is able to select duplicate stereotype values for now
+     * that breaks drag and drop so we are exiting until we add fail in compilation error
+     * for users.
+     */
     const stereotypeOwnerReferences = new Set();
 
     for (let i = 0; i < _annotatedElement.stereotypes.length; i++) {
