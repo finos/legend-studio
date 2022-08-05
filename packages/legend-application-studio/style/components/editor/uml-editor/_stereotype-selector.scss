@@ -26,6 +26,10 @@
     background: var(--color-light-grey-200);
     border-radius: 0 1.4rem 1.4rem 0;
     margin-right: 0.5rem;
+
+    &--with-validation--error {
+      background: var(--color-red-300);
+    }
   }
 
   &__profile__selector {
