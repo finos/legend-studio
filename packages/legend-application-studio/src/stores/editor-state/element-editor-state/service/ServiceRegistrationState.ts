@@ -237,7 +237,7 @@ export class ServiceRegistrationState {
         serviceRegistrationResult.pattern,
         'Service registration pattern is missing',
       );
-      const message = `Service with patten ${
+      const message = `Service with pattern ${
         serviceRegistrationResult.pattern
       } registered ${this.activatePostRegistration ? 'and activated ' : ''}`;
       const encodedServicePattern =
