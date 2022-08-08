@@ -57,6 +57,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
+import type { InputActionMeta } from 'react-select';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
@@ -170,23 +171,83 @@ const StringPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
+    valueOptions?:
+      | {
+          options: (string | number)[] | undefined;
+          isLoading: boolean;
+          updateOptions: () => void;
+        }
+      | undefined;
   }) => {
-    const { valueSpecification, className, resetValue, setValueSpecification } =
-      props;
+    const {
+      valueSpecification,
+      className,
+      resetValue,
+      setValueSpecification,
+      valueOptions,
+    } = props;
+    const useSelector = Boolean(valueOptions);
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
+    const updateValueSpec = (val: string): void => {
+      instanceValue_changeValue(valueSpecification, val, 0);
       setValueSpecification(valueSpecification);
     };
+    const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      updateValueSpec(event.target.value);
+    };
+    // custom select
+    const selectedValue = { value: value, label: value };
+    const changeValue = (
+      val: null | { value: number | string; label: string },
+    ): void => {
+      const newValue = val === null ? '' : val.value.toString();
+      updateValueSpec(newValue);
+    };
+    const handleInputChange = (
+      inputValue: string,
+      actionChange: InputActionMeta,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        updateValueSpec(inputValue);
+        valueOptions?.updateOptions();
+      }
+    };
+    const isLoading = valueOptions?.isLoading;
+    const queryOptions = valueOptions?.options?.length
+      ? valueOptions.options.map((e) => ({
+          value: e,
+          label: e.toString(),
+        }))
+      : undefined;
+    const noOptionsMessage =
+      valueOptions?.options === undefined ? (): null => null : undefined;
+
     return (
       <div className={clsx('value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input value-spec-editor__input"
-          spellCheck={false}
-          value={value}
-          placeholder={value === '' ? '(empty)' : undefined}
-          onChange={changeValue}
-        />
+        {useSelector ? (
+          <CustomSelectorInput
+            className="value-spec-editor__enum-selector"
+            options={queryOptions}
+            onChange={changeValue}
+            value={selectedValue}
+            onInputChange={handleInputChange}
+            darkMode={true}
+            isLoading={isLoading}
+            allowCreateWhileLoading={true}
+            autoFocus={true}
+            noOptionsMessage={noOptionsMessage}
+          />
+        ) : (
+          <input
+            className="panel__content__form__section__input value-spec-editor__input"
+            spellCheck={false}
+            value={value}
+            placeholder={value === '' ? '(empty)' : undefined}
+            onChange={changeInputValue}
+          />
+        )}
         <button
           className="value-spec-editor__reset-btn"
           title="Reset"
@@ -604,6 +665,13 @@ export const BasicValueSpecificationEditor: React.FC<{
   className?: string | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
   resetValue: () => void;
+  valueOptions?:
+    | {
+        options: (string | number)[] | undefined;
+        isLoading: boolean;
+        updateOptions: () => void;
+      }
+    | undefined;
 }> = (props) => {
   const {
     className,
@@ -612,6 +680,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     typeCheckOption,
     setValueSpecification,
     resetValue,
+    valueOptions,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -623,6 +692,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
+            valueOptions={valueOptions}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:

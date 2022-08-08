@@ -61,10 +61,18 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   returnUndefOnError,
+  debounce,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   type DropTargetMonitor,
   useDragLayer,
@@ -466,6 +474,19 @@ const QueryBuilderPostFilterConditionEditor = observer(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
+    const debouncedTypeAheadSearch = useMemo(
+      () => debounce(() => node.condition.handleTypeAheadSearch(), 100),
+      [node],
+    );
+
+    const changeValueSpecification = (val: ValueSpecification): void => {
+      node.condition.setValue(val);
+    };
+    const resultOptions = {
+      options: node.condition.typeAheadSearchResults,
+      isLoading: node.condition.fetchingTypeAheadSearchAction.isInProgress,
+      updateOptions: debouncedTypeAheadSearch,
+    };
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
@@ -525,9 +546,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                setValueSpecification={(val: ValueSpecification): void =>
-                  node.condition.setValue(val)
-                }
+                setValueSpecification={changeValueSpecification}
                 graph={graph}
                 typeCheckOption={{
                   expectedType: guaranteeNonNullable(
@@ -535,6 +554,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   ),
                 }}
                 resetValue={resetNode}
+                valueOptions={resultOptions}
               />
             </div>
           )}

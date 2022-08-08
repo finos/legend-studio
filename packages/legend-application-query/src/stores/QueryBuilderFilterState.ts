@@ -20,9 +20,11 @@ import {
   makeAutoObservable,
   makeObservable,
   observable,
+  flow,
 } from 'mobx';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
+  type GeneratorFn,
   assertTrue,
   getNullableFirstElement,
   guaranteeNonNullable,
@@ -34,11 +36,13 @@ import {
   deleteEntry,
   assertErrorThrown,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
+  type ExecutionResult,
   type AbstractPropertyExpression,
   type ValueSpecification,
   extractElementNameFromPath,
@@ -56,6 +60,11 @@ import {
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderProjectionColumnDragSource } from './QueryBuilderProjectionState.js';
+import {
+  buildPropertyTypeAheadQuery,
+  buildTypeAheadOptions,
+  performTypeAhead,
+} from './QueryBuilderTypeAheadSearchHelper.js';
 
 export abstract class QueryBuilderFilterOperator {
   readonly uuid = uuid();
@@ -107,6 +116,8 @@ export class FilterConditionState {
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification | undefined;
   existsLambdaParamNames: string[] = [];
+  typeAheadSearchResults: string[] | undefined;
+  fetchingTypeAheadSearchAction = ActionState.create();
 
   constructor(
     filterState: QueryBuilderFilterState,
@@ -119,7 +130,10 @@ export class FilterConditionState {
       changeOperator: action,
       setOperator: action,
       setValue: action,
+      typeAheadSearchResults: observable,
+      fetchingTypeAheadSearchAction: observable,
       addExistsLambdaParamNames: action,
+      handleTypeAheadSearch: flow,
     });
 
     this.filterState = filterState;
@@ -141,6 +155,33 @@ export class FilterConditionState {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
     );
+  }
+
+  *handleTypeAheadSearch(): GeneratorFn<void> {
+    try {
+      this.fetchingTypeAheadSearchAction.inProgress();
+      this.typeAheadSearchResults = undefined;
+      if (performTypeAhead(this.value)) {
+        const builderState = buildPropertyTypeAheadQuery(
+          this.filterState.queryBuilderState,
+          this.propertyExpressionState.propertyExpression,
+          this.value,
+        );
+        const result =
+          (yield builderState.graphManagerState.graphManager.executeMapping(
+            builderState.resultState.buildExecutionRawLambda(),
+            guaranteeNonNullable(builderState.querySetupState.mapping),
+            guaranteeNonNullable(builderState.querySetupState.runtimeValue),
+            builderState.graphManagerState.graph,
+          )) as ExecutionResult;
+        this.typeAheadSearchResults = buildTypeAheadOptions(result);
+      }
+      this.fetchingTypeAheadSearchAction.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.typeAheadSearchResults = [];
+      this.fetchingTypeAheadSearchAction.fail();
+    }
   }
 
   changeProperty(propertyExpression: AbstractPropertyExpression): void {

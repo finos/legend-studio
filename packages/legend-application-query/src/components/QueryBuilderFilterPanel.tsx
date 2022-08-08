@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+  useMemo,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -67,6 +74,7 @@ import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpre
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   assertErrorThrown,
+  debounce,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
@@ -242,6 +250,19 @@ const QueryBuilderFilterConditionEditor = observer(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
+    const debouncedTypeAheadSearch = useMemo(
+      () => debounce(() => node.condition.handleTypeAheadSearch(), 1000),
+      [node],
+    );
+
+    const changeValueSpecification = (val: ValueSpecification): void => {
+      node.condition.setValue(val);
+    };
+    const resultOptions = {
+      options: node.condition.typeAheadSearchResults,
+      isLoading: node.condition.fetchingTypeAheadSearchAction.isInProgress,
+      updateOptions: debouncedTypeAheadSearch,
+    };
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -301,9 +322,7 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                setValueSpecification={(val: ValueSpecification): void =>
-                  node.condition.setValue(val)
-                }
+                setValueSpecification={changeValueSpecification}
                 graph={graph}
                 typeCheckOption={{
                   expectedType:
@@ -311,6 +330,7 @@ const QueryBuilderFilterConditionEditor = observer(
                       .func.genericType.value.rawType,
                 }}
                 resetValue={resetNode}
+                valueOptions={resultOptions}
               />
             </div>
           )}

@@ -19,6 +19,7 @@ import {
   type PureModel,
   type Type,
   type ValueSpecification,
+  type ExecutionResult,
   Enumeration,
   PRIMITIVE_TYPE,
   observe_ValueSpecification,
@@ -36,6 +37,7 @@ import {
   UnsupportedOperationError,
   uuid,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import {
   action,
@@ -51,11 +53,16 @@ import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregation
 import { QUERY_BUILDER_GROUP_OPERATION } from './QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
-  type QueryBuilderProjectionColumnDragSource,
   type QueryBuilderProjectionColumnState,
+  type QueryBuilderProjectionColumnDragSource,
   QueryBuilderDerivationProjectionColumnState,
 } from './QueryBuilderProjectionState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import {
+  buildProjectionColumnTypeAheadQuery,
+  buildTypeAheadOptions,
+  performTypeAhead,
+} from './QueryBuilderTypeAheadSearchHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -262,6 +269,8 @@ export class PostFilterConditionState {
     | QueryBuilderAggregateColumnState;
   value?: ValueSpecification | undefined;
   operator: QueryBuilderPostFilterOperator;
+  typeAheadSearchResults: string[] | undefined;
+  fetchingTypeAheadSearchAction = ActionState.create();
 
   constructor(
     postFilterState: QueryBuilderPostFilterState,
@@ -273,11 +282,13 @@ export class PostFilterConditionState {
   ) {
     makeAutoObservable(this, {
       columnState: observable,
+      typeAheadSearchResults: observable,
       changeOperator: action,
       setColumnState: action,
       setValue: action,
       setOperator: action,
       changeColumn: flow,
+      handleTypeAheadSearch: flow,
     });
 
     this.postFilterState = postFilterState;
@@ -302,6 +313,32 @@ export class PostFilterConditionState {
     return this.postFilterState.operators.filter((op) =>
       op.isCompatibleWithPostFilterColumn(this),
     );
+  }
+
+  *handleTypeAheadSearch(): GeneratorFn<void> {
+    try {
+      this.fetchingTypeAheadSearchAction.inProgress();
+      this.typeAheadSearchResults = undefined;
+      if (performTypeAhead(this.value)) {
+        const builderState = buildProjectionColumnTypeAheadQuery(
+          this.postFilterState.queryBuilderState,
+          this.columnState,
+          this.value,
+        );
+        const result =
+          (yield builderState.graphManagerState.graphManager.executeMapping(
+            builderState.resultState.buildExecutionRawLambda(),
+            guaranteeNonNullable(builderState.querySetupState.mapping),
+            guaranteeNonNullable(builderState.querySetupState.runtimeValue),
+            builderState.graphManagerState.graph,
+          )) as ExecutionResult;
+        this.typeAheadSearchResults = buildTypeAheadOptions(result);
+      }
+      this.fetchingTypeAheadSearchAction.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchingTypeAheadSearchAction.fail();
+    }
   }
 
   changeOperator(val: QueryBuilderPostFilterOperator): void {
