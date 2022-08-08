@@ -493,47 +493,45 @@ export const QueryBuilderResultPanel = observer(
                 </div>
               </button>
             ) : (
-              <>
-                <button
-                  className="query-builder__result__execute-btn"
-                  onClick={runQuery}
-                  tabIndex={-1}
-                  disabled={!queryBuilderState.isValidQueryBuilderState()}
-                >
-                  <div className="query-builder__result__execute-btn__label">
-                    <PlayIcon className="query-builder__result__execute-btn__label__icon" />
-                    <div className="query-builder__result__execute-btn__label__title">
-                      Run Query
-                    </div>
+              <button
+                className="query-builder__result__execute-btn"
+                onClick={runQuery}
+                tabIndex={-1}
+                disabled={!queryBuilderState.isValidQueryBuilderState()}
+              >
+                <div className="query-builder__result__execute-btn__label">
+                  <PlayIcon className="query-builder__result__execute-btn__label__icon" />
+                  <div className="query-builder__result__execute-btn__label__title">
+                    Run Query
                   </div>
-                  <DropdownMenu
-                    className="query-builder__result__execute-btn__dropdown-btn"
-                    disabled={resultState.isGeneratingPlan}
-                    content={
-                      <MenuContent>
-                        <MenuContentItem
-                          className="query-builder__result__execute-btn__option"
-                          onClick={generatePlan}
-                        >
-                          Generate Plan
-                        </MenuContentItem>
-                        <MenuContentItem
-                          className="query-builder__result__execute-btn__option"
-                          onClick={debugPlanGeneration}
-                        >
-                          Debug
-                        </MenuContentItem>
-                      </MenuContent>
-                    }
-                    menuProps={{
-                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                      transformOrigin: { vertical: 'top', horizontal: 'right' },
-                    }}
-                  >
-                    <CaretDownIcon />
-                  </DropdownMenu>
-                </button>
-              </>
+                </div>
+                <DropdownMenu
+                  className="query-builder__result__execute-btn__dropdown-btn"
+                  disabled={resultState.isGeneratingPlan}
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        className="query-builder__result__execute-btn__option"
+                        onClick={generatePlan}
+                      >
+                        Generate Plan
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="query-builder__result__execute-btn__option"
+                        onClick={debugPlanGeneration}
+                      >
+                        Debug
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                  }}
+                >
+                  <CaretDownIcon />
+                </DropdownMenu>
+              </button>
             )}
             <DropdownMenu
               className="query-builder__result__export__dropdown"
