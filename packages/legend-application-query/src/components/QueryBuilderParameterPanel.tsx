@@ -195,6 +195,7 @@ const VariableExpressionEditor = observer(
                 darkMode={true}
                 formatOptionLabel={getPackageableElementOptionalFormatter({
                   darkMode: true,
+                  graphManagerStatePackage: queryBuilderState.graphManagerState,
                 })}
               />
             </div>

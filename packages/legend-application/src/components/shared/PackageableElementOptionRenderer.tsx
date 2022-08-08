@@ -14,36 +14,45 @@
  * limitations under the License.
  */
 
-import type { PackageableElement } from '@finos/legend-graph';
+import type {
+  PackageableElement,
+  GraphManagerState,
+} from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-export const getPackageableElementOptionalFormatter = (props?: {
+export const getPackageableElementOptionalFormatter = (props: {
   darkMode?: boolean;
+  graphManagerStatePackage: GraphManagerState;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
   function PackageableElementOptionLabel(
     option: PackageableElementOption<PackageableElement>,
   ): React.ReactNode {
-    let optionType = '';
-    //if no package, label type system
-    if (
-      option.value.package === undefined ||
-      option.value.package.name === 'meta'
-    ) {
-      optionType = 'system';
-    } else {
-      optionType = 'generated';
-    }
-
-    const className = props?.darkMode
+    const className = props.darkMode
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
+
+    const element = option.value;
+
+    const optionColor = props.graphManagerStatePackage.isPrimitiveTypeElement(
+      element,
+    )
+      ? 'primitive'
+      : props.graphManagerStatePackage.isSystemElement(element)
+      ? 'system'
+      : props.graphManagerStatePackage.isGeneratedElement(element)
+      ? 'generated'
+      : props.graphManagerStatePackage.isMainElement(element)
+      ? 'generated'
+      : props.graphManagerStatePackage.isDependencyElement(element)
+      ? 'dependency'
+      : '';
 
     return (
       <div className={className}>
         <span
-          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type__${optionType}`}
+          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColor}`}
         ></span>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (

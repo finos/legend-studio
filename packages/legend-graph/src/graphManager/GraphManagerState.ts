@@ -48,6 +48,8 @@ import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/
 import { InlineEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
+import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { Unit } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -172,6 +174,11 @@ export class GraphManagerState extends BasicGraphManagerState {
   dependenciesBuildState = ActionState.create();
   graphBuildState = ActionState.create();
   generationsBuildState = ActionState.create();
+  isPrimitiveTypeElement: (element: PackageableElement) => boolean;
+  isGeneratedElement: (element: PackageableElement) => boolean;
+  isSystemElement: (element: PackageableElement) => boolean;
+  isDependencyElement: (element: PackageableElement) => boolean;
+  isMainElement: (element: PackageableElement) => boolean;
 
   constructor(pluginManager: GraphManagerPluginManager, log: Log) {
     super(pluginManager, log);
@@ -191,6 +198,28 @@ export class GraphManagerState extends BasicGraphManagerState {
     this.coreModel = new CoreModel(extensionElementClasses);
     this.graph = this.createEmptyGraph();
     this.graphManager = buildPureGraphManager(this.pluginManager, log);
+
+    this.isPrimitiveTypeElement = (element: PackageableElement): boolean => {
+      if (element instanceof PrimitiveType || element instanceof Unit) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    this.isDependencyElement = (element: PackageableElement): boolean =>
+      getElementRootPackage(element).name ===
+      ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
+
+    this.isGeneratedElement = (element: PackageableElement): boolean =>
+      getElementRootPackage(element).name ===
+      ROOT_PACKAGE_NAME.MODEL_GENERATION;
+
+    this.isSystemElement = (element: PackageableElement): boolean =>
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM;
+
+    this.isMainElement = (element: PackageableElement): boolean =>
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MAIN;
 
     this.systemBuildState.setMessageFormatter(
       (message: string) => `[system] ${message}`,

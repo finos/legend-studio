@@ -47,12 +47,20 @@
   height: 3.2rem;
   padding: 0 0 0 0.5rem;
 
-  &__system {
+  &--system {
     background-color: var(--color-system);
   }
 
-  &__generated {
+  &--generated {
     background-color: var(--color-generated);
+  }
+
+  &--primitive {
+    background-color: var(--color-primitive);
+  }
+
+  &--dependency {
+    background-color: var(--color-dependency);
   }
 }
 

@@ -271,6 +271,7 @@ export const QueryBuilderSetupPanel = observer(
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
+                graphManagerStatePackage: queryBuilderState.graphManagerState,
               })}
             />
             <button
@@ -306,6 +307,7 @@ export const QueryBuilderSetupPanel = observer(
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
+                graphManagerStatePackage: queryBuilderState.graphManagerState,
               })}
             />
           </div>

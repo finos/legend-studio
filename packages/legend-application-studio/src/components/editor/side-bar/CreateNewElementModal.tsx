@@ -250,8 +250,14 @@ const NewPureModelConnectionDriverEditor = observer(
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
+            // formatOptionLabel={getPackageableElementOptionalFormatter({
+            //   darkMode: true,
+            //   graphManagerState: newConnectionDriver.editorStore.graphManagerState,
+            // })}
             formatOptionLabel={getPackageableElementOptionalFormatter({
               darkMode: true,
+              graphManagerStatePackage:
+                newConnectionDriver.editorStore.graphManagerState,
             })}
           />
         </div>
