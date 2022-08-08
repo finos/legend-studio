@@ -101,7 +101,7 @@ RelationalDatabaseConnection connection::relational::H2Connection
 RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordConnection
 {
   store: store::db;
-  type: MemSQL;
+  type: H2;
   specification: Static
   {
     name: 'myDb';
