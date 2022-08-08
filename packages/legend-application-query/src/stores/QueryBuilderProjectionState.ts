@@ -796,16 +796,25 @@ export class QueryBuilderProjectionState {
 
   isValidProjectionState(): boolean {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
+      // no columns check
+      const hasNoProjectionColumns = this.columns.length === 0;
+      return (
+        !this.isDuplicatedColumnsProjectionState() && !hasNoProjectionColumns
+      );
+    }
+    return true;
+  }
+
+  isDuplicatedColumnsProjectionState(): boolean {
+    if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
       // duplicate columns check
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>
           this.columns.filter((c) => c.columnName === column.columnName)
             .length > 1,
       );
-      // no columns check
-      const hasNoProjectionColumns = this.columns.length === 0;
-      return !hasDuplicatedProjectionColumns && !hasNoProjectionColumns;
+      return hasDuplicatedProjectionColumns;
     }
-    return true;
+    return false;
   }
 }

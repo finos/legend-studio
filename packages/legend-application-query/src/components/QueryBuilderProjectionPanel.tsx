@@ -28,6 +28,7 @@ import {
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -624,6 +625,25 @@ export const QueryBuilderProjectionPanel = observer(
         ref={dropConnector}
       >
         <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
+        {queryBuilderState.isDuplicatedQueryBuilderState() && (
+          <div className="notification__message__content__icon notification__message__content__icon--warning">
+            <div className="query-builder__result__error__label">
+              <ExclamationTriangleIcon className="query-builder__result__error__icon" />
+              Cannot run query with duplicated projection columns
+            </div>
+          </div>
+        )}
+        {!queryBuilderState.isValidQueryBuilderState() &&
+          !queryBuilderState.isDuplicatedQueryBuilderState() && (
+            <>
+              <div className="notification__message__content__icon notification__message__content__icon--warning">
+                <div className="query-builder__result__error__label">
+                  <ExclamationTriangleIcon className="query-builder__result__error__icon" />
+                  Projection column is required to run query
+                </div>
+              </div>
+            </>
+          )}
         {!projectionColumns.length && (
           <BlankPanelPlaceholder
             placeholderText="Add a projection column"
