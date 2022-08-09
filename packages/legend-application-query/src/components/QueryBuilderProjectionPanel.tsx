@@ -372,9 +372,16 @@ const QueryBuilderProjectionColumnEditor = observer(
         collect: (
           monitor,
         ): {
-          projectionColumnBeingDragged: QueryBuilderProjectionColumnState;
+          projectionColumnBeingDragged:
+            | QueryBuilderProjectionColumnState
+            | undefined;
         } => ({
-          projectionColumnBeingDragged: monitor.getItem().columnState,
+          /**
+           * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
+           */
+          projectionColumnBeingDragged: (
+            monitor.getItem() as QueryBuilderProjectionColumnDragSource | null
+          )?.columnState,
         }),
       }),
       [projectionColumnState],

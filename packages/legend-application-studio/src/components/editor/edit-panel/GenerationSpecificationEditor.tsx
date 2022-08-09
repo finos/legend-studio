@@ -180,8 +180,15 @@ const ModelGenerationItem = observer(
           item: GenerationSpecNodeDragSource,
           monitor: DropTargetMonitor,
         ): void => handleHover(item, monitor),
-        collect: (monitor): { nodeBeingDragged: GenerationTreeNode } => ({
-          nodeBeingDragged: monitor.getItem().nodeState.node,
+        collect: (
+          monitor,
+        ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
+          /**
+           * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
+           */
+          nodeBeingDragged: (
+            monitor.getItem() as GenerationSpecNodeDragSource | null
+          )?.nodeState?.node,
         }),
       }),
       [handleHover],
