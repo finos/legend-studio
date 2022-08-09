@@ -108,7 +108,7 @@ RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordC
     host: 'somehost';
     port: 999;
   };
-  auth: MiddleTierUsernamePassword
+  auth: MiddleTierUserNamePassword
   {
     vaultReference: 'value';
   };
