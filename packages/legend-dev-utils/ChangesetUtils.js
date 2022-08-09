@@ -64,7 +64,16 @@ export async function validateChangesets(cwd, sinceRef) {
       cwd,
       ref: sinceBranch || config.baseBranch,
     })
-  ).map((pkg) => pkg.packageJson.name);
+  )
+    // like changeset, we don't consider private packages without a version
+    .filter(
+      (pkg) =>
+        !(
+          pkg.packageJson.private === true &&
+          pkg.packageJson.version === undefined
+        ),
+    )
+    .map((pkg) => pkg.packageJson.name);
 
   // Check for packages listeded in changeset(s) but no longer exists
   // This is useful in case the current PR deletes some packages
