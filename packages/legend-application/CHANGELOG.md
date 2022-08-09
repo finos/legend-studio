@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 7.0.3
+
+### Patch Changes
+
+- [#1378](https://github.com/finos/legend-studio/pull/1378) [`e6812be0`](https://github.com/finos/legend-studio/commit/e6812be09157cbceb52744c55533d5fc094cb119) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix generating expected results for multi execution ([#1352](https://github.com/finos/legend-studio/issues/1352)).
+
 ## 7.0.2
 
 ## 7.0.1
