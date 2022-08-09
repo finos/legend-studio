@@ -34,6 +34,17 @@ import assembleReleasePlan from '@changesets/assemble-release-plan';
  */
 const DEFAULT_SINCE_REF = 'origin/master';
 
+function isListablePackage(config, pkg) {
+  // like the `add` command in `changeset`, we don't consider
+  //  1. ignored packages
+  //  2. private packages without a version
+  // See https://github.com/changesets/changesets/blob/main/packages/cli/src/commands/add/index.ts
+  return (
+    !micromatch.isMatch(pkg.packageJson.name, config.ignore) &&
+    (pkg.packageJson.version || !pkg.packageJson.private)
+  );
+}
+
 /**
  * Make sure the changeset covers all the packages whose files are changed since the specified reference.
  * This is good to check changesets in a PR to ensure that the contributors have at least did a `patch`
@@ -50,7 +61,6 @@ const DEFAULT_SINCE_REF = 'origin/master';
 export async function validateChangesets(cwd, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
-  const ignorePackageNames = config.ignore;
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
   const changesetPackageNames = (
     await getReleasePlan.default(cwd, sinceBranch, config)
@@ -65,14 +75,7 @@ export async function validateChangesets(cwd, sinceRef) {
       ref: sinceBranch || config.baseBranch,
     })
   )
-    // like changeset, we don't consider private packages without a version
-    .filter((pkg) => {
-      console.log('tada', pkg.packageJson);
-      return !(
-        pkg.packageJson.private === true &&
-        pkg.packageJson.version === undefined
-      );
-    })
+    .filter((pkg) => isListablePackage(config, pkg))
     .map((pkg) => pkg.packageJson.name);
 
   // Check for packages listeded in changeset(s) but no longer exists
@@ -114,11 +117,7 @@ export async function validateChangesets(cwd, sinceRef) {
   // Check for packages that have been modified but does not have a changeset entry
   const packagesWithoutChangeset = new Set();
   changedPackageNames.forEach((pkgName) => {
-    if (
-      !changesetPackageNames.includes(pkgName) &&
-      // avoid counting ignored packages
-      !micromatch.isMatch(pkgName, ignorePackageNames)
-    ) {
+    if (!changesetPackageNames.includes(pkgName)) {
       packagesWithoutChangeset.add(pkgName);
     }
   });
@@ -168,25 +167,24 @@ export async function generateChangeset(cwd, message, sinceRef) {
   const packages = await getPackages(cwd);
   const config = await read(cwd, packages);
   const sinceBranch = sinceRef ?? DEFAULT_SINCE_REF;
-  const ignorePackageNames = config.ignore;
   const changedPackages = new Set(
     (
       await getChangedPackagesSinceRef({
         cwd,
         ref: sinceBranch || config.baseBranch,
       })
-    ).map((pkg) => pkg.packageJson.name),
+    )
+      .filter((pkg) => isListablePackage(config, pkg))
+      .map((pkg) => pkg.packageJson.name),
   );
   if (!changedPackages.size) {
     info(chalk.blue(`No changeset is needed as you haven't made any changes!`));
   }
   const newChangeset = {
-    releases: Array.from(changedPackages.values())
-      .filter((pkgName) => !micromatch.isMatch(pkgName, ignorePackageNames))
-      .map((pkgName) => ({
-        name: pkgName,
-        type: 'patch',
-      })),
+    releases: Array.from(changedPackages.values()).map((pkgName) => ({
+      name: pkgName,
+      type: 'patch',
+    })),
     summary: message,
   };
   const changesetID = await writeChangeset.default(newChangeset, cwd);

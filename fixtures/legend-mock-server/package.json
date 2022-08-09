@@ -1,6 +1,5 @@
 {
   "name": "@finos/legend-fixture-mock-server",
-  "version": "0.0.0",
   "private": true,
   "description": "Legend mock server for local development and testing",
   "keywords": [
