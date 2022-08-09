@@ -32,7 +32,7 @@ export class FlatDataProperty implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY,
       this.name,
-      this.value.map((v) => v.toString()).join(','),
+      hashArray(this.value),
     ]);
   }
 }

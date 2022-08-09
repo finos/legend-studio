@@ -92,7 +92,6 @@ const V1_flatDataDecimalSchema = createModelSchema(V1_FlatDataDecimal, {
 });
 const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE),
-  // dateFormat : optional(list(primitive())),
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
@@ -100,7 +99,6 @@ const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
             return v;
           })
         : [val],
-    // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
     (val) =>
       Array.isArray(val)
         ? deserializeArray(val, (v) => {
@@ -112,7 +110,6 @@ const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
 });
 const V1_flatDataDateTimeSchema = createModelSchema(V1_FlatDataDateTime, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE_TIME),
-  // dateFormat : optional(list(primitive())),
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
@@ -133,7 +130,6 @@ const V1_flatDataStrictDateSchema = createModelSchema(V1_FlatDataStrictDate, {
   _type: usingConstantValueSchema(
     V1_FlatDataDataTypeType.FLAT_DATA_STRICT_DATE,
   ),
-  // dateFormat : optional(list(primitive())),
   dateFormat: custom(
     (val) =>
       Array.isArray(val)
@@ -141,7 +137,6 @@ const V1_flatDataStrictDateSchema = createModelSchema(V1_FlatDataStrictDate, {
             return v;
           })
         : [val],
-    // (val) => Array.isArray(val) ? serializeArray(val, (v) => { return v }) : val,
     (val) =>
       Array.isArray(val)
         ? deserializeArray(val, (v) => {

@@ -414,19 +414,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: '\t',
+              value: ['\t'],
             },
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
           ],
         },
@@ -473,19 +473,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -644,19 +644,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -724,19 +724,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -1203,19 +1203,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ';',
+              value: [';'],
             },
           ],
         },
@@ -1236,15 +1236,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -1280,19 +1280,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -1409,19 +1409,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.default',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -1431,7 +1431,7 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -1919,19 +1919,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ';',
+              value: [';'],
             },
           ],
         },
@@ -2027,19 +2027,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: '\t',
+              value: ['\t'],
             },
           ],
         },
@@ -2060,15 +2060,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -2335,23 +2335,23 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'quoteChar',
-              value: '"',
+              value: ['"'],
             },
           ],
         },
@@ -2372,15 +2372,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -2423,19 +2423,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -2503,19 +2503,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ';',
+              value: [';'],
             },
           ],
         },
@@ -2536,15 +2536,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -3749,19 +3749,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: '|',
+              value: ['|'],
             },
           ],
         },
@@ -3782,15 +3782,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -3826,19 +3826,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -4340,19 +4340,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'recordSeparator',
-              value: '\r\n',
+              value: ['\r\n'],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'nullString',
-              value: '',
+              value: [''],
             },
           ],
         },
@@ -4630,11 +4630,11 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -4716,19 +4716,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -4782,19 +4782,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: '\t',
+              value: ['\t'],
             },
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
           ],
         },
@@ -4904,23 +4904,23 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'quoteChar',
-              value: '"',
+              value: ['"'],
             },
           ],
         },
@@ -4941,15 +4941,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -4985,19 +4985,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
           ],
         },
@@ -5018,15 +5018,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -5973,19 +5973,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: '|',
+              value: ['|'],
             },
           ],
         },
@@ -6356,15 +6356,15 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.forNumberOfLines',
-              value: 1,
+              value: [1],
             },
           ],
         },
@@ -6631,23 +6631,23 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'quoteChar',
-              value: '"',
+              value: ['"'],
             },
           ],
         },
@@ -6715,19 +6715,19 @@ export const TEST_DATA__FlatDataRoundtrip2 = [
           sectionProperties: [
             {
               name: 'recordSeparator',
-              value: '\n',
+              value: ['\n'],
             },
             {
               name: 'mayContainBlankLines',
-              value: true,
+              value: [true],
             },
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ';',
+              value: [';'],
             },
           ],
         },
@@ -6954,11 +6954,11 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
           sectionProperties: [
             {
               name: 'scope.forNumberOfLines',
-              value: 24,
+              value: [24],
             },
             {
               name: 'recordSeparator',
-              value: ';',
+              value: [';'],
             },
           ],
         },
@@ -7006,7 +7006,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'yyyy-MM-dd',
+                  dateFormat: ['yyyy-MM-dd'],
                 },
                 label: 'ANOTHER_DATE',
                 optional: false,
@@ -7030,19 +7030,19 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'recordSeparator',
-              value: '\r\n',
+              value: ['\r\n'],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'quoteChar',
-              value: '"',
+              value: ['"'],
             },
           ],
         },
@@ -9206,7 +9206,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'asOfDate',
                 optional: false,
@@ -9221,7 +9221,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ETL_AS_OF_DATE',
                 optional: false,
@@ -9236,7 +9236,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ETL_PAY_HISTORY_DATE',
                 optional: true,
@@ -9251,7 +9251,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ACTIVATION_DATE',
                 optional: false,
@@ -9259,7 +9259,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'DEACTIVATION_DATE',
                 optional: false,
@@ -9393,7 +9393,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PRIMARY_DATE_OF_BIRTH',
                 optional: false,
@@ -9506,7 +9506,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SECONDARY_DATE_OF_BIRTH',
                 optional: true,
@@ -9542,7 +9542,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ORIG_DATE',
                 optional: false,
@@ -9599,7 +9599,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'NEXT_PAY_DATE',
                 optional: false,
@@ -9635,7 +9635,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PAID_THRU_DATE',
                 optional: false,
@@ -9783,7 +9783,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FIRST_PMT_DATE',
                 optional: false,
@@ -9791,7 +9791,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FIRST_PMT_RESET_DATE',
                 optional: true,
@@ -9806,7 +9806,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FIRST_RATE_RESET_DATE',
                 optional: false,
@@ -9884,7 +9884,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MATURITY_DATE',
                 optional: false,
@@ -9899,7 +9899,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FICO_DATE',
                 optional: false,
@@ -10005,7 +10005,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CURRENT_APPR_DATE',
                 optional: false,
@@ -10034,7 +10034,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CMV_APPR_DATE',
                 optional: true,
@@ -10063,7 +10063,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BPO_MOD_APPR_DATE',
                 optional: true,
@@ -10092,7 +10092,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BPO_ASIS_APPR_DATE',
                 optional: true,
@@ -10121,7 +10121,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BPO_QS_APPR_DATE',
                 optional: true,
@@ -10164,7 +10164,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_DATE',
                 optional: false,
@@ -10186,7 +10186,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_START_DATE',
                 optional: false,
@@ -10194,7 +10194,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_FILING_DATE',
                 optional: false,
@@ -10209,7 +10209,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_START_DATE',
                 optional: false,
@@ -10224,7 +10224,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MOD_DATE',
                 optional: false,
@@ -10232,7 +10232,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MATURITY_DATE_PREMOD',
                 optional: false,
@@ -10240,7 +10240,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MATURITY_DATE_POSTMOD',
                 optional: false,
@@ -10248,7 +10248,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LOSS_MIT_DATE',
                 optional: false,
@@ -10284,7 +10284,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'TRIAL_MOD_FIRST_PYMT_DATE',
                 optional: false,
@@ -10299,7 +10299,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'TERMINATION_DATE',
                 optional: false,
@@ -10412,7 +10412,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MOD_EFFECTIVE_DATE',
                 optional: false,
@@ -10511,7 +10511,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_01_EFFECTIVE_DATE',
                 optional: false,
@@ -10526,7 +10526,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_02_EFFECTIVE_DATE',
                 optional: false,
@@ -10541,7 +10541,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_03_EFFECTIVE_DATE',
                 optional: false,
@@ -10556,7 +10556,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_04_EFFECTIVE_DATE',
                 optional: false,
@@ -10571,7 +10571,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_05_EFFECTIVE_DATE',
                 optional: false,
@@ -10586,7 +10586,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_06_EFFECTIVE_DATE',
                 optional: false,
@@ -10601,7 +10601,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_07_EFFECTIVE_DATE',
                 optional: false,
@@ -10616,7 +10616,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_08_EFFECTIVE_DATE',
                 optional: false,
@@ -10631,7 +10631,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_09_EFFECTIVE_DATE',
                 optional: false,
@@ -10646,7 +10646,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_10_EFFECTIVE_DATE',
                 optional: false,
@@ -10710,7 +10710,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ASP_DATE',
                 optional: true,
@@ -10774,7 +10774,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BPE_APPR_DATE',
                 optional: true,
@@ -10824,7 +10824,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REFI_APPR_DATE',
                 optional: true,
@@ -10881,7 +10881,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CPRICE_APPR_DATE',
                 optional: true,
@@ -10910,7 +10910,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BPO_APPR_DATE',
                 optional: true,
@@ -11198,7 +11198,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FLOOD_INS_NEXT_DUE_DT',
                 optional: true,
@@ -11220,7 +11220,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'HAZ_INS_NEXT_DUE_DT',
                 optional: true,
@@ -11319,7 +11319,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'COLL_NEXT_PMT_DUE_DT',
                 optional: true,
@@ -11327,7 +11327,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'COLL_PAID_THRU_DT',
                 optional: true,
@@ -11643,7 +11643,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ORIG_APPR_DATE',
                 optional: true,
@@ -11826,7 +11826,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MI_CLAIM_DATE',
                 optional: true,
@@ -11834,7 +11834,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_AGREED_ORDER_DATE',
                 optional: true,
@@ -11842,7 +11842,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_AMENDED_POC_DATE',
                 optional: true,
@@ -11850,7 +11850,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_APO_START_DATE',
                 optional: true,
@@ -11858,7 +11858,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_APO_END_DATE',
                 optional: true,
@@ -11880,7 +11880,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_341_MEETING_DATE',
                 optional: true,
@@ -11888,7 +11888,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_HOLD_START_DATE',
                 optional: true,
@@ -11903,7 +11903,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_DEFAULT_NOTICE_DATE',
                 optional: true,
@@ -11918,7 +11918,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_DISCHARGED_DATE',
                 optional: true,
@@ -11926,7 +11926,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_CONTRACTUAL_DUE_DATE',
                 optional: true,
@@ -11969,7 +11969,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_OBJECTION_HEARING_DATE',
                 optional: true,
@@ -11977,7 +11977,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_OBJECTION_REFERRED_DATE',
                 optional: true,
@@ -11985,7 +11985,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_PLAN_REVIEW_DATE',
                 optional: true,
@@ -12000,7 +12000,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_REAFFIRMATION_DATE',
                 optional: true,
@@ -12008,7 +12008,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_RELIEF_DATE',
                 optional: true,
@@ -12023,7 +12023,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_TOC_DATE',
                 optional: true,
@@ -12038,7 +12038,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_END_DATE',
                 optional: true,
@@ -12067,7 +12067,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_SALE_DATE',
                 optional: true,
@@ -12075,7 +12075,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'EVICTION_START_DATE',
                 optional: true,
@@ -12083,7 +12083,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'EVICTION_END_DATE',
                 optional: true,
@@ -12091,7 +12091,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FB_START_DATE',
                 optional: true,
@@ -12099,7 +12099,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FB_END_DATE',
                 optional: true,
@@ -12128,7 +12128,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_END_DATE',
                 optional: true,
@@ -12136,7 +12136,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_HOLD_START_DATE',
                 optional: true,
@@ -12144,7 +12144,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_HOLD_END_DATE',
                 optional: true,
@@ -12159,7 +12159,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_JUDGEMENT_DATE',
                 optional: true,
@@ -12167,7 +12167,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_SCHEDULED_SALE_DATE',
                 optional: true,
@@ -12175,7 +12175,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_STAGE_START_DATE',
                 optional: true,
@@ -12204,7 +12204,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LAST_CONTACT_DATE',
                 optional: true,
@@ -12212,7 +12212,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LAST_PAYMENT_RECEIVED_DATE',
                 optional: true,
@@ -12220,7 +12220,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LAST_TAXES_PAID_DATE',
                 optional: true,
@@ -12228,7 +12228,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LITIGATION_START_DATE',
                 optional: true,
@@ -12236,7 +12236,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LITIGATION_END_DATE',
                 optional: true,
@@ -12251,7 +12251,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LM_DEMAND_EXPIRE_DATE',
                 optional: true,
@@ -12266,7 +12266,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'NEXT_INS_DUE_DATE',
                 optional: true,
@@ -12274,7 +12274,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'NEXT_RATE_RESET_DATE',
                 optional: true,
@@ -12289,7 +12289,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'NEXT_TAX_DUE_DATE',
                 optional: true,
@@ -12304,7 +12304,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_ORIG_LIST_DATE',
                 optional: true,
@@ -12312,7 +12312,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REDEMPTION_START_DATE',
                 optional: true,
@@ -12320,7 +12320,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REDEMPTION_END_DATE',
                 optional: true,
@@ -12328,7 +12328,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_HOLD_START_DATE',
                 optional: true,
@@ -12371,7 +12371,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SECOND_TRIAL_PMT_DATE',
                 optional: true,
@@ -12379,7 +12379,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SECOND_TRIAL_PMT_DUE_DATE',
                 optional: true,
@@ -12387,7 +12387,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'THIRD_TRIAL_PMT_DATE',
                 optional: true,
@@ -12395,7 +12395,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'THIRD_TRIAL_PMT_DUE_DATE',
                 optional: true,
@@ -12473,7 +12473,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FIRST_PMT_DATE_POSTMOD',
                 optional: true,
@@ -12628,7 +12628,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PRA1_ANNIV_DATE',
                 optional: true,
@@ -12636,7 +12636,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PRA2_ANNIV_DATE',
                 optional: true,
@@ -12644,7 +12644,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PRA3_ANNIV_DATE',
                 optional: true,
@@ -12687,7 +12687,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'STEP_MAX_INTEREST_RATE_DATE',
                 optional: true,
@@ -12744,7 +12744,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ASP_ORIG_DATE',
                 optional: true,
@@ -12759,7 +12759,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_CRAMDOWN_DATE',
                 optional: true,
@@ -12767,7 +12767,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_CRAMDOWN_OBJECTION_DATE',
                 optional: true,
@@ -12775,7 +12775,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_CRAMDOWN_REFERRAL_DATE',
                 optional: true,
@@ -12783,7 +12783,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_CONFIRMATION_DATE',
                 optional: true,
@@ -12791,7 +12791,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_POC_BAR_DATE',
                 optional: true,
@@ -12799,7 +12799,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_POC_FILED_DATE',
                 optional: true,
@@ -12807,7 +12807,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_POST_PETITION_DUE_DATE',
                 optional: true,
@@ -12815,7 +12815,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_PRE_PETITION_DUE_DATE',
                 optional: true,
@@ -12823,7 +12823,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_REMOVAL_DATE',
                 optional: true,
@@ -12901,7 +12901,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LM_DECISION_DATE',
                 optional: true,
@@ -12937,7 +12937,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CHARGEOFF_DATE',
                 optional: true,
@@ -13001,7 +13001,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'DEED_RECORDED_DATE',
                 optional: true,
@@ -13016,7 +13016,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SHORT_SALE_LIST_DATE',
                 optional: true,
@@ -13052,7 +13052,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_MILESTONE_DATE',
                 optional: true,
@@ -13074,7 +13074,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'JUDGEMENT_SCHEDULE_DATE',
                 optional: true,
@@ -13089,7 +13089,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_WORKFLOW_END_DATE',
                 optional: true,
@@ -13097,7 +13097,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FC_WORKFLOW_START_DATE',
                 optional: true,
@@ -13105,7 +13105,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FIRST_LEGAL_DATE',
                 optional: true,
@@ -13113,7 +13113,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'FLOOD_INS_LAST_PAID_DATE',
                 optional: true,
@@ -13156,7 +13156,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ORIG_IO_END_DATE',
                 optional: true,
@@ -13178,7 +13178,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'JUDGEMENT_FIGURES_DATE',
                 optional: true,
@@ -13186,7 +13186,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LAST_INS_PAID_DATE',
                 optional: true,
@@ -13194,7 +13194,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LIT_END_DATE',
                 optional: true,
@@ -13202,7 +13202,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LIT_START_DATE',
                 optional: true,
@@ -13210,7 +13210,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_MFR_HEARING_DATE',
                 optional: true,
@@ -13218,7 +13218,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_MFR_REFERRED_DATE',
                 optional: true,
@@ -13226,7 +13226,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'MOD_CFPB_DATE',
                 optional: true,
@@ -13234,7 +13234,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REINSTATEMENT_DATE',
                 optional: true,
@@ -13284,7 +13284,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_END_DATE',
                 optional: true,
@@ -13299,7 +13299,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'HAZARD_CLAIM_DATE',
                 optional: true,
@@ -13321,7 +13321,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CURRENT_REO_LIST_DATE',
                 optional: true,
@@ -13357,7 +13357,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_WORKFLOW_STEP_END_DATE',
                 optional: true,
@@ -13365,7 +13365,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_WORKFLOW_STEP_START_DATE',
                 optional: true,
@@ -13380,7 +13380,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REO_VACATE_DATE',
                 optional: true,
@@ -13388,7 +13388,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REPAIR_END_DATE',
                 optional: true,
@@ -13396,7 +13396,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'REPAIR_START_DATE',
                 optional: true,
@@ -13411,7 +13411,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SERVICE_COMPLETE_DATE',
                 optional: true,
@@ -13419,7 +13419,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SOL_DATE',
                 optional: true,
@@ -13427,7 +13427,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SPOC_NOTICE_DATE',
                 optional: true,
@@ -13435,7 +13435,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'THIRD_PARTY_FUNDS_RECD_DATE',
                 optional: true,
@@ -13443,7 +13443,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'TRIAL_MOD_END_DATE',
                 optional: true,
@@ -13451,7 +13451,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_TRUSTEE_ABANDON_DATE',
                 optional: true,
@@ -13459,7 +13459,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK_TRUSTEE_ASSET_DATE',
                 optional: true,
@@ -13523,7 +13523,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'LAST_ATTEMPT_DATE',
                 optional: true,
@@ -13531,7 +13531,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SERVICER_BOARDING_DATE',
                 optional: true,
@@ -13595,7 +13595,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'ORIG_MATURITY_DATE',
                 optional: true,
@@ -13645,7 +13645,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SERVICER_START_DATE',
                 optional: true,
@@ -13660,7 +13660,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CLIST_APPR_DATE',
                 optional: true,
@@ -13696,7 +13696,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'PAYSTRING_DATE_SELLER',
                 optional: true,
@@ -13704,7 +13704,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_FILING_DATE',
                 optional: true,
@@ -13719,7 +13719,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_AGREED_ORDER_DATE',
                 optional: true,
@@ -13727,7 +13727,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_AMENDED_POC_DATE',
                 optional: true,
@@ -13735,7 +13735,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_APO_START_DATE',
                 optional: true,
@@ -13743,7 +13743,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_APO_END_DATE',
                 optional: true,
@@ -13765,7 +13765,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_341_MEETING_DATE',
                 optional: true,
@@ -13773,7 +13773,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_HOLD_START_DATE',
                 optional: true,
@@ -13788,7 +13788,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_DEFAULT_NOTICE_DATE',
                 optional: true,
@@ -13803,7 +13803,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_DISCHARGED_DATE',
                 optional: true,
@@ -13811,7 +13811,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_CONTRACTUAL_DUE_DATE',
                 optional: true,
@@ -13854,7 +13854,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_OBJECTION_HEARING_DATE',
                 optional: true,
@@ -13862,7 +13862,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_OBJECTION_REFERRED_DATE',
                 optional: true,
@@ -13870,7 +13870,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_PLAN_REVIEW_DATE',
                 optional: true,
@@ -13885,7 +13885,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_REAFFIRMATION_DATE',
                 optional: true,
@@ -13893,7 +13893,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_RELIEF_DATE',
                 optional: true,
@@ -13908,7 +13908,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_TOC_DATE',
                 optional: true,
@@ -13916,7 +13916,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_MFR_HEARING_DATE',
                 optional: true,
@@ -13924,7 +13924,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK2_MFR_REFERRED_DATE',
                 optional: true,
@@ -13932,7 +13932,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_FILING_DATE',
                 optional: true,
@@ -13947,7 +13947,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_AGREED_ORDER_DATE',
                 optional: true,
@@ -13955,7 +13955,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_AMENDED_POC_DATE',
                 optional: true,
@@ -13963,7 +13963,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_APO_START_DATE',
                 optional: true,
@@ -13971,7 +13971,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_APO_END_DATE',
                 optional: true,
@@ -13993,7 +13993,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_341_MEETING_DATE',
                 optional: true,
@@ -14001,7 +14001,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_HOLD_START_DATE',
                 optional: true,
@@ -14016,7 +14016,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_DEFAULT_NOTICE_DATE',
                 optional: true,
@@ -14031,7 +14031,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_DISCHARGED_DATE',
                 optional: true,
@@ -14039,7 +14039,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_CONTRACTUAL_DUE_DATE',
                 optional: true,
@@ -14082,7 +14082,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_OBJECTION_HEARING_DATE',
                 optional: true,
@@ -14090,7 +14090,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_OBJECTION_REFERRED_DATE',
                 optional: true,
@@ -14098,7 +14098,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_PLAN_REVIEW_DATE',
                 optional: true,
@@ -14113,7 +14113,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_REAFFIRMATION_DATE',
                 optional: true,
@@ -14121,7 +14121,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_RELIEF_DATE',
                 optional: true,
@@ -14136,7 +14136,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_TOC_DATE',
                 optional: true,
@@ -14144,7 +14144,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_MFR_HEARING_DATE',
                 optional: true,
@@ -14152,7 +14152,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'BK3_MFR_REFERRED_DATE',
                 optional: true,
@@ -14167,7 +14167,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'SCHOOL_TAX_NEXT_DUE_DATE',
                 optional: true,
@@ -14189,7 +14189,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'CITY_TAX_NEXT_DUE_DATE',
                 optional: true,
@@ -14211,7 +14211,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'COUNTY_TAX_NEXT_DUE_DATE',
                 optional: true,
@@ -14247,7 +14247,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               {
                 flatDataDataType: {
                   _type: 'strictDate',
-                  dateFormat: 'MM/dd/yyyy',
+                  dateFormat: ['MM/dd/yyyy'],
                 },
                 label: 'COVID_PLAN_START_DATE',
                 optional: true,
@@ -14334,23 +14334,23 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
           sectionProperties: [
             {
               name: 'scope.untilEof',
-              value: true,
+              value: [true],
             },
             {
               name: 'delimiter',
-              value: ',',
+              value: [','],
             },
             {
               name: 'recordSeparator',
-              value: '\r\n',
+              value: ['\r\n'],
             },
             {
               name: 'quoteChar',
-              value: '"',
+              value: ['"'],
             },
             {
               name: 'nullString',
-              value: '',
+              value: [''],
             },
           ],
         },
