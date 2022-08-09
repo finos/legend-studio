@@ -372,11 +372,9 @@ const QueryBuilderProjectionColumnEditor = observer(
         collect: (
           monitor,
         ): {
-          projectionColumnBeingDragged:
-            | QueryBuilderProjectionColumnState
-            | undefined;
+          projectionColumnBeingDragged: QueryBuilderProjectionColumnState;
         } => ({
-          projectionColumnBeingDragged: monitor.getItem()?.columnState,
+          projectionColumnBeingDragged: monitor.getItem().columnState,
         }),
       }),
       [projectionColumnState],

@@ -180,10 +180,8 @@ const ModelGenerationItem = observer(
           item: GenerationSpecNodeDragSource,
           monitor: DropTargetMonitor,
         ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
-          nodeBeingDragged: monitor.getItem()?.nodeState?.node,
+        collect: (monitor): { nodeBeingDragged: GenerationTreeNode } => ({
+          nodeBeingDragged: monitor.getItem().nodeState.node,
         }),
       }),
       [handleHover],

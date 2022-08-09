@@ -99,73 +99,86 @@ export const QueryBuilderFetchStructurePanel = observer(
           queryBuilderState.setShowPostFilterPanel(false);
         };
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
-          if (fetchMode === FETCH_STRUCTURE_MODE.GRAPH_FETCH) {
-            if (
-              queryBuilderState.fetchStructureState.projectionState.columns
-                .length > 0
-              // NOTE: here we could potentially check for the presence of post-filter as well
-              // but we make the assumption that if there is no projection column, there should
-              // not be any post-filter at all
-            ) {
-              applicationStore.setActionAlertInfo({
-                message:
-                  queryBuilderState.showPostFilterPanel &&
-                  queryBuilderState.postFilterState.nodes.size > 0
-                    ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
-                    : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
-                type: ActionAlertType.CAUTION,
-                actions: [
-                  {
-                    label: 'Proceed',
-                    type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                    handler: applicationStore.guardUnhandledError(async () => {
-                      queryBuilderState.fetchStructureState.projectionState =
-                        new QueryBuilderProjectionState(
-                          queryBuilderState,
-                          queryBuilderState.fetchStructureState.projectionState.aggregationState.operators,
-                        );
-                      reset();
-                    }),
-                  },
-                  {
-                    label: 'Cancel',
-                    type: ActionAlertActionType.PROCEED,
-                    default: true,
-                  },
-                ],
-              });
-            } else {
-              reset();
+          switch (fetchMode) {
+            case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
+              if (
+                queryBuilderState.fetchStructureState.projectionState.columns
+                  .length > 0
+                // NOTE: here we could potentially check for the presence of post-filter as well
+                // but we make the assumption that if there is no projection column, there should
+                // not be any post-filter at all
+              ) {
+                applicationStore.setActionAlertInfo({
+                  message:
+                    queryBuilderState.showPostFilterPanel &&
+                    queryBuilderState.postFilterState.nodes.size > 0
+                      ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
+                      : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
+                  type: ActionAlertType.CAUTION,
+                  actions: [
+                    {
+                      label: 'Proceed',
+                      type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                      handler: applicationStore.guardUnhandledError(
+                        async () => {
+                          queryBuilderState.fetchStructureState.projectionState =
+                            new QueryBuilderProjectionState(
+                              queryBuilderState,
+                              queryBuilderState.fetchStructureState.projectionState.aggregationState.operators,
+                            );
+                          reset();
+                        },
+                      ),
+                    },
+                    {
+                      label: 'Cancel',
+                      type: ActionAlertActionType.PROCEED,
+                      default: true,
+                    },
+                  ],
+                });
+              } else {
+                reset();
+              }
+              return;
             }
-          } else if (fetchMode === FETCH_STRUCTURE_MODE.PROJECTION) {
-            if (
-              queryBuilderState.fetchStructureState.graphFetchTreeState.treeData
-                ?.rootIds.length
-            ) {
-              applicationStore.setActionAlertInfo({
-                message:
-                  'Current graph-fetch will be lost when switching to projection mode. Do you still want to proceed?',
-                type: ActionAlertType.CAUTION,
-                actions: [
-                  {
-                    label: 'Proceed',
-                    type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                    handler: applicationStore.guardUnhandledError(async () => {
-                      queryBuilderState.fetchStructureState.graphFetchTreeState =
-                        new QueryBuilderGraphFetchTreeState(queryBuilderState);
-                      reset();
-                    }),
-                  },
-                  {
-                    label: 'Cancel',
-                    type: ActionAlertActionType.PROCEED,
-                    default: true,
-                  },
-                ],
-              });
-            } else {
-              reset();
+            case FETCH_STRUCTURE_MODE.PROJECTION: {
+              if (
+                queryBuilderState.fetchStructureState.graphFetchTreeState
+                  .treeData?.rootIds.length
+              ) {
+                applicationStore.setActionAlertInfo({
+                  message:
+                    'Current graph-fetch will be lost when switching to projection mode. Do you still want to proceed?',
+                  type: ActionAlertType.CAUTION,
+                  actions: [
+                    {
+                      label: 'Proceed',
+                      type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                      handler: applicationStore.guardUnhandledError(
+                        async () => {
+                          queryBuilderState.fetchStructureState.graphFetchTreeState =
+                            new QueryBuilderGraphFetchTreeState(
+                              queryBuilderState,
+                            );
+                          reset();
+                        },
+                      ),
+                    },
+                    {
+                      label: 'Cancel',
+                      type: ActionAlertActionType.PROCEED,
+                      default: true,
+                    },
+                  ],
+                });
+              } else {
+                reset();
+              }
+              return;
             }
+            default:
+              return;
           }
         }
       };

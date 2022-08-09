@@ -66,13 +66,13 @@ export async function validateChangesets(cwd, sinceRef) {
     })
   )
     // like changeset, we don't consider private packages without a version
-    .filter(
-      (pkg) =>
-        !(
-          pkg.packageJson.private === true &&
-          pkg.packageJson.version === undefined
-        ),
-    )
+    .filter((pkg) => {
+      console.log('tada', pkg.packageJson);
+      return !(
+        pkg.packageJson.private === true &&
+        pkg.packageJson.version === undefined
+      );
+    })
     .map((pkg) => pkg.packageJson.name);
 
   // Check for packages listeded in changeset(s) but no longer exists
