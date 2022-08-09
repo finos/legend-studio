@@ -125,6 +125,7 @@
     padding: 0 0.5rem;
     font-size: 1.2rem;
     background: var(--color-blue-200);
+    color: var(--color-light-grey-100);
     border-radius: 0.2rem;
   }
 
@@ -268,7 +269,6 @@
     position: absolute;
     width: 100%;
     pointer-events: none;
-    background: var(--color-dark-grey-50);
   }
 }
 

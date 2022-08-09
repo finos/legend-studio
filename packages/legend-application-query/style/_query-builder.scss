@@ -60,6 +60,10 @@
       margin-left: 1rem;
       color: var(--color-dark-grey-500);
     }
+
+    svg {
+      cursor: pointer;
+    }
   }
 
   &__sub-header__menu-content {
@@ -353,7 +357,7 @@
       height: 2.2rem;
       width: 12rem;
       padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
+      border-radius: 0.2rem;
       justify-content: left;
     }
 
@@ -730,7 +734,6 @@
     position: absolute;
     width: 100%;
     pointer-events: none;
-    background: var(--color-dark-grey-50);
   }
 
   &__parameter {

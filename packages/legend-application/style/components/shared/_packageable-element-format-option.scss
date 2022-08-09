@@ -25,7 +25,8 @@
     @include flexVCenter;
 
     color: var(--color-dark-grey-500);
-    background: var(--color-light-grey-180);
+    background: var(--color-light-grey-50);
+    border: 0.1rem solid var(--color-light-grey-180);
     margin-left: 1rem;
     border-radius: 0.2rem;
     font-size: 1rem;

@@ -136,6 +136,14 @@ export class ApplicationStore<
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
+  // theme
+  /**
+   * NOTE: this is the poor man way of doing theming
+   * we would need to revise this flag later
+   * See https://github.com/finos/legend-studio/issues/264
+   */
+  TEMPORARY__isLightThemeEnabled = true;
+
   constructor(
     config: T,
     navigator: WebApplicationNavigator,
@@ -151,6 +159,7 @@ export class ApplicationStore<
       notifyWarning: action,
       notifyIllegalState: action,
       notifyError: action,
+      TEMPORARY__setIsLightThemeEnabled: action,
     });
 
     this.config = config;
@@ -171,6 +180,10 @@ export class ApplicationStore<
     this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),
     );
+  }
+
+  TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
+    this.TEMPORARY__isLightThemeEnabled = val;
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {

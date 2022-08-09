@@ -302,6 +302,7 @@
     padding: 0 0.5rem;
     font-size: 1.2rem;
     background: var(--color-pink-400);
+    color: var(--color-light-grey-100);
     border-radius: 0.2rem;
   }
 
@@ -366,7 +367,7 @@
     user-select: none;
   }
 
-  &__node__label--property--name {
+  &__node__label--property__name {
     display: inline-flex;
   }
 
@@ -501,6 +502,7 @@
     padding: 0 0.5rem;
     font-size: 1.2rem;
     background: var(--color-blue-200);
+    color: var(--color-light-grey-100);
     border-radius: 0.2rem;
   }
 }

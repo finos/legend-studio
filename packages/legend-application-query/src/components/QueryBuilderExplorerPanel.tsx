@@ -595,7 +595,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               >
                 <div
                   className={clsx(
-                    'query-builder-explorer-tree__node__label--property--name',
+                    'query-builder-explorer-tree__node__label--property__name',
                     {
                       'query-builder-explorer-tree__node__label--deprecated':
                         checkForDeprecatedNode(

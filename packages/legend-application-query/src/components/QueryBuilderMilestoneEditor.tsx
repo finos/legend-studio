@@ -124,22 +124,24 @@ const MilestoningParameterEditor = observer(
             Change Milestoning Parameter Value
           </div>
         )}
-        <BasicValueSpecificationEditor
-          valueSpecification={milestoningParameter}
-          graph={queryBuilderState.graphManagerState.graph}
-          setValueSpecification={(val: ValueSpecification): void =>
-            stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
-              ? queryBuilderState.querySetupState.setBusinessDate(val)
-              : queryBuilderState.querySetupState.setProcessingDate(val)
-          }
-          typeCheckOption={{
-            expectedType:
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-          }}
-          resetValue={resetMilestoningParameter}
-        />
+        {!isMilestoningParameterValueDragOver && (
+          <BasicValueSpecificationEditor
+            valueSpecification={milestoningParameter}
+            graph={queryBuilderState.graphManagerState.graph}
+            setValueSpecification={(val: ValueSpecification): void =>
+              stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
+                ? queryBuilderState.querySetupState.setBusinessDate(val)
+                : queryBuilderState.querySetupState.setProcessingDate(val)
+            }
+            typeCheckOption={{
+              expectedType:
+                queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.DATE,
+                ),
+            }}
+            resetValue={resetMilestoningParameter}
+          />
+        )}
       </div>
     );
   },

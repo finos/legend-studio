@@ -22,6 +22,7 @@ import {
   RobotIcon,
   SaveIcon,
   BlankPanelContent,
+  clsx,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -256,9 +257,24 @@ export const QueryEditor = observer(() => {
     );
   }, [editorStore, applicationStore]);
 
+  useEffect(() => {
+    document.body.classList.toggle(
+      'light-theme',
+      applicationStore.TEMPORARY__isLightThemeEnabled,
+    );
+  }, [applicationStore.TEMPORARY__isLightThemeEnabled]);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="query-editor">
+      <div
+        className={clsx([
+          'query-editor ',
+          {
+            'query-editor--light':
+              applicationStore.TEMPORARY__isLightThemeEnabled,
+          },
+        ])}
+      >
         <div className="query-editor__header">
           <button
             className="query-editor__header__back-btn btn--dark"

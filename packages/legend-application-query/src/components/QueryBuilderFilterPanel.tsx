@@ -159,23 +159,25 @@ const QueryBuilderFilterGroupConditionEditor = observer(
             Add to Logical Group
           </div>
         )}
-        <div
-          className={clsx('query-builder-filter-tree__group-node', {
-            'query-builder-filter-tree__group-node--and':
-              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
-            'query-builder-filter-tree__group-node--or':
-              node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
-          })}
-          title="Switch Operation"
-          onClick={switchOperation}
-        >
-          <div className="query-builder-filter-tree__group-node__label">
-            {node.groupOperation}
+        {!isPropertyDragOver && (
+          <div
+            className={clsx('query-builder-filter-tree__group-node', {
+              'query-builder-filter-tree__group-node--and':
+                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND,
+              'query-builder-filter-tree__group-node--or':
+                node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.OR,
+            })}
+            title="Switch Operation"
+            onClick={switchOperation}
+          >
+            <div className="query-builder-filter-tree__group-node__label">
+              {node.groupOperation}
+            </div>
+            <button className="query-builder-filter-tree__group-node__action">
+              <FilledTriangleIcon />
+            </button>
           </div>
-          <button className="query-builder-filter-tree__group-node__action">
-            <FilledTriangleIcon />
-          </button>
-        </div>
+        )}
       </div>
     );
   },
@@ -278,70 +280,74 @@ const QueryBuilderFilterConditionEditor = observer(
             Add New Logical Group
           </div>
         )}
-        <div className="query-builder-filter-tree__condition-node">
-          <div className="query-builder-filter-tree__condition-node__property">
-            <QueryBuilderPropertyExpressionBadge
-              propertyExpressionState={node.condition.propertyExpressionState}
-              onPropertyExpressionChange={changeProperty}
-            />
-          </div>
-          <DropdownMenu
-            className="query-builder-filter-tree__condition-node__operator"
-            content={
-              <MenuContent>
-                {node.condition.operators.map((op) => (
-                  <MenuContentItem
-                    key={op.uuid}
-                    className="query-builder-filter-tree__condition-node__operator__dropdown__option"
-                    onClick={changeOperator(op)}
-                  >
-                    {op.getLabel(node.condition)}
-                  </MenuContentItem>
-                ))}
-              </MenuContent>
-            }
-            menuProps={{
-              anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-              transformOrigin: { vertical: 'top', horizontal: 'left' },
-              elevation: 7,
-            }}
-          >
-            <div className="query-builder-filter-tree__condition-node__operator__label">
-              {node.condition.operator.getLabel(node.condition)}
-            </div>
-            <button
-              className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
-              tabIndex={-1}
-              title="Choose Operator..."
-            >
-              <CaretDownIcon />
-            </button>
-          </DropdownMenu>
-          {node.condition.value && (
-            <div
-              ref={dropConnector}
-              className="query-builder-filter-tree__condition-node__value dnd__overlay__container"
-            >
-              {isFilterValueDragOver && (
-                <div className="query-builder-filter-tree__node__dnd__overlay">
-                  Change Filter Value
-                </div>
-              )}
-              <BasicValueSpecificationEditor
-                valueSpecification={node.condition.value}
-                setValueSpecification={changeValueSpecification}
-                graph={graph}
-                typeCheckOption={{
-                  expectedType:
-                    node.condition.propertyExpressionState.propertyExpression
-                      .func.genericType.value.rawType,
-                }}
-                resetValue={resetNode}
-                selectorConfig={selectorConfig}
+        {!isPropertyDragOver && (
+          <div className="query-builder-filter-tree__condition-node">
+            <div className="query-builder-filter-tree__condition-node__property">
+              <QueryBuilderPropertyExpressionBadge
+                propertyExpressionState={node.condition.propertyExpressionState}
+                onPropertyExpressionChange={changeProperty}
               />
             </div>
-          )}
-        </div>
+            <DropdownMenu
+              className="query-builder-filter-tree__condition-node__operator"
+              content={
+                <MenuContent>
+                  {node.condition.operators.map((op) => (
+                    <MenuContentItem
+                      key={op.uuid}
+                      className="query-builder-filter-tree__condition-node__operator__dropdown__option"
+                      onClick={changeOperator(op)}
+                    >
+                      {op.getLabel(node.condition)}
+                    </MenuContentItem>
+                  ))}
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+                elevation: 7,
+              }}
+            >
+              <div className="query-builder-filter-tree__condition-node__operator__label">
+                {node.condition.operator.getLabel(node.condition)}
+              </div>
+              <button
+                className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
+                tabIndex={-1}
+                title="Choose Operator..."
+              >
+                <CaretDownIcon />
+              </button>
+            </DropdownMenu>
+            {node.condition.value && (
+              <div
+                ref={dropConnector}
+                className="query-builder-filter-tree__condition-node__value dnd__overlay__container"
+              >
+                {isFilterValueDragOver && (
+                  <div className="query-builder-filter-tree__node__dnd__overlay">
+                    Change Filter Value
+                  </div>
+                )}
+                {!isFilterValueDragOver && (
+                  <BasicValueSpecificationEditor
+                    valueSpecification={node.condition.value}
+                    setValueSpecification={changeValueSpecification}
+                    graph={graph}
+                    typeCheckOption={{
+                      expectedType:
+                        node.condition.propertyExpressionState
+                          .propertyExpression.func.genericType.value.rawType,
+                    }}
+                    resetValue={resetNode}
+                    selectorConfig={selectorConfig}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   },
@@ -360,7 +366,9 @@ const QueryBuilderFilterBlankConditionEditor = observer(
             Create Condition
           </div>
         )}
-        <div className="query-builder-filter-tree__blank-node">blank</div>
+        {!isPropertyDragOver && (
+          <div className="query-builder-filter-tree__blank-node">blank</div>
+        )}
       </div>
     );
   },
