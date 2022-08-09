@@ -19,7 +19,6 @@
 '@finos/legend-extension-external-language-morphir': patch
 '@finos/legend-extension-external-store-service': patch
 '@finos/legend-graph': patch
-'@finos/legend-manual-tests': patch
 '@finos/legend-shared': patch
 '@finos/stylelint-config-legend-studio': patch
 ---
