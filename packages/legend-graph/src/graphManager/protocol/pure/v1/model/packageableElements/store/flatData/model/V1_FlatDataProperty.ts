@@ -17,9 +17,11 @@
 import { CORE_HASH_STRUCTURE } from '../../../../../../../../../graph/Core_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
+type V1_FlatDataPropertyValue = boolean | string | number;
+
 export class V1_FlatDataProperty implements Hashable {
   name!: string;
-  value!: boolean | string | number;
+  value!: V1_FlatDataPropertyValue[];
 
   get hashCode(): string {
     return hashArray([
