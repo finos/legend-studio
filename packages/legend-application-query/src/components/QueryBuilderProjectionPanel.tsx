@@ -541,11 +541,9 @@ const ProjectionError = observer(
       queryBuilderState.fetchStructureState.projectionState;
 
     return (
-      <div className="notification__message__content__icon--error">
-        <div className="query-builder__projection__error__label">
-          <TimesCircleIcon className="query-builder__projection__error__icon" />
-          {projectionState.getValidationErrorMessage()}
-        </div>
+      <div className="query-builder__projection__error__label">
+        <TimesCircleIcon className="query-builder__projection__error__icon" />
+        {projectionState.getValidationErrorMessage()}
       </div>
     );
   },
