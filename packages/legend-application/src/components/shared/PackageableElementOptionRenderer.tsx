@@ -33,24 +33,43 @@ export const getPackageableElementOptionFormatter = (props: {
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
 
-    const element = option.value;
+    const getColor = (element: PackageableElement): string => {
+      switch (true) {
+        case props.graphManagerState.isSystemElement(element):
+          return 'system';
+        case props.graphManagerState.isGeneratedElement(element):
+          return 'generated';
+        case props.graphManagerState.isMainGraphElement(element):
+          return 'main';
+        case props.graphManagerState.isDependencyElement(element):
+          return 'dependency';
+        default:
+          return '';
+      }
+    };
 
-    const optionColor = props.graphManagerState.isPrimitiveTypeElement(element)
-      ? 'primitive'
-      : props.graphManagerState.isSystemElement(element)
-      ? 'system'
-      : props.graphManagerState.isGeneratedElement(element)
-      ? 'generated'
-      : props.graphManagerState.isMainElement(element)
-      ? 'generated'
-      : props.graphManagerState.isDependencyElement(element)
-      ? 'dependency'
-      : '';
+    const getToolTip = (element: PackageableElement): string => {
+      switch (true) {
+        case props.graphManagerState.isSystemElement(element):
+          return 'system';
+        case props.graphManagerState.isGeneratedElement(element):
+          return 'generated';
+        case props.graphManagerState.isMainGraphElement(element):
+          return '';
+        case props.graphManagerState.isDependencyElement(element):
+          return 'dependency';
+        default:
+          return '';
+      }
+    };
+
+    const optionColor = getColor(option.value);
+    const toolTip = getToolTip(option.value);
 
     return (
       <div className={className}>
         <div
-          title={`${optionColor} element`}
+          title={`${toolTip} element`}
           className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColor}`}
         ></div>
         <div className={`${className}__name`}>{option.label}</div>

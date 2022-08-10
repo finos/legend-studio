@@ -55,8 +55,8 @@
     background-color: var(--color-generated);
   }
 
-  &--primitive {
-    background-color: var(--color-primitive);
+  &--main {
+    background-color: transparent;
   }
 
   &--dependency {

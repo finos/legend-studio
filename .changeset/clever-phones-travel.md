@@ -1,7 +1,6 @@
 ---
-'@finos/legend-graph': minor
-'@finos/legend-application-studio': minor
-'@finos/legend-application': minor
-'@finos/legend-application-query': minor
+'@finos/legend-graph': patch
+'@finos/legend-application-studio': patch
+'@finos/legend-application': patch
+'@finos/legend-application-query': patch
 ---
-

@@ -76,6 +76,38 @@ export class BasicGraphManagerState {
    * methods here so that we can load plugins.
    */
 
+  isDependencyElement(
+    element: PackageableElement,
+  ): element is PackageableElement {
+    return (
+      getElementRootPackage(element).name ===
+      ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT
+    );
+  }
+
+  isGeneratedElement(
+    element: PackageableElement,
+  ): element is PackageableElement {
+    return (
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MODEL_GENERATION
+    );
+  }
+
+  isSystemElement(element: PackageableElement): element is PackageableElement {
+    return (
+      element instanceof PrimitiveType ||
+      element instanceof Unit ||
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM ||
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.CORE
+    );
+  }
+
+  isMainGraphElement(
+    element: PackageableElement,
+  ): element is PackageableElement {
+    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MAIN;
+  }
+
   isInstanceSetImplementation(
     setImplementation:
       | EnumerationMapping
@@ -169,37 +201,6 @@ export class GraphManagerState extends BasicGraphManagerState {
   coreModel: CoreModel;
   systemModel: SystemModel;
   graph: PureModel;
-
-  isPrimitiveTypeElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return element instanceof PrimitiveType || element instanceof Unit;
-  }
-
-  isDependencyElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return (
-      getElementRootPackage(element).name ===
-      ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT
-    );
-  }
-
-  isGeneratedElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return (
-      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MODEL_GENERATION
-    );
-  }
-
-  isSystemElement(element: PackageableElement): element is PackageableElement {
-    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM;
-  }
-
-  isMainElement(element: PackageableElement): element is PackageableElement {
-    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MAIN;
-  }
 
   systemBuildState = ActionState.create();
   dependenciesBuildState = ActionState.create();
