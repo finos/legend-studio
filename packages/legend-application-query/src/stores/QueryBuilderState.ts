@@ -562,8 +562,4 @@ export class QueryBuilderState {
   isValidQueryBuilderState(): boolean {
     return this.fetchStructureState.projectionState.isValidProjectionState();
   }
-
-  isDuplicatedQueryBuilderState(): boolean {
-    return this.fetchStructureState.projectionState.isDuplicatedColumnsProjectionState();
-  }
 }

@@ -28,7 +28,7 @@ import {
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
-  ExclamationTriangleIcon,
+  TimesCircleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -621,29 +621,22 @@ export const QueryBuilderProjectionPanel = observer(
 
     return (
       <div
-        className="panel__content dnd__overlay__container"
+        className={`panel__content dnd__overlay__container ${
+          projectionState.isValidProjectionState() ? '' : 'dnd__overlay--error'
+        }`}
         ref={dropConnector}
       >
         <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-        {queryBuilderState.isDuplicatedQueryBuilderState() && (
-          <div className="notification__message__content__icon notification__message__content__icon--warning">
+
+        {projectionState.getValidationError() && (
+          <div className="notification__message__content__icon notification__message__content__icon--error">
             <div className="query-builder__result__error__label">
-              <ExclamationTriangleIcon className="query-builder__result__error__icon" />
-              Cannot run query with duplicated projection columns
+              <TimesCircleIcon className="query-builder__result__error__icon" />
+              {projectionState.getValidationError()}
             </div>
           </div>
         )}
-        {!queryBuilderState.isValidQueryBuilderState() &&
-          !queryBuilderState.isDuplicatedQueryBuilderState() && (
-            <>
-              <div className="notification__message__content__icon notification__message__content__icon--warning">
-                <div className="query-builder__result__error__label">
-                  <ExclamationTriangleIcon className="query-builder__result__error__icon" />
-                  Projection column is required to run query
-                </div>
-              </div>
-            </>
-          )}
+
         {!projectionColumns.length && (
           <BlankPanelPlaceholder
             placeholderText="Add a projection column"

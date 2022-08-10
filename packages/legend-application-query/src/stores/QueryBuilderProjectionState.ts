@@ -796,25 +796,34 @@ export class QueryBuilderProjectionState {
 
   isValidProjectionState(): boolean {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
-      // no columns check
-      const hasNoProjectionColumns = this.columns.length === 0;
-      return (
-        !this.isDuplicatedColumnsProjectionState() && !hasNoProjectionColumns
-      );
-    }
-    return true;
-  }
-
-  isDuplicatedColumnsProjectionState(): boolean {
-    if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
       // duplicate columns check
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>
           this.columns.filter((c) => c.columnName === column.columnName)
             .length > 1,
       );
-      return hasDuplicatedProjectionColumns;
+      // no columns check
+      const hasNoProjectionColumns = this.columns.length === 0;
+      return !hasDuplicatedProjectionColumns && !hasNoProjectionColumns;
     }
-    return false;
+    return true;
+  }
+
+  getValidationError(): string | undefined {
+    if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
+      const hasDuplicatedProjectionColumns = this.columns.some(
+        (column) =>
+          this.columns.filter((c) => c.columnName === column.columnName)
+            .length > 1,
+      );
+      if (hasDuplicatedProjectionColumns) {
+        return 'Query has duplicated projection columns';
+      }
+      const hasNoProjectionColumns = this.columns.length === 0;
+      if (hasNoProjectionColumns) {
+        return 'Query has no projection columns';
+      }
+    }
+    return undefined;
   }
 }
