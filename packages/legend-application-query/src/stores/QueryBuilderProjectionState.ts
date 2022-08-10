@@ -795,18 +795,11 @@ export class QueryBuilderProjectionState {
   }
 
   isValidProjectionState(): boolean {
-    if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
-      // duplicate columns check
-      const hasDuplicatedProjectionColumns = this.columns.some(
-        (column) =>
-          this.columns.filter((c) => c.columnName === column.columnName)
-            .length > 1,
-      );
-      // no columns check
-      const hasNoProjectionColumns = this.columns.length === 0;
-      return !hasDuplicatedProjectionColumns && !hasNoProjectionColumns;
+    if (this.getValidationError() !== undefined) {
+      return false;
+    } else {
+      return true;
     }
-    return true;
   }
 
   getValidationError(): string | undefined {
