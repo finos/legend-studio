@@ -17,8 +17,41 @@
 @use 'mixins' as *;
 
 .query-builder__projection {
+  &__container__error {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    border: 0.2rem solid var(--color-red-200);
+    pointer-events: none;
+  }
+
+  &__error {
+    @include flexVCenter;
+
+    &__label {
+      @include flexCenter;
+
+      color: var(--color-white);
+      background-color: var(--color-red-200);
+      height: 2.2rem;
+      font-size: 1.2rem;
+      padding-bottom: 0.3rem;
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      margin-right: 0.5rem;
+    }
+  }
+
   &__columns {
     padding: 0.5rem 0;
+
+    &--with-error {
+      padding: 3rem 0;
+    }
   }
 
   &__column {
