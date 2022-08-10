@@ -179,21 +179,26 @@ export class GraphManagerState extends BasicGraphManagerState {
   isDependencyElement(
     element: PackageableElement,
   ): element is PackageableElement {
-    return element.name === ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
+    return (
+      getElementRootPackage(element).name ===
+      ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT
+    );
   }
 
   isGeneratedElement(
     element: PackageableElement,
   ): element is PackageableElement {
-    return element.name === ROOT_PACKAGE_NAME.MODEL_GENERATION;
+    return (
+      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MODEL_GENERATION
+    );
   }
 
   isSystemElement(element: PackageableElement): element is PackageableElement {
-    return element.name === ROOT_PACKAGE_NAME.SYSTEM;
+    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM;
   }
 
   isMainElement(element: PackageableElement): element is PackageableElement {
-    return element.name === ROOT_PACKAGE_NAME.MAIN;
+    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MAIN;
   }
 
   systemBuildState = ActionState.create();
