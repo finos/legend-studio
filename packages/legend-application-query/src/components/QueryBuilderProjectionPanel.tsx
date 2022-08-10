@@ -50,7 +50,6 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
-  QueryBuilderProjectionState,
 } from '../stores/QueryBuilderProjectionState.js';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
