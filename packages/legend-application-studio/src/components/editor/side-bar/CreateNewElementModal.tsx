@@ -41,7 +41,7 @@ import {
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -250,14 +250,9 @@ const NewPureModelConnectionDriverEditor = observer(
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
-            // formatOptionLabel={getPackageableElementOptionalFormatter({
-            //   darkMode: true,
-            //   graphManagerState: newConnectionDriver.editorStore.graphManagerState,
-            // })}
-            formatOptionLabel={getPackageableElementOptionalFormatter({
+            formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
-              graphManagerStatePackage:
-                newConnectionDriver.editorStore.graphManagerState,
+              graphManagerState: editorStore.graphManagerState,
             })}
           />
         </div>

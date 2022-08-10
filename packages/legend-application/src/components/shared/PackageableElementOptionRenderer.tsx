@@ -18,11 +18,12 @@ import type {
   PackageableElement,
   GraphManagerState,
 } from '@finos/legend-graph';
+import { useState } from 'react';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-export const getPackageableElementOptionalFormatter = (props: {
+export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
-  graphManagerStatePackage: GraphManagerState;
+  graphManagerState: GraphManagerState;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
@@ -35,25 +36,24 @@ export const getPackageableElementOptionalFormatter = (props: {
 
     const element = option.value;
 
-    const optionColor = props.graphManagerStatePackage.isPrimitiveTypeElement(
-      element,
-    )
+    const optionColor = props.graphManagerState.isPrimitiveTypeElement(element)
       ? 'primitive'
-      : props.graphManagerStatePackage.isSystemElement(element)
+      : props.graphManagerState.isSystemElement(element)
       ? 'system'
-      : props.graphManagerStatePackage.isGeneratedElement(element)
+      : props.graphManagerState.isGeneratedElement(element)
       ? 'generated'
-      : props.graphManagerStatePackage.isMainElement(element)
+      : props.graphManagerState.isMainElement(element)
       ? 'generated'
-      : props.graphManagerStatePackage.isDependencyElement(element)
+      : props.graphManagerState.isDependencyElement(element)
       ? 'dependency'
       : '';
 
     return (
       <div className={className}>
-        <span
+        <div
+          title={`${optionColor} element`}
           className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColor}`}
-        ></span>
+        ></div>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (
           <div className={`${className}__tag`}>{option.value.path}</div>

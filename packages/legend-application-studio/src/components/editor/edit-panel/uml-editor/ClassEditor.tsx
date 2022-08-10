@@ -83,7 +83,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
   type PackageableElementOption,
@@ -242,8 +242,8 @@ const PropertyBasicEditor = observer(
             value={selectedPropertyType}
             placeholder={'Choose a data type or enumeration'}
             filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionalFormatter({
-              graphManagerStatePackage: editorStore.graphManagerState,
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              graphManagerState: editorStore.graphManagerState,
             })}
           />
         )}
@@ -521,8 +521,8 @@ const DerivedPropertyBasicEditor = observer(
               value={selectedPropertyType}
               placeholder="Choose a data type or enumeration"
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter({
-                graphManagerStatePackage: editorStore.graphManagerState,
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                graphManagerState: editorStore.graphManagerState,
               })}
             />
           )}
@@ -773,14 +773,12 @@ const ConstraintEditor = observer(
 
 const SuperTypeEditor = observer(
   (props: {
-    editorState: ClassEditorState;
     _class: Class;
     superType: GenericTypeReference;
     deleteSuperType: () => void;
     isReadOnly: boolean;
   }) => {
-    const { superType, _class, editorState, deleteSuperType, isReadOnly } =
-      props;
+    const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
     const superTypeOptions = editorStore.classOptions.filter(
@@ -815,8 +813,8 @@ const SuperTypeEditor = observer(
           value={selectedType}
           placeholder={'Choose a class'}
           filterOption={filterOption}
-          formatOptionLabel={getPackageableElementOptionalFormatter({
-            graphManagerStatePackage: editorState.editorStore.graphManagerState,
+          formatOptionLabel={getPackageableElementOptionFormatter({
+            graphManagerState: editorStore.graphManagerState,
           })}
         />
         <button
