@@ -18,7 +18,6 @@ import type {
   PackageableElement,
   GraphManagerState,
 } from '@finos/legend-graph';
-import { useState } from 'react';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
 export const getPackageableElementOptionFormatter = (props: {
