@@ -4078,7 +4078,7 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
       connectionValue: {
         _type: 'RelationalDatabaseConnection',
         authenticationStrategy: {
-          _type: 'middleTierUsernamePassword',
+          _type: 'middleTierUserNamePassword',
           vaultReference: 'value',
         },
         databaseType: 'H2',
