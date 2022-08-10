@@ -439,6 +439,7 @@ export const QueryBuilderResultPanel = observer(
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
+
     const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
       queryBuilderState.resultState.setPreviewLimit(
@@ -497,6 +498,11 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__execute-btn"
                 onClick={runQuery}
                 tabIndex={-1}
+                title={` ${
+                  queryBuilderState.isValidQueryBuilderState()
+                    ? ''
+                    : 'Something is wrong with query'
+                }`}
                 disabled={!queryBuilderState.isValidQueryBuilderState()}
               >
                 <div className="query-builder__result__execute-btn__label">

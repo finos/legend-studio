@@ -795,14 +795,10 @@ export class QueryBuilderProjectionState {
   }
 
   isValidProjectionState(): boolean {
-    if (this.getValidationError() !== undefined) {
-      return false;
-    } else {
-      return true;
-    }
+    return Boolean(!this.getValidationErrorMessage());
   }
 
-  getValidationError(): string | undefined {
+  getValidationErrorMessage(): string | undefined {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>

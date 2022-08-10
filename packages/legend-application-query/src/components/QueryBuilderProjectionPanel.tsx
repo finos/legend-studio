@@ -50,6 +50,7 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_DND_TYPE,
+  QueryBuilderProjectionState,
 } from '../stores/QueryBuilderProjectionState.js';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -533,6 +534,23 @@ const QueryBuilderProjectionColumnEditor = observer(
   },
 );
 
+const ProjectionError = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const projectionState =
+      queryBuilderState.fetchStructureState.projectionState;
+
+    return (
+      <div className="notification__message__content__icon--error">
+        <div className="query-builder__projection__error__label">
+          <TimesCircleIcon className="query-builder__projection__error__icon" />
+          {projectionState.getValidationErrorMessage()}
+        </div>
+      </div>
+    );
+  },
+);
+
 export const QueryBuilderProjectionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const applicationStore = useApplicationStore();
@@ -589,6 +607,8 @@ export const QueryBuilderProjectionPanel = observer(
       },
       [queryBuilderState, projectionState],
     );
+
+    const isInvalidProjection = !projectionState.isValidProjectionState();
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({
         accept: [
@@ -621,21 +641,16 @@ export const QueryBuilderProjectionPanel = observer(
 
     return (
       <div
-        className={`panel__content dnd__overlay__container ${
-          projectionState.isValidProjectionState() ? '' : 'dnd__overlay--error'
-        }`}
         ref={dropConnector}
+        className={`panel__content dnd__overlay__container`}
       >
-        <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
+        <div className={clsx({ projection__error: isInvalidProjection })}>
+          {projectionState.getValidationErrorMessage() && (
+            <ProjectionError queryBuilderState={queryBuilderState} />
+          )}
+        </div>
 
-        {projectionState.getValidationError() && (
-          <div className="notification__message__content__icon notification__message__content__icon--error">
-            <div className="query-builder__result__error__label">
-              <TimesCircleIcon className="query-builder__result__error__icon" />
-              {projectionState.getValidationError()}
-            </div>
-          </div>
-        )}
+        <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
 
         {!projectionColumns.length && (
           <BlankPanelPlaceholder
@@ -646,7 +661,11 @@ export const QueryBuilderProjectionPanel = observer(
         {Boolean(projectionColumns.length) && (
           <div
             data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-            className="query-builder__projection__columns"
+            // className="query-builder__projection__columns"
+
+            className={`query-builder__projection__columns ${clsx({
+              projection__padding: isInvalidProjection,
+            })} `}
           >
             <ProjectionColumnDragLayer />
             {projectionColumns.map((projectionColumnState) => (

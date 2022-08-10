@@ -16,7 +16,40 @@
 
 @use 'mixins' as *;
 
+.projection__error {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  border: 0.2rem solid var(--color-red-100);
+  pointer-events: none;
+}
+
+.projection__padding {
+  padding: 3rem 0 !important;
+}
+
 .query-builder__projection {
+  &__error {
+    @include flexVCenter;
+
+    &__label {
+      @include flexCenter;
+
+      color: var(--color-white);
+      background-color: var(--color-red-100);
+      height: 2.2rem;
+      border-radius: 0;
+      font-size: 1.2rem;
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      margin-right: 0.5rem;
+    }
+  }
+
   &__columns {
     padding: 0.5rem 0;
   }
