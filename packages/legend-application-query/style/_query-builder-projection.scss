@@ -21,7 +21,7 @@
   height: 100%;
   position: absolute;
   z-index: 1;
-  border: 0.2rem solid var(--color-red-100);
+  border: 0.2rem solid var(--color-red-200);
   pointer-events: none;
 }
 
@@ -37,7 +37,7 @@
       @include flexCenter;
 
       color: var(--color-white);
-      background-color: var(--color-red-100);
+      background-color: var(--color-red-200);
       height: 2.2rem;
       border-radius: 0;
       font-size: 1.2rem;
