@@ -1101,7 +1101,6 @@ const SupertypesEditor = observer(
           <SuperTypeEditor
             key={superType.value._UUID}
             superType={superType}
-            editorState={editorState}
             _class={_class}
             deleteSuperType={deleteSuperType(superType)}
             isReadOnly={isReadOnly}
