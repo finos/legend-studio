@@ -16,6 +16,7 @@
 
 import {
   type TooltipPlacement,
+  type InputActionMeta,
   Tooltip,
   DollarIcon,
   clsx,
@@ -57,7 +58,6 @@ import {
 import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
-import type { InputActionMeta } from 'react-select';
 import {
   instanceValue_changeValue,
   instanceValue_changeValues,
@@ -171,11 +171,11 @@ const StringPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
-    valueOptions?:
+    selectorConfig?:
       | {
-          options: (string | number)[] | undefined;
+          values: string[] | undefined;
           isLoading: boolean;
-          updateOptions: () => void;
+          reloadValues: (val: string) => void;
         }
       | undefined;
   }) => {
@@ -184,9 +184,9 @@ const StringPrimitiveInstanceValueEditor = observer(
       className,
       resetValue,
       setValueSpecification,
-      valueOptions,
+      selectorConfig,
     } = props;
-    const useSelector = Boolean(valueOptions);
+    const useSelector = Boolean(selectorConfig);
     const value = valueSpecification.values[0] as string;
     const updateValueSpec = (val: string): void => {
       instanceValue_changeValue(valueSpecification, val, 0);
@@ -211,18 +211,18 @@ const StringPrimitiveInstanceValueEditor = observer(
     ): void => {
       if (actionChange.action === 'input-change') {
         updateValueSpec(inputValue);
-        valueOptions?.updateOptions();
+        selectorConfig?.reloadValues(inputValue);
       }
     };
-    const isLoading = valueOptions?.isLoading;
-    const queryOptions = valueOptions?.options?.length
-      ? valueOptions.options.map((e) => ({
+    const isLoading = selectorConfig?.isLoading;
+    const queryOptions = selectorConfig?.values?.length
+      ? selectorConfig.values.map((e) => ({
           value: e,
           label: e.toString(),
         }))
       : undefined;
     const noOptionsMessage =
-      valueOptions?.options === undefined ? (): null => null : undefined;
+      selectorConfig?.values === undefined ? (): null => null : undefined;
 
     return (
       <div className={clsx('value-spec-editor', className)}>
@@ -665,11 +665,11 @@ export const BasicValueSpecificationEditor: React.FC<{
   className?: string | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
   resetValue: () => void;
-  valueOptions?:
+  selectorConfig?:
     | {
-        options: (string | number)[] | undefined;
+        values: string[] | undefined;
         isLoading: boolean;
-        updateOptions: () => void;
+        reloadValues: (val: string) => void;
       }
     | undefined;
 }> = (props) => {
@@ -680,7 +680,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     typeCheckOption,
     setValueSpecification,
     resetValue,
-    valueOptions,
+    selectorConfig,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -692,7 +692,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
-            valueOptions={valueOptions}
+            selectorConfig={selectorConfig}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:

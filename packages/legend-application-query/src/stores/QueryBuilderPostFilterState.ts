@@ -62,7 +62,7 @@ import {
   buildProjectionColumnTypeAheadQuery,
   buildTypeAheadOptions,
   performTypeAhead,
-} from './QueryBuilderTypeAheadSearchHelper.js';
+} from './QueryBuilderTypeaheadHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -269,8 +269,8 @@ export class PostFilterConditionState {
     | QueryBuilderAggregateColumnState;
   value?: ValueSpecification | undefined;
   operator: QueryBuilderPostFilterOperator;
-  typeAheadSearchResults: string[] | undefined;
-  fetchingTypeAheadSearchAction = ActionState.create();
+  typeaheadSearchResults: string[] | undefined;
+  typeaheadSearchState = ActionState.create();
 
   constructor(
     postFilterState: QueryBuilderPostFilterState,
@@ -282,7 +282,7 @@ export class PostFilterConditionState {
   ) {
     makeAutoObservable(this, {
       columnState: observable,
-      typeAheadSearchResults: observable,
+      typeaheadSearchResults: observable,
       changeOperator: action,
       setColumnState: action,
       setValue: action,
@@ -317,8 +317,8 @@ export class PostFilterConditionState {
 
   *handleTypeAheadSearch(): GeneratorFn<void> {
     try {
-      this.fetchingTypeAheadSearchAction.inProgress();
-      this.typeAheadSearchResults = undefined;
+      this.typeaheadSearchState.inProgress();
+      this.typeaheadSearchResults = undefined;
       if (performTypeAhead(this.value)) {
         const builderState = buildProjectionColumnTypeAheadQuery(
           this.postFilterState.queryBuilderState,
@@ -332,12 +332,12 @@ export class PostFilterConditionState {
             guaranteeNonNullable(builderState.querySetupState.runtimeValue),
             builderState.graphManagerState.graph,
           )) as ExecutionResult;
-        this.typeAheadSearchResults = buildTypeAheadOptions(result);
+        this.typeaheadSearchResults = buildTypeAheadOptions(result);
       }
-      this.fetchingTypeAheadSearchAction.pass();
+      this.typeaheadSearchState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.fetchingTypeAheadSearchAction.fail();
+      this.typeaheadSearchState.fail();
     }
   }
 

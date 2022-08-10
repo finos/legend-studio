@@ -64,7 +64,7 @@ import {
   buildPropertyTypeAheadQuery,
   buildTypeAheadOptions,
   performTypeAhead,
-} from './QueryBuilderTypeAheadSearchHelper.js';
+} from './QueryBuilderTypeaheadHelper.js';
 
 export abstract class QueryBuilderFilterOperator {
   readonly uuid = uuid();
@@ -116,8 +116,8 @@ export class FilterConditionState {
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification | undefined;
   existsLambdaParamNames: string[] = [];
-  typeAheadSearchResults: string[] | undefined;
-  fetchingTypeAheadSearchAction = ActionState.create();
+  typeaheadSearchResults: string[] | undefined;
+  typeaheadSearchState = ActionState.create();
 
   constructor(
     filterState: QueryBuilderFilterState,
@@ -130,8 +130,8 @@ export class FilterConditionState {
       changeOperator: action,
       setOperator: action,
       setValue: action,
-      typeAheadSearchResults: observable,
-      fetchingTypeAheadSearchAction: observable,
+      typeaheadSearchResults: observable,
+      typeaheadSearchState: observable,
       addExistsLambdaParamNames: action,
       handleTypeAheadSearch: flow,
     });
@@ -159,8 +159,8 @@ export class FilterConditionState {
 
   *handleTypeAheadSearch(): GeneratorFn<void> {
     try {
-      this.fetchingTypeAheadSearchAction.inProgress();
-      this.typeAheadSearchResults = undefined;
+      this.typeaheadSearchState.inProgress();
+      this.typeaheadSearchResults = undefined;
       if (performTypeAhead(this.value)) {
         const builderState = buildPropertyTypeAheadQuery(
           this.filterState.queryBuilderState,
@@ -174,13 +174,13 @@ export class FilterConditionState {
             guaranteeNonNullable(builderState.querySetupState.runtimeValue),
             builderState.graphManagerState.graph,
           )) as ExecutionResult;
-        this.typeAheadSearchResults = buildTypeAheadOptions(result);
+        this.typeaheadSearchResults = buildTypeAheadOptions(result);
       }
-      this.fetchingTypeAheadSearchAction.pass();
+      this.typeaheadSearchState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.typeAheadSearchResults = [];
-      this.fetchingTypeAheadSearchAction.fail();
+      this.typeaheadSearchResults = [];
+      this.typeaheadSearchState.fail();
     }
   }
 

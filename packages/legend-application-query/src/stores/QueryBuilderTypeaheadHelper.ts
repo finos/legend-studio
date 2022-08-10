@@ -35,8 +35,8 @@ import {
 } from './QueryBuilderProjectionState.js';
 import { QueryBuilderState } from './QueryBuilderState.js';
 
-const SEARCH_TAKE = 200;
-const START_LENGTH = 2;
+const SEARCH_TAKE = 10;
+const START_LENGTH = 3;
 
 const createAndSetupQueryBuilderStateForTypeAhead = (
   queryBuilderState: QueryBuilderState,

@@ -474,7 +474,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
-    const debouncedTypeAheadSearch = useMemo(
+    const debouncedTypeaheadSearch = useMemo(
       () => debounce(() => node.condition.handleTypeAheadSearch(), 100),
       [node],
     );
@@ -482,10 +482,12 @@ const QueryBuilderPostFilterConditionEditor = observer(
     const changeValueSpecification = (val: ValueSpecification): void => {
       node.condition.setValue(val);
     };
-    const resultOptions = {
-      options: node.condition.typeAheadSearchResults,
-      isLoading: node.condition.fetchingTypeAheadSearchAction.isInProgress,
-      updateOptions: debouncedTypeAheadSearch,
+    const selectorConfig = {
+      values: node.condition.typeaheadSearchResults,
+      isLoading: node.condition.typeaheadSearchState.isInProgress,
+      reloadValues: (input: string): void => {
+        debouncedTypeaheadSearch();
+      },
     };
 
     return (
@@ -554,7 +556,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   ),
                 }}
                 resetValue={resetNode}
-                valueOptions={resultOptions}
+                selectorConfig={selectorConfig}
               />
             </div>
           )}
