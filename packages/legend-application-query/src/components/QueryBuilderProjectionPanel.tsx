@@ -648,7 +648,8 @@ export const QueryBuilderProjectionPanel = observer(
           <div
             data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
             className={`query-builder__projection__columns ${clsx({
-              ['query-builder__projection__padding']: isInvalidProjection,
+              ['query-builder__projection__columns--with-error']:
+                isInvalidProjection,
             })} `}
           >
             <ProjectionColumnDragLayer />

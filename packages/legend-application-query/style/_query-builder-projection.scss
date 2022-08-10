@@ -17,10 +17,6 @@
 @use 'mixins' as *;
 
 .query-builder__projection {
-  &__padding {
-    padding: 3rem 0 !important;
-  }
-
   &__container__error {
     width: 100%;
     height: 100%;
@@ -52,6 +48,10 @@
 
   &__columns {
     padding: 0.5rem 0;
+
+    &--with-error {
+      padding: 3rem 0;
+    }
   }
 
   &__column {
