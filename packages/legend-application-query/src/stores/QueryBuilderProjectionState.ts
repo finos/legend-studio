@@ -795,17 +795,24 @@ export class QueryBuilderProjectionState {
   }
 
   isValidProjectionState(): boolean {
+    return Boolean(!this.getValidationErrorMessage());
+  }
+
+  getValidationErrorMessage(): string | undefined {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
-      // duplicate columns check
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>
           this.columns.filter((c) => c.columnName === column.columnName)
             .length > 1,
       );
-      // no columns check
+      if (hasDuplicatedProjectionColumns) {
+        return 'Query has duplicated projection columns';
+      }
       const hasNoProjectionColumns = this.columns.length === 0;
-      return !hasDuplicatedProjectionColumns && !hasNoProjectionColumns;
+      if (hasNoProjectionColumns) {
+        return 'Query has no projection columns';
+      }
     }
-    return true;
+    return undefined;
   }
 }
