@@ -16,20 +16,20 @@
 
 @use 'mixins' as *;
 
-.projection__error {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  z-index: 1;
-  border: 0.2rem solid var(--color-red-200);
-  pointer-events: none;
-}
-
-.projection__padding {
-  padding: 3rem 0 !important;
-}
-
 .query-builder__projection {
+  &__padding {
+    padding: 3rem 0 !important;
+  }
+
+  &__container__error {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+    border: 0.2rem solid var(--color-red-200);
+    pointer-events: none;
+  }
+
   &__error {
     @include flexVCenter;
 
@@ -39,11 +39,8 @@
       color: var(--color-white);
       background-color: var(--color-red-200);
       height: 2.2rem;
-      border-radius: 0;
       font-size: 1.2rem;
       padding-bottom: 0.3rem;
-      align-items: center;
-      justify-content: center;
     }
 
     &__icon {

@@ -498,11 +498,11 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__execute-btn"
                 onClick={runQuery}
                 tabIndex={-1}
-                title={` ${
-                  queryBuilderState.isValidQueryBuilderState()
-                    ? ''
-                    : 'Something is wrong with query'
-                }`}
+                title={
+                  !queryBuilderState.isValidQueryBuilderState()
+                    ? 'Query is not valid'
+                    : undefined
+                }
                 disabled={!queryBuilderState.isValidQueryBuilderState()}
               >
                 <div className="query-builder__result__execute-btn__label">

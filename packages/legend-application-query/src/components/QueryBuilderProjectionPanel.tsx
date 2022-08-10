@@ -534,21 +534,6 @@ const QueryBuilderProjectionColumnEditor = observer(
   },
 );
 
-const ProjectionError = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const projectionState =
-      queryBuilderState.fetchStructureState.projectionState;
-
-    return (
-      <div className="query-builder__projection__error__label">
-        <TimesCircleIcon className="query-builder__projection__error__icon" />
-        {projectionState.getValidationErrorMessage()}
-      </div>
-    );
-  },
-);
-
 export const QueryBuilderProjectionPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const applicationStore = useApplicationStore();
@@ -642,11 +627,15 @@ export const QueryBuilderProjectionPanel = observer(
         ref={dropConnector}
         className={`panel__content dnd__overlay__container`}
       >
-        <div className={clsx({ projection__error: isInvalidProjection })}>
-          {projectionState.getValidationErrorMessage() && (
-            <ProjectionError queryBuilderState={queryBuilderState} />
-          )}
-        </div>
+        {isInvalidProjection && (
+          <div className="query-builder__projection__container__error">
+            <div className="query-builder__projection__error__label">
+              <TimesCircleIcon className="query-builder__projection__error__icon" />
+              {projectionState.getValidationErrorMessage() ??
+                'There is an error with the projection'}
+            </div>
+          </div>
+        )}
 
         <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
 
@@ -659,10 +648,8 @@ export const QueryBuilderProjectionPanel = observer(
         {Boolean(projectionColumns.length) && (
           <div
             data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-            // className="query-builder__projection__columns"
-
             className={`query-builder__projection__columns ${clsx({
-              projection__padding: isInvalidProjection,
+              ['query-builder__projection__padding']: isInvalidProjection,
             })} `}
           >
             <ProjectionColumnDragLayer />
