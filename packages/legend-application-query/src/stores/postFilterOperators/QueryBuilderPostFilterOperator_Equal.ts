@@ -28,6 +28,7 @@ import {
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
+  isSuperType,
   SUPPORTED_FUNCTIONS,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
@@ -39,7 +40,6 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
   getNonCollectionValueSpecificationType,
-  isTypeCompatibleWithConditionValueType,
   unwrapNotExpression,
 } from '../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -79,13 +79,40 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
+    const lhsType = guaranteeNonNullable(
+      postFilterConditionState.columnState.getReturnType(),
+    );
     const valueSpecification = postFilterConditionState.value;
     if (valueSpecification) {
-      return isTypeCompatibleWithConditionValueType(
-        getNonCollectionValueSpecificationType(valueSpecification),
-        guaranteeNonNullable(
-          postFilterConditionState.columnState.getReturnType(),
-        ),
+      const type = getNonCollectionValueSpecificationType(valueSpecification);
+      const NUMERIC_PRIMITIVE_TYPES = [
+        PRIMITIVE_TYPE.NUMBER,
+        PRIMITIVE_TYPE.INTEGER,
+        PRIMITIVE_TYPE.DECIMAL,
+        PRIMITIVE_TYPE.FLOAT,
+      ] as string[];
+
+      const DATE_PRIMITIVE_TYPES = [
+        PRIMITIVE_TYPE.DATE,
+        PRIMITIVE_TYPE.DATETIME,
+        PRIMITIVE_TYPE.STRICTDATE,
+        PRIMITIVE_TYPE.LATESTDATE,
+      ] as string[];
+
+      // When changing the return type for LHS, the RHS value should be adjusted accordingly.
+      return (
+        type !== undefined &&
+        // Numeric value is handled loosely because of autoboxing
+        // e.g. LHS (integer) = RHS (float) is acceptable
+        ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
+          NUMERIC_PRIMITIVE_TYPES.includes(lhsType.path)) ||
+          // Date value is handled loosely as well if the LHS is of type DateTime
+          // This is because we would simulate auto-boxing for date by altering the
+          // Pure function used for the operation
+          // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
+          DATE_PRIMITIVE_TYPES.includes(type.path) ||
+          type === lhsType ||
+          isSuperType(lhsType, type))
       );
     }
     return false;

@@ -32,8 +32,6 @@ import {
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilderProjectionState } from '../stores/QueryBuilderProjectionState.js';
-import { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState.js';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {
@@ -90,17 +88,15 @@ export const QueryBuilderFetchStructurePanel = observer(
       (fetchMode: FETCH_STRUCTURE_MODE): (() => void) =>
       (): void => {
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
+          // TODO: might want to add alert modal to alert user changing fetch structure resets state
           if (
             fetchMode === FETCH_STRUCTURE_MODE.GRAPH_FETCH &&
-            queryBuilderState.fetchStructureState.projectionState.columns
-              .length > 0
+            queryBuilderState.showPostFilterPanel &&
+            queryBuilderState.postFilterState.nodes.size > 0
           ) {
             applicationStore.setActionAlertInfo({
               message:
-                queryBuilderState.showPostFilterPanel &&
-                queryBuilderState.postFilterState.nodes.size > 0
-                  ? 'With graph fetch, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph fetch panel. Do you still want to proceed?'
-                  : 'Current projection columns will be lost when switching to the graph fetch panel. Do you still want to proceed?',
+                'With graph fetch, post filter is not supported. Current post filters will be lost when switching to the graph fetch panel. Do you still want to proceed?',
               type: ActionAlertType.CAUTION,
               actions: [
                 {
@@ -109,41 +105,6 @@ export const QueryBuilderFetchStructurePanel = observer(
                   handler: applicationStore.guardUnhandledError(async () => {
                     fetchStructureState.setFetchStructureMode(fetchMode);
                     queryBuilderState.changeFetchStructure();
-                    queryBuilderState.fetchStructureState.projectionState =
-                      new QueryBuilderProjectionState(queryBuilderState);
-                    queryBuilderState.postFilterState =
-                      new QueryBuilderPostFilterState(
-                        queryBuilderState,
-                        queryBuilderState.postFilterOperators,
-                      );
-                    queryBuilderState.setShowPostFilterPanel(false);
-                  }),
-                },
-                {
-                  label: 'Cancel',
-                  type: ActionAlertActionType.PROCEED,
-                  default: true,
-                },
-              ],
-            });
-          } else if (
-            fetchMode === FETCH_STRUCTURE_MODE.PROJECTION &&
-            queryBuilderState.fetchStructureState.graphFetchTreeState.treeData
-              ?.rootIds.length
-          ) {
-            applicationStore.setActionAlertInfo({
-              message:
-                'Current graph fetch nodes will be lost when switching to the projection panel. Do you still want to proceed?',
-              type: ActionAlertType.CAUTION,
-              actions: [
-                {
-                  label: 'Proceed',
-                  type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                  handler: applicationStore.guardUnhandledError(async () => {
-                    fetchStructureState.setFetchStructureMode(fetchMode);
-                    queryBuilderState.changeFetchStructure();
-                    queryBuilderState.fetchStructureState.graphFetchTreeState =
-                      new QueryBuilderGraphFetchTreeState(queryBuilderState);
                     queryBuilderState.postFilterState =
                       new QueryBuilderPostFilterState(
                         queryBuilderState,
@@ -166,7 +127,9 @@ export const QueryBuilderFetchStructurePanel = observer(
               queryBuilderState,
               queryBuilderState.postFilterOperators,
             );
-            queryBuilderState.setShowPostFilterPanel(false);
+            if (fetchMode === FETCH_STRUCTURE_MODE.GRAPH_FETCH) {
+              queryBuilderState.setShowPostFilterPanel(false);
+            }
           }
         }
       };

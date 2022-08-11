@@ -1,11 +1,5 @@
 # @finos/legend-application-studio
 
-## 13.0.2
-
-### Patch Changes
-
-- [#1377](https://github.com/finos/legend-studio/pull/1377) [`4c7169e3`](https://github.com/finos/legend-studio/commit/4c7169e348887bf462830cb64812ef4b1792875c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support execution cancellation for `mapping editor` and `service editor` ([#1376](https://github.com/finos/legend-studio/issues/1376)).
-
 ## 13.0.1
 
 ### Patch Changes

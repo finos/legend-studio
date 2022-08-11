@@ -558,8 +558,4 @@ export class QueryBuilderState {
       this.fetchStructureState.graphFetchTreeState.initialize();
     }
   }
-
-  isValidQueryBuilderState(): boolean {
-    return this.fetchStructureState.projectionState.isValidProjectionState();
-  }
 }
