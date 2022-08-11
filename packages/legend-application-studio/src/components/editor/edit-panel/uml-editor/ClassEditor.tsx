@@ -45,7 +45,6 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
@@ -84,7 +83,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
   type PackageableElementOption,
@@ -117,6 +116,7 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -242,7 +242,9 @@ const PropertyBasicEditor = observer(
             value={selectedPropertyType}
             placeholder={'Choose a data type or enumeration'}
             filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionalFormatter()}
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              graphManagerState: editorStore.graphManagerState,
+            })}
           />
         )}
         {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -519,7 +521,9 @@ const DerivedPropertyBasicEditor = observer(
               value={selectedPropertyType}
               placeholder="Choose a data type or enumeration"
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter()}
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                graphManagerState: editorStore.graphManagerState,
+              })}
             />
           )}
           {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -809,7 +813,9 @@ const SuperTypeEditor = observer(
           value={selectedType}
           placeholder={'Choose a class'}
           filterOption={filterOption}
-          formatOptionLabel={getPackageableElementOptionalFormatter()}
+          formatOptionLabel={getPackageableElementOptionFormatter({
+            graphManagerState: editorStore.graphManagerState,
+          })}
         />
         <button
           className="uml-element-editor__basic__detail-btn"

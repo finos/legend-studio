@@ -263,6 +263,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     ) : (
       <div />
     );
+
     const iconPackageColor = isDependencyTreeNode(node)
       ? 'color--dependency'
       : '';
