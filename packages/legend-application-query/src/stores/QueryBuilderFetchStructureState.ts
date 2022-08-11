@@ -28,13 +28,11 @@ export enum FETCH_STRUCTURE_MODE {
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
   /**
-   * NOTE: this is default to graph-fetch since if we default to projection
-   * we will by default show an error when there are no columns specified
-   * also, `getAll()` naturally works for graph-fetch case
-   *
-   * See https://github.com/finos/legend-studio/issues/1385
+   * TODO?: perhaps it would eventually make sense to default to
+   * graph-fetch since `getAll()` naturally works for graph-fetch case
+   * and graph-fetch allows somewhat an empty tree
    */
-  fetchStructureMode = FETCH_STRUCTURE_MODE.GRAPH_FETCH;
+  fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
   projectionState: QueryBuilderProjectionState;
   graphFetchTreeState: QueryBuilderGraphFetchTreeState;
 
