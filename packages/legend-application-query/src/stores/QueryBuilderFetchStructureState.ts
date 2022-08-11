@@ -68,4 +68,8 @@ export class QueryBuilderFetchStructureState {
   isProjectionMode(): boolean {
     return this.fetchStructureMode === FETCH_STRUCTURE_MODE.PROJECTION;
   }
+
+  get validationIssues(): string[] | undefined {
+    return this.projectionState.validationIssues;
+  }
 }

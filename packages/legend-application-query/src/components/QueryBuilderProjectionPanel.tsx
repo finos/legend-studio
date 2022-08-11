@@ -28,7 +28,6 @@ import {
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
-  TimesCircleIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -597,7 +596,6 @@ export const QueryBuilderProjectionPanel = observer(
       [queryBuilderState, projectionState],
     );
 
-    const isInvalidProjection = !projectionState.isValidProjectionState();
     const [{ isPropertyDragOver }, dropConnector] = useDrop(
       () => ({
         accept: [
@@ -631,20 +629,9 @@ export const QueryBuilderProjectionPanel = observer(
     return (
       <div
         ref={dropConnector}
-        className={`panel__content dnd__overlay__container`}
+        className="panel__content dnd__overlay__container"
       >
-        {isInvalidProjection && (
-          <div className="query-builder__projection__panel__error">
-            <div className="query-builder__projection__panel__error__label">
-              <TimesCircleIcon className="query-builder__projection__panel__error__icon" />
-              {projectionState.getValidationErrorMessage() ??
-                'There is an error with the projection'}
-            </div>
-          </div>
-        )}
-
         <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-
         {!projectionColumns.length && (
           <BlankPanelPlaceholder
             placeholderText="Add a projection column"
@@ -654,10 +641,7 @@ export const QueryBuilderProjectionPanel = observer(
         {Boolean(projectionColumns.length) && (
           <div
             data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-            className={`query-builder__projection__columns ${clsx({
-              ['query-builder__projection__columns--with-error']:
-                isInvalidProjection,
-            })} `}
+            className="query-builder__projection__columns"
           >
             <ProjectionColumnDragLayer />
             {projectionColumns.map((projectionColumnState) => (

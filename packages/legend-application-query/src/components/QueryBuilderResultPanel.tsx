@@ -428,6 +428,8 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
+    const queryValidationIssues = queryBuilderState.validationIssues;
+    const isQueryValid = !queryValidationIssues;
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
@@ -489,7 +491,7 @@ export const QueryBuilderResultPanel = observer(
                   type="number"
                   value={resultState.previewLimit}
                   onChange={changeLimit}
-                  disabled={!queryBuilderState.isValidQueryBuilderState()}
+                  disabled={!isQueryValid}
                 />
               </div>
             )}
@@ -498,7 +500,7 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__stop-btn"
                 onClick={cancelQuery}
                 tabIndex={-1}
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
                   <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
@@ -513,11 +515,13 @@ export const QueryBuilderResultPanel = observer(
                 onClick={runQuery}
                 tabIndex={-1}
                 title={
-                  !queryBuilderState.isValidQueryBuilderState()
-                    ? 'Query is not valid'
+                  queryValidationIssues
+                    ? `Query is not valid:\n${queryValidationIssues
+                        .map((issue) => `\u2022 ${issue}`)
+                        .join('\n')}`
                     : undefined
                 }
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 <div className="query-builder__result__execute-btn__label">
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
@@ -580,14 +584,14 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__export__dropdown__label"
                 tabIndex={-1}
                 title="Export"
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 Export
               </button>
               <button
                 className="query-builder__result__export__dropdown__trigger"
                 tabIndex={-1}
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 <CaretDownIcon />
               </button>

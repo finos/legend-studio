@@ -480,8 +480,8 @@ export class QueryBuilderState {
     }
   }
 
-  isValidQueryBuilderState(): boolean {
-    return this.fetchStructureState.projectionState.isValidProjectionState();
+  get validationIssues(): string[] | undefined {
+    return this.fetchStructureState.validationIssues;
   }
 
   createBareBuilderState(): QueryBuilderState {

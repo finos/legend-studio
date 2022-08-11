@@ -498,6 +498,22 @@
   }
 }
 
+.query-builder-panel-issue-count-badge {
+  @include flexCenter;
+
+  background: var(--color-red-200);
+  height: 2.2rem;
+  padding: 0 1rem;
+  border-radius: 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-light-grey-0);
+
+  &__icon {
+    margin-right: 0.5rem;
+  }
+}
+
 .query-builder__tooltip {
   border-radius: 0.2rem !important;
   background: var(--color-dark-grey-200) !important;

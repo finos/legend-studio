@@ -34,6 +34,7 @@ import {
 } from '@finos/legend-application';
 import { QueryBuilderProjectionState } from '../stores/QueryBuilderProjectionState.js';
 import { QueryBuilderGraphFetchTreeState } from '../stores/QueryBuilderGraphFetchTreeState.js';
+import { QueryBuilderPanelIssueCountBadge } from './QueryBuilderPanelIssueCountBadge.js';
 
 const QueryBuilderUnsupportedFetchStructure = observer(
   (props: { mode: FETCH_STRUCTURE_MODE }) => {
@@ -188,6 +189,9 @@ export const QueryBuilderFetchStructurePanel = observer(
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
+            <QueryBuilderPanelIssueCountBadge
+              issues={fetchStructureState.validationIssues}
+            />
           </div>
           <div className="panel__header__actions">
             {fetchStructureStateMode === FETCH_STRUCTURE_MODE.PROJECTION && (
