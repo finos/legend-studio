@@ -49,7 +49,6 @@ import { InlineEmbeddedRelationalInstanceSetImplementation } from '../graph/meta
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
 import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import { Unit } from '../graph/metamodel/pure/packageableElements/domain/Measure.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -96,7 +95,6 @@ export class BasicGraphManagerState {
   isSystemElement(element: PackageableElement): element is PackageableElement {
     return (
       element instanceof PrimitiveType ||
-      element instanceof Unit ||
       getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM ||
       getElementRootPackage(element).name === ROOT_PACKAGE_NAME.CORE
     );

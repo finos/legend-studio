@@ -20,6 +20,40 @@ import type {
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
+const optionColorClassName = (
+  element: PackageableElement,
+  graphManagerState: GraphManagerState,
+): string => {
+  switch (true) {
+    case graphManagerState.isSystemElement(element):
+      return 'system';
+    case graphManagerState.isGeneratedElement(element):
+      return 'generated';
+    case graphManagerState.isMainGraphElement(element):
+      return 'main';
+    case graphManagerState.isDependencyElement(element):
+      return 'dependency';
+    default:
+      return '';
+  }
+};
+
+const optionToolTip = (
+  element: PackageableElement,
+  graphManagerState: GraphManagerState,
+): string | undefined => {
+  switch (true) {
+    case graphManagerState.isSystemElement(element):
+      return 'system element';
+    case graphManagerState.isGeneratedElement(element):
+      return 'generated element';
+    case graphManagerState.isDependencyElement(element):
+      return 'dependency element';
+    default:
+      return undefined;
+  }
+};
+
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
   graphManagerState: GraphManagerState;
@@ -33,44 +67,14 @@ export const getPackageableElementOptionFormatter = (props: {
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
 
-    const getColor = (element: PackageableElement): string => {
-      switch (true) {
-        case props.graphManagerState.isSystemElement(element):
-          return 'system';
-        case props.graphManagerState.isGeneratedElement(element):
-          return 'generated';
-        case props.graphManagerState.isMainGraphElement(element):
-          return 'main';
-        case props.graphManagerState.isDependencyElement(element):
-          return 'dependency';
-        default:
-          return '';
-      }
-    };
-
-    const getToolTip = (element: PackageableElement): string => {
-      switch (true) {
-        case props.graphManagerState.isSystemElement(element):
-          return 'system';
-        case props.graphManagerState.isGeneratedElement(element):
-          return 'generated';
-        case props.graphManagerState.isMainGraphElement(element):
-          return '';
-        case props.graphManagerState.isDependencyElement(element):
-          return 'dependency';
-        default:
-          return '';
-      }
-    };
-
-    const optionColor = getColor(option.value);
-    const toolTip = getToolTip(option.value);
-
     return (
       <div className={className}>
         <div
-          title={`${toolTip} element`}
-          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColor}`}
+          title={`${optionToolTip(option.value, props.graphManagerState)}`}
+          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColorClassName(
+            option.value,
+            props.graphManagerState,
+          )}`}
         ></div>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (
