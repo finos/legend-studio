@@ -43,7 +43,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
 import { TaggedValueEditor } from './uml-editor/TaggedValueEditor.js';
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type ConcreteFunctionDefinition,
@@ -90,10 +90,6 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import {
-  AllStereotypeDragSource,
-  AllTaggedValueDragSource,
-} from './uml-editor/ClassEditor.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 enum FUNCTION_PARAMETER_TYPE {
@@ -120,19 +116,9 @@ export const getFunctionParameterType = (
 
 class FunctionParameterDragSource {
   parameter: RawVariableExpression;
-  isBeingDragged = false;
 
   constructor(parameter: RawVariableExpression) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.parameter = parameter;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -144,18 +130,11 @@ const ParameterBasicEditor = observer(
   (props: {
     parameter: RawVariableExpression;
     _func: ConcreteFunctionDefinition;
-    projectionParameterState: FunctionParameterDragSource;
     deleteParameter: () => void;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      parameter,
-      _func,
-      deleteParameter,
-      projectionParameterState,
-      isReadOnly,
-    } = props;
+    const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
@@ -237,24 +216,16 @@ const ParameterBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionParameterState.parameter === isBeingDraggedParameter;
+    const isBeingDragged = parameter === isBeingDraggedParameter;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: FUNCTION_PARAMETER_DND_TYPE.PARAMETER,
-        item: (): FunctionParameterDragSource => {
-          projectionParameterState.setIsBeingDragged(true);
-          return {
-            parameter: parameter,
-            isBeingDragged: projectionParameterState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: FunctionParameterDragSource | undefined): void =>
-          projectionParameterState.setIsBeingDragged(false),
+        item: (): FunctionParameterDragSource => ({
+          parameter: parameter,
+        }),
       }),
-      [projectionParameterState],
+      [parameter],
     );
     dragConnector(dropConnector(ref));
 
@@ -706,9 +677,6 @@ export const FunctionMainEditor = observer(
                 _func={functionElement}
                 deleteParameter={deleteParameter(param)}
                 isReadOnly={isReadOnly}
-                projectionParameterState={
-                  new FunctionParameterDragSource(param)
-                }
               />
             ))}
           </div>
@@ -920,10 +888,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _annotatedElement={functionElement}
-                    projectionTaggedValueState={
-                      new AllTaggedValueDragSource(taggedValue)
-                    }
+                    annotatedElement={functionElement}
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -943,10 +908,7 @@ export const FunctionEditor = observer(() => {
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _annotatedElement={functionElement}
-                    projectionStereotypeState={
-                      new AllStereotypeDragSource(stereotype)
-                    }
+                    annotatedElement={functionElement}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

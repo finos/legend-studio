@@ -73,28 +73,13 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import {
-  AllStereotypeDragSource,
-  AllTaggedValueDragSource,
-} from './ClassEditor.js';
-import { action, makeObservable, observable } from 'mobx';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 export class EnumValueDragSource {
   _enum: Enum;
-  isBeingDragged = false;
 
   constructor(_enum: Enum) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this._enum = _enum;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -109,17 +94,10 @@ const EnumBasicEditor = observer(
     selectValue: () => void;
     deleteValue: () => void;
     isReadOnly: boolean;
-    projectionEnumerationState: EnumValueDragSource;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      _enum,
-      _parentEnumerations,
-      selectValue,
-      deleteValue,
-      isReadOnly,
-      projectionEnumerationState,
-    } = props;
+    const { _enum, _parentEnumerations, selectValue, deleteValue, isReadOnly } =
+      props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       enum_setName(_enum, event.target.value);
     };
@@ -155,24 +133,16 @@ const EnumBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionEnumerationState._enum === isBeingDraggedEnumeration;
+    const isBeingDragged = _enum === isBeingDraggedEnumeration;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: ENUEMRATION_VALUE_DND_TYPE.ENUMERATION,
-        item: (): EnumValueDragSource => {
-          projectionEnumerationState.setIsBeingDragged(true);
-          return {
-            _enum: _enum,
-            isBeingDragged: projectionEnumerationState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: EnumValueDragSource | undefined): void =>
-          projectionEnumerationState.setIsBeingDragged(false),
+        item: (): EnumValueDragSource => ({
+          _enum: _enum,
+        }),
       }),
-      [projectionEnumerationState],
+      [_enum],
     );
     dragConnector(dropConnector(ref));
 
@@ -390,10 +360,7 @@ const EnumEditor = observer(
               >
                 {_enum.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _annotatedElement={_enum}
-                    projectionTaggedValueState={
-                      new AllTaggedValueDragSource(taggedValue)
-                    }
+                    annotatedElement={_enum}
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -413,10 +380,7 @@ const EnumEditor = observer(
                 {_enum.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _annotatedElement={_enum}
-                    projectionStereotypeState={
-                      new AllStereotypeDragSource(stereotype)
-                    }
+                    annotatedElement={_enum}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
@@ -644,9 +608,6 @@ export const EnumerationEditor = observer(
                       <EnumBasicEditor
                         key={enumValue._UUID}
                         _enum={enumValue}
-                        projectionEnumerationState={
-                          new EnumValueDragSource(enumValue)
-                        }
                         _parentEnumerations={enumeration.values}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
@@ -665,10 +626,7 @@ export const EnumerationEditor = observer(
                   >
                     {enumeration.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        _annotatedElement={enumeration}
-                        projectionTaggedValueState={
-                          new AllTaggedValueDragSource(taggedValue)
-                        }
+                        annotatedElement={enumeration}
                         key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
@@ -688,10 +646,7 @@ export const EnumerationEditor = observer(
                     {enumeration.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}
-                        _annotatedElement={enumeration}
-                        projectionStereotypeState={
-                          new AllStereotypeDragSource(stereotype)
-                        }
+                        annotatedElement={enumeration}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

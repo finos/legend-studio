@@ -18,8 +18,8 @@ import {
   addUniqueEntry,
   assertTrue,
   deleteEntry,
-  changeEntry,
   guaranteeType,
+  swapEntry,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 import {
@@ -93,49 +93,7 @@ export const class_addProperty = action(
 
 export const class_arrangeProperty = action(
   (_class: Class, sourceProperty: Property, targetProperty: Property): void => {
-    const sourceIndex = _class.properties.findIndex(
-      (property) => property === sourceProperty,
-    );
-    const targetIndex = _class.properties.findIndex(
-      (property) => property === targetProperty,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempProperty = targetProperty;
-      changeEntry(_class.properties, targetProperty, sourceProperty);
-      changeEntry(_class.properties, sourceProperty, tempProperty);
-    } else {
-      const tempProperty = sourceProperty;
-
-      changeEntry(_class.properties, sourceProperty, targetProperty);
-      changeEntry(_class.properties, targetProperty, tempProperty);
-    }
-  },
-);
-
-export const class_arrangeDerivedProperty = action(
-  (
-    _class: Class,
-    sourceProperty: DerivedProperty,
-    targetProperty: DerivedProperty,
-  ): void => {
-    const sourceIndex = _class.derivedProperties.findIndex(
-      (property) => property === sourceProperty,
-    );
-    const targetIndex = _class.derivedProperties.findIndex(
-      (property) => property === targetProperty,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempProperty = targetProperty;
-      changeEntry(_class.derivedProperties, targetProperty, sourceProperty);
-      changeEntry(_class.derivedProperties, sourceProperty, tempProperty);
-    } else {
-      const tempProperty = sourceProperty;
-
-      changeEntry(_class.derivedProperties, sourceProperty, targetProperty);
-      changeEntry(_class.derivedProperties, targetProperty, tempProperty);
-    }
+    swapEntry(_class.properties, sourceProperty, targetProperty);
   },
 );
 
@@ -149,6 +107,17 @@ export const class_addDerivedProperty = action(
     addUniqueEntry(_class.derivedProperties, observe_DerivedProperty(val));
   },
 );
+
+export const class_arrangeDerivedProperty = action(
+  (
+    _class: Class,
+    sourceProperty: DerivedProperty,
+    targetProperty: DerivedProperty,
+  ): void => {
+    swapEntry(_class.derivedProperties, sourceProperty, targetProperty);
+  },
+);
+
 export const class_addContraint = action(
   (_class: Class, val: Constraint): void => {
     addUniqueEntry(_class.constraints, observe_Constraint(val));
@@ -165,24 +134,10 @@ export const class_arrangeConstraint = action(
     sourceConstraint: Constraint,
     targetConstraint: Constraint,
   ): void => {
-    const sourceIndex = _class.constraints.findIndex(
-      (constraint) => constraint === sourceConstraint,
-    );
-    const targetIndex = _class.constraints.findIndex(
-      (constraint) => constraint === targetConstraint,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempConstraint = targetConstraint;
-      changeEntry(_class.constraints, targetConstraint, sourceConstraint);
-      changeEntry(_class.constraints, sourceConstraint, tempConstraint);
-    } else {
-      const tempConstraint = sourceConstraint;
-      changeEntry(_class.constraints, sourceConstraint, targetConstraint);
-      changeEntry(_class.constraints, targetConstraint, tempConstraint);
-    }
+    swapEntry(_class.constraints, sourceConstraint, targetConstraint);
   },
 );
+
 export const class_addSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
     addUniqueEntry(_class.generalizations, observe_GenericTypeReference(val));
@@ -199,22 +154,7 @@ export const class_arrangeSuperTypes = action(
     sourceSuperType: GenericTypeReference,
     targetSuperType: GenericTypeReference,
   ): void => {
-    const sourceIndex = _class.generalizations.findIndex(
-      (constraint) => constraint === sourceSuperType,
-    );
-    const targetIndex = _class.generalizations.findIndex(
-      (constraint) => constraint === targetSuperType,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempConstraint = targetSuperType;
-      changeEntry(_class.generalizations, targetSuperType, sourceSuperType);
-      changeEntry(_class.generalizations, sourceSuperType, tempConstraint);
-    } else {
-      const tempConstraint = sourceSuperType;
-      changeEntry(_class.generalizations, sourceSuperType, targetSuperType);
-      changeEntry(_class.generalizations, targetSuperType, tempConstraint);
-    }
+    swapEntry(_class.generalizations, sourceSuperType, targetSuperType);
   },
 );
 export const class_addSubclass = action((_class: Class, val: Class): void => {
@@ -310,58 +250,24 @@ export const tagStereotype_setValue = action(
 
 export const annotatedElement_arrangeTaggedValues = action(
   (
-    _annotatedElement: AnnotatedElement,
+    annotatedElement: AnnotatedElement,
     sourceTaggedValue: TaggedValue,
     targetTaggedValue: TaggedValue,
   ): void => {
-    const sourceIndex = _annotatedElement.taggedValues.findIndex(
-      (taggedValue) => taggedValue === sourceTaggedValue,
+    swapEntry(
+      annotatedElement.taggedValues,
+      sourceTaggedValue,
+      targetTaggedValue,
     );
-    const targetIndex = _annotatedElement.taggedValues.findIndex(
-      (taggedValue) => taggedValue === targetTaggedValue,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempTaggedValue = targetTaggedValue;
-      changeEntry(
-        _annotatedElement.taggedValues,
-        targetTaggedValue,
-        sourceTaggedValue,
-      );
-      changeEntry(
-        _annotatedElement.taggedValues,
-        sourceTaggedValue,
-        tempTaggedValue,
-      );
-    } else {
-      const tempTaggedValue = sourceTaggedValue;
-      changeEntry(
-        _annotatedElement.taggedValues,
-        sourceTaggedValue,
-        targetTaggedValue,
-      );
-      changeEntry(
-        _annotatedElement.taggedValues,
-        targetTaggedValue,
-        tempTaggedValue,
-      );
-    }
   },
 );
 
 export const annotatedElement_arrangeStereotypes = action(
   (
-    _annotatedElement: AnnotatedElement,
+    annotatedElement: AnnotatedElement,
     sourceStereotype: StereotypeReference,
     targetStereotype: StereotypeReference,
   ): void => {
-    const sourceIndex = _annotatedElement.stereotypes.findIndex(
-      (stereotype) => stereotype === sourceStereotype,
-    );
-    const targetIndex = _annotatedElement.stereotypes.findIndex(
-      (stereotype) => stereotype === targetStereotype,
-    );
-
     /**
      * NOTE: this is temporary. user is able to select duplicate stereotype values for now
      * that breaks drag and drop so we are exiting until we add fail in compilation error
@@ -369,9 +275,9 @@ export const annotatedElement_arrangeStereotypes = action(
      */
     const stereotypeOwnerReferences = new Set();
 
-    for (let i = 0; i < _annotatedElement.stereotypes.length; i++) {
+    for (let i = 0; i < annotatedElement.stereotypes.length; i++) {
       const ownerReferenceValue =
-        _annotatedElement.stereotypes[i]?.ownerReference.valueForSerialization;
+        annotatedElement.stereotypes[i]?.ownerReference.valueForSerialization;
 
       if (stereotypeOwnerReferences.has(ownerReferenceValue)) {
         return;
@@ -380,31 +286,7 @@ export const annotatedElement_arrangeStereotypes = action(
       }
     }
 
-    if (sourceIndex < targetIndex) {
-      const tempStereotype = targetStereotype;
-      changeEntry(
-        _annotatedElement.stereotypes,
-        targetStereotype,
-        sourceStereotype,
-      );
-      changeEntry(
-        _annotatedElement.stereotypes,
-        sourceStereotype,
-        tempStereotype,
-      );
-    } else {
-      const tempStereotype = sourceStereotype;
-      changeEntry(
-        _annotatedElement.stereotypes,
-        sourceStereotype,
-        targetStereotype,
-      );
-      changeEntry(
-        _annotatedElement.stereotypes,
-        targetStereotype,
-        tempStereotype,
-      );
-    }
+    swapEntry(annotatedElement.stereotypes, sourceStereotype, targetStereotype);
   },
 );
 
@@ -458,48 +340,18 @@ export const profile_deleteStereotype = action(
 );
 
 export const profile_arrangeTags = action(
-  (_profile: Profile, sourceTag: Tag, targetTag: Tag): void => {
-    const sourceIndex = _profile.p_tags.findIndex(
-      (taggedValue) => taggedValue === sourceTag,
-    );
-    const targetIndex = _profile.p_tags.findIndex(
-      (taggedValue) => taggedValue === targetTag,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempTag = targetTag;
-      changeEntry(_profile.p_tags, targetTag, sourceTag);
-      changeEntry(_profile.p_tags, sourceTag, tempTag);
-    } else {
-      const tempTag = sourceTag;
-      changeEntry(_profile.p_tags, sourceTag, targetTag);
-      changeEntry(_profile.p_tags, targetTag, tempTag);
-    }
+  (profile: Profile, sourceTag: Tag, targetTag: Tag): void => {
+    swapEntry(profile.p_tags, sourceTag, targetTag);
   },
 );
 
 export const profile_arrangeStereotypes = action(
   (
-    _profile: Profile,
+    profile: Profile,
     sourceStereotype: Stereotype,
     targetStereotype: Stereotype,
   ): void => {
-    const sourceIndex = _profile.p_stereotypes.findIndex(
-      (taggedValue) => taggedValue === sourceStereotype,
-    );
-    const targetIndex = _profile.p_stereotypes.findIndex(
-      (taggedValue) => taggedValue === targetStereotype,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempStereotype = targetStereotype;
-      changeEntry(_profile.p_stereotypes, targetStereotype, sourceStereotype);
-      changeEntry(_profile.p_stereotypes, sourceStereotype, tempStereotype);
-    } else {
-      const tempStereotype = sourceStereotype;
-      changeEntry(_profile.p_stereotypes, sourceStereotype, targetStereotype);
-      changeEntry(_profile.p_stereotypes, targetStereotype, tempStereotype);
-    }
+    swapEntry(profile.p_stereotypes, sourceStereotype, targetStereotype);
   },
 );
 
@@ -532,23 +384,7 @@ export const function_arrangeParameter = action(
     sourceParameter: RawVariableExpression,
     targetParameter: RawVariableExpression,
   ): void => {
-    const sourceIndex = _func.parameters.findIndex(
-      (parameter) => parameter === sourceParameter,
-    );
-    const targetIndex = _func.parameters.findIndex(
-      (parameter) => parameter === targetParameter,
-    );
-
-    if (sourceIndex < targetIndex) {
-      const tempProperty = targetParameter;
-      changeEntry(_func.parameters, targetParameter, sourceParameter);
-      changeEntry(_func.parameters, sourceParameter, tempProperty);
-    } else {
-      const tempProperty = sourceParameter;
-
-      changeEntry(_func.parameters, sourceParameter, targetParameter);
-      changeEntry(_func.parameters, targetParameter, tempProperty);
-    }
+    swapEntry(_func.parameters, sourceParameter, targetParameter);
   },
 );
 
@@ -575,19 +411,8 @@ export const enumValueReference_setValue = action(
 );
 
 export const enum_arrangeValues = action(
-  (_enum: Enum[], sourceEnum: Enum, targetEnum: Enum): void => {
-    const sourceIndex = _enum.findIndex((values) => values === sourceEnum);
-    const targetIndex = _enum.findIndex((values) => values === targetEnum);
-
-    if (sourceIndex < targetIndex) {
-      const tempvalues = targetEnum;
-      changeEntry(_enum, targetEnum, sourceEnum);
-      changeEntry(_enum, sourceEnum, tempvalues);
-    } else {
-      const tempvalues = sourceEnum;
-      changeEntry(_enum, sourceEnum, targetEnum);
-      changeEntry(_enum, targetEnum, tempvalues);
-    }
+  (enumeration: Enum[], sourceEnum: Enum, targetEnum: Enum): void => {
+    swapEntry(enumeration, sourceEnum, targetEnum);
   },
 );
 

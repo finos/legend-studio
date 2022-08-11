@@ -28,11 +28,8 @@
     margin: 0.5rem 0;
   }
 
-  &--big {
-    padding: 1rem;
-  }
-
-  &--big-container {
+  &--padding {
+    margin: 1rem;
     border: 0.2rem dashed var(--color-dark-grey-250);
     padding: 1rem;
   }

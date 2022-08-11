@@ -40,7 +40,6 @@ import {
   type AllStereotypeDragSource,
   CLASS_TAGGED_VALUE_DND_TYPE,
 } from './ClassEditor.js';
-import { action } from 'mobx';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
@@ -51,25 +50,23 @@ interface StereotypeOption {
 
 export const StereotypeSelector = observer(
   (props: {
-    _annotatedElement: AnnotatedElement;
+    annotatedElement: AnnotatedElement;
     stereotype: StereotypeReference;
-    projectionStereotypeState: AllStereotypeDragSource;
     deleteStereotype: () => void;
     isReadOnly: boolean;
     darkTheme?: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
     const {
-      _annotatedElement,
+      annotatedElement,
       stereotype,
-      projectionStereotypeState,
       deleteStereotype,
       isReadOnly,
       darkTheme,
     } = props;
     const editorStore = useEditorStore();
     const isStereotypeDuplicated = (val: StereotypeReference): boolean =>
-      _annotatedElement.stereotypes.filter(
+      annotatedElement.stereotypes.filter(
         (s) => s.ownerReference.value.name === val.ownerReference.value.name,
       ).length >= 2;
 
@@ -120,12 +117,12 @@ export const StereotypeSelector = observer(
         const draggingProperty = item.stereotype;
         const hoveredProperty = stereotype;
         annotatedElement_arrangeStereotypes(
-          _annotatedElement,
+          annotatedElement,
           draggingProperty,
           hoveredProperty,
         );
       },
-      [_annotatedElement, stereotype],
+      [annotatedElement, stereotype],
     );
 
     const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
@@ -144,24 +141,16 @@ export const StereotypeSelector = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionStereotypeState.stereotype === isBeingDraggedStereotype;
+    const isBeingDragged = stereotype === isBeingDraggedStereotype;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): AllStereotypeDragSource => {
-          projectionStereotypeState.setIsBeingDragged(true);
-          return {
-            stereotype: stereotype,
-            isBeingDragged: projectionStereotypeState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: AllStereotypeDragSource | undefined): void =>
-          projectionStereotypeState.setIsBeingDragged(false),
+        item: (): AllStereotypeDragSource => ({
+          stereotype: stereotype,
+        }),
       }),
-      [projectionStereotypeState],
+      [stereotype],
     );
     dragConnector(dropConnector(ref));
 

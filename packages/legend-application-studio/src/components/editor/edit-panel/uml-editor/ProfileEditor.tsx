@@ -48,26 +48,15 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { makeObservable, observable, action } from 'mobx';
 import { useRef, useCallback, useEffect } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 class TagValueDragSource {
   tag: Tag;
-  isBeingDragged = false;
 
   constructor(tag: Tag) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.tag = tag;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -81,11 +70,9 @@ const TagBasicEditor = observer(
     deleteValue: () => void;
     _profile: Profile;
     isReadOnly: boolean;
-    projectionTagState: TagValueDragSource;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { tag, _profile, deleteValue, projectionTagState, isReadOnly } =
-      props;
+    const { tag, _profile, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(tag, event.target.value);
     };
@@ -113,23 +100,16 @@ const TagBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged = projectionTagState.tag === isBeingDraggedTag;
+    const isBeingDragged = tag === isBeingDraggedTag;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: TAG_DND_TYPE.TAG,
-        item: (): TagValueDragSource => {
-          projectionTagState.setIsBeingDragged(true);
-          return {
-            tag: tag,
-            isBeingDragged: projectionTagState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: TagValueDragSource | undefined): void =>
-          projectionTagState.setIsBeingDragged(false),
+        item: (): TagValueDragSource => ({
+          tag: tag,
+        }),
       }),
-      [projectionTagState],
+      [tag],
     );
     dragConnector(dropConnector(ref));
 
@@ -184,19 +164,9 @@ const TagBasicEditor = observer(
 
 class StereotypeProfileDragSource {
   stereotype: Stereotype;
-  isBeingDragged = false;
 
   constructor(stereotype: Stereotype) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.stereotype = stereotype;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -209,17 +179,10 @@ const StereotypeBasicEditor = observer(
     stereotype: Stereotype;
     deleteStereotype: () => void;
     _profile: Profile;
-    projectionStereotypeState: StereotypeProfileDragSource;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      stereotype,
-      _profile,
-      deleteStereotype,
-      projectionStereotypeState,
-      isReadOnly,
-    } = props;
+    const { stereotype, _profile, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(stereotype, event.target.value);
     };
@@ -251,24 +214,16 @@ const StereotypeBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionStereotypeState.stereotype === isBeingDraggedTag;
+    const isBeingDragged = stereotype === isBeingDraggedTag;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: STEREOTYPE_DND_TYPE.STEREOTYPE,
-        item: (): StereotypeProfileDragSource => {
-          projectionStereotypeState.setIsBeingDragged(true);
-          return {
-            stereotype: stereotype,
-            isBeingDragged: projectionStereotypeState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: StereotypeProfileDragSource | undefined): void =>
-          projectionStereotypeState.setIsBeingDragged(false),
+        item: (): StereotypeProfileDragSource => ({
+          stereotype: stereotype,
+        }),
       }),
-      [projectionStereotypeState],
+      [stereotype],
     );
     dragConnector(dropConnector(ref));
 
@@ -422,7 +377,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                   key={tag._UUID}
                   tag={tag}
                   _profile={profile}
-                  projectionTagState={new TagValueDragSource(tag)}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
                 />
@@ -435,9 +389,6 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
                 <StereotypeBasicEditor
                   key={stereotype._UUID}
                   _profile={profile}
-                  projectionStereotypeState={
-                    new StereotypeProfileDragSource(stereotype)
-                  }
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}

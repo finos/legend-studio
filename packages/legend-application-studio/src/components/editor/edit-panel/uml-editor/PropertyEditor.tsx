@@ -45,10 +45,6 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
-import {
-  AllStereotypeDragSource,
-  AllTaggedValueDragSource,
-} from './ClassEditor.js';
 
 export const PropertyEditor = observer(
   (props: {
@@ -209,10 +205,7 @@ export const PropertyEditor = observer(
               >
                 {property.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
-                    _annotatedElement={property}
-                    projectionTaggedValueState={
-                      new AllTaggedValueDragSource(taggedValue)
-                    }
+                    annotatedElement={property}
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -232,10 +225,7 @@ export const PropertyEditor = observer(
                 {property.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
-                    _annotatedElement={property}
-                    projectionStereotypeState={
-                      new AllStereotypeDragSource(stereotype)
-                    }
+                    annotatedElement={property}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

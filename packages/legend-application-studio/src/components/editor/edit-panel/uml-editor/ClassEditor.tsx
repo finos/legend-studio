@@ -126,19 +126,9 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 
 class ClassPropertyDragSource {
   property: Property;
-  isBeingDragged = false;
 
   constructor(property: Property) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.property = property;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -151,20 +141,11 @@ const PropertyBasicEditor = observer(
     _class: Class;
     editorState: ClassEditorState;
     property: Property;
-    projectionPropertyState: ClassPropertyDragSource;
-    isRearrangingColumns: boolean;
     deleteProperty: () => void;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      property,
-      _class,
-      projectionPropertyState,
-      editorState,
-      deleteProperty,
-      isReadOnly,
-    } = props;
+    const { property, _class, editorState, deleteProperty, isReadOnly } = props;
 
     const editorStore = useEditorStore();
     const isInheritedProperty =
@@ -260,24 +241,16 @@ const PropertyBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionPropertyState.property === isBeingDraggedProperty;
+    const isBeingDragged = property === isBeingDraggedProperty;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CLASS_PROPERTY_DND_TYPE.PROPERTY,
-        item: (): ClassPropertyDragSource => {
-          projectionPropertyState.setIsBeingDragged(true);
-          return {
-            property: property,
-            isBeingDragged: projectionPropertyState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: ClassPropertyDragSource | undefined): void =>
-          projectionPropertyState.setIsBeingDragged(false),
+        item: (): ClassPropertyDragSource => ({
+          property: property,
+        }),
       }),
-      [projectionPropertyState],
+      [property],
     );
     dragConnector(dropConnector(ref));
 
@@ -494,19 +467,9 @@ const PropertyBasicEditor = observer(
 
 class ClassDerivedPropertyDragSource {
   derivedProperty: DerivedProperty;
-  isBeingDragged = false;
 
   constructor(derivedProperty: DerivedProperty) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.derivedProperty = derivedProperty;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -519,7 +482,6 @@ const DerivedPropertyBasicEditor = observer(
     _class: Class;
     editorState: ClassEditorState;
     derivedProperty: DerivedProperty;
-    projectionPropertyState: ClassDerivedPropertyDragSource;
     deleteDerivedProperty: () => void;
     isReadOnly: boolean;
   }) => {
@@ -528,7 +490,6 @@ const DerivedPropertyBasicEditor = observer(
       derivedProperty,
       _class,
       deleteDerivedProperty,
-      projectionPropertyState,
       editorState,
       isReadOnly,
     } = props;
@@ -649,24 +610,16 @@ const DerivedPropertyBasicEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionPropertyState.derivedProperty === isBeingDraggedProperty;
+    const isBeingDragged = derivedProperty === isBeingDraggedProperty;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY,
-        item: (): ClassDerivedPropertyDragSource => {
-          projectionPropertyState.setIsBeingDragged(true);
-          return {
-            derivedProperty: derivedProperty,
-            isBeingDragged: projectionPropertyState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: ClassDerivedPropertyDragSource | undefined): void =>
-          projectionPropertyState.setIsBeingDragged(false),
+        item: (): ClassDerivedPropertyDragSource => ({
+          derivedProperty: derivedProperty,
+        }),
       }),
-      [projectionPropertyState],
+      [derivedProperty],
     );
     dragConnector(dropConnector(ref));
 
@@ -699,11 +652,9 @@ const DerivedPropertyBasicEditor = observer(
     return (
       <div ref={ref}>
         {isBeingDragged && (
-          <div className="uml-element-editor__dnd--big">
-            <div className="uml-element-editor__dnd--big-container">
-              <div className="uml-element-editor__dnd__name">
-                {derivedProperty.name}
-              </div>
+          <div className="uml-element-editor__dnd--padding">
+            <div className="uml-element-editor__dnd__name">
+              {derivedProperty.name}
             </div>
           </div>
         )}
@@ -1031,7 +982,7 @@ const ConstraintEditor = observer(
       >
         {isBeingDragged && (
           <div className="uml-element-editor__dnd--tall">
-            <div className="uml-element-editor__dnd--big-container ">
+            <div className="uml-element-editor__dnd--padding ">
               <div className="uml-element-editor__dnd__name">
                 {constraint.name}
               </div>
@@ -1334,8 +1285,6 @@ const PropertiesEditor = observer(
           <PropertyBasicEditor
             key={property._UUID}
             property={property}
-            isRearrangingColumns={true}
-            projectionPropertyState={new ClassPropertyDragSource(property)}
             _class={_class}
             editorState={editorState}
             deleteProperty={deleteProperty(property)}
@@ -1417,7 +1366,6 @@ const DerviedPropertiesEditor = observer(
               key={dp._UUID}
               derivedProperty={dp}
               _class={_class}
-              projectionPropertyState={new ClassDerivedPropertyDragSource(dp)}
               editorState={editorState}
               deleteDerivedProperty={deleteDerivedProperty(dp)}
               isReadOnly={isReadOnly}
@@ -1552,19 +1500,9 @@ const SupertypesEditor = observer(
 
 export class AllTaggedValueDragSource {
   taggedValue: TaggedValue;
-  isBeingDragged = false;
 
   constructor(taggedValue: TaggedValue) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.taggedValue = taggedValue;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -1614,13 +1552,10 @@ const TaggedValuesEditor = observer(
       >
         {_class.taggedValues.map((taggedValue) => (
           <TaggedValueEditor
-            _annotatedElement={_class}
+            annotatedElement={_class}
             key={taggedValue._UUID}
             taggedValue={taggedValue}
             deleteValue={deleteTaggedValue(taggedValue)}
-            projectionTaggedValueState={
-              new AllTaggedValueDragSource(taggedValue)
-            }
             isReadOnly={isReadOnly}
           />
         ))}
@@ -1631,19 +1566,9 @@ const TaggedValuesEditor = observer(
 
 export class AllStereotypeDragSource {
   stereotype: StereotypeReference;
-  isBeingDragged = false;
 
   constructor(stereotype: StereotypeReference) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
     this.stereotype = stereotype;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 
@@ -1692,8 +1617,7 @@ const StereotypesEditor = observer(
         {_class.stereotypes.map((stereotype) => (
           <StereotypeSelector
             key={stereotype.value._UUID}
-            _annotatedElement={_class}
-            projectionStereotypeState={new AllStereotypeDragSource(stereotype)}
+            annotatedElement={_class}
             stereotype={stereotype}
             deleteStereotype={deleteStereotype(stereotype)}
             isReadOnly={isReadOnly}

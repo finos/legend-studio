@@ -87,10 +87,6 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import {
-  AllStereotypeDragSource,
-  AllTaggedValueDragSource,
-} from './ClassEditor.js';
 
 const AssociationPropertyBasicEditor = observer(
   (props: {
@@ -516,10 +512,7 @@ export const AssociationEditor = observer(
                   >
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
-                        _annotatedElement={association}
-                        projectionTaggedValueState={
-                          new AllTaggedValueDragSource(taggedValue)
-                        }
+                        annotatedElement={association}
                         key={taggedValue._UUID}
                         taggedValue={taggedValue}
                         deleteValue={_deleteTaggedValue(taggedValue)}
@@ -539,10 +532,7 @@ export const AssociationEditor = observer(
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}
-                        _annotatedElement={association}
-                        projectionStereotypeState={
-                          new AllStereotypeDragSource(stereotype)
-                        }
+                        annotatedElement={association}
                         stereotype={stereotype}
                         deleteStereotype={_deleteStereotype(stereotype)}
                         isReadOnly={isReadOnly}

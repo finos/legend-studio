@@ -64,10 +64,6 @@ import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js'
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
-import {
-  AllStereotypeDragSource,
-  AllTaggedValueDragSource,
-} from '../uml-editor/ClassEditor.js';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -322,10 +318,7 @@ export const DataElementEditor = observer(() => {
                   {dataElement.stereotypes.map((stereotype) => (
                     <StereotypeSelector
                       key={stereotype.value._UUID}
-                      _annotatedElement={dataElement}
-                      projectionStereotypeState={
-                        new AllStereotypeDragSource(stereotype)
-                      }
+                      annotatedElement={dataElement}
                       stereotype={stereotype}
                       deleteStereotype={_deleteStereotype(stereotype)}
                       isReadOnly={isReadOnly}
@@ -373,10 +366,7 @@ export const DataElementEditor = observer(() => {
                 >
                   {dataElement.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
-                      _annotatedElement={dataElement}
-                      projectionTaggedValueState={
-                        new AllTaggedValueDragSource(taggedValue)
-                      }
+                      annotatedElement={dataElement}
                       key={taggedValue._UUID}
                       taggedValue={taggedValue}
                       deleteValue={deleteTaggedValue(taggedValue)}
