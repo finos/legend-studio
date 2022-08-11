@@ -18,6 +18,8 @@ import {
   type Query,
   extractElementNameFromPath,
   QueryTaggedValue,
+  RuntimePointer,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
@@ -104,10 +106,13 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       executionContext.mapping.value,
     );
     this.queryBuilderState.querySetupState.setRuntimeValue(
-      (this.runtimePath
-        ? this.graphManagerState.graph.getRuntime(this.runtimePath)
-        : executionContext.defaultRuntime.value
-      ).runtimeValue,
+      new RuntimePointer(
+        PackageableElementExplicitReference.create(
+          this.runtimePath
+            ? this.graphManagerState.graph.getRuntime(this.runtimePath)
+            : executionContext.defaultRuntime.value,
+        ),
+      ),
     );
 
     if (this.classPath) {
