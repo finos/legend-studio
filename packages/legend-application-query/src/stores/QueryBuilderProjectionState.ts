@@ -793,4 +793,26 @@ export class QueryBuilderProjectionState {
       );
     }
   }
+
+  isValidProjectionState(): boolean {
+    return Boolean(!this.getValidationErrorMessage());
+  }
+
+  getValidationErrorMessage(): string | undefined {
+    if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
+      const hasDuplicatedProjectionColumns = this.columns.some(
+        (column) =>
+          this.columns.filter((c) => c.columnName === column.columnName)
+            .length > 1,
+      );
+      if (hasDuplicatedProjectionColumns) {
+        return 'Query has duplicated projection columns';
+      }
+      const hasNoProjectionColumns = this.columns.length === 0;
+      if (hasNoProjectionColumns) {
+        return 'Query has no projection columns';
+      }
+    }
+    return undefined;
+  }
 }
