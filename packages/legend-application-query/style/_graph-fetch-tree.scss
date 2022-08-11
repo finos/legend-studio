@@ -29,6 +29,16 @@
     height: 3.4rem;
     background: var(--color-dark-grey-85);
     padding: 0 1rem;
+
+    &__hint-icon {
+      @include flexCenter;
+
+      width: 3rem;
+
+      svg {
+        color: var(--color-dark-grey-500);
+      }
+    }
   }
 
   &__container {

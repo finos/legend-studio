@@ -221,6 +221,11 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                 );
                 if (queryBuilderExtension.mode) {
                   queryBuilderExtension.queryBuilderState.changeClass(element);
+                  queryBuilderExtension.queryBuilderState.initialize(
+                    editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+                      element,
+                    ),
+                  );
                 }
               },
             );
@@ -326,6 +331,11 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                   if (queryBuilderExtension.mode) {
                     queryBuilderExtension.queryBuilderState.changeClass(
                       classView.class.value,
+                    );
+                    queryBuilderExtension.queryBuilderState.initialize(
+                      diagramEditorState.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+                        classView.class.value,
+                      ),
                     );
                   }
                 },

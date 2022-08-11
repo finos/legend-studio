@@ -27,6 +27,7 @@ import {
   TimesIcon,
   CheckSquareIcon,
   SquareIcon,
+  InfoCircleIcon,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
@@ -181,6 +182,9 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
             </button>
             <div className="panel__content__form__section__toggler__prompt">
               Check graph fetch
+            </div>
+            <div className="query-builder-graph-fetch-tree__settings__hint-icon">
+              <InfoCircleIcon title="With this enabled, while executing, violations of constraints will reported as part of the result, rather than causing a failure" />
             </div>
           </div>
         </div>
