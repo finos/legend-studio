@@ -23,36 +23,28 @@ import type { PackageableElementOption } from '../../stores/shared/PackageableEl
 const optionColorClassName = (
   element: PackageableElement,
   graphManagerState: GraphManagerState,
-): string => {
-  switch (true) {
-    case graphManagerState.isSystemElement(element):
-      return 'system';
-    case graphManagerState.isGeneratedElement(element):
-      return 'generated';
-    case graphManagerState.isMainGraphElement(element):
-      return 'main';
-    case graphManagerState.isDependencyElement(element):
-      return 'dependency';
-    default:
-      return '';
-  }
-};
+): string =>
+  graphManagerState.isSystemElement(element)
+    ? 'system'
+    : graphManagerState.isGeneratedElement(element)
+    ? 'generated'
+    : graphManagerState.isMainGraphElement(element)
+    ? 'main'
+    : graphManagerState.isDependencyElement(element)
+    ? 'dependency'
+    : '';
 
 const optionToolTip = (
   element: PackageableElement,
   graphManagerState: GraphManagerState,
-): string | undefined => {
-  switch (true) {
-    case graphManagerState.isSystemElement(element):
-      return 'system element';
-    case graphManagerState.isGeneratedElement(element):
-      return 'generated element';
-    case graphManagerState.isDependencyElement(element):
-      return 'dependency element';
-    default:
-      return undefined;
-  }
-};
+): string | undefined =>
+  graphManagerState.isSystemElement(element)
+    ? 'system element'
+    : graphManagerState.isGeneratedElement(element)
+    ? 'generated element'
+    : graphManagerState.isDependencyElement(element)
+    ? 'dependency element'
+    : undefined;
 
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
