@@ -46,7 +46,7 @@ import {
   variableExpression_setName,
   LambdaParameterState,
   LambdaParameterValuesEditor,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -193,8 +193,9 @@ const VariableExpressionEditor = observer(
                 onChange={changeType}
                 value={selectedType}
                 darkMode={true}
-                formatOptionLabel={getPackageableElementOptionalFormatter({
+                formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: true,
+                  graphManagerState: queryBuilderState.graphManagerState,
                 })}
               />
             </div>

@@ -41,6 +41,29 @@
   }
 }
 
+.packageable-element-format-option-label-type {
+  background-color: var(--color-dark-grey-300);
+  margin: -1rem 0.8rem -1rem -1.2rem;
+  height: 3.2rem;
+  padding: 0 0 0 0.5rem;
+
+  &--system {
+    background-color: var(--color-system);
+  }
+
+  &--generated {
+    background-color: var(--color-generated);
+  }
+
+  &--main {
+    background-color: transparent;
+  }
+
+  &--dependency {
+    background-color: var(--color-dependency);
+  }
+}
+
 .packageable-element-format-option-label--dark {
   @include flexVCenter;
 
