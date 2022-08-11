@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const TEST_DATA_lambda_expected_typeahead_filter = {
+export const TEST_DATA__lambda_expected_typeahead_filter = {
   _type: 'lambda',
   body: [
     {
@@ -126,7 +126,7 @@ export const TEST_DATA_lambda_expected_typeahead_filter = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_expected_typeahead_postFilter_with_derivation = {
+export const TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation = {
   _type: 'lambda',
   body: [
     {
@@ -255,7 +255,7 @@ export const TEST_DATA_lambda_expected_typeahead_postFilter_with_derivation = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_expected_typeahead_postFilter = {
+export const TEST_DATA__lambda_expected_typeahead_postFilter = {
   _type: 'lambda',
   body: [
     {
@@ -361,7 +361,7 @@ export const TEST_DATA_lambda_expected_typeahead_postFilter = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_typeahead_simple_postFilter = {
+export const TEST_DATA__lambda_typeahead_simple_postFilter = {
   _type: 'lambda',
   body: [
     {

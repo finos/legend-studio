@@ -50,11 +50,14 @@ import {
   getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
+  type DebouncedFunc,
+  type GeneratorFn,
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
@@ -62,6 +65,7 @@ import {
   instanceValue_changeValue,
   instanceValue_changeValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 
 type TypeCheckOption = {
@@ -175,7 +179,10 @@ const StringPrimitiveInstanceValueEditor = observer(
       | {
           values: string[] | undefined;
           isLoading: boolean;
-          reloadValues: (val: string) => void;
+          reloadValues:
+            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+            | undefined;
+          cleanUpReloadValues?: () => void;
         }
       | undefined;
   }) => {
@@ -187,6 +194,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       selectorConfig,
     } = props;
     const useSelector = Boolean(selectorConfig);
+    const appStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
     const updateValueSpec = (val: string): void => {
       instanceValue_changeValue(valueSpecification, val, 0);
@@ -199,6 +207,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     };
     // custom select
     const selectedValue = { value: value, label: value };
+    const reloadValuesFunc = selectorConfig?.reloadValues;
     const changeValue = (
       val: null | { value: number | string; label: string },
     ): void => {
@@ -211,7 +220,17 @@ const StringPrimitiveInstanceValueEditor = observer(
     ): void => {
       if (actionChange.action === 'input-change') {
         updateValueSpec(inputValue);
-        selectorConfig?.reloadValues(inputValue);
+        reloadValuesFunc?.cancel();
+        const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
+        if (reloadValuesFuncTransformation) {
+          flowResult(reloadValuesFuncTransformation).catch(
+            appStore.alertUnhandledError,
+          );
+        }
+      }
+      if (actionChange.action === 'input-blur') {
+        reloadValuesFunc?.cancel();
+        selectorConfig?.cleanUpReloadValues?.();
       }
     };
     const isLoading = selectorConfig?.isLoading;
@@ -669,7 +688,10 @@ export const BasicValueSpecificationEditor: React.FC<{
     | {
         values: string[] | undefined;
         isLoading: boolean;
-        reloadValues: (val: string) => void;
+        reloadValues:
+          | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+          | undefined;
+        cleanUpReloadValues?: () => void;
       }
     | undefined;
 }> = (props) => {

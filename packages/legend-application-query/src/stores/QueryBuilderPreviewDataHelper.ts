@@ -14,27 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  type AbstractPropertyExpression,
-  type Class,
-  type PureModel,
-  GenericType,
-  GenericTypeExplicitReference,
-  PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
-  CollectionInstanceValue,
-  CORE_PURE_PATH,
-  extractElementNameFromPath,
-  FunctionType,
-  LambdaFunction,
-  Multiplicity,
-  SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
+import type {
+  RawLambda,
+  AbstractPropertyExpression,
 } from '@finos/legend-graph';
-import {
-  DEFAULT_LAMBDA_VARIABLE_NAME,
-  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
-} from '../QueryBuilder_Const.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average.js';
 import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count.js';
 import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
@@ -44,108 +28,86 @@ import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOper
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
 import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
-import { buildGetAllFunction } from './QueryBuilderLambdaBuilder.js';
-import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
+import { QueryBuilderSimpleProjectionColumnState } from './QueryBuilderProjectionState.js';
+import { QueryBuilderState } from './QueryBuilderState.js';
+import {
+  COLUMN_SORT_TYPE,
+  SortColumnState,
+} from './QueryResultSetModifierState.js';
 
-const buildGroupByFunction = (
-  getAllFunction: SimpleFunctionExpression,
+export type QueryBuilderPreviewData = {
+  columns: string[];
+  rows: { values: (string | number)[] }[];
+};
+
+const PREVIEW_DATA_TAKE_LIMIT = 10;
+const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';
+const PREVIEW_DATA_NON_NUMERIC_COUNT_COLUMN_NAME = 'Count';
+
+enum NUMERIC_AGG_FUNC {
+  COUNT = 'Count',
+  DISTINCT_COUNT = 'Distinct Count',
+  SUM = 'Sum',
+  MIN = 'Min',
+  MAX = 'Max',
+  AVERAGE = 'Average',
+  STD_DEV_POPULATION = 'Std Dev (Population)',
+  STD_DEV_SAMPLE = 'Std Dev (Sample)',
+}
+
+const NUMERIC_AGG_FUNC_TO_AGG_OP: [
+  NUMERIC_AGG_FUNC,
+  typeof QueryBuilderAggregateOperator,
+][] = [
+  [NUMERIC_AGG_FUNC.COUNT, QueryBuilderAggregateOperator_Count],
+  [
+    NUMERIC_AGG_FUNC.DISTINCT_COUNT,
+    QueryBuilderAggregateOperator_DistinctCount,
+  ],
+  [NUMERIC_AGG_FUNC.SUM, QueryBuilderAggregateOperator_Sum],
+  [NUMERIC_AGG_FUNC.MIN, QueryBuilderAggregateOperator_Min],
+  [NUMERIC_AGG_FUNC.MAX, QueryBuilderAggregateOperator_Max],
+  [NUMERIC_AGG_FUNC.AVERAGE, QueryBuilderAggregateOperator_Average],
+  [
+    NUMERIC_AGG_FUNC.STD_DEV_POPULATION,
+    QueryBuilderAggregateOperator_StdDev_Population,
+  ],
+  [
+    NUMERIC_AGG_FUNC.STD_DEV_SAMPLE,
+    QueryBuilderAggregateOperator_StdDev_Sample,
+  ],
+];
+
+const createProjectionColumn = (
+  queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
-  aggregates: [QueryBuilderAggregateOperator, string][],
-  includePropertyValue: boolean,
-  graph: PureModel,
-): SimpleFunctionExpression => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  columnName: string,
+): QueryBuilderSimpleProjectionColumnState => {
+  const col = new QueryBuilderSimpleProjectionColumnState(
+    queryBuilderState.fetchStructureState.projectionState,
+    propertyExpression,
+    false,
   );
-  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
-  const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
-  const lambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
-  );
+  col.setColumnName(columnName);
+  return col;
+};
 
-  const groupByFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY),
-    multiplicityOne,
+const createQueryBuilderState = (
+  queryBuilderState: QueryBuilderState,
+): QueryBuilderState => {
+  const builderState = new QueryBuilderState(
+    queryBuilderState.applicationStore,
+    queryBuilderState.graphManagerState,
+    queryBuilderState.mode,
   );
-
-  const colLambdas = new CollectionInstanceValue(
-    graph.getTypicalMultiplicity(
-      includePropertyValue
-        ? TYPICAL_MULTIPLICITY_TYPE.ONE
-        : TYPICAL_MULTIPLICITY_TYPE.ZERO,
-    ),
-  );
-  const aggregateLambdas = new CollectionInstanceValue(
-    new Multiplicity(aggregates.length, aggregates.length),
-  );
-  const noOfCols = aggregates.length + (includePropertyValue ? 1 : 0);
-  const colAliases = new CollectionInstanceValue(
-    new Multiplicity(noOfCols, noOfCols),
-  );
-
-  if (includePropertyValue) {
-    colLambdas.values.push(
-      buildGenericLambdaFunctionInstanceValue(
-        DEFAULT_LAMBDA_VARIABLE_NAME,
-        [propertyExpression],
-        graph,
-      ),
-    );
-    const valueColAlias = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(typeString)),
-      multiplicityOne,
-    );
-    valueColAlias.values.push('Value');
-    colAliases.values.push(valueColAlias);
-  }
-
-  aggregates.forEach((pair) => {
-    const aggregateFunctionExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
-      multiplicityOne,
-    );
-    aggregateFunctionExpression.parametersValues = [
-      buildGenericLambdaFunctionInstanceValue(
-        DEFAULT_LAMBDA_VARIABLE_NAME,
-        [propertyExpression],
-        graph,
-      ),
-      buildGenericLambdaFunctionInstanceValue(
-        DEFAULT_LAMBDA_VARIABLE_NAME,
-        [
-          pair[0].buildAggregateExpression(
-            propertyExpression,
-            DEFAULT_LAMBDA_VARIABLE_NAME,
-            graph,
-          ),
-        ],
-        graph,
-      ),
-    ];
-    aggregateLambdas.values.push(aggregateFunctionExpression);
-
-    const colAlias = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(typeString)),
-      multiplicityOne,
-    );
-    colAlias.values.push(pair[1]);
-    colAliases.values.push(colAlias);
-  });
-  groupByFunction.parametersValues = [
-    getAllFunction,
-    colLambdas,
-    aggregateLambdas,
-    colAliases,
-  ];
-  lambdaFunction.expressionSequence[0] = groupByFunction;
-  return groupByFunction;
+  builderState.querySetupState = queryBuilderState.querySetupState;
+  return builderState;
 };
 
 export const buildNumericPreviewDataQuery = (
+  queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
-  _class: Class,
-  graph: PureModel,
-): LambdaFunction => {
+): RawLambda => {
   // Build the following query
   //
   // ClassX.all()->groupBy(
@@ -171,44 +133,29 @@ export const buildNumericPreviewDataQuery = (
   //     'Std Dev (Sample)'
   //   ]
   // )
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
-  const lambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
-  );
-  const groupByFunction = buildGroupByFunction(
-    buildGetAllFunction(_class, multiplicityOne),
-    propertyExpression,
-    [
-      [new QueryBuilderAggregateOperator_Count(), 'Count'],
-      [new QueryBuilderAggregateOperator_DistinctCount(), 'Distinct Count'],
-      [new QueryBuilderAggregateOperator_Sum(), 'Sum'],
-      [new QueryBuilderAggregateOperator_Min(), 'Min'],
-      [new QueryBuilderAggregateOperator_Max(), 'Max'],
-      [new QueryBuilderAggregateOperator_Average(), 'Average'],
-      [
-        new QueryBuilderAggregateOperator_StdDev_Population(),
-        'Standard Deviation (Population)',
-      ],
-      [
-        new QueryBuilderAggregateOperator_StdDev_Sample(),
-        'Standard Deviation (Sample)',
-      ],
-    ] as [QueryBuilderAggregateOperator, string][],
-    false,
-    graph,
-  );
-  lambdaFunction.expressionSequence[0] = groupByFunction;
-  return lambdaFunction;
+  const builderState = createQueryBuilderState(queryBuilderState);
+  const projectionState = builderState.fetchStructureState.projectionState;
+  const aggregationState = projectionState.aggregationState;
+  NUMERIC_AGG_FUNC_TO_AGG_OP.forEach((val) => {
+    const colState = createProjectionColumn(
+      builderState,
+      propertyExpression,
+      val[0],
+    );
+    projectionState.columns.push(colState);
+    const valAggOp = guaranteeNonNullable(
+      aggregationState.operators.find((t) => t instanceof val[1]),
+    );
+    aggregationState.changeColumnAggregateOperator(valAggOp, colState);
+  });
+
+  return builderState.resultState.buildExecutionRawLambda();
 };
 
 export const buildNonNumericPreviewDataQuery = (
+  queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
-  _class: Class,
-  graph: PureModel,
-): LambdaFunction => {
+): RawLambda => {
   // Build the following query
   //
   // ClassX.all()->groupBy(
@@ -216,85 +163,47 @@ export const buildNonNumericPreviewDataQuery = (
   //     x|$x.prop
   //   ],
   //   [
-  //     agg(x|$x.prop, x|$x->distinct()->count())
+  //     agg(x|$x.prop, x|$x->count())
   //   ],
   //   [
   //     'Value',
   //     'Count'
   //   ]
-  // )->take(10)->sort([desc('Count'), asc('Value')])
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
-  const lambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
-  );
-
-  // build groupBy()
-  const groupByFunction = buildGroupByFunction(
-    buildGetAllFunction(_class, multiplicityOne),
+  // )->sort([desc('Count'), asc('Value')])->take(10)
+  const builderState = createQueryBuilderState(queryBuilderState);
+  const valueProjectionColState = createProjectionColumn(
+    builderState,
     propertyExpression,
-    [[new QueryBuilderAggregateOperator_Count(), 'Count']] as [
-      QueryBuilderAggregateOperator,
-      string,
-    ][],
-    true,
-    graph,
+    PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME,
   );
-  lambdaFunction.expressionSequence[0] = groupByFunction;
-
-  // build sort()
-  const sortFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT),
-    multiplicityOne,
+  const valueCountProjectionState = createProjectionColumn(
+    builderState,
+    propertyExpression,
+    PREVIEW_DATA_NON_NUMERIC_COUNT_COLUMN_NAME,
   );
-  const sortColumnFunctions = new CollectionInstanceValue(
-    new Multiplicity(2, 2),
-    undefined,
-  );
-  sortColumnFunctions.values = [
-    [QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC, 'Count'],
-    [QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC, 'Value'],
-  ].map((pair) => {
-    const sortColumnFunction = new SimpleFunctionExpression(
-      extractElementNameFromPath(pair[0] as string),
-      multiplicityOne,
-    );
-    const sortColumnName = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(
-        new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
-      ),
-      multiplicityOne,
-    );
-    sortColumnName.values = [pair[1]];
-    sortColumnFunction.parametersValues[0] = sortColumnName;
-    return sortColumnFunction;
-  });
-  sortFunction.parametersValues[0] = groupByFunction;
-  sortFunction.parametersValues[1] = sortColumnFunctions;
-
-  // build take()
-  const limit = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER)),
+  builderState.fetchStructureState.projectionState.columns = [
+    valueProjectionColState,
+    valueCountProjectionState,
+  ];
+  const distinctCountOp = guaranteeNonNullable(
+    builderState.fetchStructureState.projectionState.aggregationState.operators.find(
+      (t) => t instanceof QueryBuilderAggregateOperator_Count,
     ),
-    multiplicityOne,
   );
-  limit.values = [10];
-  const takeFunction = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE),
-    multiplicityOne,
+  builderState.fetchStructureState.projectionState.aggregationState.changeColumnAggregateOperator(
+    distinctCountOp,
+    valueCountProjectionState,
   );
-  takeFunction.parametersValues[0] = sortFunction;
-  takeFunction.parametersValues[1] = limit;
-
-  lambdaFunction.expressionSequence[0] = takeFunction;
-
-  return lambdaFunction;
-};
-
-export type QueryBuilderPreviewData = {
-  columns: string[];
-  rows: { values: (string | number)[] }[];
+  // result set
+  builderState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
+  const sortValueCount = new SortColumnState(
+    builderState,
+    valueCountProjectionState,
+  );
+  sortValueCount.sortType = COLUMN_SORT_TYPE.DESC;
+  builderState.resultSetModifierState.sortColumns = [
+    sortValueCount,
+    new SortColumnState(builderState, valueProjectionColState),
+  ];
+  return builderState.resultState.buildExecutionRawLambda();
 };

@@ -133,7 +133,7 @@ export class FilterConditionState {
       typeaheadSearchResults: observable,
       typeaheadSearchState: observable,
       addExistsLambdaParamNames: action,
-      handleTypeAheadSearch: flow,
+      handleTypeaheadSearch: flow,
     });
 
     this.filterState = filterState;
@@ -157,7 +157,7 @@ export class FilterConditionState {
     );
   }
 
-  *handleTypeAheadSearch(): GeneratorFn<void> {
+  *handleTypeaheadSearch(): GeneratorFn<void> {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
@@ -181,6 +181,8 @@ export class FilterConditionState {
       assertErrorThrown(error);
       this.typeaheadSearchResults = [];
       this.typeaheadSearchState.fail();
+    } finally {
+      this.typeaheadSearchState.complete();
     }
   }
 

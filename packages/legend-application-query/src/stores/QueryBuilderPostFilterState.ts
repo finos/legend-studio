@@ -288,7 +288,7 @@ export class PostFilterConditionState {
       setValue: action,
       setOperator: action,
       changeColumn: flow,
-      handleTypeAheadSearch: flow,
+      handleTypeaheadSearch: flow,
     });
 
     this.postFilterState = postFilterState;
@@ -315,7 +315,7 @@ export class PostFilterConditionState {
     );
   }
 
-  *handleTypeAheadSearch(): GeneratorFn<void> {
+  *handleTypeaheadSearch(): GeneratorFn<void> {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
@@ -338,6 +338,8 @@ export class PostFilterConditionState {
     } catch (error) {
       assertErrorThrown(error);
       this.typeaheadSearchState.fail();
+    } finally {
+      this.typeaheadSearchState.complete();
     }
   }
 

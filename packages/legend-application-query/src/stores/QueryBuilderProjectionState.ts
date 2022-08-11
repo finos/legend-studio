@@ -68,7 +68,6 @@ import {
   RawLambda,
   stub_RawLambda,
   isStubbed_RawLambda,
-  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -87,8 +86,8 @@ import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBui
 import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString.js';
 import {
   type QueryBuilderPreviewData,
-  buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
+  buildNonNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper.js';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
@@ -709,13 +708,9 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildRawLambdaFromLambdaFunction(
-                buildNumericPreviewDataQuery(
-                  propertyExpression,
-                  this.queryBuilderState.querySetupState._class,
-                  this.queryBuilderState.graphManagerState.graph,
-                ),
-                this.queryBuilderState.graphManagerState,
+              buildNumericPreviewDataQuery(
+                this.queryBuilderState,
+                propertyExpression,
               ),
               this.queryBuilderState.querySetupState.mapping,
               runtime,
@@ -752,13 +747,9 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildRawLambdaFromLambdaFunction(
-                buildNonNumericPreviewDataQuery(
-                  propertyExpression,
-                  this.queryBuilderState.querySetupState._class,
-                  this.queryBuilderState.graphManagerState.graph,
-                ),
-                this.queryBuilderState.graphManagerState,
+              buildNonNumericPreviewDataQuery(
+                this.queryBuilderState,
+                propertyExpression,
               ),
               this.queryBuilderState.querySetupState.mapping,
               runtime,

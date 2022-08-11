@@ -35,7 +35,7 @@ import {
 } from './QueryBuilderProjectionState.js';
 import { QueryBuilderState } from './QueryBuilderState.js';
 
-const SEARCH_TAKE = 10;
+const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
 
 const createAndSetupQueryBuilderStateForTypeAhead = (
@@ -51,7 +51,7 @@ const createAndSetupQueryBuilderStateForTypeAhead = (
   builderState.querySetupState = queryBuilderState.querySetupState;
   // result modifiers
   builderState.resultSetModifierState.distinct = true;
-  builderState.resultSetModifierState.limit = SEARCH_TAKE;
+  builderState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
   return builderState;
 };
 

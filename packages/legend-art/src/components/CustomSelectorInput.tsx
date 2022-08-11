@@ -25,14 +25,14 @@ import { CaretDownIcon, TimesIcon, CircleNotchIcon } from './CJS__Icon.cjs';
 import { FixedSizeList } from 'react-window';
 import {
   type Props,
-  type InputActionMeta as _InputActionMeta,
+  type InputActionMeta,
   CreatableSelect,
   Select,
   createFilter as _createFilter,
 } from './CJS__ReactSelect.cjs';
 
+export type { InputActionMeta };
 export const createFilter = _createFilter;
-export type InputActionMeta = _InputActionMeta;
 interface ListChildComponentProps {
   index: number;
   style: React.CSSProperties;

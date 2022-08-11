@@ -53,11 +53,11 @@ import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   QueryBuilderState,
   StandardQueryBuilderMode,
 } from '../stores/QueryBuilderState.js';
+import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 
 export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -208,7 +208,17 @@ export const TEST__setUpQueryEditor = async (
 
 export const TEST_setUpQueryBuilderState = async (
   entities: Entity[],
-  rawLambda: RawLambda,
+  rawLambda?: RawLambda | undefined,
+  executionContext?:
+    | {
+        _class: string;
+        mapping: string;
+        runtime?: string | undefined;
+      }
+    | undefined,
+  rawMappingModelCoverageAnalysisResult?:
+    | RawMappingModelCoverageAnalysisResult
+    | undefined,
 ): Promise<QueryBuilderState> => {
   const pluginManager = LegendQueryPluginManager.create();
   pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
@@ -223,6 +233,36 @@ export const TEST_setUpQueryBuilderState = async (
     graphManagerState,
     new StandardQueryBuilderMode(),
   );
-  queryBuilderState.buildStateFromRawLambda(rawLambda);
+  if (rawLambda) {
+    queryBuilderState.buildStateFromRawLambda(rawLambda);
+  }
+  if (executionContext) {
+    const graph = queryBuilderState.graphManagerState.graph;
+    queryBuilderState.querySetupState._class = graph.getClass(
+      executionContext._class,
+    );
+    queryBuilderState.querySetupState.mapping = graph.getMapping(
+      executionContext.mapping,
+    );
+    if (executionContext.runtime) {
+      queryBuilderState.querySetupState.runtimeValue = graph.getRuntime(
+        executionContext.runtime,
+      );
+    }
+  }
+  if (rawMappingModelCoverageAnalysisResult) {
+    jest
+      .spyOn(
+        queryBuilderState.graphManagerState.graphManager,
+        'analyzeMappingModelCoverage',
+      )
+      .mockResolvedValue(
+        queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+          rawMappingModelCoverageAnalysisResult,
+        ),
+      );
+
+    await queryBuilderState.explorerState.analyzeMappingModelCoverage();
+  }
   return queryBuilderState;
 };

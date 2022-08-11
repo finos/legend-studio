@@ -20,7 +20,6 @@ import {
   integrationTest,
   type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
-import { TEST_setUpQueryBuilderState } from '../../components/QueryEditorComponentTestUtils.js';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { RawLambda } from '@finos/legend-graph';
@@ -35,11 +34,12 @@ import { QueryBuilderPostFilterTreeConditionNodeData } from '../QueryBuilderPost
 import type { Entity } from '@finos/legend-storage';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
-  TEST_DATA_lambda_expected_typeahead_filter,
-  TEST_DATA_lambda_expected_typeahead_postFilter,
-  TEST_DATA_lambda_expected_typeahead_postFilter_with_derivation,
-  TEST_DATA_lambda_typeahead_simple_postFilter,
-} from './TEST_DATA__QueryBuilder_TestTypeaheadSarch.js';
+  TEST_DATA__lambda_expected_typeahead_filter,
+  TEST_DATA__lambda_expected_typeahead_postFilter,
+  TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
+  TEST_DATA__lambda_typeahead_simple_postFilter,
+} from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
+import { TEST_setUpQueryBuilderState } from '../../components/QueryEditorComponentTestUtils.js';
 
 type TypeAheadTestCase = [
   string,
@@ -58,7 +58,7 @@ const cases: TypeAheadTestCase[] = [
       entities: TEST_DATA__COVIDDataSimpleModel,
     },
     TEST_DATA__lambda_simpleSingleConditionFilter,
-    TEST_DATA_lambda_expected_typeahead_filter,
+    TEST_DATA__lambda_expected_typeahead_filter,
     false,
   ],
   [
@@ -66,8 +66,8 @@ const cases: TypeAheadTestCase[] = [
     {
       entities: TEST_DATA__PostFilterModel,
     },
-    TEST_DATA_lambda_typeahead_simple_postFilter,
-    TEST_DATA_lambda_expected_typeahead_postFilter,
+    TEST_DATA__lambda_typeahead_simple_postFilter,
+    TEST_DATA__lambda_expected_typeahead_postFilter,
     true,
   ],
   [
@@ -76,7 +76,7 @@ const cases: TypeAheadTestCase[] = [
       entities: TEST_DATA__PostFilterModel,
     },
     TEST_DATA__lambda_derivationPostFilter,
-    TEST_DATA_lambda_expected_typeahead_postFilter_with_derivation,
+    TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
     true,
   ],
 ];

@@ -475,19 +475,24 @@ const QueryBuilderPostFilterConditionEditor = observer(
       );
     };
     const debouncedTypeaheadSearch = useMemo(
-      () => debounce(() => node.condition.handleTypeAheadSearch(), 100),
+      () =>
+        debounce(
+          (inputVal: string) => node.condition.handleTypeaheadSearch(),
+          1000,
+        ),
       [node],
     );
-
+    const cleanUpReloadValues = (): void => {
+      node.condition.typeaheadSearchState.complete();
+    };
     const changeValueSpecification = (val: ValueSpecification): void => {
       node.condition.setValue(val);
     };
     const selectorConfig = {
       values: node.condition.typeaheadSearchResults,
       isLoading: node.condition.typeaheadSearchState.isInProgress,
-      reloadValues: (input: string): void => {
-        debouncedTypeaheadSearch();
-      },
+      reloadValues: debouncedTypeaheadSearch,
+      cleanUpReloadValues,
     };
 
     return (
