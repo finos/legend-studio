@@ -20,7 +20,7 @@ import type {
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-const optionColorClassName = (
+const classifyElementGraphArea = (
   element: PackageableElement,
   graphManagerState: GraphManagerState,
 ): string =>
@@ -34,7 +34,7 @@ const optionColorClassName = (
     ? 'dependency'
     : '';
 
-const optionToolTip = (
+const generateOptionTooltipText = (
   element: PackageableElement,
   graphManagerState: GraphManagerState,
 ): string | undefined =>
@@ -62,8 +62,11 @@ export const getPackageableElementOptionFormatter = (props: {
     return (
       <div className={className}>
         <div
-          title={`${optionToolTip(option.value, props.graphManagerState)}`}
-          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${optionColorClassName(
+          title={`${generateOptionTooltipText(
+            option.value,
+            props.graphManagerState,
+          )}`}
+          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${classifyElementGraphArea(
             option.value,
             props.graphManagerState,
           )}`}
