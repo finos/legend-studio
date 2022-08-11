@@ -20,6 +20,7 @@ export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 
 export enum EDITOR_THEME {
   LEGEND = 'LEGEND',
+  TEMPORARY__VSCODE_LIGHT = 'vs',
 }
 
 export enum EDITOR_LANGUAGE {

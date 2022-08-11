@@ -379,9 +379,10 @@ const QueryBuilderProjectionColumnEditor = observer(
           /**
            * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
            */
-          projectionColumnBeingDragged: (
-            monitor.getItem() as QueryBuilderProjectionColumnDragSource | null
-          )?.columnState,
+          projectionColumnBeingDragged:
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            (monitor.getItem() as QueryBuilderProjectionColumnDragSource | null)
+              ?.columnState,
         }),
       }),
       [projectionColumnState],
@@ -633,9 +634,9 @@ export const QueryBuilderProjectionPanel = observer(
         className={`panel__content dnd__overlay__container`}
       >
         {isInvalidProjection && (
-          <div className="query-builder__projection__container__error">
-            <div className="query-builder__projection__error__label">
-              <TimesCircleIcon className="query-builder__projection__error__icon" />
+          <div className="query-builder__projection__panel__error">
+            <div className="query-builder__projection__panel__error__label">
+              <TimesCircleIcon className="query-builder__projection__panel__error__icon" />
               {projectionState.getValidationErrorMessage() ??
                 'There is an error with the projection'}
             </div>

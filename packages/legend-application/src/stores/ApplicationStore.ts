@@ -142,7 +142,7 @@ export class ApplicationStore<
    * we would need to revise this flag later
    * See https://github.com/finos/legend-studio/issues/264
    */
-  TEMPORARY__isLightThemeEnabled = true;
+  TEMPORARY__isLightThemeEnabled = false;
 
   constructor(
     config: T,

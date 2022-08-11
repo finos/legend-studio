@@ -186,9 +186,10 @@ const ModelGenerationItem = observer(
           /**
            * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
            */
-          nodeBeingDragged: (
-            monitor.getItem() as GenerationSpecNodeDragSource | null
-          )?.nodeState?.node,
+          nodeBeingDragged:
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            (monitor.getItem() as GenerationSpecNodeDragSource | null)
+              ?.nodeState.node,
         }),
       }),
       [handleHover],

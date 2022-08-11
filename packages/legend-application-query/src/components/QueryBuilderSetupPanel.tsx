@@ -125,7 +125,7 @@ const generateClassLabel = (
           {val.name}
         </div>
         <ClockIcon
-          className="query-builder__setup__config__item__class-label__btn"
+          className="query-builder__setup__config__item__class-label__milestoning"
           title={milestoningParameterValues}
         />
       </div>

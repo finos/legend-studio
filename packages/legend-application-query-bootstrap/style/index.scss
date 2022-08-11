@@ -19,6 +19,12 @@
 @import '@finos/legend-application-query/lib/index.css';
 @import '@finos/legend-extension-dsl-data-space/lib/index.css';
 
+// NOTE: the following styles are temporary so we can have a poor-man version of
+// theming for Legend Query. The reason why we put the code here is that this is
+// where we essentially do all the overriding for everything from every extensions.
+// In other words, this is the only place where we can exhaustively and correctly
+// override native dark theme with light them colors.
+
 :root {
   --color-legacy-light-grey-100: #edf0f1;
   --color-legacy-light-grey-200: #dce2e4;
@@ -28,14 +34,18 @@
   --color-legacy-light-blue-50: #def3ff;
   --color-legacy-light-blue-100: #7399c6;
   --color-legacy-light-blue-200: #6a8db6;
+  --color-legacy-light-blue-250: #687b93;
   --color-legacy-light-blue-300: #4d6f9c;
+  --color-legacy-light-blue-350: #475b72;
   --color-legacy-light-blue-400: #1b4c8c;
-  --color-legacy-light-blue-600: #475b72;
+  --color-legacy-light-blue-600: #2d3d51;
   --color-legacy-green-100: #5cb65c;
   --color-legacy-orange-100: #f68f1e;
 }
 
 .light-theme {
+  // ---------------------------- Menu -------------------------------
+
   .menu {
     background: var(--color-white);
     border-color: var(--color-light-grey-400);
@@ -49,6 +59,129 @@
     }
   }
 
+  // ---------------------------- Button -------------------------------
+
+  .btn--dark,
+  .btn--dark:hover {
+    background: var(--color-legacy-light-blue-100);
+    color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution,
+  .btn--dark.btn--caution:hover {
+    background: var(--color-legacy-orange-100);
+    color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution:disabled,
+  .btn--dark:disabled {
+    background: var(--color-dark-grey-500);
+    color: var(--color-white);
+  }
+
+  .btn--dark.btn--caution:focus,
+  .btn--dark:focus {
+    outline: none;
+  }
+
+  // ---------------------------- Table -------------------------------
+
+  .query-builder__explorer__preview-data-modal__body .table {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  .table {
+    th,
+    td {
+      border: 0.1rem solid var(--color-light-grey-250);
+    }
+
+    thead {
+      background: var(--color-light-grey-100);
+    }
+  }
+
+  // ---------------------------- Panel -------------------------------
+
+  .panel__content__form__section__header__label {
+    color: var(--color-legacy-dark-grey-400);
+  }
+
+  .panel__content__form__section__toggler__prompt,
+  .panel__content__form__section__header__prompt {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  .query-builder__parameters__parameter__name__input,
+  .panel__content__form__section__input {
+    background: var(--color-white);
+    color: var(--color-legacy-dark-grey-200);
+    border-color: var(--color-light-grey-150);
+
+    &:focus {
+      border-color: var(--color-legacy-light-blue-100);
+    }
+  }
+
+  .query-builder__parameters__parameter__label {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  .query-builder__parameters__parameter:hover
+    .query-builder__parameters__parameter__action
+    svg {
+    color: var(--color-legacy-light-blue-100);
+  }
+
+  .panel__content__form__section__list__item:hover {
+    background: transparent;
+  }
+
+  .panel__content__form__section__toggler__btn svg {
+    color: var(--color-light-grey-250);
+  }
+
+  .panel__content__form__section__toggler__btn--toggled svg {
+    color: var(--color-legacy-light-blue-100);
+  }
+
+  // ---------------------------- Modal -------------------------------
+
+  .mui-popover__paper {
+    background: var(--color-white);
+  }
+
+  .modal.modal--dark {
+    background: var(--color-white);
+    color: var(--color-legacy-dark-grey-200);
+    border: none;
+  }
+
+  .modal__header {
+    color: var(--color-legacy-dark-grey-200);
+    background: var(--color-white);
+  }
+
+  .modal__footer {
+    border: none;
+    background: var(--color-legacy-light-grey-100);
+  }
+
+  .blocking-alert__summary-text,
+  .blocking-alert__prompt-text {
+    color: var(--color-legacy-dark-grey-400);
+  }
+
+  .modal__footer__close-btn {
+    background: var(--color-legacy-light-blue-100);
+  }
+
+  .text-editor__container {
+    background: var(--color-white);
+  }
+
+  // ---------------------------- Basic Value Specification Editor  -------------------------------
+
   .value-spec-editor__reset-btn {
     background: var(--color-legacy-light-grey-100);
     border: 0.1rem solid var(--color-light-grey-300);
@@ -56,6 +189,84 @@
 
     svg {
       color: var(--color-dark-grey-400);
+    }
+  }
+
+  .value-spec-editor__date-picker__trigger {
+    background: var(--color-white);
+    border: 0.1rem solid var(--color-light-grey-300);
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  .lambda-parameter-values__value__label {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  // ---------------------------- Derived Property Editor -------------------------------
+
+  .query-builder-property-editor__section__content--empty {
+    border-color: var(--color-light-grey-300);
+    color: var(--color-light-grey-300);
+  }
+
+  // ---------------------------- Text Mode -------------------------------
+
+  .query-builder-text-mode {
+    &__modal {
+      &__content {
+        background: var(--color-white);
+      }
+    }
+
+    &__lambda-editor {
+      .monaco-editor {
+        .margin,
+        .monaco-editor-background {
+          background: unset !important;
+        }
+      }
+    }
+
+    &__modal--has-error {
+      .modal__title__error-badge {
+        background: var(--color-red-100);
+        color: var(--color-white);
+      }
+    }
+  }
+
+  // ---------------------------- Property Search -------------------------------
+
+  .query-builder-property-search-panel {
+    &__header {
+      border-color: var(--color-legacy-light-grey-200);
+    }
+
+    &__form__section__header__label,
+    &__form__section__toggler__prompt {
+      color: var(--color-legacy-dark-grey-200);
+    }
+
+    .resizable-panel__splitter-line {
+      background: var(--color-legacy-light-grey-200) !important;
+    }
+
+    &__node__label--with-action {
+      color: var(--color-legacy-dark-grey-200);
+    }
+
+    &__node__container:hover svg {
+      color: var(--color-dark-grey-350);
+    }
+
+    &__input {
+      background: var(--color-white);
+      border-color: var(--color-light-grey-200);
+      color: var(--color-legacy-dark-grey-200);
+
+      &:focus {
+        border-color: var(--color-legacy-light-blue-100);
+      }
     }
   }
 }
@@ -111,12 +322,21 @@
   // ------------------------------------ App ---------------------------------------
 
   .query-editor__header {
-    background: var(--color-legacy-light-blue-600);
+    background: var(--color-legacy-light-blue-350);
+
+    &__label {
+      background: var(--color-dark-shade-100);
+    }
+
+    &__label__tag {
+      background: var(--color-light-shade-50);
+      color: var(--color-light-grey-150);
+    }
   }
 
   .query-editor__header__back-btn.btn--dark,
   .query-editor__header__action.btn--dark {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacy-light-blue-250);
     color: var(--color-white);
 
     svg {
@@ -125,7 +345,7 @@
   }
 
   .query-editor__header__action__icon {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacy-light-blue-250);
     color: var(--color-white);
   }
 
@@ -145,7 +365,7 @@
   }
 
   .query-builder__status-bar {
-    background: var(--color-legacy-light-blue-600);
+    background: var(--color-legacy-light-blue-350);
   }
 
   .query-builder__activity-bar__item:hover {
@@ -243,7 +463,35 @@
     color: var(--color-legacy-dark-grey-200);
   }
 
+  .query-builder-explorer-tree__node__container--unmapped {
+    .query-builder-explorer-tree__node__label {
+      color: var(--color-legacy-light-grey-300);
+    }
+
+    .query-builder-explorer-tree__type-icon svg {
+      color: var(--color-legacy-light-grey-300);
+    }
+  }
+
   // ------------------------------------ Function Explorer Panel ---------------------------------------
+
+  .query-builder__functions-explorer__tree__type-icon svg {
+    color: var(--color-legacy-light-blue-300);
+  }
+
+  .query-builder__functions-explorer__tree__node__label--with-action,
+  .query-builder__functions-explorer__function__label {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
+  .query-builder__functions-explorer__tree__node__container:hover
+    .query-builder__functions-explorer__tree__node__info,
+  .query-builder__functions-explorer__function:hover
+    .query-builder__functions-explorer__function__node__info {
+    svg {
+      color: var(--color-legacy-light-blue-100);
+    }
+  }
 
   // ------------------------------------ Parameters Panel ---------------------------------------
 
@@ -282,16 +530,28 @@
     }
   }
 
+  .query-builder__projection__column__aggregate__operator__label {
+    background: var(--color-legacy-light-blue-100);
+  }
+
   .query-builder__projection__column__aggregate__operator__badge {
-    background: var(--color-light-grey-250);
-    color: var(--color-dark-grey-400);
+    background: var(--color-dark-grey-400);
+    color: var(--color-light-grey-100);
   }
 
   .query-builder__projection__column__aggregate__operator__dropdown__trigger {
-    background: var(--color-light-grey-200);
+    background: var(--color-dark-grey-350);
 
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  .query-builder__projection__column__aggregate__operator__badge--activated {
+    background: var(--color-legacy-light-blue-200);
+
+    svg {
+      color: var(--color-legacy-light-grey-100);
     }
   }
 
@@ -309,10 +569,6 @@
     background: var(--color-legacy-light-grey-100);
 
     .panel__content__form__section__toggler__prompt {
-      color: var(--color-dark-grey-400);
-    }
-
-    svg {
       color: var(--color-dark-grey-400);
     }
   }
@@ -466,6 +722,30 @@
     }
   }
 
+  .query-builder__result__execute-btn:disabled:hover
+    .query-builder__result__execute-btn__label,
+  .query-builder__result__execute-btn:disabled
+    .query-builder__result__execute-btn__label {
+    background: var(--color-legacy-light-grey-200);
+
+    &__title,
+    svg {
+      color: var(--color-light-grey-400);
+    }
+  }
+
+  .query-builder__result__execute-btn:disabled:hover
+    .query-builder__result__execute-btn__dropdown-btn,
+  .query-builder__result__execute-btn:disabled
+    .query-builder__result__execute-btn__dropdown-btn {
+    background: var(--color-legacy-light-grey-200);
+    border-color: var(--color-dark-shade-50);
+
+    svg {
+      color: var(--color-light-grey-400);
+    }
+  }
+
   .query-builder__result__stop-btn__label.btn--caution {
     background: var(--color-legacy-orange-100);
     color: var(--color-white);
@@ -575,5 +855,34 @@
 
   .query-builder-property-expression-badge__dnd__placeholder {
     color: var(--color-light-grey-400);
+  }
+
+  .query-builder__lambda-editor {
+    border: 0.1rem solid var(--color-legacy-light-blue-100);
+
+    .monaco-editor {
+      .margin,
+      .monaco-editor-background {
+        background: unset !important;
+      }
+    }
+  }
+
+  .lambda-editor__editor__expand-btn {
+    background: var(--color-legacy-light-blue-100);
+    border-color: var(--color-legacy-light-blue-300);
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  .lambda-editor__action {
+    background: var(--color-legacy-light-blue-100);
+    border-color: transparent;
+
+    svg {
+      color: var(--color-light-grey-50);
+    }
   }
 }

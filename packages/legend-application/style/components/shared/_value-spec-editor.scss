@@ -325,7 +325,7 @@
   }
 }
 
-.lambda__parameters__editor {
+.lambda-parameter-values {
   padding: 2rem;
   width: 100%;
 
@@ -350,7 +350,7 @@
       cursor: default;
     }
 
-    &__name {
+    &__label__type {
       @include flexVCenter;
 
       background: var(--color-dark-grey-250);

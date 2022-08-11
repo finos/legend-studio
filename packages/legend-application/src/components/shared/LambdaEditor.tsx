@@ -183,13 +183,15 @@ const LambdaEditorInline = observer(
         const _editor = monacoEditorAPI.create(element, {
           ...baseTextEditorSettings,
           language: EDITOR_LANGUAGE.PURE,
-          theme: EDITOR_THEME.LEGEND,
+          theme: applicationStore.TEMPORARY__isLightThemeEnabled
+            ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
+            : EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
         disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
-    }, [editor, useBaseTextEditorSettings]);
+    }, [editor, applicationStore, useBaseTextEditorSettings]);
 
     // set styling for expanded mode
     useEffect(() => {

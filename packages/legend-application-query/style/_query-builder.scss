@@ -669,7 +669,6 @@
 
   &__lambda-editor {
     height: 100% !important;
-    background: var(--color-dark-grey-50);
     padding-top: 1rem;
 
     .monaco-editor {
@@ -721,6 +720,8 @@
 
 .query-builder__parameter-editor {
   @include flexCenter;
+
+  height: 2.8rem;
 
   &__node__dnd__overlay {
     @include flexCenter;

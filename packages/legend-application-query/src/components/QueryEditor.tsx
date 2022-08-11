@@ -23,6 +23,8 @@ import {
   SaveIcon,
   BlankPanelContent,
   clsx,
+  EmptyLightBulbIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -200,6 +202,10 @@ const QueryEditorHeaderContent = observer(() => {
       ),
     );
   };
+  const toggleLightDarkTheme = (): void =>
+    applicationStore.TEMPORARY__setIsLightThemeEnabled(
+      !applicationStore.TEMPORARY__isLightThemeEnabled,
+    );
   const saveQuery = (): void => {
     editorStore.queryBuilderState
       .saveQuery(async (lambda: RawLambda) => {
@@ -227,6 +233,18 @@ const QueryEditorHeaderContent = observer(() => {
           onClick={viewQueryProject}
         >
           <ExternalLinkSquareIcon />
+        </button>
+        <button
+          className="query-editor__header__action query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          title="Toggle Light/Dark Theme"
+          onClick={toggleLightDarkTheme}
+        >
+          {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+            <EmptyLightBulbIcon />
+          ) : (
+            <LightBulbIcon />
+          )}
         </button>
         <button
           className="query-editor__header__action btn--dark"

@@ -47,6 +47,7 @@ import {
   LambdaParameterState,
   LambdaParameterValuesEditor,
   getPackageableElementOptionFormatter,
+  useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
@@ -60,6 +61,7 @@ const VariableExpressionEditor = observer(
   }) => {
     // main state
     const { queryBuilderState, lambdaParameterState } = props;
+    const applicationStore = useApplicationStore();
     const queryParametersState = queryBuilderState.queryParametersState;
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
@@ -145,6 +147,7 @@ const VariableExpressionEditor = observer(
       }
       close();
     };
+
     return (
       <Dialog
         open={Boolean(lambdaParameterState)}
@@ -192,9 +195,9 @@ const VariableExpressionEditor = observer(
                 options={typeOptions}
                 onChange={changeType}
                 value={selectedType}
-                darkMode={true}
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
-                  darkMode: true,
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
                   graphManagerState: queryBuilderState.graphManagerState,
                 })}
               />
