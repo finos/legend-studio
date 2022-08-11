@@ -71,10 +71,21 @@ import {
   Package,
   isValidFullPath,
   isValidPath,
+  getElementRootPackage,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+
+const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
+  getElementRootPackage(node.packageableElement).name ===
+  ROOT_PACKAGE_NAME.MODEL_GENERATION;
+const isSystemPackageTreeNode = (node: PackageTreeNodeData): boolean =>
+  getElementRootPackage(node.packageableElement).name ===
+  ROOT_PACKAGE_NAME.SYSTEM;
+const isDependencyTreeNode = (node: PackageTreeNodeData): boolean =>
+  getElementRootPackage(node.packageableElement).name ===
+  ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -364,19 +375,13 @@ const PackageTreeNodeContainer = observer(
     ) : (
       <ChevronRightIcon />
     );
-
-    const iconPackageColor = editorStore.graphManagerState.isGeneratedElement(
-      node.packageableElement,
-    )
+    const iconPackageColor = isGeneratedPackageTreeNode(node)
       ? 'color--generated'
-      : editorStore.graphManagerState.isSystemElement(node.packageableElement)
+      : isSystemPackageTreeNode(node)
       ? 'color--system'
-      : editorStore.graphManagerState.isDependencyElement(
-          node.packageableElement,
-        )
+      : isDependencyTreeNode(node)
       ? 'color--dependency'
       : '';
-
     const nodeIcon = isPackage ? (
       node.isOpen ? (
         <div className={iconPackageColor}>
@@ -688,12 +693,10 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     });
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
-
   const isImmutablePackageTreeNode = (node: PackageTreeNodeData): boolean =>
-    editorStore.graphManagerState.isGeneratedElement(node.packageableElement) ||
-    editorStore.graphManagerState.isSystemElement(node.packageableElement) ||
-    editorStore.graphManagerState.isDependencyElement(node.packageableElement);
-
+    isGeneratedPackageTreeNode(node) ||
+    isSystemPackageTreeNode(node) ||
+    isDependencyTreeNode(node);
   const showModelLoader = (): void =>
     editorStore.openState(editorStore.modelLoaderState);
 

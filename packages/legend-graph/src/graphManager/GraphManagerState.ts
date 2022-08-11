@@ -48,7 +48,6 @@ import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/
 import { InlineEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
-import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -74,37 +73,6 @@ export class BasicGraphManagerState {
    * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
    * methods here so that we can load plugins.
    */
-
-  isDependencyElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return (
-      getElementRootPackage(element).name ===
-      ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT
-    );
-  }
-
-  isGeneratedElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return (
-      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MODEL_GENERATION
-    );
-  }
-
-  isSystemElement(element: PackageableElement): element is PackageableElement {
-    return (
-      element instanceof PrimitiveType ||
-      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM ||
-      getElementRootPackage(element).name === ROOT_PACKAGE_NAME.CORE
-    );
-  }
-
-  isMainGraphElement(
-    element: PackageableElement,
-  ): element is PackageableElement {
-    return getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MAIN;
-  }
 
   isInstanceSetImplementation(
     setImplementation:

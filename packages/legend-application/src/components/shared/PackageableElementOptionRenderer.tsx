@@ -14,63 +14,23 @@
  * limitations under the License.
  */
 
-import type {
-  PackageableElement,
-  GraphManagerState,
-} from '@finos/legend-graph';
+import type { PackageableElement } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-const classifyElementGraphArea = (
-  element: PackageableElement,
-  graphManagerState: GraphManagerState,
-): string =>
-  graphManagerState.isSystemElement(element)
-    ? 'system'
-    : graphManagerState.isGeneratedElement(element)
-    ? 'generated'
-    : graphManagerState.isMainGraphElement(element)
-    ? 'main'
-    : graphManagerState.isDependencyElement(element)
-    ? 'dependency'
-    : '';
-
-const generateOptionTooltipText = (
-  element: PackageableElement,
-  graphManagerState: GraphManagerState,
-): string | undefined =>
-  graphManagerState.isSystemElement(element)
-    ? 'system element'
-    : graphManagerState.isGeneratedElement(element)
-    ? 'generated element'
-    : graphManagerState.isDependencyElement(element)
-    ? 'dependency element'
-    : undefined;
-
-export const getPackageableElementOptionFormatter = (props: {
+export const getPackageableElementOptionalFormatter = (props?: {
   darkMode?: boolean;
-  graphManagerState: GraphManagerState;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
   function PackageableElementOptionLabel(
     option: PackageableElementOption<PackageableElement>,
   ): React.ReactNode {
-    const className = props.darkMode
+    const className = props?.darkMode
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
 
     return (
       <div className={className}>
-        <div
-          title={`${generateOptionTooltipText(
-            option.value,
-            props.graphManagerState,
-          )}`}
-          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${classifyElementGraphArea(
-            option.value,
-            props.graphManagerState,
-          )}`}
-        ></div>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (
           <div className={`${className}__tag`}>{option.value.path}</div>

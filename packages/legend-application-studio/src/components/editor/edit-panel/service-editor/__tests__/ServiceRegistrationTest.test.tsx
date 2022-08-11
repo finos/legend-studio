@@ -340,7 +340,7 @@ test(
     await waitFor(() => getByText(actionAlertDialog, 'Launch Service'));
     getByText(
       actionAlertDialog,
-      'Service with pattern /myservice registered and activated',
+      'Service with patten /myservice registered and activated',
     );
     fireEvent.click(renderResult.getByText('Close'));
     // check no owners check

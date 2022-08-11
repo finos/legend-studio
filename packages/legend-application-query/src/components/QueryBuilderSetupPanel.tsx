@@ -46,7 +46,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
-  getPackageableElementOptionFormatter,
+  getPackageableElementOptionalFormatter,
   buildElementOption,
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
@@ -269,9 +269,8 @@ export const QueryBuilderSetupPanel = observer(
               darkMode={true}
               disabled={!isQuerySupported || querySetupState.classIsReadOnly}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
+              formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
-                graphManagerState: queryBuilderState.graphManagerState,
               })}
             />
             <button
@@ -305,9 +304,8 @@ export const QueryBuilderSetupPanel = observer(
               value={selectedMappingOption}
               darkMode={true}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
+              formatOptionLabel={getPackageableElementOptionalFormatter({
                 darkMode: true,
-                graphManagerState: queryBuilderState.graphManagerState,
               })}
             />
           </div>

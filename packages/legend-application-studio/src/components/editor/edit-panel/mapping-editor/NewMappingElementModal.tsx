@@ -45,7 +45,7 @@ import {
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
 import {
-  getPackageableElementOptionFormatter,
+  getPackageableElementOptionalFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
 
@@ -235,9 +235,7 @@ export const NewMappingElementModal = observer(() => {
               filterOption={filterOption}
               onChange={handleTargetChange}
               value={selectedOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                graphManagerState: editorStore.graphManagerState,
-              })}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
               placeholder="Choose a target"
               isClearable={true}
             />

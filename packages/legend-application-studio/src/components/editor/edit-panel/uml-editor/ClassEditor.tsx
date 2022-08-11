@@ -45,6 +45,7 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
+import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { action, flowResult, makeObservable, observable } from 'mobx';
@@ -84,7 +85,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
-  getPackageableElementOptionFormatter,
+  getPackageableElementOptionalFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
   type PackageableElementOption,
@@ -134,7 +135,6 @@ class ClassPropertyDragSource {
 enum CLASS_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
 }
-import { TaggedValueEditor } from './TaggedValueEditor.js';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -281,13 +281,14 @@ const PropertyBasicEditor = observer(
               </div>
             </div>
           </div>
-        )} 
+        )}
+
         {!isBeingDragged && (
           <div className="property-basic-editor">
             {!isIndirectProperty && (
               <div className="uml-element-editor__drag-handler" tabIndex={-1}>
                 <VerticalDragHandleIcon />
-              </div> 
+              </div>
             )}
             {isIndirectProperty && (
               <div className="property-basic-editor__name--with-lock">
@@ -675,41 +676,6 @@ const DerivedPropertyBasicEditor = observer(
                     {derivedProperty.name}
                   </span>
                 </div>
-          )}
-          {!isInheritedProperty && (
-            <input
-              disabled={isReadOnly}
-              spellCheck={false}
-              className="property-basic-editor__name property-basic-editor__qualififed-property__name"
-              value={derivedProperty.name}
-              placeholder="Property name"
-              onChange={changeValue}
-            />
-          )}
-          {!isInheritedProperty && !isReadOnly && isEditingType && (
-            <CustomSelectorInput
-              className="property-basic-editor__type property-basic-editor__qualififed-property__type"
-              options={propertyTypeOptions}
-              onChange={changePropertyType}
-              value={selectedPropertyType}
-              placeholder="Choose a data type or enumeration"
-              filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                graphManagerState: editorStore.graphManagerState,
-              })}
-            />
-          )}
-          {!isInheritedProperty && !isReadOnly && !isEditingType && (
-            <div
-              className={clsx(
-                'property-basic-editor__type',
-                'property-basic-editor__type--show-click-hint',
-                `background--${propertyTypeName.toLowerCase()}`,
-                {
-                  'property-basic-editor__type--has-visit-btn':
-                    propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
-                },
-
               )}
               {!isInheritedProperty && (
                 <div className="uml-element-editor__drag-handler" tabIndex={-1}>
@@ -1229,9 +1195,7 @@ const SuperTypeEditor = observer(
               value={selectedType}
               placeholder={'Choose a class'}
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-              graphManagerState: editorStore.graphManagerState,
-              })}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
             />
             <button
               className="uml-element-editor__basic__detail-btn"
