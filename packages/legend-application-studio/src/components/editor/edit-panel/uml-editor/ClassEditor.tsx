@@ -123,7 +123,6 @@ import {
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
 
 class ClassPropertyDragSource {
   property: Property;
@@ -325,9 +324,7 @@ const PropertyBasicEditor = observer(
                 value={selectedPropertyType}
                 placeholder={'Choose a data type or enumeration'}
                 filterOption={filterOption}
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  graphManagerState: editorStore.graphManagerState,
-                })}
+                formatOptionLabel={getPackageableElementOptionalFormatter()}
               />
             )}
             {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -702,9 +699,7 @@ const DerivedPropertyBasicEditor = observer(
                   value={selectedPropertyType}
                   placeholder="Choose a data type or enumeration"
                   filterOption={filterOption}
-                  formatOptionLabel={getPackageableElementOptionFormatter({
-                    graphManagerState: editorStore.graphManagerState,
-                  })}
+                  formatOptionLabel={getPackageableElementOptionalFormatter()}
                 />
               )}
               {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -1199,9 +1194,7 @@ const SuperTypeEditor = observer(
               value={selectedType}
               placeholder={'Choose a class'}
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                graphManagerState: editorStore.graphManagerState,
-              })}
+              formatOptionLabel={getPackageableElementOptionalFormatter()}
             />
             <button
               className="uml-element-editor__basic__detail-btn"
