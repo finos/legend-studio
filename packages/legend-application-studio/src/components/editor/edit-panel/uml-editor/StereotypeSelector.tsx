@@ -65,10 +65,6 @@ export const StereotypeSelector = observer(
       darkTheme,
     } = props;
     const editorStore = useEditorStore();
-    const isStereotypeDuplicated = (val: StereotypeReference): boolean =>
-      annotatedElement.stereotypes.filter(
-        (s) => s.ownerReference.value.name === val.ownerReference.value.name,
-      ).length >= 2;
 
     // Profile
     const profileOptions = editorStore.profileOptions.filter(
@@ -83,6 +79,7 @@ export const StereotypeSelector = observer(
     const [selectedProfile, setSelectedProfile] = useState<
       PackageableElementOption<Profile>
     >({ value: stereotype.value._OWNER, label: stereotype.value._OWNER.name });
+
     const changeProfile = (val: PackageableElementOption<Profile>): void => {
       if (val.value.p_stereotypes.length) {
         setSelectedProfile(val);
@@ -176,20 +173,11 @@ export const StereotypeSelector = observer(
             <div
               className={`stereotype-selector__profile ${
                 darkTheme ? 'stereotype-selector-dark-theme' : ''
-              } stereotype-selector__profile${
-                isStereotypeDuplicated(stereotype)
-                  ? '--with-validation--error'
-                  : ''
-              }`}
+              } stereotype-selector__profile`}
             >
-              {isStereotypeDuplicated(stereotype) ? (
-                ''
-              ) : (
-                <div className="uml-element-editor__drag-handler" tabIndex={-1}>
-                  <VerticalDragHandleIcon />
-                </div>
-              )}
-
+              <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+                <VerticalDragHandleIcon />
+              </div>
               <CustomSelectorInput
                 className="stereotype-selector__profile__selector"
                 disabled={isReadOnly}

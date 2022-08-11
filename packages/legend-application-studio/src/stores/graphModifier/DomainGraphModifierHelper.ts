@@ -268,24 +268,6 @@ export const annotatedElement_arrangeStereotypes = action(
     sourceStereotype: StereotypeReference,
     targetStereotype: StereotypeReference,
   ): void => {
-    /**
-     * NOTE: this is temporary. user is able to select duplicate stereotype values for now
-     * that breaks drag and drop so we are exiting until we add fail in compilation error
-     * for users.
-     */
-    const stereotypeOwnerReferences = new Set();
-
-    for (let i = 0; i < annotatedElement.stereotypes.length; i++) {
-      const ownerReferenceValue =
-        annotatedElement.stereotypes[i]?.ownerReference.valueForSerialization;
-
-      if (stereotypeOwnerReferences.has(ownerReferenceValue)) {
-        return;
-      } else {
-        stereotypeOwnerReferences.add(ownerReferenceValue);
-      }
-    }
-
     swapEntry(annotatedElement.stereotypes, sourceStereotype, targetStereotype);
   },
 );

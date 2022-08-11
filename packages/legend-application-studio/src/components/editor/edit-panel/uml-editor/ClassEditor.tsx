@@ -1615,7 +1615,7 @@ const StereotypesEditor = observer(
       >
         {_class.stereotypes.map((stereotype) => (
           <StereotypeSelector
-            key={stereotype.value._UUID}
+            key={stereotype._UUID}
             annotatedElement={_class}
             stereotype={stereotype}
             deleteStereotype={deleteStereotype(stereotype)}
