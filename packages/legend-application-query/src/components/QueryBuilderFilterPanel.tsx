@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState, useCallback, forwardRef } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+  useMemo,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -67,6 +74,7 @@ import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpre
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   assertErrorThrown,
+  debounce,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
@@ -242,6 +250,26 @@ const QueryBuilderFilterConditionEditor = observer(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
+    const debouncedTypeaheadSearch = useMemo(
+      () =>
+        debounce(
+          (inputVal: string) => node.condition.handleTypeaheadSearch(),
+          1000,
+        ),
+      [node],
+    );
+    const cleanUpReloadValues = (): void => {
+      node.condition.typeaheadSearchState.complete();
+    };
+    const changeValueSpecification = (val: ValueSpecification): void => {
+      node.condition.setValue(val);
+    };
+    const selectorConfig = {
+      values: node.condition.typeaheadSearchResults,
+      isLoading: node.condition.typeaheadSearchState.isInProgress,
+      reloadValues: debouncedTypeaheadSearch,
+      cleanUpReloadValues,
+    };
 
     return (
       <div className="query-builder-filter-tree__node__label__content dnd__overlay__container">
@@ -301,9 +329,7 @@ const QueryBuilderFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                setValueSpecification={(val: ValueSpecification): void =>
-                  node.condition.setValue(val)
-                }
+                setValueSpecification={changeValueSpecification}
                 graph={graph}
                 typeCheckOption={{
                   expectedType:
@@ -311,6 +337,7 @@ const QueryBuilderFilterConditionEditor = observer(
                       .func.genericType.value.rawType,
                 }}
                 resetValue={resetNode}
+                selectorConfig={selectorConfig}
               />
             </div>
           )}

@@ -1,0 +1,4 @@
+---
+'@finos/legend-art': patch
+---
+
