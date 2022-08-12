@@ -198,7 +198,6 @@ const VariableExpressionEditor = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={getPackageableElementOptionFormatter({
                   darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                  graphManagerState: queryBuilderState.graphManagerState,
                 })}
               />
             </div>

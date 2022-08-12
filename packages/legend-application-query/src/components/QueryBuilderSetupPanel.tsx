@@ -270,9 +270,8 @@ export const QueryBuilderSetupPanel = observer(
               darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               disabled={!isQuerySupported || querySetupState.classIsReadOnly}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter({
+              formatOptionLabel={getPackageableElementOptionFormatter({
                 darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                graphManagerState: queryBuilderState.graphManagerState,
               })}
             />
             <button
@@ -306,9 +305,8 @@ export const QueryBuilderSetupPanel = observer(
               value={selectedMappingOption}
               darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter({
+              formatOptionLabel={getPackageableElementOptionFormatter({
                 darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
-                graphManagerState: queryBuilderState.graphManagerState,
               })}
             />
           </div>

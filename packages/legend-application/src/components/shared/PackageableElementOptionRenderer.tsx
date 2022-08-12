@@ -14,41 +14,36 @@
  * limitations under the License.
  */
 
-import type {
-  PackageableElement,
-  GraphManagerState,
+import {
+  type PackageableElement,
+  isSystemElement,
+  isGeneratedElement,
+  isDependencyElement,
 } from '@finos/legend-graph';
 import type { PackageableElementOption } from '../../stores/shared/PackageableElementOption.js';
 
-const classifyElementGraphArea = (
-  element: PackageableElement,
-  graphManagerState: GraphManagerState,
-): string =>
-  graphManagerState.isSystemElement(element)
+const getElementColorCode = (element: PackageableElement): string =>
+  isSystemElement(element)
     ? 'system'
-    : graphManagerState.isGeneratedElement(element)
+    : isGeneratedElement(element)
     ? 'generated'
-    : graphManagerState.isMainGraphElement(element)
-    ? 'main'
-    : graphManagerState.isDependencyElement(element)
+    : isDependencyElement(element)
     ? 'dependency'
     : '';
 
 const generateOptionTooltipText = (
   element: PackageableElement,
-  graphManagerState: GraphManagerState,
 ): string | undefined =>
-  graphManagerState.isSystemElement(element)
+  isSystemElement(element)
     ? 'system element'
-    : graphManagerState.isGeneratedElement(element)
+    : isGeneratedElement(element)
     ? 'generated element'
-    : graphManagerState.isDependencyElement(element)
+    : isDependencyElement(element)
     ? 'dependency element'
     : undefined;
 
 export const getPackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
-  graphManagerState: GraphManagerState;
 }): ((
   option: PackageableElementOption<PackageableElement>,
 ) => React.ReactNode) =>
@@ -58,18 +53,17 @@ export const getPackageableElementOptionFormatter = (props: {
     const className = props.darkMode
       ? 'packageable-element-format-option-label--dark'
       : 'packageable-element-format-option-label';
+    const colorCode = getElementColorCode(option.value);
 
     return (
       <div className={className}>
         <div
-          title={`${generateOptionTooltipText(
-            option.value,
-            props.graphManagerState,
-          )}`}
-          className={`packageable-element-format-option-label-type packageable-element-format-option-label-type--${classifyElementGraphArea(
-            option.value,
-            props.graphManagerState,
-          )}`}
+          title={generateOptionTooltipText(option.value)}
+          className={`packageable-element-format-option-label-type ${
+            colorCode
+              ? `packageable-element-format-option-label-type--${colorCode}`
+              : ''
+          } `}
         ></div>
         <div className={`${className}__name`}>{option.label}</div>
         {option.value.package && (

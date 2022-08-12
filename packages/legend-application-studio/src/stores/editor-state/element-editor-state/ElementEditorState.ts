@@ -27,6 +27,7 @@ import {
   type CompilationError,
   type PackageableElement,
   GRAPH_MANAGER_EVENT,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { TAB_SIZE } from '@finos/legend-application';
 
@@ -61,9 +62,7 @@ export abstract class ElementEditorState extends EditorState {
     });
 
     this.element = element;
-    this.isReadOnly =
-      editorStore.graphManagerState.isElementReadOnly(element) ||
-      editorStore.isInViewerMode;
+    this.isReadOnly = isElementReadOnly(element) || editorStore.isInViewerMode;
   }
 
   get headerName(): string {

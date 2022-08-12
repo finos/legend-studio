@@ -81,6 +81,7 @@ import {
   getAllSuperclasses,
   getAllClassConstraints,
   getAllClassDerivedProperties,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
@@ -320,9 +321,7 @@ const PropertyBasicEditor = observer(
                 value={selectedPropertyType}
                 placeholder={'Choose a data type or enumeration'}
                 filterOption={filterOption}
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  graphManagerState: editorStore.graphManagerState,
-                })}
+                formatOptionLabel={getPackageableElementOptionFormatter({})}
               />
             )}
             {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -693,9 +692,7 @@ const DerivedPropertyBasicEditor = observer(
                   value={selectedPropertyType}
                   placeholder="Choose a data type or enumeration"
                   filterOption={filterOption}
-                  formatOptionLabel={getPackageableElementOptionFormatter({
-                    graphManagerState: editorStore.graphManagerState,
-                  })}
+                  formatOptionLabel={getPackageableElementOptionFormatter({})}
                 />
               )}
               {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -1132,9 +1129,7 @@ const SuperTypeEditor = observer(
               value={selectedType}
               placeholder={'Choose a class'}
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                graphManagerState: editorStore.graphManagerState,
-              })}
+              formatOptionLabel={getPackageableElementOptionFormatter({})}
             />
             <button
               className="uml-element-editor__basic__detail-btn"
@@ -1552,7 +1547,7 @@ export const ClassFormEditor = observer(
     const { _class, editorState, onHashChange } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
+    const classHash = isElementReadOnly(_class)
       ? undefined
       : applicationStore.notifyAndReturnAlternativeOnError(
           () => _class.hashCode,

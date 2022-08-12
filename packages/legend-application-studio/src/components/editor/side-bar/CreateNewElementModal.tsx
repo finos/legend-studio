@@ -252,7 +252,6 @@ const NewPureModelConnectionDriverEditor = observer(
             darkMode={true}
             formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
-              graphManagerState: editorStore.graphManagerState,
             })}
           />
         </div>

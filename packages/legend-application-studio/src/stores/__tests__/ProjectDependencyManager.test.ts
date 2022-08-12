@@ -31,6 +31,7 @@ import {
 } from '@finos/legend-server-depot';
 import {
   DependencyManager,
+  isElementReadOnly,
   PackageableElementReference,
 } from '@finos/legend-graph';
 import TEST_DATA__M2MGraphEntities from './TEST_DATA__M2MGraphEntities.json';
@@ -271,9 +272,7 @@ const testDependencyElements = async (
       );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(
-      editorStore.graphManagerState.isElementReadOnly(elementInGraph),
-    ).toBe(true);
+    expect(isElementReadOnly(elementInGraph)).toBe(true);
   });
   if (includeDependencyInFileGenerationScopeElements) {
     const fileGeneration = guaranteeNonNullable(

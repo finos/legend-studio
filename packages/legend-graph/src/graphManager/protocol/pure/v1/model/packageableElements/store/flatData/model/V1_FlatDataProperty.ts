@@ -21,7 +21,7 @@ type V1_FlatDataPropertyValue = boolean | string | number;
 
 export class V1_FlatDataProperty implements Hashable {
   name!: string;
-  value!: V1_FlatDataPropertyValue[];
+  value!: V1_FlatDataPropertyValue;
 
   get hashCode(): string {
     return hashArray([
