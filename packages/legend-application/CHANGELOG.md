@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 7.0.4
+
+### Patch Changes
+
+- [#1381](https://github.com/finos/legend-studio/pull/1381) [`7a892e6b`](https://github.com/finos/legend-studio/commit/7a892e6b3906b7429ee89ee0fe573e4215553fbf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for selection of value specification values through options.
+
 ## 7.0.3
 
 ### Patch Changes

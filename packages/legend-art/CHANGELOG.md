@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 2.1.0
+
+### Minor Changes
+
+- [#1370](https://github.com/finos/legend-studio/pull/1370) [`a5a547d9`](https://github.com/finos/legend-studio/commit/a5a547d9b19376a62bbdefd0e3cf658a0fe7cac0) ([@xannem](https://github.com/xannem)) - Add indicator for `PackageableElementOption` to show the graph the elements belong to (i.e. `system`, `dependencies`, etc.) ([#457](https://github.com/finos/legend-studio/issues/457)).
+
 ## 2.0.12
 
 ## 2.0.11
