@@ -310,6 +310,23 @@ export const changeEntry = <T>(
   return false;
 };
 
+export const swapEntry = <T>(
+  array: T[],
+  entryOne: T,
+  entryTwo: T,
+  comparator = (val1: T, val2: T): boolean => val1 === val2,
+): boolean => {
+  const idxX = array.findIndex((entry) => comparator(entry, entryOne));
+  const idxY = array.findIndex((entry) => comparator(entry, entryTwo));
+
+  if (idxX !== -1 && idxY !== -1) {
+    array[idxX] = entryTwo;
+    array[idxY] = entryOne;
+    return true;
+  }
+  return false;
+};
+
 export const deleteEntry = <T>(
   array: T[],
   entryToDelete: T,

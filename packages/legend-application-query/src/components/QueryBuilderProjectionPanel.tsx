@@ -38,7 +38,6 @@ import {
 } from '../stores/QueryBuilderExplorerState.js';
 import {
   type DropTargetMonitor,
-  type XYCoord,
   useDragLayer,
   useDrag,
   useDrop,
@@ -342,8 +341,7 @@ const QueryBuilderProjectionColumnEditor = observer(
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
           2;
         const dragDistance =
-          (monitor.getClientOffset() as XYCoord).y -
-          (hoverBoundingReact?.top ?? 0);
+          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
         if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
           return;
         }
