@@ -48,7 +48,7 @@ import { StereotypeSelector } from './StereotypeSelector.js';
 import { TaggedValueEditor } from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
-import { action, flowResult, makeObservable, observable } from 'mobx';
+import { flowResult } from 'mobx';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -111,10 +111,10 @@ import {
   property_setName,
   property_setGenericType,
   property_setMultiplicity,
-  class_arrangeProperty,
-  class_arrangeDerivedProperty,
-  class_arrangeConstraint,
-  class_arrangeSuperTypes,
+  class_swapProperties,
+  class_swapDerivedProperties,
+  class_swapConstraints,
+  class_swapSuperTypes,
   setGenericTypeReferenceValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
@@ -124,13 +124,9 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-class ClassPropertyDragSource {
+type ClassPropertyDragSource = {
   property: Property;
-
-  constructor(property: Property) {
-    this.property = property;
-  }
-}
+};
 
 enum CLASS_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
@@ -220,7 +216,7 @@ const PropertyBasicEditor = observer(
       (item: ClassPropertyDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.property;
         const hoveredProperty = property;
-        class_arrangeProperty(_class, draggingProperty, hoveredProperty);
+        class_swapProperties(_class, draggingProperty, hoveredProperty);
       },
       [_class, property],
     );
@@ -285,7 +281,7 @@ const PropertyBasicEditor = observer(
         {!isBeingDragged && (
           <div className="property-basic-editor">
             {!isIndirectProperty && (
-              <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+              <div className="uml-element-editor__drag-handler">
                 <VerticalDragHandleIcon />
               </div>
             )}
@@ -466,13 +462,9 @@ const PropertyBasicEditor = observer(
   },
 );
 
-class ClassDerivedPropertyDragSource {
+type ClassDerivedPropertyDragSource = {
   derivedProperty: DerivedProperty;
-
-  constructor(derivedProperty: DerivedProperty) {
-    this.derivedProperty = derivedProperty;
-  }
-}
+};
 
 enum CLASS_DERIVED_PROPERTY_DND_TYPE {
   PROPERTY = 'PROPERTY',
@@ -589,7 +581,7 @@ const DerivedPropertyBasicEditor = observer(
         if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
           return;
         }
-        class_arrangeDerivedProperty(_class, draggingProperty, hoveredProperty);
+        class_swapDerivedProperties(_class, draggingProperty, hoveredProperty);
       },
       [_class, derivedProperty],
     );
@@ -679,7 +671,7 @@ const DerivedPropertyBasicEditor = observer(
                 </div>
               )}
               {!isInheritedProperty && (
-                <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+                <div className="uml-element-editor__drag-handler">
                   <VerticalDragHandleIcon />
                 </div>
               )}
@@ -853,23 +845,9 @@ const DerivedPropertyBasicEditor = observer(
   },
 );
 
-class ClassSuperTypeDragSource {
+type ClassSuperTypeDragSource = {
   superType: GenericTypeReference;
-  isBeingDragged = false;
-
-  constructor(superType: GenericTypeReference) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
-    this.superType = superType;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
-  }
-}
+};
 
 enum CLASS_SUPER_TYPE_DND_TYPE {
   SUPER_TYPE = 'SUPER_TYPE',
@@ -885,18 +863,11 @@ const ConstraintEditor = observer(
     _class: Class;
     constraint: Constraint;
     deleteConstraint: () => void;
-    projectionConstraintState: ClassConstraintDragSource;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      constraint,
-      _class,
-      deleteConstraint,
-      projectionConstraintState,
-      editorState,
-      isReadOnly,
-    } = props;
+    const { constraint, _class, deleteConstraint, editorState, isReadOnly } =
+      props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const hasParserError = editorState.classState.constraintStates.some(
@@ -914,7 +885,7 @@ const ConstraintEditor = observer(
       (item: ClassConstraintDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.constraint;
         const hoveredProperty = constraint;
-        class_arrangeConstraint(_class, draggingProperty, hoveredProperty);
+        class_swapConstraints(_class, draggingProperty, hoveredProperty);
       },
       [_class, constraint],
     );
@@ -935,24 +906,16 @@ const ConstraintEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionConstraintState.constraint === isBeingDraggedProperty;
+    const isBeingDragged = constraint === isBeingDraggedProperty;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CLASS_CONSTRAINT_DND_TYPE.CONSTRAINT,
-        item: (): ClassConstraintDragSource => {
-          projectionConstraintState.setIsBeingDragged(true);
-          return {
-            constraint: constraint,
-            isBeingDragged: projectionConstraintState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: ClassConstraintDragSource | undefined): void =>
-          projectionConstraintState.setIsBeingDragged(false),
+        item: (): ClassConstraintDragSource => ({
+          constraint: constraint,
+        }),
       }),
-      [projectionConstraintState],
+      [constraint],
     );
     dragConnector(dropConnector(ref));
 
@@ -996,7 +959,7 @@ const ConstraintEditor = observer(
           <>
             <div className="constraint-editor__content">
               {!isInheritedConstraint && (
-                <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+                <div className="uml-element-editor__drag-handler">
                   <VerticalDragHandleIcon />
                 </div>
               )}
@@ -1063,40 +1026,19 @@ const ConstraintEditor = observer(
   },
 );
 
-class ClassConstraintDragSource {
+type ClassConstraintDragSource = {
   constraint: Constraint;
-  isBeingDragged = false;
-
-  constructor(constraint: Constraint) {
-    makeObservable(this, {
-      isBeingDragged: observable,
-      setIsBeingDragged: action,
-    });
-
-    this.constraint = constraint;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
-  }
-}
+};
 
 const SuperTypeEditor = observer(
   (props: {
     _class: Class;
     superType: GenericTypeReference;
-    projectionSuperTypeState: ClassSuperTypeDragSource;
     deleteSuperType: () => void;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const {
-      superType,
-      _class,
-      projectionSuperTypeState,
-      deleteSuperType,
-      isReadOnly,
-    } = props;
+    const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
     const superTypeOptions = editorStore.classOptions.filter(
@@ -1115,7 +1057,7 @@ const SuperTypeEditor = observer(
       (item: ClassSuperTypeDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.superType;
         const hoveredProperty = superType;
-        class_arrangeSuperTypes(_class, draggingProperty, hoveredProperty);
+        class_swapSuperTypes(_class, draggingProperty, hoveredProperty);
       },
       [_class, superType],
     );
@@ -1136,24 +1078,16 @@ const SuperTypeEditor = observer(
       }),
       [handleHover],
     );
-    const isBeingDragged =
-      projectionSuperTypeState.superType === isBeingDraggedProperty;
+    const isBeingDragged = superType === isBeingDraggedProperty;
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE,
-        item: (): ClassSuperTypeDragSource => {
-          projectionSuperTypeState.setIsBeingDragged(true);
-          return {
-            superType: superType,
-            isBeingDragged: projectionSuperTypeState.isBeingDragged,
-            setIsBeingDragged: action,
-          };
-        },
-        end: (item: ClassSuperTypeDragSource | undefined): void =>
-          projectionSuperTypeState.setIsBeingDragged(false),
+        item: (): ClassSuperTypeDragSource => ({
+          superType: superType,
+        }),
       }),
-      [projectionSuperTypeState],
+      [superType],
     );
     dragConnector(dropConnector(ref));
 
@@ -1187,7 +1121,7 @@ const SuperTypeEditor = observer(
         )}
         {!isBeingDragged && (
           <div className="super-type-editor">
-            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+            <div className="uml-element-editor__drag-handler">
               <VerticalDragHandleIcon />
             </div>
             <CustomSelectorInput
@@ -1412,9 +1346,6 @@ const ConstraintsEditor = observer(
             <ConstraintEditor
               key={constraint._UUID}
               constraint={constraint}
-              projectionConstraintState={
-                new ClassConstraintDragSource(constraint)
-              }
               _class={_class}
               editorState={editorState}
               deleteConstraint={deleteConstraint(constraint)}
@@ -1492,7 +1423,6 @@ const SupertypesEditor = observer(
           <SuperTypeEditor
             key={superType.value._UUID}
             superType={superType}
-            projectionSuperTypeState={new ClassSuperTypeDragSource(superType)}
             _class={_class}
             deleteSuperType={deleteSuperType(superType)}
             isReadOnly={isReadOnly}
@@ -1502,18 +1432,6 @@ const SupertypesEditor = observer(
     );
   },
 );
-
-export class AllTaggedValueDragSource {
-  taggedValue: TaggedValue;
-
-  constructor(taggedValue: TaggedValue) {
-    this.taggedValue = taggedValue;
-  }
-}
-
-export enum CLASS_TAGGED_VALUE_DND_TYPE {
-  TAGGED_VALUE = 'TAGGED_VALUE',
-}
 
 const TaggedValuesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {
@@ -1568,14 +1486,6 @@ const TaggedValuesEditor = observer(
     );
   },
 );
-
-export class AllStereotypeDragSource {
-  stereotype: StereotypeReference;
-
-  constructor(stereotype: StereotypeReference) {
-    this.stereotype = stereotype;
-  }
-}
 
 const StereotypesEditor = observer(
   (props: { _class: Class; editorState: ClassEditorState }) => {

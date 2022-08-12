@@ -43,8 +43,8 @@ import {
   profile_deleteTag,
   profile_deleteStereotype,
   tagStereotype_setValue,
-  profile_arrangeTags,
-  profile_arrangeStereotypes,
+  profile_swapTags,
+  profile_swapStereotypes,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
@@ -52,13 +52,9 @@ import { useRef, useCallback, useEffect } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-class TagValueDragSource {
+type TagDragSource = {
   tag: Tag;
-
-  constructor(tag: Tag) {
-    this.tag = tag;
-  }
-}
+};
 
 enum TAG_DND_TYPE {
   TAG = 'TAG',
@@ -81,10 +77,10 @@ const TagBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: TagValueDragSource, monitor: DropTargetMonitor): void => {
+      (item: TagDragSource, monitor: DropTargetMonitor): void => {
         const draggingTag = item.tag;
         const hoveredTag = tag;
-        profile_arrangeTags(_profile, draggingTag, hoveredTag);
+        profile_swapTags(_profile, draggingTag, hoveredTag);
       },
       [_profile, tag],
     );
@@ -92,10 +88,10 @@ const TagBasicEditor = observer(
     const [{ isBeingDraggedTag }, dropConnector] = useDrop(
       () => ({
         accept: [TAG_DND_TYPE.TAG],
-        hover: (item: TagValueDragSource, monitor: DropTargetMonitor): void =>
+        hover: (item: TagDragSource, monitor: DropTargetMonitor): void =>
           handleHover(item, monitor),
         collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
-          isBeingDraggedTag: monitor.getItem<TagValueDragSource | null>()?.tag,
+          isBeingDraggedTag: monitor.getItem<TagDragSource | null>()?.tag,
         }),
       }),
       [handleHover],
@@ -105,7 +101,7 @@ const TagBasicEditor = observer(
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: TAG_DND_TYPE.TAG,
-        item: (): TagValueDragSource => ({
+        item: (): TagDragSource => ({
           tag: tag,
         }),
       }),
@@ -130,7 +126,7 @@ const TagBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="tag-basic-editor">
-            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+            <div className="uml-element-editor__drag-handler">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation
@@ -162,13 +158,9 @@ const TagBasicEditor = observer(
   },
 );
 
-class StereotypeProfileDragSource {
+type StereotypeDragSource = {
   stereotype: Stereotype;
-
-  constructor(stereotype: Stereotype) {
-    this.stereotype = stereotype;
-  }
-}
+};
 
 enum STEREOTYPE_DND_TYPE {
   STEREOTYPE = 'STEREOTYPE',
@@ -192,10 +184,10 @@ const StereotypeBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: StereotypeProfileDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
         const draggingTag = item.stereotype;
         const hoveredTag = stereotype;
-        profile_arrangeStereotypes(_profile, draggingTag, hoveredTag);
+        profile_swapStereotypes(_profile, draggingTag, hoveredTag);
       },
       [_profile, stereotype],
     );
@@ -203,13 +195,11 @@ const StereotypeBasicEditor = observer(
     const [{ isBeingDraggedTag }, dropConnector] = useDrop(
       () => ({
         accept: [STEREOTYPE_DND_TYPE.STEREOTYPE],
-        hover: (
-          item: StereotypeProfileDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
+          handleHover(item, monitor),
         collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
-          isBeingDraggedTag:
-            monitor.getItem<StereotypeProfileDragSource | null>()?.stereotype,
+          isBeingDraggedTag: monitor.getItem<StereotypeDragSource | null>()
+            ?.stereotype,
         }),
       }),
       [handleHover],
@@ -219,7 +209,7 @@ const StereotypeBasicEditor = observer(
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: STEREOTYPE_DND_TYPE.STEREOTYPE,
-        item: (): StereotypeProfileDragSource => ({
+        item: (): StereotypeDragSource => ({
           stereotype: stereotype,
         }),
       }),
@@ -246,7 +236,7 @@ const StereotypeBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="stereotype-basic-editor">
-            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+            <div className="uml-element-editor__drag-handler">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation

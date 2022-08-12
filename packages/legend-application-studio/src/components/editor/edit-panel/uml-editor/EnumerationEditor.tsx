@@ -69,19 +69,15 @@ import {
   annotatedElement_deleteTaggedValue,
   enum_deleteValue,
   enum_addValue,
-  enum_arrangeValues,
+  enum_swapValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
-export class EnumValueDragSource {
+type EnumValueDragSource = {
   _enum: Enum;
-
-  constructor(_enum: Enum) {
-    this._enum = _enum;
-  }
-}
+};
 
 enum ENUEMRATION_VALUE_DND_TYPE {
   ENUMERATION = 'ENUMERATION',
@@ -110,7 +106,7 @@ const EnumBasicEditor = observer(
       (item: EnumValueDragSource, monitor: DropTargetMonitor): void => {
         const draggingEnumeration = item._enum;
         const hoveredEnumeration = _enum;
-        enum_arrangeValues(
+        enum_swapValues(
           _parentEnumerations,
           draggingEnumeration,
           hoveredEnumeration,
@@ -163,7 +159,7 @@ const EnumBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="enum-basic-editor">
-            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+            <div className="uml-element-editor__drag-handler">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation

@@ -37,20 +37,24 @@ import {
 import {
   taggedValue_setValue,
   taggedValue_setTag,
-  annotatedElement_arrangeTaggedValues,
+  annotatedElement_swapTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import {
-  type AllTaggedValueDragSource,
-  CLASS_TAGGED_VALUE_DND_TYPE,
-} from './ClassEditor.js';
 
 interface TagOption {
   label: string;
   value: Tag;
 }
+
+enum TAGGED_VALUE_DND_TYPE {
+  TAGGED_VALUE = 'TAGGED_VALUE',
+}
+
+type TaggedValueDragSource = {
+  taggedValue: TaggedValue;
+};
 
 export const TaggedValueEditor = observer(
   (props: {
@@ -120,10 +124,10 @@ export const TaggedValueEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: AllTaggedValueDragSource, monitor: DropTargetMonitor): void => {
+      (item: TaggedValueDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.taggedValue;
         const hoveredProperty = taggedValue;
-        annotatedElement_arrangeTaggedValues(
+        annotatedElement_swapTaggedValues(
           annotatedElement,
           draggingProperty,
           hoveredProperty,
@@ -134,16 +138,16 @@ export const TaggedValueEditor = observer(
 
     const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
+        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
         hover: (
-          item: AllTaggedValueDragSource,
+          item: TaggedValueDragSource,
           monitor: DropTargetMonitor,
         ): void => handleHover(item, monitor),
         collect: (
           monitor,
         ): { isBeingDraggedTaggedValue: TaggedValue | undefined } => ({
           isBeingDraggedTaggedValue:
-            monitor.getItem<AllTaggedValueDragSource | null>()?.taggedValue,
+            monitor.getItem<TaggedValueDragSource | null>()?.taggedValue,
         }),
       }),
       [handleHover],
@@ -152,8 +156,8 @@ export const TaggedValueEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): AllTaggedValueDragSource => ({
+        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
+        item: (): TaggedValueDragSource => ({
           taggedValue: taggedValue,
         }),
       }),
@@ -183,7 +187,7 @@ export const TaggedValueEditor = observer(
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''
               }`}
             >
-              <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+              <div className="uml-element-editor__drag-handler">
                 <VerticalDragHandleIcon />
               </div>
               <CustomSelectorInput

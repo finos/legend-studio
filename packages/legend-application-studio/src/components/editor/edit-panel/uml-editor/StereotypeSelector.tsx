@@ -32,14 +32,10 @@ import {
   type AnnotatedElement,
 } from '@finos/legend-graph';
 import {
-  annotatedElement_arrangeStereotypes,
+  annotatedElement_swapStereotypes,
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
-import {
-  type AllStereotypeDragSource,
-  CLASS_TAGGED_VALUE_DND_TYPE,
-} from './ClassEditor.js';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
@@ -47,6 +43,14 @@ interface StereotypeOption {
   label: string;
   value: Stereotype;
 }
+
+enum TAGGED_VALUE_DND_TYPE {
+  TAGGED_VALUE = 'TAGGED_VALUE',
+}
+
+type StereotypeDragSource = {
+  stereotype: StereotypeReference;
+};
 
 export const StereotypeSelector = observer(
   (props: {
@@ -110,10 +114,10 @@ export const StereotypeSelector = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: AllStereotypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
         const draggingProperty = item.stereotype;
         const hoveredProperty = stereotype;
-        annotatedElement_arrangeStereotypes(
+        annotatedElement_swapStereotypes(
           annotatedElement,
           draggingProperty,
           hoveredProperty,
@@ -124,16 +128,14 @@ export const StereotypeSelector = observer(
 
     const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
-        hover: (
-          item: AllStereotypeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
+        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
+          handleHover(item, monitor),
         collect: (
           monitor,
         ): { isBeingDraggedStereotype: StereotypeReference | undefined } => ({
           isBeingDraggedStereotype:
-            monitor.getItem<AllStereotypeDragSource | null>()?.stereotype,
+            monitor.getItem<StereotypeDragSource | null>()?.stereotype,
         }),
       }),
       [handleHover],
@@ -142,8 +144,8 @@ export const StereotypeSelector = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): AllStereotypeDragSource => ({
+        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
+        item: (): StereotypeDragSource => ({
           stereotype: stereotype,
         }),
       }),
@@ -175,7 +177,7 @@ export const StereotypeSelector = observer(
                 darkTheme ? 'stereotype-selector-dark-theme' : ''
               } stereotype-selector__profile`}
             >
-              <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+              <div className="uml-element-editor__drag-handler">
                 <VerticalDragHandleIcon />
               </div>
               <CustomSelectorInput

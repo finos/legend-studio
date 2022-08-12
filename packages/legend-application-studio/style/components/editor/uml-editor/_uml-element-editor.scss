@@ -235,10 +235,6 @@
     color: var(--color-dark-grey-400);
   }
 
-  &__drag-handler:active {
-    color: var(--color-dark-grey-200);
-  }
-
   &__remove-btn {
     @include flexCenter;
 

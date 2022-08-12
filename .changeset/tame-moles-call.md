@@ -1,8 +1,5 @@
 ---
-'@finos/legend-application-query': minor
 '@finos/legend-application-studio': minor
-'@finos/legend-graph': minor
-'@finos/legend-shared': minor
 ---
 
-Allow re-arrange elements (class properties, tagged values, etc.) ([#303](https://github.com/finos/legend-studio/pull/303)).
+Allow re-arranging sub-elements (class properties, tagged values, etc.) in UML editors ([#303](https://github.com/finos/legend-studio/pull/303)).

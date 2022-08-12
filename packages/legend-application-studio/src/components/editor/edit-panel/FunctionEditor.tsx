@@ -82,7 +82,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-  function_arrangeParameter,
+  function_swapParameters,
 } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
@@ -114,13 +114,9 @@ export const getFunctionParameterType = (
   );
 };
 
-class FunctionParameterDragSource {
+type FunctionParameterDragSource = {
   parameter: RawVariableExpression;
-
-  constructor(parameter: RawVariableExpression) {
-    this.parameter = parameter;
-  }
-}
+};
 
 enum FUNCTION_PARAMETER_DND_TYPE {
   PARAMETER = 'PARAMETER',
@@ -193,7 +189,7 @@ const ParameterBasicEditor = observer(
       (item: FunctionParameterDragSource, monitor: DropTargetMonitor): void => {
         const draggingParameter = item.parameter;
         const hoveredParameter = parameter;
-        function_arrangeParameter(_func, draggingParameter, hoveredParameter);
+        function_swapParameters(_func, draggingParameter, hoveredParameter);
       },
       [_func, parameter],
     );
@@ -265,7 +261,7 @@ const ParameterBasicEditor = observer(
                 <LockIcon />
               </div>
             )}
-            <div className="uml-element-editor__drag-handler" tabIndex={-1}>
+            <div className="uml-element-editor__drag-handler">
               <VerticalDragHandleIcon />
             </div>
             <input

@@ -91,7 +91,7 @@ export const class_addProperty = action(
   },
 );
 
-export const class_arrangeProperty = action(
+export const class_swapProperties = action(
   (_class: Class, sourceProperty: Property, targetProperty: Property): void => {
     swapEntry(_class.properties, sourceProperty, targetProperty);
   },
@@ -108,7 +108,7 @@ export const class_addDerivedProperty = action(
   },
 );
 
-export const class_arrangeDerivedProperty = action(
+export const class_swapDerivedProperties = action(
   (
     _class: Class,
     sourceProperty: DerivedProperty,
@@ -128,7 +128,7 @@ export const class_deleteConstraint = action(
     deleteEntry(_class.constraints, val);
   },
 );
-export const class_arrangeConstraint = action(
+export const class_swapConstraints = action(
   (
     _class: Class,
     sourceConstraint: Constraint,
@@ -148,7 +148,7 @@ export const class_deleteSuperType = action(
     deleteEntry(_class.generalizations, val);
   },
 );
-export const class_arrangeSuperTypes = action(
+export const class_swapSuperTypes = action(
   (
     _class: Class,
     sourceSuperType: GenericTypeReference,
@@ -248,7 +248,7 @@ export const tagStereotype_setValue = action(
   },
 );
 
-export const annotatedElement_arrangeTaggedValues = action(
+export const annotatedElement_swapTaggedValues = action(
   (
     annotatedElement: AnnotatedElement,
     sourceTaggedValue: TaggedValue,
@@ -262,7 +262,7 @@ export const annotatedElement_arrangeTaggedValues = action(
   },
 );
 
-export const annotatedElement_arrangeStereotypes = action(
+export const annotatedElement_swapStereotypes = action(
   (
     annotatedElement: AnnotatedElement,
     sourceStereotype: StereotypeReference,
@@ -321,13 +321,13 @@ export const profile_deleteStereotype = action(
   },
 );
 
-export const profile_arrangeTags = action(
+export const profile_swapTags = action(
   (profile: Profile, sourceTag: Tag, targetTag: Tag): void => {
     swapEntry(profile.p_tags, sourceTag, targetTag);
   },
 );
 
-export const profile_arrangeStereotypes = action(
+export const profile_swapStereotypes = action(
   (
     profile: Profile,
     sourceStereotype: Stereotype,
@@ -360,7 +360,7 @@ export const function_setReturnMultiplicity = action(
   },
 );
 
-export const function_arrangeParameter = action(
+export const function_swapParameters = action(
   (
     _func: ConcreteFunctionDefinition,
     sourceParameter: RawVariableExpression,
@@ -392,7 +392,7 @@ export const enumValueReference_setValue = action(
   },
 );
 
-export const enum_arrangeValues = action(
+export const enum_swapValues = action(
   (enumeration: Enum[], sourceEnum: Enum, targetEnum: Enum): void => {
     swapEntry(enumeration, sourceEnum, targetEnum);
   },
