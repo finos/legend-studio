@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 5.1.0
+
+### Minor Changes
+
+- [#1386](https://github.com/finos/legend-studio/pull/1386) [`b73263b9`](https://github.com/finos/legend-studio/commit/b73263b9866624cbf184261603001caeb2d13685) ([@xannem](https://github.com/xannem)) - Warn when there are no projections in query-builder ([#1385](https://github.com/finos/legend-studio/issues/1385)).
+
+* [#1381](https://github.com/finos/legend-studio/pull/1381) [`7a892e6b`](https://github.com/finos/legend-studio/commit/7a892e6b3906b7429ee89ee0fe573e4215553fbf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add typeahead search for filter and post filter string values ([#1382](https://github.com/finos/legend-studio/issues/1382)).
+
 ## 5.0.2
 
 ### Patch Changes
