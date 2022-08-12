@@ -19,13 +19,13 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_FlatDataProperty implements Hashable {
   name!: string;
-  value!: (boolean | string | number)[];
+  value!: boolean | string | number;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY,
       this.name,
-      hashArray(this.value),
+      this.value.toString(),
     ]);
   }
 }
