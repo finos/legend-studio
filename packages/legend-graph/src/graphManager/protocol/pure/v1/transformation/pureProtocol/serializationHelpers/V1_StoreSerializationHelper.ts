@@ -92,28 +92,19 @@ const V1_flatDataDecimalSchema = createModelSchema(V1_FlatDataDecimal, {
 });
 const V1_flatDataDateSchema = createModelSchema(V1_FlatDataDate, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE),
-  dateFormat: custom(
-    (val) => (Array.isArray(val) ? serializeArray(val, (v) => v) : [val]),
-    (val) => (Array.isArray(val) ? deserializeArray(val, (v) => v) : [val]),
-  ),
+  dateFormat: optional(primitive()),
   timeZone: optional(primitive()),
 });
 const V1_flatDataDateTimeSchema = createModelSchema(V1_FlatDataDateTime, {
   _type: usingConstantValueSchema(V1_FlatDataDataTypeType.FLAT_DATA_DATE_TIME),
-  dateFormat: custom(
-    (val) => (Array.isArray(val) ? serializeArray(val, (v) => v) : [val]),
-    (val) => (Array.isArray(val) ? deserializeArray(val, (v) => v) : [val]),
-  ),
+  dateFormat: optional(primitive()),
   timeZone: optional(primitive()),
 });
 const V1_flatDataStrictDateSchema = createModelSchema(V1_FlatDataStrictDate, {
   _type: usingConstantValueSchema(
     V1_FlatDataDataTypeType.FLAT_DATA_STRICT_DATE,
   ),
-  dateFormat: custom(
-    (val) => (Array.isArray(val) ? serializeArray(val, (v) => v) : [val]),
-    (val) => (Array.isArray(val) ? deserializeArray(val, (v) => v) : [val]),
-  ),
+  dateFormat: optional(primitive()),
   timeZone: optional(primitive()),
 });
 const V1_flatDataRecordTypeSchema = createModelSchema(V1_FlatDataRecordType, {
@@ -238,24 +229,15 @@ function V1_deserializeFlatDataRecordField(
 const V1_flatDataPropertyModelSchema = createModelSchema(V1_FlatDataProperty, {
   name: primitive(),
   value: custom(
-    (values) =>
-      Array.isArray(values)
-        ? serializeArray(values, (value) => value)
-        : [values],
-    (values) => {
-      if (Array.isArray(values)) {
-        return deserializeArray(values, (value) => {
-          assertTrue(
-            typeof value === 'boolean' ||
-              typeof value === 'string' ||
-              typeof value === 'number',
-            `Can't deserialize flat-data property value '${value}'`,
-          );
-          return value;
-        });
-      } else {
-        return [values];
-      }
+    (val) => val,
+    (value: boolean | string | number): boolean | string | number => {
+      assertTrue(
+        typeof value === 'boolean' ||
+          typeof value === 'string' ||
+          typeof value === 'number',
+        `Can't deserialize flat-data property value '${value}'`,
+      );
+      return value;
     },
   ),
 });
