@@ -19,6 +19,7 @@ import type {
   AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
 import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average.js';
 import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count.js';
 import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
@@ -27,18 +28,12 @@ import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBui
 import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
 import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
-import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
 import { QueryBuilderSimpleProjectionColumnState } from './QueryBuilderProjectionState.js';
-import { QueryBuilderState } from './QueryBuilderState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from './QueryResultSetModifierState.js';
-
-export type QueryBuilderPreviewData = {
-  columns: string[];
-  rows: { values: (string | number)[] }[];
-};
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';
@@ -95,13 +90,14 @@ const createProjectionColumn = (
 const createQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = new QueryBuilderState(
-    queryBuilderState.applicationStore,
-    queryBuilderState.graphManagerState,
-    queryBuilderState.mode,
-  );
+  const builderState = queryBuilderState.createBareBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
   return builderState;
+};
+
+export type QueryBuilderPreviewData = {
+  columns: string[];
+  rows: { values: (string | number)[] }[];
 };
 
 export const buildNumericPreviewDataQuery = (

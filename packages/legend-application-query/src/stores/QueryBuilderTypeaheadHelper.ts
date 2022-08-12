@@ -33,7 +33,7 @@ import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionState.js';
-import { QueryBuilderState } from './QueryBuilderState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
@@ -42,11 +42,7 @@ const createAndSetupQueryBuilderStateForTypeAhead = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
   // builderState to build dummy query
-  const builderState = new QueryBuilderState(
-    queryBuilderState.applicationStore,
-    queryBuilderState.graphManagerState,
-    queryBuilderState.mode,
-  );
+  const builderState = queryBuilderState.createBareBuilderState();
   // setup
   builderState.querySetupState = queryBuilderState.querySetupState;
   // result modifiers

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, test, describe } from '@jest/globals';
+import { test, describe, expect } from '@jest/globals';
 import {
   guaranteeType,
   integrationTest,
@@ -31,12 +31,12 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../QueryBuilderExplorerState.js';
+import {
+  buildNonNumericPreviewDataQuery,
+  buildNumericPreviewDataQuery,
+} from '../QueryBuilderPreviewDataHelper.js';
+import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
 import type { RawMappingModelCoverageAnalysisResult } from '@finos/legend-graph';
-// import {
-//   buildNonNumericPreviewDataQuery,
-//   buildNumericPreviewDataQuery,
-// } from '../QueryBuilderPreviewDataHelper.js';
-import { TEST_setUpQueryBuilderState } from '../../components/QueryEditorComponentTestUtils.js';
 
 type PreviewDataTestCase = [
   string,
@@ -118,20 +118,20 @@ describe(integrationTest('Query builder preview data'), () => {
           queryBuilderState.explorerState.propertySearchPanelState
             .allMappedPropertyNodes,
         );
-      // const rawLambda = numeric
-      //   ? buildNumericPreviewDataQuery(queryBuilderState, propertyExpression)
-      //   : buildNonNumericPreviewDataQuery(
-      //       queryBuilderState,
-      //       propertyExpression,
-      //     );
+      const rawLambda = numeric
+        ? buildNumericPreviewDataQuery(queryBuilderState, propertyExpression)
+        : buildNonNumericPreviewDataQuery(
+            queryBuilderState,
+            propertyExpression,
+          );
 
-      // const jsonQuery =
-      //   queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-      //     rawLambda,
-      //   );
-      // (
-      //   expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
-      // ).toIncludeSameMembers([jsonQuery]);
+      const jsonQuery =
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          rawLambda,
+        );
+      (
+        expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
+      ).toIncludeSameMembers([jsonQuery]);
     },
   );
 });

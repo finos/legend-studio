@@ -30,8 +30,6 @@ import {
   RawLambda,
   PackageableElementExplicitReference,
   type RawMappingModelCoverageAnalysisResult,
-  TEST__getTestGraphManagerState,
-  TEST__buildGraphWithEntities,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -53,11 +51,6 @@ import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
-import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
-} from '../stores/QueryBuilderState.js';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 
 export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -204,65 +197,4 @@ export const TEST__setUpQueryEditor = async (
     renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
   );
   return renderResult;
-};
-
-export const TEST_setUpQueryBuilderState = async (
-  entities: Entity[],
-  rawLambda?: RawLambda | undefined,
-  executionContext?:
-    | {
-        _class: string;
-        mapping: string;
-        runtime?: string | undefined;
-      }
-    | undefined,
-  rawMappingModelCoverageAnalysisResult?:
-    | RawMappingModelCoverageAnalysisResult
-    | undefined,
-): Promise<QueryBuilderState> => {
-  const pluginManager = LegendQueryPluginManager.create();
-  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
-  const applicationStore = TEST__getTestApplicationStore(
-    TEST__getTestLegendQueryApplicationConfig(),
-    LegendQueryPluginManager.create(),
-  );
-  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-  await TEST__buildGraphWithEntities(graphManagerState, entities);
-  const queryBuilderState = new QueryBuilderState(
-    applicationStore,
-    graphManagerState,
-    new StandardQueryBuilderMode(),
-  );
-  if (rawLambda) {
-    queryBuilderState.buildStateFromRawLambda(rawLambda);
-  }
-  if (executionContext) {
-    const graph = queryBuilderState.graphManagerState.graph;
-    queryBuilderState.querySetupState._class = graph.getClass(
-      executionContext._class,
-    );
-    queryBuilderState.querySetupState.mapping = graph.getMapping(
-      executionContext.mapping,
-    );
-    if (executionContext.runtime) {
-      queryBuilderState.querySetupState.runtimeValue = graph.getRuntime(
-        executionContext.runtime,
-      );
-    }
-  }
-  if (rawMappingModelCoverageAnalysisResult) {
-    jest
-      .spyOn(
-        queryBuilderState.graphManagerState.graphManager,
-        'analyzeMappingModelCoverage',
-      )
-      .mockResolvedValue(
-        queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-          rawMappingModelCoverageAnalysisResult,
-        ),
-      );
-
-    await queryBuilderState.explorerState.analyzeMappingModelCoverage();
-  }
-  return queryBuilderState;
 };

@@ -110,7 +110,10 @@ export const QueryBuilderFetchStructurePanel = observer(
                     fetchStructureState.setFetchStructureMode(fetchMode);
                     queryBuilderState.changeFetchStructure();
                     queryBuilderState.fetchStructureState.projectionState =
-                      new QueryBuilderProjectionState(queryBuilderState);
+                      new QueryBuilderProjectionState(
+                        queryBuilderState,
+                        queryBuilderState.fetchStructureState.projectionState.aggregationState.operators,
+                      );
                     queryBuilderState.postFilterState =
                       new QueryBuilderPostFilterState(
                         queryBuilderState,

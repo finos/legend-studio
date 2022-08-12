@@ -25,10 +25,6 @@ import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COV
 import { RawLambda } from '@finos/legend-graph';
 import { TEST_DATA__lambda_simpleSingleConditionFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../QueryBuilderFilterState.js';
-import {
-  buildProjectionColumnTypeAheadQuery,
-  buildPropertyTypeAheadQuery,
-} from '../QueryBuilderTypeaheadHelper.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
@@ -39,7 +35,11 @@ import {
   TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
-import { TEST_setUpQueryBuilderState } from '../../components/QueryEditorComponentTestUtils.js';
+import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
+import {
+  buildProjectionColumnTypeAheadQuery,
+  buildPropertyTypeAheadQuery,
+} from '../QueryBuilderTypeaheadHelper.js';
 
 type TypeAheadTestCase = [
   string,
