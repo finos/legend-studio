@@ -73,13 +73,13 @@ export class FlatDataDecimal extends FlatDataNumber implements Hashable {
 }
 
 export class FlatDataDate extends FlatDataDataType implements Hashable {
-  dateFormat?: string[] | undefined;
+  dateFormat?: string | undefined;
   timeZone?: string | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE,
-      this.dateFormat ? hashArray(this.dateFormat) : '',
+      this.dateFormat ?? '',
       this.timeZone ?? '',
     ]);
   }
@@ -89,7 +89,7 @@ export class FlatDataDateTime extends FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_DATE_TIME,
-      this.dateFormat ? hashArray(this.dateFormat) : '',
+      this.dateFormat ?? '',
       this.timeZone ?? '',
     ]);
   }
@@ -99,7 +99,7 @@ export class FlatDataStrictDate extends FlatDataDate implements Hashable {
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_STRICT_DATE,
-      this.dateFormat ? hashArray(this.dateFormat) : '',
+      this.dateFormat ?? '',
       this.timeZone ?? '',
     ]);
   }
