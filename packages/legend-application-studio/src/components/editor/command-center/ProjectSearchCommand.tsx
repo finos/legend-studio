@@ -31,6 +31,7 @@ import type { PackageableElement } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   buildElementOption,
+  getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
 
@@ -44,7 +45,13 @@ export const ProjectSearchCommand = observer(() => {
     (type: string | undefined): (() => void) =>
     (): void =>
       setElementType(type);
-  const options = editorStore.graphManagerState.graph.allOwnElements
+  const options = [
+    // NOTE: we don't include system elements here for now
+    // ...editorStore.graphManagerState.graph.systemModel.allOwnElements,
+    ...editorStore.graphManagerState.graph.dependencyManager.allOwnElements,
+    ...editorStore.graphManagerState.graph.allOwnElements,
+    ...editorStore.graphManagerState.graph.generationModel.allOwnElements,
+  ]
     .filter(
       (element) =>
         !elementType ||
@@ -88,7 +95,7 @@ export const ProjectSearchCommand = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal search-modal">
+      <div className="modal search-modal modal--dark">
         <div className="project-search-command">
           <DropdownMenu
             content={
@@ -138,6 +145,10 @@ export const ProjectSearchCommand = observer(() => {
               elementType ? elementType.toLowerCase() : 'elements'
             } by path`}
             escapeClearsValue={true}
+            darkMode={true}
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              darkMode: true,
+            })}
           />
         </div>
       </div>
