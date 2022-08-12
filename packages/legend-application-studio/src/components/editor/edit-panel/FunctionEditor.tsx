@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   FunctionEditorState,
@@ -29,7 +29,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import {
   clsx,
   CustomSelectorInput,
@@ -38,6 +38,7 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
+  VerticalDragHandleIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
@@ -81,6 +82,7 @@ import {
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
+  function_swapParameters,
 } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
@@ -88,6 +90,7 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -111,13 +114,23 @@ export const getFunctionParameterType = (
   );
 };
 
+type FunctionParameterDragSource = {
+  parameter: RawVariableExpression;
+};
+
+enum FUNCTION_PARAMETER_DND_TYPE {
+  PARAMETER = 'PARAMETER',
+}
+
 const ParameterBasicEditor = observer(
   (props: {
     parameter: RawVariableExpression;
+    _func: ConcreteFunctionDefinition;
     deleteParameter: () => void;
     isReadOnly: boolean;
   }) => {
-    const { parameter, deleteParameter, isReadOnly } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
@@ -170,6 +183,53 @@ const ParameterBasicEditor = observer(
         );
       }
     };
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: FunctionParameterDragSource, monitor: DropTargetMonitor): void => {
+        const draggingParameter = item.parameter;
+        const hoveredParameter = parameter;
+        function_swapParameters(_func, draggingParameter, hoveredParameter);
+      },
+      [_func, parameter],
+    );
+
+    const [{ isBeingDraggedParameter }, dropConnector] = useDrop(
+      () => ({
+        accept: [FUNCTION_PARAMETER_DND_TYPE.PARAMETER],
+        hover: (
+          item: FunctionParameterDragSource,
+          monitor: DropTargetMonitor,
+        ): void => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): {
+          isBeingDraggedParameter: RawVariableExpression | undefined;
+        } => ({
+          isBeingDraggedParameter:
+            monitor.getItem<FunctionParameterDragSource | null>()?.parameter,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = parameter === isBeingDraggedParameter;
+
+    const [, dragConnector, dragPreviewConnector] = useDrag(
+      () => ({
+        type: FUNCTION_PARAMETER_DND_TYPE.PARAMETER,
+        item: (): FunctionParameterDragSource => ({
+          parameter: parameter,
+        }),
+      }),
+      [parameter],
+    );
+    dragConnector(dropConnector(ref));
+
+    // hide default HTML5 preview image
+    useEffect(() => {
+      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+    }, [dragPreviewConnector]);
+
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
@@ -183,128 +243,147 @@ const ParameterBasicEditor = observer(
       updateMultiplicity(lowerBound, event.target.value);
     };
     return (
-      <div className="property-basic-editor">
-        {isReadOnly && (
-          <div className="property-basic-editor__lock">
-            <LockIcon />
+      <div ref={ref}>
+        {isBeingDragged && (
+          <div className="uml-element-editor__dnd__container">
+            <div className="uml-element-editor__dnd ">
+              <div className="uml-element-editor__dnd__name">
+                {parameter.name}
+              </div>
+            </div>
           </div>
         )}
-        <input
-          className="property-basic-editor__name"
-          disabled={isReadOnly}
-          value={parameter.name}
-          spellCheck={false}
-          onChange={changeValue}
-          placeholder={`Property name`}
-        />
-        {!isReadOnly && isEditingType && (
-          <CustomSelectorInput
-            className="property-basic-editor__type"
-            options={typeOptions}
-            onChange={changeType}
-            value={selectedType}
-            placeholder={'Choose a data type or enumeration'}
-            filterOption={filterOption}
-          />
-        )}
-        {!isReadOnly && !isEditingType && (
-          <div
-            className={clsx(
-              'property-basic-editor__type',
-              'property-basic-editor__type--show-click-hint',
-              `background--${typeName.toLowerCase()}`,
-              {
-                'property-basic-editor__type--has-visit-btn':
-                  typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
-              },
-            )}
-          >
-            {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-              <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, paramType)}
+
+        {!isBeingDragged && (
+          <div className="property-basic-editor">
+            {isReadOnly && (
+              <div className="property-basic-editor__lock">
+                <LockIcon />
               </div>
             )}
-            <div className="property-basic-editor__type__label">
-              {paramType.name}
+            <div className="uml-element-editor__drag-handler">
+              <VerticalDragHandleIcon />
             </div>
-            <div
-              className="property-basic-editor__type__label property-basic-editor__type__label--hover"
-              onClick={(): void => setIsEditingType(true)}
-            >
-              Click to edit
-            </div>
-            {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-              <button
-                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                className="property-basic-editor__type__visit-btn"
-                onClick={openElement}
-                tabIndex={-1}
-                title={'Visit element'}
+            <input
+              className="property-basic-editor__name"
+              disabled={isReadOnly}
+              value={parameter.name}
+              spellCheck={false}
+              onChange={changeValue}
+              placeholder={`Property name`}
+            />
+            {!isReadOnly && isEditingType && (
+              <CustomSelectorInput
+                className="property-basic-editor__type"
+                options={typeOptions}
+                onChange={changeType}
+                value={selectedType}
+                placeholder={'Choose a data type or enumeration'}
+                filterOption={filterOption}
+              />
+            )}
+            {!isReadOnly && !isEditingType && (
+              <div
+                className={clsx(
+                  'property-basic-editor__type',
+                  'property-basic-editor__type--show-click-hint',
+                  `background--${typeName.toLowerCase()}`,
+                  {
+                    'property-basic-editor__type--has-visit-btn':
+                      typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
+                  },
+                )}
               >
-                <ArrowCircleRightIcon />
+                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                  <div className="property-basic-editor__type__abbr">
+                    {getElementIcon(editorStore, paramType)}
+                  </div>
+                )}
+                <div className="property-basic-editor__type__label">
+                  {paramType.name}
+                </div>
+                <div
+                  className="property-basic-editor__type__label property-basic-editor__type__label--hover"
+                  onClick={(): void => setIsEditingType(true)}
+                >
+                  Click to edit
+                </div>
+                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                  <button
+                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                    className="property-basic-editor__type__visit-btn"
+                    onClick={openElement}
+                    tabIndex={-1}
+                    title={'Visit element'}
+                  >
+                    <ArrowCircleRightIcon />
+                  </button>
+                )}
+              </div>
+            )}
+            {isReadOnly && (
+              <div
+                className={clsx(
+                  'property-basic-editor__type',
+                  `background--${typeName.toLowerCase()}`,
+                  {
+                    'property-basic-editor__type--has-visit-btn':
+                      typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
+                  },
+                )}
+              >
+                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                  <div className="property-basic-editor__type__abbr">
+                    {getElementIcon(editorStore, paramType)}
+                  </div>
+                )}
+                <div className="property-basic-editor__type__label">
+                  {paramType.name}
+                </div>
+                {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
+                  <button
+                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                    className="property-basic-editor__type__visit-btn"
+                    onClick={openElement}
+                    tabIndex={-1}
+                    title={'Visit element'}
+                  >
+                    <ArrowCircleRightIcon />
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="property-basic-editor__multiplicity">
+              <input
+                className="property-basic-editor__multiplicity-bound"
+                disabled={isReadOnly}
+                spellCheck={false}
+                value={lowerBound}
+                onChange={changeLowerBound}
+              />
+              <div className="property-basic-editor__multiplicity__range">
+                ..
+              </div>
+              <input
+                className="property-basic-editor__multiplicity-bound"
+                disabled={isReadOnly}
+                spellCheck={false}
+                value={upperBound}
+                onChange={changeUpperBound}
+              />
+            </div>
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteParameter}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
               </button>
             )}
           </div>
-        )}
-        {isReadOnly && (
-          <div
-            className={clsx(
-              'property-basic-editor__type',
-              `background--${typeName.toLowerCase()}`,
-              {
-                'property-basic-editor__type--has-visit-btn':
-                  typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE,
-              },
-            )}
-          >
-            {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-              <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, paramType)}
-              </div>
-            )}
-            <div className="property-basic-editor__type__label">
-              {paramType.name}
-            </div>
-            {typeName !== FUNCTION_PARAMETER_TYPE.PRIMITIVE && (
-              <button
-                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                className="property-basic-editor__type__visit-btn"
-                onClick={openElement}
-                tabIndex={-1}
-                title={'Visit element'}
-              >
-                <ArrowCircleRightIcon />
-              </button>
-            )}
-          </div>
-        )}
-        <div className="property-basic-editor__multiplicity">
-          <input
-            className="property-basic-editor__multiplicity-bound"
-            disabled={isReadOnly}
-            spellCheck={false}
-            value={lowerBound}
-            onChange={changeLowerBound}
-          />
-          <div className="property-basic-editor__multiplicity__range">..</div>
-          <input
-            className="property-basic-editor__multiplicity-bound"
-            disabled={isReadOnly}
-            spellCheck={false}
-            value={upperBound}
-            onChange={changeUpperBound}
-          />
-        </div>
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteParameter}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
         )}
       </div>
     );
@@ -591,6 +670,7 @@ export const FunctionMainEditor = observer(
               <ParameterBasicEditor
                 key={param._UUID}
                 parameter={param}
+                _func={functionElement}
                 deleteParameter={deleteParameter(param)}
                 isReadOnly={isReadOnly}
               />
@@ -804,6 +884,7 @@ export const FunctionEditor = observer(() => {
               >
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
+                    annotatedElement={functionElement}
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -823,6 +904,7 @@ export const FunctionEditor = observer(() => {
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
+                    annotatedElement={functionElement}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { uuid } from '@finos/legend-shared';
+
 /**
  * Reference implies pointer-based relationship in the protocol. This means that during graph-building,
  * we figure out/infer the reference using pointer of some form. Take the following example:
@@ -53,6 +55,8 @@
  *    but for simplicity sake, we will just swap out to use new a new reference
  */
 export abstract class Reference {
+  readonly _UUID = uuid();
+
   abstract value: unknown;
 }
 
