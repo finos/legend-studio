@@ -49,10 +49,18 @@ export interface Hashable {
 export const hashString = (val: string): string =>
   hash.sha1().update(val).digest('hex');
 
-export const hashArray = (arr: (string | Hashable)[]): string =>
+export const hashArray = (
+  arr: (string | boolean | number | Hashable)[],
+): string =>
   hashString(
     arr
-      .map((val) => (typeof val === 'string' ? hashString(val) : val.hashCode))
+      .map((val) =>
+        typeof val === 'string'
+          ? hashString(val)
+          : typeof val === 'boolean' || typeof val === 'number'
+          ? val.toString()
+          : val.hashCode,
+      )
       .join(','),
   );
 
