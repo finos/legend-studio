@@ -71,6 +71,7 @@ import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
+import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -311,6 +312,7 @@ export abstract class AbstractPureGraphManager {
   >;
 
   abstract generateModelFromExternalFormat(
+    schemaSet: SchemaSet,
     configs: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string>;

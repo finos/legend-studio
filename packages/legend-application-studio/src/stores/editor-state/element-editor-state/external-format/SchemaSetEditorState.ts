@@ -162,16 +162,8 @@ export class SchemaSetModelGenerationState {
   *generateModel(): GeneratorFn<void> {
     this.isGenerating = true;
     try {
-      const SCHEMA_SET_PROPERTY_NAME = 'sourceSchemaSet';
       const SCHEMA_FORMAT_PROPERTY_NAME = 'format';
       const properties = [...this.configurationProperties];
-      if (!properties.find((e) => e.name === SCHEMA_SET_PROPERTY_NAME)) {
-        const genProperty = new ConfigurationProperty(
-          SCHEMA_SET_PROPERTY_NAME,
-          this.schemaSetEditorState.schemaSet.path,
-        );
-        properties.push(genProperty);
-      }
       if (!properties.find((e) => e.name === SCHEMA_FORMAT_PROPERTY_NAME)) {
         const genProperty = new ConfigurationProperty(
           SCHEMA_FORMAT_PROPERTY_NAME,
@@ -181,6 +173,7 @@ export class SchemaSetModelGenerationState {
       }
       const val =
         (yield this.schemaSetEditorState.editorStore.graphManagerState.graphManager.generateModelFromExternalFormat(
+          this.schemaSetEditorState.schemaSet,
           properties,
           this.schemaSetEditorState.editorStore.graphManagerState.graph,
         )) as string;

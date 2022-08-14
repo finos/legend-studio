@@ -254,6 +254,7 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
+import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1821,6 +1822,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateModelFromExternalFormat(
+    schemaSet: SchemaSet,
     configurationProperties: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string> {
@@ -1829,10 +1831,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       config[property.name] = property.value as Record<PropertyKey, unknown>;
     });
     const model = this.getFullGraphModelData(graph);
-    const input = new V1_ExternalFormatModelGenerationInput();
-    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
-    input.model = model;
-    input.config = config;
+    const input = new V1_ExternalFormatModelGenerationInput(
+      schemaSet.path,
+      model,
+      config,
+    );
     return this.engine.generateModel(input);
   }
 
