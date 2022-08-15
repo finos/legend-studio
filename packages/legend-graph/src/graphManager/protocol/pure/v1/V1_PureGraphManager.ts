@@ -30,7 +30,6 @@ import {
   getClass,
   guaranteeNonNullable,
   UnsupportedOperationError,
-  assertTrue,
   assertErrorThrown,
   promisify,
   StopWatch,
@@ -1721,7 +1720,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     }
   }
 
-  // ------------------------------------------- ValueSpecification -------------------------------------------
+  // ------------------------------------------- Value Specification -------------------------------------------
 
   buildValueSpecification(
     json: Record<PropertyKey, unknown>,
@@ -1780,7 +1779,41 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  createGetAllRawLambda(_class: Class): RawLambda {
+    return new RawLambda(
+      [],
+      [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: _class.path,
+            },
+          ],
+        },
+      ],
+    );
+  }
+
+  createDefaultBasicRawLambda(options?: {
+    addDummyParameter?: boolean;
+  }): RawLambda {
+    return new RawLambda(
+      options?.addDummyParameter ? [{ _type: 'var', name: 'x' }] : undefined,
+      [
+        {
+          _type: 'string',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          values: [''],
+        },
+      ],
+    );
+  }
+
   // ------------------------------------------- External Format --------------------------------
+
   getAvailableExternalFormatsDescriptions(): Promise<
     ExternalFormatDescription[]
   > {
@@ -2344,129 +2377,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.pureModelContextDataToEntities(
       await this.engine.buildDatabase(dbBuilderInput),
     );
-  }
-
-  // --------------------------------------------- HACKY ---------------------------------------------
-
-  HACKY__createGetAllLambda(_class: Class): RawLambda {
-    return new RawLambda(
-      [],
-      [
-        {
-          _type: 'func',
-          function: 'getAll',
-          parameters: [
-            {
-              _type: 'packageableElementPtr',
-              fullPath: _class.path,
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__createServiceTestAssertLambda(assertData: string): RawLambda {
-    return new RawLambda(
-      [
-        {
-          _type: 'var',
-          class: 'meta::pure::mapping::Result',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          name: 'res',
-        },
-      ],
-      [
-        {
-          _type: 'func',
-          function: 'equalJsonStrings',
-          parameters: [
-            {
-              _type: 'func',
-              function: 'toString',
-              parameters: [
-                {
-                  _type: 'func',
-                  function: 'toOne',
-                  parameters: [
-                    {
-                      _type: 'property',
-                      parameters: [
-                        {
-                          _type: 'var',
-                          name: 'res',
-                        },
-                      ],
-                      property: 'values',
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: [assertData],
-            },
-          ],
-        },
-      ],
-    );
-  }
-
-  HACKY__extractServiceTestAssertionData(query: RawLambda): string | undefined {
-    let json: string | undefined;
-    try {
-      json = (
-        (
-          ((query.body as unknown[])[0] as Record<PropertyKey, unknown>) // FunctionValue
-            .parameters as unknown[]
-        )[1] as {
-          values: (string | undefined)[];
-        }
-      ).values[0];
-      assertTrue(typeof json === 'string', `Expected value of type 'string'`);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.log.warn(
-        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
-        `Can't extract assertion result`,
-      );
-      json = undefined;
-    }
-    if (!json) {
-      /* Add other assertion cases if we read others */
-    }
-    return json;
-  }
-
-  HACKY__createDefaultBlankLambda(): RawLambda {
-    return new RawLambda(
-      [{ _type: 'var', name: 'x' }],
-      [
-        {
-          _type: 'string',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [''],
-        },
-      ],
-    );
-  }
-
-  HACKY__createDefaultEmptyLambda(): RawLambda {
-    return new RawLambda(undefined, [
-      {
-        _type: 'collection',
-        multiplicity: {
-          lowerBound: 0,
-          upperBound: 0,
-        },
-        values: [],
-      },
-    ]);
   }
 
   // --------------------------------------------- Utilities ---------------------------------------------

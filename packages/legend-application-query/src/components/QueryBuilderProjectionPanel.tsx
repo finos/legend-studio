@@ -556,7 +556,9 @@ export const QueryBuilderProjectionPanel = observer(
             const derivationProjectionColumn =
               new QueryBuilderDerivationProjectionColumnState(
                 projectionState,
-                queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
+                queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
+                  { addDummyParameter: true },
+                ),
               );
             derivationProjectionColumn.derivationLambdaEditorState.setLambdaString(
               `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${generateFunctionCallString(

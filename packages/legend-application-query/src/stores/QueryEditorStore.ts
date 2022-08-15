@@ -470,7 +470,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
         this.queryBuilderState.changeClass(defaultClass);
       } else {
         this.queryBuilderState.initialize(
-          this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultEmptyLambda(),
+          this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(),
         );
       }
     }

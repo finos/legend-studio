@@ -583,7 +583,9 @@ export class QueryBuilderProjectionState {
   addNewBlankDerivation(): void {
     const derivation = new QueryBuilderDerivationProjectionColumnState(
       this,
-      this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
+      this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
+        { addDummyParameter: true },
+      ),
     );
     this.addColumn(derivation);
     derivation.derivationLambdaEditorState.setLambdaString(

@@ -222,7 +222,7 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                 if (queryBuilderExtension.mode) {
                   queryBuilderExtension.queryBuilderState.changeClass(element);
                   queryBuilderExtension.queryBuilderState.initialize(
-                    editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+                    editorStore.graphManagerState.graphManager.createGetAllRawLambda(
                       element,
                     ),
                   );
@@ -333,7 +333,7 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                       classView.class.value,
                     );
                     queryBuilderExtension.queryBuilderState.initialize(
-                      diagramEditorState.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+                      diagramEditorState.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
                         classView.class.value,
                       ),
                     );
