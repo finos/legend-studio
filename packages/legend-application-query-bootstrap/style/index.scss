@@ -581,6 +581,10 @@
     }
   }
 
+  .query-builder-graph-fetch-tree__expand-icon svg {
+    color: var(--color-legacy-dark-grey-200);
+  }
+
   // ------------------------------------ Filter Panel ---------------------------------------
 
   .query-builder-filter-tree__node__container--selected,
@@ -625,6 +629,10 @@
   .query-builder-filter-tree__blank-node {
     border-color: var(--color-light-grey-250);
     color: var(--color-light-grey-400);
+  }
+
+  .query-builder-filter-tree__expand-icon svg {
+    color: var(--color-legacy-dark-grey-200);
   }
 
   // ------------------------------------ Post-filter Panel ---------------------------------------
@@ -690,6 +698,10 @@
   .query-builder-post-filter-tree__blank-node {
     border-color: var(--color-light-grey-250);
     color: var(--color-light-grey-400);
+  }
+
+  .query-builder-post-filter-tree__expand-icon svg {
+    color: var(--color-legacy-dark-grey-200);
   }
 
   // ------------------------------------ Result Panel ---------------------------------------
