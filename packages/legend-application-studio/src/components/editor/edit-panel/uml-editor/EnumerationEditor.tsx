@@ -79,9 +79,7 @@ type EnumValueDragSource = {
   _enum: Enum;
 };
 
-enum ENUEMRATION_VALUE_DND_TYPE {
-  ENUMERATION = 'ENUMERATION',
-}
+const ENUM_VALUE_DND_TYPE = 'ENUMERATION';
 
 const EnumBasicEditor = observer(
   (props: {
@@ -117,7 +115,7 @@ const EnumBasicEditor = observer(
 
     const [{ isBeingDraggedEnumeration }, dropConnector] = useDrop(
       () => ({
-        accept: [ENUEMRATION_VALUE_DND_TYPE.ENUMERATION],
+        accept: [ENUM_VALUE_DND_TYPE],
         hover: (item: EnumValueDragSource, monitor: DropTargetMonitor): void =>
           handleHover(item, monitor),
         collect: (
@@ -133,7 +131,7 @@ const EnumBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: ENUEMRATION_VALUE_DND_TYPE.ENUMERATION,
+        type: ENUM_VALUE_DND_TYPE,
         item: (): EnumValueDragSource => ({
           _enum: _enum,
         }),

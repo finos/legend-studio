@@ -56,9 +56,7 @@ type TagDragSource = {
   tag: Tag;
 };
 
-enum TAG_DND_TYPE {
-  TAG = 'TAG',
-}
+const TAG_DND_TYPE = 'TAG';
 
 const TagBasicEditor = observer(
   (props: {
@@ -87,7 +85,7 @@ const TagBasicEditor = observer(
 
     const [{ isBeingDraggedTag }, dropConnector] = useDrop(
       () => ({
-        accept: [TAG_DND_TYPE.TAG],
+        accept: [TAG_DND_TYPE],
         hover: (item: TagDragSource, monitor: DropTargetMonitor): void =>
           handleHover(item, monitor),
         collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
@@ -100,7 +98,7 @@ const TagBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: TAG_DND_TYPE.TAG,
+        type: TAG_DND_TYPE,
         item: (): TagDragSource => ({
           tag: tag,
         }),
@@ -162,9 +160,7 @@ type StereotypeDragSource = {
   stereotype: Stereotype;
 };
 
-enum STEREOTYPE_DND_TYPE {
-  STEREOTYPE = 'STEREOTYPE',
-}
+const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
 
 const StereotypeBasicEditor = observer(
   (props: {
@@ -194,7 +190,7 @@ const StereotypeBasicEditor = observer(
 
     const [{ isBeingDraggedTag }, dropConnector] = useDrop(
       () => ({
-        accept: [STEREOTYPE_DND_TYPE.STEREOTYPE],
+        accept: [STEREOTYPE_DND_TYPE],
         hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
           handleHover(item, monitor),
         collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
@@ -208,7 +204,7 @@ const StereotypeBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: STEREOTYPE_DND_TYPE.STEREOTYPE,
+        type: STEREOTYPE_DND_TYPE,
         item: (): StereotypeDragSource => ({
           stereotype: stereotype,
         }),

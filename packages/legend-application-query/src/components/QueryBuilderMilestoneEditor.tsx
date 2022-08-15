@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import { useCallback } from 'react';
 import {
@@ -60,7 +60,7 @@ const MilestoningParameterEditor = observer(
     );
     const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
         drop: (
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,

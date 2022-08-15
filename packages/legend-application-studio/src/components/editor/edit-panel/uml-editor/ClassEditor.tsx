@@ -129,9 +129,7 @@ type ClassPropertyDragSource = {
   property: Property;
 };
 
-enum CLASS_PROPERTY_DND_TYPE {
-  PROPERTY = 'PROPERTY',
-}
+const CLASS_PROPERTY_DND_TYPE = 'CLASS_PROPERTY';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -224,7 +222,7 @@ const PropertyBasicEditor = observer(
 
     const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_PROPERTY_DND_TYPE.PROPERTY],
+        accept: [CLASS_PROPERTY_DND_TYPE],
         hover: (
           item: ClassPropertyDragSource,
           monitor: DropTargetMonitor,
@@ -242,7 +240,7 @@ const PropertyBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_PROPERTY_DND_TYPE.PROPERTY,
+        type: CLASS_PROPERTY_DND_TYPE,
         item: (): ClassPropertyDragSource => ({
           property: property,
         }),
@@ -465,9 +463,7 @@ type ClassDerivedPropertyDragSource = {
   derivedProperty: DerivedProperty;
 };
 
-enum CLASS_DERIVED_PROPERTY_DND_TYPE {
-  PROPERTY = 'PROPERTY',
-}
+const CLASS_DERIVED_PROPERTY_DND_TYPE = 'CLASS_DERIVED_PROPERTY';
 
 const DerivedPropertyBasicEditor = observer(
   (props: {
@@ -587,7 +583,7 @@ const DerivedPropertyBasicEditor = observer(
 
     const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY],
+        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE],
         hover: (
           item: ClassDerivedPropertyDragSource,
           monitor: DropTargetMonitor,
@@ -606,7 +602,7 @@ const DerivedPropertyBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY,
+        type: CLASS_DERIVED_PROPERTY_DND_TYPE,
         item: (): ClassDerivedPropertyDragSource => ({
           derivedProperty: derivedProperty,
         }),
@@ -842,17 +838,11 @@ const DerivedPropertyBasicEditor = observer(
   },
 );
 
-type ClassSuperTypeDragSource = {
-  superType: GenericTypeReference;
+type ClassConstraintDragSource = {
+  constraint: Constraint;
 };
 
-enum CLASS_SUPER_TYPE_DND_TYPE {
-  SUPER_TYPE = 'SUPER_TYPE',
-}
-
-enum CLASS_CONSTRAINT_DND_TYPE {
-  CONSTRAINT = 'CONSTRAINT',
-}
+const CLASS_CONSTRAINT_DND_TYPE = 'CLASS_CONSTRAINT';
 
 const ConstraintEditor = observer(
   (props: {
@@ -889,7 +879,7 @@ const ConstraintEditor = observer(
 
     const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_CONSTRAINT_DND_TYPE.CONSTRAINT],
+        accept: [CLASS_CONSTRAINT_DND_TYPE],
         hover: (
           item: ClassConstraintDragSource,
           monitor: DropTargetMonitor,
@@ -907,7 +897,7 @@ const ConstraintEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_CONSTRAINT_DND_TYPE.CONSTRAINT,
+        type: CLASS_CONSTRAINT_DND_TYPE,
         item: (): ClassConstraintDragSource => ({
           constraint: constraint,
         }),
@@ -1023,9 +1013,11 @@ const ConstraintEditor = observer(
   },
 );
 
-type ClassConstraintDragSource = {
-  constraint: Constraint;
+type ClassSuperTypeDragSource = {
+  superType: GenericTypeReference;
 };
+
+const CLASS_SUPER_TYPE_DND_TYPE = 'CLASS_SUPER_TYPE';
 
 const SuperTypeEditor = observer(
   (props: {
@@ -1061,7 +1053,7 @@ const SuperTypeEditor = observer(
 
     const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
       () => ({
-        accept: [CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE],
+        accept: [CLASS_SUPER_TYPE_DND_TYPE],
         hover: (
           item: ClassSuperTypeDragSource,
           monitor: DropTargetMonitor,
@@ -1079,7 +1071,7 @@ const SuperTypeEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE,
+        type: CLASS_SUPER_TYPE_DND_TYPE,
         item: (): ClassSuperTypeDragSource => ({
           superType: superType,
         }),

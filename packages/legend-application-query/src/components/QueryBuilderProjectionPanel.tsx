@@ -48,7 +48,7 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-  QUERY_BUILDER_PROJECTION_DND_TYPE,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../stores/QueryBuilderProjectionState.js';
 import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
@@ -60,7 +60,7 @@ import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import {
   type ConcreteFunctionDefinition,
@@ -70,7 +70,7 @@ import {
 } from '@finos/legend-graph';
 import {
   type QueryBuilderFunctionsExplorerDragSource,
-  QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
+  QUERY_BUILDER_FUNCTION_DND_TYPE,
 } from '../stores/QueryFunctionsExplorerState.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../stores/QueryBuilderPostFilterState.js';
@@ -90,7 +90,7 @@ const ProjectionColumnDragLayer: React.FC = () => {
   if (
     !isDragging ||
     !item ||
-    itemType !== QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN
+    itemType !== QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE
   ) {
     return null;
   }
@@ -191,7 +191,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           | QueryBuilderFunctionsExplorerDragSource,
         type: string,
       ): void => {
-        if (type === QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE) {
+        if (type === QUERY_BUILDER_PARAMETER_DND_TYPE) {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
@@ -199,9 +199,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
               (item as QueryBuilderParameterDragSource).variable.variableName
             }`,
           );
-        } else if (
-          type === QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION
-        ) {
+        } else if (type === QUERY_BUILDER_FUNCTION_DND_TYPE) {
           projectionColumnState.derivationLambdaEditorState.setLambdaString(
             `${
               projectionColumnState.derivationLambdaEditorState.lambdaString
@@ -226,8 +224,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE,
-          QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
+          QUERY_BUILDER_PARAMETER_DND_TYPE,
+          QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
         drop: (
           item:
@@ -351,7 +349,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     );
     const [, dropConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
+        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         hover: (
           item: QueryBuilderProjectionColumnDragSource,
           monitor: DropTargetMonitor,
@@ -365,7 +363,7 @@ const QueryBuilderProjectionColumnEditor = observer(
       dragPreviewConnector,
     ] = useDrag(
       () => ({
-        type: QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
+        type: QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
         item: (): QueryBuilderProjectionColumnDragSource => ({
           columnState: projectionColumnState,
         }),
@@ -552,7 +550,7 @@ export const QueryBuilderProjectionPanel = observer(
         type: string,
       ): void => {
         switch (type) {
-          case QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION: {
+          case QUERY_BUILDER_FUNCTION_DND_TYPE: {
             const derivationProjectionColumn =
               new QueryBuilderDerivationProjectionColumnState(
                 projectionState,
@@ -597,7 +595,7 @@ export const QueryBuilderProjectionPanel = observer(
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-          QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
+          QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
         drop: (
           item:

@@ -48,9 +48,7 @@ interface TagOption {
   value: Tag;
 }
 
-enum TAGGED_VALUE_DND_TYPE {
-  TAGGED_VALUE = 'TAGGED_VALUE',
-}
+const TAGGED_VALUE_DND_TYPE = 'TAGGED_VALUE';
 
 type TaggedValueDragSource = {
   taggedValue: TaggedValue;
@@ -138,7 +136,7 @@ export const TaggedValueEditor = observer(
 
     const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
       () => ({
-        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
+        accept: [TAGGED_VALUE_DND_TYPE],
         hover: (
           item: TaggedValueDragSource,
           monitor: DropTargetMonitor,
@@ -156,7 +154,7 @@ export const TaggedValueEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
+        type: TAGGED_VALUE_DND_TYPE,
         item: (): TaggedValueDragSource => ({
           taggedValue: taggedValue,
         }),

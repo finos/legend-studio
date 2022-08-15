@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import { useEffect, useState } from 'react';
 import {
@@ -249,8 +249,7 @@ const QueryBuilderParameterDragLayer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { itemType, item, isDragging, currentPosition } = useDragLayer(
       (monitor) => ({
-        itemType:
-          monitor.getItemType() as QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+        itemType: monitor.getItemType(),
         item: monitor.getItem<QueryBuilderParameterDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
@@ -258,11 +257,7 @@ const QueryBuilderParameterDragLayer = observer(
       }),
     );
 
-    if (
-      !isDragging ||
-      !item ||
-      !Object.values(QUERY_BUILDER_PARAMETER_TREE_DND_TYPE).includes(itemType)
-    ) {
+    if (!isDragging || !item || itemType !== QUERY_BUILDER_PARAMETER_DND_TYPE) {
       return null;
     }
     return (
@@ -304,7 +299,7 @@ export const VariableExpressionViewer = observer(
       queryParameterState.removeParameter(variableExpressionState);
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE,
+        type: QUERY_BUILDER_PARAMETER_DND_TYPE,
         item: { variable: variableExpressionState },
       }),
       [variableExpressionState],

@@ -44,9 +44,7 @@ interface StereotypeOption {
   value: Stereotype;
 }
 
-enum TAGGED_VALUE_DND_TYPE {
-  TAGGED_VALUE = 'TAGGED_VALUE',
-}
+const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
 
 type StereotypeDragSource = {
   stereotype: StereotypeReference;
@@ -128,7 +126,7 @@ export const StereotypeSelector = observer(
 
     const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
       () => ({
-        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
+        accept: [STEREOTYPE_DND_TYPE],
         hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
           handleHover(item, monitor),
         collect: (
@@ -144,7 +142,7 @@ export const StereotypeSelector = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
+        type: STEREOTYPE_DND_TYPE,
         item: (): StereotypeDragSource => ({
           stereotype: stereotype,
         }),

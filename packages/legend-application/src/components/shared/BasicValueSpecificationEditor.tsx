@@ -256,6 +256,9 @@ const StringPrimitiveInstanceValueEditor = observer(
             isLoading={isLoading}
             allowCreateWhileLoading={true}
             noOptionsMessage={noOptionsMessage}
+            components={{
+              DropdownIndicator: null,
+            }}
           />
         ) : (
           <input

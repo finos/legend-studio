@@ -85,7 +85,7 @@ import {
 } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import {
   isTypeCompatibleWithConditionValueType,
@@ -95,7 +95,7 @@ import type { ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderSimpleProjectionColumnState,
-  QUERY_BUILDER_PROJECTION_DND_TYPE,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../stores/QueryBuilderProjectionState.js';
 
 const FilterConditionDragLayer: React.FC = () => {
@@ -233,7 +233,7 @@ const QueryBuilderFilterConditionEditor = observer(
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
         drop: (
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
@@ -776,7 +776,7 @@ export const QueryBuilderFilterPanel = observer(
         let filterConditionState: FilterConditionState;
         try {
           let propertyExpression;
-          if (type === QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN) {
+          if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
             if (
               (item as QueryBuilderProjectionColumnDragSource)
                 .columnState instanceof QueryBuilderSimpleProjectionColumnState
@@ -827,7 +827,7 @@ export const QueryBuilderFilterPanel = observer(
           ? [
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
+              QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
             ]
           : [
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,

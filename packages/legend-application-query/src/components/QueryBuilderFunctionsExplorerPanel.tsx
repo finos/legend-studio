@@ -41,9 +41,9 @@ import {
 import {
   type QueryBuilderFunctionsExplorerTreeNodeData,
   type QueryBuilderFunctionsExplorerDragSource,
-  QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
   generateFunctionsExplorerTreeNodeData,
   getFunctionsExplorerTreeNodeChildren,
+  QUERY_BUILDER_FUNCTION_DND_TYPE,
 } from '../stores/QueryFunctionsExplorerState.js';
 import { useDrag, useDragLayer } from 'react-dnd';
 import {
@@ -138,23 +138,14 @@ const QueryBuilderFunctionDragLayer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { itemType, item, isDragging, currentPosition } = useDragLayer(
       (monitor) => ({
-        itemType:
-          monitor.getItemType() as QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
+        itemType: monitor.getItemType(),
         item: monitor.getItem<QueryBuilderFunctionsExplorerDragSource | null>(),
         isDragging: monitor.isDragging(),
         initialOffset: monitor.getInitialSourceClientOffset(),
         currentPosition: monitor.getClientOffset(),
       }),
     );
-    if (
-      !isDragging ||
-      !item ||
-      !Object.values(QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE).includes(
-        itemType,
-      ) ||
-      item.node.dndType ===
-        QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.PACKAGE
-    ) {
+    if (!isDragging || !item || itemType !== QUERY_BUILDER_FUNCTION_DND_TYPE) {
       return null;
     }
     return (
@@ -196,7 +187,7 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
     const functionSignature = generateFunctionSignature(element, true);
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
+        type: QUERY_BUILDER_FUNCTION_DND_TYPE,
         item: { node: node },
       }),
       [node],
@@ -281,10 +272,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     };
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type:
-          node.packageableElement instanceof ConcreteFunctionDefinition
-            ? QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION
-            : QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.PACKAGE,
+        type: QUERY_BUILDER_FUNCTION_DND_TYPE,
         item: (): { node?: QueryBuilderFunctionsExplorerTreeNodeData } =>
           node.packageableElement instanceof ConcreteFunctionDefinition
             ? { node }

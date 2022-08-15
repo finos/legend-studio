@@ -118,9 +118,7 @@ type FunctionParameterDragSource = {
   parameter: RawVariableExpression;
 };
 
-enum FUNCTION_PARAMETER_DND_TYPE {
-  PARAMETER = 'PARAMETER',
-}
+const FUNCTION_PARAMETER_DND_TYPE = 'FUNCTION_PARAMETER';
 
 const ParameterBasicEditor = observer(
   (props: {
@@ -196,7 +194,7 @@ const ParameterBasicEditor = observer(
 
     const [{ isBeingDraggedParameter }, dropConnector] = useDrop(
       () => ({
-        accept: [FUNCTION_PARAMETER_DND_TYPE.PARAMETER],
+        accept: [FUNCTION_PARAMETER_DND_TYPE],
         hover: (
           item: FunctionParameterDragSource,
           monitor: DropTargetMonitor,
@@ -216,7 +214,7 @@ const ParameterBasicEditor = observer(
 
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: FUNCTION_PARAMETER_DND_TYPE.PARAMETER,
+        type: FUNCTION_PARAMETER_DND_TYPE,
         item: (): FunctionParameterDragSource => ({
           parameter: parameter,
         }),

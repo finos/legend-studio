@@ -101,13 +101,13 @@ import {
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
-  QUERY_BUILDER_PROJECTION_DND_TYPE,
+  QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
 } from '../stores/QueryBuilderProjectionState.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 
@@ -349,7 +349,7 @@ export const QueryBuilderColumnBadge = observer(
     );
     const [{ isDragOver }, dropConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
+        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         drop: (
           item: QueryBuilderProjectionColumnDragSource,
           monitor: DropTargetMonitor,
@@ -457,7 +457,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
     );
     const [{ isFilterValueDragOver }, dropConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
+        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
         drop: (
           item: QueryBuilderParameterDragSource,
           monitor: DropTargetMonitor,
@@ -625,7 +625,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       postFilterState.removeNodeAndPruneBranch(node);
     const handleDrop = useCallback(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
-        if (type === QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN) {
+        if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
           const columnState = (item as QueryBuilderProjectionColumnDragSource)
             .columnState;
           let conditionState: PostFilterConditionState;
@@ -684,7 +684,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       () => ({
         accept: [
           ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
-          QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN,
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
         ],
         drop: (
           item: QueryBuilderPostFilterConditionDragSource,
@@ -1000,7 +1000,7 @@ export const QueryBuilderPostFilterPanel = observer(
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
-        accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
+        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         drop: (
           item: QueryBuilderProjectionColumnDragSource,
           monitor: DropTargetMonitor,

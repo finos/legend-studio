@@ -21,9 +21,7 @@ import {
 import { observable, makeObservable, action } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
-export enum QUERY_BUILDER_PARAMETER_TREE_DND_TYPE {
-  VARIABLE = 'VARIABLE',
-}
+export const QUERY_BUILDER_PARAMETER_DND_TYPE = 'PARAMETER';
 
 export interface QueryBuilderParameterDragSource {
   variable: LambdaParameterState;

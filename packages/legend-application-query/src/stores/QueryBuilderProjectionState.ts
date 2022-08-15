@@ -85,9 +85,7 @@ import {
   buildNonNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper.js';
 
-export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
-  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
-}
+export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
