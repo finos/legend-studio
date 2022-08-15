@@ -25,6 +25,7 @@ import {
   ResizablePanelSplitterLine,
   TimesIcon,
   LockIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   filterByType,
@@ -141,38 +142,37 @@ const BindingScopeEditor = observer(
 
     return (
       <div className="binding-scope-editor">
-        <div
-          ref={dropElementRef}
-          className="binding-scope-editor__panel__content dnd__overlay__container"
-        >
-          <div
-            className={clsx({ dnd__overlay: isElementDragOver && !isReadOnly })}
-          />
-          <div className="binding-scope-editor__panel__content__form">
-            <div className="binding-scope-editor__panel__content__form__section">
-              <div className="binding-scope-editor__panel__content__form__section__list">
-                {elements.map((elementRef) => (
-                  <BindingScopeEntryEditor
-                    key={elementRef.value._UUID}
-                    elementRef={elementRef}
-                    removeElement={removeElement}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-                <div className="binding-scope-editor__panel__content__form__section__list__new-item__add">
-                  <button
-                    className="binding-scope-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                    disabled={!allowAddingElement}
-                    tabIndex={-1}
-                    onClick={addElement}
-                    title="Add Element"
-                  >
-                    Add Value
-                  </button>
+        <div className="binding-scope-editor__panel__content">
+          <PanelDropZone
+            dropTargetConnector={dropElementRef}
+            isDragOver={isElementDragOver && !isReadOnly}
+          >
+            <div className="binding-scope-editor__panel__content__form">
+              <div className="binding-scope-editor__panel__content__form__section">
+                <div className="binding-scope-editor__panel__content__form__section__list">
+                  {elements.map((elementRef) => (
+                    <BindingScopeEntryEditor
+                      key={elementRef.value._UUID}
+                      elementRef={elementRef}
+                      removeElement={removeElement}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                  <div className="binding-scope-editor__panel__content__form__section__list__new-item__add">
+                    <button
+                      className="binding-scope-editor__panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                      disabled={!allowAddingElement}
+                      tabIndex={-1}
+                      onClick={addElement}
+                      title="Add Element"
+                    >
+                      Add Value
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </PanelDropZone>
         </div>
       </div>
     );

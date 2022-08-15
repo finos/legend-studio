@@ -30,6 +30,7 @@ import {
   PencilIcon,
   TimesIcon,
   PlusIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
@@ -502,42 +503,46 @@ export const EnumerationMappingEditor = observer(
                       </button>
                     </div>
                   </div>
-                  <div ref={dropRef} className="panel__content dnd__dropzone">
-                    {sourceType && isDragOver && !isReadOnly && (
-                      <div className="dnd__overlay"></div>
-                    )}
-                    {sourceType && (
-                      <div className="source-panel__explorer">
-                        {sourceType instanceof Enumeration && (
-                          <TypeTree type={sourceType} />
-                        )}
-                        {/* TODO?: do we need to show anything when the source type is string or integer */}
-                      </div>
-                    )}
-                    {!sourceType && (
-                      <BlankPanelPlaceholder
-                        placeholderText="Choose a source"
-                        onClick={showSourceSelectorModal}
-                        clickActionType="add"
-                        tooltipText="Drop an enumeration"
-                        dndProps={{
-                          isDragOver: isDragOver && !isReadOnly,
-                          canDrop: canDrop && !isReadOnly,
-                        }}
-                        readOnlyProps={
-                          !isReadOnly
-                            ? undefined
-                            : {
-                                placeholderText: 'No source',
-                              }
-                        }
+                  <div className="panel__content">
+                    <PanelDropZone
+                      dropTargetConnector={dropRef}
+                      isDragOver={
+                        Boolean(sourceType) && isDragOver && !isReadOnly
+                      }
+                    >
+                      {sourceType && (
+                        <div className="source-panel__explorer">
+                          {sourceType instanceof Enumeration && (
+                            <TypeTree type={sourceType} />
+                          )}
+                          {/* TODO?: do we need to show anything when the source type is string or integer */}
+                        </div>
+                      )}
+                      {!sourceType && (
+                        <BlankPanelPlaceholder
+                          placeholderText="Choose a source"
+                          onClick={showSourceSelectorModal}
+                          clickActionType="add"
+                          tooltipText="Drop an enumeration"
+                          dndProps={{
+                            isDragOver: isDragOver && !isReadOnly,
+                            canDrop: canDrop && !isReadOnly,
+                          }}
+                          readOnlyProps={
+                            !isReadOnly
+                              ? undefined
+                              : {
+                                  placeholderText: 'No source',
+                                }
+                          }
+                        />
+                      )}
+                      <EnumerationMappingSourceSelectorModal
+                        enumerationMapping={enumerationMapping}
+                        open={openSourceSelectorModal}
+                        closeModal={hideSourceSelectorModal}
                       />
-                    )}
-                    <EnumerationMappingSourceSelectorModal
-                      enumerationMapping={enumerationMapping}
-                      open={openSourceSelectorModal}
-                      closeModal={hideSourceSelectorModal}
-                    />
+                    </PanelDropZone>
                   </div>
                 </div>
               </ResizablePanel>

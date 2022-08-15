@@ -28,6 +28,7 @@ import {
   ContextMenu,
   InputWithInlineValidation,
   SigmaIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -403,9 +404,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         })}
       >
         {isBeingDragged && (
-          <div className="query-builder__projection__column__dnd__placeholder__container">
-            <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
-          </div>
+          <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
         )}
         {!isBeingDragged && (
           <ContextMenu
@@ -596,7 +595,7 @@ export const QueryBuilderProjectionPanel = observer(
       [queryBuilderState, projectionState],
     );
 
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -613,8 +612,8 @@ export const QueryBuilderProjectionPanel = observer(
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -627,32 +626,33 @@ export const QueryBuilderProjectionPanel = observer(
     }, [applicationStore, projectionState]);
 
     return (
-      <div
-        ref={dropConnector}
-        className="panel__content dnd__overlay__container"
-      >
-        <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-        {!projectionColumns.length && (
-          <BlankPanelPlaceholder
-            placeholderText="Add a projection column"
-            tooltipText="Drag and drop properties here"
-          />
-        )}
-        {Boolean(projectionColumns.length) && (
-          <div
-            data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-            className="query-builder__projection__columns"
-          >
-            <ProjectionColumnDragLayer />
-            {projectionColumns.map((projectionColumnState) => (
-              <QueryBuilderProjectionColumnEditor
-                key={projectionColumnState.uuid}
-                projectionColumnState={projectionColumnState}
-              />
-            ))}
-          </div>
-        )}
-        <QueryResultModifierModal queryBuilderState={queryBuilderState} />
+      <div className="panel__content">
+        <PanelDropZone
+          isDragOver={isDragOver}
+          dropTargetConnector={dropTargetConnector}
+        >
+          {!projectionColumns.length && (
+            <BlankPanelPlaceholder
+              placeholderText="Add a projection column"
+              tooltipText="Drag and drop properties here"
+            />
+          )}
+          {Boolean(projectionColumns.length) && (
+            <div
+              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
+              className="query-builder__projection__columns"
+            >
+              <ProjectionColumnDragLayer />
+              {projectionColumns.map((projectionColumnState) => (
+                <QueryBuilderProjectionColumnEditor
+                  key={projectionColumnState.uuid}
+                  projectionColumnState={projectionColumnState}
+                />
+              ))}
+            </div>
+          )}
+          <QueryResultModifierModal queryBuilderState={queryBuilderState} />
+        </PanelDropZone>
       </div>
     );
   },

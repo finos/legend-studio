@@ -164,9 +164,6 @@ export const BlankPanelPlaceholder: React.FC<{
   }
   return (
     <div ref={containerRef} className="blank-panel-placeholder__container">
-      {dndProps && (
-        <div className={clsx({ dnd__overlay: dndProps.isDragOver })} />
-      )}
       <div
         className={clsx('blank-panel-placeholder', {
           'blank-panel-placeholder--no-click': !onClick,

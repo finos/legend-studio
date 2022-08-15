@@ -15,7 +15,7 @@
  */
 
 import { useCallback } from 'react';
-import { clsx, Dialog, InfoCircleIcon } from '@finos/legend-art';
+import { clsx, Dialog, PanelDropZone, InfoCircleIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   generateMilestonedPropertyParameterValue,
@@ -74,7 +74,7 @@ const DerivedPropertyParameterValueEditor = observer(
       },
       [derivedPropertyExpressionState, idx],
     );
-    const [{ isParameterValueDragOver }, dropConnector] = useDrop(
+    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
         drop: (
@@ -125,37 +125,34 @@ const DerivedPropertyParameterValueEditor = observer(
         <div className="panel__content__form__section__header__prompt">{`${
           variable.multiplicity.lowerBound === 0 ? 'optional' : ''
         }`}</div>
-        <div
-          ref={dropConnector}
-          className="query-builder__parameter-editor dnd__overlay__container"
-        >
-          {isParameterValueDragOver && (
-            <div className="query-builder__parameter-editor__node__dnd__overlay">
-              Change Parameter Value
-            </div>
-          )}
-          <BasicValueSpecificationEditor
-            valueSpecification={guaranteeNonNullable(
-              derivedPropertyExpressionState.parameterValues[idx],
-            )}
-            setValueSpecification={(val: ValueSpecification): void => {
-              propertyExpression_setParametersValue(
-                derivedPropertyExpressionState.propertyExpression,
-                idx + 1,
-                val,
-                derivedPropertyExpressionState.queryBuilderState
-                  .observableContext,
-              );
-            }}
-            graph={graph}
-            typeCheckOption={{
-              expectedType: parameterType,
-              match:
-                parameterType ===
-                graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-            }}
-            resetValue={resetParameterValue}
-          />
+        <div className="query-builder__parameter-editor">
+          <PanelDropZone
+            isDragOver={isParameterValueDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            <BasicValueSpecificationEditor
+              valueSpecification={guaranteeNonNullable(
+                derivedPropertyExpressionState.parameterValues[idx],
+              )}
+              setValueSpecification={(val: ValueSpecification): void => {
+                propertyExpression_setParametersValue(
+                  derivedPropertyExpressionState.propertyExpression,
+                  idx + 1,
+                  val,
+                  derivedPropertyExpressionState.queryBuilderState
+                    .observableContext,
+                );
+              }}
+              graph={graph}
+              typeCheckOption={{
+                expectedType: parameterType,
+                match:
+                  parameterType ===
+                  graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+              }}
+              resetValue={resetParameterValue}
+            />
+          </PanelDropZone>
         </div>
         <div className="panel__content__form__section__list"></div>
       </div>
@@ -282,7 +279,7 @@ export const QueryBuilderPropertyExpressionBadge = observer(
         onPropertyExpressionChange(item.node),
       [onPropertyExpressionChange],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropConnector] = useDrop(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -296,8 +293,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -305,15 +302,15 @@ export const QueryBuilderPropertyExpressionBadge = observer(
 
     return (
       <div
-        ref={dropConnector}
         className="query-builder-property-expression-badge"
+        ref={dropConnector}
       >
-        {isPropertyDragOver && (
+        {isDragOver && (
           <div className="query-builder__dnd__placeholder query-builder-property-expression-badge__dnd__placeholder">
             Change Property
           </div>
         )}
-        {!isPropertyDragOver && (
+        {!isDragOver && (
           <div
             className={clsx(
               'query-builder-property-expression-badge__content',

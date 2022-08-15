@@ -422,7 +422,7 @@ const SchemaSetModelGenerationEditor = observer(
                   </button>
                 </div>
               </div>
-              <div className="panel__content dnd__dropzone">
+              <div className="panel__content">
                 <div className="file-generation-editor__configuration__content">
                   {modelGenerationState.modelGenerationProperties.map(
                     (abstractGenerationProperty) => (

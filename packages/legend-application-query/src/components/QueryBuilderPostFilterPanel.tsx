@@ -47,6 +47,7 @@ import {
   ToggleIcon,
   HashtagIcon,
   ClockIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -203,9 +204,9 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
 const QueryBuilderPostFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeGroupNodeData;
-    isPropertyDragOver: boolean;
+    isDragOver: boolean;
   }) => {
-    const { node, isPropertyDragOver } = props;
+    const { node, isDragOver } = props;
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
@@ -217,13 +218,13 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
       );
     };
     return (
-      <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
-        {isPropertyDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__overlay">
+      <div className="query-builder-post-filter-tree__node__label__content">
+        {isDragOver && (
+          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
             Add to Logical Group
           </div>
         )}
-        {!isPropertyDragOver && (
+        {!isDragOver && (
           <div
             className={clsx('query-builder-post-filter-tree__group-node', {
               'query-builder-post-filter-tree__group-node--and':
@@ -346,7 +347,7 @@ export const QueryBuilderColumnBadge = observer(
         onColumnChange(item.columnState),
       [onColumnChange],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropConnector] = useDrop(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
         drop: (
@@ -360,8 +361,8 @@ export const QueryBuilderColumnBadge = observer(
             );
           }
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -369,12 +370,12 @@ export const QueryBuilderColumnBadge = observer(
 
     return (
       <div ref={dropConnector} className="query-builder-column-badge">
-        {isPropertyDragOver && (
+        {isDragOver && (
           <div className="query-builder__dnd__placeholder query-builder-column-badge__dnd__placeholder">
             Change Property
           </div>
         )}
-        {!isPropertyDragOver && (
+        {!isDragOver && (
           <div className="query-builder-column-badge__content">
             {type && (
               <div
@@ -413,9 +414,9 @@ export const QueryBuilderColumnBadge = observer(
 const QueryBuilderPostFilterConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeConditionNodeData;
-    isPropertyDragOver: boolean;
+    isDragOver: boolean;
   }) => {
-    const { node, isPropertyDragOver } = props;
+    const { node, isDragOver } = props;
     const graph =
       node.condition.postFilterState.queryBuilderState.graphManagerState.graph;
     const applicationStore = useApplicationStore();
@@ -498,13 +499,13 @@ const QueryBuilderPostFilterConditionEditor = observer(
     };
 
     return (
-      <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
-        {isPropertyDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__overlay">
+      <div className="query-builder-post-filter-tree__node__label__content">
+        {isDragOver && (
+          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
             Add New Logical Group
           </div>
         )}
-        {!isPropertyDragOver && (
+        {!isDragOver && (
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
               <QueryBuilderColumnBadge
@@ -547,10 +548,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
             {node.condition.value && (
               <div
                 ref={dropConnector}
-                className="query-builder-post-filter-tree__condition-node__value dnd__overlay__container"
+                className="query-builder-post-filter-tree__condition-node__value"
               >
                 {isFilterValueDragOver && (
-                  <div className="query-builder-post-filter-tree__node__dnd__overlay">
+                  <div className="query-builder-post-filter-tree__node__dnd__placeholder">
                     Change Filter Value
                   </div>
                 )}
@@ -580,17 +581,17 @@ const QueryBuilderPostFilterConditionEditor = observer(
 const QueryBuilderPostFilterBlankConditionEditor = observer(
   (props: {
     node: QueryBuilderPostFilterTreeBlankConditionNodeData;
-    isPropertyDragOver: boolean;
+    isDragOver: boolean;
   }) => {
-    const { isPropertyDragOver } = props;
+    const { isDragOver } = props;
     return (
-      <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
-        {isPropertyDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__overlay">
+      <div className="query-builder-post-filter-tree__node__label__content">
+        {isDragOver && (
+          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
             Create Condition
           </div>
         )}
-        {!isPropertyDragOver && (
+        {!isDragOver && (
           <div className="query-builder-post-filter-tree__blank-node">
             blank
           </div>
@@ -679,7 +680,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       },
       [applicationStore, postFilterState, node],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropConnector] = useDrop(
       () => ({
         accept: [
           ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
@@ -693,8 +694,8 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -776,20 +777,20 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
               {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
                 <QueryBuilderPostFilterGroupConditionEditor
                   node={node}
-                  isPropertyDragOver={isPropertyDragOver}
+                  isDragOver={isDragOver}
                 />
               )}
               {node instanceof QueryBuilderPostFilterTreeConditionNodeData && (
                 <QueryBuilderPostFilterConditionEditor
                   node={node}
-                  isPropertyDragOver={isPropertyDragOver}
+                  isDragOver={isDragOver}
                 />
               )}
               {node instanceof
                 QueryBuilderPostFilterTreeBlankConditionNodeData && (
                 <QueryBuilderPostFilterBlankConditionEditor
                   node={node}
-                  isPropertyDragOver={isPropertyDragOver}
+                  isDragOver={isDragOver}
                 />
               )}
             </div>
@@ -997,7 +998,7 @@ export const QueryBuilderPostFilterPanel = observer(
           .columns,
       ],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_DND_TYPE.PROJECTION_COLUMN],
         drop: (
@@ -1010,8 +1011,8 @@ export const QueryBuilderPostFilterPanel = observer(
             );
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -1091,25 +1092,26 @@ export const QueryBuilderPostFilterPanel = observer(
             </button>
           </div>
         </div>
-        <div
-          className="panel__content query-builder__filter__content dnd__overlay__container"
-          ref={dropConnector}
-        >
-          <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-          {postFilterState.isEmpty && (
-            <BlankPanelPlaceholder
-              placeholderText="Add a post-filter condition"
-              tooltipText="Drag and drop properties here"
-            />
-          )}
-          {!postFilterState.isEmpty && (
-            <>
-              <PostFilterConditionDragLayer />
-              <QueryBuilderPostFilterTree
-                queryBuilderState={queryBuilderState}
+        <div className="panel__content query-builder__filter__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {postFilterState.isEmpty && (
+              <BlankPanelPlaceholder
+                placeholderText="Add a post-filter condition"
+                tooltipText="Drag and drop properties here"
               />
-            </>
-          )}
+            )}
+            {!postFilterState.isEmpty && (
+              <>
+                <PostFilterConditionDragLayer />
+                <QueryBuilderPostFilterTree
+                  queryBuilderState={queryBuilderState}
+                />
+              </>
+            )}
+          </PanelDropZone>
         </div>
       </div>
     );

@@ -25,6 +25,7 @@ import {
   AsteriskIcon,
   LongArrowAltDownIcon,
   PencilEditIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -318,11 +319,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
             </button>
           </div>
         </div>
-        <div ref={dropRef} className="panel__content dnd__dropzone">
-          <>
-            {srcElement && isDragOver && !isReadOnly && (
-              <div className="dnd__overlay" />
-            )}
+        <div className="panel__content">
+          <PanelDropZone
+            dropTargetConnector={dropRef}
+            isDragOver={Boolean(srcElement) && isDragOver && !isReadOnly}
+          >
             {srcElement ? (
               <div className="source-panel__explorer">
                 {srcElement instanceof Type && (
@@ -377,7 +378,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 closeModal={hideSourceSelectorModal}
               />
             )}
-          </>
+          </PanelDropZone>
         </div>
       </div>
     );

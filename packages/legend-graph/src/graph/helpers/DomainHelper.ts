@@ -37,6 +37,7 @@ import {
   guaranteeType,
   uniqBy,
   UnsupportedOperationError,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils.js';
 import type { BasicModel } from '../BasicModel.js';
@@ -217,25 +218,33 @@ export const getRawGenericType = <T extends Type>(
 ): T => guaranteeType<T>(genericType.rawType, clazz);
 
 export const isElementReadOnly = (element: PackageableElement): boolean =>
-  getElementRootPackage(element).name !== ROOT_PACKAGE_NAME.MAIN;
+  returnUndefOnError(() => getElementRootPackage(element))?.name !==
+  ROOT_PACKAGE_NAME.MAIN;
 
 export const isDependencyElement = (
   element: PackageableElement,
 ): element is PackageableElement =>
-  getElementRootPackage(element).name ===
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
   ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 export const isGeneratedElement = (
   element: PackageableElement,
 ): element is PackageableElement =>
-  getElementRootPackage(element).name === ROOT_PACKAGE_NAME.MODEL_GENERATION;
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
+  ROOT_PACKAGE_NAME.MODEL_GENERATION;
 
 export const isSystemElement = (
   element: PackageableElement,
-): element is PackageableElement =>
-  element instanceof PrimitiveType ||
-  getElementRootPackage(element).name === ROOT_PACKAGE_NAME.SYSTEM ||
-  getElementRootPackage(element).name === ROOT_PACKAGE_NAME.CORE;
+): element is PackageableElement => {
+  const elementRootPackageName = returnUndefOnError(() =>
+    getElementRootPackage(element),
+  )?.name;
+  return (
+    element instanceof PrimitiveType ||
+    elementRootPackageName === ROOT_PACKAGE_NAME.SYSTEM ||
+    elementRootPackageName === ROOT_PACKAGE_NAME.CORE
+  );
+};
 
 /**
  * Extract the type of temporal milestone the class is associated with (using stereotype).

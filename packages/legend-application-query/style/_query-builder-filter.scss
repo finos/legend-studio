@@ -257,7 +257,7 @@
     }
   }
 
-  &__node__dnd__overlay {
+  &__node__dnd__placeholder {
     @include flexCenter;
 
     border: 0.2rem dashed var(--color-dark-grey-100);
@@ -266,8 +266,6 @@
     font-weight: 700;
     color: var(--color-dark-grey-300);
     height: 2.8rem;
-    position: absolute;
     width: 100%;
-    pointer-events: none;
   }
 }

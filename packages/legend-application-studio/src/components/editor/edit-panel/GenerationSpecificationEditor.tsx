@@ -44,6 +44,7 @@ import {
   TimesIcon,
   PlusIcon,
   LongArrowRightIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -313,7 +314,7 @@ const ModelGenerationSpecifications = observer(
         ),
       [specState],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: extraModelGenerationSpecificationElementDnDTypes,
         drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
@@ -321,8 +322,8 @@ const ModelGenerationSpecifications = observer(
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -345,30 +346,31 @@ const ModelGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div
-          className="panel__content dnd__overlay__container"
-          ref={dropConnector}
-        >
-          <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-          {specNodesStates.length ? (
-            <div className="generation-spec-model-generation-editor__items">
-              <ModelGenerationDragLayer />
-              {specNodesStates.map((nodeState) => (
-                <ModelGenerationItem
-                  key={nodeState.uuid}
-                  specState={specState}
-                  nodeState={nodeState}
-                  options={modelGenerationElementOptions}
-                />
-              ))}
-            </div>
-          ) : (
-            <BlankPanelContent>
-              {modelGenerationElementsInGraph.length
-                ? 'No model generation included in spec'
-                : 'Create a model generation element to include in spec'}
-            </BlankPanelContent>
-          )}
+        <div className="panel__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {specNodesStates.length ? (
+              <div className="generation-spec-model-generation-editor__items">
+                <ModelGenerationDragLayer />
+                {specNodesStates.map((nodeState) => (
+                  <ModelGenerationItem
+                    key={nodeState.uuid}
+                    specState={specState}
+                    nodeState={nodeState}
+                    options={modelGenerationElementOptions}
+                  />
+                ))}
+              </div>
+            ) : (
+              <BlankPanelContent>
+                {modelGenerationElementsInGraph.length
+                  ? 'No model generation included in spec'
+                  : 'Create a model generation element to include in spec'}
+              </BlankPanelContent>
+            )}
+          </PanelDropZone>
         </div>
       </div>
     );
@@ -467,7 +469,7 @@ const FileGenerationSpecifications = observer(
       },
       [fileGenerations, generationSpec],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION],
         drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
@@ -475,8 +477,8 @@ const FileGenerationSpecifications = observer(
             handleDrop(item);
           }
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -499,31 +501,32 @@ const FileGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div
-          className="panel__content dnd__overlay__container"
-          ref={dropConnector}
-        >
-          <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-          {generationSpec.fileGenerations.length ? (
-            <div className="generation-spec-file-generation-editor__items">
-              {generationSpec.fileGenerations.map((fileGen) => (
-                <FileGenerationItem
-                  key={fileGen.value.path}
-                  generationSpecificationEditorState={
-                    generationSpecificationEditorState
-                  }
-                  fileGeneraitonRef={fileGen}
-                  options={fileGenerationsOptions}
-                />
-              ))}
-            </div>
-          ) : (
-            <BlankPanelContent>
-              {fileGenerationInGraph.length
-                ? 'Add file generation to spec'
-                : 'Create a file generation to include in spec'}
-            </BlankPanelContent>
-          )}
+        <div className="panel__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {generationSpec.fileGenerations.length ? (
+              <div className="generation-spec-file-generation-editor__items">
+                {generationSpec.fileGenerations.map((fileGen) => (
+                  <FileGenerationItem
+                    key={fileGen.value.path}
+                    generationSpecificationEditorState={
+                      generationSpecificationEditorState
+                    }
+                    fileGeneraitonRef={fileGen}
+                    options={fileGenerationsOptions}
+                  />
+                ))}
+              </div>
+            ) : (
+              <BlankPanelContent>
+                {fileGenerationInGraph.length
+                  ? 'Add file generation to spec'
+                  : 'Create a file generation to include in spec'}
+              </BlankPanelContent>
+            )}
+          </PanelDropZone>
         </div>
       </div>
     );

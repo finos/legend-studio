@@ -115,12 +115,9 @@ const MilestoningParameterEditor = observer(
       }
     };
     return (
-      <div
-        ref={dropConnector}
-        className="query-builder__parameter-editor dnd__overlay__container"
-      >
+      <div ref={dropConnector} className="query-builder__parameter-editor">
         {isMilestoningParameterValueDragOver && (
-          <div className="query-builder__parameter-editor__node__dnd__overlay">
+          <div className="query-builder__parameter-editor__node__dnd__placeholder">
             Change Milestoning Parameter Value
           </div>
         )}

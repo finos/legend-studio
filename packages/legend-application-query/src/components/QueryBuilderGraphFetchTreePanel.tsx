@@ -28,6 +28,7 @@ import {
   CheckSquareIcon,
   SquareIcon,
   InfoCircleIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
@@ -226,7 +227,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
       },
       [graphFetchState],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
@@ -240,8 +241,8 @@ export const QueryBuilderGraphFetchTreePanel = observer(
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor): { isDragOver: boolean } => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -250,24 +251,27 @@ export const QueryBuilderGraphFetchTreePanel = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_GRAPH_FETCH}
-        className="panel__content dnd__overlay__container"
-        ref={dropConnector}
+        className="panel__content"
       >
-        <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-        {(!treeData || isGraphFetchTreeDataEmpty(treeData)) && (
-          <BlankPanelPlaceholder
-            placeholderText="Add a graph fetch property"
-            tooltipText="Drag and drop properties here"
-          />
-        )}
-        {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
-          <QueryBuilderGraphFetchTreeExplorer
-            graphFetchState={graphFetchState}
-            treeData={treeData}
-            isReadOnly={false}
-            updateTreeData={updateTreeData}
-          />
-        )}
+        <PanelDropZone
+          isDragOver={isDragOver}
+          dropTargetConnector={dropTargetConnector}
+        >
+          {(!treeData || isGraphFetchTreeDataEmpty(treeData)) && (
+            <BlankPanelPlaceholder
+              placeholderText="Add a graph fetch property"
+              tooltipText="Drag and drop properties here"
+            />
+          )}
+          {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
+            <QueryBuilderGraphFetchTreeExplorer
+              graphFetchState={graphFetchState}
+              treeData={treeData}
+              isReadOnly={false}
+              updateTreeData={updateTreeData}
+            />
+          )}
+        </PanelDropZone>
       </div>
     );
   },
