@@ -2456,6 +2456,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  HACKY__createDefaultEmptyLambda(): RawLambda {
+    return new RawLambda(undefined, [
+      {
+        _type: 'collection',
+        multiplicity: {
+          lowerBound: 0,
+          upperBound: 0,
+        },
+        values: [],
+      },
+    ]);
+  }
+
   // --------------------------------------------- Utilities ---------------------------------------------
 
   elementToEntity = (

@@ -429,7 +429,8 @@ export const QueryBuilderResultPanel = observer(
       });
     };
     const queryValidationIssues = queryBuilderState.validationIssues;
-    const isQueryValid = !queryValidationIssues;
+    const isQueryValid =
+      !queryBuilderState.isQuerySupported() || !queryValidationIssues;
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(

@@ -461,6 +461,7 @@ export abstract class AbstractPureGraphManager {
   // as these are relatively simple lambda to construct
   abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
   abstract HACKY__createDefaultBlankLambda(): RawLambda;
+  abstract HACKY__createDefaultEmptyLambda(): RawLambda;
 
   // NOTE: after we refactor service, we probably can remove these methods
   // See https://github.com/finos/legend-studio/issues/1077

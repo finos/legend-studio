@@ -50,6 +50,7 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
+  isSystemElement,
 } from '@finos/legend-graph';
 import {
   QueryBuilderState,
@@ -448,15 +449,30 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       );
       this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
     } else {
-      this.queryBuilderState.changeClass(
+      // try to find a class to set
+      // first, find classes which is mapped by the mapping
+      // then, find any classes except for class coming from system
+      // if none found, default to a dummy blank query
+      const defaultClass =
         getNullableFirstElement(
           this.queryBuilderState.querySetupState.mapping
             ? getAllClassMappings(
                 this.queryBuilderState.querySetupState.mapping,
               ).map((classMapping) => classMapping.class.value)
             : [],
-        ),
-      );
+        ) ??
+        getNullableFirstElement(
+          this.queryBuilderState.graphManagerState.graph.classes.filter(
+            (el) => !isSystemElement(el),
+          ),
+        );
+      if (defaultClass) {
+        this.queryBuilderState.changeClass(defaultClass);
+      } else {
+        this.queryBuilderState.initialize(
+          this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultEmptyLambda(),
+        );
+      }
     }
   }
 
