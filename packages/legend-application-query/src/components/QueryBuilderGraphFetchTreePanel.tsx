@@ -259,7 +259,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
         >
           {(!treeData || isGraphFetchTreeDataEmpty(treeData)) && (
             <BlankPanelPlaceholder
-              placeholderText="Add a graph fetch property"
+              text="Add a graph fetch property"
               tooltipText="Drag and drop properties here"
             />
           )}

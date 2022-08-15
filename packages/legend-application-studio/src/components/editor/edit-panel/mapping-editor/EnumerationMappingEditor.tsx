@@ -520,21 +520,13 @@ export const EnumerationMappingEditor = observer(
                       )}
                       {!sourceType && (
                         <BlankPanelPlaceholder
-                          placeholderText="Choose a source"
+                          text="Choose a source"
                           onClick={showSourceSelectorModal}
                           clickActionType="add"
                           tooltipText="Drop an enumeration"
-                          dndProps={{
-                            isDragOver: isDragOver && !isReadOnly,
-                            canDrop: canDrop && !isReadOnly,
-                          }}
-                          readOnlyProps={
-                            !isReadOnly
-                              ? undefined
-                              : {
-                                  placeholderText: 'No source',
-                                }
-                          }
+                          isDropZoneActive={canDrop}
+                          disabled={isReadOnly}
+                          previewText="No source"
                         />
                       )}
                       <EnumerationMappingSourceSelectorModal

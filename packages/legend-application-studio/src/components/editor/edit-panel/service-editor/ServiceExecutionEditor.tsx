@@ -696,7 +696,7 @@ const MultiPureExecutionEditor = observer(
               ))}
               {!multiExecution.executionParameters.length && (
                 <BlankPanelPlaceholder
-                  placeholderText="Add an execution context"
+                  text="Add an execution context"
                   onClick={addExecutionKey}
                   clickActionType="add"
                   tooltipText="Click to add an execution context"
@@ -739,7 +739,7 @@ const MultiPureExecutionEditor = observer(
               />
             ) : (
               <BlankPanelPlaceholder
-                placeholderText="Add an execution context"
+                text="Add an execution context"
                 onClick={addExecutionKey}
                 clickActionType="add"
                 tooltipText="Click to add an execution context"

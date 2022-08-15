@@ -633,7 +633,7 @@ export const QueryBuilderProjectionPanel = observer(
         >
           {!projectionColumns.length && (
             <BlankPanelPlaceholder
-              placeholderText="Add a projection column"
+              text="Add a projection column"
               tooltipText="Drag and drop properties here"
             />
           )}

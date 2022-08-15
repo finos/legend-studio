@@ -763,25 +763,15 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                   {!currentRuntimeEditorTabState.identifiedConnections
                     .length && (
                     <BlankPanelPlaceholder
-                      placeholderText="Add a connection"
+                      text="Add a connection"
                       onClick={addNewConnection}
                       clickActionType="add"
                       tooltipText="Drop a connection to add it to the list, or click to add an embedded connection"
-                      dndProps={
-                        isEmbeddedRuntime
-                          ? undefined
-                          : {
-                              isDragOver: isConnectionDragOver,
-                              canDrop: canDropConnection,
-                            }
+                      isDropZoneActive={
+                        isEmbeddedRuntime ? undefined : canDropConnection
                       }
-                      readOnlyProps={
-                        !isReadOnly
-                          ? undefined
-                          : {
-                              placeholderText: 'No connection',
-                            }
-                      }
+                      disabled={isReadOnly}
+                      previewText="No connection"
                     />
                   )}
                 </PanelDropZone>

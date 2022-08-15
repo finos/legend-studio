@@ -930,7 +930,7 @@ export const QueryBuilderFilterPanel = observer(
           >
             {filterState.isEmpty && (
               <BlankPanelPlaceholder
-                placeholderText="Add a filter condition"
+                text="Add a filter condition"
                 tooltipText="Drag and drop properties here"
               />
             )}

@@ -347,21 +347,13 @@ export const InstanceSetImplementationSourceExplorer = observer(
               </div>
             ) : (
               <BlankPanelPlaceholder
-                placeholderText="Choose a source"
+                text="Choose a source"
                 onClick={showSourceSelectorModal}
                 clickActionType="add"
                 tooltipText="Drop a class mapping source, or click to choose one"
-                dndProps={{
-                  isDragOver: isDragOver && !isReadOnly,
-                  canDrop: canDrop && !isReadOnly,
-                }}
-                readOnlyProps={
-                  !isReadOnly
-                    ? undefined
-                    : {
-                        placeholderText: 'No source',
-                      }
-                }
+                isDropZoneActive={canDrop}
+                disabled={isReadOnly}
+                previewText="No source"
               />
             )}
             {isUnsupported && (

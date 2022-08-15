@@ -44,6 +44,7 @@ import {
   RefreshIcon,
   WrenchIcon,
   PauseCircleIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { useDrop } from 'react-dnd';
 import {
@@ -223,17 +224,20 @@ const MappingTestQueryEditor = observer(
           </div>
         )}
         {isStubbed_RawLambda(queryState.query) && (
-          <div ref={dropRef} className="panel__content">
-            <BlankPanelPlaceholder
-              placeholderText="Choose a class mapping"
-              onClick={showClassMappingSelectorModal}
-              clickActionType="add"
-              tooltipText="Drop a class mapping, or click to choose one to start building the query"
-              dndProps={{
-                isDragOver: isDragOver,
-                canDrop: canDrop,
-              }}
-            />
+          <div className="panel__content">
+            <PanelDropZone
+              dropTargetConnector={dropRef}
+              isDragOver={isDragOver}
+            >
+              <BlankPanelPlaceholder
+                text="Choose a class mapping"
+                onClick={showClassMappingSelectorModal}
+                clickActionType="add"
+                tooltipText="Drop a class mapping, or click to choose one to start building the query"
+                isDropZoneActive={canDrop}
+                disabled={isReadOnly}
+              />
+            </PanelDropZone>
           </div>
         )}
         {openClassMappingSelectorModal && (

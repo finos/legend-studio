@@ -237,7 +237,7 @@ export const RelationalCSVDataEditor = observer(
               {!currentTableState && (
                 <BlankPanelPlaceholder
                   onClick={(): void => openIdentifierModal()}
-                  placeholderText="Add a relational data table"
+                  text="Add a relational data table"
                   clickActionType="add"
                   tooltipText={'Click to add new relational data table'}
                 />
