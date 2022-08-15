@@ -397,12 +397,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div
-        ref={ref}
-        className={clsx('query-builder__projection__column', {
-          'query-builder__projection__column--dragged': isBeingDragged,
-        })}
-      >
+      <div ref={ref} className="query-builder__projection__column">
         {isBeingDragged && (
           <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
         )}
@@ -427,8 +422,8 @@ const QueryBuilderProjectionColumnEditor = observer(
             onOpen={onContextMenuOpen}
             onClose={onContextMenuClose}
           >
-            <div className="query-builder__projection__column__dnd__indicator">
-              <div className="query-builder__projection__column__dnd__indicator__handler">
+            <div className="query-builder__projection__column__drag-handle__container">
+              <div className="query-builder__projection__column__drag-handle">
                 <VerticalDragHandleIcon />
               </div>
             </div>

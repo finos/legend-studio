@@ -159,7 +159,7 @@ const EnumBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="enum-basic-editor">
-            <div className="uml-element-editor__drag-handler">
+            <div className="uml-element-editor__drag-handle">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation

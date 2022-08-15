@@ -126,7 +126,7 @@ const TagBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="tag-basic-editor">
-            <div className="uml-element-editor__drag-handler">
+            <div className="uml-element-editor__drag-handle">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation
@@ -236,7 +236,7 @@ const StereotypeBasicEditor = observer(
 
         {!isBeingDragged && (
           <div className="stereotype-basic-editor">
-            <div className="uml-element-editor__drag-handler">
+            <div className="uml-element-editor__drag-handle">
               <VerticalDragHandleIcon />
             </div>
             <InputWithInlineValidation

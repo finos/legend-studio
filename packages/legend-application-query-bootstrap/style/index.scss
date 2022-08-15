@@ -44,6 +44,18 @@
 }
 
 .light-theme {
+  // ---------------------------- Input -------------------------------
+
+  input {
+    background: var(--color-white);
+    color: var(--color-legacy-dark-grey-200);
+    border-color: var(--color-light-grey-250);
+
+    &:focus {
+      border-color: var(--color-light-grey-250);
+    }
+  }
+
   // ---------------------------- Menu -------------------------------
 
   .menu {
@@ -294,16 +306,6 @@
     border-radius: 0;
   }
 
-  input {
-    background: var(--color-white);
-    color: var(--color-legacy-dark-grey-200);
-    border-color: var(--color-light-grey-250);
-
-    &:focus {
-      border-color: var(--color-light-grey-250);
-    }
-  }
-
   .input--with-validation--error,
   .input--with-validation--error:focus {
     border-color: var(--color-red-180);
@@ -418,7 +420,7 @@
     text-transform: capitalize;
   }
 
-  .query-builder__projection__column__dnd__indicator__handler {
+  .query-builder__projection__column__drag-handle {
     background: var(--color-light-grey-180);
 
     svg {

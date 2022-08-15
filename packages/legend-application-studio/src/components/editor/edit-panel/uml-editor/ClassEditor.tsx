@@ -282,7 +282,7 @@ const PropertyBasicEditor = observer(
         {!isBeingDragged && (
           <div className="property-basic-editor">
             {!isIndirectProperty && (
-              <div className="uml-element-editor__drag-handler">
+              <div className="uml-element-editor__drag-handle">
                 <VerticalDragHandleIcon />
               </div>
             )}
@@ -670,7 +670,7 @@ const DerivedPropertyBasicEditor = observer(
                 </div>
               )}
               {!isInheritedProperty && (
-                <div className="uml-element-editor__drag-handler">
+                <div className="uml-element-editor__drag-handle">
                   <VerticalDragHandleIcon />
                 </div>
               )}
@@ -956,7 +956,7 @@ const ConstraintEditor = observer(
           <>
             <div className="constraint-editor__content">
               {!isInheritedConstraint && (
-                <div className="uml-element-editor__drag-handler">
+                <div className="uml-element-editor__drag-handle">
                   <VerticalDragHandleIcon />
                 </div>
               )}
@@ -1118,7 +1118,7 @@ const SuperTypeEditor = observer(
         )}
         {!isBeingDragged && (
           <div className="super-type-editor">
-            <div className="uml-element-editor__drag-handler">
+            <div className="uml-element-editor__drag-handle">
               <VerticalDragHandleIcon />
             </div>
             <CustomSelectorInput

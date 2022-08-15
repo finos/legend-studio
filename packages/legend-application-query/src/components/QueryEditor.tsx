@@ -111,6 +111,8 @@ const QueryExportDialogContent = observer(
           )}
           <button
             className="btn modal__footer__close-btn btn--dark"
+            // TODO?: we should probably annotate here why,
+            // when we disable this action
             disabled={!allowCreate}
             onClick={create}
           >

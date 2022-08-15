@@ -177,7 +177,7 @@ export const StereotypeSelector = observer(
                 darkTheme ? 'stereotype-selector-dark-theme' : ''
               } stereotype-selector__profile`}
             >
-              <div className="uml-element-editor__drag-handler">
+              <div className="uml-element-editor__drag-handle">
                 <VerticalDragHandleIcon />
               </div>
               <CustomSelectorInput

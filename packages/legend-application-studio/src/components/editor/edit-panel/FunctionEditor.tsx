@@ -261,7 +261,7 @@ const ParameterBasicEditor = observer(
                 <LockIcon />
               </div>
             )}
-            <div className="uml-element-editor__drag-handler">
+            <div className="uml-element-editor__drag-handle">
               <VerticalDragHandleIcon />
             </div>
             <input

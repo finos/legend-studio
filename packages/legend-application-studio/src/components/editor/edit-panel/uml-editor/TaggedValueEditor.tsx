@@ -187,7 +187,7 @@ export const TaggedValueEditor = observer(
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''
               }`}
             >
-              <div className="uml-element-editor__drag-handler">
+              <div className="uml-element-editor__drag-handle">
                 <VerticalDragHandleIcon />
               </div>
               <CustomSelectorInput
