@@ -26,7 +26,8 @@ import {
   PlusIcon,
   TimesIcon,
   LockIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -114,19 +115,9 @@ const TagBasicEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">{tag.value}</div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="tag-basic-editor">
-            <div className="uml-element-editor__drag-handle">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="tag-basic-editor__value input-group__input"
               spellCheck={false}
@@ -150,7 +141,7 @@ const TagBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -220,21 +211,9 @@ const StereotypeBasicEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {stereotype.value}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-basic-editor">
-            <div className="uml-element-editor__drag-handle">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="stereotype-basic-editor__value input-group__input"
               spellCheck={false}
@@ -260,7 +239,7 @@ const StereotypeBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

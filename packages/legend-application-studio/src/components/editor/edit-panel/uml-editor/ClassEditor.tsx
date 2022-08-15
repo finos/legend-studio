@@ -37,10 +37,11 @@ import {
   PlusIcon,
   TimesIcon,
   LongArrowRightIcon,
-  VerticalDragHandleIcon,
   ArrowCircleRightIcon,
   FireIcon,
   StickArrowCircleRightIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -229,7 +230,9 @@ const PropertyBasicEditor = observer(
         ): void => handleHover(item, monitor),
         collect: (
           monitor,
-        ): { isBeingDraggedProperty: Property | undefined } => ({
+        ): {
+          isBeingDraggedProperty: Property | undefined;
+        } => ({
           isBeingDraggedProperty:
             monitor.getItem<ClassPropertyDragSource | null>()?.property,
         }),
@@ -268,24 +271,11 @@ const PropertyBasicEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {property.name}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
-            {!isIndirectProperty && (
-              <div className="uml-element-editor__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
-            )}
+            {!isIndirectProperty && <PanelEntryDragHandle />}
             {isIndirectProperty && (
-              <div className="property-basic-editor__name--with-lock">
+              <div className="property-basic-editor__name property-basic-editor__name--with-lock">
                 <div className="property-basic-editor__name--with-lock__icon">
                   <LockIcon />
                 </div>
@@ -453,7 +443,7 @@ const PropertyBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -639,15 +629,10 @@ const DerivedPropertyBasicEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--padding">
-            <div className="uml-element-editor__dnd__name">
-              {derivedProperty.name}
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="derived-property-editor__dnd__placeholder"
+        >
           <div
             className={clsx('derived-property-editor', {
               backdrop__element:
@@ -656,7 +641,7 @@ const DerivedPropertyBasicEditor = observer(
           >
             <div className="property-basic-editor">
               {isInheritedProperty && (
-                <div className="property-basic-editor__name--with-lock">
+                <div className="property-basic-editor__name property-basic-editor__name--with-lock">
                   <div className="property-basic-editor__name--with-lock__icon">
                     <LockIcon />
                   </div>
@@ -665,11 +650,7 @@ const DerivedPropertyBasicEditor = observer(
                   </span>
                 </div>
               )}
-              {!isInheritedProperty && (
-                <div className="uml-element-editor__drag-handle">
-                  <VerticalDragHandleIcon />
-                </div>
-              )}
+              {!isInheritedProperty && <PanelEntryDragHandle />}
               {!isInheritedProperty && (
                 <input
                   disabled={isReadOnly}
@@ -818,21 +799,20 @@ const DerivedPropertyBasicEditor = observer(
                 </button>
               )}
             </div>
-            <div onFocus={onLambdaEditorFocus}>
-              <StudioLambdaEditor
-                disabled={
-                  editorState.classState
-                    .isConvertingDerivedPropertyLambdaObjects ||
-                  isInheritedProperty ||
-                  isReadOnly
-                }
-                lambdaEditorState={dpState}
-                forceBackdrop={hasParserError}
-                expectedType={propertyType}
-              />
-            </div>
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState
+                  .isConvertingDerivedPropertyLambdaObjects ||
+                isInheritedProperty ||
+                isReadOnly
+              }
+              lambdaEditorState={dpState}
+              forceBackdrop={hasParserError}
+              expectedType={propertyType}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
+            />
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -933,81 +913,68 @@ const ConstraintEditor = observer(
           backdrop__element: constraintState.parserError,
         })}
       >
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--tall">
-            <div className="uml-element-editor__dnd--padding ">
-              <div className="uml-element-editor__dnd__name">
-                {constraint.name}
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="constraint-editor__dnd__placeholder"
+        >
+          <div className="constraint-editor__content">
+            {!isInheritedConstraint && <PanelEntryDragHandle />}
+            {isInheritedConstraint && (
+              <div className="constraint-editor__content__name--with-lock">
+                <div className="constraint-editor__content__name--with-lock__icon">
+                  <LockIcon />
+                </div>
+                <span className="constraint-editor__content__name--with-lock__name">
+                  {constraint.name}
+                </span>
               </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
-          <>
-            <div className="constraint-editor__content">
-              {!isInheritedConstraint && (
-                <div className="uml-element-editor__drag-handle">
-                  <VerticalDragHandleIcon />
-                </div>
-              )}
-              {isInheritedConstraint && (
-                <div className="constraint-editor__content__name--with-lock">
-                  <div className="constraint-editor__content__name--with-lock__icon">
-                    <LockIcon />
-                  </div>
-                  <span className="constraint-editor__content__name--with-lock__name">
-                    {constraint.name}
-                  </span>
-                </div>
-              )}
-              {!isInheritedConstraint && (
-                <input
-                  className="constraint-editor__content__name"
-                  spellCheck={false}
-                  disabled={isReadOnly || isInheritedConstraint}
-                  value={constraint.name}
-                  onChange={changeName}
-                  placeholder="Constraint name"
-                />
-              )}
-              {isInheritedConstraint && (
-                <button
-                  className="uml-element-editor__visit-parent-element-btn"
-                  onClick={visitOwner}
-                  tabIndex={-1}
-                  title={`Visit super type class ${constraint._OWNER.path}`}
-                >
-                  <ArrowCircleRightIcon />
-                </button>
-              )}
-              {!isInheritedConstraint && !isReadOnly && (
-                <button
-                  className="uml-element-editor__remove-btn"
-                  disabled={isInheritedConstraint}
-                  onClick={remove}
-                  tabIndex={-1}
-                  title="Remove"
-                >
-                  <TimesIcon />
-                </button>
-              )}
-            </div>
-            <div onFocus={onLambdaEditorFocus}>
-              <StudioLambdaEditor
-                disabled={
-                  editorState.classState.isConvertingConstraintLambdaObjects ||
-                  isReadOnly ||
-                  isInheritedConstraint
-                }
-                lambdaEditorState={constraintState}
-                forceBackdrop={hasParserError}
-                expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.BOOLEAN,
-                )}
+            )}
+            {!isInheritedConstraint && (
+              <input
+                className="constraint-editor__content__name"
+                spellCheck={false}
+                disabled={isReadOnly || isInheritedConstraint}
+                value={constraint.name}
+                onChange={changeName}
+                placeholder="Constraint name"
               />
-            </div>
-          </>
-        )}
+            )}
+            {isInheritedConstraint && (
+              <button
+                className="uml-element-editor__visit-parent-element-btn"
+                onClick={visitOwner}
+                tabIndex={-1}
+                title={`Visit super type class ${constraint._OWNER.path}`}
+              >
+                <ArrowCircleRightIcon />
+              </button>
+            )}
+            {!isInheritedConstraint && !isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isInheritedConstraint}
+                onClick={remove}
+                tabIndex={-1}
+                title="Remove"
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
+          <StudioLambdaEditor
+            disabled={
+              editorState.classState.isConvertingConstraintLambdaObjects ||
+              isReadOnly ||
+              isInheritedConstraint
+            }
+            lambdaEditorState={constraintState}
+            forceBackdrop={hasParserError}
+            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+              PRIMITIVE_TYPE.BOOLEAN,
+            )}
+            onEditorFocusEventHandler={onLambdaEditorFocus}
+          />
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -1099,20 +1066,9 @@ const SuperTypeEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {selectedType.label}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="super-type-editor">
-            <div className="uml-element-editor__drag-handle">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <CustomSelectorInput
               className="super-type-editor__class"
               disabled={isReadOnly}
@@ -1143,7 +1099,7 @@ const SuperTypeEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

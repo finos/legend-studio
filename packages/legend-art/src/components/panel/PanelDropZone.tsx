@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import { clsx } from 'clsx';
 import type { ConnectDropTarget } from 'react-dnd';
+import { VerticalDragHandleIcon } from '../CJS__Icon.cjs';
 
 export const PanelDropZone: React.FC<{
   children: React.ReactNode;
@@ -26,6 +28,33 @@ export const PanelDropZone: React.FC<{
     <div className="dnd__dropzone" ref={dropTargetConnector}>
       {isDragOver && <div className="panel__dnd__dropzone__overlay" />}
       <div className="panel__dnd__dropzone__content">{children}</div>
+    </div>
+  );
+};
+
+export const PanelEntryDragHandle: React.FC = () => (
+  <div className="dnd__entry-drag-handle">
+    <VerticalDragHandleIcon />
+  </div>
+);
+
+export const PanelEntryDropZonePlaceholder: React.FC<{
+  children: React.ReactNode;
+  showPlaceholder: boolean;
+  className?: string;
+  label?: string;
+}> = (props) => {
+  const { children, showPlaceholder, className, label } = props;
+  if (!showPlaceholder) {
+    return <>{children}</>;
+  }
+  return (
+    <div className={clsx(['dnd__entry-dropzone__placeholder', className])}>
+      <div className="dnd__entry-dropzone__placeholder__content">
+        {label && (
+          <div className="dnd__entry-dropzone__placeholder__label">{label}</div>
+        )}
+      </div>
     </div>
   );
 };

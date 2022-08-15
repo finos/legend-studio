@@ -76,3 +76,57 @@
   padding: 0;
   margin: 0;
 }
+
+.dnd__entry-drag-handle {
+  @include flexCenter;
+  @include flexConstantDimension;
+
+  width: 2rem;
+  height: 2.8rem;
+  background: var(--color-dark-shade-50);
+  color: var(--color-light-grey-300);
+  border-radius: 0.2rem;
+  margin-right: 0.5rem;
+  // NOTE: here we use `move` instead of `grab` since grab requires
+  // a more sophisticated control, i.e. when dragging, the cursor should
+  // be changed
+  cursor: move;
+}
+
+.dnd__entry-dropzone__placeholder {
+  @include flexCenter;
+
+  height: 2.8rem;
+  margin: 0.5rem 0;
+
+  &__content {
+    border: 0.2rem dashed var(--color-light-grey-300);
+    height: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
+  // &--padding {
+  //   margin: 1rem;
+  //   border: 0.2rem dashed var(--color-dark-grey-250);
+  //   padding: 1rem;
+  // }
+
+  // &--tall {
+  //   height: 7rem !important;
+  //   padding-top: 1rem;
+  // }
+
+  // &__label {
+  //   @include flexVCenter;
+
+  //   display: inline-flex;
+  //   color: var(--color-white);
+  //   height: 2rem;
+  //   padding: 0.5rem;
+  //   font-size: 1.2rem;
+  //   margin-top: 0.5rem;
+  //   background: var(--color-blue-200);
+  //   border-radius: 0.2rem;
+  // }
+}

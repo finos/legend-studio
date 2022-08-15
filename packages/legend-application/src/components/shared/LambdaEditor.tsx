@@ -100,6 +100,7 @@ const LambdaEditorInline = observer(
     backdropSetter?: ((val: boolean) => void) | undefined;
     onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
     openInPopUp: () => void;
+    onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -118,12 +119,16 @@ const LambdaEditorInline = observer(
       hideErrorBar,
       onKeyDownEventHandlers,
       openInPopUp,
+      onEditorFocusEventHandler,
     } = props;
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
     const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+    const onDidFocusEditorWidgetDisposer = useRef<IDisposable | undefined>(
+      undefined,
+    );
     const value = normalizeLineEnding(lambdaEditorState.lambdaString);
     const parserError = lambdaEditorState.parserError;
     const compilationError = lambdaEditorState.compilationError;
@@ -306,6 +311,13 @@ const LambdaEditorInline = observer(
           }
         });
       });
+
+      onDidFocusEditorWidgetDisposer.current?.dispose();
+      onDidFocusEditorWidgetDisposer.current = editor.onDidFocusEditorWidget(
+        () => {
+          onEditorFocusEventHandler?.();
+        },
+      );
 
       // Set the text value
       const currentValue = getEditorValue(editor);
@@ -740,6 +752,7 @@ export const LambdaEditor = observer(
      * to allow activating global hotkeys while typing in the editor
      */
     onKeyDownEventHandlers?: LambdaEditorOnKeyDownEventHandler[];
+    onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -756,6 +769,7 @@ export const LambdaEditor = observer(
       useBaseTextEditorSettings,
       hideErrorBar,
       onKeyDownEventHandlers,
+      onEditorFocusEventHandler,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
     const openInPopUp = (): void => setShowPopUp(true);
@@ -833,6 +847,7 @@ export const LambdaEditor = observer(
         hideErrorBar={hideErrorBar}
         onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
         openInPopUp={openInPopUp}
+        onEditorFocusEventHandler={onEditorFocusEventHandler}
       />
     );
   },

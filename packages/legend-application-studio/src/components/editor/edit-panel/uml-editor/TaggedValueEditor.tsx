@@ -24,7 +24,8 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -170,24 +171,17 @@ export const TaggedValueEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--padding ">
-            <div className="uml-element-editor__dnd__name">
-              {taggedValue.value}
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="tagged-value-editor__dnd__placeholder"
+        >
           <div className="tagged-value-editor">
+            <PanelEntryDragHandle />
             <div
               className={`tagged-value-editor__profile ${
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''
               }`}
             >
-              <div className="uml-element-editor__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
               <CustomSelectorInput
                 className="tagged-value-editor__profile__selector"
                 disabled={isReadOnly}
@@ -274,7 +268,7 @@ export const TaggedValueEditor = observer(
               </button>
             </div>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

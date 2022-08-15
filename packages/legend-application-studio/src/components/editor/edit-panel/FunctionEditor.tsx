@@ -38,7 +38,8 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
@@ -242,33 +243,21 @@ const ParameterBasicEditor = observer(
     };
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {parameter.name}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {isReadOnly && (
               <div className="property-basic-editor__lock">
                 <LockIcon />
               </div>
             )}
-            <div className="uml-element-editor__drag-handle">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <input
               className="property-basic-editor__name"
               disabled={isReadOnly}
               value={parameter.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Property name`}
+              placeholder={`Parameter name`}
             />
             {!isReadOnly && isEditingType && (
               <CustomSelectorInput
@@ -382,7 +371,7 @@ const ParameterBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -458,6 +447,7 @@ const ReturnTypeEditor = observer(
       setUpperBound(event.target.value);
       updateMultiplicity(lowerBound, event.target.value);
     };
+
     return (
       <div className="function-editor__return__type-editor">
         {!isReadOnly && isEditingType && (
@@ -618,27 +608,6 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
-    const handleDropReturnType = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          function_setReturnType(functionElement, item.data.packageableElement);
-        }
-      },
-      [functionElement, isReadOnly],
-    );
-    const [{ isReturnTypeDragOver }, dropReturnTypeRef] = useDrop(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        ],
-        drop: (item: ElementDragSource): void => handleDropReturnType(item),
-        collect: (monitor): { isReturnTypeDragOver: boolean } => ({
-          isReturnTypeDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropReturnType],
-    );
 
     return (
       <div className="panel__content function-editor__element">
@@ -680,13 +649,7 @@ export const FunctionMainEditor = observer(
             <div className="function-editor__element__item__header__title">
               LAMBDA
             </div>
-            <div
-              ref={dropReturnTypeRef}
-              className={clsx('function-editor__element__item__content', {
-                'panel__content__lists--dnd-over':
-                  isReturnTypeDragOver && !isReadOnly,
-              })}
-            >
+            <div className="">
               <ReturnTypeEditor
                 functionElement={functionElement}
                 isReadOnly={isReadOnly}

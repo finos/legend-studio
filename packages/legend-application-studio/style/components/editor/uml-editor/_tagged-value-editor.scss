@@ -21,6 +21,11 @@
   flex-wrap: wrap;
   margin-top: 0.5rem;
 
+  &__dnd__placeholder {
+    height: 6.1rem;
+    margin: 0.5rem 0;
+  }
+
   &__profile {
     display: flex;
     width: 17rem;

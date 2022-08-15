@@ -21,7 +21,8 @@ import {
   createFilter,
   TimesIcon,
   ArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -158,26 +159,14 @@ export const StereotypeSelector = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {selectedStereotype.label}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-selector">
+            <PanelEntryDragHandle />
             <div
               className={`stereotype-selector__profile ${
                 darkTheme ? 'stereotype-selector-dark-theme' : ''
               } stereotype-selector__profile`}
             >
-              <div className="uml-element-editor__drag-handle">
-                <VerticalDragHandleIcon />
-              </div>
               <CustomSelectorInput
                 className="stereotype-selector__profile__selector"
                 disabled={isReadOnly}
@@ -222,7 +211,7 @@ export const StereotypeSelector = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

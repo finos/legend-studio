@@ -42,7 +42,8 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { StereotypeSelector } from './StereotypeSelector.js';
@@ -147,19 +148,9 @@ const EnumBasicEditor = observer(
 
     return (
       <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">{_enum.name}</div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="enum-basic-editor">
-            <div className="uml-element-editor__drag-handle">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="enum-basic-editor__name input-group__input"
               spellCheck={false}
@@ -191,7 +182,7 @@ const EnumBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

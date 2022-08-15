@@ -28,23 +28,9 @@
   background: var(--color-light-grey-180);
 }
 
-.derived-property-editor {
-  padding: 1rem 3.5rem 1rem 1rem;
-  background: var(--color-light-grey-0);
-  border-radius: 0.2rem;
-
-  .property-basic-editor {
-    margin-bottom: 0.5rem;
-  }
-}
-
 .property-basic-editor {
   margin-top: 0.5rem;
   display: flex;
-
-  &:hover {
-    background: var(--color-light-grey-200);
-  }
 
   &__lock {
     @include flexVCenter;
@@ -119,17 +105,6 @@
   }
 
   &__name--with-lock {
-    @include flexVCenter;
-
-    flex: auto;
-    height: 2.8rem;
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
-    padding: 0 1rem;
-    border-radius: 0.2rem;
-    margin-right: 0.5rem;
-    width: calc(100% - 36rem);
-    min-width: calc(100% - 36rem);
     cursor: default;
   }
 
@@ -269,11 +244,36 @@
   }
 }
 
+.derived-property-editor {
+  padding: 1rem;
+  background: var(--color-light-grey-0);
+  border-radius: 0.2rem;
+
+  .property-basic-editor {
+    margin-bottom: 0.5rem;
+
+    &__name {
+      width: calc(100% - 39.3rem);
+      min-width: calc(100% - 39.3rem);
+    }
+  }
+
+  &__dnd__placeholder {
+    height: 8.1rem;
+    padding: 1rem;
+  }
+}
+
 .constraint-editor {
   padding: 1rem;
   background: var(--color-light-grey-0);
   border-radius: 0.2rem;
   margin-top: 0.5rem;
+
+  &__dnd__placeholder {
+    height: 8.1rem;
+    padding: 1rem;
+  }
 
   &__content {
     display: flex;
