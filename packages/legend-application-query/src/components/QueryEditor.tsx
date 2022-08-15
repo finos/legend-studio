@@ -236,18 +236,20 @@ const QueryEditorHeaderContent = observer(() => {
         >
           <ExternalLinkSquareIcon />
         </button>
-        <button
-          className="query-editor__header__action query-editor__header__action--simple btn--dark"
-          tabIndex={-1}
-          title="Toggle Light/Dark Theme"
-          onClick={toggleLightDarkTheme}
-        >
-          {applicationStore.TEMPORARY__isLightThemeEnabled ? (
-            <EmptyLightBulbIcon />
-          ) : (
-            <LightBulbIcon />
-          )}
-        </button>
+        {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+          <button
+            className="query-editor__header__action query-editor__header__action--simple btn--dark"
+            tabIndex={-1}
+            title="Toggle Light/Dark Theme"
+            onClick={toggleLightDarkTheme}
+          >
+            {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+              <EmptyLightBulbIcon />
+            ) : (
+              <LightBulbIcon />
+            )}
+          </button>
+        )}
         <button
           className="query-editor__header__action btn--dark"
           tabIndex={-1}

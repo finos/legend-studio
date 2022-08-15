@@ -67,7 +67,8 @@
     "react-dom": "18.2.0",
     "react-hotkeys": "2.0.0",
     "react-router": "5.3.3",
-    "react-router-dom": "5.3.3"
+    "react-router-dom": "5.3.3",
+    "serializr": "2.0.5"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

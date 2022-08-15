@@ -823,7 +823,7 @@ export const QueryBuilderFilterPanel = observer(
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop(
       () => ({
-        accept: filterState.allowDnDProjectionToFilter
+        accept: queryBuilderState.mode.isDnDProjectionToFilterSupported
           ? [
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,

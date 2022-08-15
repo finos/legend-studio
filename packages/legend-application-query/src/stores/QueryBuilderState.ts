@@ -81,6 +81,14 @@ export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
 
   abstract get isResultPanelHidden(): boolean;
+
+  /**
+   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * and will be leveraged when the concepts of workflows are introduced into query builder.
+   */
+  get isDnDProjectionToFilterSupported(): boolean {
+    return true;
+  }
 }
 
 export class StandardQueryBuilderMode extends QueryBuilderMode {

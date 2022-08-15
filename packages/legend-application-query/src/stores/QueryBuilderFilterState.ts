@@ -452,11 +452,6 @@ export class QueryBuilderFilterState
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
-  /**
-   * This flag is for turning on/off dnd from projection panel to filter panel,
-   * and will be leveraged when the concepts of workflows are introduced into query builder.
-   */
-  allowDnDProjectionToFilter = true;
 
   constructor(
     queryBuilderState: QueryBuilderState,
