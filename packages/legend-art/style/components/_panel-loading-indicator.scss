@@ -41,7 +41,7 @@
 }
 
 @keyframes panel-loading-indicator__loading {
-  from {
+  0% {
     left: 0;
     width: min(3%, 2rem);
   }
@@ -67,7 +67,7 @@
     width: min(2.5%, 3rem);
   }
 
-  to {
+  100% {
     left: 100%;
     width: min(2.75%, 2.5rem);
   }
