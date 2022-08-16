@@ -40,10 +40,17 @@ import {
   ArrowCircleRightIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
-import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
-import { TaggedValueEditor } from './uml-editor/TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './uml-editor/StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './uml-editor/TaggedValueEditor.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -182,6 +189,18 @@ const ParameterBasicEditor = observer(
         );
       }
     };
+    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setLowerBound(event.target.value);
+      updateMultiplicity(event.target.value, upperBound);
+    };
+    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setUpperBound(event.target.value);
+      updateMultiplicity(lowerBound, event.target.value);
+    };
 
     // Drag and Drop
     const handleHover = useCallback(
@@ -229,20 +248,8 @@ const ParameterBasicEditor = observer(
       dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
     }, [dragPreviewConnector]);
 
-    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setLowerBound(event.target.value);
-      updateMultiplicity(event.target.value, upperBound);
-    };
-    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setUpperBound(event.target.value);
-      updateMultiplicity(lowerBound, event.target.value);
-    };
     return (
-      <div ref={ref}>
+      <div ref={ref} className="property-basic-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {isReadOnly && (
@@ -626,6 +633,12 @@ export const FunctionMainEditor = observer(
               <PlusIcon />
             </button>
           </div>
+          <DragPreviewLayer
+            labelGetter={(item: FunctionParameterDragSource): string =>
+              item.parameter.name === '' ? '(unknown)' : item.parameter.name
+            }
+            types={[FUNCTION_PARAMETER_DND_TYPE]}
+          />
           <div
             ref={dropParameterRef}
             className={clsx('function-editor__element__item__content', {
@@ -843,6 +856,7 @@ export const FunctionEditor = observer(() => {
                     isTaggedValueDragOver && !isReadOnly,
                 })}
               >
+                <TaggedValueDragPreviewLayer />
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
                     annotatedElement={functionElement}
@@ -862,6 +876,7 @@ export const FunctionEditor = observer(() => {
                     isStereotypeDragOver && !isReadOnly,
                 })}
               >
+                <StereotypeDragPreviewLayer />
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}

@@ -15,7 +15,13 @@
  */
 
 import { useCallback } from 'react';
-import { clsx, Dialog, PanelDropZone, InfoCircleIcon } from '@finos/legend-art';
+import {
+  clsx,
+  Dialog,
+  PanelDropZone,
+  InfoCircleIcon,
+  PanelEntryDropZonePlaceholder,
+} from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
   generateMilestonedPropertyParameterValue,
@@ -305,12 +311,11 @@ export const QueryBuilderPropertyExpressionBadge = observer(
         className="query-builder-property-expression-badge"
         ref={dropConnector}
       >
-        {isDragOver && (
-          <div className="query-builder__dnd__placeholder query-builder-property-expression-badge__dnd__placeholder">
-            Change Property
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Change Property"
+          className="query-builder__dnd__placeholder"
+        >
           <div
             className={clsx(
               'query-builder-property-expression-badge__content',
@@ -360,7 +365,7 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               </div>
             </QueryBuilderPropertyInfoTooltip>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

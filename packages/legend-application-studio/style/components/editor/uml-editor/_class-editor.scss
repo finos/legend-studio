@@ -32,6 +32,10 @@
   margin-top: 0.5rem;
   display: flex;
 
+  &__container {
+    margin: 0.5rem 0;
+  }
+
   &__lock {
     @include flexVCenter;
 
@@ -249,7 +253,12 @@
   background: var(--color-light-grey-0);
   border-radius: 0.2rem;
 
+  &__container {
+    margin: 0.5rem 0;
+  }
+
   .property-basic-editor {
+    margin-top: 0;
     margin-bottom: 0.5rem;
 
     &__name {
@@ -268,7 +277,10 @@
   padding: 1rem;
   background: var(--color-light-grey-0);
   border-radius: 0.2rem;
-  margin-top: 0.5rem;
+
+  &__container {
+    margin: 0.5rem 0;
+  }
 
   &__dnd__placeholder {
     height: 8.1rem;
@@ -335,6 +347,10 @@
 .super-type-editor {
   display: flex;
   margin-top: 0.5rem;
+
+  &__container {
+    margin: 0.5rem 0;
+  }
 
   &__class {
     flex: auto;

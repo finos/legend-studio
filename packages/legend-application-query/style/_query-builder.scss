@@ -251,6 +251,11 @@
   }
 }
 
+.query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
+  border-color: var(--color-dark-grey-100);
+  color: var(--color-dark-grey-300);
+}
+
 .query-builder__fetch__structure {
   &__modes {
     @include flexVCenter;
@@ -582,15 +587,6 @@
   width: 100%;
   height: 100%;
 
-  &__dnd__placeholder {
-    @include flexCenter;
-
-    height: 2.8rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-  }
-
   &__content {
     @include flexVCenter;
 
@@ -669,12 +665,6 @@
   }
 }
 
-.query-builder__dnd__placeholder {
-  border: 0.2rem dashed var(--color-dark-grey-250);
-  height: 100%;
-  width: 100%;
-}
-
 .query-builder-text-mode {
   &__modal {
     &__content {
@@ -738,18 +728,6 @@
   @include flexCenter;
 
   height: 2.8rem;
-
-  &__node__dnd__placeholder {
-    @include flexCenter;
-
-    border: 0.2rem dashed var(--color-dark-grey-100);
-    margin: 0.3rem 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-    height: 2.8rem;
-    width: 100%;
-  }
 
   &__parameter {
     height: 2.8rem;

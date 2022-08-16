@@ -79,28 +79,6 @@
   &__node__info {
     cursor: help;
   }
-
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-100);
-    border-radius: 0.2rem;
-  }
 }
 
 .query-builder__functions-explorer {

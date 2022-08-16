@@ -108,28 +108,6 @@
     height: 100%;
   }
 
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    color: var(--color-light-grey-100);
-    border-radius: 0.2rem;
-  }
-
   &__group-node {
     @include flexVCenter;
 
@@ -256,17 +234,5 @@
       font-size: 1.2rem;
       font-weight: 500;
     }
-  }
-
-  &__node__dnd__placeholder {
-    @include flexCenter;
-
-    border: 0.2rem dashed var(--color-dark-grey-100);
-    margin: 0.3rem 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-    height: 2.8rem;
-    width: 100%;
   }
 }

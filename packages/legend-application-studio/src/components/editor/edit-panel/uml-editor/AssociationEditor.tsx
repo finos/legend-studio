@@ -45,8 +45,14 @@ import {
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -510,6 +516,7 @@ export const AssociationEditor = observer(
                         isTaggedValueDragOver && !isReadOnly,
                     })}
                   >
+                    <TaggedValueDragPreviewLayer />
                     {association.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
                         annotatedElement={association}
@@ -529,6 +536,7 @@ export const AssociationEditor = observer(
                         isStereotypeDragOver && !isReadOnly,
                     })}
                   >
+                    <StereotypeDragPreviewLayer />
                     {association.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}

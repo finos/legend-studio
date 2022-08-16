@@ -281,6 +281,13 @@
       }
     }
   }
+
+  // ---------------------------- Other -------------------------------
+
+  .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
+    border-color: var(--color-light-grey-250);
+    color: var(--color-light-grey-400);
+  }
 }
 
 .query-editor--light {
@@ -614,12 +621,6 @@
     background: var(--color-light-grey-400);
   }
 
-  .query-builder-filter-tree__node__dnd__placeholder {
-    border-color: var(--color-light-grey-250);
-    color: var(--color-light-grey-400);
-    background: transparent;
-  }
-
   .query-builder-filter-tree__node__container--selected
     .query-builder-filter-tree__blank-node,
   .query-builder-filter-tree__node__container--selected:hover
@@ -681,12 +682,6 @@
 
   .query-builder-post-filter-tree__group-node.query-builder-post-filter-tree__group-node--or {
     background: var(--color-light-grey-400);
-  }
-
-  .query-builder-post-filter-tree__node__dnd__placeholder {
-    border-color: var(--color-light-grey-250);
-    color: var(--color-light-grey-400);
-    background: transparent;
   }
 
   .query-builder-post-filter-tree__node__container--selected
@@ -839,10 +834,6 @@
     }
   }
 
-  .query-builder__dnd__placeholder {
-    border-color: var(--color-light-grey-250);
-  }
-
   .blank-panel-placeholder__text {
     color: var(--color-light-grey-300);
   }
@@ -865,10 +856,6 @@
 
   .panel__content__blank__content {
     color: var(--color-dark-grey-500);
-  }
-
-  .query-builder-property-expression-badge__dnd__placeholder {
-    color: var(--color-light-grey-400);
   }
 
   .query-builder__lambda-editor {

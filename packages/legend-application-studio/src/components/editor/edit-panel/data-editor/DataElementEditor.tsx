@@ -53,9 +53,15 @@ import {
   type UMLEditorElementDropTarget,
   type ElementDragSource,
 } from '../../../../stores/shared/DnDUtil.js';
-import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from '../uml-editor/TaggedValueEditor.js';
 import { useCallback, useEffect, useRef } from 'react';
-import { StereotypeSelector } from '../uml-editor/StereotypeSelector.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from '../uml-editor/StereotypeSelector.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
@@ -315,6 +321,7 @@ export const DataElementEditor = observer(() => {
                       isStereotypeDragOver && !isReadOnly,
                   })}
                 >
+                  <StereotypeDragPreviewLayer />
                   {dataElement.stereotypes.map((stereotype) => (
                     <StereotypeSelector
                       key={stereotype.value._UUID}
@@ -364,6 +371,7 @@ export const DataElementEditor = observer(() => {
                       isTaggedValueDragOver && !isReadOnly,
                   })}
                 >
+                  <TaggedValueDragPreviewLayer />
                   {dataElement.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
                       annotatedElement={dataElement}

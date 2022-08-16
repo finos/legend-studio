@@ -15,7 +15,7 @@
  */
 
 import { clsx } from 'clsx';
-import type { ConnectDropTarget } from 'react-dnd';
+import { type ConnectDropTarget, useDragLayer } from 'react-dnd';
 import { VerticalDragHandleIcon } from '../CJS__Icon.cjs';
 
 export const PanelDropZone: React.FC<{
@@ -58,3 +58,45 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
     </div>
   );
 };
+
+export function DragPreviewLayer<T>(props: {
+  labelGetter: (item: T) => string;
+  types: string[];
+}): JSX.Element | null {
+  const { labelGetter, types } = props;
+  const { itemType, item, isDragging, currentPosition } = useDragLayer(
+    (monitor) => ({
+      itemType: monitor.getItemType(),
+      item: monitor.getItem<T | null>(),
+      isDragging: monitor.isDragging(),
+      initialOffset: monitor.getInitialSourceClientOffset(),
+      currentPosition: monitor.getClientOffset(),
+    }),
+  );
+  if (
+    !isDragging ||
+    !item ||
+    !itemType ||
+    !types.includes(itemType.toString())
+  ) {
+    return null;
+  }
+  return (
+    <div className="dnd__drag-preview-layer">
+      <div
+        className="dnd__drag-preview-layer__content"
+        style={
+          !currentPosition
+            ? { display: 'none' }
+            : {
+                transform: `translate(${currentPosition.x / 10 + 2}rem, ${
+                  currentPosition.y / 10 + 1
+                }rem)`,
+              }
+        }
+      >
+        {labelGetter(item)}
+      </div>
+    </div>
+  );
+}

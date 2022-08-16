@@ -28,6 +28,7 @@ import {
   LockIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -114,7 +115,7 @@ const TagBasicEditor = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="tag-basic-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="tag-basic-editor">
             <PanelEntryDragHandle />
@@ -210,7 +211,7 @@ const StereotypeBasicEditor = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="stereotype-basic-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-basic-editor">
             <PanelEntryDragHandle />
@@ -337,6 +338,12 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
         <div className="panel__content">
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: TagDragSource): string =>
+                  item.tag.value === '' ? '(unknown)' : item.tag.value
+                }
+                types={[TAG_DND_TYPE]}
+              />
               {profile.p_tags.map((tag) => (
                 <TagBasicEditor
                   key={tag._UUID}
@@ -350,6 +357,14 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: StereotypeDragSource): string =>
+                  item.stereotype.value === ''
+                    ? '(unknown)'
+                    : item.stereotype.value
+                }
+                types={[STEREOTYPE_DND_TYPE]}
+              />
               {profile.p_stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
                   key={stereotype._UUID}

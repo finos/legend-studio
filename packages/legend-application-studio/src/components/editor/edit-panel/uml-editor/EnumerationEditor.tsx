@@ -44,10 +44,17 @@ import {
   StickArrowCircleRightIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Enumeration,
@@ -77,7 +84,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../st
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 type EnumValueDragSource = {
-  _enum: Enum;
+  enumValue: Enum;
 };
 
 const ENUM_VALUE_DND_TYPE = 'ENUMERATION';
@@ -103,7 +110,7 @@ const EnumBasicEditor = observer(
     // Drag and Drop
     const handleHover = useCallback(
       (item: EnumValueDragSource, monitor: DropTargetMonitor): void => {
-        const draggingEnumeration = item._enum;
+        const draggingEnumeration = item.enumValue;
         const hoveredEnumeration = _enum;
         enum_swapValues(
           _parentEnumerations,
@@ -123,7 +130,7 @@ const EnumBasicEditor = observer(
           monitor,
         ): { isBeingDraggedEnumeration: Enum | undefined } => ({
           isBeingDraggedEnumeration:
-            monitor.getItem<EnumValueDragSource | null>()?._enum,
+            monitor.getItem<EnumValueDragSource | null>()?.enumValue,
         }),
       }),
       [handleHover],
@@ -134,7 +141,7 @@ const EnumBasicEditor = observer(
       () => ({
         type: ENUM_VALUE_DND_TYPE,
         item: (): EnumValueDragSource => ({
-          _enum: _enum,
+          enumValue: _enum,
         }),
       }),
       [_enum],
@@ -147,7 +154,7 @@ const EnumBasicEditor = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="enum-basic-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="enum-basic-editor">
             <PanelEntryDragHandle />
@@ -343,6 +350,7 @@ const EnumEditor = observer(
                     isTaggedValueDragOver && !isReadOnly,
                 })}
               >
+                <TaggedValueDragPreviewLayer />
                 {_enum.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
                     annotatedElement={_enum}
@@ -362,6 +370,7 @@ const EnumEditor = observer(
                     isStereotypeDragOver && !isReadOnly,
                 })}
               >
+                <StereotypeDragPreviewLayer />
                 {_enum.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
@@ -589,6 +598,14 @@ export const EnumerationEditor = observer(
               <div className="panel__content">
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
                   <div className="panel__content__lists">
+                    <DragPreviewLayer
+                      labelGetter={(item: EnumValueDragSource): string =>
+                        item.enumValue.name === ''
+                          ? '(unknown)'
+                          : item.enumValue.name
+                      }
+                      types={[ENUM_VALUE_DND_TYPE]}
+                    />
                     {enumeration.values.map((enumValue) => (
                       <EnumBasicEditor
                         key={enumValue._UUID}
@@ -609,6 +626,7 @@ export const EnumerationEditor = observer(
                         isTaggedValueDragOver && !isReadOnly,
                     })}
                   >
+                    <TaggedValueDragPreviewLayer />
                     {enumeration.taggedValues.map((taggedValue) => (
                       <TaggedValueEditor
                         annotatedElement={enumeration}
@@ -628,6 +646,7 @@ export const EnumerationEditor = observer(
                         isStereotypeDragOver && !isReadOnly,
                     })}
                   >
+                    <StereotypeDragPreviewLayer />
                     {enumeration.stereotypes.map((stereotype) => (
                       <StereotypeSelector
                         key={stereotype.value._UUID}

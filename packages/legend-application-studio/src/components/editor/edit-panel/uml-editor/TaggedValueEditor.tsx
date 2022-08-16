@@ -26,6 +26,7 @@ import {
   LongArrowAltUpIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -49,11 +50,21 @@ interface TagOption {
   value: Tag;
 }
 
-const TAGGED_VALUE_DND_TYPE = 'TAGGED_VALUE';
-
-type TaggedValueDragSource = {
+export const TAGGED_VALUE_DND_TYPE = 'TAGGED_VALUE';
+export type TaggedValueDragSource = {
   taggedValue: TaggedValue;
 };
+
+export const TaggedValueDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: TaggedValueDragSource): string =>
+      isStubbed_PackageableElement(item.taggedValue.tag.ownerReference.value)
+        ? '(unknown)'
+        : `${item.taggedValue.tag.ownerReference.value.name}.${item.taggedValue.tag.value.value}`
+    }
+    types={[TAGGED_VALUE_DND_TYPE]}
+  />
+);
 
 export const TaggedValueEditor = observer(
   (props: {
@@ -170,7 +181,7 @@ export const TaggedValueEditor = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="tagged-value-editor__container">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="tagged-value-editor__dnd__placeholder"

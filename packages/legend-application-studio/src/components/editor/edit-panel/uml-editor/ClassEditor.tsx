@@ -42,11 +42,18 @@ import {
   StickArrowCircleRightIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeSelector,
+  StereotypeDragPreviewLayer,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueEditor,
+  TaggedValueDragPreviewLayer,
+} from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
@@ -270,7 +277,7 @@ const PropertyBasicEditor = observer(
     const visitOwner = (): void => editorStore.openElement(property._OWNER);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="property-basic-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {!isIndirectProperty && <PanelEntryDragHandle />}
@@ -628,7 +635,7 @@ const DerivedPropertyBasicEditor = observer(
     });
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="derived-property-editor__container">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="derived-property-editor__dnd__placeholder"
@@ -907,73 +914,74 @@ const ConstraintEditor = observer(
     const visitOwner = (): void => editorStore.openElement(constraint._OWNER);
 
     return (
-      <div
-        ref={ref}
-        className={clsx('constraint-editor', {
-          backdrop__element: constraintState.parserError,
-        })}
-      >
+      <div ref={ref} className="constraint-editor__container">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="constraint-editor__dnd__placeholder"
         >
-          <div className="constraint-editor__content">
-            {!isInheritedConstraint && <PanelEntryDragHandle />}
-            {isInheritedConstraint && (
-              <div className="constraint-editor__content__name--with-lock">
-                <div className="constraint-editor__content__name--with-lock__icon">
-                  <LockIcon />
+          <div
+            className={clsx('constraint-editor', {
+              backdrop__element: constraintState.parserError,
+            })}
+          >
+            <div className="constraint-editor__content">
+              {!isInheritedConstraint && <PanelEntryDragHandle />}
+              {isInheritedConstraint && (
+                <div className="constraint-editor__content__name--with-lock">
+                  <div className="constraint-editor__content__name--with-lock__icon">
+                    <LockIcon />
+                  </div>
+                  <span className="constraint-editor__content__name--with-lock__name">
+                    {constraint.name}
+                  </span>
                 </div>
-                <span className="constraint-editor__content__name--with-lock__name">
-                  {constraint.name}
-                </span>
-              </div>
-            )}
-            {!isInheritedConstraint && (
-              <input
-                className="constraint-editor__content__name"
-                spellCheck={false}
-                disabled={isReadOnly || isInheritedConstraint}
-                value={constraint.name}
-                onChange={changeName}
-                placeholder="Constraint name"
-              />
-            )}
-            {isInheritedConstraint && (
-              <button
-                className="uml-element-editor__visit-parent-element-btn"
-                onClick={visitOwner}
-                tabIndex={-1}
-                title={`Visit super type class ${constraint._OWNER.path}`}
-              >
-                <ArrowCircleRightIcon />
-              </button>
-            )}
-            {!isInheritedConstraint && !isReadOnly && (
-              <button
-                className="uml-element-editor__remove-btn"
-                disabled={isInheritedConstraint}
-                onClick={remove}
-                tabIndex={-1}
-                title="Remove"
-              >
-                <TimesIcon />
-              </button>
-            )}
+              )}
+              {!isInheritedConstraint && (
+                <input
+                  className="constraint-editor__content__name"
+                  spellCheck={false}
+                  disabled={isReadOnly || isInheritedConstraint}
+                  value={constraint.name}
+                  onChange={changeName}
+                  placeholder="Constraint name"
+                />
+              )}
+              {isInheritedConstraint && (
+                <button
+                  className="uml-element-editor__visit-parent-element-btn"
+                  onClick={visitOwner}
+                  tabIndex={-1}
+                  title={`Visit super type class ${constraint._OWNER.path}`}
+                >
+                  <ArrowCircleRightIcon />
+                </button>
+              )}
+              {!isInheritedConstraint && !isReadOnly && (
+                <button
+                  className="uml-element-editor__remove-btn"
+                  disabled={isInheritedConstraint}
+                  onClick={remove}
+                  tabIndex={-1}
+                  title="Remove"
+                >
+                  <TimesIcon />
+                </button>
+              )}
+            </div>
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState.isConvertingConstraintLambdaObjects ||
+                isReadOnly ||
+                isInheritedConstraint
+              }
+              lambdaEditorState={constraintState}
+              forceBackdrop={hasParserError}
+              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.BOOLEAN,
+              )}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
+            />
           </div>
-          <StudioLambdaEditor
-            disabled={
-              editorState.classState.isConvertingConstraintLambdaObjects ||
-              isReadOnly ||
-              isInheritedConstraint
-            }
-            lambdaEditorState={constraintState}
-            forceBackdrop={hasParserError}
-            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.BOOLEAN,
-            )}
-            onEditorFocusEventHandler={onLambdaEditorFocus}
-          />
         </PanelEntryDropZonePlaceholder>
       </div>
     );
@@ -1065,7 +1073,7 @@ const SuperTypeEditor = observer(
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="super-type-editor__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="super-type-editor">
             <PanelEntryDragHandle />
@@ -1163,6 +1171,12 @@ const PropertiesEditor = observer(
           'panel__content__lists--dnd-over': isPropertyDragOver && !isReadOnly,
         })}
       >
+        <DragPreviewLayer
+          labelGetter={(item: ClassPropertyDragSource): string =>
+            item.property.name === '' ? '(unknown)' : item.property.name
+          }
+          types={[CLASS_PROPERTY_DND_TYPE]}
+        />
         {_class.properties.concat(indirectProperties).map((property) => (
           <PropertyBasicEditor
             key={property._UUID}
@@ -1238,6 +1252,14 @@ const DerviedPropertiesEditor = observer(
             isDerivedPropertyDragOver && !isReadOnly,
         })}
       >
+        <DragPreviewLayer
+          labelGetter={(item: ClassDerivedPropertyDragSource): string =>
+            item.derivedProperty.name === ''
+              ? '(unknown)'
+              : item.derivedProperty.name
+          }
+          types={[CLASS_DERIVED_PROPERTY_DND_TYPE]}
+        />
         {_class.derivedProperties
           .concat(indirectDerivedProperties)
           .filter((dp): dp is DerivedProperty =>
@@ -1280,6 +1302,12 @@ const ConstraintsEditor = observer(
 
     return (
       <div className="panel__content__lists">
+        <DragPreviewLayer
+          labelGetter={(item: ClassConstraintDragSource): string =>
+            item.constraint.name === '' ? '(unknown)' : item.constraint.name
+          }
+          types={[CLASS_CONSTRAINT_DND_TYPE]}
+        />
         {_class.constraints
           .concat(inheritedConstraints)
           .filter((constraint): constraint is Constraint =>
@@ -1362,6 +1390,12 @@ const SupertypesEditor = observer(
           'panel__content__lists--dnd-over': isSuperTypeDragOver && !isReadOnly,
         })}
       >
+        <DragPreviewLayer
+          labelGetter={(item: ClassSuperTypeDragSource): string =>
+            item.superType.value.rawType.name
+          }
+          types={[CLASS_SUPER_TYPE_DND_TYPE]}
+        />
         {_class.generalizations.map((superType) => (
           <SuperTypeEditor
             key={superType.value._UUID}
@@ -1416,6 +1450,7 @@ const TaggedValuesEditor = observer(
             isTaggedValueDragOver && !isReadOnly,
         })}
       >
+        <TaggedValueDragPreviewLayer />
         {_class.taggedValues.map((taggedValue) => (
           <TaggedValueEditor
             annotatedElement={_class}
@@ -1472,6 +1507,7 @@ const StereotypesEditor = observer(
             isStereotypeDragOver && !isReadOnly,
         })}
       >
+        <StereotypeDragPreviewLayer />
         {_class.stereotypes.map((stereotype) => (
           <StereotypeSelector
             key={stereotype._UUID}

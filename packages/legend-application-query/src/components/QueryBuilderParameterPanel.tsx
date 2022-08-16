@@ -25,6 +25,7 @@ import {
   DollarIcon,
   PlusIcon,
   InputWithInlineValidation,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
@@ -49,7 +50,7 @@ import {
   getPackageableElementOptionFormatter,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useDrag, useDragLayer } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../QueryBuilder_Const.js';
@@ -245,42 +246,6 @@ const VariableExpressionEditor = observer(
   },
 );
 
-const QueryBuilderParameterDragLayer = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { itemType, item, isDragging, currentPosition } = useDragLayer(
-      (monitor) => ({
-        itemType: monitor.getItemType(),
-        item: monitor.getItem<QueryBuilderParameterDragSource | null>(),
-        isDragging: monitor.isDragging(),
-        initialOffset: monitor.getInitialSourceClientOffset(),
-        currentPosition: monitor.getClientOffset(),
-      }),
-    );
-
-    if (!isDragging || !item || itemType !== QUERY_BUILDER_PARAMETER_DND_TYPE) {
-      return null;
-    }
-    return (
-      <div className="query-builder__parameters__drag-preview-layer">
-        <div
-          className="query-builder__parameters__drag-preview"
-          style={
-            !currentPosition
-              ? { display: 'none' }
-              : {
-                  transform: `translate(${currentPosition.x + 20}px, ${
-                    currentPosition.y + 10
-                  }px)`,
-                }
-          }
-        >
-          {item.variable.variableName}
-        </div>
-      </div>
-    );
-  },
-);
-
 export const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -310,7 +275,14 @@ export const VariableExpressionViewer = observer(
     }, [dragPreviewConnector]);
     return (
       <div className="query-builder__parameters__parameter" ref={dragConnector}>
-        <QueryBuilderParameterDragLayer queryBuilderState={queryBuilderState} />
+        <DragPreviewLayer
+          labelGetter={(item: QueryBuilderParameterDragSource): string =>
+            item.variable.variableName === ''
+              ? '(unknown)'
+              : item.variable.variableName
+          }
+          types={[QUERY_BUILDER_PARAMETER_DND_TYPE]}
+        />
         <div className="query-builder__parameters__parameter__content">
           <div className="query-builder__parameters__parameter__icon">
             <div className="query-builder__parameters__parameter-icon">

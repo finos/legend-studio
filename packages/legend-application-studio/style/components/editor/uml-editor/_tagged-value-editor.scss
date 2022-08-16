@@ -19,7 +19,10 @@
 .tagged-value-editor {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 0.5rem;
+
+  &__container {
+    margin: 0.5rem 0;
+  }
 
   &__dnd__placeholder {
     height: 6.1rem;

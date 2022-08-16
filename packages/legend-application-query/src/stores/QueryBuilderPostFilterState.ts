@@ -165,7 +165,7 @@ export abstract class QueryBuilderPostFilterTreeNodeData
     });
   }
 
-  abstract get dragLayerLabel(): string;
+  abstract get dragPreviewLabel(): string;
   setIsOpen(val: boolean): void {
     this.isOpen = val;
   }
@@ -197,13 +197,13 @@ export class QueryBuilderPostFilterTreeGroupNodeData extends QueryBuilderPostFil
       setGroupOperation: action,
       addChildNode: action,
       removeChildNode: action,
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
     this.groupOperation = groupOperation;
     this.isOpen = true;
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return `${this.groupOperation.toUpperCase()} group`;
   }
 
@@ -238,13 +238,13 @@ export class QueryBuilderPostFilterTreeConditionNodeData extends QueryBuilderPos
 
     makeObservable(this, {
       condition: observable,
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
 
     this.condition = condition;
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return this.condition.columnName;
   }
 }
@@ -254,11 +254,11 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData extends QueryBuild
     super(parentId);
 
     makeObservable(this, {
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return '<blank>';
   }
 }

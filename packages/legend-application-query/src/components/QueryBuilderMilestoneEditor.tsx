@@ -34,7 +34,7 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
-import { Dialog } from '@finos/legend-art';
+import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { BasicValueSpecificationEditor } from '@finos/legend-application';
 
@@ -114,14 +114,14 @@ const MilestoningParameterEditor = observer(
         queryBuilderState.querySetupState.setProcessingDate(parameter);
       }
     };
+
     return (
       <div ref={dropConnector} className="query-builder__parameter-editor">
-        {isMilestoningParameterValueDragOver && (
-          <div className="query-builder__parameter-editor__node__dnd__placeholder">
-            Change Milestoning Parameter Value
-          </div>
-        )}
-        {!isMilestoningParameterValueDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isMilestoningParameterValueDragOver}
+          label="Change Milestoning Parameter Value"
+          className="query-builder__dnd__placeholder"
+        >
           <BasicValueSpecificationEditor
             valueSpecification={milestoningParameter}
             graph={queryBuilderState.graphManagerState.graph}
@@ -138,7 +138,7 @@ const MilestoningParameterEditor = observer(
             }}
             resetValue={resetMilestoningParameter}
           />
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

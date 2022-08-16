@@ -46,6 +46,8 @@ import {
   PlusCircleIcon,
   TimesIcon,
   PanelDropZone,
+  DragPreviewLayer,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -58,12 +60,7 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState.js';
-import {
-  type DropTargetMonitor,
-  useDragLayer,
-  useDrag,
-  useDrop,
-} from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -98,45 +95,6 @@ import {
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../stores/QueryBuilderProjectionState.js';
 
-const FilterConditionDragLayer: React.FC = () => {
-  const { itemType, item, isDragging, currentPosition } = useDragLayer(
-    (monitor) => ({
-      itemType: monitor.getItemType() as QUERY_BUILDER_FILTER_DND_TYPE,
-      item: monitor.getItem<QueryBuilderFilterConditionDragSource | null>(),
-      isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
-      currentPosition: monitor.getClientOffset(),
-    }),
-  );
-
-  if (
-    !isDragging ||
-    !item ||
-    !Object.values(QUERY_BUILDER_FILTER_DND_TYPE).includes(itemType)
-  ) {
-    return null;
-  }
-  return (
-    <div className="query-builder-filter-tree__drag-preview-layer">
-      <div
-        className="query-builder-filter-tree__drag-preview"
-        // added some offset so the mouse doesn't overlap the label too much
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x + 20}px, ${
-                  currentPosition.y + 10
-                }px)`,
-              }
-        }
-      >
-        {item.node.dragLayerLabel}
-      </div>
-    </div>
-  );
-};
-
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
     node: QueryBuilderFilterTreeGroupNodeData;
@@ -155,12 +113,11 @@ const QueryBuilderFilterGroupConditionEditor = observer(
     };
     return (
       <div className="query-builder-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-filter-tree__node__dnd__placeholder">
-            Add to Logical Group
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Add to Logical Group"
+          className="query-builder__dnd__placeholder"
+        >
           <div
             className={clsx('query-builder-filter-tree__group-node', {
               'query-builder-filter-tree__group-node--and':
@@ -178,7 +135,7 @@ const QueryBuilderFilterGroupConditionEditor = observer(
               <FilledTriangleIcon />
             </button>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -276,12 +233,11 @@ const QueryBuilderFilterConditionEditor = observer(
 
     return (
       <div className="query-builder-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-filter-tree__node__dnd__placeholder">
-            Add New Logical Group
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Add New Logical Group"
+          className="query-builder__dnd__placeholder"
+        >
           <div className="query-builder-filter-tree__condition-node">
             <div className="query-builder-filter-tree__condition-node__property">
               <QueryBuilderPropertyExpressionBadge
@@ -326,12 +282,11 @@ const QueryBuilderFilterConditionEditor = observer(
                 ref={dropConnector}
                 className="query-builder-filter-tree__condition-node__value"
               >
-                {isFilterValueDragOver && (
-                  <div className="query-builder-filter-tree__node__dnd__placeholder">
-                    Change Filter Value
-                  </div>
-                )}
-                {!isFilterValueDragOver && (
+                <PanelEntryDropZonePlaceholder
+                  showPlaceholder={isFilterValueDragOver}
+                  label="Change Filter Value"
+                  className="query-builder__dnd__placeholder"
+                >
                   <BasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
@@ -344,11 +299,11 @@ const QueryBuilderFilterConditionEditor = observer(
                     resetValue={resetNode}
                     selectorConfig={selectorConfig}
                   />
-                )}
+                </PanelEntryDropZonePlaceholder>
               </div>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -362,14 +317,13 @@ const QueryBuilderFilterBlankConditionEditor = observer(
     const { isDragOver } = props;
     return (
       <div className="query-builder-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-filter-tree__node__dnd__placeholder">
-            Create Condition
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Create Condition"
+          className="query-builder__dnd__placeholder"
+        >
           <div className="query-builder-filter-tree__blank-node">blank</div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -936,8 +890,13 @@ export const QueryBuilderFilterPanel = observer(
             )}
             {!filterState.isEmpty && (
               <>
+                <DragPreviewLayer
+                  labelGetter={(
+                    item: QueryBuilderFilterConditionDragSource,
+                  ): string => item.node.dragPreviewLabel}
+                  types={Object.values(QUERY_BUILDER_FILTER_DND_TYPE)}
+                />
                 <QueryBuilderFilterTree queryBuilderState={queryBuilderState} />
-                <FilterConditionDragLayer />
               </>
             )}
           </PanelDropZone>

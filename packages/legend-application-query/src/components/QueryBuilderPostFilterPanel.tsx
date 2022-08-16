@@ -48,6 +48,8 @@ import {
   HashtagIcon,
   ClockIcon,
   PanelDropZone,
+  DragPreviewLayer,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -74,12 +76,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  type DropTargetMonitor,
-  useDragLayer,
-  useDrop,
-  useDrag,
-} from 'react-dnd';
+import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
@@ -110,45 +107,6 @@ import {
   QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
-
-const PostFilterConditionDragLayer: React.FC = () => {
-  const { itemType, item, isDragging, currentPosition } = useDragLayer(
-    (monitor) => ({
-      itemType: monitor.getItemType() as QUERY_BUILDER_POST_FILTER_DND_TYPE,
-      item: monitor.getItem<QueryBuilderPostFilterConditionDragSource | null>(),
-      isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
-      currentPosition: monitor.getClientOffset(),
-    }),
-  );
-
-  if (
-    !isDragging ||
-    !item ||
-    !Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE).includes(itemType)
-  ) {
-    return null;
-  }
-  return (
-    <div className="query-builder-post-filter-tree__drag-preview-layer">
-      <div
-        className="query-builder-post-filter-tree__drag-preview"
-        // added some offset so the mouse doesn't overlap the label too much
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x + 20}px, ${
-                  currentPosition.y + 10
-                }px)`,
-              }
-        }
-      >
-        {item.node.dragLayerLabel}
-      </div>
-    </div>
-  );
-};
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -219,12 +177,11 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
     };
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
-            Add to Logical Group
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Add to Logical Group"
+          className="query-builder__dnd__placeholder"
+        >
           <div
             className={clsx('query-builder-post-filter-tree__group-node', {
               'query-builder-post-filter-tree__group-node--and':
@@ -242,7 +199,7 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
               <FilledTriangleIcon />
             </button>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -370,12 +327,11 @@ export const QueryBuilderColumnBadge = observer(
 
     return (
       <div ref={dropConnector} className="query-builder-column-badge">
-        {isDragOver && (
-          <div className="query-builder__dnd__placeholder query-builder-column-badge__dnd__placeholder">
-            Change Property
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Change Property"
+          className="query-builder__dnd__placeholder"
+        >
           <div className="query-builder-column-badge__content">
             {type && (
               <div
@@ -406,7 +362,7 @@ export const QueryBuilderColumnBadge = observer(
               </div>
             </QueryBuilderColumnInfoTooltip>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -500,12 +456,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
-            Add New Logical Group
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Add New Logical Group"
+          className="query-builder__dnd__placeholder"
+        >
           <div className="query-builder-post-filter-tree__condition-node">
             <div className="query-builder-post-filter-tree__condition-node__property">
               <QueryBuilderColumnBadge
@@ -550,12 +505,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
                 ref={dropConnector}
                 className="query-builder-post-filter-tree__condition-node__value"
               >
-                {isFilterValueDragOver && (
-                  <div className="query-builder-post-filter-tree__node__dnd__placeholder">
-                    Change Filter Value
-                  </div>
-                )}
-                {!isFilterValueDragOver && (
+                <PanelEntryDropZonePlaceholder
+                  showPlaceholder={isFilterValueDragOver}
+                  label="Change Filter Value"
+                  className="query-builder__dnd__placeholder"
+                >
                   <BasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
@@ -568,11 +522,11 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     resetValue={resetNode}
                     selectorConfig={selectorConfig}
                   />
-                )}
+                </PanelEntryDropZonePlaceholder>
               </div>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -586,16 +540,15 @@ const QueryBuilderPostFilterBlankConditionEditor = observer(
     const { isDragOver } = props;
     return (
       <div className="query-builder-post-filter-tree__node__label__content">
-        {isDragOver && (
-          <div className="query-builder-post-filter-tree__node__dnd__placeholder">
-            Create Condition
-          </div>
-        )}
-        {!isDragOver && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isDragOver}
+          label="Create Condition"
+          className="query-builder__dnd__placeholder"
+        >
           <div className="query-builder-post-filter-tree__blank-node">
             blank
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -1105,7 +1058,12 @@ export const QueryBuilderPostFilterPanel = observer(
             )}
             {!postFilterState.isEmpty && (
               <>
-                <PostFilterConditionDragLayer />
+                <DragPreviewLayer
+                  labelGetter={(
+                    item: QueryBuilderPostFilterConditionDragSource,
+                  ): string => item.node.dragPreviewLabel}
+                  types={Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE)}
+                />
                 <QueryBuilderPostFilterTree
                   queryBuilderState={queryBuilderState}
                 />

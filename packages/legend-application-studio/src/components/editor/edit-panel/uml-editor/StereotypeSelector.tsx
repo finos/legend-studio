@@ -23,6 +23,7 @@ import {
   ArrowCircleRightIcon,
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -45,11 +46,21 @@ interface StereotypeOption {
   value: Stereotype;
 }
 
-const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
-
-type StereotypeDragSource = {
+export const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
+export type StereotypeDragSource = {
   stereotype: StereotypeReference;
 };
+
+export const StereotypeDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: StereotypeDragSource): string =>
+      isStubbed_PackageableElement(item.stereotype.ownerReference.value)
+        ? '(unknown)'
+        : `${item.stereotype.ownerReference.value.name}.${item.stereotype.value.value}`
+    }
+    types={[STEREOTYPE_DND_TYPE]}
+  />
+);
 
 export const StereotypeSelector = observer(
   (props: {
@@ -158,7 +169,7 @@ export const StereotypeSelector = observer(
     }, [dragPreviewConnector]);
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="stereotype-selector__container">
         <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-selector">
             <PanelEntryDragHandle />

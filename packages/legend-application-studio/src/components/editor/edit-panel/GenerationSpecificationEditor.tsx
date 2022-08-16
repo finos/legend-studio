@@ -23,12 +23,7 @@ import {
   type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import {
-  type DropTargetMonitor,
-  useDragLayer,
-  useDrag,
-  useDrop,
-} from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   clsx,
@@ -45,6 +40,7 @@ import {
   PlusIcon,
   LongArrowRightIcon,
   PanelDropZone,
+  DragPreviewLayer,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -75,38 +71,7 @@ import {
   generationSpecification_setId,
 } from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
 
-const ModelGenerationDragLayer: React.FC = () => {
-  const { itemType, item, isDragging, currentPosition } = useDragLayer(
-    (monitor) => ({
-      itemType: monitor.getItemType(),
-      item: monitor.getItem<GenerationSpecNodeDragSource | null>(),
-      isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
-      currentPosition: monitor.getClientOffset(),
-    }),
-  );
-  if (!isDragging || !item || itemType !== CORE_DND_TYPE.GENERATION_SPEC_NODE) {
-    return null;
-  }
-  return (
-    <div className="generation-spec-model-generation-editor__item__drag-preview-layer">
-      <div
-        className="generation-spec-model-generation-editor__item__drag-preview"
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x + 20}px, ${
-                  currentPosition.y + 10
-                }px)`,
-              }
-        }
-      >
-        {item.nodeState.node.generationElement.value.name}
-      </div>
-    </div>
-  );
-};
+const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 
 const ModelGenerationItem = observer(
   (props: {
@@ -176,7 +141,7 @@ const ModelGenerationItem = observer(
     );
     const [{ nodeBeingDragged }, dropConnector] = useDrop(
       () => ({
-        accept: [CORE_DND_TYPE.GENERATION_SPEC_NODE],
+        accept: [GENERATION_SPEC_NODE_DND_TYPE],
         hover: (
           item: GenerationSpecNodeDragSource,
           monitor: DropTargetMonitor,
@@ -198,7 +163,7 @@ const ModelGenerationItem = observer(
     const isBeingDragged = nodeState.node === nodeBeingDragged;
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: CORE_DND_TYPE.GENERATION_SPEC_NODE,
+        type: GENERATION_SPEC_NODE_DND_TYPE,
         item: (): GenerationSpecNodeDragSource => ({ nodeState }),
       }),
       [nodeState],
@@ -353,7 +318,12 @@ const ModelGenerationSpecifications = observer(
           >
             {specNodesStates.length ? (
               <div className="generation-spec-model-generation-editor__items">
-                <ModelGenerationDragLayer />
+                <DragPreviewLayer
+                  labelGetter={(item: GenerationSpecNodeDragSource): string =>
+                    item.nodeState.node.generationElement.value.name
+                  }
+                  types={[GENERATION_SPEC_NODE_DND_TYPE]}
+                />
                 {specNodesStates.map((nodeState) => (
                   <ModelGenerationItem
                     key={nodeState.uuid}

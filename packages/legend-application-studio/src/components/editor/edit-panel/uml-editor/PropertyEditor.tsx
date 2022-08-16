@@ -23,8 +23,14 @@ import {
   type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil.js';
 import { clsx, LockIcon, PlusIcon, TimesIcon } from '@finos/legend-art';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeSelector,
+  StereotypeDragPreviewLayer,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
@@ -203,6 +209,7 @@ export const PropertyEditor = observer(
                     isTaggedValueDragOver && !isReadOnly,
                 })}
               >
+                <TaggedValueDragPreviewLayer />
                 {property.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
                     annotatedElement={property}
@@ -222,6 +229,7 @@ export const PropertyEditor = observer(
                     isStereotypeDragOver && !isReadOnly,
                 })}
               >
+                <StereotypeDragPreviewLayer />
                 {property.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}

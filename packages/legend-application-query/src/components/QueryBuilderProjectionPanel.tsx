@@ -29,6 +29,8 @@ import {
   InputWithInlineValidation,
   SigmaIcon,
   PanelDropZone,
+  DragPreviewLayer,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -36,12 +38,7 @@ import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState.js';
-import {
-  type DropTargetMonitor,
-  useDragLayer,
-  useDrag,
-  useDrop,
-} from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -75,45 +72,6 @@ import {
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../stores/QueryBuilderPostFilterState.js';
 import { filterByType } from '@finos/legend-shared';
-
-const ProjectionColumnDragLayer: React.FC = () => {
-  const { itemType, item, isDragging, currentPosition } = useDragLayer(
-    (monitor) => ({
-      itemType: monitor.getItemType(),
-      item: monitor.getItem<QueryBuilderProjectionColumnDragSource | null>(),
-      isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
-      currentPosition: monitor.getClientOffset(),
-    }),
-  );
-
-  if (
-    !isDragging ||
-    !item ||
-    itemType !== QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE
-  ) {
-    return null;
-  }
-  return (
-    <div className="query-builder__projection__column__drag-preview-layer">
-      <div
-        className="query-builder__projection__column__drag-preview"
-        // added some offset so the mouse doesn't overlap the label too much
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x + 20}px, ${
-                  currentPosition.y + 10
-                }px)`,
-              }
-        }
-      >
-        {item.columnState.columnName}
-      </div>
-    </div>
-  );
-};
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -396,10 +354,10 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     return (
       <div ref={ref} className="query-builder__projection__column">
-        {isBeingDragged && (
-          <div className="query-builder__dnd__placeholder query-builder__projection__column__dnd__placeholder" />
-        )}
-        {!isBeingDragged && (
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="query-builder__dnd__placeholder"
+        >
           <ContextMenu
             content={
               <QueryBuilderProjectionColumnContextMenu
@@ -529,7 +487,7 @@ const QueryBuilderProjectionColumnEditor = observer(
               </button>
             </div>
           </ContextMenu>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -637,7 +595,16 @@ export const QueryBuilderProjectionPanel = observer(
               data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
               className="query-builder__projection__columns"
             >
-              <ProjectionColumnDragLayer />
+              <DragPreviewLayer
+                labelGetter={(
+                  item: QueryBuilderProjectionColumnDragSource,
+                ): string =>
+                  item.columnState.columnName === ''
+                    ? '(unknown)'
+                    : item.columnState.columnName
+                }
+                types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
+              />
               {projectionColumns.map((projectionColumnState) => (
                 <QueryBuilderProjectionColumnEditor
                   key={projectionColumnState.uuid}

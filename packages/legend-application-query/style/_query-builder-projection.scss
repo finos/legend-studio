@@ -24,37 +24,12 @@
   &__column {
     @include flexVCenter;
 
-    min-width: 3.4rem;
+    height: 3.4rem;
     color: var(--color-light-grey-400);
-
-    &__drag-preview-layer {
-      position: fixed;
-      pointer-events: none;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    &__drag-preview {
-      @include flexCenter;
-
-      display: inline-flex;
-      height: 2rem;
-      padding: 0 0.5rem;
-      font-size: 1.2rem;
-      background: var(--color-blue-200);
-      color: var(--color-light-grey-100);
-      border-radius: 0.2rem;
-    }
+    padding: 0 0.5rem;
 
     &:hover {
       background: var(--color-dark-blue-shade-100);
-    }
-
-    &--dragged:hover {
-      background: transparent !important;
     }
   }
 
@@ -66,12 +41,6 @@
 
   &__column--selected-from-context-menu {
     background: var(--color-dark-blue-shade-100);
-  }
-
-  &__column__dnd__placeholder {
-    height: 3.4rem;
-    margin: 0 0.5rem;
-    padding: 0.2rem;
   }
 
   &__column__drag-handle {
