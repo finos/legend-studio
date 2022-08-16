@@ -1,12 +1,12 @@
-name: (Bot) Add Milestoned Issue to Project
+name: (Bot) Track New Issue
 
 on:
   issues:
     types: [milestoned]
 
 jobs:
-  add-milestoned-issue-to-project:
-    name: Label New Issue
+  track-new-issue:
+    name: Track New Issue
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,10 +27,10 @@ jobs:
           node-version: 16
       - name: Install dependencies
         run: yarn workspaces focus --production @finos/legend-internal-github-bot
-      - name: Label new issue
+      - name: Track new milestoned issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MANAGE_PROJECT_TOKEN: ${{ secrets.MANAGE_PROJECT_TOKEN }}
           PROJECT_NUMBER: 21
         working-directory: ./scripts/github-bot
-        run: node ./addMilestonedIssueToProject.js
+        run: node ./trackNewMilestonedIssue.js
