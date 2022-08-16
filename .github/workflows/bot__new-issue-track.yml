@@ -31,6 +31,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MANAGE_PROJECT_TOKEN: ${{ secrets.MANAGE_PROJECT_TOKEN }}
+          ORGANIZATION: finos
           PROJECT_NUMBER: 21
         working-directory: ./scripts/github-bot
         run: node ./trackNewMilestonedIssue.js
