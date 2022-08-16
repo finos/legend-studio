@@ -19,10 +19,9 @@ import * as githubActionCore from '@actions/core';
 import chalk from 'chalk';
 
 /**
- * This script will automatically label new issue. Labelling rules are:
- * - If the issue creator is a member of the team, add the team label
+ * This script will automatically add the new milestoned issue to our tracker project
  */
-const addMilestonedIssueToProject = async () => {
+const trackNewMilestonedIssue = async () => {
   const octokitWithProjectManageToken = github.getOctokit(
     process.env.MANAGE_PROJECT_TOKEN,
   );
@@ -36,11 +35,11 @@ const addMilestonedIssueToProject = async () => {
     process.exit(1);
   }
 
-  console.log('ammar', issueEventPayload);
-
   const issueNumber = issueEventPayload.number;
+  const milestone = issueEventPayload.milestone.title;
+  console.log('milestone', milestone);
 
-  console.log(`Adding milestoned issue to project...`);
+  console.log(`Adding milestoned issue to tracker project...`);
 
   // Use GraphQL API
   // See https://docs.github.com/en/graphql/overview/explorer
@@ -56,14 +55,15 @@ const addMilestonedIssueToProject = async () => {
     `);
     console.log(
       chalk.green(
-        `\u2713 Added milestoned issue '${issueEventPayload.html_url}' to project`,
+        `\u2713 Tracked milestoned issue ${issueEventPayload.html_url}`,
       ),
     );
   } catch (error) {
+    console.log(error);
     githubActionCore.error(
-      `Can't add milestoned issue issue '${issueEventPayload.html_url}' to project`,
+      `Can't track milestoned issue ${issueEventPayload.html_url}`,
     );
   }
 };
 
-addMilestonedIssueToProject();
+trackNewMilestonedIssue();
