@@ -51,7 +51,10 @@ import { QueryBuilderPropertyExpressionBadge } from './QueryBuilderPropertyExpre
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
-import type { QueryBuilderAggregateOperator } from '../stores/QueryBuilderAggregationState.js';
+import {
+  type QueryBuilderAggregateOperator,
+  QueryBuilderAggregateColumnState,
+} from '../stores/QueryBuilderAggregationState.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -237,13 +240,21 @@ const QueryBuilderProjectionColumnEditor = observer(
       projectionColumnState.projectionState.queryBuilderState;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-
-    const isRemovalDisabled = Array.from(
+    const postFilterColumnStates = Array.from(
       queryBuilderState.postFilterState.nodes.values(),
     )
       .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-      .map((n) => n.condition.columnState)
-      .includes(projectionColumnState);
+      .map((n) => n.condition.columnState);
+
+    const isRemovalDisabled =
+      postFilterColumnStates
+        .filter((co) => co instanceof QueryBuilderAggregateColumnState)
+        .map(
+          (co) =>
+            (co as QueryBuilderAggregateColumnState).projectionColumnState,
+        )
+        .includes(projectionColumnState) ||
+      postFilterColumnStates.includes(projectionColumnState);
 
     const removeColumn = (): void =>
       projectionState.removeColumn(projectionColumnState);

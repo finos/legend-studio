@@ -176,7 +176,13 @@ export const QueryBuilder = observer(
                       Show Function(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
-                  <MenuContentItem onClick={toggleShowParameterPanel}>
+                  <MenuContentItem
+                    onClick={toggleShowParameterPanel}
+                    disabled={
+                      queryBuilderState.queryParametersState.parameterStates
+                        .length > 0
+                    }
+                  >
                     <MenuContentItemIcon>
                       {queryBuilderState.showParameterPanel ? (
                         <CheckIcon />
@@ -188,7 +194,12 @@ export const QueryBuilder = observer(
                   </MenuContentItem>
                   <MenuContentItem
                     onClick={toggleShowPostFilterPanel}
-                    disabled={queryBuilderState.fetchStructureState.isGraphFetchMode()}
+                    disabled={
+                      queryBuilderState.fetchStructureState.isGraphFetchMode() ||
+                      Array.from(
+                        queryBuilderState.postFilterState.nodes.values(),
+                      ).length > 0
+                    }
                   >
                     <MenuContentItemIcon>
                       {queryBuilderState.showPostFilterPanel ? (
