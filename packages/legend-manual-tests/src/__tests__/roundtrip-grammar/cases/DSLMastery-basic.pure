@@ -1,0 +1,24 @@
+###Mastery
+MasterRecordDefinition org::legend::PersonMasterRecord
+{
+  modelClass: org::legend::Person;
+  identityResolution:
+  {
+    modelClass: org::legend::Person;
+    resolutionQueries:
+      [
+        {
+          queries: [ {input: org::legend::Person[1]|org::legend::Person.all()->filter(person|$person.name == $input.name)}
+                   ];
+          keyType: Optional;
+          precedence: 1;
+        }
+      ]
+  }
+}
+
+###Pure
+Class org::legend::Person
+{
+  name: String[0..1];
+}

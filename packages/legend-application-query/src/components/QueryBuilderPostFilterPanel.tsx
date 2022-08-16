@@ -61,10 +61,18 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   returnUndefOnError,
+  debounce,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   type DropTargetMonitor,
   useDragLayer,
@@ -466,6 +474,26 @@ const QueryBuilderPostFilterConditionEditor = observer(
         node.condition.operator.getDefaultFilterConditionValue(node.condition),
       );
     };
+    const debouncedTypeaheadSearch = useMemo(
+      () =>
+        debounce(
+          (inputVal: string) => node.condition.handleTypeaheadSearch(),
+          1000,
+        ),
+      [node],
+    );
+    const cleanUpReloadValues = (): void => {
+      node.condition.typeaheadSearchState.complete();
+    };
+    const changeValueSpecification = (val: ValueSpecification): void => {
+      node.condition.setValue(val);
+    };
+    const selectorConfig = {
+      values: node.condition.typeaheadSearchResults,
+      isLoading: node.condition.typeaheadSearchState.isInProgress,
+      reloadValues: debouncedTypeaheadSearch,
+      cleanUpReloadValues,
+    };
 
     return (
       <div className="query-builder-post-filter-tree__node__label__content dnd__overlay__container">
@@ -525,9 +553,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
               )}
               <BasicValueSpecificationEditor
                 valueSpecification={node.condition.value}
-                setValueSpecification={(val: ValueSpecification): void =>
-                  node.condition.setValue(val)
-                }
+                setValueSpecification={changeValueSpecification}
                 graph={graph}
                 typeCheckOption={{
                   expectedType: guaranteeNonNullable(
@@ -535,6 +561,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                   ),
                 }}
                 resetValue={resetNode}
+                selectorConfig={selectorConfig}
               />
             </div>
           )}

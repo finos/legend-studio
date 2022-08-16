@@ -62,71 +62,20 @@ import {
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
-import {
-  QueryBuilderFilterOperator_Equal,
-  QueryBuilderFilterOperator_NotEqual,
-} from './filterOperators/QueryBuilderFilterOperator_Equal.js';
-import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan.js';
-import {
-  QueryBuilderFilterOperator_NotStartWith,
-  QueryBuilderFilterOperator_StartWith,
-} from './filterOperators/QueryBuilderFilterOperator_StartWith.js';
-import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual.js';
-import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual.js';
-import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan.js';
-import {
-  QueryBuilderFilterOperator_EndWith,
-  QueryBuilderFilterOperator_NotEndWith,
-} from './filterOperators/QueryBuilderFilterOperator_EndWith.js';
-import {
-  QueryBuilderFilterOperator_Contain,
-  QueryBuilderFilterOperator_NotContain,
-} from './filterOperators/QueryBuilderFilterOperator_Contain.js';
-import {
-  QueryBuilderFilterOperator_IsEmpty,
-  QueryBuilderFilterOperator_IsNotEmpty,
-} from './filterOperators/QueryBuilderFilterOperator_IsEmpty.js';
-import {
-  QueryBuilderFilterOperator_In,
-  QueryBuilderFilterOperator_NotIn,
-} from './filterOperators/QueryBuilderFilterOperator_In.js';
 import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
 import {
   LambdaParameterState,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
-import {
-  QueryBuilderPostFilterOperator_Equal,
-  QueryBuilderPostFilterOperator_NotEqual,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
-import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan.js';
-import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual.js';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan.js';
-import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual.js';
-import {
-  QueryBuilderPostFilterOperator_NotStartWith,
-  QueryBuilderPostFilterOperator_StartWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
-import {
-  QueryBuilderPostFilterOperator_Contain,
-  QueryBuilderPostFilterOperator_NotContain,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain.js';
-import {
-  QueryBuilderPostFilterOperator_EndWith,
-  QueryBuilderPostFilterOperator_NotEndWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
-import {
-  QueryBuilderPostFilterOperator_In,
-  QueryBuilderPostFilterOperator_NotIn,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_In.js';
-import {
-  QueryBuilderPostFilterOperator_IsEmpty,
-  QueryBuilderPostFilterOperator_IsNotEmpty,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
 import { QueryParametersState } from './QueryParametersState.js';
+import {
+  AGGREGATION_OPERATORS,
+  FILTER_OPERATORS,
+  POST_FILTER_OPERATORS,
+} from './QueryBuilderOperatorLoader.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -179,42 +128,8 @@ export class QueryBuilderState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   observableContext: ObserverContext;
-  filterOperators: QueryBuilderFilterOperator[] = [
-    new QueryBuilderFilterOperator_Equal(),
-    new QueryBuilderFilterOperator_NotEqual(),
-    new QueryBuilderFilterOperator_LessThan(),
-    new QueryBuilderFilterOperator_LessThanEqual(),
-    new QueryBuilderFilterOperator_GreaterThan(),
-    new QueryBuilderFilterOperator_GreaterThanEqual(),
-    new QueryBuilderFilterOperator_StartWith(),
-    new QueryBuilderFilterOperator_NotStartWith(),
-    new QueryBuilderFilterOperator_Contain(),
-    new QueryBuilderFilterOperator_NotContain(),
-    new QueryBuilderFilterOperator_EndWith(),
-    new QueryBuilderFilterOperator_NotEndWith(),
-    new QueryBuilderFilterOperator_In(),
-    new QueryBuilderFilterOperator_NotIn(),
-    new QueryBuilderFilterOperator_IsEmpty(),
-    new QueryBuilderFilterOperator_IsNotEmpty(),
-  ];
-  postFilterOperators: QueryBuilderPostFilterOperator[] = [
-    new QueryBuilderPostFilterOperator_Equal(),
-    new QueryBuilderPostFilterOperator_NotEqual(),
-    new QueryBuilderPostFilterOperator_LessThan(),
-    new QueryBuilderPostFilterOperator_LessThanEqual(),
-    new QueryBuilderPostFilterOperator_GreaterThan(),
-    new QueryBuilderPostFilterOperator_GreaterThanEqual(),
-    new QueryBuilderPostFilterOperator_StartWith(),
-    new QueryBuilderPostFilterOperator_NotStartWith(),
-    new QueryBuilderPostFilterOperator_Contain(),
-    new QueryBuilderPostFilterOperator_NotContain(),
-    new QueryBuilderPostFilterOperator_EndWith(),
-    new QueryBuilderPostFilterOperator_NotEndWith(),
-    new QueryBuilderPostFilterOperator_In(),
-    new QueryBuilderPostFilterOperator_NotIn(),
-    new QueryBuilderPostFilterOperator_IsEmpty(),
-    new QueryBuilderPostFilterOperator_IsNotEmpty(),
-  ];
+  filterOperators: QueryBuilderFilterOperator[] = FILTER_OPERATORS;
+  postFilterOperators: QueryBuilderPostFilterOperator[] = POST_FILTER_OPERATORS;
   isCompiling = false;
   backdrop = false;
   showFunctionPanel = false;
@@ -267,7 +182,10 @@ export class QueryBuilderState {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    this.fetchStructureState = new QueryBuilderFetchStructureState(this);
+    this.fetchStructureState = new QueryBuilderFetchStructureState(
+      this,
+      AGGREGATION_OPERATORS,
+    );
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.postFilterState = new QueryBuilderPostFilterState(
       this,
@@ -338,7 +256,10 @@ export class QueryBuilderState {
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    const fetchStructureState = new QueryBuilderFetchStructureState(this);
+    const fetchStructureState = new QueryBuilderFetchStructureState(
+      this,
+      this.fetchStructureState.projectionState.aggregationState.operators,
+    );
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
     );
@@ -561,5 +482,13 @@ export class QueryBuilderState {
 
   isValidQueryBuilderState(): boolean {
     return this.fetchStructureState.projectionState.isValidProjectionState();
+  }
+
+  createBareBuilderState(): QueryBuilderState {
+    return new QueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.mode,
+    );
   }
 }

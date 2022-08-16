@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query-bootstrap",
-  "version": "7.1.0",
+  "version": "7.3.0",
   "description": "Legend Query application bootstrap",
   "keywords": [
     "legend",
@@ -49,6 +49,7 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
+    "@finos/legend-extension-dsl-mastery": "workspace:*",
     "@finos/legend-extension-dsl-persistence": "workspace:*",
     "@finos/legend-extension-dsl-persistence-cloud": "workspace:*",
     "@finos/legend-extension-dsl-text": "workspace:*",

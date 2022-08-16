@@ -31,6 +31,7 @@ import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-
 import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
 import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
 import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLMastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 
 export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -41,6 +42,7 @@ export class LegendQueryWebApplication {
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),
+      new DSLMastery_GraphManagerPreset(),
       new DSLPersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),

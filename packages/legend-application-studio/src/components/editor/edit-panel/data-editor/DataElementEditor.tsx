@@ -318,6 +318,7 @@ export const DataElementEditor = observer(() => {
                   {dataElement.stereotypes.map((stereotype) => (
                     <StereotypeSelector
                       key={stereotype.value._UUID}
+                      annotatedElement={dataElement}
                       stereotype={stereotype}
                       deleteStereotype={_deleteStereotype(stereotype)}
                       isReadOnly={isReadOnly}
@@ -365,6 +366,7 @@ export const DataElementEditor = observer(() => {
                 >
                   {dataElement.taggedValues.map((taggedValue) => (
                     <TaggedValueEditor
+                      annotatedElement={dataElement}
                       key={taggedValue._UUID}
                       taggedValue={taggedValue}
                       deleteValue={deleteTaggedValue(taggedValue)}

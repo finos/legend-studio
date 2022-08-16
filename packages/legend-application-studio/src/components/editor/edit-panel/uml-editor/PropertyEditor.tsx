@@ -205,6 +205,7 @@ export const PropertyEditor = observer(
               >
                 {property.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
+                    annotatedElement={property}
                     key={taggedValue._UUID}
                     taggedValue={taggedValue}
                     deleteValue={_deleteTaggedValue(taggedValue)}
@@ -224,6 +225,7 @@ export const PropertyEditor = observer(
                 {property.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}
+                    annotatedElement={property}
                     stereotype={stereotype}
                     deleteStereotype={_deleteStereotype(stereotype)}
                     isReadOnly={isReadOnly}
