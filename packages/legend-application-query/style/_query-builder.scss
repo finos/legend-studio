@@ -180,11 +180,6 @@
       border-bottom: 0.1rem solid var(--color-dark-grey-85);
       box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
     }
-
-    &__content--dnd-over {
-      filter: brightness(105%) blur(0.05rem);
-      border: 0.1rem solid var(--color-light-blue-200);
-    }
   }
 
   &__status-bar {

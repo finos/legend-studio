@@ -41,6 +41,7 @@ import {
   PanelDropZone,
   DragPreviewLayer,
   useDragPreviewLayer,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -173,59 +174,48 @@ const ModelGenerationItem = observer(
     useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div
-        ref={ref}
-        className={clsx('generation-spec-model-generation-editor__item', {
-          'generation-spec-model-generation-editor__item--dragged':
-            isBeingDragged,
-        })}
-      >
-        {isBeingDragged && (
-          <div className="generation-spec-editor__dnd__placeholder" />
-        )}
-        {!isBeingDragged && (
-          <>
-            <div className="btn--sm generation-spec-model-generation-editor__item__label">
-              {getElementIcon(editorStore, modelGeneration)}
-            </div>
-            <input
-              className={clsx(
-                'generation-spec-model-generation-editor__item__id',
-                {
-                  'generation-spec-model-generation-editor__item__id--has-error':
-                    !isUnique,
-                },
-              )}
-              spellCheck={false}
-              value={isDefault ? 'DEFAULT' : generationTreeNode.id}
-              onChange={changeNodeId}
-              disabled={isDefault}
-            />
-            <CustomSelectorInput
-              className="generation-spec-model-generation-editor__item__dropdown"
-              options={options}
-              onChange={onChange}
-              value={value}
-              darkMode={true}
-            />
-            <button
-              className="btn--dark btn--sm"
-              onClick={visitModelGeneration}
-              tabIndex={-1}
-              title={'See mapping'}
-            >
-              <LongArrowRightIcon />
-            </button>
-            <button
-              className="generation-spec-model-generation-editor__item__remove-btn"
-              onClick={deleteNode}
-              tabIndex={-1}
-              title={'Remove'}
-            >
-              <TimesIcon />
-            </button>
-          </>
-        )}
+      <div ref={ref} className="generation-spec-model-generation-editor__item">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="btn--sm generation-spec-model-generation-editor__item__label">
+            {getElementIcon(editorStore, modelGeneration)}
+          </div>
+          <input
+            className={clsx(
+              'generation-spec-model-generation-editor__item__id',
+              {
+                'generation-spec-model-generation-editor__item__id--has-error':
+                  !isUnique,
+              },
+            )}
+            spellCheck={false}
+            value={isDefault ? 'DEFAULT' : generationTreeNode.id}
+            onChange={changeNodeId}
+            disabled={isDefault}
+          />
+          <CustomSelectorInput
+            className="generation-spec-model-generation-editor__item__dropdown"
+            options={options}
+            onChange={onChange}
+            value={value}
+            darkMode={true}
+          />
+          <button
+            className="btn--dark btn--sm"
+            onClick={visitModelGeneration}
+            tabIndex={-1}
+            title={'See mapping'}
+          >
+            <LongArrowRightIcon />
+          </button>
+          <button
+            className="generation-spec-model-generation-editor__item__remove-btn"
+            onClick={deleteNode}
+            tabIndex={-1}
+            title={'Remove'}
+          >
+            <TimesIcon />
+          </button>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -371,7 +361,7 @@ const FileGenerationItem = observer(
       );
     const visitFileGen = (): void => editorStore.openElement(fileGeneration);
     return (
-      <div className="panel__content__form__section__list__item generation-spec-file-generation-editor__item">
+      <div className="generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">
           <PURE_FileGenerationIcon />
         </div>

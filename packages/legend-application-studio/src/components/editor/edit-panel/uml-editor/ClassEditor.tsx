@@ -44,6 +44,7 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -1149,29 +1150,29 @@ const PropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropPropertyRef}
       >
-        <DragPreviewLayer
-          labelGetter={(item: ClassPropertyDragSource): string =>
-            item.property.name === '' ? '(unknown)' : item.property.name
-          }
-          types={[CLASS_PROPERTY_DND_TYPE]}
-        />
-        {_class.properties.concat(indirectProperties).map((property) => (
-          <PropertyBasicEditor
-            key={property._UUID}
-            property={property}
-            _class={_class}
-            editorState={editorState}
-            deleteProperty={deleteProperty(property)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassPropertyDragSource): string =>
+              item.property.name === '' ? '(unknown)' : item.property.name
+            }
+            types={[CLASS_PROPERTY_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.properties.concat(indirectProperties).map((property) => (
+            <PropertyBasicEditor
+              key={property._UUID}
+              property={property}
+              _class={_class}
+              editorState={editorState}
+              deleteProperty={deleteProperty(property)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1229,37 +1230,36 @@ const DerviedPropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropDerivedPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isDerivedPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isDerivedPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropDerivedPropertyRef}
       >
-        <DragPreviewLayer
-          labelGetter={(item: ClassDerivedPropertyDragSource): string =>
-            item.derivedProperty.name === ''
-              ? '(unknown)'
-              : item.derivedProperty.name
-          }
-          types={[CLASS_DERIVED_PROPERTY_DND_TYPE]}
-        />
-        {_class.derivedProperties
-          .concat(indirectDerivedProperties)
-          .filter((dp): dp is DerivedProperty =>
-            Boolean(classState.getNullableDerivedPropertyState(dp)),
-          )
-          .map((dp) => (
-            <DerivedPropertyBasicEditor
-              key={dp._UUID}
-              derivedProperty={dp}
-              _class={_class}
-              editorState={editorState}
-              deleteDerivedProperty={deleteDerivedProperty(dp)}
-              isReadOnly={isReadOnly}
-            />
-          ))}
-      </div>
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassDerivedPropertyDragSource): string =>
+              item.derivedProperty.name === ''
+                ? '(unknown)'
+                : item.derivedProperty.name
+            }
+            types={[CLASS_DERIVED_PROPERTY_DND_TYPE]}
+          />
+          {_class.derivedProperties
+            .concat(indirectDerivedProperties)
+            .filter((dp): dp is DerivedProperty =>
+              Boolean(classState.getNullableDerivedPropertyState(dp)),
+            )
+            .map((dp) => (
+              <DerivedPropertyBasicEditor
+                key={dp._UUID}
+                derivedProperty={dp}
+                _class={_class}
+                editorState={editorState}
+                deleteDerivedProperty={deleteDerivedProperty(dp)}
+                isReadOnly={isReadOnly}
+              />
+            ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1368,28 +1368,28 @@ const SupertypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropSuperTypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isSuperTypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isSuperTypeDragOver && !isReadOnly}
+        dropTargetConnector={dropSuperTypeRef}
       >
-        <DragPreviewLayer
-          labelGetter={(item: ClassSuperTypeDragSource): string =>
-            item.superType.value.rawType.name
-          }
-          types={[CLASS_SUPER_TYPE_DND_TYPE]}
-        />
-        {_class.generalizations.map((superType) => (
-          <SuperTypeEditor
-            key={superType.value._UUID}
-            superType={superType}
-            _class={_class}
-            deleteSuperType={deleteSuperType(superType)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassSuperTypeDragSource): string =>
+              item.superType.value.rawType.name
+            }
+            types={[CLASS_SUPER_TYPE_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.generalizations.map((superType) => (
+            <SuperTypeEditor
+              key={superType.value._UUID}
+              superType={superType}
+              _class={_class}
+              deleteSuperType={deleteSuperType(superType)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1427,24 +1427,23 @@ const TaggedValuesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropTaggedValueRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isTaggedValueDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isTaggedValueDragOver && !isReadOnly}
+        dropTargetConnector={dropTaggedValueRef}
       >
-        <TaggedValueDragPreviewLayer />
-        {_class.taggedValues.map((taggedValue) => (
-          <TaggedValueEditor
-            annotatedElement={_class}
-            key={taggedValue._UUID}
-            taggedValue={taggedValue}
-            deleteValue={deleteTaggedValue(taggedValue)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <TaggedValueDragPreviewLayer />
+          {_class.taggedValues.map((taggedValue) => (
+            <TaggedValueEditor
+              annotatedElement={_class}
+              key={taggedValue._UUID}
+              taggedValue={taggedValue}
+              deleteValue={deleteTaggedValue(taggedValue)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1484,24 +1483,23 @@ const StereotypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropStereotypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isStereotypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isStereotypeDragOver && !isReadOnly}
+        dropTargetConnector={dropStereotypeRef}
       >
-        <StereotypeDragPreviewLayer />
-        {_class.stereotypes.map((stereotype) => (
-          <StereotypeSelector
-            key={stereotype._UUID}
-            annotatedElement={_class}
-            stereotype={stereotype}
-            deleteStereotype={deleteStereotype(stereotype)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <StereotypeDragPreviewLayer />
+          {_class.stereotypes.map((stereotype) => (
+            <StereotypeSelector
+              key={stereotype._UUID}
+              annotatedElement={_class}
+              stereotype={stereotype}
+              deleteStereotype={deleteStereotype(stereotype)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );

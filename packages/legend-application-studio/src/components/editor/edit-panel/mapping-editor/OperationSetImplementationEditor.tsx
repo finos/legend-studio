@@ -18,12 +18,12 @@ import { useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import {
-  clsx,
   CustomSelectorInput,
   createFilter,
   TimesIcon,
   ArrowCircleRightIcon,
   PlusIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -211,53 +211,52 @@ export const OperationSetImplementationEditor = observer(
               </button>
             </div>
           </div>
-          <div
-            ref={dropRef}
-            className={clsx('panel__content', {
-              'operation-mapping-editor__parameters--dnd-over':
-                isDragOver && !isReadOnly,
-            })}
+          <PanelDropZone
+            isDragOver={isDragOver && !isReadOnly}
+            dropTargetConnector={dropRef}
           >
-            {setImplementation.parameters.map((param) => (
-              <div
-                key={param._UUID}
-                className="operation-mapping-editor__parameter"
-              >
-                <div className="operation-mapping-editor__parameter__selector">
-                  <CustomSelectorInput
-                    options={setImplementationOptions}
-                    disabled={isReadOnly}
-                    onChange={changeParamater(param)}
-                    filterOption={filterOption}
-                    value={{
-                      value: param,
-                      label: param.setImplementation.value.id.value,
-                    }}
-                    placeholder={`Select parameter ID`}
-                  />
-                </div>
-                <button
-                  className="operation-mapping-editor__parameter__visit-btn"
-                  onClick={visit(param)}
-                  tabIndex={-1}
-                  title={'Visit mapping element'}
+            <div className="panel__content">
+              {setImplementation.parameters.map((param) => (
+                <div
+                  key={param._UUID}
+                  className="operation-mapping-editor__parameter"
                 >
-                  <ArrowCircleRightIcon />
-                </button>
-                {!isReadOnly && (
+                  <div className="operation-mapping-editor__parameter__selector">
+                    <CustomSelectorInput
+                      options={setImplementationOptions}
+                      disabled={isReadOnly}
+                      onChange={changeParamater(param)}
+                      filterOption={filterOption}
+                      value={{
+                        value: param,
+                        label: param.setImplementation.value.id.value,
+                      }}
+                      placeholder={`Select parameter ID`}
+                    />
+                  </div>
                   <button
-                    className="operation-mapping-editor__parameter__remove-btn"
-                    disabled={isReadOnly}
-                    onClick={deleteParameter(param)}
+                    className="operation-mapping-editor__parameter__visit-btn"
+                    onClick={visit(param)}
                     tabIndex={-1}
-                    title={'Remove'}
+                    title={'Visit mapping element'}
                   >
-                    <TimesIcon />
+                    <ArrowCircleRightIcon />
                   </button>
-                )}
-              </div>
-            ))}
-          </div>
+                  {!isReadOnly && (
+                    <button
+                      className="operation-mapping-editor__parameter__remove-btn"
+                      disabled={isReadOnly}
+                      onClick={deleteParameter(param)}
+                      tabIndex={-1}
+                      title={'Remove'}
+                    >
+                      <TimesIcon />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </PanelDropZone>
         </div>
       </div>
     );

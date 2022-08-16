@@ -167,10 +167,6 @@
     color: var(--color-light-grey-400);
     margin-bottom: 0.5rem;
 
-    &--dragged {
-      padding: 0.2rem 0;
-    }
-
     &__id {
       padding: 0.5rem;
       width: 50%;
@@ -190,10 +186,6 @@
     &:hover {
       display: flex;
       background: var(--color-dark-blue-shade-100);
-    }
-
-    &--dragged:hover {
-      background: transparent !important;
     }
 
     &__label {

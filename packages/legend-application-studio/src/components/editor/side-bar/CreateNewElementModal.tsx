@@ -368,6 +368,7 @@ const NewFileGenerationDriverEditor = observer(() => {
         options={options}
         onChange={onTypeSelectionChange}
         value={newConnectionDriver.typeOption}
+        darkMode={true}
       />
     </div>
   );
@@ -489,6 +490,7 @@ export const CreateNewElementModal = observer(() => {
               onChange={handleTypeChange}
               value={selectedTypeOption}
               isClearable={false}
+              darkMode={true}
             />
           )}
           <input

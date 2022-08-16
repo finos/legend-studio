@@ -28,6 +28,7 @@ import {
   LockIcon,
   MenuContent,
   MenuContentItem,
+  PanelDropZone,
   PlusIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -314,25 +315,24 @@ export const DataElementEditor = observer(() => {
             </div>
             <div className="data-editor__content">
               <div className="data-editor__content__lists">
-                <div
-                  ref={dropStereotypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isStereotypeDragOver && !isReadOnly,
-                  })}
+                <PanelDropZone
+                  isDragOver={isStereotypeDragOver && !isReadOnly}
+                  dropTargetConnector={dropStereotypeRef}
                 >
-                  <StereotypeDragPreviewLayer />
-                  {dataElement.stereotypes.map((stereotype) => (
-                    <StereotypeSelector
-                      key={stereotype.value._UUID}
-                      annotatedElement={dataElement}
-                      stereotype={stereotype}
-                      deleteStereotype={_deleteStereotype(stereotype)}
-                      isReadOnly={isReadOnly}
-                      darkTheme={true}
-                    />
-                  ))}
-                </div>
+                  <div className="panel__content__lists">
+                    <StereotypeDragPreviewLayer />
+                    {dataElement.stereotypes.map((stereotype) => (
+                      <StereotypeSelector
+                        key={stereotype.value._UUID}
+                        annotatedElement={dataElement}
+                        stereotype={stereotype}
+                        deleteStereotype={_deleteStereotype(stereotype)}
+                        isReadOnly={isReadOnly}
+                        darkTheme={true}
+                      />
+                    ))}
+                  </div>
+                </PanelDropZone>
               </div>
             </div>
           </>
@@ -364,25 +364,24 @@ export const DataElementEditor = observer(() => {
             </div>
             <div className="data-editor__content">
               <div className="data-editor__content__lists">
-                <div
-                  ref={dropTaggedValueRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isTaggedValueDragOver && !isReadOnly,
-                  })}
+                <PanelDropZone
+                  isDragOver={isTaggedValueDragOver && !isReadOnly}
+                  dropTargetConnector={dropTaggedValueRef}
                 >
-                  <TaggedValueDragPreviewLayer />
-                  {dataElement.taggedValues.map((taggedValue) => (
-                    <TaggedValueEditor
-                      annotatedElement={dataElement}
-                      key={taggedValue._UUID}
-                      taggedValue={taggedValue}
-                      deleteValue={deleteTaggedValue(taggedValue)}
-                      isReadOnly={isReadOnly}
-                      darkTheme={true}
-                    />
-                  ))}
-                </div>
+                  <div className="panel__content__lists">
+                    <TaggedValueDragPreviewLayer />
+                    {dataElement.taggedValues.map((taggedValue) => (
+                      <TaggedValueEditor
+                        annotatedElement={dataElement}
+                        key={taggedValue._UUID}
+                        taggedValue={taggedValue}
+                        deleteValue={deleteTaggedValue(taggedValue)}
+                        isReadOnly={isReadOnly}
+                        darkTheme={true}
+                      />
+                    ))}
+                  </div>
+                </PanelDropZone>
               </div>
             </div>
           </>

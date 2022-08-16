@@ -322,7 +322,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
         <div className="panel__content">
           <PanelDropZone
             dropTargetConnector={dropRef}
-            isDragOver={Boolean(srcElement) && isDragOver && !isReadOnly}
+            isDragOver={isDragOver && !isReadOnly}
           >
             {srcElement ? (
               <div className="source-panel__explorer">
