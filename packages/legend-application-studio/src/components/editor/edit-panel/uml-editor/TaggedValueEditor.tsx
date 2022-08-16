@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -27,6 +27,7 @@ import {
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -43,7 +44,6 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 interface TagOption {
   label: string;
@@ -174,11 +174,7 @@ export const TaggedValueEditor = observer(
       [taggedValue],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="tagged-value-editor__container">

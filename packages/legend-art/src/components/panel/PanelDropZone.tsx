@@ -15,7 +15,13 @@
  */
 
 import { clsx } from 'clsx';
-import { type ConnectDropTarget, useDragLayer } from 'react-dnd';
+import { useEffect } from 'react';
+import {
+  type ConnectDropTarget,
+  type ConnectDragPreview,
+  useDragLayer,
+} from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import { VerticalDragHandleIcon } from '../CJS__Icon.cjs';
 
 export const PanelDropZone: React.FC<{
@@ -57,6 +63,15 @@ export const PanelEntryDropZonePlaceholder: React.FC<{
       </div>
     </div>
   );
+};
+
+export const useDragPreviewLayer = (
+  dragPreviewConnector: ConnectDragPreview,
+): void => {
+  // hide default HTML5 preview image
+  useEffect(() => {
+    dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
+  }, [dragPreviewConnector]);
 };
 
 export function DragPreviewLayer<T>(props: {

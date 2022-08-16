@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  forwardRef,
-  useMemo,
-} from 'react';
+import { useRef, useState, useCallback, forwardRef, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TreeNodeContainerProps,
@@ -48,6 +41,7 @@ import {
   PanelDropZone,
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -61,7 +55,6 @@ import {
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState.js';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -498,10 +491,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       [node, filterState],
     );
     dragConnector(dropConnector(ref));
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
+
     // context menu
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);

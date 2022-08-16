@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   GenerationSpecificationEditorState,
@@ -22,7 +22,6 @@ import {
   type GenerationSpecNodeDropTarget,
   type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
@@ -41,6 +40,7 @@ import {
   LongArrowRightIcon,
   PanelDropZone,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -169,10 +169,9 @@ const ModelGenerationItem = observer(
       [nodeState],
     );
     dragConnector(dropConnector(ref));
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
       <div
         ref={ref}

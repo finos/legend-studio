@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
@@ -26,12 +27,12 @@ import {
   PlusIcon,
   InputWithInlineValidation,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
-import { useEffect, useState } from 'react';
 import {
   type Type,
   MULTIPLICITY_INFINITE,
@@ -51,7 +52,6 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 
@@ -269,10 +269,8 @@ export const VariableExpressionViewer = observer(
       }),
       [variableExpressionState],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
       <div className="query-builder__parameters__parameter" ref={dragConnector}>
         <DragPreviewLayer

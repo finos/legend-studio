@@ -50,6 +50,7 @@ import {
   PanelDropZone,
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -68,16 +69,8 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import { getColumnMultiplicity } from '../stores/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../stores/QueryBuilderAggregationState.js';
 import {
@@ -668,10 +661,8 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       [node, postFilterState],
     );
     dragConnector(dropConnector(ref));
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
+
     // context menu
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);

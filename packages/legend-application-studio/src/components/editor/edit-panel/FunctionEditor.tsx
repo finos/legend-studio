@@ -41,6 +41,7 @@ import {
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import {
@@ -98,7 +99,6 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -242,11 +242,7 @@ const ParameterBasicEditor = observer(
       [parameter],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="property-basic-editor__container">

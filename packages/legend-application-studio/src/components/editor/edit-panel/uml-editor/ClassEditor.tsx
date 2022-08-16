@@ -43,6 +43,7 @@ import {
   PanelEntryDragHandle,
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -131,7 +132,6 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 type ClassPropertyDragSource = {
   property: Property;
@@ -258,11 +258,7 @@ const PropertyBasicEditor = observer(
       [property],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Other
     const openElement = (): void => {
@@ -607,11 +603,7 @@ const DerivedPropertyBasicEditor = observer(
       [derivedProperty],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Action
     const onLambdaEditorFocus = (): void =>
@@ -892,11 +884,7 @@ const ConstraintEditor = observer(
       [constraint],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Actions
     const onLambdaEditorFocus = (): void =>
@@ -1054,11 +1042,7 @@ const SuperTypeEditor = observer(
       [superType],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     const rawType = superType.value.rawType;
     const filterOption = createFilter({

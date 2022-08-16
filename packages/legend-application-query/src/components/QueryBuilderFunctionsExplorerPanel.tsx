@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TooltipPlacement,
@@ -38,6 +39,7 @@ import {
   MenuContentItemLabel,
   MoreVerticalIcon,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFunctionsExplorerTreeNodeData,
@@ -55,8 +57,6 @@ import {
   ROOT_PACKAGE_NAME,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import { useEffect, useState } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
 const isDependencyTreeNode = (
@@ -155,10 +155,7 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
       }),
       [node],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div
@@ -243,10 +240,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div>

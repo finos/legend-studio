@@ -31,6 +31,7 @@ import {
   PanelDropZone,
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -39,7 +40,6 @@ import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
 } from '../stores/QueryBuilderExplorerState.js';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import {
   type QueryBuilderProjectionColumnDragSource,
   type QueryBuilderProjectionColumnState,
@@ -346,11 +346,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const isBeingDragged =
       projectionColumnState === projectionColumnBeingDragged;
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div ref={ref} className="query-builder__projection__column">

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useRef, useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -28,6 +29,7 @@ import {
   SearchIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   Class,
@@ -37,9 +39,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
 import { useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import { QUERY_BUILDER_PROPERTY_SEARCH_TYPE } from '../QueryBuilder_Const.js';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -136,6 +136,7 @@ const QueryBuilderTreeNodeViewer = observer(
       }),
       [node],
     );
+    useDragPreviewLayer(dragPreviewConnector);
     const isMultiple =
       (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         (node.property.multiplicity.upperBound === undefined ||
@@ -185,10 +186,6 @@ const QueryBuilderTreeNodeViewer = observer(
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         node.parentId === pn.id,
     );
-
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
 
     return (
       <div>

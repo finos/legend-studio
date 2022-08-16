@@ -47,6 +47,7 @@ import {
   SearchIcon,
   PanelLoadingIndicator,
   DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -61,7 +62,6 @@ import {
 } from '../stores/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState.js';
@@ -415,6 +415,8 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       }),
       [node],
     );
+    useDragPreviewLayer(dragPreviewConnector);
+
     const isExpandable = Boolean(node.childrenIds.length);
     const isDerivedProperty =
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
@@ -462,10 +464,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
 
     if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
       return null;
