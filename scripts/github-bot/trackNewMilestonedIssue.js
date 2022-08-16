@@ -27,7 +27,7 @@ const trackNewMilestonedIssue = async () => {
     process.env.MANAGE_PROJECT_TOKEN,
   );
   const organization = process.env.ORGANIZATION;
-  const projectNumber = process.env.PROJECT_NUMBER;
+  const projectNumber = parseInt(process.env.PROJECT_NUMBER, 10);
   const issueEventPayload = github.context.payload.issue;
 
   if (!issueEventPayload) {
