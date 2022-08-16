@@ -53,23 +53,21 @@ const trackNewMilestonedIssue = async () => {
   // Use GraphQL API
   // See https://docs.github.com/en/graphql/overview/explorer
   try {
-    const result = await octokitWithProjectManageToken.graphql(
-      `query ($organization: String!, $projectNumber: Int!) {
+    const projectId = (
+      await octokitWithProjectManageToken.graphql(
+        `query ($organization: String!, $projectNumber: Int!) {
       organization(login: $organization) {
-        id
         projectV2(number: $projectNumber) {
           id
         }
       }
     }`,
-      {
-        organization,
-        projectNumber,
-      },
-    );
-    // TODO: to be removed
-    console.log('ar', result);
-    const projectId = result.payload.data.organization.projectV2.id;
+        {
+          organization,
+          projectNumber,
+        },
+      )
+    ).organization.projectV2.id;
 
     await octokitWithProjectManageToken.graphql(
       `
@@ -92,8 +90,6 @@ const trackNewMilestonedIssue = async () => {
       ),
     );
   } catch (error) {
-    // TODO: to be removed
-    console.log(error);
     githubActionCore.error(
       `Can't track milestoned issue ${issueEventPayload.html_url}`,
     );
