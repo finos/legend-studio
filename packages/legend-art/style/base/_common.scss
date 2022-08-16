@@ -84,7 +84,7 @@
   width: 2rem;
   height: 2.8rem;
   background: var(--color-dark-shade-50);
-  color: var(--color-light-grey-300);
+  color: var(--color-light-grey-400);
   border-radius: 0.2rem;
   margin-right: 0.5rem;
   // NOTE: here we use `move` instead of `grab` since grab requires
@@ -105,9 +105,6 @@
     width: 100%;
     margin: 0;
     font-weight: 700;
-
-    // border: 0.2rem dashed var(--color-dark-grey-100);
-    // color: var(--color-dark-grey-300);
   }
 }
 
