@@ -32,7 +32,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
 import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper.js';
@@ -58,13 +58,14 @@ const MilestoningParameterEditor = observer(
       },
       [queryBuilderState, stereotype],
     );
-    const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
+    const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop<
+      QueryBuilderParameterDragSource,
+      void,
+      { isMilestoningParameterValueDragOver: boolean }
+    >(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
-        drop: (
-          item: QueryBuilderParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           }

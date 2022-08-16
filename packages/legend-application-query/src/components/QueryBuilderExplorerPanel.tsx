@@ -398,7 +398,9 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       useState(false);
     const applicationStore = useApplicationStore();
     const explorerState = queryBuilderState.explorerState;
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<{
+      node?: QueryBuilderExplorerTreePropertyNodeData;
+    }>(
       () => ({
         type:
           node instanceof QueryBuilderExplorerTreePropertyNodeData
@@ -408,7 +410,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
               : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
             : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
-        item: (): { node?: QueryBuilderExplorerTreePropertyNodeData } =>
+        item: () =>
           node instanceof QueryBuilderExplorerTreePropertyNodeData
             ? { node }
             : {},

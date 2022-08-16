@@ -122,7 +122,11 @@ const BindingScopeEditor = observer(
       handleDropElement,
       isReadOnly,
     } = props;
-    const [{ isElementDragOver }, dropElementRef] = useDrop(
+    const [{ isElementDragOver }, dropElementRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isElementDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
@@ -132,8 +136,8 @@ const BindingScopeEditor = observer(
           CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
           CORE_DND_TYPE.PROJECT_EXPLORER_FUNCTION,
         ],
-        drop: (item: ElementDragSource): void => handleDropElement(item),
-        collect: (monitor): { isElementDragOver: boolean } => ({
+        drop: (item) => handleDropElement(item),
+        collect: (monitor) => ({
           isElementDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

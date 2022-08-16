@@ -43,7 +43,7 @@ import {
   annotatedElement_swapTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
+import { useDrop, useDrag } from 'react-dnd';
 
 interface TagOption {
   label: string;
@@ -134,7 +134,7 @@ export const TaggedValueEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: TaggedValueDragSource, monitor: DropTargetMonitor): void => {
+      (item: TaggedValueDragSource) => {
         const draggingProperty = item.taggedValue;
         const hoveredProperty = taggedValue;
         annotatedElement_swapTaggedValues(
@@ -146,16 +146,15 @@ export const TaggedValueEditor = observer(
       [annotatedElement, taggedValue],
     );
 
-    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop<
+      TaggedValueDragSource,
+      void,
+      { isBeingDraggedTaggedValue: TaggedValue | undefined }
+    >(
       () => ({
         accept: [TAGGED_VALUE_DND_TYPE],
-        hover: (
-          item: TaggedValueDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedTaggedValue: TaggedValue | undefined } => ({
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTaggedValue:
             monitor.getItem<TaggedValueDragSource | null>()?.taggedValue,
         }),
@@ -164,15 +163,16 @@ export const TaggedValueEditor = observer(
     );
     const isBeingDragged = taggedValue === isBeingDraggedTaggedValue;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: TAGGED_VALUE_DND_TYPE,
-        item: (): TaggedValueDragSource => ({
-          taggedValue: taggedValue,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<TaggedValueDragSource>(
+        () => ({
+          type: TAGGED_VALUE_DND_TYPE,
+          item: () => ({
+            taggedValue: taggedValue,
+          }),
         }),
-      }),
-      [taggedValue],
-    );
+        [taggedValue],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 

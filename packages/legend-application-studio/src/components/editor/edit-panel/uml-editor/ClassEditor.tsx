@@ -221,7 +221,7 @@ const PropertyBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassPropertyDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassPropertyDragSource): void => {
         const draggingProperty = item.property;
         const hoveredProperty = property;
         class_swapProperties(_class, draggingProperty, hoveredProperty);
@@ -229,13 +229,14 @@ const PropertyBasicEditor = observer(
       [_class, property],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop<
+      ClassPropertyDragSource,
+      void,
+      { isBeingDraggedProperty: Property | undefined }
+    >(
       () => ({
         accept: [CLASS_PROPERTY_DND_TYPE],
-        hover: (
-          item: ClassPropertyDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
         ): {
@@ -249,15 +250,16 @@ const PropertyBasicEditor = observer(
     );
     const isBeingDragged = property === isBeingDraggedProperty;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_PROPERTY_DND_TYPE,
-        item: (): ClassPropertyDragSource => ({
-          property: property,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassPropertyDragSource>(
+        () => ({
+          type: CLASS_PROPERTY_DND_TYPE,
+          item: () => ({
+            property: property,
+          }),
         }),
-      }),
-      [property],
-    );
+        [property],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -575,34 +577,34 @@ const DerivedPropertyBasicEditor = observer(
       [_class, derivedProperty],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedDerivedProperty }, dropConnector] = useDrop<
+      ClassDerivedPropertyDragSource,
+      void,
+      { isBeingDraggedDerivedProperty: DerivedProperty | undefined }
+    >(
       () => ({
         accept: [CLASS_DERIVED_PROPERTY_DND_TYPE],
-        hover: (
-          item: ClassDerivedPropertyDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedProperty: Property | undefined } => ({
-          isBeingDraggedProperty:
+        hover: (item, monitor): void => handleHover(item, monitor),
+        collect: (monitor) => ({
+          isBeingDraggedDerivedProperty:
             monitor.getItem<ClassDerivedPropertyDragSource | null>()
               ?.derivedProperty,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = derivedProperty === isBeingDraggedProperty;
+    const isBeingDragged = derivedProperty === isBeingDraggedDerivedProperty;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_DERIVED_PROPERTY_DND_TYPE,
-        item: (): ClassDerivedPropertyDragSource => ({
-          derivedProperty: derivedProperty,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassDerivedPropertyDragSource>(
+        () => ({
+          type: CLASS_DERIVED_PROPERTY_DND_TYPE,
+          item: () => ({
+            derivedProperty: derivedProperty,
+          }),
         }),
-      }),
-      [derivedProperty],
-    );
+        [derivedProperty],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -849,7 +851,7 @@ const ConstraintEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassConstraintDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassConstraintDragSource): void => {
         const draggingProperty = item.constraint;
         const hoveredProperty = constraint;
         class_swapConstraints(_class, draggingProperty, hoveredProperty);
@@ -857,33 +859,35 @@ const ConstraintEditor = observer(
       [_class, constraint],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedConstraint }, dropConnector] = useDrop<
+      ClassConstraintDragSource,
+      void,
+      { isBeingDraggedConstraint: Constraint | undefined }
+    >(
       () => ({
         accept: [CLASS_CONSTRAINT_DND_TYPE],
-        hover: (
-          item: ClassConstraintDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
-        ): { isBeingDraggedProperty: Constraint | undefined } => ({
-          isBeingDraggedProperty:
+        ): { isBeingDraggedConstraint: Constraint | undefined } => ({
+          isBeingDraggedConstraint:
             monitor.getItem<ClassConstraintDragSource | null>()?.constraint,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = constraint === isBeingDraggedProperty;
+    const isBeingDragged = constraint === isBeingDraggedConstraint;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_CONSTRAINT_DND_TYPE,
-        item: (): ClassConstraintDragSource => ({
-          constraint: constraint,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassConstraintDragSource>(
+        () => ({
+          type: CLASS_CONSTRAINT_DND_TYPE,
+          item: () => ({
+            constraint: constraint,
+          }),
         }),
-      }),
-      [constraint],
-    );
+        [constraint],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -1007,7 +1011,7 @@ const SuperTypeEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassSuperTypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassSuperTypeDragSource): void => {
         const draggingProperty = item.superType;
         const hoveredProperty = superType;
         class_swapSuperTypes(_class, draggingProperty, hoveredProperty);
@@ -1015,33 +1019,33 @@ const SuperTypeEditor = observer(
       [_class, superType],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedSupertype }, dropConnector] = useDrop<
+      ClassSuperTypeDragSource,
+      void,
+      { isBeingDraggedSupertype: GenericTypeReference | undefined }
+    >(
       () => ({
         accept: [CLASS_SUPER_TYPE_DND_TYPE],
-        hover: (
-          item: ClassSuperTypeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedProperty: GenericTypeReference | undefined } => ({
-          isBeingDraggedProperty:
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedSupertype:
             monitor.getItem<ClassSuperTypeDragSource | null>()?.superType,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = superType === isBeingDraggedProperty;
+    const isBeingDragged = superType === isBeingDraggedSupertype;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_SUPER_TYPE_DND_TYPE,
-        item: (): ClassSuperTypeDragSource => ({
-          superType: superType,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassSuperTypeDragSource>(
+        () => ({
+          type: CLASS_SUPER_TYPE_DND_TYPE,
+          item: () => ({
+            superType: superType,
+          }),
         }),
-      }),
-      [superType],
-    );
+        [superType],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -1131,14 +1135,18 @@ const PropertiesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop(
+    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropProperty(item),
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropProperty(item),
+        collect: (monitor) => ({
           isPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1210,15 +1218,18 @@ const DerviedPropertiesEditor = observer(
       },
       [_class, classState, isReadOnly],
     );
-    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop(
+    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDerivedPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleDropDerivedProperty(item),
-        collect: (monitor): { isDerivedPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropDerivedProperty(item),
+        collect: (monitor) => ({
           isDerivedPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1349,14 +1360,18 @@ const SupertypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop(
+    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isSuperTypeDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropSuperType(item),
-        collect: (monitor): { isSuperTypeDragOver: boolean } => ({
+        drop: (item) => handleDropSuperType(item),
+        collect: (monitor) => ({
           isSuperTypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1415,11 +1430,15 @@ const TaggedValuesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1471,11 +1490,15 @@ const StereotypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

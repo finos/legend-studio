@@ -453,15 +453,19 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
           }),
     [isReadOnly, mappingEditorState],
   );
-  const [{ isDragOver }, dropRef] = useDrop(
+  const [{ isDragOver }, dropRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isDragOver: boolean }
+  >(
     () => ({
       accept: [
         CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
         CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
       ],
-      drop: (item: ElementDragSource): void => handleDrop(item),
-      collect: (monitor): { isDragOver: boolean } => ({
+      drop: (item) => handleDrop(item),
+      collect: (monitor) => ({
         isDragOver: monitor.isOver({ shallow: true }),
       }),
     }),

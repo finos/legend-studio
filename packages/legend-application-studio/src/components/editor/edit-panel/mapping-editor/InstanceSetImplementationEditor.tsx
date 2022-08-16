@@ -245,11 +245,15 @@ export const InstanceSetImplementationSourceExplorer = observer(
         setImplementation,
       ],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: dndType,
-        drop: (item: ElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),

@@ -204,11 +204,15 @@ export const SourceValueInput = observer(
       },
       [isReadOnly, updateSourceValue, value],
     );
-    const [{ canDrop }, dropRef] = useDrop(
+    const [{ canDrop }, dropRef] = useDrop<
+      TypeDragSource,
+      void,
+      { canDrop: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.TYPE_TREE_ENUM,
-        drop: (item: TransformDropTarget): void => handleDrop(item),
-        collect: (monitor): { canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           canDrop: monitor.canDrop(),
         }),
       }),
@@ -366,11 +370,15 @@ export const EnumerationMappingEditor = observer(
       },
       [enumerationMapping, isReadOnly],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        drop: (item: ElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),

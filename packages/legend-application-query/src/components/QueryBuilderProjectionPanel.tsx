@@ -175,7 +175,11 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
       },
       [projectionColumnState],
     );
-    const [, dropConnector] = useDrop(
+    const [, dropConnector] = useDrop<
+      | QueryBuilderExplorerTreeDragSource
+      | QueryBuilderParameterDragSource
+      | QueryBuilderFunctionsExplorerDragSource
+    >(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
@@ -185,13 +189,7 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           QUERY_BUILDER_PARAMETER_DND_TYPE,
           QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
-        drop: (
-          item:
-            | QueryBuilderExplorerTreeDragSource
-            | QueryBuilderParameterDragSource
-            | QueryBuilderFunctionsExplorerDragSource,
-          monitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
@@ -305,13 +303,10 @@ const QueryBuilderProjectionColumnEditor = observer(
       },
       [projectionColumnState, projectionState],
     );
-    const [, dropConnector] = useDrop(
+    const [, dropConnector] = useDrop<QueryBuilderProjectionColumnDragSource>(
       () => ({
         accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
-        hover: (
-          item: QueryBuilderProjectionColumnDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item, monitor): void => handleHover(item, monitor),
       }),
       [handleHover],
     );
@@ -319,19 +314,21 @@ const QueryBuilderProjectionColumnEditor = observer(
       { projectionColumnBeingDragged },
       dragConnector,
       dragPreviewConnector,
-    ] = useDrag(
+    ] = useDrag<
+      QueryBuilderProjectionColumnDragSource,
+      void,
+      {
+        projectionColumnBeingDragged:
+          | QueryBuilderProjectionColumnState
+          | undefined;
+      }
+    >(
       () => ({
         type: QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-        item: (): QueryBuilderProjectionColumnDragSource => ({
+        item: () => ({
           columnState: projectionColumnState,
         }),
-        collect: (
-          monitor,
-        ): {
-          projectionColumnBeingDragged:
-            | QueryBuilderProjectionColumnState
-            | undefined;
-        } => ({
+        collect: (monitor) => ({
           /**
            * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
            */
@@ -544,24 +541,24 @@ export const QueryBuilderProjectionPanel = observer(
       [queryBuilderState, projectionState],
     );
 
-    const [{ isDragOver }, dropTargetConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      | QueryBuilderExplorerTreeDragSource
+      | QueryBuilderFunctionsExplorerDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
           QUERY_BUILDER_FUNCTION_DND_TYPE,
         ],
-        drop: (
-          item:
-            | QueryBuilderExplorerTreeDragSource
-            | QueryBuilderFunctionsExplorerDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

@@ -54,7 +54,7 @@ import {
   QueryBuilderFilterTreeBlankConditionNodeData,
   QueryBuilderFilterTreeGroupNodeData,
 } from '../stores/QueryBuilderFilterState.js';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import {
   type QueryBuilderExplorerTreeDragSource,
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -181,18 +181,19 @@ const QueryBuilderFilterConditionEditor = observer(
       },
       [applicationStore, node.condition],
     );
-    const [{ isFilterValueDragOver }, dropConnector] = useDrop(
+    const [{ isFilterValueDragOver }, dropConnector] = useDrop<
+      QueryBuilderParameterDragSource,
+      void,
+      { isFilterValueDragOver: boolean }
+    >(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
-        drop: (
-          item: QueryBuilderParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
-          }
+          } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isFilterValueDragOver: boolean } => ({
+        collect: (monitor) => ({
           isFilterValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -451,45 +452,42 @@ const QueryBuilderFilterTreeNodeContainer = observer(
       },
       [applicationStore, filterState, node],
     );
-    const [{ isDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropConnector] = useDrop<
+      QueryBuilderFilterConditionDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [
           ...Object.values(QUERY_BUILDER_FILTER_DND_TYPE),
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
         ],
-        drop: (
-          item: QueryBuilderFilterConditionDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        // canDrop: (item: QueryBuilderFilterConditionDragSource, monitor: DropTargetMonitor): boolean => {
-        //   // prevent drop inside of children
-        //   // prevent dropping inside my direct ancestor
-        //   return true;
-        // },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
     );
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type:
-          node instanceof QueryBuilderFilterTreeGroupNodeData
-            ? QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION
-            : node instanceof QueryBuilderFilterTreeConditionNodeData
-            ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
-            : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
-        item: (): QueryBuilderFilterConditionDragSource => ({ node }),
-        end: (): void => filterState.setRearrangingConditions(false),
-      }),
-      [node, filterState],
-    );
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<QueryBuilderFilterConditionDragSource>(
+        () => ({
+          type:
+            node instanceof QueryBuilderFilterTreeGroupNodeData
+              ? QUERY_BUILDER_FILTER_DND_TYPE.GROUP_CONDITION
+              : node instanceof QueryBuilderFilterTreeConditionNodeData
+              ? QUERY_BUILDER_FILTER_DND_TYPE.CONDITION
+              : QUERY_BUILDER_FILTER_DND_TYPE.BLANK_CONDITION,
+          item: () => ({ node }),
+          end: (): void => filterState.setRearrangingConditions(false),
+        }),
+        [node, filterState],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -766,7 +764,11 @@ export const QueryBuilderFilterPanel = observer(
       },
       [applicationStore, filterState],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      QueryBuilderExplorerTreeDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: queryBuilderState.mode.isDnDProjectionToFilterSupported
           ? [
@@ -778,15 +780,12 @@ export const QueryBuilderFilterPanel = observer(
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
             ],
-        drop: (
-          item: QueryBuilderExplorerTreeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

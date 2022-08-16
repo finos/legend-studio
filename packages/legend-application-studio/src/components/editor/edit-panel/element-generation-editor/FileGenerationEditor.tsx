@@ -59,6 +59,7 @@ import {
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
+  type ElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil.js';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
@@ -1333,15 +1334,19 @@ export const FileGenerationConfigurationEditor = observer(
         isReadOnly,
       ],
     );
-    const [{ isScopeElementDragOver }, scopeElementDropRef] = useDrop(
+    const [{ isScopeElementDragOver }, scopeElementDropRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isScopeElementDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: FileGenerationSourceDropTarget): void => handleDrop(item),
-        collect: (monitor): { isScopeElementDragOver: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isScopeElementDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

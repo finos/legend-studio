@@ -29,7 +29,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import {
   clsx,
   CustomSelectorInput,
@@ -204,7 +204,7 @@ const ParameterBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: FunctionParameterDragSource, monitor: DropTargetMonitor): void => {
+      (item: FunctionParameterDragSource): void => {
         const draggingParameter = item.parameter;
         const hoveredParameter = parameter;
         function_swapParameters(_func, draggingParameter, hoveredParameter);
@@ -212,13 +212,14 @@ const ParameterBasicEditor = observer(
       [_func, parameter],
     );
 
-    const [{ isBeingDraggedParameter }, dropConnector] = useDrop(
+    const [{ isBeingDraggedParameter }, dropConnector] = useDrop<
+      FunctionParameterDragSource,
+      void,
+      { isBeingDraggedParameter: RawVariableExpression | undefined }
+    >(
       () => ({
         accept: [FUNCTION_PARAMETER_DND_TYPE],
-        hover: (
-          item: FunctionParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
         ): {
@@ -232,15 +233,16 @@ const ParameterBasicEditor = observer(
     );
     const isBeingDragged = parameter === isBeingDraggedParameter;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: FUNCTION_PARAMETER_DND_TYPE,
-        item: (): FunctionParameterDragSource => ({
-          parameter: parameter,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<FunctionParameterDragSource>(
+        () => ({
+          type: FUNCTION_PARAMETER_DND_TYPE,
+          item: () => ({
+            parameter: parameter,
+          }),
         }),
-      }),
-      [parameter],
-    );
+        [parameter],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 
@@ -598,14 +600,18 @@ export const FunctionMainEditor = observer(
       },
       [functionElement, isReadOnly],
     );
-    const [{ isParameterDragOver }, dropParameterRef] = useDrop(
+    const [{ isParameterDragOver }, dropParameterRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isParameterDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropParameter(item),
-        collect: (monitor): { isParameterDragOver: boolean } => ({
+        drop: (item) => handleDropParameter(item),
+        collect: (monitor) => ({
           isParameterDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -735,11 +741,15 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isTaggedValueDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-      collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+      drop: (item) => handleDropTaggedValue(item),
+      collect: (monitor) => ({
         isTaggedValueDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -758,11 +768,15 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isStereotypeDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropStereotype(item),
-      collect: (monitor): { isStereotypeDragOver: boolean } => ({
+      drop: (item) => handleDropStereotype(item),
+      collect: (monitor) => ({
         isStereotypeDragOver: monitor.isOver({ shallow: true }),
       }),
     }),

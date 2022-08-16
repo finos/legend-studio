@@ -146,11 +146,15 @@ export const OperationSetImplementationEditor = observer(
       },
       [setImplementation],
     );
-    const [{ isDragOver }, dropRef] = useDrop(
+    const [{ isDragOver }, dropRef] = useDrop<
+      MappingElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

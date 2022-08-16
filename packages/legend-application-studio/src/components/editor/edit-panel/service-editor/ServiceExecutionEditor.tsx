@@ -219,15 +219,18 @@ const PureExecutionContextConfigurationEditor = observer(
       },
       [isReadOnly, mapping, executionContextState, pureExecutionState],
     );
-    const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop(
+    const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isMappingOrRuntimeDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
           CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleMappingOrRuntimeDrop(item),
-        collect: (monitor): { isMappingOrRuntimeDragOver: boolean } => ({
+        drop: (item) => handleMappingOrRuntimeDrop(item),
+        collect: (monitor) => ({
           isMappingOrRuntimeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

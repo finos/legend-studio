@@ -230,10 +230,12 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     const selectNode = (): void => {
       onNodeSelect?.(node);
     };
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<{
+      node?: QueryBuilderFunctionsExplorerTreeNodeData;
+    }>(
       () => ({
         type: QUERY_BUILDER_FUNCTION_DND_TYPE,
-        item: (): { node?: QueryBuilderFunctionsExplorerTreeNodeData } =>
+        item: () =>
           node.packageableElement instanceof ConcreteFunctionDefinition
             ? { node }
             : {},

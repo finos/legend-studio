@@ -16,7 +16,7 @@
 
 import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import {
   type TreeNodeContainerProps,
   clsx,
@@ -227,21 +227,22 @@ export const QueryBuilderGraphFetchTreePanel = observer(
       },
       [graphFetchState],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      QueryBuilderExplorerTreeDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
         ],
-        drop: (
-          item: QueryBuilderExplorerTreeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

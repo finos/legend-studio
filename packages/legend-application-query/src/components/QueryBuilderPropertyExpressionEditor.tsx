@@ -30,7 +30,7 @@ import {
   type QueryBuilderDerivedPropertyExpressionState,
   type QueryBuilderPropertyExpressionState,
 } from '../stores/QueryBuilderPropertyEditorState.js';
-import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import {
   QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
   type QueryBuilderExplorerTreeDragSource,
@@ -80,13 +80,14 @@ const DerivedPropertyParameterValueEditor = observer(
       },
       [derivedPropertyExpressionState, idx],
     );
-    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop(
+    const [{ isParameterValueDragOver }, dropTargetConnector] = useDrop<
+      QueryBuilderParameterDragSource,
+      void,
+      { isParameterValueDragOver: boolean }
+    >(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
-        drop: (
-          item: QueryBuilderParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           const itemType = item.variable.parameter.genericType?.value.rawType;
           if (
             !monitor.didDrop() &&
@@ -96,9 +97,9 @@ const DerivedPropertyParameterValueEditor = observer(
               parameterType.name === itemType.name)
           ) {
             handleDrop(item);
-          }
+          } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isParameterValueDragOver: boolean } => ({
+        collect: (monitor) => ({
           isParameterValueDragOver: monitor.isOver({
             shallow: true,
           }),
@@ -285,21 +286,22 @@ export const QueryBuilderPropertyExpressionBadge = observer(
         onPropertyExpressionChange(item.node),
       [onPropertyExpressionChange],
     );
-    const [{ isDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropConnector] = useDrop<
+      QueryBuilderExplorerTreeDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
           QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
         ],
-        drop: (
-          item: QueryBuilderExplorerTreeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

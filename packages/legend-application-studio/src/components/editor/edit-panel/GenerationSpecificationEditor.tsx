@@ -140,13 +140,14 @@ const ModelGenerationItem = observer(
       },
       [nodeState, specState],
     );
-    const [{ nodeBeingDragged }, dropConnector] = useDrop(
+    const [{ nodeBeingDragged }, dropConnector] = useDrop<
+      GenerationSpecNodeDragSource,
+      void,
+      { nodeBeingDragged: GenerationTreeNode | undefined }
+    >(
       () => ({
         accept: [GENERATION_SPEC_NODE_DND_TYPE],
-        hover: (
-          item: GenerationSpecNodeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        hover: (item, monitor): void => handleHover(item, monitor),
         collect: (
           monitor,
         ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
@@ -162,13 +163,14 @@ const ModelGenerationItem = observer(
       [handleHover],
     );
     const isBeingDragged = nodeState.node === nodeBeingDragged;
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: GENERATION_SPEC_NODE_DND_TYPE,
-        item: (): GenerationSpecNodeDragSource => ({ nodeState }),
-      }),
-      [nodeState],
-    );
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<GenerationSpecNodeDragSource>(
+        () => ({
+          type: GENERATION_SPEC_NODE_DND_TYPE,
+          item: () => ({ nodeState }),
+        }),
+        [nodeState],
+      );
     dragConnector(dropConnector(ref));
 
     useDragPreviewLayer(dragPreviewConnector);
@@ -268,15 +270,19 @@ const ModelGenerationSpecifications = observer(
         ),
       [specState],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: extraModelGenerationSpecificationElementDnDTypes,
-        drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -428,15 +434,19 @@ const FileGenerationSpecifications = observer(
       },
       [fileGenerations, generationSpec],
     );
-    const [{ isDragOver }, dropTargetConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION],
-        drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
-          }
+          } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isDragOver: boolean } => ({
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),

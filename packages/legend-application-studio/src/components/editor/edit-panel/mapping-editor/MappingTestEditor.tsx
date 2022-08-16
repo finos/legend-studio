@@ -176,11 +176,15 @@ const MappingTestQueryEditor = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      MappingElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),

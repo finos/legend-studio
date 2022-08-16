@@ -52,7 +52,7 @@ import {
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
+import { useDrop, useDrag } from 'react-dnd';
 
 type TagDragSource = {
   tag: Tag;
@@ -77,7 +77,7 @@ const TagBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: TagDragSource, monitor: DropTargetMonitor): void => {
+      (item: TagDragSource): void => {
         const draggingTag = item.tag;
         const hoveredTag = tag;
         profile_swapTags(_profile, draggingTag, hoveredTag);
@@ -85,12 +85,15 @@ const TagBasicEditor = observer(
       [_profile, tag],
     );
 
-    const [{ isBeingDraggedTag }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      TagDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
       () => ({
         accept: [TAG_DND_TYPE],
-        hover: (item: TagDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTag: monitor.getItem<TagDragSource | null>()?.tag,
         }),
       }),
@@ -98,10 +101,10 @@ const TagBasicEditor = observer(
     );
     const isBeingDragged = tag === isBeingDraggedTag;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<TagDragSource>(
       () => ({
         type: TAG_DND_TYPE,
-        item: (): TagDragSource => ({
+        item: () => ({
           tag: tag,
         }),
       }),
@@ -168,7 +171,7 @@ const StereotypeBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource): void => {
         const draggingTag = item.stereotype;
         const hoveredTag = stereotype;
         profile_swapStereotypes(_profile, draggingTag, hoveredTag);
@@ -176,12 +179,15 @@ const StereotypeBasicEditor = observer(
       [_profile, stereotype],
     );
 
-    const [{ isBeingDraggedTag }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      StereotypeDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
       () => ({
         accept: [STEREOTYPE_DND_TYPE],
-        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTag: monitor.getItem<StereotypeDragSource | null>()
             ?.stereotype,
         }),
@@ -190,15 +196,16 @@ const StereotypeBasicEditor = observer(
     );
     const isBeingDragged = stereotype === isBeingDraggedTag;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: STEREOTYPE_DND_TYPE,
-        item: (): StereotypeDragSource => ({
-          stereotype: stereotype,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<StereotypeDragSource>(
+        () => ({
+          type: STEREOTYPE_DND_TYPE,
+          item: () => ({
+            stereotype: stereotype,
+          }),
         }),
-      }),
-      [stereotype],
-    );
+        [stereotype],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 

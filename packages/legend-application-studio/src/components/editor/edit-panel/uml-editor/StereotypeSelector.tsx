@@ -39,7 +39,7 @@ import {
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
+import { useDrop, useDrag } from 'react-dnd';
 
 interface StereotypeOption {
   label: string;
@@ -124,7 +124,7 @@ export const StereotypeSelector = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource): void => {
         const draggingProperty = item.stereotype;
         const hoveredProperty = stereotype;
         annotatedElement_swapStereotypes(
@@ -136,14 +136,15 @@ export const StereotypeSelector = observer(
       [annotatedElement, stereotype],
     );
 
-    const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
+    const [{ isBeingDraggedStereotype }, dropConnector] = useDrop<
+      StereotypeDragSource,
+      void,
+      { isBeingDraggedStereotype: StereotypeReference | undefined }
+    >(
       () => ({
         accept: [STEREOTYPE_DND_TYPE],
-        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedStereotype: StereotypeReference | undefined } => ({
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedStereotype:
             monitor.getItem<StereotypeDragSource | null>()?.stereotype,
         }),
@@ -152,15 +153,16 @@ export const StereotypeSelector = observer(
     );
     const isBeingDragged = stereotype === isBeingDraggedStereotype;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: STEREOTYPE_DND_TYPE,
-        item: (): StereotypeDragSource => ({
-          stereotype: stereotype,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<StereotypeDragSource>(
+        () => ({
+          type: STEREOTYPE_DND_TYPE,
+          item: () => ({
+            stereotype: stereotype,
+          }),
         }),
-      }),
-      [stereotype],
-    );
+        [stereotype],
+      );
     dragConnector(dropConnector(ref));
     useDragPreviewLayer(dragPreviewConnector);
 

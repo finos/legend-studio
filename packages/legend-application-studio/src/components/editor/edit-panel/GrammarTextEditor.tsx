@@ -50,7 +50,7 @@ import {
   type ElementDragSource,
   CORE_DND_TYPE,
 } from '../../../stores/shared/DnDUtil.js';
-import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import type {
   DSL_LegendStudioApplicationPlugin_Extension,
   PureGrammarTextSuggestion,
@@ -825,7 +825,7 @@ export const GrammarTextEditor = observer(() => {
         ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
     );
   const handleDrop = useCallback(
-    (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+    (item: ElementDragSource): void => {
       if (editor) {
         editor.trigger('keyboard', 'type', {
           text: item.data.packageableElement.path,
@@ -834,7 +834,7 @@ export const GrammarTextEditor = observer(() => {
     },
     [editor],
   );
-  const [, dropConnector] = useDrop(
+  const [, dropConnector] = useDrop<ElementDragSource>(
     () => ({
       accept: [
         ...extraDnDTypes,
@@ -856,8 +856,7 @@ export const GrammarTextEditor = observer(() => {
         CORE_DND_TYPE.PROJECT_EXPLORER_DATA,
       ],
 
-      drop: (item: ElementDragSource, monitor): void =>
-        handleDrop(item, monitor),
+      drop: (item) => handleDrop(item),
     }),
     [extraDnDTypes, handleDrop],
   );
