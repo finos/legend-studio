@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import semver from 'semver';
 import * as github from '@actions/github';
 import * as githubActionCore from '@actions/core';
 import chalk from 'chalk';
@@ -25,6 +26,7 @@ const trackNewMilestonedIssue = async () => {
   const octokitWithProjectManageToken = github.getOctokit(
     process.env.MANAGE_PROJECT_TOKEN,
   );
+  const organization = process.env.ORGANIZATION;
   const projectNumber = process.env.PROJECT_NUMBER;
   const issueEventPayload = github.context.payload.issue;
 
@@ -35,30 +37,62 @@ const trackNewMilestonedIssue = async () => {
     process.exit(1);
   }
 
-  const issueNumber = issueEventPayload.number;
+  const issueId = issueEventPayload.node_id;
   const milestone = issueEventPayload.milestone.title;
-  console.log('milestone', milestone);
+
+  // NOTE: only auto-track issues which are added to version milestones
+  if (!semver.valid(milestone)) {
+    githubActionCore.warning(
+      `(skipped) Issue is not milestoned '${milestone}' which is not a version milestone`,
+    );
+    return;
+  }
 
   console.log(`Adding milestoned issue to tracker project...`);
 
   // Use GraphQL API
   // See https://docs.github.com/en/graphql/overview/explorer
   try {
-    await octokitWithProjectManageToken.graphql(`
-      mutation {
-        addProjectV2ItemById(input: {projectId: ${projectNumber}, contentId: ${issueNumber}}) {
-          item {
-            id
-          }
+    const result = await octokitWithProjectManageToken.graphql(
+      `query ($organization: String!, $projectNumber: Int!) {
+      organization(login: $organization) {
+        id
+        projectV2(number: $projectNumber) {
+          id
         }
       }
-    `);
+    }`,
+      {
+        organization,
+        projectNumber,
+      },
+    );
+    // TODO: to be removed
+    console.log('ar', result);
+    const projectId = result.payload.data.organization.projectV2.id;
+
+    await octokitWithProjectManageToken.graphql(
+      `
+        mutation ($projectId: ID!, $issueId: ID!) {
+          addProjectV2ItemById(input: {projectId: $projectId, contentId: $issueId}) {
+              item {
+                  id
+              }
+          }
+      }
+    `,
+      {
+        projectId,
+        issueId,
+      },
+    );
     console.log(
       chalk.green(
         `\u2713 Tracked milestoned issue ${issueEventPayload.html_url}`,
       ),
     );
   } catch (error) {
+    // TODO: to be removed
     console.log(error);
     githubActionCore.error(
       `Can't track milestoned issue ${issueEventPayload.html_url}`,
