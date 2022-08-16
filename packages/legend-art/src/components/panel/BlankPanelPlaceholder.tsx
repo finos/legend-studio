@@ -47,35 +47,37 @@ export const BlankPanelPlaceholder: React.FC<{
    * Placeholder text is similar to what we would put in text input, e.g. `Choose a file`
    * This should be in `Sentence case` and should have ellipses when it can potentially require more user actions
    */
-  placeholderText: string;
+  text: string;
+  /**
+   * The tooltip text for the add/drop zone
+   */
+  tooltipText: string;
+  /**
+   * The text to be shown when the panel is disabled (i.e. in preview) mode
+   */
+  previewText?: string | undefined;
   /**
    * Possible values are `add` for list-type value and `modify` for single value
    */
   clickActionType?: ClickActionType | undefined;
   onClick?: (() => void) | undefined;
   /**
-   * The tooltip text for the add/drop zone
+   * This flag is used to control whether the panel placeholder supports drag-and-drop interaction
+   * By default, this is set to undefined, which means drag-and-drop interaction is not supported
+   * When defined as a boolean, it will control when the drag-and-drop indicator becomes active/responsive
+   * corresponding to the drag-over entry, signaling dropability.
    */
-  tooltipText: string;
-  dndProps?:
-    | {
-        canDrop: boolean;
-        isDragOver: boolean;
-      }
-    | undefined;
-  readOnlyProps?:
-    | {
-        placeholderText: string;
-      }
-    | undefined;
+  isDropZoneActive?: boolean | undefined;
+  disabled?: boolean | undefined;
 }> = (props) => {
   const {
-    placeholderText,
-    clickActionType,
-    onClick,
+    text,
     tooltipText,
-    dndProps,
-    readOnlyProps,
+    previewText,
+    clickActionType,
+    disabled,
+    onClick,
+    isDropZoneActive,
   } = props;
   // if no action is provided, it means the panel support DnD
   const clickActionIcon = !onClick ? (
@@ -123,6 +125,12 @@ export const BlankPanelPlaceholder: React.FC<{
     refreshRate: 50,
     refreshOptions: { trailing: true },
   });
+  const handleClick = (): void => {
+    if (disabled) {
+      return;
+    }
+    onClick?.();
+  };
 
   useEffect(() => {
     const _containerWidth = containerWidth ?? 0;
@@ -157,23 +165,18 @@ export const BlankPanelPlaceholder: React.FC<{
     graphicHeight,
   ]);
 
-  if (readOnlyProps) {
-    return (
-      <BlankPanelContent>{readOnlyProps.placeholderText}</BlankPanelContent>
-    );
+  if (disabled) {
+    return <BlankPanelContent>{previewText ?? null}</BlankPanelContent>;
   }
   return (
     <div ref={containerRef} className="blank-panel-placeholder__container">
-      {dndProps && (
-        <div className={clsx({ dnd__overlay: dndProps.isDragOver })} />
-      )}
       <div
         className={clsx('blank-panel-placeholder', {
-          'blank-panel-placeholder--no-click': !onClick,
+          'blank-panel-placeholder--no-click': !onClick || disabled,
           'blank-panel-placeholder--invisible': !showPlaceholder,
         })}
         title={tooltipText}
-        onClick={onClick}
+        onClick={handleClick}
       >
         <div
           ref={textRef}
@@ -181,7 +184,7 @@ export const BlankPanelPlaceholder: React.FC<{
             'blank-panel-placeholder__text--hide': !showText,
           })}
         >
-          {placeholderText}
+          {text}
         </div>
         {showText && <div className="blank-panel-placeholder__spacing" />}
         <div
@@ -191,12 +194,12 @@ export const BlankPanelPlaceholder: React.FC<{
             'blank-panel-placeholder__action--hide': !showGraphic,
           })}
         >
-          {dndProps && (
+          {isDropZoneActive !== undefined && (
             <>
               <VerticalAlignBottomIcon
                 className={clsx('blank-panel-placeholder__action__dnd-icon', {
                   'blank-panel-placeholder__action__dnd-icon--can-drop':
-                    dndProps.canDrop,
+                    isDropZoneActive && !disabled,
                 })}
               />
               <div className="blank-panel-placeholder__action__dnd-click-icon">
@@ -204,7 +207,7 @@ export const BlankPanelPlaceholder: React.FC<{
               </div>
             </>
           )}
-          {!dndProps && clickActionIcon}
+          {isDropZoneActive === undefined && clickActionIcon}
         </div>
       </div>
     </div>

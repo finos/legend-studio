@@ -18,7 +18,7 @@
 
 - [#1336](https://github.com/finos/legend-studio/pull/1336) [`de50c294`](https://github.com/finos/legend-studio/commit/de50c29416214de49b16f208bbc11925b496ea43) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Check type compatibility when dragging and dropping parameters into `filter/post-filter` panel ([#1335](https://github.com/finos/legend-studio/issues/1335)).
 
-* [#1383](https://github.com/finos/legend-studio/pull/1383) [`846953d5`](https://github.com/finos/legend-studio/commit/846953d59c5df8136d4d516be3fba5087936671d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Alert user changing fetch structure resets state ((#1380)[https://github.com/finos/legend-studio/issues/1380]).
+* [#1383](https://github.com/finos/legend-studio/pull/1383) [`846953d5`](https://github.com/finos/legend-studio/commit/846953d59c5df8136d4d516be3fba5087936671d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Alert user about changing fetch-structure would cause a query builder state reset ([#1380](https://github.com/finos/legend-studio/issues/1380)).
 
 - [#1358](https://github.com/finos/legend-studio/pull/1358) [`1119c45b`](https://github.com/finos/legend-studio/commit/1119c45bb8616de9d655da4fef62b8b2b7b65445) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Allow cancelling query execution ([#1357](https://github.com/finos/legend-studio/issues/1357)).
 

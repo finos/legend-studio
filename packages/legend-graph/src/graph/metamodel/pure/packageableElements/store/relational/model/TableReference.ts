@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
-import { hashString } from '@finos/legend-shared';
+import { hashValue } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -53,7 +53,7 @@ export abstract class TableReference extends NamedRelationalReference {
       this.value.schema.name,
       this.value.name,
     ]
-      .map(hashString)
+      .map(hashValue)
       .join(',');
   }
 
@@ -64,7 +64,7 @@ export abstract class TableReference extends NamedRelationalReference {
       SELF_JOIN_SCHEMA_NAME,
       SELF_JOIN_TABLE_NAME,
     ]
-      .map(hashString)
+      .map(hashValue)
       .join(',');
   }
 }

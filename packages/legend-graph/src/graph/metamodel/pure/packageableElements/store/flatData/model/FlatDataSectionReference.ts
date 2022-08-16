@@ -15,7 +15,7 @@
  */
 
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
-import { hashString } from '@finos/legend-shared';
+import { hashValue } from '@finos/legend-shared';
 import {
   PackageableElementExplicitReference,
   type PackageableElementReference,
@@ -44,7 +44,7 @@ export abstract class FlatDataSectionReference extends ReferenceWithOwner {
       this.ownerReference.valueForSerialization ?? '',
       this.value.name,
     ]
-      .map(hashString)
+      .map(hashValue)
       .join(',');
   }
 }

@@ -355,6 +355,11 @@ export const getQueryBuilderPropertyNodeData = (
     parentNode.isPartOfDerivedPropertyBranch ||
     (parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&
       parentNode.property instanceof DerivedProperty);
+  // NOTE: in case of association, to avoid infinite exploration path
+  // we will prune it, on the other hand, in circular composition case
+  // A has property of type B and B has property of type A
+  // we will allow users to explore as deeply as they wish
+  // See https://github.com/finos/legend-studio/issues/1172
   if (
     property instanceof Property &&
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData &&

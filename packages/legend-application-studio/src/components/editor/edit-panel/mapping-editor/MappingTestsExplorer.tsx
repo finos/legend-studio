@@ -27,8 +27,6 @@ import {
   clsx,
   ContextMenu,
   ProgressBar,
-  VerticalAlignBottomIcon,
-  AddIcon,
   PlayIcon,
   EmptyCircleIcon,
   TimesCircleIcon,
@@ -38,6 +36,8 @@ import {
   EmptyStopCircleIcon,
   ExclamationCircleIcon,
   PauseCircleIcon,
+  PanelDropZone,
+  BlankPanelPlaceholder,
 } from '@finos/legend-art';
 import {
   type MappingElementDragSource,
@@ -369,11 +369,15 @@ export const MappingTestsExplorer = observer(
       },
       [applicationStore.alertUnhandledError, isReadOnly, mappingEditorState],
     );
-    const [{ isDragOver }, dropRef] = useDrop(
+    const [{ isDragOver }, dropRef] = useDrop<
+      MappingElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -474,40 +478,38 @@ export const MappingTestsExplorer = observer(
           }
           menuProps={{ elevation: 7 }}
         >
-          <div
-            ref={dropRef}
-            className={clsx('mapping-test-explorer__content', {
-              'mapping-test-explorer__content--dnd-over':
-                isDragOver && !isReadOnly,
-            })}
+          <PanelDropZone
+            isDragOver={isDragOver && !isReadOnly}
+            dropTargetConnector={dropRef}
           >
-            {Boolean(mappingEditorState.mappingTestStates.length) &&
-              mappingEditorState.mappingTestStates
-                .slice()
-                .map((testState) => (
-                  <MappingTestExplorer
-                    key={testState.test._UUID}
-                    testState={testState}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-            {/* TODO: use BlankPanelPlaceholder */}
-            {!isReadOnly && !mappingEditorState.mappingTestStates.length && (
-              <div
-                className="mapping-test-explorer__content mapping-test-explorer__content__adder"
-                onClick={showClassMappingSelectorModal}
-              >
-                <div className="mapping-test-explorer__content__adder__text">
-                  {new Randomizer().getRandomItemInCollection(addTestPromps) ??
-                    addTestPromps[0]}
-                </div>
-                <div className="mapping-test-explorer__content__adder__action">
-                  <VerticalAlignBottomIcon className="mapping-test-explorer__content__adder__action__dnd-icon" />
-                  <AddIcon className="mapping-test-explorer__content__adder__action__add-icon" />
-                </div>
-              </div>
-            )}
-          </div>
+            <div className="mapping-test-explorer__content">
+              {Boolean(mappingEditorState.mappingTestStates.length) &&
+                mappingEditorState.mappingTestStates
+                  .slice()
+                  .map((testState) => (
+                    <MappingTestExplorer
+                      key={testState.test._UUID}
+                      testState={testState}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+              {!isReadOnly && !mappingEditorState.mappingTestStates.length && (
+                <BlankPanelPlaceholder
+                  text={
+                    new Randomizer().getRandomItemInCollection(addTestPromps) ??
+                    addTestPromps[0] ??
+                    'Add a mapping test'
+                  }
+                  onClick={showClassMappingSelectorModal}
+                  clickActionType="add"
+                  tooltipText="Drop a mapping element to start testing"
+                  isDropZoneActive={isDragOver && !isReadOnly}
+                  disabled={isReadOnly}
+                  previewText="No test"
+                />
+              )}
+            </div>
+          </PanelDropZone>
         </ContextMenu>
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal

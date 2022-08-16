@@ -53,6 +53,7 @@ import {
   LongArrowRightIcon,
   CogIcon,
   CaretRightIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil.js';
@@ -405,15 +406,18 @@ const RuntimeExplorer = observer(
       },
       [isReadOnly, runtimeEditorState, runtimeValue],
     );
-    const [{ isRuntimeSubElementDragOver }, dropRuntimeSubElementRef] = useDrop(
+    const [{ isRuntimeSubElementDragOver }, dropRuntimeSubElementRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isRuntimeSubElementDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION,
           CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleDropRuntimeSubElement(item),
-        collect: (monitor): { isRuntimeSubElementDragOver: boolean } => ({
+        drop: (item) => handleDropRuntimeSubElement(item),
+        collect: (monitor) => ({
           isRuntimeSubElementDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -440,10 +444,10 @@ const RuntimeExplorer = observer(
           disabled={true}
           menuProps={{ elevation: 7 }}
         >
-          <div ref={dropRuntimeSubElementRef} className="dnd__dropzone">
-            <div
-              className={clsx({ dnd__overlay: isRuntimeSubElementDragOver })}
-            />
+          <PanelDropZone
+            dropTargetConnector={dropRuntimeSubElementRef}
+            isDragOver={isRuntimeSubElementDragOver}
+          >
             <div className="panel__content__list">
               <TreeView
                 components={{
@@ -459,7 +463,7 @@ const RuntimeExplorer = observer(
                 }}
               />
             </div>
-          </div>
+          </PanelDropZone>
         </ContextMenu>
       </div>
     );
@@ -657,10 +661,14 @@ const IdentifiedConnectionsPerStoreEditor = observer(
       },
       [currentRuntimeEditorTabState, isReadOnly],
     );
-    const [{ isConnectionDragOver, dragItem }, dropConnectionRef] = useDrop(
+    const [{ isConnectionDragOver, dragItem }, dropConnectionRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isConnectionDragOver: boolean; dragItem: ElementDragSource | null }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_CONNECTION],
-        drop: (item: ElementDragSource): void => handleDropConnection(item),
+        drop: (item) => handleDropConnection(item),
         collect: (
           monitor,
         ): {
@@ -736,56 +744,44 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                 }
                 menuProps={{ elevation: 7 }}
               >
-                <div ref={dropConnectionRef} className="dnd__dropzone">
+                <PanelDropZone
+                  dropTargetConnector={dropConnectionRef}
+                  isDragOver={isConnectionDragOver}
+                >
                   {Boolean(
                     currentRuntimeEditorTabState.identifiedConnections.length,
                   ) && (
-                    <>
-                      <div
-                        className={clsx({ dnd__overlay: isConnectionDragOver })}
-                      />
-                      <div className="panel__content__list">
-                        {currentRuntimeEditorTabState.identifiedConnections.map(
-                          (rtConnection) => (
-                            <IdentifiedConnectionsPerStoreExplorerItem
-                              key={rtConnection._UUID}
-                              identifiedConnection={rtConnection}
-                              currentRuntimeEditorTabState={
-                                currentRuntimeEditorTabState
-                              }
-                              isActive={rtConnection === identifiedConnection}
-                              isReadOnly={isReadOnly}
-                            />
-                          ),
-                        )}
-                      </div>
-                    </>
+                    <div className="panel__content__list">
+                      {currentRuntimeEditorTabState.identifiedConnections.map(
+                        (rtConnection) => (
+                          <IdentifiedConnectionsPerStoreExplorerItem
+                            key={rtConnection._UUID}
+                            identifiedConnection={rtConnection}
+                            currentRuntimeEditorTabState={
+                              currentRuntimeEditorTabState
+                            }
+                            isActive={rtConnection === identifiedConnection}
+                            isReadOnly={isReadOnly}
+                          />
+                        ),
+                      )}
+                    </div>
                   )}
                   {!currentRuntimeEditorTabState.identifiedConnections
                     .length && (
                     <BlankPanelPlaceholder
-                      placeholderText="Add a connection"
+                      text="Add a connection"
                       onClick={addNewConnection}
                       clickActionType="add"
                       tooltipText="Drop a connection to add it to the list, or click to add an embedded connection"
-                      dndProps={
-                        isEmbeddedRuntime
-                          ? undefined
-                          : {
-                              isDragOver: isConnectionDragOver,
-                              canDrop: canDropConnection,
-                            }
+                      isDropZoneActive={
+                        isEmbeddedRuntime ? undefined : canDropConnection
                       }
-                      readOnlyProps={
-                        !isReadOnly
-                          ? undefined
-                          : {
-                              placeholderText: 'No connection',
-                            }
-                      }
+                      disabled={isReadOnly}
+                      previewText="No connection"
                     />
                   )}
-                </div>
+                </PanelDropZone>
               </ContextMenu>
             </div>
           </ResizablePanel>
@@ -909,7 +905,7 @@ const RuntimeGeneralEditor = observer(
       }
     };
     const handleDropMapping = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
+      (item: UMLEditorElementDropTarget) => {
         const element = item.data.packageableElement;
         if (
           !isReadOnly &&
@@ -923,11 +919,15 @@ const RuntimeGeneralEditor = observer(
       },
       [isReadOnly, runtimeEditorState, runtimeValue.mappings],
     );
-    const [{ isMappingDragOver }, dropMappingRef] = useDrop(
+    const [{ isMappingDragOver }, dropMappingRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isMappingDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING],
-        drop: (item: ElementDragSource): void => handleDropMapping(item),
-        collect: (monitor): { isMappingDragOver: boolean } => ({
+        drop: (item) => handleDropMapping(item),
+        collect: (monitor) => ({
           isMappingDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -937,46 +937,45 @@ const RuntimeGeneralEditor = observer(
     return (
       <div className="panel runtime-explorer">
         <div className="panel__header"></div>
-        <div
-          ref={dropMappingRef}
-          className="panel__content dnd__overlay__container"
-        >
-          <div
-            className={clsx({ dnd__overlay: isMappingDragOver && !isReadOnly })}
-          />
-          <div className="panel__content__form">
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Mappings
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                Specifies the list of mappings covered by this runtime
-              </div>
-              <div className="panel__content__form__section__list">
-                {runtimeValue.mappings.map((mappingRef) => (
-                  <RuntimeMappingEditor
-                    key={mappingRef.value._UUID}
-                    runtimeEditorState={runtimeEditorState}
-                    mappingRef={mappingRef}
-                    isReadOnly={isReadOnly || isRuntimeEmbedded}
-                  />
-                ))}
-                {!isRuntimeEmbedded && (
-                  <div className="panel__content__form__section__list__new-item__add">
-                    <button
-                      className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                      disabled={!allowAddingMapping}
-                      tabIndex={-1}
-                      onClick={addMapping}
-                      title="Add Mapping"
-                    >
-                      Add Value
-                    </button>
-                  </div>
-                )}
+        <div className="panel__content">
+          <PanelDropZone
+            dropTargetConnector={dropMappingRef}
+            isDragOver={isMappingDragOver && !isReadOnly}
+          >
+            <div className="panel__content__form">
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Mappings
+                </div>
+                <div className="panel__content__form__section__header__prompt">
+                  Specifies the list of mappings covered by this runtime
+                </div>
+                <div className="panel__content__form__section__list">
+                  {runtimeValue.mappings.map((mappingRef) => (
+                    <RuntimeMappingEditor
+                      key={mappingRef.value._UUID}
+                      runtimeEditorState={runtimeEditorState}
+                      mappingRef={mappingRef}
+                      isReadOnly={isReadOnly || isRuntimeEmbedded}
+                    />
+                  ))}
+                  {!isRuntimeEmbedded && (
+                    <div className="panel__content__form__section__list__new-item__add">
+                      <button
+                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+                        disabled={!allowAddingMapping}
+                        tabIndex={-1}
+                        onClick={addMapping}
+                        title="Add Mapping"
+                      >
+                        Add Value
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          </PanelDropZone>
         </div>
       </div>
     );

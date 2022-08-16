@@ -255,19 +255,21 @@ export const FlatDataPropertyMappingEditor = observer(
       },
       [disableEditingTransform, flatDataPropertyMappingState],
     );
-    const [{ item }, drop] = useDrop(
+    const [{ dragItem }, drop] = useDrop<
+      FlatDataColumnDragSource,
+      void,
+      { dragItem: FlatDataColumnDragSource | undefined }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.TYPE_TREE_PRIMITIVE],
-        drop: (droppedItem: FlatDataPropertyMappingTransformDropTarget): void =>
-          handleDrop(droppedItem),
-        collect: (monitor): { item: FlatDataColumnDragSource | null } => ({
-          item: monitor.getItem<FlatDataColumnDragSource | null>(),
+        drop: (_item) => handleDrop(_item),
+        collect: (monitor) => ({
+          dragItem:
+            monitor.getItem<FlatDataColumnDragSource | null>() ?? undefined,
         }),
       }),
       [handleDrop],
     );
-    const dragItem =
-      item instanceof FlatDataColumnDragSource ? item : undefined;
     const transformProps = {
       disableTransform:
         flatDataInstanceSetImplementationState.isConvertingTransformLambdaObjects,

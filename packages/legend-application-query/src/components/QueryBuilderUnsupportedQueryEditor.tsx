@@ -48,7 +48,9 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
     const { queryBuilderState } = props;
     const queryUnsupportedState = queryBuilderState.queryUnsupportedState;
     const lambdaError = queryUnsupportedState.lambdaError;
-    const errorMessage = lambdaError ? `due to: ${lambdaError.message}` : '';
+    const errorMessage = lambdaError?.message
+      ? ` due to: ${lambdaError.message}`
+      : '';
     const openLambdaModal = (): void =>
       queryBuilderState.queryTextEditorState.openModal(
         QueryTextEditorMode.TEXT,
@@ -63,7 +65,7 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
         <div className="panel__content">
           <BlankPanelContent>
             <div className="query-builder__unsupported-view__main">
-              <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode ${errorMessage}`}</div>
+              <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode${errorMessage}`}</div>
               <button
                 className="btn--dark query-builder__unsupported-view__to-text-mode__btn"
                 onClick={openLambdaModal}

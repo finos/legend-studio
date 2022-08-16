@@ -85,9 +85,7 @@ import {
   buildNonNumericPreviewDataQuery,
 } from './QueryBuilderPreviewDataHelper.js';
 
-export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
-  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
-}
+export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
@@ -96,7 +94,6 @@ export interface QueryBuilderProjectionColumnDragSource {
 export abstract class QueryBuilderProjectionColumnState {
   readonly uuid = uuid();
   projectionState: QueryBuilderProjectionState;
-  isBeingDragged = false;
   columnName: string;
 
   constructor(
@@ -106,18 +103,12 @@ export abstract class QueryBuilderProjectionColumnState {
     makeObservable(this, {
       uuid: false,
       projectionState: false,
-      isBeingDragged: observable,
       columnName: observable,
-      setIsBeingDragged: action,
       setColumnName: action,
     });
 
     this.projectionState = projectionState;
     this.columnName = columnName;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 
   setColumnName(val: string): void {
@@ -590,7 +581,9 @@ export class QueryBuilderProjectionState {
   addNewBlankDerivation(): void {
     const derivation = new QueryBuilderDerivationProjectionColumnState(
       this,
-      this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
+      this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
+        { addDummyParameter: true },
+      ),
     );
     this.addColumn(derivation);
     derivation.derivationLambdaEditorState.setLambdaString(
@@ -770,11 +763,7 @@ export class QueryBuilderProjectionState {
     }
   }
 
-  isValidProjectionState(): boolean {
-    return Boolean(!this.getValidationErrorMessage());
-  }
-
-  getValidationErrorMessage(): string | undefined {
+  get validationIssues(): string[] | undefined {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>
@@ -782,11 +771,11 @@ export class QueryBuilderProjectionState {
             .length > 1,
       );
       if (hasDuplicatedProjectionColumns) {
-        return 'Query has duplicated projection columns';
+        return ['Query has duplicated projection columns'];
       }
       const hasNoProjectionColumns = this.columns.length === 0;
       if (hasNoProjectionColumns) {
-        return 'Query has no projection columns';
+        return ['Query has no projection columns'];
       }
     }
     return undefined;

@@ -693,6 +693,10 @@ export class QueryBuilderLambdaProcessor
         (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
+      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
+        FETCH_STRUCTURE_MODE.PROJECTION,
+      );
+
       return;
     } else if (
       matchFunctionName(
@@ -941,6 +945,10 @@ export class QueryBuilderLambdaProcessor
         .filter(isNonNullable);
       this.queryBuilderState.fetchStructureState.projectionState.columns.forEach(
         (e, idx) => e.setColumnName(aliases[idx] as string),
+      );
+
+      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
+        FETCH_STRUCTURE_MODE.PROJECTION,
       );
 
       return;

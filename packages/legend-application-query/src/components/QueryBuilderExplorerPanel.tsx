@@ -46,6 +46,8 @@ import {
   CheckIcon,
   SearchIcon,
   PanelLoadingIndicator,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -58,9 +60,8 @@ import {
   getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
 } from '../stores/QueryBuilderExplorerState.js';
-import { useDrag, useDragLayer } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from './QueryBuilderPropertyInfoTooltip.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { addQueryBuilderPropertyNode } from '../stores/QueryBuilderGraphFetchTreeUtil.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../stores/QueryBuilderProjectionState.js';
@@ -233,51 +234,6 @@ const QueryBuilderExplorerPreviewDataModal = observer(
   },
 );
 
-const QueryBuilderExplorerPropertyDragLayer = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const explorerState = queryBuilderState.explorerState;
-    const { itemType, item, isDragging, currentPosition } = useDragLayer(
-      (monitor) => ({
-        itemType: monitor.getItemType() as QUERY_BUILDER_EXPLORER_TREE_DND_TYPE,
-        item: monitor.getItem<QueryBuilderExplorerTreeDragSource | null>(),
-        isDragging: monitor.isDragging(),
-        initialOffset: monitor.getInitialSourceClientOffset(),
-        currentPosition: monitor.getClientOffset(),
-      }),
-    );
-
-    if (
-      !isDragging ||
-      !item ||
-      !Object.values(QUERY_BUILDER_EXPLORER_TREE_DND_TYPE).includes(itemType)
-    ) {
-      return null;
-    }
-    return (
-      <div className="query-builder-explorer-tree__drag-preview-layer">
-        <div
-          className="query-builder-explorer-tree__drag-preview"
-          // added some offset so the mouse doesn't overlap the label too much
-          style={
-            !currentPosition
-              ? { display: 'none' }
-              : {
-                  transform: `translate(${currentPosition.x + 20}px, ${
-                    currentPosition.y + 10
-                  }px)`,
-                }
-          }
-        >
-          {explorerState.humanizePropertyName
-            ? prettyPropertyName(item.node.label)
-            : item.node.label}
-        </div>
-      </div>
-    );
-  },
-);
-
 const QueryBuilderExplorerContextMenu = observer(
   forwardRef<
     HTMLDivElement,
@@ -442,7 +398,9 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       useState(false);
     const applicationStore = useApplicationStore();
     const explorerState = queryBuilderState.explorerState;
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<{
+      node?: QueryBuilderExplorerTreePropertyNodeData;
+    }>(
       () => ({
         type:
           node instanceof QueryBuilderExplorerTreePropertyNodeData
@@ -452,13 +410,15 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               ? QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.CLASS_PROPERTY
               : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY
             : QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ROOT,
-        item: (): { node?: QueryBuilderExplorerTreePropertyNodeData } =>
+        item: () =>
           node instanceof QueryBuilderExplorerTreePropertyNodeData
             ? { node }
             : {},
       }),
       [node],
     );
+    useDragPreviewLayer(dragPreviewConnector);
+
     const isExpandable = Boolean(node.childrenIds.length);
     const isDerivedProperty =
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
@@ -506,10 +466,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
 
     if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
       return null;
@@ -595,7 +551,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
               >
                 <div
                   className={clsx(
-                    'query-builder-explorer-tree__node__label--property--name',
+                    'query-builder-explorer-tree__node__label--property__name',
                     {
                       'query-builder-explorer-tree__node__label--deprecated':
                         checkForDeprecatedNode(
@@ -968,8 +924,13 @@ export const QueryBuilderExplorerPanel = observer(
               explorerState.mappingModelCoverageAnalysisState.isInProgress
             }
           />
-          <QueryBuilderExplorerPropertyDragLayer
-            queryBuilderState={queryBuilderState}
+          <DragPreviewLayer
+            labelGetter={(item: QueryBuilderExplorerTreeDragSource): string =>
+              explorerState.humanizePropertyName
+                ? prettyPropertyName(item.node.label)
+                : item.node.label
+            }
+            types={Object.values(QUERY_BUILDER_EXPLORER_TREE_DND_TYPE)}
           />
           {explorerState.mappingModelCoverageAnalysisState.isInProgress ? (
             <BlankPanelContent>

@@ -37,15 +37,25 @@ import {
   PlusIcon,
   TimesIcon,
   LongArrowRightIcon,
-  VerticalDragHandleIcon,
   ArrowCircleRightIcon,
   FireIcon,
   StickArrowCircleRightIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeSelector,
+  StereotypeDragPreviewLayer,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueEditor,
+  TaggedValueDragPreviewLayer,
+} from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
@@ -81,6 +91,7 @@ import {
   getAllSuperclasses,
   getAllClassConstraints,
   getAllClassDerivedProperties,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
@@ -122,15 +133,12 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 type ClassPropertyDragSource = {
   property: Property;
 };
 
-enum CLASS_PROPERTY_DND_TYPE {
-  PROPERTY = 'PROPERTY',
-}
+const CLASS_PROPERTY_DND_TYPE = 'CLASS_PROPERTY';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -213,7 +221,7 @@ const PropertyBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassPropertyDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassPropertyDragSource): void => {
         const draggingProperty = item.property;
         const hoveredProperty = property;
         class_swapProperties(_class, draggingProperty, hoveredProperty);
@@ -221,16 +229,19 @@ const PropertyBasicEditor = observer(
       [_class, property],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop<
+      ClassPropertyDragSource,
+      void,
+      { isBeingDraggedProperty: Property | undefined }
+    >(
       () => ({
-        accept: [CLASS_PROPERTY_DND_TYPE.PROPERTY],
-        hover: (
-          item: ClassPropertyDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        accept: [CLASS_PROPERTY_DND_TYPE],
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
-        ): { isBeingDraggedProperty: Property | undefined } => ({
+        ): {
+          isBeingDraggedProperty: Property | undefined;
+        } => ({
           isBeingDraggedProperty:
             monitor.getItem<ClassPropertyDragSource | null>()?.property,
         }),
@@ -239,21 +250,18 @@ const PropertyBasicEditor = observer(
     );
     const isBeingDragged = property === isBeingDraggedProperty;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_PROPERTY_DND_TYPE.PROPERTY,
-        item: (): ClassPropertyDragSource => ({
-          property: property,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassPropertyDragSource>(
+        () => ({
+          type: CLASS_PROPERTY_DND_TYPE,
+          item: () => ({
+            property: property,
+          }),
         }),
-      }),
-      [property],
-    );
+        [property],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Other
     const openElement = (): void => {
@@ -268,25 +276,12 @@ const PropertyBasicEditor = observer(
     const visitOwner = (): void => editorStore.openElement(property._OWNER);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {property.name}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
+      <div ref={ref} className="property-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
-            {!isIndirectProperty && (
-              <div className="uml-element-editor__drag-handler">
-                <VerticalDragHandleIcon />
-              </div>
-            )}
+            {!isIndirectProperty && <PanelEntryDragHandle />}
             {isIndirectProperty && (
-              <div className="property-basic-editor__name--with-lock">
+              <div className="property-basic-editor__name property-basic-editor__name--with-lock">
                 <div className="property-basic-editor__name--with-lock__icon">
                   <LockIcon />
                 </div>
@@ -320,9 +315,7 @@ const PropertyBasicEditor = observer(
                 value={selectedPropertyType}
                 placeholder={'Choose a data type or enumeration'}
                 filterOption={filterOption}
-                formatOptionLabel={getPackageableElementOptionFormatter({
-                  graphManagerState: editorStore.graphManagerState,
-                })}
+                formatOptionLabel={getPackageableElementOptionFormatter({})}
               />
             )}
             {!isIndirectProperty && !isReadOnly && !isEditingType && (
@@ -456,7 +449,7 @@ const PropertyBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -466,9 +459,7 @@ type ClassDerivedPropertyDragSource = {
   derivedProperty: DerivedProperty;
 };
 
-enum CLASS_DERIVED_PROPERTY_DND_TYPE {
-  PROPERTY = 'PROPERTY',
-}
+const CLASS_DERIVED_PROPERTY_DND_TYPE = 'CLASS_DERIVED_PROPERTY';
 
 const DerivedPropertyBasicEditor = observer(
   (props: {
@@ -586,40 +577,36 @@ const DerivedPropertyBasicEditor = observer(
       [_class, derivedProperty],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedDerivedProperty }, dropConnector] = useDrop<
+      ClassDerivedPropertyDragSource,
+      void,
+      { isBeingDraggedDerivedProperty: DerivedProperty | undefined }
+    >(
       () => ({
-        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY],
-        hover: (
-          item: ClassDerivedPropertyDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedProperty: Property | undefined } => ({
-          isBeingDraggedProperty:
+        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE],
+        hover: (item, monitor): void => handleHover(item, monitor),
+        collect: (monitor) => ({
+          isBeingDraggedDerivedProperty:
             monitor.getItem<ClassDerivedPropertyDragSource | null>()
               ?.derivedProperty,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = derivedProperty === isBeingDraggedProperty;
+    const isBeingDragged = derivedProperty === isBeingDraggedDerivedProperty;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_DERIVED_PROPERTY_DND_TYPE.PROPERTY,
-        item: (): ClassDerivedPropertyDragSource => ({
-          derivedProperty: derivedProperty,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassDerivedPropertyDragSource>(
+        () => ({
+          type: CLASS_DERIVED_PROPERTY_DND_TYPE,
+          item: () => ({
+            derivedProperty: derivedProperty,
+          }),
         }),
-      }),
-      [derivedProperty],
-    );
+        [derivedProperty],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Action
     const onLambdaEditorFocus = (): void =>
@@ -643,16 +630,11 @@ const DerivedPropertyBasicEditor = observer(
     });
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--padding">
-            <div className="uml-element-editor__dnd__name">
-              {derivedProperty.name}
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="derived-property-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="derived-property-editor__dnd__placeholder"
+        >
           <div
             className={clsx('derived-property-editor', {
               backdrop__element:
@@ -661,7 +643,7 @@ const DerivedPropertyBasicEditor = observer(
           >
             <div className="property-basic-editor">
               {isInheritedProperty && (
-                <div className="property-basic-editor__name--with-lock">
+                <div className="property-basic-editor__name property-basic-editor__name--with-lock">
                   <div className="property-basic-editor__name--with-lock__icon">
                     <LockIcon />
                   </div>
@@ -670,11 +652,7 @@ const DerivedPropertyBasicEditor = observer(
                   </span>
                 </div>
               )}
-              {!isInheritedProperty && (
-                <div className="uml-element-editor__drag-handler">
-                  <VerticalDragHandleIcon />
-                </div>
-              )}
+              {!isInheritedProperty && <PanelEntryDragHandle />}
               {!isInheritedProperty && (
                 <input
                   disabled={isReadOnly}
@@ -693,9 +671,7 @@ const DerivedPropertyBasicEditor = observer(
                   value={selectedPropertyType}
                   placeholder="Choose a data type or enumeration"
                   filterOption={filterOption}
-                  formatOptionLabel={getPackageableElementOptionFormatter({
-                    graphManagerState: editorStore.graphManagerState,
-                  })}
+                  formatOptionLabel={getPackageableElementOptionFormatter({})}
                 />
               )}
               {!isInheritedProperty && !isReadOnly && !isEditingType && (
@@ -825,37 +801,30 @@ const DerivedPropertyBasicEditor = observer(
                 </button>
               )}
             </div>
-            <div onFocus={onLambdaEditorFocus}>
-              <StudioLambdaEditor
-                disabled={
-                  editorState.classState
-                    .isConvertingDerivedPropertyLambdaObjects ||
-                  isInheritedProperty ||
-                  isReadOnly
-                }
-                lambdaEditorState={dpState}
-                forceBackdrop={hasParserError}
-                expectedType={propertyType}
-              />
-            </div>
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState
+                  .isConvertingDerivedPropertyLambdaObjects ||
+                isInheritedProperty ||
+                isReadOnly
+              }
+              lambdaEditorState={dpState}
+              forceBackdrop={hasParserError}
+              expectedType={propertyType}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
+            />
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
 
-type ClassSuperTypeDragSource = {
-  superType: GenericTypeReference;
+type ClassConstraintDragSource = {
+  constraint: Constraint;
 };
 
-enum CLASS_SUPER_TYPE_DND_TYPE {
-  SUPER_TYPE = 'SUPER_TYPE',
-}
-
-enum CLASS_CONSTRAINT_DND_TYPE {
-  CONSTRAINT = 'CONSTRAINT',
-}
+const CLASS_CONSTRAINT_DND_TYPE = 'CLASS_CONSTRAINT';
 
 const ConstraintEditor = observer(
   (props: {
@@ -882,7 +851,7 @@ const ConstraintEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassConstraintDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassConstraintDragSource): void => {
         const draggingProperty = item.constraint;
         const hoveredProperty = constraint;
         class_swapConstraints(_class, draggingProperty, hoveredProperty);
@@ -890,39 +859,37 @@ const ConstraintEditor = observer(
       [_class, constraint],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedConstraint }, dropConnector] = useDrop<
+      ClassConstraintDragSource,
+      void,
+      { isBeingDraggedConstraint: Constraint | undefined }
+    >(
       () => ({
-        accept: [CLASS_CONSTRAINT_DND_TYPE.CONSTRAINT],
-        hover: (
-          item: ClassConstraintDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        accept: [CLASS_CONSTRAINT_DND_TYPE],
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
-        ): { isBeingDraggedProperty: Constraint | undefined } => ({
-          isBeingDraggedProperty:
+        ): { isBeingDraggedConstraint: Constraint | undefined } => ({
+          isBeingDraggedConstraint:
             monitor.getItem<ClassConstraintDragSource | null>()?.constraint,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = constraint === isBeingDraggedProperty;
+    const isBeingDragged = constraint === isBeingDraggedConstraint;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_CONSTRAINT_DND_TYPE.CONSTRAINT,
-        item: (): ClassConstraintDragSource => ({
-          constraint: constraint,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassConstraintDragSource>(
+        () => ({
+          type: CLASS_CONSTRAINT_DND_TYPE,
+          item: () => ({
+            constraint: constraint,
+          }),
         }),
-      }),
-      [constraint],
-    );
+        [constraint],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     // Actions
     const onLambdaEditorFocus = (): void =>
@@ -940,29 +907,18 @@ const ConstraintEditor = observer(
     const visitOwner = (): void => editorStore.openElement(constraint._OWNER);
 
     return (
-      <div
-        ref={ref}
-        className={clsx('constraint-editor', {
-          backdrop__element: constraintState.parserError,
-        })}
-      >
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--tall">
-            <div className="uml-element-editor__dnd--padding ">
-              <div className="uml-element-editor__dnd__name">
-                {constraint.name}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
-          <>
+      <div ref={ref} className="constraint-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="constraint-editor__dnd__placeholder"
+        >
+          <div
+            className={clsx('constraint-editor', {
+              backdrop__element: constraintState.parserError,
+            })}
+          >
             <div className="constraint-editor__content">
-              {!isInheritedConstraint && (
-                <div className="uml-element-editor__drag-handler">
-                  <VerticalDragHandleIcon />
-                </div>
-              )}
+              {!isInheritedConstraint && <PanelEntryDragHandle />}
               {isInheritedConstraint && (
                 <div className="constraint-editor__content__name--with-lock">
                   <div className="constraint-editor__content__name--with-lock__icon">
@@ -1005,30 +961,31 @@ const ConstraintEditor = observer(
                 </button>
               )}
             </div>
-            <div onFocus={onLambdaEditorFocus}>
-              <StudioLambdaEditor
-                disabled={
-                  editorState.classState.isConvertingConstraintLambdaObjects ||
-                  isReadOnly ||
-                  isInheritedConstraint
-                }
-                lambdaEditorState={constraintState}
-                forceBackdrop={hasParserError}
-                expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.BOOLEAN,
-                )}
-              />
-            </div>
-          </>
-        )}
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState.isConvertingConstraintLambdaObjects ||
+                isReadOnly ||
+                isInheritedConstraint
+              }
+              lambdaEditorState={constraintState}
+              forceBackdrop={hasParserError}
+              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.BOOLEAN,
+              )}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
+            />
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
 
-type ClassConstraintDragSource = {
-  constraint: Constraint;
+type ClassSuperTypeDragSource = {
+  superType: GenericTypeReference;
 };
+
+const CLASS_SUPER_TYPE_DND_TYPE = 'CLASS_SUPER_TYPE';
 
 const SuperTypeEditor = observer(
   (props: {
@@ -1054,7 +1011,7 @@ const SuperTypeEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: ClassSuperTypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: ClassSuperTypeDragSource): void => {
         const draggingProperty = item.superType;
         const hoveredProperty = superType;
         class_swapSuperTypes(_class, draggingProperty, hoveredProperty);
@@ -1062,39 +1019,35 @@ const SuperTypeEditor = observer(
       [_class, superType],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop(
+    const [{ isBeingDraggedSupertype }, dropConnector] = useDrop<
+      ClassSuperTypeDragSource,
+      void,
+      { isBeingDraggedSupertype: GenericTypeReference | undefined }
+    >(
       () => ({
-        accept: [CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE],
-        hover: (
-          item: ClassSuperTypeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedProperty: GenericTypeReference | undefined } => ({
-          isBeingDraggedProperty:
+        accept: [CLASS_SUPER_TYPE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedSupertype:
             monitor.getItem<ClassSuperTypeDragSource | null>()?.superType,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = superType === isBeingDraggedProperty;
+    const isBeingDragged = superType === isBeingDraggedSupertype;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CLASS_SUPER_TYPE_DND_TYPE.SUPER_TYPE,
-        item: (): ClassSuperTypeDragSource => ({
-          superType: superType,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassSuperTypeDragSource>(
+        () => ({
+          type: CLASS_SUPER_TYPE_DND_TYPE,
+          item: () => ({
+            superType: superType,
+          }),
         }),
-      }),
-      [superType],
-    );
+        [superType],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
@@ -1109,21 +1062,10 @@ const SuperTypeEditor = observer(
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {selectedType.label}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isBeingDragged && (
+      <div ref={ref} className="super-type-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="super-type-editor">
-            <div className="uml-element-editor__drag-handler">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <CustomSelectorInput
               className="super-type-editor__class"
               disabled={isReadOnly}
@@ -1132,9 +1074,7 @@ const SuperTypeEditor = observer(
               value={selectedType}
               placeholder={'Choose a class'}
               filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionFormatter({
-                graphManagerState: editorStore.graphManagerState,
-              })}
+              formatOptionLabel={getPackageableElementOptionFormatter({})}
             />
             <button
               className="uml-element-editor__basic__detail-btn"
@@ -1156,7 +1096,7 @@ const SuperTypeEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -1195,14 +1135,18 @@ const PropertiesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop(
+    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropProperty(item),
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropProperty(item),
+        collect: (monitor) => ({
           isPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1214,23 +1158,29 @@ const PropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropPropertyRef}
       >
-        {_class.properties.concat(indirectProperties).map((property) => (
-          <PropertyBasicEditor
-            key={property._UUID}
-            property={property}
-            _class={_class}
-            editorState={editorState}
-            deleteProperty={deleteProperty(property)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassPropertyDragSource): string =>
+              item.property.name === '' ? '(unknown)' : item.property.name
+            }
+            types={[CLASS_PROPERTY_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.properties.concat(indirectProperties).map((property) => (
+            <PropertyBasicEditor
+              key={property._UUID}
+              property={property}
+              _class={_class}
+              editorState={editorState}
+              deleteProperty={deleteProperty(property)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1268,15 +1218,18 @@ const DerviedPropertiesEditor = observer(
       },
       [_class, classState, isReadOnly],
     );
-    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop(
+    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDerivedPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleDropDerivedProperty(item),
-        collect: (monitor): { isDerivedPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropDerivedProperty(item),
+        collect: (monitor) => ({
           isDerivedPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1288,29 +1241,36 @@ const DerviedPropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropDerivedPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isDerivedPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isDerivedPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropDerivedPropertyRef}
       >
-        {_class.derivedProperties
-          .concat(indirectDerivedProperties)
-          .filter((dp): dp is DerivedProperty =>
-            Boolean(classState.getNullableDerivedPropertyState(dp)),
-          )
-          .map((dp) => (
-            <DerivedPropertyBasicEditor
-              key={dp._UUID}
-              derivedProperty={dp}
-              _class={_class}
-              editorState={editorState}
-              deleteDerivedProperty={deleteDerivedProperty(dp)}
-              isReadOnly={isReadOnly}
-            />
-          ))}
-      </div>
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassDerivedPropertyDragSource): string =>
+              item.derivedProperty.name === ''
+                ? '(unknown)'
+                : item.derivedProperty.name
+            }
+            types={[CLASS_DERIVED_PROPERTY_DND_TYPE]}
+          />
+          {_class.derivedProperties
+            .concat(indirectDerivedProperties)
+            .filter((dp): dp is DerivedProperty =>
+              Boolean(classState.getNullableDerivedPropertyState(dp)),
+            )
+            .map((dp) => (
+              <DerivedPropertyBasicEditor
+                key={dp._UUID}
+                derivedProperty={dp}
+                _class={_class}
+                editorState={editorState}
+                deleteDerivedProperty={deleteDerivedProperty(dp)}
+                isReadOnly={isReadOnly}
+              />
+            ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1337,6 +1297,12 @@ const ConstraintsEditor = observer(
 
     return (
       <div className="panel__content__lists">
+        <DragPreviewLayer
+          labelGetter={(item: ClassConstraintDragSource): string =>
+            item.constraint.name === '' ? '(unknown)' : item.constraint.name
+          }
+          types={[CLASS_CONSTRAINT_DND_TYPE]}
+        />
         {_class.constraints
           .concat(inheritedConstraints)
           .filter((constraint): constraint is Constraint =>
@@ -1394,14 +1360,18 @@ const SupertypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop(
+    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isSuperTypeDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropSuperType(item),
-        collect: (monitor): { isSuperTypeDragOver: boolean } => ({
+        drop: (item) => handleDropSuperType(item),
+        collect: (monitor) => ({
           isSuperTypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1413,22 +1383,28 @@ const SupertypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropSuperTypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isSuperTypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isSuperTypeDragOver && !isReadOnly}
+        dropTargetConnector={dropSuperTypeRef}
       >
-        {_class.generalizations.map((superType) => (
-          <SuperTypeEditor
-            key={superType.value._UUID}
-            superType={superType}
-            _class={_class}
-            deleteSuperType={deleteSuperType(superType)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassSuperTypeDragSource): string =>
+              item.superType.value.rawType.name
+            }
+            types={[CLASS_SUPER_TYPE_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.generalizations.map((superType) => (
+            <SuperTypeEditor
+              key={superType.value._UUID}
+              superType={superType}
+              _class={_class}
+              deleteSuperType={deleteSuperType(superType)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1454,11 +1430,15 @@ const TaggedValuesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1466,23 +1446,23 @@ const TaggedValuesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropTaggedValueRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isTaggedValueDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isTaggedValueDragOver && !isReadOnly}
+        dropTargetConnector={dropTaggedValueRef}
       >
-        {_class.taggedValues.map((taggedValue) => (
-          <TaggedValueEditor
-            annotatedElement={_class}
-            key={taggedValue._UUID}
-            taggedValue={taggedValue}
-            deleteValue={deleteTaggedValue(taggedValue)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <TaggedValueDragPreviewLayer />
+          {_class.taggedValues.map((taggedValue) => (
+            <TaggedValueEditor
+              annotatedElement={_class}
+              key={taggedValue._UUID}
+              taggedValue={taggedValue}
+              deleteValue={deleteTaggedValue(taggedValue)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1510,11 +1490,15 @@ const StereotypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1522,23 +1506,23 @@ const StereotypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropStereotypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isStereotypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isStereotypeDragOver && !isReadOnly}
+        dropTargetConnector={dropStereotypeRef}
       >
-        {_class.stereotypes.map((stereotype) => (
-          <StereotypeSelector
-            key={stereotype._UUID}
-            annotatedElement={_class}
-            stereotype={stereotype}
-            deleteStereotype={deleteStereotype(stereotype)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <StereotypeDragPreviewLayer />
+          {_class.stereotypes.map((stereotype) => (
+            <StereotypeSelector
+              key={stereotype._UUID}
+              annotatedElement={_class}
+              stereotype={stereotype}
+              deleteStereotype={deleteStereotype(stereotype)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1552,7 +1536,7 @@ export const ClassFormEditor = observer(
     const { _class, editorState, onHashChange } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
+    const classHash = isElementReadOnly(_class)
       ? undefined
       : applicationStore.notifyAndReturnAlternativeOnError(
           () => _class.hashCode,

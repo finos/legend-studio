@@ -24,6 +24,7 @@ import {
   PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   PURE_DEPRECATED_STEREOTYPE,
+  ROOT_PACKAGE_NAME,
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
@@ -36,6 +37,7 @@ import {
   guaranteeType,
   uniqBy,
   UnsupportedOperationError,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils.js';
 import type { BasicModel } from '../BasicModel.js';
@@ -214,6 +216,35 @@ export const getRawGenericType = <T extends Type>(
   genericType: GenericType,
   clazz: Clazz<T>,
 ): T => guaranteeType<T>(genericType.rawType, clazz);
+
+export const isElementReadOnly = (element: PackageableElement): boolean =>
+  returnUndefOnError(() => getElementRootPackage(element))?.name !==
+  ROOT_PACKAGE_NAME.MAIN;
+
+export const isDependencyElement = (
+  element: PackageableElement,
+): element is PackageableElement =>
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
+  ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
+
+export const isGeneratedElement = (
+  element: PackageableElement,
+): element is PackageableElement =>
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
+  ROOT_PACKAGE_NAME.MODEL_GENERATION;
+
+export const isSystemElement = (
+  element: PackageableElement,
+): element is PackageableElement => {
+  const elementRootPackageName = returnUndefOnError(() =>
+    getElementRootPackage(element),
+  )?.name;
+  return (
+    element instanceof PrimitiveType ||
+    elementRootPackageName === ROOT_PACKAGE_NAME.SYSTEM ||
+    elementRootPackageName === ROOT_PACKAGE_NAME.CORE
+  );
+};
 
 /**
  * Extract the type of temporal milestone the class is associated with (using stereotype).

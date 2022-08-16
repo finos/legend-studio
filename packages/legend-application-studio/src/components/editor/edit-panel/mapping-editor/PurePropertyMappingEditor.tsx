@@ -350,7 +350,14 @@ export const PurePropertyMappingEditor = observer(
       },
       [disableEditingTransform, purePropertyMappingState],
     );
-    const [{ item, dragItemType }, drop] = useDrop(
+    const [{ dragItem, dragItemType }, drop] = useDrop<
+      TypeDragSource,
+      void,
+      {
+        dragItem: TypeDragSource | undefined;
+        dragItemType: CORE_DND_TYPE;
+      }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.TYPE_TREE_CLASS,
@@ -358,18 +365,15 @@ export const PurePropertyMappingEditor = observer(
           CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
           CORE_DND_TYPE.TYPE_TREE_ENUM,
         ],
-        drop: (dropItem: TransformDropTarget, monitor): void =>
-          handleDrop(dropItem, monitor.getItemType() as string),
-        collect: (
-          monitor,
-        ): { item: TypeDragSource | null; dragItemType: CORE_DND_TYPE } => ({
-          item: monitor.getItem<TypeDragSource | null>(),
+        drop: (item, monitor) =>
+          handleDrop(item, monitor.getItemType() as string),
+        collect: (monitor) => ({
+          dragItem: monitor.getItem<TypeDragSource | null>() ?? undefined,
           dragItemType: monitor.getItemType() as CORE_DND_TYPE,
         }),
       }),
       [handleDrop],
     );
-    const dragItem = item instanceof TypeDragSource ? item : undefined;
     const transformProps = {
       disableTransform: disableEditingTransform,
       forceBackdrop: setImplementationHasParserError,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -24,7 +24,10 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -40,21 +43,28 @@ import {
   annotatedElement_swapTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useDrop, useDrag } from 'react-dnd';
 
 interface TagOption {
   label: string;
   value: Tag;
 }
 
-enum TAGGED_VALUE_DND_TYPE {
-  TAGGED_VALUE = 'TAGGED_VALUE',
-}
-
-type TaggedValueDragSource = {
+export const TAGGED_VALUE_DND_TYPE = 'TAGGED_VALUE';
+export type TaggedValueDragSource = {
   taggedValue: TaggedValue;
 };
+
+export const TaggedValueDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: TaggedValueDragSource): string =>
+      isStubbed_PackageableElement(item.taggedValue.tag.ownerReference.value)
+        ? '(unknown)'
+        : `${item.taggedValue.tag.ownerReference.value.name}.${item.taggedValue.tag.value.value}`
+    }
+    types={[TAGGED_VALUE_DND_TYPE]}
+  />
+);
 
 export const TaggedValueEditor = observer(
   (props: {
@@ -124,7 +134,7 @@ export const TaggedValueEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: TaggedValueDragSource, monitor: DropTargetMonitor): void => {
+      (item: TaggedValueDragSource) => {
         const draggingProperty = item.taggedValue;
         const hoveredProperty = taggedValue;
         annotatedElement_swapTaggedValues(
@@ -136,16 +146,15 @@ export const TaggedValueEditor = observer(
       [annotatedElement, taggedValue],
     );
 
-    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop<
+      TaggedValueDragSource,
+      void,
+      { isBeingDraggedTaggedValue: TaggedValue | undefined }
+    >(
       () => ({
-        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
-        hover: (
-          item: TaggedValueDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedTaggedValue: TaggedValue | undefined } => ({
+        accept: [TAGGED_VALUE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTaggedValue:
             monitor.getItem<TaggedValueDragSource | null>()?.taggedValue,
         }),
@@ -154,42 +163,32 @@ export const TaggedValueEditor = observer(
     );
     const isBeingDragged = taggedValue === isBeingDraggedTaggedValue;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): TaggedValueDragSource => ({
-          taggedValue: taggedValue,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<TaggedValueDragSource>(
+        () => ({
+          type: TAGGED_VALUE_DND_TYPE,
+          item: () => ({
+            taggedValue: taggedValue,
+          }),
         }),
-      }),
-      [taggedValue],
-    );
+        [taggedValue],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd--padding ">
-            <div className="uml-element-editor__dnd__name">
-              {taggedValue.value}
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="tagged-value-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="tagged-value-editor__dnd__placeholder"
+        >
           <div className="tagged-value-editor">
+            <PanelEntryDragHandle />
             <div
               className={`tagged-value-editor__profile ${
                 darkTheme ? 'tagged-value-editor-dark-theme' : ''
               }`}
             >
-              <div className="uml-element-editor__drag-handler">
-                <VerticalDragHandleIcon />
-              </div>
               <CustomSelectorInput
                 className="tagged-value-editor__profile__selector"
                 disabled={isReadOnly}
@@ -276,7 +275,7 @@ export const TaggedValueEditor = observer(
               </button>
             </div>
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

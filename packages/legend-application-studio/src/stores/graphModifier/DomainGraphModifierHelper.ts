@@ -385,16 +385,15 @@ export const enum_deleteValue = action(
     deleteEntry(enumeration.values, value);
   },
 );
+export const enum_swapValues = action(
+  (enumeration: Enumeration, sourceEnum: Enum, targetEnum: Enum): void => {
+    swapEntry(enumeration.values, sourceEnum, targetEnum);
+  },
+);
 export const enumValueReference_setValue = action(
   (ref: EnumValueReference, value: Enum): void => {
     ref.value = observe_Enum(value);
     packageableElementReference_setValue(ref.ownerReference, value._OWNER);
-  },
-);
-
-export const enum_swapValues = action(
-  (enumeration: Enum[], sourceEnum: Enum, targetEnum: Enum): void => {
-    swapEntry(enumeration, sourceEnum, targetEnum);
   },
 );
 

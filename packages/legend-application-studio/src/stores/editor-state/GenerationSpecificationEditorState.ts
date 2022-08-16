@@ -22,13 +22,7 @@ import {
   deleteEntry,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import {
-  computed,
-  observable,
-  makeObservable,
-  makeAutoObservable,
-  action,
-} from 'mobx';
+import { computed, observable, makeObservable, action } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import {
   GenerationSpecification,
@@ -48,17 +42,9 @@ export type GenerationSpecNodeDropTarget = GenerationSpecNodeDragSource;
 export class GenerationTreeNodeState {
   readonly uuid = uuid();
   node: GenerationTreeNode;
-  isBeingDragged = false;
 
   constructor(node: GenerationTreeNode) {
-    makeAutoObservable(this, {
-      setIsBeingDragged: action,
-    });
     this.node = node;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 }
 

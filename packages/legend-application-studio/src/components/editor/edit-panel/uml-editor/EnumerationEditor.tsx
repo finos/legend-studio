@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   UMLEditorState,
   UML_EDITOR_TAB,
 } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
@@ -42,11 +42,21 @@ import {
   LockIcon,
   FireIcon,
   StickArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Enumeration,
@@ -73,104 +83,86 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 type EnumValueDragSource = {
-  _enum: Enum;
+  enumValue: Enum;
 };
 
-enum ENUEMRATION_VALUE_DND_TYPE {
-  ENUMERATION = 'ENUMERATION',
-}
+const ENUM_VALUE_DND_TYPE = 'ENUMERATION';
 
 const EnumBasicEditor = observer(
   (props: {
-    _parentEnumerations: Enum[];
-    _enum: Enum;
+    enumValue: Enum;
     selectValue: () => void;
     deleteValue: () => void;
     isReadOnly: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { _enum, _parentEnumerations, selectValue, deleteValue, isReadOnly } =
-      props;
+    const { enumValue, selectValue, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      enum_setName(_enum, event.target.value);
+      enum_setName(enumValue, event.target.value);
     };
     const isEnumValueDuplicated = (val: Enum): boolean =>
-      _enum._OWNER.values.filter((value) => value.name === val.name).length >=
-      2;
+      enumValue._OWNER.values.filter((value) => value.name === val.name)
+        .length >= 2;
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: EnumValueDragSource, monitor: DropTargetMonitor): void => {
-        const draggingEnumeration = item._enum;
-        const hoveredEnumeration = _enum;
+      (item: EnumValueDragSource): void => {
+        const draggingEnumeration = item.enumValue;
+        const hoveredEnumeration = enumValue;
         enum_swapValues(
-          _parentEnumerations,
+          enumValue._OWNER,
           draggingEnumeration,
           hoveredEnumeration,
         );
       },
-      [_parentEnumerations, _enum],
+      [enumValue],
     );
 
-    const [{ isBeingDraggedEnumeration }, dropConnector] = useDrop(
+    const [{ isBeingDraggedEnumeration }, dropConnector] = useDrop<
+      EnumValueDragSource,
+      void,
+      { isBeingDraggedEnumeration: Enum | undefined }
+    >(
       () => ({
-        accept: [ENUEMRATION_VALUE_DND_TYPE.ENUMERATION],
-        hover: (item: EnumValueDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedEnumeration: Enum | undefined } => ({
+        accept: [ENUM_VALUE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedEnumeration:
-            monitor.getItem<EnumValueDragSource | null>()?._enum,
+            monitor.getItem<EnumValueDragSource | null>()?.enumValue,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = _enum === isBeingDraggedEnumeration;
-
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: ENUEMRATION_VALUE_DND_TYPE.ENUMERATION,
-        item: (): EnumValueDragSource => ({
-          _enum: _enum,
+    const isBeingDragged = enumValue === isBeingDraggedEnumeration;
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<EnumValueDragSource>(
+        () => ({
+          type: ENUM_VALUE_DND_TYPE,
+          item: () => ({
+            enumValue: enumValue,
+          }),
         }),
-      }),
-      [_enum],
-    );
+        [enumValue],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">{_enum.name}</div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="enum-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="enum-basic-editor">
-            <div className="uml-element-editor__drag-handler">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="enum-basic-editor__name input-group__input"
               spellCheck={false}
               disabled={isReadOnly}
-              value={_enum.name}
+              value={enumValue.name}
               onChange={changeValue}
               placeholder={`Enum name`}
               validationErrorMessage={
-                isEnumValueDuplicated(_enum) ? 'Duplicated enum' : undefined
+                isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
               }
             />
             <button
@@ -193,7 +185,7 @@ const EnumBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -258,11 +250,15 @@ const EnumEditor = observer(
       },
       [_enum, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -281,11 +277,15 @@ const EnumEditor = observer(
       },
       [_enum, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -347,42 +347,42 @@ const EnumEditor = observer(
           </div>
           <div className="panel__content">
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-              <div
-                ref={dropTaggedValueRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isTaggedValueDragOver && !isReadOnly,
-                })}
+              <PanelDropZone
+                isDragOver={isTaggedValueDragOver && !isReadOnly}
+                dropTargetConnector={dropTaggedValueRef}
               >
-                {_enum.taggedValues.map((taggedValue) => (
-                  <TaggedValueEditor
-                    annotatedElement={_enum}
-                    key={taggedValue._UUID}
-                    taggedValue={taggedValue}
-                    deleteValue={_deleteTaggedValue(taggedValue)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
+                <div className="panel__content__lists">
+                  <TaggedValueDragPreviewLayer />
+                  {_enum.taggedValues.map((taggedValue) => (
+                    <TaggedValueEditor
+                      annotatedElement={_enum}
+                      key={taggedValue._UUID}
+                      taggedValue={taggedValue}
+                      deleteValue={_deleteTaggedValue(taggedValue)}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </div>
+              </PanelDropZone>
             )}
             {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-              <div
-                ref={dropStereotypeRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isStereotypeDragOver && !isReadOnly,
-                })}
+              <PanelDropZone
+                isDragOver={isStereotypeDragOver && !isReadOnly}
+                dropTargetConnector={dropStereotypeRef}
               >
-                {_enum.stereotypes.map((stereotype) => (
-                  <StereotypeSelector
-                    key={stereotype.value._UUID}
-                    annotatedElement={_enum}
-                    stereotype={stereotype}
-                    deleteStereotype={_deleteStereotype(stereotype)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
+                <div className="panel__content__lists">
+                  <StereotypeDragPreviewLayer />
+                  {_enum.stereotypes.map((stereotype) => (
+                    <StereotypeSelector
+                      key={stereotype.value._UUID}
+                      annotatedElement={_enum}
+                      stereotype={stereotype}
+                      deleteStereotype={_deleteStereotype(stereotype)}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </div>
+              </PanelDropZone>
             )}
           </div>
         </div>
@@ -477,11 +477,15 @@ export const EnumerationEditor = observer(
       },
       [enumeration, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -500,11 +504,15 @@ export const EnumerationEditor = observer(
       },
       [enumeration, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -600,11 +608,18 @@ export const EnumerationEditor = observer(
               <div className="panel__content">
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
                   <div className="panel__content__lists">
+                    <DragPreviewLayer
+                      labelGetter={(item: EnumValueDragSource): string =>
+                        item.enumValue.name === ''
+                          ? '(unknown)'
+                          : item.enumValue.name
+                      }
+                      types={[ENUM_VALUE_DND_TYPE]}
+                    />
                     {enumeration.values.map((enumValue) => (
                       <EnumBasicEditor
                         key={enumValue._UUID}
-                        _enum={enumValue}
-                        _parentEnumerations={enumeration.values}
+                        enumValue={enumValue}
                         deleteValue={deleteValue(enumValue)}
                         selectValue={selectValue(enumValue)}
                         isReadOnly={isReadOnly}
@@ -613,42 +628,42 @@ export const EnumerationEditor = observer(
                   </div>
                 )}
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                  <div
-                    ref={dropTaggedValueRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isTaggedValueDragOver && !isReadOnly,
-                    })}
+                  <PanelDropZone
+                    isDragOver={isTaggedValueDragOver && !isReadOnly}
+                    dropTargetConnector={dropTaggedValueRef}
                   >
-                    {enumeration.taggedValues.map((taggedValue) => (
-                      <TaggedValueEditor
-                        annotatedElement={enumeration}
-                        key={taggedValue._UUID}
-                        taggedValue={taggedValue}
-                        deleteValue={_deleteTaggedValue(taggedValue)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                    <div className="panel__content__lists">
+                      <TaggedValueDragPreviewLayer />
+                      {enumeration.taggedValues.map((taggedValue) => (
+                        <TaggedValueEditor
+                          annotatedElement={enumeration}
+                          key={taggedValue._UUID}
+                          taggedValue={taggedValue}
+                          deleteValue={_deleteTaggedValue(taggedValue)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                    </div>
+                  </PanelDropZone>
                 )}
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                  <div
-                    ref={dropStereotypeRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isStereotypeDragOver && !isReadOnly,
-                    })}
+                  <PanelDropZone
+                    isDragOver={isStereotypeDragOver && !isReadOnly}
+                    dropTargetConnector={dropStereotypeRef}
                   >
-                    {enumeration.stereotypes.map((stereotype) => (
-                      <StereotypeSelector
-                        key={stereotype.value._UUID}
-                        annotatedElement={enumeration}
-                        stereotype={stereotype}
-                        deleteStereotype={_deleteStereotype(stereotype)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                    <div className="panel__content__lists">
+                      <StereotypeDragPreviewLayer />
+                      {enumeration.stereotypes.map((stereotype) => (
+                        <StereotypeSelector
+                          key={stereotype.value._UUID}
+                          annotatedElement={enumeration}
+                          stereotype={stereotype}
+                          deleteStereotype={_deleteStereotype(stereotype)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                    </div>
+                  </PanelDropZone>
                 )}
               </div>
             </div>

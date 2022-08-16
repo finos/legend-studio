@@ -32,6 +32,7 @@ import {
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import type { QueryBuilderProjectionColumnState } from '../stores/QueryBuilderProjectionState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { useApplicationStore } from '@finos/legend-application';
 
 const ColumnSortEditor = observer(
   (props: {
@@ -39,6 +40,7 @@ const ColumnSortEditor = observer(
     columnSort: SortColumnState;
   }) => {
     const { queryBuilderState, columnSort } = props;
+    const applicationStore = useApplicationStore();
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
     const sortColumns = queryBuilderState.resultSetModifierState.sortColumns;
@@ -81,7 +83,7 @@ const ColumnSortEditor = observer(
           disabled={projectionOptions.length <= 1}
           onChange={onChange}
           value={value}
-          darkMode={true}
+          darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
         />
         <button
           className="btn--dark btn--sm query-builder__projection__options__sort__type-btn"
@@ -95,7 +97,7 @@ const ColumnSortEditor = observer(
           )}
         </button>
         <button
-          className="query-builder__projection__options__sort__remove-btn"
+          className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
           onClick={deleteColumnSort}
           tabIndex={-1}
           title={'Remove'}

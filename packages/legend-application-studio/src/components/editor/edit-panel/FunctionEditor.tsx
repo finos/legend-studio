@@ -29,7 +29,7 @@ import {
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import {
   clsx,
   CustomSelectorInput,
@@ -38,11 +38,20 @@ import {
   PlusIcon,
   TimesIcon,
   ArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
-import { StereotypeSelector } from './uml-editor/StereotypeSelector.js';
-import { TaggedValueEditor } from './uml-editor/TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './uml-editor/StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './uml-editor/TaggedValueEditor.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
@@ -90,7 +99,6 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -118,9 +126,7 @@ type FunctionParameterDragSource = {
   parameter: RawVariableExpression;
 };
 
-enum FUNCTION_PARAMETER_DND_TYPE {
-  PARAMETER = 'PARAMETER',
-}
+const FUNCTION_PARAMETER_DND_TYPE = 'FUNCTION_PARAMETER';
 
 const ParameterBasicEditor = observer(
   (props: {
@@ -183,10 +189,22 @@ const ParameterBasicEditor = observer(
         );
       }
     };
+    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setLowerBound(event.target.value);
+      updateMultiplicity(event.target.value, upperBound);
+    };
+    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      setUpperBound(event.target.value);
+      updateMultiplicity(lowerBound, event.target.value);
+    };
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: FunctionParameterDragSource, monitor: DropTargetMonitor): void => {
+      (item: FunctionParameterDragSource): void => {
         const draggingParameter = item.parameter;
         const hoveredParameter = parameter;
         function_swapParameters(_func, draggingParameter, hoveredParameter);
@@ -194,13 +212,14 @@ const ParameterBasicEditor = observer(
       [_func, parameter],
     );
 
-    const [{ isBeingDraggedParameter }, dropConnector] = useDrop(
+    const [{ isBeingDraggedParameter }, dropConnector] = useDrop<
+      FunctionParameterDragSource,
+      void,
+      { isBeingDraggedParameter: RawVariableExpression | undefined }
+    >(
       () => ({
-        accept: [FUNCTION_PARAMETER_DND_TYPE.PARAMETER],
-        hover: (
-          item: FunctionParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        accept: [FUNCTION_PARAMETER_DND_TYPE],
+        hover: (item) => handleHover(item),
         collect: (
           monitor,
         ): {
@@ -214,63 +233,36 @@ const ParameterBasicEditor = observer(
     );
     const isBeingDragged = parameter === isBeingDraggedParameter;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: FUNCTION_PARAMETER_DND_TYPE.PARAMETER,
-        item: (): FunctionParameterDragSource => ({
-          parameter: parameter,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<FunctionParameterDragSource>(
+        () => ({
+          type: FUNCTION_PARAMETER_DND_TYPE,
+          item: () => ({
+            parameter: parameter,
+          }),
         }),
-      }),
-      [parameter],
-    );
+        [parameter],
+      );
     dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
 
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
-
-    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setLowerBound(event.target.value);
-      updateMultiplicity(event.target.value, upperBound);
-    };
-    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      setUpperBound(event.target.value);
-      updateMultiplicity(lowerBound, event.target.value);
-    };
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {parameter.name}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="property-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="property-basic-editor">
             {isReadOnly && (
               <div className="property-basic-editor__lock">
                 <LockIcon />
               </div>
             )}
-            <div className="uml-element-editor__drag-handler">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <input
               className="property-basic-editor__name"
               disabled={isReadOnly}
               value={parameter.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Property name`}
+              placeholder={`Parameter name`}
             />
             {!isReadOnly && isEditingType && (
               <CustomSelectorInput
@@ -384,7 +376,7 @@ const ParameterBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -460,6 +452,7 @@ const ReturnTypeEditor = observer(
       setUpperBound(event.target.value);
       updateMultiplicity(lowerBound, event.target.value);
     };
+
     return (
       <div className="function-editor__return__type-editor">
         {!isReadOnly && isEditingType && (
@@ -607,39 +600,22 @@ export const FunctionMainEditor = observer(
       },
       [functionElement, isReadOnly],
     );
-    const [{ isParameterDragOver }, dropParameterRef] = useDrop(
+    const [{ isParameterDragOver }, dropParameterRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isParameterDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropParameter(item),
-        collect: (monitor): { isParameterDragOver: boolean } => ({
+        drop: (item) => handleDropParameter(item),
+        collect: (monitor) => ({
           isParameterDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDropParameter],
-    );
-    const handleDropReturnType = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          function_setReturnType(functionElement, item.data.packageableElement);
-        }
-      },
-      [functionElement, isReadOnly],
-    );
-    const [{ isReturnTypeDragOver }, dropReturnTypeRef] = useDrop(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-          CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
-        ],
-        drop: (item: ElementDragSource): void => handleDropReturnType(item),
-        collect: (monitor): { isReturnTypeDragOver: boolean } => ({
-          isReturnTypeDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleDropReturnType],
     );
 
     return (
@@ -659,6 +635,12 @@ export const FunctionMainEditor = observer(
               <PlusIcon />
             </button>
           </div>
+          <DragPreviewLayer
+            labelGetter={(item: FunctionParameterDragSource): string =>
+              item.parameter.name === '' ? '(unknown)' : item.parameter.name
+            }
+            types={[FUNCTION_PARAMETER_DND_TYPE]}
+          />
           <div
             ref={dropParameterRef}
             className={clsx('function-editor__element__item__content', {
@@ -682,13 +664,7 @@ export const FunctionMainEditor = observer(
             <div className="function-editor__element__item__header__title">
               LAMBDA
             </div>
-            <div
-              ref={dropReturnTypeRef}
-              className={clsx('function-editor__element__item__content', {
-                'panel__content__lists--dnd-over':
-                  isReturnTypeDragOver && !isReadOnly,
-              })}
-            >
+            <div className="">
               <ReturnTypeEditor
                 functionElement={functionElement}
                 isReadOnly={isReadOnly}
@@ -765,11 +741,15 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isTaggedValueDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-      collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+      drop: (item) => handleDropTaggedValue(item),
+      collect: (monitor) => ({
         isTaggedValueDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -788,11 +768,15 @@ export const FunctionEditor = observer(() => {
     },
     [functionElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isStereotypeDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropStereotype(item),
-      collect: (monitor): { isStereotypeDragOver: boolean } => ({
+      drop: (item) => handleDropStereotype(item),
+      collect: (monitor) => ({
         isStereotypeDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -882,6 +866,7 @@ export const FunctionEditor = observer(() => {
                     isTaggedValueDragOver && !isReadOnly,
                 })}
               >
+                <TaggedValueDragPreviewLayer />
                 {functionElement.taggedValues.map((taggedValue) => (
                   <TaggedValueEditor
                     annotatedElement={functionElement}
@@ -901,6 +886,7 @@ export const FunctionEditor = observer(() => {
                     isStereotypeDragOver && !isReadOnly,
                 })}
               >
+                <StereotypeDragPreviewLayer />
                 {functionElement.stereotypes.map((stereotype) => (
                   <StereotypeSelector
                     key={stereotype.value._UUID}

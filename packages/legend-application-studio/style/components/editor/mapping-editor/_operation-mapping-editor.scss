@@ -29,11 +29,6 @@
     margin-bottom: 1rem;
   }
 
-  &__parameters--dnd-over {
-    filter: brightness(95%) blur(0.05rem);
-    box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
-  }
-
   &__parameter {
     display: flex;
     background: var(--color-light-grey-0);

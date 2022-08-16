@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   CustomSelectorInput,
   createFilter,
   TimesIcon,
   ArrowCircleRightIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -36,21 +39,28 @@ import {
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useDrop, useDrag } from 'react-dnd';
 
 interface StereotypeOption {
   label: string;
   value: Stereotype;
 }
 
-enum TAGGED_VALUE_DND_TYPE {
-  TAGGED_VALUE = 'TAGGED_VALUE',
-}
-
-type StereotypeDragSource = {
+export const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
+export type StereotypeDragSource = {
   stereotype: StereotypeReference;
 };
+
+export const StereotypeDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: StereotypeDragSource): string =>
+      isStubbed_PackageableElement(item.stereotype.ownerReference.value)
+        ? '(unknown)'
+        : `${item.stereotype.ownerReference.value.name}.${item.stereotype.value.value}`
+    }
+    types={[STEREOTYPE_DND_TYPE]}
+  />
+);
 
 export const StereotypeSelector = observer(
   (props: {
@@ -114,7 +124,7 @@ export const StereotypeSelector = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource): void => {
         const draggingProperty = item.stereotype;
         const hoveredProperty = stereotype;
         annotatedElement_swapStereotypes(
@@ -126,14 +136,15 @@ export const StereotypeSelector = observer(
       [annotatedElement, stereotype],
     );
 
-    const [{ isBeingDraggedStereotype }, dropConnector] = useDrop(
+    const [{ isBeingDraggedStereotype }, dropConnector] = useDrop<
+      StereotypeDragSource,
+      void,
+      { isBeingDraggedStereotype: StereotypeReference | undefined }
+    >(
       () => ({
-        accept: [TAGGED_VALUE_DND_TYPE.TAGGED_VALUE],
-        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): { isBeingDraggedStereotype: StereotypeReference | undefined } => ({
+        accept: [STEREOTYPE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedStereotype:
             monitor.getItem<StereotypeDragSource | null>()?.stereotype,
         }),
@@ -142,44 +153,29 @@ export const StereotypeSelector = observer(
     );
     const isBeingDragged = stereotype === isBeingDraggedStereotype;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: TAGGED_VALUE_DND_TYPE.TAGGED_VALUE,
-        item: (): StereotypeDragSource => ({
-          stereotype: stereotype,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<StereotypeDragSource>(
+        () => ({
+          type: STEREOTYPE_DND_TYPE,
+          item: () => ({
+            stereotype: stereotype,
+          }),
         }),
-      }),
-      [stereotype],
-    );
+        [stereotype],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {selectedStereotype.label}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="stereotype-selector__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-selector">
+            <PanelEntryDragHandle />
             <div
               className={`stereotype-selector__profile ${
                 darkTheme ? 'stereotype-selector-dark-theme' : ''
               } stereotype-selector__profile`}
             >
-              <div className="uml-element-editor__drag-handler">
-                <VerticalDragHandleIcon />
-              </div>
               <CustomSelectorInput
                 className="stereotype-selector__profile__selector"
                 disabled={isReadOnly}
@@ -224,7 +220,7 @@ export const StereotypeSelector = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

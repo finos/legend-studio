@@ -64,13 +64,15 @@ export const buildGenericLambdaFunctionInstanceValue = (
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );
   const typeAny = graph.getType(CORE_PURE_PATH.ANY);
-  const aggregateLambda = new LambdaFunctionInstanceValue(multiplicityOne);
-  const colLambdaFunctionType = new FunctionType(typeAny, multiplicityOne);
-  colLambdaFunctionType.parameters.push(
+  const functionInstanceValue = new LambdaFunctionInstanceValue(
+    multiplicityOne,
+  );
+  const functionType = new FunctionType(typeAny, multiplicityOne);
+  functionType.parameters.push(
     new VariableExpression(lambdaParameterName, multiplicityOne),
   );
-  const colLambdaFunction = new LambdaFunction(colLambdaFunctionType);
-  colLambdaFunction.expressionSequence = lambdaBodyExpressions;
-  aggregateLambda.values.push(colLambdaFunction);
-  return aggregateLambda;
+  const lambdaFunction = new LambdaFunction(functionType);
+  lambdaFunction.expressionSequence = lambdaBodyExpressions;
+  functionInstanceValue.values.push(lambdaFunction);
+  return functionInstanceValue;
 };

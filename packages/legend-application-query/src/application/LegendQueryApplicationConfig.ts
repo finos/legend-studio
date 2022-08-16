@@ -17,12 +17,40 @@
 import {
   assertNonNullable,
   guaranteeNonEmptyString,
+  SerializationFactory,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
+import { createModelSchema, optional, primitive } from 'serializr';
+
+class LegendQueryApplicationCoreOptions {
+  /**
+   * Indicates if we should enable theme switcher.
+   *
+   * NOTE: support for theme switcher is fairly basic at the moment, so we really should
+   * just keep this feature as a beta.
+   *
+   * This flag will be kept until we have full support for themeing
+   * See https://github.com/finos/legend-studio/issues/264
+   */
+  TEMPORARY__enableThemeSwitcher = false;
+
+  private static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendQueryApplicationCoreOptions, {
+      TEMPORARY__enableThemeSwitcher: optional(primitive()),
+    }),
+  );
+
+  static create(
+    configData: PlainObject<LegendQueryApplicationCoreOptions>,
+  ): LegendQueryApplicationCoreOptions {
+    return LegendQueryApplicationCoreOptions.serialization.fromJson(configData);
+  }
+}
 
 export interface LegendQueryApplicationConfigurationData
   extends LegendApplicationConfigurationData {
@@ -39,10 +67,11 @@ export interface LegendQueryApplicationConfigurationData
   };
   engine: { url: string; queryUrl?: string };
   studio: { url: string };
-  extensions?: Record<PropertyKey, unknown>;
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
+  readonly options = new LegendQueryApplicationCoreOptions();
+
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
@@ -73,5 +102,10 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     );
     this.TEMPORARY__useLegacyDepotServerAPIRoutes =
       input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
+
+    this.options = LegendQueryApplicationCoreOptions.create(
+      (input.configData.extensions?.core ??
+        {}) as PlainObject<LegendQueryApplicationCoreOptions>,
+    );
   }
 }

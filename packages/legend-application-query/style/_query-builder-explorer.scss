@@ -51,13 +51,13 @@
     width: 100%;
   }
 
-  &__config__item__class-label__btn {
+  &__config__item__class-label__milestoning {
     @include flexCenter;
 
-    svg {
-      font-size: 1.3rem;
-      color: var(--color-light-grey-400);
-    }
+    cursor: default;
+    width: 2rem;
+    font-size: 1.2rem;
+    color: var(--color-light-grey-400);
   }
 
   &__config__item__class-label--deprecated {
@@ -284,29 +284,8 @@
     background: var(--color-dark-blue-shade-100);
   }
 
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-pink-400);
-    border-radius: 0.2rem;
-  }
-
   &__value__editor {
-    height: 3rem;
+    height: 2.8rem;
 
     input {
       font-size: 1.4rem !important;
@@ -366,7 +345,7 @@
     user-select: none;
   }
 
-  &__node__label--property--name {
+  &__node__label--property__name {
     display: inline-flex;
   }
 
@@ -481,26 +460,5 @@
 
   &__node__info {
     cursor: help;
-  }
-
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    border-radius: 0.2rem;
   }
 }
