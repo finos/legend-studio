@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 5.2.1
+
+### Patch Changes
+
+- [#1392](https://github.com/finos/legend-studio/pull/1392) [`8be89c97`](https://github.com/finos/legend-studio/commit/8be89c970ac30f551842fc96f901900c7475016c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where default value of `date` type will throw a cast error ([#1391](https://github.com/finos/legend-studio/issues/1391)).
+
 ## 5.2.0
 
 ### Minor Changes
