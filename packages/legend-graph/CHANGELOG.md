@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 14.0.0
+
+### Major Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `HACKY__createGetAllLambda()` to `createGetAllRawLambda()` and `HACKY__createDefaultBlankLambda()` to `createDefaultBasicRawLambda()` which now will also accept an option to control whether or not the dummy variable `x` should be added by default to the generated raw lambda.
+
 ## 13.0.2
 
 ## 13.0.1

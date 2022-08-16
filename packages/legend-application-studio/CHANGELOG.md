@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 13.1.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Improve project search command to show full element package path; we also allow searching for elements from dependencies and generated elements.
+
+* [#1395](https://github.com/finos/legend-studio/pull/1395) [`4c81ab5a`](https://github.com/finos/legend-studio/commit/4c81ab5aba69220fb5c2a4ac1ea97e05492ea110) ([@xannem](https://github.com/xannem)) - Allow re-arranging sub-elements (class properties, tagged values, etc.) in UML editors ([#303](https://github.com/finos/legend-studio/pull/303)).
+
 ## 13.0.3
 
 ## 13.0.2

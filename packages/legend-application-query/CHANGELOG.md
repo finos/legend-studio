@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 5.2.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Add basic support for a light-themed mode for query editor. This will be available only to standalone mode (i.e. `Legend Query`) instead of embedded query builder since we want the embedded builder to have consistent look and field with the host app ([#1374](https://github.com/finos/legend-studio/issues/1374)). By the default, this mode will not be available in query editor, to enable it, configure the core option of query builder `extensions: { core: { TEMPORARY__enableThemeSwitcher: true }}` in `Legend Query` application config.
+
+### Patch Changes
+
+- [#1408](https://github.com/finos/legend-studio/pull/1408) [`823d16f8`](https://github.com/finos/legend-studio/commit/823d16f848da1bd90f7d8572762320d6a9a58dd4) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Disable options to hide parameter/post filter panel when they are not empty and deletion of aggregation projection columns if they are used in post filters. ([#1314](https://github.com/finos/legend-studio/pull/1314)).
+
 ## 5.1.0
 
 ### Minor Changes
