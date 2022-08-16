@@ -1,5 +1,11 @@
 # @finos/eslint-plugin-legend-studio
 
+## 2.0.8
+
+### Patch Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Relax `@typescript-eslint/explicit-function-return-type` by allowing expressions; now this check will only validate for function/constant declarations.
+
 ## 2.0.7
 
 ## 2.0.6
