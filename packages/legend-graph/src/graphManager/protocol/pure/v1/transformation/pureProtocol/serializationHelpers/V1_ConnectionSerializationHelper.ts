@@ -347,7 +347,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
-  MIDDLE_TIER_USERNAME_PASSWORD = 'middleTierUsernamePassword',
+  MIDDLE_TIER_USERNAME_PASSWORD = 'middleTierUserNamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
