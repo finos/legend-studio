@@ -220,12 +220,12 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                   }),
                 );
                 if (queryBuilderExtension.mode) {
-                  queryBuilderExtension.queryBuilderState.changeClass(element);
                   queryBuilderExtension.queryBuilderState.initialize(
                     editorStore.graphManagerState.graphManager.createGetAllRawLambda(
                       element,
                     ),
                   );
+                  queryBuilderExtension.queryBuilderState.changeClass(element);
                 }
               },
             );
@@ -329,13 +329,13 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                     }),
                   );
                   if (queryBuilderExtension.mode) {
-                    queryBuilderExtension.queryBuilderState.changeClass(
-                      classView.class.value,
-                    );
                     queryBuilderExtension.queryBuilderState.initialize(
                       diagramEditorState.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
                         classView.class.value,
                       ),
+                    );
+                    queryBuilderExtension.queryBuilderState.changeClass(
+                      classView.class.value,
                     );
                   }
                 },
