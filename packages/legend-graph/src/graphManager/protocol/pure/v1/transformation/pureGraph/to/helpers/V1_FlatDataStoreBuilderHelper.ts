@@ -169,9 +169,9 @@ const buildFlatDataProperty = (
     `Flat-data property 'value' field is missing`,
   );
   assertTrue(
-    isString(property.value) ||
-      isNumber(property.value) ||
-      isBoolean(property.value),
+    property.value.every(
+      (value) => isString(value) || isNumber(value) || isBoolean(value),
+    ),
     `Flat-data property value must be either a string, a boolean, or a number`,
   );
   return new FlatDataProperty(property.name, property.value);

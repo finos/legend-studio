@@ -21,13 +21,13 @@ type V1_FlatDataPropertyValue = boolean | string | number;
 
 export class V1_FlatDataProperty implements Hashable {
   name!: string;
-  value!: V1_FlatDataPropertyValue;
+  value!: V1_FlatDataPropertyValue[];
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FLAT_DATA_PROPERTY,
       this.name,
-      this.value.toString(),
+      hashArray(this.value),
     ]);
   }
 }
