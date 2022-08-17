@@ -25,6 +25,7 @@ import {
   MULTIPLICITY_INFINITE,
   PURE_DEPRECATED_STEREOTYPE,
   ROOT_PACKAGE_NAME,
+  MILESTONING_VERSION_PROPERTY_SUFFIX,
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
@@ -562,4 +563,20 @@ export const isElementDeprecated = (
       graph
         .getProfile(CORE_PURE_PATH.PROFILE_DOC)
         .p_stereotypes.find((s) => s.value === PURE_DEPRECATED_STEREOTYPE),
+  );
+
+/**
+ *  Gets the generated milestoned properties of a property owner
+ */
+export const getGeneratedMilestonedPropertiesForAssociation = (
+  propertyOwner: PropertyOwner,
+  property: DerivedProperty,
+): AbstractProperty[] =>
+  propertyOwner._generatedMilestonedProperties.filter(
+    (prop) =>
+      prop.name !== property.name &&
+      prop.name !==
+        `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}` &&
+      prop.name !==
+        `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
   );

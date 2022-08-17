@@ -52,6 +52,7 @@ import {
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
   INTERNAL__PropagatedValue,
   Association,
+  getGeneratedMilestonedPropertiesForAssociation,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -67,9 +68,11 @@ export const getDerivedPropertyMilestoningSteoreotype = (
   if (owner instanceof Class) {
     return getMilestoneTemporalStereotype(owner, graph);
   } else if (owner instanceof Association) {
-    if (owner._generatedMilestonedProperties.length) {
+    const generatedMilestonedProperties =
+      getGeneratedMilestonedPropertiesForAssociation(owner, property);
+    if (generatedMilestonedProperties.length) {
       const ownerClass =
-        owner._generatedMilestonedProperties[0]?.genericType.value.rawType;
+        generatedMilestonedProperties[0]?.genericType.value.rawType;
       return getMilestoneTemporalStereotype(
         guaranteeType(ownerClass, Class),
         graph,
