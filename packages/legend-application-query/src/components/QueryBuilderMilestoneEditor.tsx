@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
 import { useCallback } from 'react';
 import {
@@ -32,9 +32,9 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { type DropTargetMonitor, useDrop } from 'react-dnd';
+import { useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from './QueryBuilderParameterPanel.js';
-import { Dialog } from '@finos/legend-art';
+import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../stores/QueryBuilderValueSpecificationBuilderHelper.js';
 import { BasicValueSpecificationEditor } from '@finos/legend-application';
 
@@ -58,13 +58,14 @@ const MilestoningParameterEditor = observer(
       },
       [queryBuilderState, stereotype],
     );
-    const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop(
+    const [{ isMilestoningParameterValueDragOver }, dropConnector] = useDrop<
+      QueryBuilderParameterDragSource,
+      void,
+      { isMilestoningParameterValueDragOver: boolean }
+    >(
       () => ({
-        accept: [QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE],
-        drop: (
-          item: QueryBuilderParameterDragSource,
-          monitor: DropTargetMonitor,
-        ): void => {
+        accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           }
@@ -114,32 +115,31 @@ const MilestoningParameterEditor = observer(
         queryBuilderState.querySetupState.setProcessingDate(parameter);
       }
     };
+
     return (
-      <div
-        ref={dropConnector}
-        className="query-builder__parameter-editor dnd__overlay__container"
-      >
-        {isMilestoningParameterValueDragOver && (
-          <div className="query-builder__parameter-editor__node__dnd__overlay">
-            Change Milestoning Parameter Value
-          </div>
-        )}
-        <BasicValueSpecificationEditor
-          valueSpecification={milestoningParameter}
-          graph={queryBuilderState.graphManagerState.graph}
-          setValueSpecification={(val: ValueSpecification): void =>
-            stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
-              ? queryBuilderState.querySetupState.setBusinessDate(val)
-              : queryBuilderState.querySetupState.setProcessingDate(val)
-          }
-          typeCheckOption={{
-            expectedType:
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.DATE,
-              ),
-          }}
-          resetValue={resetMilestoningParameter}
-        />
+      <div ref={dropConnector} className="query-builder__parameter-editor">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isMilestoningParameterValueDragOver}
+          label="Change Milestoning Parameter Value"
+          className="query-builder__dnd__placeholder"
+        >
+          <BasicValueSpecificationEditor
+            valueSpecification={milestoningParameter}
+            graph={queryBuilderState.graphManagerState.graph}
+            setValueSpecification={(val: ValueSpecification): void =>
+              stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
+                ? queryBuilderState.querySetupState.setBusinessDate(val)
+                : queryBuilderState.querySetupState.setProcessingDate(val)
+            }
+            typeCheckOption={{
+              expectedType:
+                queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.DATE,
+                ),
+            }}
+            resetValue={resetMilestoningParameter}
+          />
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

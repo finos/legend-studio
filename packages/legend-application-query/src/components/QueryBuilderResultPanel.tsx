@@ -288,6 +288,61 @@ const QueryBuilderResultContextMenu = observer(
   }),
 );
 
+const QueryBuilderGridResult = observer(
+  (props: {
+    executionResult: TdsExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
+    const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
+      useState<CellMouseOverEvent | null>(null);
+    const columns = executionResult.result.columns;
+    const rowData = executionResult.result.rows.map((_row) => {
+      const row: Record<PropertyKey, unknown> = {};
+      const cols = executionResult.result.columns;
+      _row.values.forEach((value, idx) => {
+        // `ag-grid` shows `false` value as empty string so we have
+        // call `.toString()` to avoid this behavior.
+        // See https://github.com/finos/legend-studio/issues/1008
+        row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
+      });
+      return row;
+    });
+
+    return (
+      <ContextMenu
+        content={
+          <QueryBuilderResultContextMenu
+            event={cellDoubleClickedEvent}
+            queryBuilderState={queryBuilderState}
+          />
+        }
+        menuProps={{ elevation: 7 }}
+        key={executionResult._UUID}
+        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      >
+        <AgGridReact
+          rowData={rowData}
+          onCellMouseOver={(event): void => {
+            setCellDoubleClickedEvent(event);
+          }}
+        >
+          {columns.map((colName) => (
+            <AgGridColumn
+              minWidth={50}
+              sortable={true}
+              resizable={true}
+              field={colName}
+              key={colName}
+              flex={1}
+            />
+          ))}
+        </AgGridReact>
+      </ContextMenu>
+    );
+  },
+);
+
 const QueryBuilderResultValues = observer(
   (props: {
     executionResult: ExecutionResult;
@@ -295,52 +350,11 @@ const QueryBuilderResultValues = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TdsExecutionResult) {
-      const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
-        useState<CellMouseOverEvent | null>(null);
-      const columns = executionResult.result.columns;
-      const rowData = executionResult.result.rows.map((_row) => {
-        const row: Record<PropertyKey, unknown> = {};
-        const cols = executionResult.result.columns;
-        _row.values.forEach((value, idx) => {
-          // `ag-grid` shows `false` value as empty string so we have
-          // call `.toString()` to avoid this behavior.
-          // See https://github.com/finos/legend-studio/issues/1008
-          row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
-        });
-        return row;
-      });
       return (
-        <ContextMenu
-          content={
-            <QueryBuilderResultContextMenu
-              event={cellDoubleClickedEvent}
-              queryBuilderState={queryBuilderState}
-            />
-          }
-          menuProps={{ elevation: 7 }}
-          key={executionResult._UUID}
-          className={clsx(
-            'ag-theme-balham-dark query-builder__result__tds-grid',
-          )}
-        >
-          <AgGridReact
-            rowData={rowData}
-            onCellMouseOver={(event): void => {
-              setCellDoubleClickedEvent(event);
-            }}
-          >
-            {columns.map((colName) => (
-              <AgGridColumn
-                minWidth={50}
-                sortable={true}
-                resizable={true}
-                field={colName}
-                key={colName}
-                flex={1}
-              />
-            ))}
-          </AgGridReact>
-        </ContextMenu>
+        <QueryBuilderGridResult
+          queryBuilderState={queryBuilderState}
+          executionResult={executionResult}
+        />
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
@@ -414,6 +428,9 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
+    const queryValidationIssues = queryBuilderState.validationIssues;
+    const isQueryValid =
+      !queryBuilderState.isQuerySupported() || !queryValidationIssues;
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
@@ -439,6 +456,7 @@ export const QueryBuilderResultPanel = observer(
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
+
     const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
       queryBuilderState.resultState.setPreviewLimit(
@@ -474,7 +492,7 @@ export const QueryBuilderResultPanel = observer(
                   type="number"
                   value={resultState.previewLimit}
                   onChange={changeLimit}
-                  disabled={!queryBuilderState.isValidQueryBuilderState()}
+                  disabled={!isQueryValid}
                 />
               </div>
             )}
@@ -483,7 +501,7 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__stop-btn"
                 onClick={cancelQuery}
                 tabIndex={-1}
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
                   <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
@@ -497,7 +515,14 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__execute-btn"
                 onClick={runQuery}
                 tabIndex={-1}
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                title={
+                  queryValidationIssues
+                    ? `Query is not valid:\n${queryValidationIssues
+                        .map((issue) => `\u2022 ${issue}`)
+                        .join('\n')}`
+                    : undefined
+                }
+                disabled={!isQueryValid}
               >
                 <div className="query-builder__result__execute-btn__label">
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
@@ -560,14 +585,14 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__export__dropdown__label"
                 tabIndex={-1}
                 title="Export"
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 Export
               </button>
               <button
                 className="query-builder__result__export__dropdown__trigger"
                 tabIndex={-1}
-                disabled={!queryBuilderState.isValidQueryBuilderState()}
+                disabled={!isQueryValid}
               >
                 <CaretDownIcon />
               </button>

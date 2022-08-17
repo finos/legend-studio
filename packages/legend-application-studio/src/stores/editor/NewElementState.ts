@@ -758,8 +758,8 @@ export class NewElementState {
         element = new Profile(name);
         break;
       // default for function -> return type: String, return Multiplicity 1
-      case PACKAGEABLE_ELEMENT_TYPE.FUNCTION:
-        element = new ConcreteFunctionDefinition(
+      case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
+        const fn = new ConcreteFunctionDefinition(
           name,
           PackageableElementExplicitReference.create(
             this.editorStore.graphManagerState.graph.getPrimitiveType(
@@ -770,7 +770,13 @@ export class NewElementState {
             TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),
         );
+        // default to empty string
+        fn.expressionSequence =
+          this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda()
+            .body as object[];
+        element = fn;
         break;
+      }
       case PACKAGEABLE_ELEMENT_TYPE.MAPPING:
         element = new Mapping(name);
         break;

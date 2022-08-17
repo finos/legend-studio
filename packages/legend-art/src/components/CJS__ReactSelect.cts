@@ -26,4 +26,8 @@
  * See https://github.com/microsoft/TypeScript/issues/49298
  */
 export { default as CreatableSelect, type Props } from 'react-select/creatable';
-export { default as Select, createFilter } from 'react-select';
+export {
+  default as Select,
+  createFilter,
+  type InputActionMeta,
+} from 'react-select';

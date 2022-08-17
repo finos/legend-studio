@@ -237,7 +237,7 @@
     color: var(--color-light-grey-200);
     padding: 1rem;
     border-radius: 0.1rem;
-    height: 3rem;
+    height: 2.8rem;
     border: 0.1rem solid var(--color-dark-grey-100);
 
     &:focus {
@@ -491,5 +491,24 @@
     &:hover svg {
       color: var(--color-light-grey-100) !important;
     }
+  }
+}
+
+.panel__dnd__dropzone {
+  &__overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: var(--color-dnd__overlay);
+    filter: blur(0.05rem);
+    pointer-events: none; // pass all mouse event through it (used for nested DnD)
+    z-index: 1;
+  }
+
+  &__content {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    pointer-events: all;
   }
 }

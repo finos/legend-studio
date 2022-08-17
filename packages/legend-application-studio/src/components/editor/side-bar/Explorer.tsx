@@ -71,21 +71,14 @@ import {
   Package,
   isValidFullPath,
   isValidPath,
-  getElementRootPackage,
+  isGeneratedElement,
+  isSystemElement,
+  isDependencyElement,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
-
-const isGeneratedPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).name ===
-  ROOT_PACKAGE_NAME.MODEL_GENERATION;
-const isSystemPackageTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).name ===
-  ROOT_PACKAGE_NAME.SYSTEM;
-const isDependencyTreeNode = (node: PackageTreeNodeData): boolean =>
-  getElementRootPackage(node.packageableElement).name ===
-  ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT;
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -375,13 +368,15 @@ const PackageTreeNodeContainer = observer(
     ) : (
       <ChevronRightIcon />
     );
-    const iconPackageColor = isGeneratedPackageTreeNode(node)
+
+    const iconPackageColor = isGeneratedElement(node.packageableElement)
       ? 'color--generated'
-      : isSystemPackageTreeNode(node)
+      : isSystemElement(node.packageableElement)
       ? 'color--system'
-      : isDependencyTreeNode(node)
+      : isDependencyElement(node.packageableElement)
       ? 'color--dependency'
       : '';
+
     const nodeIcon = isPackage ? (
       node.isOpen ? (
         <div className={iconPackageColor}>
@@ -693,10 +688,6 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     });
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
-  const isImmutablePackageTreeNode = (node: PackageTreeNodeData): boolean =>
-    isGeneratedPackageTreeNode(node) ||
-    isSystemPackageTreeNode(node) ||
-    isDependencyTreeNode(node);
   const showModelLoader = (): void =>
     editorStore.openState(editorStore.modelLoaderState);
 
@@ -716,7 +707,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         disabled={
           disabled ||
           isInGrammarMode ||
-          (selectedTreeNode && isImmutablePackageTreeNode(selectedTreeNode))
+          (selectedTreeNode &&
+            isElementReadOnly(selectedTreeNode.packageableElement))
         }
         content={<ExplorerDropdownMenu />}
         menuProps={{
@@ -730,7 +722,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
             disabled={
               disabled ||
               isInGrammarMode ||
-              (selectedTreeNode && isImmutablePackageTreeNode(selectedTreeNode))
+              (selectedTreeNode &&
+                isElementReadOnly(selectedTreeNode.packageableElement))
             }
             className="panel__header__action"
             tabIndex={-1}

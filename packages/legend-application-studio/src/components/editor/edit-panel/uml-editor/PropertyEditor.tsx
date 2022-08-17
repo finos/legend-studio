@@ -22,9 +22,21 @@ import {
   type ElementDragSource,
   type UMLEditorElementDropTarget,
 } from '../../../../stores/shared/DnDUtil.js';
-import { clsx, LockIcon, PlusIcon, TimesIcon } from '@finos/legend-art';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  clsx,
+  LockIcon,
+  PanelDropZone,
+  PlusIcon,
+  TimesIcon,
+} from '@finos/legend-art';
+import {
+  StereotypeSelector,
+  StereotypeDragPreviewLayer,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
@@ -109,11 +121,15 @@ export const PropertyEditor = observer(
       },
       [isReadOnly, property],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -132,16 +148,21 @@ export const PropertyEditor = observer(
       },
       [isReadOnly, property],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDropStereotype],
     );
+
     return (
       <div className="uml-element-editor property-editor">
         <div data-testid={LEGEND_STUDIO_TEST_ID.PANEL} className="panel">
@@ -196,40 +217,42 @@ export const PropertyEditor = observer(
           </div>
           <div className="panel__content">
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-              <div
-                ref={dropTaggedValueRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isTaggedValueDragOver && !isReadOnly,
-                })}
+              <PanelDropZone
+                isDragOver={isTaggedValueDragOver && !isReadOnly}
+                dropTargetConnector={dropTaggedValueRef}
               >
-                {property.taggedValues.map((taggedValue) => (
-                  <TaggedValueEditor
-                    key={taggedValue._UUID}
-                    taggedValue={taggedValue}
-                    deleteValue={_deleteTaggedValue(taggedValue)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
+                <div className="panel__content__lists">
+                  <TaggedValueDragPreviewLayer />
+                  {property.taggedValues.map((taggedValue) => (
+                    <TaggedValueEditor
+                      annotatedElement={property}
+                      key={taggedValue._UUID}
+                      taggedValue={taggedValue}
+                      deleteValue={_deleteTaggedValue(taggedValue)}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </div>
+              </PanelDropZone>
             )}
             {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-              <div
-                ref={dropStereotypeRef}
-                className={clsx('panel__content__lists', {
-                  'panel__content__lists--dnd-over':
-                    isStereotypeDragOver && !isReadOnly,
-                })}
+              <PanelDropZone
+                isDragOver={isStereotypeDragOver && !isReadOnly}
+                dropTargetConnector={dropStereotypeRef}
               >
-                {property.stereotypes.map((stereotype) => (
-                  <StereotypeSelector
-                    key={stereotype.value._UUID}
-                    stereotype={stereotype}
-                    deleteStereotype={_deleteStereotype(stereotype)}
-                    isReadOnly={isReadOnly}
-                  />
-                ))}
-              </div>
+                <div className="panel__content__lists">
+                  <StereotypeDragPreviewLayer />
+                  {property.stereotypes.map((stereotype) => (
+                    <StereotypeSelector
+                      key={stereotype.value._UUID}
+                      annotatedElement={property}
+                      stereotype={stereotype}
+                      deleteStereotype={_deleteStereotype(stereotype)}
+                      isReadOnly={isReadOnly}
+                    />
+                  ))}
+                </div>
+              </PanelDropZone>
             )}
           </div>
         </div>

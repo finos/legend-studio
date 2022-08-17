@@ -30,21 +30,21 @@
 
     height: 2.8rem;
     width: 3.5rem;
-    background: var(--color-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-200);
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-280);
     border-right: none;
-    color: var(--color-dark-grey-300);
+    color: var(--color-light-grey-300);
   }
 
   &__type__selector {
     @include flexCenter;
 
     height: 2.8rem;
-    background: var(--color-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-200);
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-280);
     width: 1.5rem;
     border-right: none;
-    color: var(--color-dark-grey-300);
+    color: var(--color-light-grey-300);
   }
 
   &__options {
@@ -57,8 +57,9 @@
     @include flexCenter;
 
     height: 2.8rem;
-    background: var(--color-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-200);
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    color: var(--color-light-grey-300);
     border-top: none;
     cursor: pointer;
   }

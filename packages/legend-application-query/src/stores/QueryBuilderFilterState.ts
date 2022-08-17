@@ -20,9 +20,11 @@ import {
   makeAutoObservable,
   makeObservable,
   observable,
+  flow,
 } from 'mobx';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
+  type GeneratorFn,
   assertTrue,
   getNullableFirstElement,
   guaranteeNonNullable,
@@ -34,11 +36,13 @@ import {
   deleteEntry,
   assertErrorThrown,
   filterByType,
+  ActionState,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from './QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from './QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
+  type ExecutionResult,
   type AbstractPropertyExpression,
   type ValueSpecification,
   extractElementNameFromPath,
@@ -56,6 +60,11 @@ import {
   QUERY_BUILDER_GROUP_OPERATION,
 } from './QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderProjectionColumnDragSource } from './QueryBuilderProjectionState.js';
+import {
+  buildPropertyTypeAheadQuery,
+  buildTypeAheadOptions,
+  performTypeAhead,
+} from './QueryBuilderTypeaheadHelper.js';
 
 export abstract class QueryBuilderFilterOperator {
   readonly uuid = uuid();
@@ -107,6 +116,8 @@ export class FilterConditionState {
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification | undefined;
   existsLambdaParamNames: string[] = [];
+  typeaheadSearchResults: string[] | undefined;
+  typeaheadSearchState = ActionState.create();
 
   constructor(
     filterState: QueryBuilderFilterState,
@@ -119,7 +130,10 @@ export class FilterConditionState {
       changeOperator: action,
       setOperator: action,
       setValue: action,
+      typeaheadSearchResults: observable,
+      typeaheadSearchState: observable,
       addExistsLambdaParamNames: action,
+      handleTypeaheadSearch: flow,
     });
 
     this.filterState = filterState;
@@ -141,6 +155,35 @@ export class FilterConditionState {
     return this.filterState.operators.filter((op) =>
       op.isCompatibleWithFilterConditionProperty(this),
     );
+  }
+
+  *handleTypeaheadSearch(): GeneratorFn<void> {
+    try {
+      this.typeaheadSearchState.inProgress();
+      this.typeaheadSearchResults = undefined;
+      if (performTypeAhead(this.value)) {
+        const builderState = buildPropertyTypeAheadQuery(
+          this.filterState.queryBuilderState,
+          this.propertyExpressionState.propertyExpression,
+          this.value,
+        );
+        const result =
+          (yield builderState.graphManagerState.graphManager.executeMapping(
+            builderState.resultState.buildExecutionRawLambda(),
+            guaranteeNonNullable(builderState.querySetupState.mapping),
+            guaranteeNonNullable(builderState.querySetupState.runtimeValue),
+            builderState.graphManagerState.graph,
+          )) as ExecutionResult;
+        this.typeaheadSearchResults = buildTypeAheadOptions(result);
+      }
+      this.typeaheadSearchState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.typeaheadSearchResults = [];
+      this.typeaheadSearchState.fail();
+    } finally {
+      this.typeaheadSearchState.complete();
+    }
   }
 
   changeProperty(propertyExpression: AbstractPropertyExpression): void {
@@ -221,7 +264,7 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
     });
   }
 
-  abstract get dragLayerLabel(): string;
+  abstract get dragPreviewLabel(): string;
   setIsOpen(val: boolean): void {
     this.isOpen = val;
   }
@@ -246,14 +289,14 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
       setGroupOperation: action,
       addChildNode: action,
       removeChildNode: action,
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
 
     this.groupOperation = groupOperation;
     this.isOpen = true;
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return `${this.groupOperation.toUpperCase()} group`;
   }
 
@@ -285,13 +328,13 @@ export class QueryBuilderFilterTreeConditionNodeData extends QueryBuilderFilterT
 
     makeObservable(this, {
       condition: observable,
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
 
     this.condition = condition;
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return this.condition.propertyExpressionState.title;
   }
 }
@@ -301,11 +344,11 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
     super(parentId);
 
     makeObservable(this, {
-      dragLayerLabel: computed,
+      dragPreviewLabel: computed,
     });
   }
 
-  get dragLayerLabel(): string {
+  get dragPreviewLabel(): string {
     return '<blank>';
   }
 }
@@ -409,11 +452,6 @@ export class QueryBuilderFilterState
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
-  /**
-   * This flag is for turning on/off dnd from projection panel to filter panel,
-   * and will be leveraged when the concepts of workflows are introduced into query builder.
-   */
-  allowDnDProjectionToFilter = true;
 
   constructor(
     queryBuilderState: QueryBuilderState,

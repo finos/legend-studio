@@ -23,6 +23,7 @@ import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
 } from './LegendQueryBaseStoreProvider.js';
+import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
   undefined,
@@ -34,11 +35,13 @@ export const QuerySetupStoreProvider: React.FC<{
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
   const baseStore = useLegendQueryBaseStore();
+  const sdlcServerClient = useSDLCServerClient();
   const store = useLocalObservable(
     () =>
       new QuerySetupStore(
         applicationStore,
         depotServerClient,
+        sdlcServerClient,
         baseStore.pluginManager,
       ),
   );

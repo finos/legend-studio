@@ -117,6 +117,7 @@ import {
   PRIMITIVE_TYPE,
   Package,
   DataElement,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
@@ -1121,7 +1122,7 @@ export class EditorStore {
   *deleteElement(element: PackageableElement): GeneratorFn<void> {
     if (
       this.graphState.checkIfApplicationUpdateOperationIsRunning() ||
-      this.graphManagerState.isElementReadOnly(element)
+      isElementReadOnly(element)
     ) {
       return;
     }
@@ -1187,7 +1188,7 @@ export class EditorStore {
     element: PackageableElement,
     newPath: string,
   ): GeneratorFn<void> {
-    if (this.graphManagerState.isElementReadOnly(element)) {
+    if (isElementReadOnly(element)) {
       return;
     }
     graph_renameElement(
@@ -1354,7 +1355,7 @@ export class EditorStore {
   get classOptions(): PackageableElementOption<Class>[] {
     return this.graphManagerState.graph.ownClasses
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownClasses,
         ),
       )
@@ -1365,7 +1366,7 @@ export class EditorStore {
   get associationOptions(): PackageableElementOption<Association>[] {
     return this.graphManagerState.graph.ownAssociations
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownAssociations,
         ),
       )
@@ -1376,7 +1377,7 @@ export class EditorStore {
   get profileOptions(): PackageableElementOption<Profile>[] {
     return this.graphManagerState.graph.ownProfiles
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownProfiles,
         ),
       )
@@ -1391,7 +1392,7 @@ export class EditorStore {
       .concat(
         this.graphManagerState.graph.ownTypes
           .concat(
-            this.graphManagerState.filterSystemElementOptions(
+            this.graphManagerState.collectExposedSystemElements(
               this.graphManagerState.graph.systemModel.ownTypes,
             ),
           )

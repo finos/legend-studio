@@ -18,6 +18,7 @@ import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
+import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
 
 export enum FETCH_STRUCTURE_MODE {
   PROJECTION = 'PROJECTION',
@@ -26,11 +27,19 @@ export enum FETCH_STRUCTURE_MODE {
 
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
+  /**
+   * TODO?: perhaps it would eventually make sense to default to
+   * graph-fetch since `getAll()` naturally works for graph-fetch case
+   * and graph-fetch allows somewhat an empty tree
+   */
   fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
   projectionState: QueryBuilderProjectionState;
   graphFetchTreeState: QueryBuilderGraphFetchTreeState;
 
-  constructor(queryBuilderState: QueryBuilderState) {
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    operators: QueryBuilderAggregateOperator[],
+  ) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       setFetchStructureMode: action,
@@ -39,7 +48,10 @@ export class QueryBuilderFetchStructureState {
     this.queryBuilderState = queryBuilderState;
     // TODO: we probably should modularize this a bit better
     // See https://github.com/finos/legend-studio/issues/731
-    this.projectionState = new QueryBuilderProjectionState(queryBuilderState);
+    this.projectionState = new QueryBuilderProjectionState(
+      queryBuilderState,
+      operators,
+    );
     this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
       queryBuilderState,
     );
@@ -55,5 +67,9 @@ export class QueryBuilderFetchStructureState {
 
   isProjectionMode(): boolean {
     return this.fetchStructureMode === FETCH_STRUCTURE_MODE.PROJECTION;
+  }
+
+  get validationIssues(): string[] | undefined {
+    return this.projectionState.validationIssues;
   }
 }

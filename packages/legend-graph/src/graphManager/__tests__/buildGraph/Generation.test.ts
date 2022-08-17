@@ -32,6 +32,7 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../GraphManagerTestUtils.js';
+import { isElementReadOnly } from '../../../graph/helpers/DomainHelper.js';
 
 const PARENT_ELEMENT_PATH = 'model::myFileGeneration';
 
@@ -91,7 +92,7 @@ const testGeneratedElements = async (
     );
     expect(elementInMainGraph).toBeUndefined();
     expect(elementInGraph).toBe(element);
-    expect(graphManagerState.isElementReadOnly(elementInGraph)).toBe(true);
+    expect(isElementReadOnly(elementInGraph)).toBe(true);
   });
 
   const transformedEntities = graphManagerState.graph.allOwnElements.map((el) =>

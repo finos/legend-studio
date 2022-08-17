@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { isNonNullable, prettyCONSTName } from '@finos/legend-shared';
-import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
   type ElementDragSource,
@@ -41,14 +40,26 @@ import {
   ArrowCircleRightIcon,
   FireIcon,
   StickArrowCircleRightIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeSelector,
+  StereotypeDragPreviewLayer,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueEditor,
+  TaggedValueDragPreviewLayer,
+} from './TaggedValueEditor.js';
 import { UML_EDITOR_TAB } from '../../../../stores/editor-state/element-editor-state/UMLEditorState.js';
 import { ClassEditorState } from '../../../../stores/editor-state/element-editor-state/ClassEditorState.js';
 import { flowResult } from 'mobx';
+import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type StereotypeReference,
@@ -80,11 +91,12 @@ import {
   getAllSuperclasses,
   getAllClassConstraints,
   getAllClassDerivedProperties,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
   type PackageableElementOption,
@@ -110,6 +122,10 @@ import {
   property_setName,
   property_setGenericType,
   property_setMultiplicity,
+  class_swapProperties,
+  class_swapDerivedProperties,
+  class_swapConstraints,
+  class_swapSuperTypes,
   setGenericTypeReferenceValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import {
@@ -117,6 +133,12 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+
+type ClassPropertyDragSource = {
+  property: Property;
+};
+
+const CLASS_PROPERTY_DND_TYPE = 'CLASS_PROPERTY';
 
 const PropertyBasicEditor = observer(
   (props: {
@@ -126,7 +148,9 @@ const PropertyBasicEditor = observer(
     deleteProperty: () => void;
     isReadOnly: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const { property, _class, editorState, deleteProperty, isReadOnly } = props;
+
     const editorStore = useEditorStore();
     const isInheritedProperty =
       property._OWNER instanceof Class && property._OWNER !== _class;
@@ -136,6 +160,7 @@ const PropertyBasicEditor = observer(
       _class.properties.filter((p) => p.name === val.name).length >= 2;
     const selectProperty = (): void =>
       editorState.setSelectedProperty(property);
+
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       property_setName(property, event.target.value);
@@ -193,6 +218,51 @@ const PropertyBasicEditor = observer(
       setUpperBound(event.target.value);
       updateMultiplicity(lowerBound, event.target.value);
     };
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: ClassPropertyDragSource): void => {
+        const draggingProperty = item.property;
+        const hoveredProperty = property;
+        class_swapProperties(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, property],
+    );
+
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop<
+      ClassPropertyDragSource,
+      void,
+      { isBeingDraggedProperty: Property | undefined }
+    >(
+      () => ({
+        accept: [CLASS_PROPERTY_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (
+          monitor,
+        ): {
+          isBeingDraggedProperty: Property | undefined;
+        } => ({
+          isBeingDraggedProperty:
+            monitor.getItem<ClassPropertyDragSource | null>()?.property,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = property === isBeingDraggedProperty;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassPropertyDragSource>(
+        () => ({
+          type: CLASS_PROPERTY_DND_TYPE,
+          item: () => ({
+            property: property,
+          }),
+        }),
+        [property],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     // Other
     const openElement = (): void => {
       if (!(propertyType instanceof PrimitiveType)) {
@@ -206,177 +276,190 @@ const PropertyBasicEditor = observer(
     const visitOwner = (): void => editorStore.openElement(property._OWNER);
 
     return (
-      <div className="property-basic-editor">
-        {isIndirectProperty && (
-          <div className="property-basic-editor__name--with-lock">
-            <div className="property-basic-editor__name--with-lock__icon">
-              <LockIcon />
-            </div>
-            <span className="property-basic-editor__name--with-lock__name">
-              {property.name}
-            </span>
-          </div>
-        )}
-        {!isIndirectProperty && (
-          <div className="input-group__input property-basic-editor__input">
-            <InputWithInlineValidation
-              className="property-basic-editor__input--with-validation input-group__input"
-              disabled={isReadOnly}
-              value={property.name}
-              spellCheck={false}
-              onChange={changeValue}
-              placeholder={`Property name`}
-              validationErrorMessage={
-                isPropertyDuplicated(property)
-                  ? 'Duplicated property'
-                  : undefined
-              }
-            />
-          </div>
-        )}
-        {!isIndirectProperty && !isReadOnly && isEditingType && (
-          <CustomSelectorInput
-            className="property-basic-editor__type"
-            options={propertyTypeOptions}
-            onChange={changePropertyType}
-            value={selectedPropertyType}
-            placeholder={'Choose a data type or enumeration'}
-            filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionalFormatter()}
-          />
-        )}
-        {!isIndirectProperty && !isReadOnly && !isEditingType && (
-          <div
-            className={clsx(
-              'property-basic-editor__type',
-              'property-basic-editor__type--show-click-hint',
-              `background--${propertyTypeName.toLowerCase()}`,
-              {
-                'property-basic-editor__type--has-visit-btn':
-                  propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
-              },
-            )}
-          >
-            {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
-              <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, propertyType)}
+      <div ref={ref} className="property-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="property-basic-editor">
+            {!isIndirectProperty && <PanelEntryDragHandle />}
+            {isIndirectProperty && (
+              <div className="property-basic-editor__name property-basic-editor__name--with-lock">
+                <div className="property-basic-editor__name--with-lock__icon">
+                  <LockIcon />
+                </div>
+                <span className="property-basic-editor__name--with-lock__name">
+                  {property.name}
+                </span>
               </div>
             )}
-            <div className="property-basic-editor__type__label">
-              {propertyType.name}
+            {!isIndirectProperty && (
+              <div className="input-group__input property-basic-editor__input">
+                <InputWithInlineValidation
+                  className="property-basic-editor__input--with-validation input-group__input"
+                  disabled={isReadOnly}
+                  value={property.name}
+                  spellCheck={false}
+                  onChange={changeValue}
+                  placeholder={`Property name`}
+                  validationErrorMessage={
+                    isPropertyDuplicated(property)
+                      ? 'Duplicated property'
+                      : undefined
+                  }
+                />
+              </div>
+            )}
+            {!isIndirectProperty && !isReadOnly && isEditingType && (
+              <CustomSelectorInput
+                className="property-basic-editor__type"
+                options={propertyTypeOptions}
+                onChange={changePropertyType}
+                value={selectedPropertyType}
+                placeholder={'Choose a data type or enumeration'}
+                filterOption={filterOption}
+                formatOptionLabel={getPackageableElementOptionFormatter({})}
+              />
+            )}
+            {!isIndirectProperty && !isReadOnly && !isEditingType && (
+              <div
+                className={clsx(
+                  'property-basic-editor__type',
+                  'property-basic-editor__type--show-click-hint',
+                  `background--${propertyTypeName.toLowerCase()}`,
+                  {
+                    'property-basic-editor__type--has-visit-btn':
+                      propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
+                  },
+                )}
+              >
+                {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                  <div className="property-basic-editor__type__abbr">
+                    {getElementIcon(editorStore, propertyType)}
+                  </div>
+                )}
+                <div className="property-basic-editor__type__label">
+                  {propertyType.name}
+                </div>
+                <div
+                  data-testid={
+                    LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                  }
+                  className="property-basic-editor__type__label property-basic-editor__type__label--hover"
+                  onClick={(): void => setIsEditingType(true)}
+                >
+                  Click to edit
+                </div>
+                {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                  <button
+                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                    className="property-basic-editor__type__visit-btn"
+                    onClick={openElement}
+                    tabIndex={-1}
+                    title={'Visit element'}
+                  >
+                    <ArrowCircleRightIcon />
+                  </button>
+                )}
+              </div>
+            )}
+            {(isIndirectProperty || isReadOnly) && (
+              <div
+                className={clsx(
+                  'property-basic-editor__type',
+                  `background--${propertyTypeName.toLowerCase()}`,
+                  {
+                    'property-basic-editor__type--has-visit-btn':
+                      propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
+                  },
+                )}
+              >
+                {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                  <div className="property-basic-editor__type__abbr">
+                    {getElementIcon(editorStore, propertyType)}
+                  </div>
+                )}
+                <div className="property-basic-editor__type__label">
+                  {propertyType.name}
+                </div>
+                {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                  <button
+                    data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                    className="property-basic-editor__type__visit-btn"
+                    onClick={openElement}
+                    tabIndex={-1}
+                    title={'Visit element'}
+                  >
+                    <ArrowCircleRightIcon />
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="property-basic-editor__multiplicity">
+              <input
+                className="property-basic-editor__multiplicity-bound"
+                disabled={isIndirectProperty || isReadOnly}
+                spellCheck={false}
+                value={lowerBound}
+                onChange={changeLowerBound}
+              />
+              <div className="property-basic-editor__multiplicity__range">
+                ..
+              </div>
+              <input
+                className="property-basic-editor__multiplicity-bound"
+                disabled={isIndirectProperty || isReadOnly}
+                spellCheck={false}
+                value={upperBound}
+                onChange={changeUpperBound}
+              />
             </div>
-            <div
-              data-testid={
-                LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
-              }
-              className="property-basic-editor__type__label property-basic-editor__type__label--hover"
-              onClick={(): void => setIsEditingType(true)}
-            >
-              Click to edit
-            </div>
-            {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+            {!isIndirectProperty && (
               <button
-                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                className="property-basic-editor__type__visit-btn"
-                onClick={openElement}
+                className="uml-element-editor__basic__detail-btn"
+                onClick={selectProperty}
                 tabIndex={-1}
-                title={'Visit element'}
+                title={'See detail'}
+              >
+                <LongArrowRightIcon />
+              </button>
+            )}
+            {isIndirectProperty && (
+              <button
+                className="uml-element-editor__visit-parent-element-btn"
+                onClick={visitOwner}
+                tabIndex={-1}
+                title={`Visit ${
+                  isInheritedProperty ? 'super type class' : 'association'
+                } '${property._OWNER.path}'`}
               >
                 <ArrowCircleRightIcon />
               </button>
             )}
-          </div>
-        )}
-        {(isIndirectProperty || isReadOnly) && (
-          <div
-            className={clsx(
-              'property-basic-editor__type',
-              `background--${propertyTypeName.toLowerCase()}`,
-              {
-                'property-basic-editor__type--has-visit-btn':
-                  propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
-              },
+            {isIndirectProperty && (
+              <div className="property-basic-editor__locked-property-end-block"></div>
             )}
-          >
-            {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
-              <div className="property-basic-editor__type__abbr">
-                {getElementIcon(editorStore, propertyType)}
-              </div>
-            )}
-            <div className="property-basic-editor__type__label">
-              {propertyType.name}
-            </div>
-            {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+            {!isIndirectProperty && !isReadOnly && (
               <button
-                data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                className="property-basic-editor__type__visit-btn"
-                onClick={openElement}
+                className={clsx('uml-element-editor__remove-btn', {
+                  'uml-element-editor__remove-btn--hidden': isIndirectProperty,
+                })}
+                onClick={deleteProperty}
                 tabIndex={-1}
-                title={'Visit element'}
+                title={'Remove'}
               >
-                <ArrowCircleRightIcon />
+                <TimesIcon />
               </button>
             )}
           </div>
-        )}
-        <div className="property-basic-editor__multiplicity">
-          <input
-            className="property-basic-editor__multiplicity-bound"
-            disabled={isIndirectProperty || isReadOnly}
-            spellCheck={false}
-            value={lowerBound}
-            onChange={changeLowerBound}
-          />
-          <div className="property-basic-editor__multiplicity__range">..</div>
-          <input
-            className="property-basic-editor__multiplicity-bound"
-            disabled={isIndirectProperty || isReadOnly}
-            spellCheck={false}
-            value={upperBound}
-            onChange={changeUpperBound}
-          />
-        </div>
-        {!isIndirectProperty && (
-          <button
-            className="uml-element-editor__basic__detail-btn"
-            onClick={selectProperty}
-            tabIndex={-1}
-            title={'See detail'}
-          >
-            <LongArrowRightIcon />
-          </button>
-        )}
-        {isIndirectProperty && (
-          <button
-            className="uml-element-editor__visit-parent-element-btn"
-            onClick={visitOwner}
-            tabIndex={-1}
-            title={`Visit ${
-              isInheritedProperty ? 'super type class' : 'association'
-            } '${property._OWNER.path}'`}
-          >
-            <ArrowCircleRightIcon />
-          </button>
-        )}
-        {isIndirectProperty && (
-          <div className="property-basic-editor__locked-property-end-block"></div>
-        )}
-        {!isIndirectProperty && !isReadOnly && (
-          <button
-            className={clsx('uml-element-editor__remove-btn', {
-              'uml-element-editor__remove-btn--hidden': isIndirectProperty,
-            })}
-            onClick={deleteProperty}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
+
+type ClassDerivedPropertyDragSource = {
+  derivedProperty: DerivedProperty;
+};
+
+const CLASS_DERIVED_PROPERTY_DND_TYPE = 'CLASS_DERIVED_PROPERTY';
 
 const DerivedPropertyBasicEditor = observer(
   (props: {
@@ -386,6 +469,7 @@ const DerivedPropertyBasicEditor = observer(
     deleteDerivedProperty: () => void;
     isReadOnly: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const {
       derivedProperty,
       _class,
@@ -462,6 +546,68 @@ const DerivedPropertyBasicEditor = observer(
       setUpperBound(event.target.value);
       updateMultiplicity(lowerBound, event.target.value);
     };
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (
+        item: ClassDerivedPropertyDragSource,
+        monitor: DropTargetMonitor,
+      ): void => {
+        const draggingProperty = item.derivedProperty;
+        const hoveredProperty = derivedProperty;
+
+        const dragIndex = _class.derivedProperties.findIndex(
+          (e) => e === item.derivedProperty,
+        );
+        const hoverIndex = _class.derivedProperties.findIndex(
+          (e) => e === derivedProperty,
+        );
+        // move the item being hovered on when the dragged item position is beyond the its middle point
+        const hoverBoundingReact = ref.current?.getBoundingClientRect();
+        const distanceThreshold =
+          ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
+          2;
+        const dragDistance =
+          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
+        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+          return;
+        }
+        class_swapDerivedProperties(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, derivedProperty],
+    );
+
+    const [{ isBeingDraggedDerivedProperty }, dropConnector] = useDrop<
+      ClassDerivedPropertyDragSource,
+      void,
+      { isBeingDraggedDerivedProperty: DerivedProperty | undefined }
+    >(
+      () => ({
+        accept: [CLASS_DERIVED_PROPERTY_DND_TYPE],
+        hover: (item, monitor): void => handleHover(item, monitor),
+        collect: (monitor) => ({
+          isBeingDraggedDerivedProperty:
+            monitor.getItem<ClassDerivedPropertyDragSource | null>()
+              ?.derivedProperty,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = derivedProperty === isBeingDraggedDerivedProperty;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassDerivedPropertyDragSource>(
+        () => ({
+          type: CLASS_DERIVED_PROPERTY_DND_TYPE,
+          item: () => ({
+            derivedProperty: derivedProperty,
+          }),
+        }),
+        [derivedProperty],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     // Action
     const onLambdaEditorFocus = (): void =>
       applicationStore.navigationContextService.push(
@@ -484,184 +630,201 @@ const DerivedPropertyBasicEditor = observer(
     });
 
     return (
-      <div
-        className={clsx('derived-property-editor', {
-          backdrop__element:
-            dpState.parserError && !isInheritedProperty && !isReadOnly,
-        })}
-      >
-        <div className="property-basic-editor">
-          {isInheritedProperty && (
-            <div className="property-basic-editor__name--with-lock">
-              <div className="property-basic-editor__name--with-lock__icon">
-                <LockIcon />
-              </div>
-              <span className="property-basic-editor__name--with-lock__name">
-                {derivedProperty.name}
-              </span>
-            </div>
-          )}
-          {!isInheritedProperty && (
-            <input
-              disabled={isReadOnly}
-              spellCheck={false}
-              className="property-basic-editor__name property-basic-editor__qualififed-property__name"
-              value={derivedProperty.name}
-              placeholder="Property name"
-              onChange={changeValue}
-            />
-          )}
-          {!isInheritedProperty && !isReadOnly && isEditingType && (
-            <CustomSelectorInput
-              className="property-basic-editor__type property-basic-editor__qualififed-property__type"
-              options={propertyTypeOptions}
-              onChange={changePropertyType}
-              value={selectedPropertyType}
-              placeholder="Choose a data type or enumeration"
-              filterOption={filterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter()}
-            />
-          )}
-          {!isInheritedProperty && !isReadOnly && !isEditingType && (
-            <div
-              className={clsx(
-                'property-basic-editor__type',
-                'property-basic-editor__type--show-click-hint',
-                `background--${propertyTypeName.toLowerCase()}`,
-                {
-                  'property-basic-editor__type--has-visit-btn':
-                    propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
-                },
-              )}
-            >
-              {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
-                <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, propertyType)}
+      <div ref={ref} className="derived-property-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="derived-property-editor__dnd__placeholder"
+        >
+          <div
+            className={clsx('derived-property-editor', {
+              backdrop__element:
+                dpState.parserError && !isInheritedProperty && !isReadOnly,
+            })}
+          >
+            <div className="property-basic-editor">
+              {isInheritedProperty && (
+                <div className="property-basic-editor__name property-basic-editor__name--with-lock">
+                  <div className="property-basic-editor__name--with-lock__icon">
+                    <LockIcon />
+                  </div>
+                  <span className="property-basic-editor__name--with-lock__name">
+                    {derivedProperty.name}
+                  </span>
                 </div>
               )}
-              <div className="property-basic-editor__type__label">
-                {propertyType.name}
+              {!isInheritedProperty && <PanelEntryDragHandle />}
+              {!isInheritedProperty && (
+                <input
+                  disabled={isReadOnly}
+                  spellCheck={false}
+                  className="property-basic-editor__name property-basic-editor__qualififed-property__name"
+                  value={derivedProperty.name}
+                  placeholder="Property name"
+                  onChange={changeValue}
+                />
+              )}
+              {!isInheritedProperty && !isReadOnly && isEditingType && (
+                <CustomSelectorInput
+                  className="property-basic-editor__type property-basic-editor__qualififed-property__type"
+                  options={propertyTypeOptions}
+                  onChange={changePropertyType}
+                  value={selectedPropertyType}
+                  placeholder="Choose a data type or enumeration"
+                  filterOption={filterOption}
+                  formatOptionLabel={getPackageableElementOptionFormatter({})}
+                />
+              )}
+              {!isInheritedProperty && !isReadOnly && !isEditingType && (
+                <div
+                  className={clsx(
+                    'property-basic-editor__type',
+                    'property-basic-editor__type--show-click-hint',
+                    `background--${propertyTypeName.toLowerCase()}`,
+                    {
+                      'property-basic-editor__type--has-visit-btn':
+                        propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
+                    },
+                  )}
+                >
+                  {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                    <div className="property-basic-editor__type__abbr">
+                      {getElementIcon(editorStore, propertyType)}
+                    </div>
+                  )}
+                  <div className="property-basic-editor__type__label">
+                    {propertyType.name}
+                  </div>
+                  <div
+                    data-testid={
+                      LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
+                    }
+                    className="property-basic-editor__type__label property-basic-editor__type__label--hover"
+                    onClick={(): void => setIsEditingType(true)}
+                  >
+                    Click to edit
+                  </div>
+                  {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                    <button
+                      data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                      className="property-basic-editor__type__visit-btn"
+                      onClick={openElement}
+                      tabIndex={-1}
+                      title="Visit element"
+                    >
+                      <ArrowCircleRightIcon />
+                    </button>
+                  )}
+                </div>
+              )}
+              {(isInheritedProperty || isReadOnly) && (
+                <div
+                  className={clsx(
+                    'property-basic-editor__type',
+                    `background--${propertyTypeName.toLowerCase()}`,
+                    {
+                      'property-basic-editor__type--has-visit-btn':
+                        propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
+                    },
+                  )}
+                >
+                  {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                    <div className="property-basic-editor__type__abbr">
+                      {getElementIcon(editorStore, propertyType)}
+                    </div>
+                  )}
+                  <div className="property-basic-editor__type__label">
+                    {propertyType.name}
+                  </div>
+                  {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+                    <button
+                      data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
+                      className="property-basic-editor__type__visit-btn"
+                      onClick={openElement}
+                      tabIndex={-1}
+                      title="Visit element"
+                    >
+                      <ArrowCircleRightIcon />
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="property-basic-editor__multiplicity">
+                <input
+                  className="property-basic-editor__multiplicity-bound"
+                  spellCheck={false}
+                  disabled={isInheritedProperty || isReadOnly}
+                  value={lowerBound}
+                  onChange={changeLowerBound}
+                />
+                <div className="property-basic-editor__multiplicity__range">
+                  ..
+                </div>
+                <input
+                  className="property-basic-editor__multiplicity-bound"
+                  spellCheck={false}
+                  disabled={isInheritedProperty || isReadOnly}
+                  value={upperBound}
+                  onChange={changeUpperBound}
+                />
               </div>
-              <div
-                data-testid={
-                  LEGEND_STUDIO_TEST_ID.PROPERTY_BASIC_EDITOR__TYPE__LABEL_HOVER
-                }
-                className="property-basic-editor__type__label property-basic-editor__type__label--hover"
-                onClick={(): void => setIsEditingType(true)}
-              >
-                Click to edit
-              </div>
-              {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+              {!isInheritedProperty && (
                 <button
-                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                  className="property-basic-editor__type__visit-btn"
-                  onClick={openElement}
+                  className="uml-element-editor__basic__detail-btn"
+                  onClick={selectDerivedProperty}
                   tabIndex={-1}
-                  title="Visit element"
+                  title="See detail"
+                >
+                  <LongArrowRightIcon />
+                </button>
+              )}
+              {isInheritedProperty && (
+                <button
+                  className="uml-element-editor__visit-parent-element-btn"
+                  onClick={visitOwner}
+                  tabIndex={-1}
+                  title={`Visit super type class ${derivedProperty._OWNER.path}`}
                 >
                   <ArrowCircleRightIcon />
                 </button>
               )}
-            </div>
-          )}
-          {(isInheritedProperty || isReadOnly) && (
-            <div
-              className={clsx(
-                'property-basic-editor__type',
-                `background--${propertyTypeName.toLowerCase()}`,
-                {
-                  'property-basic-editor__type--has-visit-btn':
-                    propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE,
-                },
-              )}
-            >
-              {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
-                <div className="property-basic-editor__type__abbr">
-                  {getElementIcon(editorStore, propertyType)}
-                </div>
-              )}
-              <div className="property-basic-editor__type__label">
-                {propertyType.name}
-              </div>
-              {propertyTypeName !== CLASS_PROPERTY_TYPE.PRIMITIVE && (
+              {!isInheritedProperty && !isReadOnly && (
                 <button
-                  data-testid={LEGEND_STUDIO_TEST_ID.TYPE_VISIT}
-                  className="property-basic-editor__type__visit-btn"
-                  onClick={openElement}
+                  className={clsx('uml-element-editor__remove-btn', {
+                    'uml-element-editor__remove-btn--hidden':
+                      isInheritedProperty,
+                  })}
+                  onClick={remove}
                   tabIndex={-1}
-                  title="Visit element"
+                  title="Remove"
                 >
-                  <ArrowCircleRightIcon />
+                  <TimesIcon />
                 </button>
               )}
             </div>
-          )}
-          <div className="property-basic-editor__multiplicity">
-            <input
-              className="property-basic-editor__multiplicity-bound"
-              spellCheck={false}
-              disabled={isInheritedProperty || isReadOnly}
-              value={lowerBound}
-              onChange={changeLowerBound}
-            />
-            <div className="property-basic-editor__multiplicity__range">..</div>
-            <input
-              className="property-basic-editor__multiplicity-bound"
-              spellCheck={false}
-              disabled={isInheritedProperty || isReadOnly}
-              value={upperBound}
-              onChange={changeUpperBound}
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState
+                  .isConvertingDerivedPropertyLambdaObjects ||
+                isInheritedProperty ||
+                isReadOnly
+              }
+              lambdaEditorState={dpState}
+              forceBackdrop={hasParserError}
+              expectedType={propertyType}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
             />
           </div>
-          {!isInheritedProperty && (
-            <button
-              className="uml-element-editor__basic__detail-btn"
-              onClick={selectDerivedProperty}
-              tabIndex={-1}
-              title="See detail"
-            >
-              <LongArrowRightIcon />
-            </button>
-          )}
-          {isInheritedProperty && (
-            <button
-              className="uml-element-editor__visit-parent-element-btn"
-              onClick={visitOwner}
-              tabIndex={-1}
-              title={`Visit super type class ${derivedProperty._OWNER.path}`}
-            >
-              <ArrowCircleRightIcon />
-            </button>
-          )}
-          {!isInheritedProperty && !isReadOnly && (
-            <button
-              className={clsx('uml-element-editor__remove-btn', {
-                'uml-element-editor__remove-btn--hidden': isInheritedProperty,
-              })}
-              onClick={remove}
-              tabIndex={-1}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          )}
-        </div>
-        <div onFocus={onLambdaEditorFocus}>
-          <StudioLambdaEditor
-            disabled={
-              editorState.classState.isConvertingDerivedPropertyLambdaObjects ||
-              isInheritedProperty ||
-              isReadOnly
-            }
-            lambdaEditorState={dpState}
-            forceBackdrop={hasParserError}
-            expectedType={propertyType}
-          />
-        </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
+
+type ClassConstraintDragSource = {
+  constraint: Constraint;
+};
+
+const CLASS_CONSTRAINT_DND_TYPE = 'CLASS_CONSTRAINT';
 
 const ConstraintEditor = observer(
   (props: {
@@ -671,6 +834,7 @@ const ConstraintEditor = observer(
     deleteConstraint: () => void;
     isReadOnly: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const { constraint, _class, deleteConstraint, editorState, isReadOnly } =
       props;
     const editorStore = useEditorStore();
@@ -684,6 +848,49 @@ const ConstraintEditor = observer(
     // Name
     const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       constraint_setName(constraint, event.target.value);
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: ClassConstraintDragSource): void => {
+        const draggingProperty = item.constraint;
+        const hoveredProperty = constraint;
+        class_swapConstraints(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, constraint],
+    );
+
+    const [{ isBeingDraggedConstraint }, dropConnector] = useDrop<
+      ClassConstraintDragSource,
+      void,
+      { isBeingDraggedConstraint: Constraint | undefined }
+    >(
+      () => ({
+        accept: [CLASS_CONSTRAINT_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (
+          monitor,
+        ): { isBeingDraggedConstraint: Constraint | undefined } => ({
+          isBeingDraggedConstraint:
+            monitor.getItem<ClassConstraintDragSource | null>()?.constraint,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = constraint === isBeingDraggedConstraint;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassConstraintDragSource>(
+        () => ({
+          type: CLASS_CONSTRAINT_DND_TYPE,
+          item: () => ({
+            constraint: constraint,
+          }),
+        }),
+        [constraint],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     // Actions
     const onLambdaEditorFocus = (): void =>
       applicationStore.navigationContextService.push(
@@ -700,72 +907,85 @@ const ConstraintEditor = observer(
     const visitOwner = (): void => editorStore.openElement(constraint._OWNER);
 
     return (
-      <div
-        className={clsx('constraint-editor', {
-          backdrop__element: constraintState.parserError,
-        })}
-      >
-        <div className="constraint-editor__content">
-          {isInheritedConstraint && (
-            <div className="constraint-editor__content__name--with-lock">
-              <div className="constraint-editor__content__name--with-lock__icon">
-                <LockIcon />
-              </div>
-              <span className="constraint-editor__content__name--with-lock__name">
-                {constraint.name}
-              </span>
+      <div ref={ref} className="constraint-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="constraint-editor__dnd__placeholder"
+        >
+          <div
+            className={clsx('constraint-editor', {
+              backdrop__element: constraintState.parserError,
+            })}
+          >
+            <div className="constraint-editor__content">
+              {!isInheritedConstraint && <PanelEntryDragHandle />}
+              {isInheritedConstraint && (
+                <div className="constraint-editor__content__name--with-lock">
+                  <div className="constraint-editor__content__name--with-lock__icon">
+                    <LockIcon />
+                  </div>
+                  <span className="constraint-editor__content__name--with-lock__name">
+                    {constraint.name}
+                  </span>
+                </div>
+              )}
+              {!isInheritedConstraint && (
+                <input
+                  className="constraint-editor__content__name"
+                  spellCheck={false}
+                  disabled={isReadOnly || isInheritedConstraint}
+                  value={constraint.name}
+                  onChange={changeName}
+                  placeholder="Constraint name"
+                />
+              )}
+              {isInheritedConstraint && (
+                <button
+                  className="uml-element-editor__visit-parent-element-btn"
+                  onClick={visitOwner}
+                  tabIndex={-1}
+                  title={`Visit super type class ${constraint._OWNER.path}`}
+                >
+                  <ArrowCircleRightIcon />
+                </button>
+              )}
+              {!isInheritedConstraint && !isReadOnly && (
+                <button
+                  className="uml-element-editor__remove-btn"
+                  disabled={isInheritedConstraint}
+                  onClick={remove}
+                  tabIndex={-1}
+                  title="Remove"
+                >
+                  <TimesIcon />
+                </button>
+              )}
             </div>
-          )}
-          {!isInheritedConstraint && (
-            <input
-              className="constraint-editor__content__name"
-              spellCheck={false}
-              disabled={isReadOnly || isInheritedConstraint}
-              value={constraint.name}
-              onChange={changeName}
-              placeholder="Constraint name"
+            <StudioLambdaEditor
+              disabled={
+                editorState.classState.isConvertingConstraintLambdaObjects ||
+                isReadOnly ||
+                isInheritedConstraint
+              }
+              lambdaEditorState={constraintState}
+              forceBackdrop={hasParserError}
+              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
+                PRIMITIVE_TYPE.BOOLEAN,
+              )}
+              onEditorFocusEventHandler={onLambdaEditorFocus}
             />
-          )}
-          {isInheritedConstraint && (
-            <button
-              className="uml-element-editor__visit-parent-element-btn"
-              onClick={visitOwner}
-              tabIndex={-1}
-              title={`Visit super type class ${constraint._OWNER.path}`}
-            >
-              <ArrowCircleRightIcon />
-            </button>
-          )}
-          {!isInheritedConstraint && !isReadOnly && (
-            <button
-              className="uml-element-editor__remove-btn"
-              disabled={isInheritedConstraint}
-              onClick={remove}
-              tabIndex={-1}
-              title="Remove"
-            >
-              <TimesIcon />
-            </button>
-          )}
-        </div>
-        <div onFocus={onLambdaEditorFocus}>
-          <StudioLambdaEditor
-            disabled={
-              editorState.classState.isConvertingConstraintLambdaObjects ||
-              isReadOnly ||
-              isInheritedConstraint
-            }
-            lambdaEditorState={constraintState}
-            forceBackdrop={hasParserError}
-            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.BOOLEAN,
-            )}
-          />
-        </div>
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
+
+type ClassSuperTypeDragSource = {
+  superType: GenericTypeReference;
+};
+
+const CLASS_SUPER_TYPE_DND_TYPE = 'CLASS_SUPER_TYPE';
 
 const SuperTypeEditor = observer(
   (props: {
@@ -774,6 +994,7 @@ const SuperTypeEditor = observer(
     deleteSuperType: () => void;
     isReadOnly: boolean;
   }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
@@ -787,6 +1008,47 @@ const SuperTypeEditor = observer(
         // Ensure there is no loop (might be expensive)
         !getAllSuperclasses(classOption.value).includes(_class),
     );
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: ClassSuperTypeDragSource): void => {
+        const draggingProperty = item.superType;
+        const hoveredProperty = superType;
+        class_swapSuperTypes(_class, draggingProperty, hoveredProperty);
+      },
+      [_class, superType],
+    );
+
+    const [{ isBeingDraggedSupertype }, dropConnector] = useDrop<
+      ClassSuperTypeDragSource,
+      void,
+      { isBeingDraggedSupertype: GenericTypeReference | undefined }
+    >(
+      () => ({
+        accept: [CLASS_SUPER_TYPE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedSupertype:
+            monitor.getItem<ClassSuperTypeDragSource | null>()?.superType,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = superType === isBeingDraggedSupertype;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<ClassSuperTypeDragSource>(
+        () => ({
+          type: CLASS_SUPER_TYPE_DND_TYPE,
+          item: () => ({
+            superType: superType,
+          }),
+        }),
+        [superType],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     const rawType = superType.value.rawType;
     const filterOption = createFilter({
       ignoreCase: true,
@@ -800,36 +1062,41 @@ const SuperTypeEditor = observer(
     const visitDerivationSource = (): void => editorStore.openElement(rawType);
 
     return (
-      <div className="super-type-editor">
-        <CustomSelectorInput
-          className="super-type-editor__class"
-          disabled={isReadOnly}
-          options={superTypeOptions}
-          onChange={changeType}
-          value={selectedType}
-          placeholder={'Choose a class'}
-          filterOption={filterOption}
-          formatOptionLabel={getPackageableElementOptionalFormatter()}
-        />
-        <button
-          className="uml-element-editor__basic__detail-btn"
-          onClick={visitDerivationSource}
-          tabIndex={-1}
-          title={'Visit super type'}
-        >
-          <LongArrowRightIcon />
-        </button>
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteSuperType}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
-        )}
+      <div ref={ref} className="super-type-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="super-type-editor">
+            <PanelEntryDragHandle />
+            <CustomSelectorInput
+              className="super-type-editor__class"
+              disabled={isReadOnly}
+              options={superTypeOptions}
+              onChange={changeType}
+              value={selectedType}
+              placeholder={'Choose a class'}
+              filterOption={filterOption}
+              formatOptionLabel={getPackageableElementOptionFormatter({})}
+            />
+            <button
+              className="uml-element-editor__basic__detail-btn"
+              onClick={visitDerivationSource}
+              tabIndex={-1}
+              title={'Visit super type'}
+            >
+              <LongArrowRightIcon />
+            </button>
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteSuperType}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -848,6 +1115,7 @@ const PropertiesEditor = observer(
           editorState.setSelectedProperty(undefined);
         }
       };
+
     const indirectProperties = getAllClassProperties(_class)
       .filter((property) => !_class.properties.includes(property))
       .sort((p1, p2) => p1.name.localeCompare(p2.name))
@@ -867,14 +1135,18 @@ const PropertiesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop(
+    const [{ isPropertyDragOver }, dropPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropProperty(item),
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropProperty(item),
+        collect: (monitor) => ({
           isPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -886,23 +1158,29 @@ const PropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropPropertyRef}
       >
-        {_class.properties.concat(indirectProperties).map((property) => (
-          <PropertyBasicEditor
-            key={property._UUID}
-            property={property}
-            _class={_class}
-            editorState={editorState}
-            deleteProperty={deleteProperty(property)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassPropertyDragSource): string =>
+              item.property.name === '' ? '(unknown)' : item.property.name
+            }
+            types={[CLASS_PROPERTY_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.properties.concat(indirectProperties).map((property) => (
+            <PropertyBasicEditor
+              key={property._UUID}
+              property={property}
+              _class={_class}
+              editorState={editorState}
+              deleteProperty={deleteProperty(property)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -940,15 +1218,18 @@ const DerviedPropertiesEditor = observer(
       },
       [_class, classState, isReadOnly],
     );
-    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop(
+    const [{ isDerivedPropertyDragOver }, dropDerivedPropertyRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDerivedPropertyDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleDropDerivedProperty(item),
-        collect: (monitor): { isDerivedPropertyDragOver: boolean } => ({
+        drop: (item) => handleDropDerivedProperty(item),
+        collect: (monitor) => ({
           isDerivedPropertyDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -960,29 +1241,36 @@ const DerviedPropertiesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropDerivedPropertyRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isDerivedPropertyDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isDerivedPropertyDragOver && !isReadOnly}
+        dropTargetConnector={dropDerivedPropertyRef}
       >
-        {_class.derivedProperties
-          .concat(indirectDerivedProperties)
-          .filter((dp): dp is DerivedProperty =>
-            Boolean(classState.getNullableDerivedPropertyState(dp)),
-          )
-          .map((dp) => (
-            <DerivedPropertyBasicEditor
-              key={dp._UUID}
-              derivedProperty={dp}
-              _class={_class}
-              editorState={editorState}
-              deleteDerivedProperty={deleteDerivedProperty(dp)}
-              isReadOnly={isReadOnly}
-            />
-          ))}
-      </div>
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassDerivedPropertyDragSource): string =>
+              item.derivedProperty.name === ''
+                ? '(unknown)'
+                : item.derivedProperty.name
+            }
+            types={[CLASS_DERIVED_PROPERTY_DND_TYPE]}
+          />
+          {_class.derivedProperties
+            .concat(indirectDerivedProperties)
+            .filter((dp): dp is DerivedProperty =>
+              Boolean(classState.getNullableDerivedPropertyState(dp)),
+            )
+            .map((dp) => (
+              <DerivedPropertyBasicEditor
+                key={dp._UUID}
+                derivedProperty={dp}
+                _class={_class}
+                editorState={editorState}
+                deleteDerivedProperty={deleteDerivedProperty(dp)}
+                isReadOnly={isReadOnly}
+              />
+            ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1009,6 +1297,12 @@ const ConstraintsEditor = observer(
 
     return (
       <div className="panel__content__lists">
+        <DragPreviewLayer
+          labelGetter={(item: ClassConstraintDragSource): string =>
+            item.constraint.name === '' ? '(unknown)' : item.constraint.name
+          }
+          types={[CLASS_CONSTRAINT_DND_TYPE]}
+        />
         {_class.constraints
           .concat(inheritedConstraints)
           .filter((constraint): constraint is Constraint =>
@@ -1066,14 +1360,18 @@ const SupertypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop(
+    const [{ isSuperTypeDragOver }, dropSuperTypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isSuperTypeDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: ElementDragSource): void => handleDropSuperType(item),
-        collect: (monitor): { isSuperTypeDragOver: boolean } => ({
+        drop: (item) => handleDropSuperType(item),
+        collect: (monitor) => ({
           isSuperTypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1085,22 +1383,28 @@ const SupertypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropSuperTypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over': isSuperTypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isSuperTypeDragOver && !isReadOnly}
+        dropTargetConnector={dropSuperTypeRef}
       >
-        {_class.generalizations.map((superType) => (
-          <SuperTypeEditor
-            key={superType.value._UUID}
-            superType={superType}
-            _class={_class}
-            deleteSuperType={deleteSuperType(superType)}
-            isReadOnly={isReadOnly}
+        <div className="panel__content__lists">
+          <DragPreviewLayer
+            labelGetter={(item: ClassSuperTypeDragSource): string =>
+              item.superType.value.rawType.name
+            }
+            types={[CLASS_SUPER_TYPE_DND_TYPE]}
           />
-        ))}
-      </div>
+          {_class.generalizations.map((superType) => (
+            <SuperTypeEditor
+              key={superType.value._UUID}
+              superType={superType}
+              _class={_class}
+              deleteSuperType={deleteSuperType(superType)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1126,11 +1430,15 @@ const TaggedValuesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1138,22 +1446,23 @@ const TaggedValuesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropTaggedValueRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isTaggedValueDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isTaggedValueDragOver && !isReadOnly}
+        dropTargetConnector={dropTaggedValueRef}
       >
-        {_class.taggedValues.map((taggedValue) => (
-          <TaggedValueEditor
-            key={taggedValue._UUID}
-            taggedValue={taggedValue}
-            deleteValue={deleteTaggedValue(taggedValue)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <TaggedValueDragPreviewLayer />
+          {_class.taggedValues.map((taggedValue) => (
+            <TaggedValueEditor
+              annotatedElement={_class}
+              key={taggedValue._UUID}
+              taggedValue={taggedValue}
+              deleteValue={deleteTaggedValue(taggedValue)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1181,11 +1490,15 @@ const StereotypesEditor = observer(
       },
       [_class, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1193,22 +1506,23 @@ const StereotypesEditor = observer(
     );
 
     return (
-      <div
-        ref={dropStereotypeRef}
-        className={clsx('panel__content__lists', {
-          'panel__content__lists--dnd-over':
-            isStereotypeDragOver && !isReadOnly,
-        })}
+      <PanelDropZone
+        isDragOver={isStereotypeDragOver && !isReadOnly}
+        dropTargetConnector={dropStereotypeRef}
       >
-        {_class.stereotypes.map((stereotype) => (
-          <StereotypeSelector
-            key={stereotype.value._UUID}
-            stereotype={stereotype}
-            deleteStereotype={deleteStereotype(stereotype)}
-            isReadOnly={isReadOnly}
-          />
-        ))}
-      </div>
+        <div className="panel__content__lists">
+          <StereotypeDragPreviewLayer />
+          {_class.stereotypes.map((stereotype) => (
+            <StereotypeSelector
+              key={stereotype._UUID}
+              annotatedElement={_class}
+              stereotype={stereotype}
+              deleteStereotype={deleteStereotype(stereotype)}
+              isReadOnly={isReadOnly}
+            />
+          ))}
+        </div>
+      </PanelDropZone>
     );
   },
 );
@@ -1222,7 +1536,7 @@ export const ClassFormEditor = observer(
     const { _class, editorState, onHashChange } = props;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
+    const classHash = isElementReadOnly(_class)
       ? undefined
       : applicationStore.notifyAndReturnAlternativeOnError(
           () => _class.hashCode,

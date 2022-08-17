@@ -55,9 +55,11 @@ import {
   FileCodeIcon,
   LockIcon,
   SaveIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
+  type ElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil.js';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
@@ -1332,15 +1334,19 @@ export const FileGenerationConfigurationEditor = observer(
         isReadOnly,
       ],
     );
-    const [{ isScopeElementDragOver }, scopeElementDropRef] = useDrop(
+    const [{ isScopeElementDragOver }, scopeElementDropRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isScopeElementDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
           CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
           CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         ],
-        drop: (item: FileGenerationSourceDropTarget): void => handleDrop(item),
-        collect: (monitor): { isScopeElementDragOver: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isScopeElementDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -1381,50 +1387,49 @@ export const FileGenerationConfigurationEditor = observer(
             )}
           </div>
         </div>
-        <div ref={scopeElementDropRef} className="panel__content dnd__dropzone">
-          <div
-            className={clsx({
-              dnd__overlay:
-                isScopeElementDragOver &&
-                !elementGenerationState &&
-                !isReadOnly,
-            })}
-          />
-          <div className="file-generation-editor__configuration__content">
-            <FileGenerationScopeEditor
-              fileGenerationState={fileGenerationState}
-              regenerate={debouncedRegenerate}
-              isReadOnly={isReadOnly || Boolean(elementGenerationState)}
-            />
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Generation Output Path
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                Specifies the root path where files will be generated. Defaults
-                to the file specification path
-              </div>
-              <input
-                className="panel__content__form__section__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={fileGeneration.generationOutputPath ?? ''}
-                onChange={changeValue}
+        <div className="panel__content">
+          <PanelDropZone
+            dropTargetConnector={scopeElementDropRef}
+            isDragOver={
+              isScopeElementDragOver && !elementGenerationState && !isReadOnly
+            }
+          >
+            <div className="file-generation-editor__configuration__content">
+              <FileGenerationScopeEditor
+                fileGenerationState={fileGenerationState}
+                regenerate={debouncedRegenerate}
+                isReadOnly={isReadOnly || Boolean(elementGenerationState)}
               />
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Generation Output Path
+                </div>
+                <div className="panel__content__form__section__header__prompt">
+                  Specifies the root path where files will be generated.
+                  Defaults to the file specification path
+                </div>
+                <input
+                  className="panel__content__form__section__input"
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  value={fileGeneration.generationOutputPath ?? ''}
+                  onChange={changeValue}
+                />
+              </div>
+              {fileGenerationConfiguration.map((abstractGenerationProperty) => (
+                <GenerationPropertyEditor
+                  key={
+                    abstractGenerationProperty.name +
+                    abstractGenerationProperty.type
+                  }
+                  update={update}
+                  isReadOnly={isReadOnly}
+                  getConfigValue={getConfigValue}
+                  property={abstractGenerationProperty}
+                />
+              ))}
             </div>
-            {fileGenerationConfiguration.map((abstractGenerationProperty) => (
-              <GenerationPropertyEditor
-                key={
-                  abstractGenerationProperty.name +
-                  abstractGenerationProperty.type
-                }
-                update={update}
-                isReadOnly={isReadOnly}
-                getConfigValue={getConfigValue}
-                property={abstractGenerationProperty}
-              />
-            ))}
-          </div>
+          </PanelDropZone>
         </div>
       </div>
     );

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, hashObject, hashString } from '@finos/legend-shared';
+import { hashArray, hashObject, hashValue } from '@finos/legend-shared';
 import { SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX } from './MetaModelConst.js';
 
 /**
@@ -262,5 +262,5 @@ export const hashRawLambda = (
 
 export const hashElementPointer = (pointerType: string, path: string): string =>
   [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
+    .map(hashValue)
     .join(',');

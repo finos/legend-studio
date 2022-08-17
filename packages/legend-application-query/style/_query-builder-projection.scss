@@ -22,44 +22,14 @@
   }
 
   &__column {
-    @include flexHCenter;
+    @include flexVCenter;
 
-    align-items: flex-start;
-    min-width: 3.4rem;
+    height: 3.4rem;
     color: var(--color-light-grey-400);
-
-    &--dragged {
-      padding: 0.2rem 0;
-    }
-
-    &__drag-preview-layer {
-      position: fixed;
-      pointer-events: none;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    &__drag-preview {
-      @include flexCenter;
-
-      display: inline-flex;
-      height: 2rem;
-      padding: 0 0.5rem;
-      font-size: 1.2rem;
-      background: var(--color-blue-200);
-      border-radius: 0.2rem;
-    }
+    padding: 0 0.5rem;
 
     &:hover {
       background: var(--color-dark-blue-shade-100);
-    }
-
-    &--no-hover:hover,
-    &--dragged:hover {
-      background: transparent !important;
     }
   }
 
@@ -73,34 +43,24 @@
     background: var(--color-dark-blue-shade-100);
   }
 
-  &__column__dnd__placeholder {
-    height: 2.8rem !important;
-
-    &__container {
-      height: 3.4rem;
-      width: 100%;
-      padding: 0 0.5rem;
-    }
-  }
-
-  &__column__dnd__indicator {
+  &__column__drag-handle {
     @include flexCenter;
 
-    height: 3.4rem;
+    background: var(--color-dark-grey-100);
+    height: 2.4rem;
+    width: 1.6rem;
+    min-width: 1.6rem;
+    margin-left: 0.5rem;
 
-    &__handler {
+    svg {
+      color: var(--color-dark-grey-300);
+      font-size: 1.2rem;
+    }
+
+    &__container {
       @include flexCenter;
 
-      background: var(--color-dark-grey-100);
-      height: 2.4rem;
-      width: 1.6rem;
-      min-width: 1.6rem;
-      margin-left: 0.5rem;
-
-      svg {
-        color: var(--color-dark-grey-300);
-        font-size: 1.2rem;
-      }
+      height: 3.4rem;
     }
   }
 

@@ -68,34 +68,24 @@ import {
   RawLambda,
   stub_RawLambda,
   isStubbed_RawLambda,
-  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../QueryBuilder_Const.js';
-import { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
-import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count.js';
-import { QueryBuilderAggregateOperator_Distinct } from './aggregateOperators/QueryBuilderAggregateOperator_Distinct.js';
-import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
-import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average.js';
-import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
-import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
-import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
-import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min.js';
-import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max.js';
-import { QueryBuilderAggregateOperator_JoinString } from './aggregateOperators/QueryBuilderAggregateOperator_JoinString.js';
 import {
-  type QueryBuilderPreviewData,
-  buildNonNumericPreviewDataQuery,
-  buildNumericPreviewDataQuery,
-} from './QueryBuilderPreviewDataHelper.js';
+  type QueryBuilderAggregateOperator,
+  QueryBuilderAggregationState,
+} from './QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
+import {
+  type QueryBuilderPreviewData,
+  buildNumericPreviewDataQuery,
+  buildNonNumericPreviewDataQuery,
+} from './QueryBuilderPreviewDataHelper.js';
 
-export enum QUERY_BUILDER_PROJECTION_DND_TYPE {
-  PROJECTION_COLUMN = 'PROJECTION_COLUMN',
-}
+export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
 export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
@@ -104,7 +94,6 @@ export interface QueryBuilderProjectionColumnDragSource {
 export abstract class QueryBuilderProjectionColumnState {
   readonly uuid = uuid();
   projectionState: QueryBuilderProjectionState;
-  isBeingDragged = false;
   columnName: string;
 
   constructor(
@@ -114,18 +103,12 @@ export abstract class QueryBuilderProjectionColumnState {
     makeObservable(this, {
       uuid: false,
       projectionState: false,
-      isBeingDragged: observable,
       columnName: observable,
-      setIsBeingDragged: action,
       setColumnName: action,
     });
 
     this.projectionState = projectionState;
     this.columnName = columnName;
-  }
-
-  setIsBeingDragged(val: boolean): void {
-    this.isBeingDragged = val;
   }
 
   setColumnName(val: string): void {
@@ -380,7 +363,10 @@ export class QueryBuilderProjectionState {
   aggregationState: QueryBuilderAggregationState;
   isConvertDerivationProjectionObjects = false;
 
-  constructor(queryBuilderState: QueryBuilderState) {
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    operators: QueryBuilderAggregateOperator[],
+  ) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       removeColumn: action,
@@ -390,18 +376,7 @@ export class QueryBuilderProjectionState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.aggregationState = new QueryBuilderAggregationState(this, [
-      new QueryBuilderAggregateOperator_Count(),
-      new QueryBuilderAggregateOperator_DistinctCount(),
-      new QueryBuilderAggregateOperator_Distinct(),
-      new QueryBuilderAggregateOperator_Sum(),
-      new QueryBuilderAggregateOperator_Average(),
-      new QueryBuilderAggregateOperator_Min(),
-      new QueryBuilderAggregateOperator_Max(),
-      new QueryBuilderAggregateOperator_StdDev_Population(),
-      new QueryBuilderAggregateOperator_StdDev_Sample(),
-      new QueryBuilderAggregateOperator_JoinString(),
-    ]);
+    this.aggregationState = new QueryBuilderAggregationState(this, operators);
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -606,7 +581,9 @@ export class QueryBuilderProjectionState {
   addNewBlankDerivation(): void {
     const derivation = new QueryBuilderDerivationProjectionColumnState(
       this,
-      this.queryBuilderState.graphManagerState.graphManager.HACKY__createDefaultBlankLambda(),
+      this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
+        { addDummyParameter: true },
+      ),
     );
     this.addColumn(derivation);
     derivation.derivationLambdaEditorState.setLambdaString(
@@ -709,13 +686,9 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.FLOAT: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildRawLambdaFromLambdaFunction(
-                buildNumericPreviewDataQuery(
-                  propertyExpression,
-                  this.queryBuilderState.querySetupState._class,
-                  this.queryBuilderState.graphManagerState.graph,
-                ),
-                this.queryBuilderState.graphManagerState,
+              buildNumericPreviewDataQuery(
+                this.queryBuilderState,
+                propertyExpression,
               ),
               this.queryBuilderState.querySetupState.mapping,
               runtime,
@@ -752,13 +725,9 @@ export class QueryBuilderProjectionState {
         case PRIMITIVE_TYPE.DATETIME: {
           const previewResult =
             (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildRawLambdaFromLambdaFunction(
-                buildNonNumericPreviewDataQuery(
-                  propertyExpression,
-                  this.queryBuilderState.querySetupState._class,
-                  this.queryBuilderState.graphManagerState.graph,
-                ),
-                this.queryBuilderState.graphManagerState,
+              buildNonNumericPreviewDataQuery(
+                this.queryBuilderState,
+                propertyExpression,
               ),
               this.queryBuilderState.querySetupState.mapping,
               runtime,
@@ -794,18 +763,21 @@ export class QueryBuilderProjectionState {
     }
   }
 
-  isValidProjectionState(): boolean {
+  get validationIssues(): string[] | undefined {
     if (this.queryBuilderState.fetchStructureState.isProjectionMode()) {
-      // duplicate columns check
       const hasDuplicatedProjectionColumns = this.columns.some(
         (column) =>
           this.columns.filter((c) => c.columnName === column.columnName)
             .length > 1,
       );
-      // no columns check
+      if (hasDuplicatedProjectionColumns) {
+        return ['Query has duplicated projection columns'];
+      }
       const hasNoProjectionColumns = this.columns.length === 0;
-      return !hasDuplicatedProjectionColumns && !hasNoProjectionColumns;
+      if (hasNoProjectionColumns) {
+        return ['Query has no projection columns'];
+      }
     }
-    return true;
+    return undefined;
   }
 }

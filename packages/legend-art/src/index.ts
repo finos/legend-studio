@@ -42,6 +42,7 @@ export * from './components/radio-group/BaseRadioGroup.js';
 export * from './components/panel/BlankPanelContent.js';
 export * from './components/panel/BlankPanelPlaceholder.js';
 export * from './components/panel/PanelLoadingIndicator.js';
+export * from './components/panel/PanelDropZone.js';
 
 export * from './components/ProgressBar.js';
 

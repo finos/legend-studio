@@ -96,12 +96,14 @@ export class IllegalStateError extends EnrichedError {
 }
 
 export class UnsupportedOperationError extends EnrichedError {
-  constructor(message?: string, unsupportedObject?: unknown) {
+  constructor(message?: string | undefined, unsupportedObject?: unknown) {
     super(
       'Unsupported Operation Error',
-      `${message}${
-        unsupportedObject ? `\n${printObject(unsupportedObject)}` : ''
-      }`,
+      message || unsupportedObject
+        ? `${message}${
+            unsupportedObject ? `\n${printObject(unsupportedObject)}` : ''
+          }`
+        : undefined,
     );
   }
 }

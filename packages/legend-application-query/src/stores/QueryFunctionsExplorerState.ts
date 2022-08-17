@@ -31,10 +31,7 @@ import { action, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 
-export enum QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE {
-  FUNCTION = 'FUNCTION',
-  PACKAGE = 'PACKAGE',
-}
+export const QUERY_BUILDER_FUNCTION_DND_TYPE = 'QUERY_BUILDER_FUNCTION';
 
 export interface QueryBuilderFunctionsExplorerDragSource {
   node: QueryBuilderFunctionsExplorerTreeNodeData;
@@ -43,7 +40,6 @@ export interface QueryBuilderFunctionsExplorerDragSource {
 export class QueryBuilderFunctionsExplorerTreeNodeData implements TreeNodeData {
   id: string;
   label: string;
-  dndType: string;
   childrenIds: string[] = [];
   isOpen?: boolean | undefined;
   packageableElement: PackageableElement;
@@ -51,12 +47,10 @@ export class QueryBuilderFunctionsExplorerTreeNodeData implements TreeNodeData {
   constructor(
     id: string,
     label: string,
-    dndType: string,
     packageableElement: PackageableElement,
   ) {
     this.id = id;
     this.label = label;
-    this.dndType = dndType;
     this.packageableElement = packageableElement;
   }
 }
@@ -81,10 +75,6 @@ export const generateFunctionsExplorerTreeNodeData = (
   rootPackageName: ROOT_PACKAGE_NAME,
 ): QueryBuilderFunctionsExplorerTreeNodeData => ({
   id: element.path,
-  dndType:
-    element instanceof Package
-      ? QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.PACKAGE
-      : QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
   label: element.name,
   childrenIds:
     element instanceof Package

@@ -70,24 +70,62 @@
 }
 
 .dnd__dropzone {
+  position: relative;
   width: 100%;
   height: 100%;
+  padding: 0;
+  margin: 0;
 }
 
-.dnd__overlay {
+.dnd__entry-drag-handle {
+  @include flexCenter;
+  @include flexConstantDimension;
+
+  width: 2rem;
+  height: 2.8rem;
+  background: var(--color-dark-shade-50);
+  color: var(--color-light-grey-400);
+  border-radius: 0.2rem;
+  margin-right: 0.5rem;
+  // NOTE: here we use `move` instead of `grab` since grab requires
+  // a more sophisticated control, i.e. when dragging, the cursor should
+  // be changed
+  cursor: move;
+}
+
+.dnd__entry-dropzone__placeholder {
+  height: 2.8rem;
+  width: 100%;
+
+  &__content {
+    @include flexCenter;
+
+    border: 0.2rem dashed var(--color-light-grey-300);
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+.dnd__drag-preview-layer {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  position: absolute;
-  background: var(--color-dnd__overlay);
-  filter: blur(0.05rem);
-  pointer-events: none; // pass all mouse event through it (used for nested DnD)
-  z-index: 1;
 
-  &__container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    margin: 0;
+  &__content {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 2rem;
+    padding: 0 0.5rem;
+    font-size: 1.2rem;
+    background: var(--color-blue-200);
+    color: var(--color-white);
+    border-radius: 0.2rem;
   }
 }

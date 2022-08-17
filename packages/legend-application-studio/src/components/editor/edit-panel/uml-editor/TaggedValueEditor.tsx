@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -24,6 +24,10 @@ import {
   TimesIcon,
   ArrowCircleRightIcon,
   LongArrowAltUpIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -31,26 +35,53 @@ import {
   type Tag,
   type Profile,
   isStubbed_PackageableElement,
+  type AnnotatedElement,
 } from '@finos/legend-graph';
 import {
   taggedValue_setValue,
   taggedValue_setTag,
+  annotatedElement_swapTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import type { PackageableElementOption } from '@finos/legend-application';
+import { useDrop, useDrag } from 'react-dnd';
 
 interface TagOption {
   label: string;
   value: Tag;
 }
 
+export const TAGGED_VALUE_DND_TYPE = 'TAGGED_VALUE';
+export type TaggedValueDragSource = {
+  taggedValue: TaggedValue;
+};
+
+export const TaggedValueDragPreviewLayer: React.FC = () => (
+  <DragPreviewLayer
+    labelGetter={(item: TaggedValueDragSource): string =>
+      isStubbed_PackageableElement(item.taggedValue.tag.ownerReference.value)
+        ? '(unknown)'
+        : `${item.taggedValue.tag.ownerReference.value.name}.${item.taggedValue.tag.value.value}`
+    }
+    types={[TAGGED_VALUE_DND_TYPE]}
+  />
+);
+
 export const TaggedValueEditor = observer(
   (props: {
+    annotatedElement: AnnotatedElement;
     taggedValue: TaggedValue;
     deleteValue: () => void;
     isReadOnly: boolean;
     darkTheme?: boolean;
   }) => {
-    const { taggedValue, deleteValue, isReadOnly, darkTheme } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const {
+      annotatedElement,
+      taggedValue,
+      deleteValue,
+      isReadOnly,
+      darkTheme,
+    } = props;
     const editorStore = useEditorStore();
     // Name
     const changeValue: React.ChangeEventHandler<
@@ -101,98 +132,150 @@ export const TaggedValueEditor = observer(
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleExpandedMode = (): void => setIsExpanded(!isExpanded);
 
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: TaggedValueDragSource) => {
+        const draggingProperty = item.taggedValue;
+        const hoveredProperty = taggedValue;
+        annotatedElement_swapTaggedValues(
+          annotatedElement,
+          draggingProperty,
+          hoveredProperty,
+        );
+      },
+      [annotatedElement, taggedValue],
+    );
+
+    const [{ isBeingDraggedTaggedValue }, dropConnector] = useDrop<
+      TaggedValueDragSource,
+      void,
+      { isBeingDraggedTaggedValue: TaggedValue | undefined }
+    >(
+      () => ({
+        accept: [TAGGED_VALUE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedTaggedValue:
+            monitor.getItem<TaggedValueDragSource | null>()?.taggedValue,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = taggedValue === isBeingDraggedTaggedValue;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<TaggedValueDragSource>(
+        () => ({
+          type: TAGGED_VALUE_DND_TYPE,
+          item: () => ({
+            taggedValue: taggedValue,
+          }),
+        }),
+        [taggedValue],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
-      <div className="tagged-value-editor">
-        <div
-          className={`tagged-value-editor__profile ${
-            darkTheme ? 'tagged-value-editor-dark-theme' : ''
-          }`}
+      <div ref={ref} className="tagged-value-editor__container">
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          className="tagged-value-editor__dnd__placeholder"
         >
-          <CustomSelectorInput
-            className="tagged-value-editor__profile__selector"
-            disabled={isReadOnly}
-            options={profileOptions}
-            onChange={changeProfile}
-            value={selectedProfile}
-            placeholder={'Choose a profile'}
-            filterOption={profileFilterOption}
-            darkMode={darkTheme ?? false}
-          />
-          <button
-            className={`tagged-value-editor__profile__visit-btn ${
-              darkTheme ? 'tagged-value-editor-dark-theme' : ''
-            }`}
-            disabled={isStubbed_PackageableElement(
-              taggedValue.tag.value._OWNER,
+          <div className="tagged-value-editor">
+            <PanelEntryDragHandle />
+            <div
+              className={`tagged-value-editor__profile ${
+                darkTheme ? 'tagged-value-editor-dark-theme' : ''
+              }`}
+            >
+              <CustomSelectorInput
+                className="tagged-value-editor__profile__selector"
+                disabled={isReadOnly}
+                options={profileOptions}
+                onChange={changeProfile}
+                value={selectedProfile}
+                placeholder={'Choose a profile'}
+                filterOption={profileFilterOption}
+                darkMode={darkTheme ?? false}
+              />
+              <button
+                className={`tagged-value-editor__profile__visit-btn ${
+                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                }`}
+                disabled={isStubbed_PackageableElement(
+                  taggedValue.tag.value._OWNER,
+                )}
+                onClick={visitProfile}
+                tabIndex={-1}
+                title={'Visit profile'}
+              >
+                <ArrowCircleRightIcon />
+              </button>
+            </div>
+            <CustomSelectorInput
+              className="tagged-value-editor__tag"
+              disabled={isReadOnly}
+              options={tagOptions}
+              onChange={changeTag}
+              value={selectedTag}
+              placeholder={'Choose a tag'}
+              filterOption={tagFilterOption}
+              darkMode={Boolean(darkTheme)}
+            />
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteValue}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
             )}
-            onClick={visitProfile}
-            tabIndex={-1}
-            title={'Visit profile'}
-          >
-            <ArrowCircleRightIcon />
-          </button>
-        </div>
-        <CustomSelectorInput
-          className="tagged-value-editor__tag"
-          disabled={isReadOnly}
-          options={tagOptions}
-          onChange={changeTag}
-          value={selectedTag}
-          placeholder={'Choose a tag'}
-          filterOption={tagFilterOption}
-          darkMode={Boolean(darkTheme)}
-        />
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteValue}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
-        )}
-        <div
-          className={clsx('tagged-value-editor__value', {
-            'tagged-value-editor__value__expanded': isExpanded,
-          })}
-        >
-          {isExpanded && (
-            <textarea
-              className={`tagged-value-editor__value__input ${
-                darkTheme ? 'tagged-value-editor-dark-theme' : ''
-              }`}
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={taggedValue.value}
-              onChange={changeValue}
-              placeholder={`Value`}
-            />
-          )}
-          {!isExpanded && (
-            <input
-              className={`tagged-value-editor__value__input ${
-                darkTheme ? 'tagged-value-editor-dark-theme' : ''
-              }`}
-              spellCheck={false}
-              disabled={isReadOnly}
-              value={taggedValue.value}
-              onChange={changeValue}
-              placeholder={`Value`}
-            />
-          )}
-          <button
-            className={`tagged-value-editor__value__expand-btn ${
-              darkTheme ? 'tagged-value-editor-dark-theme' : ''
-            }`}
-            onClick={toggleExpandedMode}
-            tabIndex={-1}
-            title={'Expand/Collapse'}
-          >
-            {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
-          </button>
-        </div>
+            <div
+              className={clsx('tagged-value-editor__value', {
+                'tagged-value-editor__value__expanded': isExpanded,
+              })}
+            >
+              {isExpanded && (
+                <textarea
+                  className={`tagged-value-editor__value__input ${
+                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                  }`}
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  value={taggedValue.value}
+                  onChange={changeValue}
+                  placeholder={`Value`}
+                />
+              )}
+              {!isExpanded && (
+                <input
+                  className={`tagged-value-editor__value__input ${
+                    darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                  }`}
+                  spellCheck={false}
+                  disabled={isReadOnly}
+                  value={taggedValue.value}
+                  onChange={changeValue}
+                  placeholder={`Value`}
+                />
+              )}
+              <button
+                className={`tagged-value-editor__value__expand-btn ${
+                  darkTheme ? 'tagged-value-editor-dark-theme' : ''
+                }`}
+                onClick={toggleExpandedMode}
+                tabIndex={-1}
+                title={'Expand/Collapse'}
+              >
+                {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
+              </button>
+            </div>
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

@@ -26,6 +26,7 @@ import {
   buildGraphFetchTreeData,
 } from './QueryBuilderGraphFetchTreeUtil.js';
 import type { QueryBuilderExplorerTreePropertyNodeData } from './QueryBuilderExplorerState.js';
+import { assertNonNullable } from '@finos/legend-shared';
 
 export class QueryBuilderGraphFetchTreeState {
   queryBuilderState: QueryBuilderState;
@@ -77,14 +78,19 @@ export class QueryBuilderGraphFetchTreeState {
   }
 
   addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
-    if (this.treeData) {
-      addQueryBuilderPropertyNode(
-        this.treeData,
-        this.queryBuilderState.explorerState.nonNullableTreeData,
-        node,
-        this.queryBuilderState,
-      );
-      this.setGraphFetchTree({ ...this.treeData });
+    if (!this.treeData) {
+      this.initialize();
     }
+    assertNonNullable(
+      this.treeData,
+      `Graph-fetch tree has not been properly initialized`,
+    );
+    addQueryBuilderPropertyNode(
+      this.treeData,
+      this.queryBuilderState.explorerState.nonNullableTreeData,
+      node,
+      this.queryBuilderState,
+    );
+    this.setGraphFetchTree({ ...this.treeData });
   }
 }

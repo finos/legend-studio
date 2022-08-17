@@ -301,11 +301,8 @@ test(
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${filterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, filterValue));
+
     await waitFor(() => getByText(filterPanel, 'First Name'));
     await waitFor(() => getByText(filterPanel, 'is'));
     const filterState = queryBuilderState.filterState;
@@ -336,18 +333,10 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'or'));
     filterValue = 'lastNameTest';
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${filterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, filterValue));
     await waitFor(() => getByText(filterPanel, 'First Name'));
     const lastNameFilterValue = 'lastNameTest';
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${lastNameFilterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, lastNameFilterValue));
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
     expect(

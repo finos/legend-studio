@@ -41,7 +41,7 @@ import {
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -250,7 +250,7 @@ const NewPureModelConnectionDriverEditor = observer(
             onChange={onClassSelectionChange}
             value={selectedClassOption}
             darkMode={true}
-            formatOptionLabel={getPackageableElementOptionalFormatter({
+            formatOptionLabel={getPackageableElementOptionFormatter({
               darkMode: true,
             })}
           />
@@ -368,6 +368,7 @@ const NewFileGenerationDriverEditor = observer(() => {
         options={options}
         onChange={onTypeSelectionChange}
         value={newConnectionDriver.typeOption}
+        darkMode={true}
       />
     </div>
   );
@@ -489,6 +490,7 @@ export const CreateNewElementModal = observer(() => {
               onChange={handleTypeChange}
               value={selectedTypeOption}
               isClearable={false}
+              darkMode={true}
             />
           )}
           <input
