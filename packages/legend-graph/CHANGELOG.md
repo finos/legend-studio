@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 14.0.1
+
+### Patch Changes
+
+- [#1412](https://github.com/finos/legend-studio/pull/1412) [`4fdf8689`](https://github.com/finos/legend-studio/commit/4fdf86893b1cb9a4ab68667ef1aa693fde026b4f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where there is a false-positive change detection for property mapping without `targetId` ([#1406](https://github.com/finos/legend-studio/issues/1406)).
+
 ## 14.0.0
 
 ### Major Changes
