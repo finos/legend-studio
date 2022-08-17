@@ -43,6 +43,7 @@ import {
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSLDataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -66,6 +67,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
@@ -75,7 +77,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
     runtimePath: string | undefined,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient, sdlcServerClient, pluginManager);
 
     this.groupId = groupId;
     this.artifactId = artifactId;

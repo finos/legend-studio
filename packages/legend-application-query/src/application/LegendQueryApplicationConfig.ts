@@ -66,7 +66,7 @@ export interface LegendQueryApplicationConfigurationData
     TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
-  studio: { url: string };
+  studio: { url: string; sdlcUrl: string };
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -76,6 +76,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly depotServerUrl: string;
   readonly studioUrl: string;
+  readonly sdlcUrl: string;
   readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   constructor(
@@ -99,6 +100,10 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
+    );
+    this.sdlcUrl = guaranteeNonEmptyString(
+      input.configData.studio.sdlcUrl,
+      `Can't configure application: 'studio.sdlcUrl' field is missing or empty`,
     );
     this.TEMPORARY__useLegacyDepotServerAPIRoutes =
       input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
