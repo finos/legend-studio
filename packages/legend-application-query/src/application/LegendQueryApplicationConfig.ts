@@ -67,7 +67,6 @@ export interface LegendQueryApplicationConfigurationData
   };
   engine: { url: string; queryUrl?: string };
   studio: { url: string; sdlcUrl: string };
-  extensions?: Record<PropertyKey, unknown>;
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
