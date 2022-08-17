@@ -1,5 +1,7 @@
 # @finos/legend-application-query-deployment
 
+## 7.6.0
+
 ## 7.5.0
 
 ## 7.4.0
