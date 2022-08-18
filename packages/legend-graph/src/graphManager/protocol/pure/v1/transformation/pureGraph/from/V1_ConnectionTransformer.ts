@@ -38,6 +38,7 @@ import {
   OAuthAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
+  MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
@@ -72,6 +73,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_OAuthAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+  V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { V1_Connection } from '../../../model/packageableElements/connection/V1_Connection.js';
 import {
@@ -252,6 +254,12 @@ const transformAuthenticationStrategy = (
     auth.baseVaultReference = metamodel.baseVaultReference;
     auth.userNameVaultReference = metamodel.userNameVaultReference;
     auth.passwordVaultReference = metamodel.passwordVaultReference;
+    return auth;
+  } else if (
+    metamodel instanceof MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    const auth = new V1_MiddleTierUsernamePasswordAuthenticationStrategy();
+    auth.vaultReference = metamodel.vaultReference;
     return auth;
   }
   const extraConnectionAuthenticationStrategyTransformers =

@@ -40,6 +40,7 @@ import {
   DefaultH2AuthenticationStrategy,
   DelegatedKerberosAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
+  MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
@@ -62,6 +63,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+  V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
 
@@ -308,7 +310,19 @@ export const V1_buildAuthenticationStrategy = (
     );
     metamodel.baseVaultReference = protocol.baseVaultReference;
     return metamodel;
+  } else if (
+    protocol instanceof V1_MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    assertNonEmptyString(
+      protocol.vaultReference,
+      `Middle Tier Username password authentication strategy 'vaultReference' field is missing or empty`,
+    );
+
+    return new MiddleTierUsernamePasswordAuthenticationStrategy(
+      protocol.vaultReference,
+    );
   }
+
   const extraConnectionAuthenticationStrategyBuilders =
     context.extensions.plugins.flatMap(
       (plugin) =>

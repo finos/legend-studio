@@ -63,6 +63,7 @@ import {
   V1_DelegatedKerberosAuthenticationStrategy,
   V1_UsernamePasswordAuthenticationStrategy,
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
+  V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
@@ -346,6 +347,7 @@ enum V1_AuthenticationStrategyType {
   OAUTH = 'oauth',
   USERNAME_PASSWORD = 'userNamePassword',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'gcpWorkloadIdentityFederation',
+  MIDDLE_TIER_USERNAME_PASSWORD = 'middleTierUserNamePassword',
 }
 
 const V1_delegatedKerberosAuthenticationStrategyModelSchema = createModelSchema(
@@ -388,6 +390,14 @@ const V1_GCPApplicationDefaultCredentialsAuthenticationStrategyModelSchema =
     _type: usingConstantValueSchema(
       V1_AuthenticationStrategyType.GCP_APPLICATION_DEFAULT_CREDENTIALS,
     ),
+  });
+
+const V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema =
+  createModelSchema(V1_MiddleTierUsernamePasswordAuthenticationStrategy, {
+    _type: usingConstantValueSchema(
+      V1_AuthenticationStrategyType.MIDDLE_TIER_USERNAME_PASSWORD,
+    ),
+    vaultReference: primitive(),
   });
 
 const V1_GCPWorkloadIdentityFederationAuthenticationStrategyModelSchema =
@@ -460,6 +470,13 @@ export const V1_serializeAuthenticationStrategy = (
       V1_UsernamePasswordAuthenticationStrategyModelSchema,
       protocol,
     );
+  } else if (
+    protocol instanceof V1_MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    return serialize(
+      V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
+      protocol,
+    );
   }
   const extraConnectionAuthenticationStrategyProtocolSerializers =
     plugins.flatMap(
@@ -515,6 +532,11 @@ export const V1_deserializeAuthenticationStrategy = (
     case V1_AuthenticationStrategyType.USERNAME_PASSWORD:
       return deserialize(
         V1_UsernamePasswordAuthenticationStrategyModelSchema,
+        json,
+      );
+    case V1_AuthenticationStrategyType.MIDDLE_TIER_USERNAME_PASSWORD:
+      return deserialize(
+        V1_MiddleTierUsernamePasswordAuthenticationStrategyModelSchema,
         json,
       );
     default: {

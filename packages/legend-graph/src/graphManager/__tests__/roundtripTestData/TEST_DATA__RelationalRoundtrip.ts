@@ -4072,6 +4072,31 @@ export const TEST_DATA__RelationalDatabaseConnectionRoundtrip = [
     classifierPath: 'meta::pure::runtime::PackageableConnection',
   },
   {
+    path: 'apps::middleTierUsernamePasswordConnection',
+    content: {
+      _type: 'connection',
+      connectionValue: {
+        _type: 'RelationalDatabaseConnection',
+        authenticationStrategy: {
+          _type: 'middleTierUserNamePassword',
+          vaultReference: 'value',
+        },
+        databaseType: 'H2',
+        datasourceSpecification: {
+          _type: 'static',
+          databaseName: 'myDb',
+          host: 'somehost',
+          port: 999,
+        },
+        element: 'apps::pure::studio::relational::tests::dbInc',
+        type: 'H2',
+      },
+      name: 'middleTierUsernamePasswordConnection',
+      package: 'apps',
+    },
+    classifierPath: 'meta::pure::runtime::PackageableConnection',
+  },
+  {
     path: 'apps::myBigQueryWithWorkloadIdentityFederation',
     content: {
       _type: 'connection',

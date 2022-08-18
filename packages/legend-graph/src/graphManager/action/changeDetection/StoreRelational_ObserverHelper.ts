@@ -25,6 +25,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
+  MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/connection/AuthenticationStrategy.js';
 import {
   type DatasourceSpecification,
@@ -938,6 +939,17 @@ export const observe_GCPWorkloadIdentityFederationAuthenticationStrategy =
       }),
   );
 
+export const observe_MiddleTierUsernamePasswordAuthenticationStrategy =
+  skipObserved(
+    (
+      metamodel: MiddleTierUsernamePasswordAuthenticationStrategy,
+    ): MiddleTierUsernamePasswordAuthenticationStrategy =>
+      makeObservable(metamodel, {
+        hashCode: computed,
+        vaultReference: observable,
+      }),
+  );
+
 export const observe_AuthenticationStrategy = (
   metamodel: AuthenticationStrategy,
   context: ObserverContext,
@@ -966,6 +978,10 @@ export const observe_AuthenticationStrategy = (
     return observe_GCPWorkloadIdentityFederationAuthenticationStrategy(
       metamodel,
     );
+  } else if (
+    metamodel instanceof MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    return observe_MiddleTierUsernamePasswordAuthenticationStrategy(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
     (plugin) =>

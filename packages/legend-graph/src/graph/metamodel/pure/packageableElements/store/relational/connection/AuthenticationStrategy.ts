@@ -170,3 +170,22 @@ export class UsernamePasswordAuthenticationStrategy
     ]);
   }
 }
+
+export class MiddleTierUsernamePasswordAuthenticationStrategy
+  extends AuthenticationStrategy
+  implements Hashable
+{
+  vaultReference: string;
+
+  constructor(vaultReference: string) {
+    super();
+    this.vaultReference = vaultReference;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.MIDDLE_TIER_USERNAME_PASSWORD_AUTHENTICATION_STRATEGY,
+      this.vaultReference,
+    ]);
+  }
+}
