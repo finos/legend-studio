@@ -68,6 +68,7 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import { QueryPromoteToServiceState } from './QueryPromoteToServiceState.js';
 import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export interface QueryExportConfiguration {
@@ -207,6 +208,7 @@ export abstract class QueryEditorStore {
   initState = ActionState.create();
   queryBuilderState: QueryBuilderState;
   exportState?: QueryExportState | undefined;
+  queryPromoteToServiceState: QueryPromoteToServiceState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -216,6 +218,7 @@ export abstract class QueryEditorStore {
   ) {
     makeObservable(this, {
       exportState: observable,
+      queryPromoteToServiceState: observable,
       setExportState: action,
       initialize: flow,
       buildGraph: flow,
@@ -234,6 +237,7 @@ export abstract class QueryEditorStore {
       new StandardQueryBuilderMode(),
     );
     this.sdlcServerClient = sdlcServerClient;
+    this.queryPromoteToServiceState = new QueryPromoteToServiceState(this);
   }
 
   setExportState(val: QueryExportState | undefined): void {
@@ -321,7 +325,8 @@ export abstract class QueryEditorStore {
         artifactId,
       )) as PlainObject<ProjectData>,
     );
-
+    this.queryPromoteToServiceState.setDepotProject(project);
+    this.queryPromoteToServiceState.setVersionId(versionId);
     // initialize system
     stopWatch.record();
     yield this.graphManagerState.initializeSystem();

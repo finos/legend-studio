@@ -233,6 +233,7 @@ export abstract class AbstractPureGraphManager {
 
   // ------------------------------------------- Compile -------------------------------------------
 
+  abstract compileEntities(entities: Entity[]): Promise<void>;
   abstract compileGraph(
     graph: PureModel,
     options?: { onError?: () => void; keepSourceInformation?: boolean },

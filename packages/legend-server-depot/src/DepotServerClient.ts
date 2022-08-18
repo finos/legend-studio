@@ -16,7 +16,11 @@
 
 import type { Entity } from '@finos/legend-storage';
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import { LATEST_VERSION_ALIAS, SNAPSHOT_VERSION_ALIAS } from './DepotUtils.js';
+import {
+  LATEST_VERSION_ALIAS,
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from './DepotUtils.js';
 import type { DepotScope } from './models/DepotScope.js';
 import type { ProjectData } from './models/ProjectData.js';
 import {
@@ -40,6 +44,17 @@ export class DepotServerClient extends AbstractServerClient {
     this.TEMPORARY__useLegacyDepotServerAPIRoutes = Boolean(
       config.TEMPORARY__useLegacyDepotServerAPIRoutes,
     );
+  }
+
+  // ------------------------------------------- UTILS -------------------------------------------
+
+  resolveProjectVersion(project: ProjectData, versionId: string): string {
+    if (versionId === LATEST_VERSION_ALIAS) {
+      return project.latestVersion;
+    } else if (versionId === SNAPSHOT_VERSION_ALIAS) {
+      return MASTER_SNAPSHOT_ALIAS;
+    }
+    return versionId;
   }
 
   // ------------------------------------------- Projects -------------------------------------------
@@ -92,16 +107,10 @@ export class DepotServerClient extends AbstractServerClient {
     project: ProjectData,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> {
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      return this.getLatestRevisionEntities(
-        project.groupId,
-        project.artifactId,
-      );
-    }
     return this.getVersionEntities(
       project.groupId,
       project.artifactId,
-      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      this.resolveProjectVersion(project, versionId),
     );
   }
 
@@ -136,17 +145,10 @@ export class DepotServerClient extends AbstractServerClient {
     versionId: string,
     entityPath: string,
   ): Promise<PlainObject<Entity>> {
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      return this.getLatestRevisionEntity(
-        project.groupId,
-        project.artifactId,
-        entityPath,
-      );
-    }
     return this.getVersionEntity(
       project.groupId,
       project.artifactId,
-      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      this.resolveProjectVersion(project, versionId),
       entityPath,
     );
   }
@@ -208,26 +210,21 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
-  getLatestRevisionDependencyEntities = (
+  getProjectDependencies = (
     groupId: string,
     artifactId: string,
+    version: string,
     /**
      * Flag indicating if transitive dependencies should be returned.
      */
     transitive: boolean,
-    /**
-     * Flag indicating whether to return the root of the dependency tree.
-     */
-    includeOrigin: boolean,
-  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
+  ): Promise<PlainObject<ProjectDependencyCoordinates>[]> =>
     this.get(
-      `${this._revisions(groupId, artifactId)}/latest/dependants`,
+      `${this._version(groupId, artifactId, version)}/projectDependencies`,
       undefined,
       undefined,
       {
         transitive,
-        includeOrigin,
-        versioned: false, // we don't need to add version prefix to entity path
       },
     );
 
@@ -236,23 +233,13 @@ export class DepotServerClient extends AbstractServerClient {
     versionId: string,
   ): Promise<Map<string, Entity[]>> {
     const dependencyEntitiesIndex = new Map<string, Entity[]>();
-    let dependencies: PlainObject<ProjectVersionEntities>[] = [];
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      dependencies = await this.getLatestRevisionDependencyEntities(
-        project.groupId,
-        project.artifactId,
-        true,
-        false,
-      );
-    } else {
-      dependencies = await this.getDependencyEntities(
-        project.groupId,
-        project.artifactId,
-        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
-        true,
-        false,
-      );
-    }
+    const dependencies = await this.getDependencyEntities(
+      project.groupId,
+      project.artifactId,
+      this.resolveProjectVersion(project, versionId),
+      true,
+      false,
+    );
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {

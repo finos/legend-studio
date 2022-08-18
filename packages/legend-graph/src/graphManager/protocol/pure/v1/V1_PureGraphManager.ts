@@ -1487,6 +1487,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- Compile -------------------------------------------
 
+  async compileEntities(entities: Entity[]): Promise<void> {
+    const pmcd = await this.entitiesToPureModelContextData(entities);
+    await this.engine.compilePureModelContextData(pmcd);
+  }
+
   async compileGraph(
     graph: PureModel,
     options?:

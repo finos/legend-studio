@@ -30,6 +30,16 @@ const TEST_DATA__appConfig = {
     url: 'http://testStudioUrl',
     sdlcUrl: 'http://testSdlcUrl',
   },
+  sdlc: {
+    default: 'test',
+    instances: [
+      {
+        key: 'test',
+        url: 'https://sdlcUrl',
+        studioUrl: 'https://testStudioUrl',
+      },
+    ],
+  },
 };
 
 export const TEST__getTestLegendQueryApplicationConfig = (

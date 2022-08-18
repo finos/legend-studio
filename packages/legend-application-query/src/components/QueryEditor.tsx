@@ -63,6 +63,7 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import { QueryPromoteToServiceEditor } from './QueryPromoteToServiceEditor.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -221,6 +222,32 @@ const QueryEditorHeaderContent = observer(() => {
       })
       .catch(applicationStore.alertUnhandledError);
   };
+  const productionizeQuery = (): void => {
+    flowResult(editorStore.queryPromoteToServiceState.init()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  };
+  const renderProductionizeAction = (): React.ReactNode => {
+    if (editorStore instanceof ServiceQueryEditorStore) {
+      // TODO: add option of `updating` current service
+      return null;
+    }
+    return (
+      <button
+        className="query-editor__header__action btn--dark"
+        tabIndex={-1}
+        onClick={productionizeQuery}
+      >
+        <div className="query-editor__header__action__icon">
+          <RobotIcon />
+          <QueryExport />
+        </div>
+        <div className="query-editor__header__action__label">
+          Promote To Service
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="query-editor__header__content">
@@ -250,6 +277,7 @@ const QueryEditorHeaderContent = observer(() => {
             )}
           </button>
         )}
+        {renderProductionizeAction()}
         <button
           className="query-editor__header__action btn--dark"
           tabIndex={-1}
@@ -306,6 +334,11 @@ export const QueryEditor = observer(() => {
             <ArrowLeftIcon />
           </button>
           {!isLoadingEditor && <QueryEditorHeaderContent />}
+          {editorStore.queryPromoteToServiceState.showModal && (
+            <QueryPromoteToServiceEditor
+              promoteToServiceState={editorStore.queryPromoteToServiceState}
+            />
+          )}
         </div>
         <div className="query-editor__content">
           <PanelLoadingIndicator isLoading={isLoadingEditor} />
