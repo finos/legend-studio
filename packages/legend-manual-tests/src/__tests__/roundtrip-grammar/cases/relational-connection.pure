@@ -114,7 +114,6 @@ RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordC
   };
 }
 
-
 RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers
 {
   store: store::db;
