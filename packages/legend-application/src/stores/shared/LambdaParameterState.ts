@@ -90,12 +90,14 @@ export const buildParametersLetLambdaFunc = (
 export class LambdaParameterState {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
+  readonly graph: PureModel;
   observableContext: ObserverContext;
   value: ValueSpecification | undefined;
 
   constructor(
     variableExpression: VariableExpression,
     observableContext: ObserverContext,
+    graph: PureModel,
   ) {
     makeObservable(this, {
       value: observable,
@@ -104,10 +106,13 @@ export class LambdaParameterState {
     });
     this.observableContext = observableContext;
     this.parameter = observe_VariableExpression(variableExpression);
+    this.graph = graph;
   }
 
   mockParameterValue(): void {
-    this.setValue(generateVariableExpressionMockValue(this.parameter));
+    this.setValue(
+      generateVariableExpressionMockValue(this.parameter, this.graph),
+    );
   }
 
   setValue(value: ValueSpecification | undefined): void {
