@@ -44,6 +44,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   getNullableFirstElement,
+  uniq,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
@@ -360,6 +361,6 @@ export class ServiceTestDataState {
     } else if (execution instanceof PureMultiExecution) {
       runtimes = execution.executionParameters.map((t) => t.runtime);
     }
-    return runtimes.flatMap(getAllIdentifiedConnectionsFromRuntime);
+    return uniq(runtimes.flatMap(getAllIdentifiedConnectionsFromRuntime));
   }
 }
