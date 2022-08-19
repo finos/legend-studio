@@ -63,13 +63,14 @@ export const getAllIdentifiedConnectionsFromRuntime = (
 ): IdentifiedConnection[] => {
   const resolvedRuntimes: EngineRuntime[] = [];
   if (runtime instanceof RuntimePointer) {
-    const engineRuntime = runtime.packageableRuntime.value.runtimeValue;
-    resolvedRuntimes.push(engineRuntime);
+    resolvedRuntimes.push(runtime.packageableRuntime.value.runtimeValue);
   } else if (runtime instanceof EngineRuntime) {
     resolvedRuntimes.push(runtime);
   }
   return resolvedRuntimes
-    .flatMap((e) => e.connections.map((l) => l.storeConnections))
+    .flatMap((e) =>
+      e.connections.map((connection) => connection.storeConnections),
+    )
     .flat();
 };
 

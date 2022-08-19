@@ -212,12 +212,14 @@ export const NewConnectionDataModal = observer(
     const dataElementOptions = testDataState.editorStore.dataOptions;
     const newConnectionState = testDataState.newConnectionDataState;
     const dataElement = newConnectionState.dataElement;
-    const selectedOption = dataElement ? buildElementOption(dataElement) : null;
+    const selectedDataElement = dataElement
+      ? buildElementOption(dataElement)
+      : null;
     const onDataElementChange = (val: {
       label: string;
       value?: DataElement;
     }): void => {
-      if (val.value !== selectedOption?.value && val.value) {
+      if (val.value !== selectedDataElement?.value && val.value) {
         newConnectionState.setDataElement(val.value);
       }
     };
@@ -265,7 +267,7 @@ export const NewConnectionDataModal = observer(
     // external format
     const selectedEmbeddedType = newConnectionState.embeddedDataType
       ? {
-          label: prettyCONSTName(newConnectionState.embeddedDataType.label),
+          label: prettyCONSTName(newConnectionState.embeddedDataType.value),
           value: newConnectionState.embeddedDataType.value,
         }
       : undefined;
@@ -301,42 +303,67 @@ export const NewConnectionDataModal = observer(
       >
         <form
           onSubmit={handleSubmit}
-          className="modal modal--dark search-modal"
+          className="modal service-test-data-modal modal--dark"
         >
-          <div className="modal__title">Create a connection test data</div>
-          <div className="explorer__new-element-modal__driver">
-            <CustomSelectorInput
-              className="explorer__new-element-modal__driver__dropdown"
-              options={connectionOptions}
-              onChange={onConnectionSelectionChange}
-              value={selectedConnection}
-              isClearable={false}
-              darkMode={true}
-            />
+          <div className="modal__header">
+            <div className="modal__title">Create a connection test data</div>
           </div>
-          <div className="explorer__new-element-modal__driver">
-            <CustomSelectorInput
-              className="explorer__new-element-modal__driver__dropdown"
-              options={embeddedOptions}
-              onChange={onEmbeddedTypeChange}
-              value={selectedEmbeddedType}
-              isClearable={false}
-              darkMode={true}
-            />
-          </div>
-          {selectedEmbeddedType?.value === EmbeddedDataType.DATA_ELEMENT && (
-            <div className="explorer__new-element-modal__driver">
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown data-element-reference-editor__value__dropdown"
-                disabled={isReadOnly}
-                options={dataElementOptions}
-                onChange={onDataElementChange}
-                value={selectedOption}
-                darkMode={true}
-              />
+          <div className="modal__body">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Connection ID
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Connection in runtime to povide test data for
+              </div>
+              <div className="explorer__new-element-modal__driver">
+                <CustomSelectorInput
+                  className="explorer__new-element-modal__driver__dropdown"
+                  options={connectionOptions}
+                  onChange={onConnectionSelectionChange}
+                  value={selectedConnection}
+                  isClearable={false}
+                  darkMode={true}
+                />
+              </div>
             </div>
-          )}
-          <div className="search-modal__actions">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Data Type
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Test data type that will be loaded to your test connection
+              </div>
+              <div className="explorer__new-element-modal__driver">
+                <CustomSelectorInput
+                  className="explorer__new-element-modal__driver__dropdown"
+                  options={embeddedOptions}
+                  onChange={onEmbeddedTypeChange}
+                  value={selectedEmbeddedType}
+                  isClearable={false}
+                  darkMode={true}
+                />
+              </div>
+            </div>
+            {selectedEmbeddedType?.value === EmbeddedDataType.DATA_ELEMENT && (
+              <div className="panel__content__form__section">
+                <div className="panel__content__form__section__header__label">
+                  Data Element
+                </div>
+                <div className="explorer__new-element-modal__driver">
+                  <CustomSelectorInput
+                    className="panel__content__form__section__dropdown data-element-reference-editor__value__dropdown"
+                    disabled={isReadOnly}
+                    options={dataElementOptions}
+                    onChange={onDataElementChange}
+                    value={selectedDataElement}
+                    darkMode={true}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="modal__footer">
             <button
               type="button"
               className="btn btn--dark"
