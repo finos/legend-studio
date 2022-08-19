@@ -362,6 +362,7 @@ export class QueryBuilderState {
       const variableState = new LambdaParameterState(
         milestoningParameter,
         this.querySetupState.queryBuilderState.observableContext,
+        this.querySetupState.queryBuilderState.graphManagerState.graph,
       );
       variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);

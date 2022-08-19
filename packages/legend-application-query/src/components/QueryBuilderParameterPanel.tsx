@@ -343,6 +343,7 @@ export const QueryBuilderParameterPanel = observer(
             ),
           ),
           queryBuilderState.observableContext,
+          queryBuilderState.graphManagerState.graph,
         );
         queryParameterState.setSelectedParameter(parmaterState);
         parmaterState.mockParameterValue();

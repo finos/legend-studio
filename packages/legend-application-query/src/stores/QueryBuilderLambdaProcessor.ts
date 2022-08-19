@@ -1223,6 +1223,7 @@ export const processQueryParameters = (
     const parameterState = new LambdaParameterState(
       parameter,
       queryBuilderState.observableContext,
+      queryBuilderState.graphManagerState.graph,
     );
     parameterState.mockParameterValue();
     queryParameterState.addParameter(parameterState);
