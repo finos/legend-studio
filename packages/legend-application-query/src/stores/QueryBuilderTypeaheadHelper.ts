@@ -38,27 +38,23 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
 
-const createAndSetupQueryBuilderStateForTypeAhead = (
+const createAndSetupQueryBuilderStateForTypeahead = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  // builderState to build dummy query
   const builderState = queryBuilderState.createBareBuilderState();
-  // setup
   builderState.querySetupState = queryBuilderState.querySetupState;
-  // result modifiers
   builderState.resultSetModifierState.distinct = true;
   builderState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
   return builderState;
 };
 
-const buildColumnTypeAheadQuery = (
+const buildColumnTypeaheadQuery = (
   builderState: QueryBuilderState,
   columnState:
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
 ): QueryBuilderState => {
-  // projection column
   let projectionState;
   if (columnState instanceof QueryBuilderProjectionColumnState) {
     projectionState = columnState;
@@ -69,7 +65,6 @@ const buildColumnTypeAheadQuery = (
     aggregationState.columns = [columnState];
   }
   builderState.fetchStructureState.projectionState.columns = [projectionState];
-  // post filter
   const postConditionState = new PostFilterConditionState(
     builderState.postFilterState,
     columnState,
@@ -84,40 +79,38 @@ const buildColumnTypeAheadQuery = (
   return builderState;
 };
 
-export const buildPropertyTypeAheadQuery = (
+export const buildPropertyTypeaheadQuery = (
   queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
   value: ValueSpecification | undefined,
 ): QueryBuilderState => {
-  // builderState to build dummy query
   const builderState =
-    createAndSetupQueryBuilderStateForTypeAhead(queryBuilderState);
+    createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
   const projectionState = new QueryBuilderSimpleProjectionColumnState(
     builderState.fetchStructureState.projectionState,
     propertyExpression,
     false,
   );
-  return buildColumnTypeAheadQuery(builderState, projectionState, value);
+  return buildColumnTypeaheadQuery(builderState, projectionState, value);
 };
 
-export const buildProjectionColumnTypeAheadQuery = (
+export const buildProjectionColumnTypeaheadQuery = (
   queryBuilderState: QueryBuilderState,
   columnState:
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
 ): QueryBuilderState => {
-  // builderState to build dummy query
   const builderState =
-    createAndSetupQueryBuilderStateForTypeAhead(queryBuilderState);
-  return buildColumnTypeAheadQuery(builderState, columnState, value);
+    createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
+  return buildColumnTypeaheadQuery(builderState, columnState, value);
 };
 
-export const buildTypeAheadOptions = (result: ExecutionResult): string[] => {
+export const buildTypeaheadOptions = (result: ExecutionResult): string[] => {
   const tdsResult = guaranteeType(
     result,
     TdsExecutionResult,
-    'Type ahead search is only supported for tds result sets',
+    'Typeahead search is only supported for tds result sets',
   );
   const options: string[] = [];
   tdsResult.result.rows
@@ -131,7 +124,7 @@ export const buildTypeAheadOptions = (result: ExecutionResult): string[] => {
   return options;
 };
 
-export const performTypeAhead = (
+export const performTypeahead = (
   val: ValueSpecification | undefined,
 ): boolean => {
   if (val instanceof PrimitiveInstanceValue) {

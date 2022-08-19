@@ -80,54 +80,60 @@ import {
   QueryBuilderPostFilterOperator_EndWith,
   QueryBuilderPostFilterOperator_NotEndWith,
 } from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith.js';
+import type { QueryBuilderFilterOperator } from './QueryBuilderFilterState.js';
+import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
+import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 
-export const AGGREGATION_OPERATORS = [
-  new QueryBuilderAggregateOperator_Count(),
-  new QueryBuilderAggregateOperator_DistinctCount(),
-  new QueryBuilderAggregateOperator_Distinct(),
-  new QueryBuilderAggregateOperator_Sum(),
-  new QueryBuilderAggregateOperator_Average(),
-  new QueryBuilderAggregateOperator_Min(),
-  new QueryBuilderAggregateOperator_Max(),
-  new QueryBuilderAggregateOperator_StdDev_Population(),
-  new QueryBuilderAggregateOperator_StdDev_Sample(),
-  new QueryBuilderAggregateOperator_JoinString(),
-];
+export const getQueryBuilderCoreAggregrationOperators =
+  (): QueryBuilderAggregateOperator[] => [
+    new QueryBuilderAggregateOperator_Count(),
+    new QueryBuilderAggregateOperator_DistinctCount(),
+    new QueryBuilderAggregateOperator_Distinct(),
+    new QueryBuilderAggregateOperator_Sum(),
+    new QueryBuilderAggregateOperator_Average(),
+    new QueryBuilderAggregateOperator_Min(),
+    new QueryBuilderAggregateOperator_Max(),
+    new QueryBuilderAggregateOperator_StdDev_Population(),
+    new QueryBuilderAggregateOperator_StdDev_Sample(),
+    new QueryBuilderAggregateOperator_JoinString(),
+  ];
 
-export const FILTER_OPERATORS = [
-  new QueryBuilderFilterOperator_Equal(),
-  new QueryBuilderFilterOperator_NotEqual(),
-  new QueryBuilderFilterOperator_LessThan(),
-  new QueryBuilderFilterOperator_LessThanEqual(),
-  new QueryBuilderFilterOperator_GreaterThan(),
-  new QueryBuilderFilterOperator_GreaterThanEqual(),
-  new QueryBuilderFilterOperator_StartWith(),
-  new QueryBuilderFilterOperator_NotStartWith(),
-  new QueryBuilderFilterOperator_Contain(),
-  new QueryBuilderFilterOperator_NotContain(),
-  new QueryBuilderFilterOperator_EndWith(),
-  new QueryBuilderFilterOperator_NotEndWith(),
-  new QueryBuilderFilterOperator_In(),
-  new QueryBuilderFilterOperator_NotIn(),
-  new QueryBuilderFilterOperator_IsEmpty(),
-  new QueryBuilderFilterOperator_IsNotEmpty(),
-];
+export const getQueryBuilderCoreFilterOperators =
+  (): QueryBuilderFilterOperator[] => [
+    new QueryBuilderFilterOperator_Equal(),
+    new QueryBuilderFilterOperator_NotEqual(),
+    new QueryBuilderFilterOperator_LessThan(),
+    new QueryBuilderFilterOperator_LessThanEqual(),
+    new QueryBuilderFilterOperator_GreaterThan(),
+    new QueryBuilderFilterOperator_GreaterThanEqual(),
+    new QueryBuilderFilterOperator_StartWith(),
+    new QueryBuilderFilterOperator_NotStartWith(),
+    new QueryBuilderFilterOperator_Contain(),
+    new QueryBuilderFilterOperator_NotContain(),
+    new QueryBuilderFilterOperator_EndWith(),
+    new QueryBuilderFilterOperator_NotEndWith(),
+    new QueryBuilderFilterOperator_In(),
+    new QueryBuilderFilterOperator_NotIn(),
+    new QueryBuilderFilterOperator_IsEmpty(),
+    new QueryBuilderFilterOperator_IsNotEmpty(),
+  ];
 
-export const POST_FILTER_OPERATORS = [
-  new QueryBuilderPostFilterOperator_Equal(),
-  new QueryBuilderPostFilterOperator_NotEqual(),
-  new QueryBuilderPostFilterOperator_LessThan(),
-  new QueryBuilderPostFilterOperator_LessThanEqual(),
-  new QueryBuilderPostFilterOperator_GreaterThan(),
-  new QueryBuilderPostFilterOperator_GreaterThanEqual(),
-  new QueryBuilderPostFilterOperator_StartWith(),
-  new QueryBuilderPostFilterOperator_NotStartWith(),
-  new QueryBuilderPostFilterOperator_Contain(),
-  new QueryBuilderPostFilterOperator_NotContain(),
-  new QueryBuilderPostFilterOperator_EndWith(),
-  new QueryBuilderPostFilterOperator_NotEndWith(),
-  new QueryBuilderPostFilterOperator_In(),
-  new QueryBuilderPostFilterOperator_NotIn(),
-  new QueryBuilderPostFilterOperator_IsEmpty(),
-  new QueryBuilderPostFilterOperator_IsNotEmpty(),
-];
+export const getQueryBuilderCorePostFilterOperators =
+  (): QueryBuilderPostFilterOperator[] => [
+    new QueryBuilderPostFilterOperator_Equal(),
+    new QueryBuilderPostFilterOperator_NotEqual(),
+    new QueryBuilderPostFilterOperator_LessThan(),
+    new QueryBuilderPostFilterOperator_LessThanEqual(),
+    new QueryBuilderPostFilterOperator_GreaterThan(),
+    new QueryBuilderPostFilterOperator_GreaterThanEqual(),
+    new QueryBuilderPostFilterOperator_StartWith(),
+    new QueryBuilderPostFilterOperator_NotStartWith(),
+    new QueryBuilderPostFilterOperator_Contain(),
+    new QueryBuilderPostFilterOperator_NotContain(),
+    new QueryBuilderPostFilterOperator_EndWith(),
+    new QueryBuilderPostFilterOperator_NotEndWith(),
+    new QueryBuilderPostFilterOperator_In(),
+    new QueryBuilderPostFilterOperator_NotIn(),
+    new QueryBuilderPostFilterOperator_IsEmpty(),
+    new QueryBuilderPostFilterOperator_IsNotEmpty(),
+  ];

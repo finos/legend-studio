@@ -61,9 +61,9 @@ import {
 } from './QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderProjectionColumnDragSource } from './QueryBuilderProjectionState.js';
 import {
-  buildPropertyTypeAheadQuery,
-  buildTypeAheadOptions,
-  performTypeAhead,
+  buildPropertyTypeaheadQuery,
+  buildTypeaheadOptions,
+  performTypeahead,
 } from './QueryBuilderTypeaheadHelper.js';
 
 export abstract class QueryBuilderFilterOperator {
@@ -161,8 +161,8 @@ export class FilterConditionState {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
-      if (performTypeAhead(this.value)) {
-        const builderState = buildPropertyTypeAheadQuery(
+      if (performTypeahead(this.value)) {
+        const builderState = buildPropertyTypeaheadQuery(
           this.filterState.queryBuilderState,
           this.propertyExpressionState.propertyExpression,
           this.value,
@@ -174,7 +174,7 @@ export class FilterConditionState {
             guaranteeNonNullable(builderState.querySetupState.runtimeValue),
             builderState.graphManagerState.graph,
           )) as ExecutionResult;
-        this.typeaheadSearchResults = buildTypeAheadOptions(result);
+        this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }
       this.typeaheadSearchState.pass();
     } catch (error) {
