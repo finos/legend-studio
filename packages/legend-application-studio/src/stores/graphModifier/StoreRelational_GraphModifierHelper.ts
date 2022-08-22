@@ -38,6 +38,7 @@ import {
   type StaticDatasourceSpecification,
   type UsernamePasswordAuthenticationStrategy,
   type GCPWorkloadIdentityFederationAuthenticationStrategy,
+  type MiddleTierUsernamePasswordAuthenticationStrategy,
   type ObserverContext,
   type EnumerationMappingReference,
   type TableAlias,
@@ -163,6 +164,15 @@ export const gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGc
     },
   );
 
+export const middleTierUsernamePasswordAuthenticationStrategy_setVaultReference =
+  action(
+    (
+      v: MiddleTierUsernamePasswordAuthenticationStrategy,
+      val: string,
+    ): void => {
+      v.vaultReference = val;
+    },
+  );
 // --------------------------------------------- DatasourceSpecification -------------------------------------
 export const staticDatasourceSpecification_setHost = action(
   (v: StaticDatasourceSpecification, val: string): void => {

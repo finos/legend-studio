@@ -208,7 +208,7 @@ export const ServiceTestableEditor = observer(
           )}
           {!service.tests.length && (
             <BlankPanelPlaceholder
-              placeholderText="Add Test Suite"
+              text="Add Test Suite"
               onClick={addSuite}
               clickActionType="add"
               tooltipText="Click to add test"

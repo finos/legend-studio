@@ -27,6 +27,11 @@ export enum FETCH_STRUCTURE_MODE {
 
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
+  /**
+   * TODO?: perhaps it would eventually make sense to default to
+   * graph-fetch since `getAll()` naturally works for graph-fetch case
+   * and graph-fetch allows somewhat an empty tree
+   */
   fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
   projectionState: QueryBuilderProjectionState;
   graphFetchTreeState: QueryBuilderGraphFetchTreeState;
@@ -62,5 +67,9 @@ export class QueryBuilderFetchStructureState {
 
   isProjectionMode(): boolean {
     return this.fetchStructureMode === FETCH_STRUCTURE_MODE.PROJECTION;
+  }
+
+  get validationIssues(): string[] | undefined {
+    return this.projectionState.validationIssues;
   }
 }

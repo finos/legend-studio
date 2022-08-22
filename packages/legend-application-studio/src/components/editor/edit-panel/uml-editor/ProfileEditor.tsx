@@ -26,7 +26,10 @@ import {
   PlusIcon,
   TimesIcon,
   LockIcon,
-  VerticalDragHandleIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -48,17 +51,14 @@ import {
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
-import { useRef, useCallback, useEffect } from 'react';
-import { type DropTargetMonitor, useDrop, useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useRef, useCallback } from 'react';
+import { useDrop, useDrag } from 'react-dnd';
 
 type TagDragSource = {
   tag: Tag;
 };
 
-enum TAG_DND_TYPE {
-  TAG = 'TAG',
-}
+const TAG_DND_TYPE = 'TAG';
 
 const TagBasicEditor = observer(
   (props: {
@@ -77,7 +77,7 @@ const TagBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: TagDragSource, monitor: DropTargetMonitor): void => {
+      (item: TagDragSource): void => {
         const draggingTag = item.tag;
         const hoveredTag = tag;
         profile_swapTags(_profile, draggingTag, hoveredTag);
@@ -85,12 +85,15 @@ const TagBasicEditor = observer(
       [_profile, tag],
     );
 
-    const [{ isBeingDraggedTag }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      TagDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
       () => ({
-        accept: [TAG_DND_TYPE.TAG],
-        hover: (item: TagDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
+        accept: [TAG_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTag: monitor.getItem<TagDragSource | null>()?.tag,
         }),
       }),
@@ -98,37 +101,23 @@ const TagBasicEditor = observer(
     );
     const isBeingDragged = tag === isBeingDraggedTag;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<TagDragSource>(
       () => ({
-        type: TAG_DND_TYPE.TAG,
-        item: (): TagDragSource => ({
+        type: TAG_DND_TYPE,
+        item: () => ({
           tag: tag,
         }),
       }),
       [tag],
     );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">{tag.value}</div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="tag-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="tag-basic-editor">
-            <div className="uml-element-editor__drag-handler">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="tag-basic-editor__value input-group__input"
               spellCheck={false}
@@ -152,7 +141,7 @@ const TagBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -162,9 +151,7 @@ type StereotypeDragSource = {
   stereotype: Stereotype;
 };
 
-enum STEREOTYPE_DND_TYPE {
-  STEREOTYPE = 'STEREOTYPE',
-}
+const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
 
 const StereotypeBasicEditor = observer(
   (props: {
@@ -184,7 +171,7 @@ const StereotypeBasicEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: StereotypeDragSource, monitor: DropTargetMonitor): void => {
+      (item: StereotypeDragSource): void => {
         const draggingTag = item.stereotype;
         const hoveredTag = stereotype;
         profile_swapStereotypes(_profile, draggingTag, hoveredTag);
@@ -192,12 +179,15 @@ const StereotypeBasicEditor = observer(
       [_profile, stereotype],
     );
 
-    const [{ isBeingDraggedTag }, dropConnector] = useDrop(
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      StereotypeDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
       () => ({
-        accept: [STEREOTYPE_DND_TYPE.STEREOTYPE],
-        hover: (item: StereotypeDragSource, monitor: DropTargetMonitor): void =>
-          handleHover(item, monitor),
-        collect: (monitor): { isBeingDraggedTag: Tag | undefined } => ({
+        accept: [STEREOTYPE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
           isBeingDraggedTag: monitor.getItem<StereotypeDragSource | null>()
             ?.stereotype,
         }),
@@ -206,39 +196,24 @@ const StereotypeBasicEditor = observer(
     );
     const isBeingDragged = stereotype === isBeingDraggedTag;
 
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: STEREOTYPE_DND_TYPE.STEREOTYPE,
-        item: (): StereotypeDragSource => ({
-          stereotype: stereotype,
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<StereotypeDragSource>(
+        () => ({
+          type: STEREOTYPE_DND_TYPE,
+          item: () => ({
+            stereotype: stereotype,
+          }),
         }),
-      }),
-      [stereotype],
-    );
+        [stereotype],
+      );
     dragConnector(dropConnector(ref));
-
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
-      <div ref={ref}>
-        {isBeingDragged && (
-          <div className="uml-element-editor__dnd__container">
-            <div className="uml-element-editor__dnd ">
-              <div className="uml-element-editor__dnd__name">
-                {stereotype.value}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isBeingDragged && (
+      <div ref={ref} className="stereotype-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
           <div className="stereotype-basic-editor">
-            <div className="uml-element-editor__drag-handler">
-              <VerticalDragHandleIcon />
-            </div>
+            <PanelEntryDragHandle />
             <InputWithInlineValidation
               className="stereotype-basic-editor__value input-group__input"
               spellCheck={false}
@@ -264,7 +239,7 @@ const StereotypeBasicEditor = observer(
               </button>
             )}
           </div>
-        )}
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -362,6 +337,12 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
         <div className="panel__content">
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: TagDragSource): string =>
+                  item.tag.value === '' ? '(unknown)' : item.tag.value
+                }
+                types={[TAG_DND_TYPE]}
+              />
               {profile.p_tags.map((tag) => (
                 <TagBasicEditor
                   key={tag._UUID}
@@ -375,6 +356,14 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: StereotypeDragSource): string =>
+                  item.stereotype.value === ''
+                    ? '(unknown)'
+                    : item.stereotype.value
+                }
+                types={[STEREOTYPE_DND_TYPE]}
+              />
               {profile.p_stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
                   key={stereotype._UUID}

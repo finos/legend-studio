@@ -194,7 +194,7 @@ const StringPrimitiveInstanceValueEditor = observer(
       selectorConfig,
     } = props;
     const useSelector = Boolean(selectorConfig);
-    const appStore = useApplicationStore();
+    const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
     const updateValueSpec = (val: string): void => {
       instanceValue_changeValue(valueSpecification, val, 0);
@@ -224,7 +224,7 @@ const StringPrimitiveInstanceValueEditor = observer(
         const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
         if (reloadValuesFuncTransformation) {
           flowResult(reloadValuesFuncTransformation).catch(
-            appStore.alertUnhandledError,
+            applicationStore.alertUnhandledError,
           );
         }
       }
@@ -252,11 +252,13 @@ const StringPrimitiveInstanceValueEditor = observer(
             onChange={changeValue}
             value={selectedValue}
             onInputChange={handleInputChange}
-            darkMode={true}
+            darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
             isLoading={isLoading}
             allowCreateWhileLoading={true}
-            autoFocus={true}
             noOptionsMessage={noOptionsMessage}
+            components={{
+              DropdownIndicator: null,
+            }}
           />
         ) : (
           <input

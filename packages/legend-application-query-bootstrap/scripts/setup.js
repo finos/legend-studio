@@ -49,6 +49,7 @@ export const setup = (outputDir) => {
         },
         studio: {
           url: 'http://localhost:8080/studio',
+          sdlcUrl: 'http://localhost:7070/api',
         },
       },
       undefined,

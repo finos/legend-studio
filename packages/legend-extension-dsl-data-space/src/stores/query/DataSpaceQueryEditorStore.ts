@@ -18,6 +18,10 @@ import {
   type Query,
   extractElementNameFromPath,
   QueryTaggedValue,
+  RuntimePointer,
+  PackageableElementExplicitReference,
+  getAllClassMappings,
+  isSystemElement,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
@@ -29,12 +33,17 @@ import type {
   DepotServerClient,
   ProjectGAVCoordinates,
 } from '@finos/legend-server-depot';
-import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
+import {
+  getNullableFirstElement,
+  guaranteeNonNullable,
+  uuid,
+} from '@finos/legend-shared';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSLDataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -58,6 +67,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
@@ -67,7 +77,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
     runtimePath: string | undefined,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient, sdlcServerClient, pluginManager);
 
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -104,10 +114,13 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       executionContext.mapping.value,
     );
     this.queryBuilderState.querySetupState.setRuntimeValue(
-      (this.runtimePath
-        ? this.graphManagerState.graph.getRuntime(this.runtimePath)
-        : executionContext.defaultRuntime.value
-      ).runtimeValue,
+      new RuntimePointer(
+        PackageableElementExplicitReference.create(
+          this.runtimePath
+            ? this.graphManagerState.graph.getRuntime(this.runtimePath)
+            : executionContext.defaultRuntime.value,
+        ),
+      ),
     );
 
     if (this.classPath) {
@@ -116,11 +129,30 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       );
       this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
     } else {
-      // TODO?: should we set the class here automatically?
-
-      // initialize query builder state after setting up
-      this.queryBuilderState.resetQueryBuilder();
-      this.queryBuilderState.resetQuerySetup();
+      // try to find a class to set
+      // first, find classes which is mapped by the mapping
+      // then, find any classes except for class coming from system
+      // if none found, default to a dummy blank query
+      const defaultClass =
+        getNullableFirstElement(
+          this.queryBuilderState.querySetupState.mapping
+            ? getAllClassMappings(
+                this.queryBuilderState.querySetupState.mapping,
+              ).map((classMapping) => classMapping.class.value)
+            : [],
+        ) ??
+        getNullableFirstElement(
+          this.queryBuilderState.graphManagerState.graph.classes.filter(
+            (el) => !isSystemElement(el),
+          ),
+        );
+      if (defaultClass) {
+        this.queryBuilderState.changeClass(defaultClass);
+      } else {
+        this.queryBuilderState.initialize(
+          this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+        );
+      }
     }
   }
 

@@ -82,13 +82,20 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
       case PRIMITIVE_TYPE.DECIMAL:
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER:
-      case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
           postFilterConditionState.postFilterState.queryBuilderState
             .graphManagerState.graph,
           propertyType.path,
+          generateDefaultValueForPrimitiveType(propertyType.path),
+        );
+      }
+      case PRIMITIVE_TYPE.DATE: {
+        return buildPrimitiveInstanceValue(
+          postFilterConditionState.postFilterState.queryBuilderState
+            .graphManagerState.graph,
+          PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }

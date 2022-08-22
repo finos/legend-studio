@@ -60,6 +60,10 @@
       margin-left: 1rem;
       color: var(--color-dark-grey-500);
     }
+
+    svg {
+      cursor: pointer;
+    }
   }
 
   &__sub-header__menu-content {
@@ -153,7 +157,7 @@
 
     &__header__action[disabled] svg,
     &__header__action[disabled]:hover svg {
-      color: var(--color-dark-grey-300) !important;
+      color: var(--color-dark-grey-300);
     }
 
     &__header__action--toggled svg {
@@ -175,11 +179,6 @@
       border-radius: 0 0 0.2rem 0.2rem;
       border-bottom: 0.1rem solid var(--color-dark-grey-85);
       box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.5rem 0;
-    }
-
-    &__content--dnd-over {
-      filter: brightness(105%) blur(0.05rem);
-      border: 0.1rem solid var(--color-light-blue-200);
     }
   }
 
@@ -245,6 +244,11 @@
       }
     }
   }
+}
+
+.query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
+  border-color: var(--color-dark-grey-100);
+  color: var(--color-dark-grey-300);
 }
 
 .query-builder__fetch__structure {
@@ -353,7 +357,7 @@
       height: 2.2rem;
       width: 12rem;
       padding: 1rem;
-      border-radius: 0.2rem 0 0 0.2rem;
+      border-radius: 0.2rem;
       justify-content: left;
     }
 
@@ -494,6 +498,23 @@
   }
 }
 
+.query-builder-panel-issue-count-badge {
+  @include flexCenter;
+
+  background: var(--color-red-200);
+  height: 2.2rem;
+  padding: 0 1rem;
+  border-radius: 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-light-grey-0);
+  white-space: nowrap;
+
+  &__icon {
+    margin-right: 0.5rem;
+  }
+}
+
 .query-builder__tooltip {
   border-radius: 0.2rem !important;
   background: var(--color-dark-grey-200) !important;
@@ -560,15 +581,6 @@
 
   width: 100%;
   height: 100%;
-
-  &__dnd__placeholder {
-    @include flexCenter;
-
-    height: 2.8rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-  }
 
   &__content {
     @include flexVCenter;
@@ -648,12 +660,6 @@
   }
 }
 
-.query-builder__dnd__placeholder {
-  border: 0.2rem dashed var(--color-dark-grey-250);
-  height: 100%;
-  width: 100%;
-}
-
 .query-builder-text-mode {
   &__modal {
     &__content {
@@ -665,7 +671,6 @@
 
   &__lambda-editor {
     height: 100% !important;
-    background: var(--color-dark-grey-50);
     padding-top: 1rem;
 
     .monaco-editor {
@@ -698,7 +703,6 @@
 }
 
 .query-builder__lambda-editor {
-  background: var(--color-dark-grey-50);
   border: 0.1rem solid var(--color-dark-grey-280);
 
   &__container {
@@ -718,20 +722,7 @@
 .query-builder__parameter-editor {
   @include flexCenter;
 
-  &__node__dnd__overlay {
-    @include flexCenter;
-
-    border: 0.2rem dashed var(--color-dark-grey-100);
-    margin: 0.3rem 0;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-dark-grey-300);
-    height: 2.8rem;
-    position: absolute;
-    width: 100%;
-    pointer-events: none;
-    background: var(--color-dark-grey-50);
-  }
+  height: 2.8rem;
 
   &__parameter {
     height: 2.8rem;

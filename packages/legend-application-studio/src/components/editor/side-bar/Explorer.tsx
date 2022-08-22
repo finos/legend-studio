@@ -71,6 +71,10 @@ import {
   Package,
   isValidFullPath,
   isValidPath,
+  isGeneratedElement,
+  isSystemElement,
+  isDependencyElement,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
@@ -365,15 +369,11 @@ const PackageTreeNodeContainer = observer(
       <ChevronRightIcon />
     );
 
-    const iconPackageColor = editorStore.graphManagerState.isGeneratedElement(
-      node.packageableElement,
-    )
+    const iconPackageColor = isGeneratedElement(node.packageableElement)
       ? 'color--generated'
-      : editorStore.graphManagerState.isSystemElement(node.packageableElement)
+      : isSystemElement(node.packageableElement)
       ? 'color--system'
-      : editorStore.graphManagerState.isDependencyElement(
-          node.packageableElement,
-        )
+      : isDependencyElement(node.packageableElement)
       ? 'color--dependency'
       : '';
 
@@ -688,12 +688,6 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     });
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
-
-  const isImmutablePackageTreeNode = (node: PackageTreeNodeData): boolean =>
-    editorStore.graphManagerState.isGeneratedElement(node.packageableElement) ||
-    editorStore.graphManagerState.isSystemElement(node.packageableElement) ||
-    editorStore.graphManagerState.isDependencyElement(node.packageableElement);
-
   const showModelLoader = (): void =>
     editorStore.openState(editorStore.modelLoaderState);
 
@@ -713,7 +707,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         disabled={
           disabled ||
           isInGrammarMode ||
-          (selectedTreeNode && isImmutablePackageTreeNode(selectedTreeNode))
+          (selectedTreeNode &&
+            isElementReadOnly(selectedTreeNode.packageableElement))
         }
         content={<ExplorerDropdownMenu />}
         menuProps={{
@@ -727,7 +722,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
             disabled={
               disabled ||
               isInGrammarMode ||
-              (selectedTreeNode && isImmutablePackageTreeNode(selectedTreeNode))
+              (selectedTreeNode &&
+                isElementReadOnly(selectedTreeNode.packageableElement))
             }
             className="panel__header__action"
             tabIndex={-1}

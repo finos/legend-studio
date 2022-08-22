@@ -27,8 +27,6 @@ import {
   clsx,
   TreeView,
   ContextMenu,
-  VerticalAlignBottomIcon,
-  AddIcon,
   PlusIcon,
   LockIcon,
   FireIcon,
@@ -36,6 +34,8 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
   FilterIcon,
+  PanelDropZone,
+  BlankPanelPlaceholder,
 } from '@finos/legend-art';
 import { MappingElementState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import { useDrop, useDrag } from 'react-dnd';
@@ -453,15 +453,19 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
           }),
     [isReadOnly, mappingEditorState],
   );
-  const [{ isDragOver }, dropRef] = useDrop(
+  const [{ isDragOver }, dropRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isDragOver: boolean }
+  >(
     () => ({
       accept: [
         CORE_DND_TYPE.PROJECT_EXPLORER_ENUMERATION,
         CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
         CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
       ],
-      drop: (item: ElementDragSource): void => handleDrop(item),
-      collect: (monitor): { isDragOver: boolean } => ({
+      drop: (item) => handleDrop(item),
+      collect: (monitor) => ({
         isDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -553,41 +557,37 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
         }
         menuProps={{ elevation: 7 }}
       >
-        <div
-          ref={dropRef}
-          className={clsx('mapping-explorer__content', {
-            'mapping-explorer__content--dnd-over': isDragOver && !isReadOnly,
-          })}
+        <PanelDropZone
+          isDragOver={isDragOver && !isReadOnly}
+          dropTargetConnector={dropRef}
         >
-          <TreeView
-            components={{
-              TreeNodeContainer: MappingElementTreeNodeContainer,
-            }}
-            treeData={mappingElementsTreeData}
-            onNodeSelect={onNodeSelect}
-            getChildNodes={getMappingElementTreeChildNodes}
-            innerProps={{
-              isReadOnly,
-              onNodeExpand,
-            }}
-          />
-          {/* TODO: use BlankPanelPlaceholder */}
-          {!isReadOnly && !mappingElements.length && (
-            <div
-              className="mapping-explorer__content mapping-explorer__content__adder"
-              onClick={openNewMapingModal}
-            >
-              <div className="mapping-explorer__content__adder__text">
-                {'Add a mapping element'}
-              </div>
-              <div className="mapping-explorer__content__adder__action">
-                <VerticalAlignBottomIcon className="mapping-explorer__content__adder__action__dnd-icon" />
-                <AddIcon className="mapping-explorer__content__adder__action__add-icon" />
-              </div>
-            </div>
-          )}
-          <NewMappingElementModal />
-        </div>
+          <div className="mapping-explorer__content">
+            <TreeView
+              components={{
+                TreeNodeContainer: MappingElementTreeNodeContainer,
+              }}
+              treeData={mappingElementsTreeData}
+              onNodeSelect={onNodeSelect}
+              getChildNodes={getMappingElementTreeChildNodes}
+              innerProps={{
+                isReadOnly,
+                onNodeExpand,
+              }}
+            />
+            {!isReadOnly && !mappingElements.length && (
+              <BlankPanelPlaceholder
+                text="Add a mapping element"
+                onClick={openNewMapingModal}
+                clickActionType="add"
+                tooltipText="Drop a class or an enumeration to start creating mappings"
+                isDropZoneActive={isDragOver && !isReadOnly}
+                disabled={isReadOnly}
+                previewText="No mapping"
+              />
+            )}
+            <NewMappingElementModal />
+          </div>
+        </PanelDropZone>
       </ContextMenu>
     </div>
   );

@@ -37,6 +37,7 @@ import {
   CaretDownIcon,
   RefreshIcon,
   RobotIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -204,7 +205,7 @@ const MappingExecutionQueryEditor = observer(
         flowResult(
           queryState.updateLamba(
             setImplementation
-              ? editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+              ? editorStore.graphManagerState.graphManager.createGetAllRawLambda(
                   guaranteeType(
                     getMappingElementTarget(setImplementation),
                     Class,
@@ -281,11 +282,15 @@ const MappingExecutionQueryEditor = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      MappingElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),
@@ -328,17 +333,19 @@ const MappingExecutionQueryEditor = observer(
           </div>
         )}
         {isStubbed_RawLambda(queryState.query) && (
-          <div ref={dropRef} className="panel__content">
-            <BlankPanelPlaceholder
-              placeholderText="Choose a class mapping"
-              onClick={showClassMappingSelectorModal}
-              clickActionType="add"
-              tooltipText="Drop a class mapping, or click to choose one to start building the query"
-              dndProps={{
-                isDragOver: isDragOver,
-                canDrop: canDrop,
-              }}
-            />
+          <div className="panel__content">
+            <PanelDropZone
+              dropTargetConnector={dropRef}
+              isDragOver={isDragOver}
+            >
+              <BlankPanelPlaceholder
+                text="Choose a class mapping"
+                onClick={showClassMappingSelectorModal}
+                clickActionType="add"
+                tooltipText="Drop a class mapping, or click to choose one to start building the query"
+                isDropZoneActive={canDrop}
+              />
+            </PanelDropZone>
           </div>
         )}
         {openClassMappingSelectorModal && (
@@ -437,11 +444,15 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
       },
       [changeClassMapping],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      MappingElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: CORE_DND_TYPE.MAPPING_EXPLORER_CLASS_MAPPING,
-        drop: (item: MappingElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),
@@ -450,17 +461,16 @@ export const MappingExecutionEmptyInputDataBuilder = observer(
     );
 
     return (
-      <div ref={dropRef} className="panel__content">
-        <BlankPanelPlaceholder
-          placeholderText="Choose a class mapping"
-          onClick={showClassMappingSelectorModal}
-          clickActionType="add"
-          tooltipText="Drop a class mapping, or click to choose one to generate input data"
-          dndProps={{
-            isDragOver: isDragOver,
-            canDrop: canDrop,
-          }}
-        />
+      <div className="panel__content">
+        <PanelDropZone dropTargetConnector={dropRef} isDragOver={isDragOver}>
+          <BlankPanelPlaceholder
+            text="Choose a class mapping"
+            onClick={showClassMappingSelectorModal}
+            clickActionType="add"
+            tooltipText="Drop a class mapping, or click to choose one to generate input data"
+            isDropZoneActive={canDrop}
+          />
+        </PanelDropZone>
       </div>
     );
   },

@@ -45,16 +45,17 @@
   }
 
   &__indicator {
+    @include flexVCenter;
+
     cursor: pointer;
     width: 1.6rem;
     height: 100%;
-
-    @include flexVCenter;
-
     padding: 0;
   }
 
   &__loading-indicator {
+    @include flexVCenter;
+
     width: initial;
     padding: 0 0.5rem;
 
@@ -88,6 +89,22 @@
 
     height: 2.6rem;
     padding: 0 0.5rem;
+  }
+
+  &__placeholder,
+  &__single-value {
+    @include flexVCenter;
+
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  &__single-value + div {
+    @include flexVCenter;
+  }
+
+  &__input {
+    @include flexVCenter;
   }
 
   &__option--custom {
@@ -221,8 +238,20 @@
 
   &__single-value,
   &__placeholder {
+    @include flexVCenter;
+
     color: var(--color-light-grey-200);
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  &__single-value + div {
+    @include flexVCenter;
+  }
+
+  &__input {
+    @include flexVCenter;
   }
 
   &__placeholder {

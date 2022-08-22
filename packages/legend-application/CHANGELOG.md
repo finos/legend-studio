@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 7.1.1
+
+## 7.1.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Add support for `focus` event handler for `LambdaEditor` via the new prop `onEditorFocusEventHandler`.
+
 ## 7.0.4
 
 ### Patch Changes

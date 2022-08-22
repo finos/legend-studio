@@ -81,6 +81,14 @@ export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
 
   abstract get isResultPanelHidden(): boolean;
+
+  /**
+   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * and will be leveraged when the concepts of workflows are introduced into query builder.
+   */
+  get isDnDProjectionToFilterSupported(): boolean {
+    return true;
+  }
 }
 
 export class StandardQueryBuilderMode extends QueryBuilderMode {
@@ -354,6 +362,7 @@ export class QueryBuilderState {
       const variableState = new LambdaParameterState(
         milestoningParameter,
         this.querySetupState.queryBuilderState.observableContext,
+        this.querySetupState.queryBuilderState.graphManagerState.graph,
       );
       variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);
@@ -480,8 +489,8 @@ export class QueryBuilderState {
     }
   }
 
-  isValidQueryBuilderState(): boolean {
-    return this.fetchStructureState.projectionState.isValidProjectionState();
+  get validationIssues(): string[] | undefined {
+    return this.fetchStructureState.validationIssues;
   }
 
   createBareBuilderState(): QueryBuilderState {

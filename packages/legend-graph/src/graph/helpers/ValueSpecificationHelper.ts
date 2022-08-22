@@ -101,6 +101,7 @@ export const createMockEnumerationProperty = (
 
 export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
+  graph: PureModel,
 ): InstanceValue | undefined => {
   const varType = parameter.genericType?.value.rawType;
   const multiplicity = parameter.multiplicity;
@@ -112,7 +113,11 @@ export const generateVariableExpressionMockValue = (
   }
   if (varType instanceof PrimitiveType) {
     const primitiveInst = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(varType)),
+      GenericTypeExplicitReference.create(
+        varType.name === PRIMITIVE_TYPE.DATE
+          ? new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE))
+          : new GenericType(varType),
+      ),
       multiplicity,
     );
     primitiveInst.values = [

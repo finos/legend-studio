@@ -45,6 +45,7 @@ import {
   ApiTokenAuthenticationStrategy,
   UsernamePasswordAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
+  MiddleTierUsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   SnowflakeDatasourceSpecification,
@@ -114,6 +115,7 @@ import {
   usernamePasswordAuthenticationStrategy_setUserNameVaultReference,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
+  middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 /**
@@ -1014,6 +1016,31 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
     );
   },
 );
+// Middle Tier Username Password Authentication Strategy obtains credentials(username and password) from the provided vault reference
+const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
+  (props: {
+    authSpec: MiddleTierUsernamePasswordAuthenticationStrategy;
+    isReadOnly: boolean;
+  }) => {
+    const { authSpec, isReadOnly } = props;
+    return (
+      <>
+        <ConnectionEditor_StringEditor
+          isReadOnly={isReadOnly}
+          value={authSpec.vaultReference}
+          propertyName={'vault reference'}
+          description="Specifies the cred vault reference containing connection credentials"
+          update={(value: string | undefined): void =>
+            middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
+              authSpec,
+              value ?? '',
+            )
+          }
+        />
+      </>
+    );
+  },
+);
 
 const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
   (props: {
@@ -1234,6 +1261,15 @@ const renderAuthenticationStrategyEditor = (
   } else if (authSpec instanceof UsernamePasswordAuthenticationStrategy) {
     return (
       <UsernamePasswordAuthenticationStrategyEditor
+        authSpec={authSpec}
+        isReadOnly={isReadOnly}
+      />
+    );
+  } else if (
+    authSpec instanceof MiddleTierUsernamePasswordAuthenticationStrategy
+  ) {
+    return (
+      <MiddleTierUsernamePasswordAuthenticationStrategyEditor
         authSpec={authSpec}
         isReadOnly={isReadOnly}
       />

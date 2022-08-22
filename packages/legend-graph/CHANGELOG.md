@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 14.0.1
+
+### Patch Changes
+
+- [#1412](https://github.com/finos/legend-studio/pull/1412) [`4fdf8689`](https://github.com/finos/legend-studio/commit/4fdf86893b1cb9a4ab68667ef1aa693fde026b4f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where there is a false-positive change detection for property mapping without `targetId` ([#1406](https://github.com/finos/legend-studio/issues/1406)).
+
+## 14.0.0
+
+### Major Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `HACKY__createGetAllLambda()` to `createGetAllRawLambda()` and `HACKY__createDefaultBlankLambda()` to `createDefaultBasicRawLambda()` which now will also accept an option to control whether or not the dummy variable `x` should be added by default to the generated raw lambda.
+
 ## 13.0.2
 
 ## 13.0.1

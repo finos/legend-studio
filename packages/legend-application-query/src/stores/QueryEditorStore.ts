@@ -50,6 +50,7 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
+  isSystemElement,
 } from '@finos/legend-graph';
 import {
   QueryBuilderState,
@@ -67,6 +68,7 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -198,6 +200,7 @@ export class QueryExportState {
 export abstract class QueryEditorStore {
   applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
+  sdlcServerClient: SDLCServerClient;
   pluginManager: LegendQueryPluginManager;
   graphManagerState: GraphManagerState;
 
@@ -208,6 +211,7 @@ export abstract class QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
   ) {
     makeObservable(this, {
@@ -229,6 +233,7 @@ export abstract class QueryEditorStore {
       this.graphManagerState,
       new StandardQueryBuilderMode(),
     );
+    this.sdlcServerClient = sdlcServerClient;
   }
 
   setExportState(val: QueryExportState | undefined): void {
@@ -403,6 +408,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
@@ -411,7 +417,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
     runtimePath: string,
     classPath: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient, sdlcServerClient, pluginManager);
 
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -448,15 +454,30 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       );
       this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
     } else {
-      this.queryBuilderState.changeClass(
+      // try to find a class to set
+      // first, find classes which is mapped by the mapping
+      // then, find any classes except for class coming from system
+      // if none found, default to a dummy blank query
+      const defaultClass =
         getNullableFirstElement(
           this.queryBuilderState.querySetupState.mapping
             ? getAllClassMappings(
                 this.queryBuilderState.querySetupState.mapping,
               ).map((classMapping) => classMapping.class.value)
             : [],
-        ),
-      );
+        ) ??
+        getNullableFirstElement(
+          this.queryBuilderState.graphManagerState.graph.classes.filter(
+            (el) => !isSystemElement(el),
+          ),
+        );
+      if (defaultClass) {
+        this.queryBuilderState.changeClass(defaultClass);
+      } else {
+        this.queryBuilderState.initialize(
+          this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+        );
+      }
     }
   }
 
@@ -482,6 +503,7 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
@@ -489,7 +511,7 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
     servicePath: string,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient, sdlcServerClient, pluginManager);
 
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -573,10 +595,11 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
+    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
     queryId: string,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient, sdlcServerClient, pluginManager);
 
     makeObservable<ExistingQueryEditorStore, '_query'>(this, {
       _query: observable,

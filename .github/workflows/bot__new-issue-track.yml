@@ -1,0 +1,37 @@
+name: (Bot) Track New Issue
+
+on:
+  issues:
+    types: [milestoned]
+
+jobs:
+  track-new-issue:
+    name: Track New Issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: yarn workspaces focus --production @finos/legend-internal-github-bot
+      - name: Track new milestoned issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MANAGE_PROJECT_TOKEN: ${{ secrets.MANAGE_PROJECT_TOKEN }}
+          ORGANIZATION: finos
+          PROJECT_NUMBER: 21
+        working-directory: ./scripts/github-bot
+        run: node ./trackNewMilestonedIssue.js

@@ -1,5 +1,23 @@
 # @finos/legend-application-query
 
+## 5.2.2
+
+## 5.2.1
+
+### Patch Changes
+
+- [#1392](https://github.com/finos/legend-studio/pull/1392) [`8be89c97`](https://github.com/finos/legend-studio/commit/8be89c970ac30f551842fc96f901900c7475016c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where default value of `date` type will throw a cast error ([#1391](https://github.com/finos/legend-studio/issues/1391)).
+
+## 5.2.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Add basic support for a light-themed mode for query editor. This will be available only to standalone mode (i.e. `Legend Query`) instead of embedded query builder since we want the embedded builder to have consistent look and field with the host app ([#1374](https://github.com/finos/legend-studio/issues/1374)). By the default, this mode will not be available in query editor, to enable it, configure the core option of query builder `extensions: { core: { TEMPORARY__enableThemeSwitcher: true }}` in `Legend Query` application config.
+
+### Patch Changes
+
+- [#1408](https://github.com/finos/legend-studio/pull/1408) [`823d16f8`](https://github.com/finos/legend-studio/commit/823d16f848da1bd90f7d8572762320d6a9a58dd4) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Disable options to hide parameter/post filter panel when they are not empty and deletion of aggregation projection columns if they are used in post filters. ([#1314](https://github.com/finos/legend-studio/pull/1314)).
+
 ## 5.1.0
 
 ### Minor Changes
@@ -18,7 +36,7 @@
 
 - [#1336](https://github.com/finos/legend-studio/pull/1336) [`de50c294`](https://github.com/finos/legend-studio/commit/de50c29416214de49b16f208bbc11925b496ea43) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Check type compatibility when dragging and dropping parameters into `filter/post-filter` panel ([#1335](https://github.com/finos/legend-studio/issues/1335)).
 
-* [#1383](https://github.com/finos/legend-studio/pull/1383) [`846953d5`](https://github.com/finos/legend-studio/commit/846953d59c5df8136d4d516be3fba5087936671d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Alert user changing fetch structure resets state ((#1380)[https://github.com/finos/legend-studio/issues/1380]).
+* [#1383](https://github.com/finos/legend-studio/pull/1383) [`846953d5`](https://github.com/finos/legend-studio/commit/846953d59c5df8136d4d516be3fba5087936671d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Alert user about changing fetch-structure would cause a query builder state reset ([#1380](https://github.com/finos/legend-studio/issues/1380)).
 
 - [#1358](https://github.com/finos/legend-studio/pull/1358) [`1119c45b`](https://github.com/finos/legend-studio/commit/1119c45bb8616de9d655da4fef62b8b2b7b65445) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Allow cancelling query execution ([#1357](https://github.com/finos/legend-studio/issues/1357)).
 

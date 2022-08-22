@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type TooltipPlacement,
@@ -37,15 +38,17 @@ import {
   MenuContentItemIcon,
   MenuContentItemLabel,
   MoreVerticalIcon,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFunctionsExplorerTreeNodeData,
   type QueryBuilderFunctionsExplorerDragSource,
-  QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
   generateFunctionsExplorerTreeNodeData,
   getFunctionsExplorerTreeNodeChildren,
+  QUERY_BUILDER_FUNCTION_DND_TYPE,
 } from '../stores/QueryFunctionsExplorerState.js';
-import { useDrag, useDragLayer } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 import {
   ConcreteFunctionDefinition,
   generateFunctionSignature,
@@ -54,8 +57,6 @@ import {
   ROOT_PACKAGE_NAME,
   getMultiplicityDescription,
 } from '@finos/legend-graph';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import { useEffect, useState } from 'react';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 
 const isDependencyTreeNode = (
@@ -134,53 +135,6 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
   );
 };
 
-const QueryBuilderFunctionDragLayer = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { itemType, item, isDragging, currentPosition } = useDragLayer(
-      (monitor) => ({
-        itemType:
-          monitor.getItemType() as QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE,
-        item: monitor.getItem<QueryBuilderFunctionsExplorerDragSource | null>(),
-        isDragging: monitor.isDragging(),
-        initialOffset: monitor.getInitialSourceClientOffset(),
-        currentPosition: monitor.getClientOffset(),
-      }),
-    );
-    if (
-      !isDragging ||
-      !item ||
-      !Object.values(QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE).includes(
-        itemType,
-      ) ||
-      item.node.dndType ===
-        QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.PACKAGE
-    ) {
-      return null;
-    }
-    return (
-      <div className="query-builder__functions-explorer__tree__drag-preview-layer">
-        <div
-          className="query-builder__functions-explorer__tree__drag-preview"
-          style={
-            !currentPosition
-              ? { display: 'none' }
-              : {
-                  transform: `translate(${currentPosition.x + 20}px, ${
-                    currentPosition.y + 10
-                  }px)`,
-                }
-          }
-        >
-          {generateFunctionSignature(
-            item.node.packageableElement as ConcreteFunctionDefinition,
-            true,
-          )}
-        </div>
-      </div>
-    );
-  },
-);
-
 const QueryBuilderFunctionsExplorerListEntry = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -196,15 +150,12 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
     const functionSignature = generateFunctionSignature(element, true);
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION,
+        type: QUERY_BUILDER_FUNCTION_DND_TYPE,
         item: { node: node },
       }),
       [node],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div
@@ -279,23 +230,19 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     const selectNode = (): void => {
       onNodeSelect?.(node);
     };
-    const [, dragConnector, dragPreviewConnector] = useDrag(
+    const [, dragConnector, dragPreviewConnector] = useDrag<{
+      node?: QueryBuilderFunctionsExplorerTreeNodeData;
+    }>(
       () => ({
-        type:
-          node.packageableElement instanceof ConcreteFunctionDefinition
-            ? QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.FUNCTION
-            : QUERY_BUILDER_FUNCTIONS_EXPLORER_TREE_DND_TYPE.PACKAGE,
-        item: (): { node?: QueryBuilderFunctionsExplorerTreeNodeData } =>
+        type: QUERY_BUILDER_FUNCTION_DND_TYPE,
+        item: () =>
           node.packageableElement instanceof ConcreteFunctionDefinition
             ? { node }
             : {},
       }),
       [node],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
 
     return (
       <div>
@@ -523,8 +470,16 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
           </div>
         </div>
         <div className="panel__content query-builder__functions-explorer__content">
-          <QueryBuilderFunctionDragLayer
-            queryBuilderState={queryBuilderState}
+          <DragPreviewLayer
+            labelGetter={(
+              item: QueryBuilderFunctionsExplorerDragSource,
+            ): string =>
+              generateFunctionSignature(
+                item.node.packageableElement as ConcreteFunctionDefinition,
+                true,
+              )
+            }
+            types={[QUERY_BUILDER_FUNCTION_DND_TYPE]}
           />
           {((showDependencyFuncions &&
             (!queryFunctionsState.dependencyTreeData ||

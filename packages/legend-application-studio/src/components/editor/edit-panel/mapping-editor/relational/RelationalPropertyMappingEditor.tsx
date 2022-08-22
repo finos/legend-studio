@@ -295,11 +295,10 @@ export const RelationalPropertyMappingEditor = observer(
       },
       [disableEditingTransform, relationalPropertyMappingState],
     );
-    const [, drop] = useDrop(
+    const [, drop] = useDrop<TableOrViewTreeNodeDragSource>(
       () => ({
         accept: [TABLE_ELEMENT_DND_TYPE],
-        drop: (droppedItem: TableOrViewTreeNodeDragSource): void =>
-          handleDrop(droppedItem),
+        drop: (item) => handleDrop(item),
       }),
       [handleDrop],
     );

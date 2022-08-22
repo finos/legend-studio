@@ -47,6 +47,7 @@ export const QueryBuilderLambdaEditor = observer(
     disablePopUp?: boolean | undefined;
     useBaseTextEditorSettings?: boolean | undefined;
     hideErrorBar?: boolean | undefined;
+    onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
     const {
       queryBuilderState,
@@ -62,6 +63,7 @@ export const QueryBuilderLambdaEditor = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
+      onEditorFocusEventHandler,
     } = props;
     const applicationStore = useApplicationStore();
     const backdropSetter = useCallback(
@@ -111,6 +113,7 @@ export const QueryBuilderLambdaEditor = observer(
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         onKeyDownEventHandlers={onKeyDownEventHandlers}
+        onEditorFocusEventHandler={onEditorFocusEventHandler}
       />
     );
   },
