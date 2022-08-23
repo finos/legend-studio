@@ -87,7 +87,7 @@ export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStor
  */
 
 export {
-  ConnectionEditor_StringEditor,
+  ConnectionEditor_TextEditor,
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
