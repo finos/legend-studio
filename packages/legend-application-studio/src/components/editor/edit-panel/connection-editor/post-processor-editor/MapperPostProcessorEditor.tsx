@@ -246,18 +246,13 @@ export const MapperPostProcessorEditor = observer(
                 <div className="panel__content">
                   {!selectedMapper && (
                     <BlankPanelPlaceholder
-                      placeholderText=""
+                      text=""
                       tooltipText=""
-                      readOnlyProps={
+                      disabled={true}
+                      previewText={
                         !mappers.length
-                          ? {
-                              placeholderText:
-                                'Add a mapper to view properties',
-                            }
-                          : {
-                              placeholderText:
-                                'Select a mapper to view properties',
-                            }
+                          ? 'Add a mapper to view properties'
+                          : 'Select a mapper to view properties'
                       }
                     />
                   )}

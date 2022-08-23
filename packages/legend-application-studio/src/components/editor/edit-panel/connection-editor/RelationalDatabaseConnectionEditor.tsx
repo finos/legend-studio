@@ -1007,7 +1007,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <ConnectionEditor_StringEditor
+        <PanelStringEditor
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
           propertyName={'vault reference'}
@@ -1231,7 +1231,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                   )}
                   {!firstSelectedPostProcessor && !postprocessors.length && (
                     <BlankPanelPlaceholder
-                      placeholderText="Add a post processor"
+                      text="Add a post processor"
                       onClick={addPostProcessor}
                       clickActionType="add"
                       tooltipText="Add a post processor"
@@ -1239,12 +1239,10 @@ const PostProcessorRelationalConnectionEditor = observer(
                   )}
                   {!firstSelectedPostProcessor && postprocessors.length && (
                     <BlankPanelPlaceholder
-                      placeholderText=""
+                      text=""
                       tooltipText=""
-                      readOnlyProps={{
-                        placeholderText:
-                          'Select a post processor to view properties',
-                      }}
+                      disabled={true}
+                      previewText="Select a post processor to view properties"
                     />
                   )}
                 </ResizablePanel>
