@@ -72,10 +72,11 @@ import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOpe
 import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
 import { QueryParametersState } from './QueryParametersState.js';
 import {
-  AGGREGATION_OPERATORS,
-  FILTER_OPERATORS,
-  POST_FILTER_OPERATORS,
+  getQueryBuilderCoreAggregrationOperators,
+  getQueryBuilderCoreFilterOperators,
+  getQueryBuilderCorePostFilterOperators,
 } from './QueryBuilderOperatorLoader.js';
+import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -136,8 +137,12 @@ export class QueryBuilderState {
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   observableContext: ObserverContext;
-  filterOperators: QueryBuilderFilterOperator[] = FILTER_OPERATORS;
-  postFilterOperators: QueryBuilderPostFilterOperator[] = POST_FILTER_OPERATORS;
+  filterOperators: QueryBuilderFilterOperator[] =
+    getQueryBuilderCoreFilterOperators();
+  postFilterOperators: QueryBuilderPostFilterOperator[] =
+    getQueryBuilderCorePostFilterOperators();
+  aggregationOperators: QueryBuilderAggregateOperator[] =
+    getQueryBuilderCoreAggregrationOperators();
   isCompiling = false;
   backdrop = false;
   showFunctionPanel = false;
@@ -190,10 +195,7 @@ export class QueryBuilderState {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    this.fetchStructureState = new QueryBuilderFetchStructureState(
-      this,
-      AGGREGATION_OPERATORS,
-    );
+    this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.postFilterState = new QueryBuilderPostFilterState(
       this,
@@ -264,10 +266,7 @@ export class QueryBuilderState {
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    const fetchStructureState = new QueryBuilderFetchStructureState(
-      this,
-      this.fetchStructureState.projectionState.aggregationState.operators,
-    );
+    const fetchStructureState = new QueryBuilderFetchStructureState(this);
     fetchStructureState.setFetchStructureMode(
       this.fetchStructureState.fetchStructureMode,
     );

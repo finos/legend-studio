@@ -73,10 +73,7 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../QueryBuilder_Const.js';
-import {
-  type QueryBuilderAggregateOperator,
-  QueryBuilderAggregationState,
-} from './QueryBuilderAggregationState.js';
+import { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
 import {
@@ -363,10 +360,7 @@ export class QueryBuilderProjectionState {
   aggregationState: QueryBuilderAggregationState;
   isConvertDerivationProjectionObjects = false;
 
-  constructor(
-    queryBuilderState: QueryBuilderState,
-    operators: QueryBuilderAggregateOperator[],
-  ) {
+  constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       removeColumn: action,
@@ -376,7 +370,10 @@ export class QueryBuilderProjectionState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.aggregationState = new QueryBuilderAggregationState(this, operators);
+    this.aggregationState = new QueryBuilderAggregationState(
+      this,
+      queryBuilderState.aggregationOperators,
+    );
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {

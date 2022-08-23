@@ -123,10 +123,7 @@ export const QueryBuilderFetchStructurePanel = observer(
                       handler: applicationStore.guardUnhandledError(
                         async () => {
                           queryBuilderState.fetchStructureState.projectionState =
-                            new QueryBuilderProjectionState(
-                              queryBuilderState,
-                              queryBuilderState.fetchStructureState.projectionState.aggregationState.operators,
-                            );
+                            new QueryBuilderProjectionState(queryBuilderState);
                           reset();
                         },
                       ),

@@ -59,9 +59,9 @@ import {
 } from './QueryBuilderProjectionState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
-  buildProjectionColumnTypeAheadQuery,
-  buildTypeAheadOptions,
-  performTypeAhead,
+  buildProjectionColumnTypeaheadQuery,
+  buildTypeaheadOptions,
+  performTypeahead,
 } from './QueryBuilderTypeaheadHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
@@ -319,8 +319,8 @@ export class PostFilterConditionState {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
-      if (performTypeAhead(this.value)) {
-        const builderState = buildProjectionColumnTypeAheadQuery(
+      if (performTypeahead(this.value)) {
+        const builderState = buildProjectionColumnTypeaheadQuery(
           this.postFilterState.queryBuilderState,
           this.columnState,
           this.value,
@@ -332,7 +332,7 @@ export class PostFilterConditionState {
             guaranteeNonNullable(builderState.querySetupState.runtimeValue),
             builderState.graphManagerState.graph,
           )) as ExecutionResult;
-        this.typeaheadSearchResults = buildTypeAheadOptions(result);
+        this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }
       this.typeaheadSearchState.pass();
     } catch (error) {
