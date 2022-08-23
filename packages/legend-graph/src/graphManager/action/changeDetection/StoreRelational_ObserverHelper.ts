@@ -105,7 +105,7 @@ import type { View } from '../../../graph/metamodel/pure/packageableElements/sto
 import { ViewReference } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
 import {
   type Mapper,
-  type SchemaNameMapper,
+  SchemaNameMapper,
   TableNameMapper,
 } from '../../../StoreRelational_Exports.js';
 import type { StoreRelational_PureGraphManagerPlugin_Extension } from '../../StoreRelational_PureGraphManagerPlugin_Extension.js';
@@ -1003,80 +1003,51 @@ export const observe_AuthenticationStrategy = (
   return metamodel;
 };
 
-export const observe_SchemaMapper = skipObserved(
-  (metamodel: SchemaNameMapper): SchemaNameMapper => {
+export const observe_Mapper = skipObserved(
+  (metamodel: Mapper): Mapper =>
     makeObservable(metamodel, {
       from: observable,
       to: observable,
-    });
+      hashCode: computed,
+    }),
+);
+
+const observe_Abstract_Mapper = (metamodel: Mapper): void => {
+  makeObservable(metamodel, {
+    from: observable,
+    to: observable,
+  });
+};
+
+export const observe_SchemaNameMapper = skipObserved(
+  (metamodel: SchemaNameMapper): SchemaNameMapper => {
+    observe_Abstract_Mapper(metamodel);
+
     return metamodel;
   },
 );
 
 export const observe_TableNameMapper = skipObserved(
   (metamodel: TableNameMapper): TableNameMapper => {
+    observe_Abstract_Mapper(metamodel);
+
     makeObservable(metamodel, {
-      from: observable,
-      to: observable,
       schema: observable,
     });
-    observe_SchemaMapper(metamodel.schema);
+    observe_SchemaNameMapper(metamodel.schema);
     return metamodel;
   },
 );
-
-// export const observe_RelationalDataTable = skipObserved(
-//   (metamodel: RelationalCSVDataTable): RelationalCSVDataTable => {
-//     makeObservable(metamodel, {
-//       values: observable,
-//       table: observable,
-//       schema: observable,
-//       hashCode: computed,
-//     });
-//     return metamodel;
-//   },
-// );
-
-// (metamodel: RelationalCSVData): RelationalCSVData => {
-//   makeObservable(metamodel, {
-//     tables: observable,
-//     hashCode: computed,
-//   });
-//   metamodel.tables.forEach(observe_RelationalDataTable);
-//   return metamodel;
-// },
-
-//svpmobx
-export const observe_Mapper = skipObserved(
-  (metamodel: Mapper): Mapper =>
-    makeObservable(metamodel, {
-      from: observable,
-      to: observable,
-    }),
-);
-
-export const observe_PostProcessorMapper = (
-  metamodel: MapperPostProcessor,
-): PostProcessor => {
-  makeObservable(metamodel, {
-    mappers: observable,
-  });
-
-  console.log('we are observing the post processor mapper svp');
-  return metamodel;
-};
 
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
   if (metamodel instanceof MapperPostProcessor) {
-    // TODO
     makeObservable(metamodel, {
       mappers: observable,
+      hashCode: computed,
     });
-
-    console.log('we are observing the post processor mapper svp');
     return metamodel;
   }
   const extraObservers = context.plugins.flatMap(
@@ -1090,6 +1061,18 @@ export const observe_PostProcessor = (
     if (observedPostProcessor) {
       return observedPostProcessor;
     }
+  }
+  return metamodel;
+};
+
+export const observe_Mapper_Thoughts = (
+  metamodel: Mapper,
+  context: ObserverContext,
+): Mapper => {
+  if (metamodel instanceof SchemaNameMapper) {
+    return observe_SchemaNameMapper(metamodel);
+  } else if (metamodel instanceof TableNameMapper) {
+    return observe_TableNameMapper(metamodel);
   }
   return metamodel;
 };
@@ -1116,6 +1099,7 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     makeObservable(metamodel, {
       datasourceSpecification: observable,
       authenticationStrategy: observable,
+      postProcessors: observable,
       hashCode: computed,
     });
 
@@ -1124,13 +1108,8 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     metamodel.postProcessors.forEach((postProcessor) => {
       observe_PostProcessor(postProcessor, context);
       if (postProcessor instanceof MapperPostProcessor) {
-        console.log('------------------true--------------');
         postProcessor.mappers.forEach((mapper) => {
-          observe_Mapper(mapper);
-          if (mapper instanceof TableNameMapper) {
-            console.log('-----------table mapper--------------------');
-            observe_TableNameMapper(mapper);
-          }
+          observe_Mapper_Thoughts(mapper, context);
         });
       }
     });

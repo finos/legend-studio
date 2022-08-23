@@ -135,7 +135,6 @@ import {
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { PostProcessorEditor } from './PostProcessorEditor.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
-import { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/MapperPostProcessorEditorState.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -1142,18 +1141,18 @@ const PostProcessorRelationalConnectionEditor = observer(
     const postprocessors = connection.postProcessors;
 
     const firstSelectedPostProcessor =
-      connectionValueState.selectedSvpPostProcessor;
+      connectionValueState.selectedPostProcessor;
 
     const deletePostProcessor =
       (postprocessor: PostProcessor): (() => void) =>
       (): void => {
         postProcessor_deletePostProcessor(connectionValueState, postprocessor);
-        if (postprocessor === connectionValueState.selectedSvpPostProcessor) {
+        if (postprocessor === connectionValueState.selectedPostProcessor) {
           connectionValueState.setSelectedPostProcessor(undefined);
         }
       };
 
-    const addPostProcessor = () => {
+    const addPostProcessor = (): (() => void) => (): void => {
       postprocessor_addPostProcessor(connectionValueState);
 
       connectionValueState.setSelectedPostProcessor(
@@ -1161,11 +1160,9 @@ const PostProcessorRelationalConnectionEditor = observer(
           connectionValueState.connection.postProcessors.length - 1
         ],
       );
-      connectionValueState.setSelectedSvpMapper(undefined);
+      connectionValueState.setSelectedMapper(undefined);
+      connectionValueState.setSelectedSchema(undefined);
     };
-
-    console.log('info-rendering postprocessoreditor   rendering');
-
     return (
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
@@ -1186,7 +1183,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                     <div className="panel__content">
                       {postprocessors.map((postprocessor, idx) => (
                         <ContextMenu
-                          key={postprocessor.hashCode + '528491'}
+                          key={postprocessor._UUID}
                           disabled={false}
                           content={
                             <MenuContent>
@@ -1200,7 +1197,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                           menuProps={{ elevation: 7 }}
                         >
                           <PostProcessorEditor
-                            key={postprocessor.hashCode}
+                            key={postprocessor._UUID}
                             connectionValueState={connectionValueState}
                             postprocessor={postprocessor}
                             firstSelectedPostProcessor={
@@ -1220,13 +1217,6 @@ const PostProcessorRelationalConnectionEditor = observer(
                     <MapperPostProcessorEditor
                       connectionValueState={connectionValueState}
                       postprocessor={firstSelectedPostProcessor}
-                      mapperEditorState={
-                        new MapperPostProcessorEditorState(
-                          connectionValueState.selectedSvpMapper,
-                          connectionValueState,
-                          firstSelectedPostProcessor,
-                        )
-                      }
                     />
                   )}
                   {!firstSelectedPostProcessor && !postprocessors.length && (
@@ -1255,7 +1245,6 @@ const PostProcessorRelationalConnectionEditor = observer(
   },
 );
 
-//svp0 instanceof
 const renderDatasourceSpecificationEditor = (
   connection: RelationalDatabaseConnection,
   isReadOnly: boolean,
@@ -1416,7 +1405,6 @@ const RelationalConnectionGeneralEditor = observer(
     const editorStore = useEditorStore();
     const plugins = editorStore.pluginManager.getApplicationPlugins();
 
-    console.log('info-rendering general store rendering');
     // database type
     const typeOptions = Object.values(DatabaseType).map((e) => ({
       value: e,
@@ -1455,12 +1443,6 @@ const RelationalConnectionGeneralEditor = observer(
     const onSourceSpecChange = (
       val: { label: string; value: string } | null,
     ): void => {
-      console.log(
-        'svp- ------------the source spec is changign for some reason',
-      );
-      console.log(val);
-      connectionValueState.changeMapperSpec(val?.value);
-
       connectionValueState.changeDatasourceSpec(
         val?.value ?? CORE_DATASOURCE_SPEC_TYPE.STATIC,
       );
@@ -1604,7 +1586,6 @@ export const RelationalDatabaseConnectionEditor = observer(
       <>
         <div className="panel__header">
           <div className="uml-element-editor__tabs">
-            {/* svp0 */}
             {Object.values(RELATIONAL_DATABASE_TAB_TYPE).map((tab) => (
               <div
                 key={tab}

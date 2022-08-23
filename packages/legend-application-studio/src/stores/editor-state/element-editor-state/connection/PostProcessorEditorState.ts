@@ -33,15 +33,12 @@ export class PostProcessorPostProcessorEditorState {
       connectionValueState: observable,
       selectedPostP: observable,
     });
-    console.log('class: PostProcessor editor state');
 
     this.selectedPostProcessor = selectedPostProcessor;
     this.connectionValueState = connectionValueState;
     this.selectedPostP = selectedPostP;
   }
   setselectedPostProcessor(val: PostProcessor): void {
-    console.log('selecting post');
     this.selectedPostProcessor = val;
-    console.log(val);
   }
 }
