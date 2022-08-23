@@ -20,7 +20,7 @@ import { SDLCServerClientProvider } from './SDLCServerClientProvider.js';
 
 export const TEST__getTestSDLCServerClient = (): SDLCServerClient =>
   new SDLCServerClient({
-    serverUrl: 'https://testSdlcUrl',
+    serverUrl: '',
     env: '',
   });
 

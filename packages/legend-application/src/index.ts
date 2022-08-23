@@ -40,7 +40,6 @@ export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
-export * from './stores/LegendApplicationSDLCSetupState.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

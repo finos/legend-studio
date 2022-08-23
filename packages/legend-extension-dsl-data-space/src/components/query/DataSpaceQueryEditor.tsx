@@ -36,7 +36,6 @@ import {
   type DataSpaceQueryEditorQueryParams,
   DATA_SPACE_QUERY_EDITOR_PATH_PARAM_TOKEN,
 } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 const DataSpaceQueryEditorStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -56,14 +55,12 @@ const DataSpaceQueryEditorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const sdlcServerClient = useSDLCServerClient();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new DataSpaceQueryEditorStore(
         applicationStore,
         depotServerClient,
-        sdlcServerClient,
         baseStore.pluginManager,
         groupId,
         artifactId,
