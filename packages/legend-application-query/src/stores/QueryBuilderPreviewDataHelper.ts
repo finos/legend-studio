@@ -19,21 +19,21 @@ import type {
   AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
-import { QueryBuilderAggregateOperator_Average } from './aggregateOperators/QueryBuilderAggregateOperator_Average.js';
-import { QueryBuilderAggregateOperator_Count } from './aggregateOperators/QueryBuilderAggregateOperator_Count.js';
-import { QueryBuilderAggregateOperator_DistinctCount } from './aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
-import { QueryBuilderAggregateOperator_Max } from './aggregateOperators/QueryBuilderAggregateOperator_Max.js';
-import { QueryBuilderAggregateOperator_Min } from './aggregateOperators/QueryBuilderAggregateOperator_Min.js';
-import { QueryBuilderAggregateOperator_StdDev_Population } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
-import { QueryBuilderAggregateOperator_StdDev_Sample } from './aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
-import { QueryBuilderAggregateOperator_Sum } from './aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
-import { QueryBuilderSimpleProjectionColumnState } from './QueryBuilderProjectionState.js';
+import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateOperator_Average } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Average.js';
+import { QueryBuilderAggregateOperator_Count } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Count.js';
+import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
+import { QueryBuilderAggregateOperator_Max } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Max.js';
+import { QueryBuilderAggregateOperator_Min } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Min.js';
+import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
+import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
+import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
+import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from './QueryResultSetModifierState.js';
+} from './fetch-structure/projection/QueryResultSetModifierState.js';
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';

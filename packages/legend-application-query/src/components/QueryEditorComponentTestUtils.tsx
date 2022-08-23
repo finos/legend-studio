@@ -174,8 +174,6 @@ export const TEST__setUpQueryEditor = async (
       );
   }
   MOCK__editorStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
-  // TODO: we need to think of how we will mock these calls when we modularize
-  // See https://github.com/finos/legend-studio/issues/731
   MOCK__editorStore.graphManagerState.graphManager.initialize =
     jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();

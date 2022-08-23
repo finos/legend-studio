@@ -27,15 +27,15 @@ import {
 import {
   type QueryBuilderFilterOperator,
   QueryBuilderFilterState,
-} from './QueryBuilderFilterState.js';
-import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
-import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
+} from './filter/QueryBuilderFilterState.js';
+import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
+import { QueryResultSetModifierState } from './fetch-structure/projection/QueryResultSetModifierState.js';
 import {
   QueryTextEditorMode,
   QueryTextEditorState,
 } from './QueryTextEditorState.js';
 import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
-import { QueryBuilderExplorerState } from './QueryBuilderExplorerState.js';
+import { QueryBuilderExplorerState } from './explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
   processQueryBuilderLambdaFunction,
@@ -67,16 +67,16 @@ import {
   LambdaParameterState,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
-import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
-import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
+import { QueryBuilderPostFilterState } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
+import type { QueryBuilderPostFilterOperator } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
+import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import { QueryParametersState } from './QueryParametersState.js';
 import {
   getQueryBuilderCoreAggregrationOperators,
   getQueryBuilderCoreFilterOperators,
   getQueryBuilderCorePostFilterOperators,
 } from './QueryBuilderOperatorLoader.js';
-import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregationState.js';
+import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -212,6 +212,7 @@ export class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
+  // TODO-BEFORE-PR: consider removing this
   setMode(val: QueryBuilderMode): void {
     this.mode = val;
   }
@@ -473,6 +474,7 @@ export class QueryBuilderState {
     }
   }
 
+  // TODO-BEFORE-PR: consider removing this
   changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this.resetQueryBuilder();
     this.resetQuerySetup();
@@ -480,6 +482,7 @@ export class QueryBuilderState {
     this.explorerState.refreshTreeData();
   }
 
+  // TODO-BEFORE-PR: consider removing this
   changeFetchStructure(): void {
     this.resultSetModifierState = new QueryResultSetModifierState(this);
     const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
@@ -492,6 +495,7 @@ export class QueryBuilderState {
     return this.fetchStructureState.validationIssues;
   }
 
+  // TODO-BEFORE-PR: consider removing this
   createBareBuilderState(): QueryBuilderState {
     return new QueryBuilderState(
       this.applicationStore,

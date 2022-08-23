@@ -31,13 +31,13 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from './QueryResultSetModifierState.js';
+} from './fetch-structure/projection/QueryResultSetModifierState.js';
 import {
   type QueryBuilderFilterState,
   QueryBuilderFilterTreeGroupNodeData,
   QueryBuilderFilterTreeConditionNodeData,
-} from './QueryBuilderFilterState.js';
-import { FETCH_STRUCTURE_MODE } from './QueryBuilderFetchStructureState.js';
+} from './filter/QueryBuilderFilterState.js';
+import { FETCH_STRUCTURE_MODE } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import {
   type AlloySerializationConfigInstanceValue,
   type EnumValueInstanceValue,
@@ -76,10 +76,10 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './QueryBuilderProjectionState.js';
-import type { QueryBuilderAggregationState } from './QueryBuilderAggregationState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { QueryBuilderAggregationState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
-import { processPostFilterLambda } from './QueryBuilderPostFilterProcessor.js';
+import { processPostFilterLambda } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterProcessor.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { LambdaParameterState } from '@finos/legend-application';

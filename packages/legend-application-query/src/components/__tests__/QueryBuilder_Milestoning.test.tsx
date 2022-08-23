@@ -42,7 +42,7 @@ import {
   TEST__setUpQueryEditor,
 } from '../QueryEditorComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 

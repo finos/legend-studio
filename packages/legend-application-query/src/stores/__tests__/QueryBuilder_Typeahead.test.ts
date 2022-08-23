@@ -24,9 +24,9 @@ import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilt
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { RawLambda } from '@finos/legend-graph';
 import { TEST_DATA__lambda_simpleSingleConditionFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
-import { QueryBuilderFilterTreeConditionNodeData } from '../QueryBuilderFilterState.js';
+import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { QueryBuilderPostFilterTreeConditionNodeData } from '../QueryBuilderPostFilterState.js';
+import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {

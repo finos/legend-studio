@@ -60,12 +60,12 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-} from '../../stores/QueryBuilderExplorerState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
-import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState.js';
+} from '../../stores/explorer/QueryBuilderExplorerState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState.js';
+import { FETCH_STRUCTURE_MODE } from '../../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 
 test(
   integrationTest(

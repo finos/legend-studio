@@ -20,7 +20,7 @@ import { clsx, Dialog } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderLambdaEditor } from './QueryBuilderLambdaEditor.js';
+import { QueryBuilderLambdaEditor } from './shared/QueryBuilderLambdaEditor.js';
 import {
   EDITOR_LANGUAGE,
   TextInputEditor,

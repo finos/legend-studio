@@ -23,16 +23,16 @@ import {
   TdsExecutionResult,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
-import { QueryBuilderPostFilterOperator_StartWith } from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
-import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
+import type { QueryBuilderAggregateColumnState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import {
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from './QueryBuilderPostFilterState.js';
+} from './fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './QueryBuilderProjectionState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
