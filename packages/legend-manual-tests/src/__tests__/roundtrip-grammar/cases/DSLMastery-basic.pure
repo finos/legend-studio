@@ -1,38 +1,3 @@
-###Mastery
-MasterRecordDefinition org::legend::PersonMasterRecord
-{
-  modelClass: org::legend::Person;
-  identityResolution:
-  {
-    modelClass: org::legend::Person;
-    resolutionQueries:
-      [
-        {
-          queries: [ {input: org::legend::Person[1]|org::legend::Person.all()->filter(person|$person.name == $input.name)}
-                   ];
-          keyType: Optional;
-          precedence: 1;
-        }
-      ]
-  }
-  recordSources:
-  [
-    {
-      id: 'test-source-id';
-      description: 'Test Source';
-      status: Development;
-      parseService: org::legend::PersonService;
-      transformService: org::legend::PersonService;
-      partitions:
-      [
-        {
-          id: 'test-partition-1';
-        }
-      ]
-    }
-  ]
-}
-
 ###Pure
 Class org::legend::Person
 {
@@ -69,4 +34,39 @@ Service org::legend::PersonService
     [
     ];
   }
+}
+
+###Mastery
+MasterRecordDefinition org::legend::PersonMasterRecord
+{
+  modelClass: org::legend::Person;
+  identityResolution:
+  {
+    modelClass: org::legend::Person;
+    resolutionQueries:
+      [
+        {
+          queries: [ {input: org::legend::Person[1]|org::legend::Person.all()->filter(person|$person.name == $input.name)}
+                   ];
+          keyType: Optional;
+          precedence: 1;
+        }
+      ]
+  }
+  recordSources:
+  [
+    {
+      id: 'test-source-id';
+      description: 'Test Source';
+      status: Development;
+      parseService: org::legend::PersonService;
+      transformService: org::legend::PersonService;
+      partitions:
+      [
+        {
+          id: 'test-partition-1';
+        }
+      ]
+    }
+  ]
 }
