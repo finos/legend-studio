@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {
-  QueryBuilderFilterOperator,
-  type QueryBuilderFilterState,
-  type FilterConditionState,
+import type {
+  QueryBuilderFilterState,
+  FilterConditionState,
 } from '../QueryBuilderFilterState.js';
+import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
   PRIMITIVE_TYPE,
   type ValueSpecification,

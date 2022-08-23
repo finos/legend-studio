@@ -33,11 +33,11 @@ import {
 import {
   FilterConditionState,
   type QueryBuilderFilterState,
-  type QueryBuilderFilterOperator,
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { buildPropertyExpressionChain } from '../../QueryBuilderLambdaBuilder.js';
+import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,

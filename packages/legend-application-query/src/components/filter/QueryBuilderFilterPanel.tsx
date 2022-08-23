@@ -47,7 +47,6 @@ import {
   type QueryBuilderFilterConditionDragSource,
   type QueryBuilderFilterDropTarget,
   type QueryBuilderFilterTreeNodeData,
-  type QueryBuilderFilterOperator,
   QUERY_BUILDER_FILTER_DND_TYPE,
   FilterConditionState,
   QueryBuilderFilterTreeConditionNodeData,
@@ -87,6 +86,7 @@ import {
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {

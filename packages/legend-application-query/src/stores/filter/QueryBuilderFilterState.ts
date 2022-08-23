@@ -65,33 +65,7 @@ import {
   buildTypeaheadOptions,
   performTypeahead,
 } from '../QueryBuilderTypeaheadHelper.js';
-
-export abstract class QueryBuilderFilterOperator {
-  readonly uuid = uuid();
-
-  abstract getLabel(filterConditionState: FilterConditionState): string;
-
-  abstract isCompatibleWithFilterConditionProperty(
-    filterConditionState: FilterConditionState,
-  ): boolean;
-
-  abstract isCompatibleWithFilterConditionValue(
-    filterConditionState: FilterConditionState,
-  ): boolean;
-
-  abstract getDefaultFilterConditionValue(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification | undefined;
-
-  abstract buildFilterConditionExpression(
-    filterConditionState: FilterConditionState,
-  ): ValueSpecification;
-
-  abstract buildFilterConditionState(
-    filterState: QueryBuilderFilterState,
-    expression: SimpleFunctionExpression,
-  ): FilterConditionState | undefined;
-}
+import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',

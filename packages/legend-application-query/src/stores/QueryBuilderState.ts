@@ -24,10 +24,7 @@ import {
   filterByType,
   hashObject,
 } from '@finos/legend-shared';
-import {
-  type QueryBuilderFilterOperator,
-  QueryBuilderFilterState,
-} from './filter/QueryBuilderFilterState.js';
+import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { QueryResultSetModifierState } from './fetch-structure/projection/QueryResultSetModifierState.js';
 import {
@@ -71,12 +68,11 @@ import { QueryBuilderPostFilterState } from './fetch-structure/projection/post-f
 import type { QueryBuilderPostFilterOperator } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import { QueryParametersState } from './QueryParametersState.js';
-import {
-  getQueryBuilderCoreAggregrationOperators,
-  getQueryBuilderCoreFilterOperators,
-  getQueryBuilderCorePostFilterOperators,
-} from './QueryBuilderOperatorLoader.js';
 import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
+import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
+import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
+import { getQueryBuilderCorePostFilterOperators } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterOperatorLoader.js';
+import { getQueryBuilderCoreAggregrationOperators } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperatorLoader.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
