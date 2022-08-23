@@ -120,12 +120,7 @@ const AssociationPropertyBasicEditor = observer(
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // TODO: make this so that association can only refer to classes from the same graph space
-    const propertyTypeOptions = editorStore.classOptions.filter(
-      (classOption) =>
-        classOption.value !==
-        getOtherAssociatedProperty(association, property).genericType.value
-          .rawType,
-    );
+    const propertyTypeOptions = editorStore.classOptions;
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
