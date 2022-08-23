@@ -15,10 +15,58 @@ MasterRecordDefinition org::legend::PersonMasterRecord
         }
       ]
   }
+  recordSources:
+  [
+    {
+      id: 'test-source-id';
+      description: 'Test Source';
+      status: Development;
+      parseService: org::legend::PersonService;
+      transformService: org::legend::PersonService;
+      partitions:
+      [
+        {
+          id: 'test-partition-1';
+        }
+      ]
+    }
+  ]
 }
 
 ###Pure
 Class org::legend::Person
 {
   name: String[0..1];
+}
+
+###Mapping
+Mapping org::legend::PersonMapping
+(
+)
+
+###Service
+Service org::legend::PersonService
+{
+  pattern: 'person';
+  documentation: 'Person test service';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::legend::Person[1]|$src.name;
+    mapping: org::legend::PersonMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        org::legend::PersonMapping
+      ];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
 }
