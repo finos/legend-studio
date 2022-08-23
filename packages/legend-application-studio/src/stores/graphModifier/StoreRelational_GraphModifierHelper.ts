@@ -54,13 +54,12 @@ import {
   SchemaNameMapper,
   MapperPostProcessor,
   TableNameMapper,
-  observe_SchemaMapper,
+  observe_TableNameMapper,
   observe_Mapper,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
 import type { RelationalDatabaseConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { MapperPostProcessorEditorState } from '../editor-state/element-editor-state/connection/MapperPostProcessorEditorState.js';
 
 // --------------------------------------------- DB Connection -------------------------------------
 
@@ -434,27 +433,12 @@ export const rootRelationalSetImp_setPropertyMappings = action(
 
 // --------------------------------------------- Post Processor -------------------------------------
 
-//svpWillRemove
-export const relationalDbConnection_setMapperSpecification = action(
-  (
-    con: RelationalDatabaseConnection,
-    val: Mapper,
-    context: ObserverContext,
-  ): void => {
-    console.log('----------------plm---------------------');
-    con.datasourceSpecification = observe_Mapper(val);
-  },
-);
-
 export const postprocessor_addPostProcessor = action(
   (connectionValueState: RelationalDatabaseConnectionValueState): void => {
     addUniqueEntry(
       connectionValueState.connection.postProcessors,
       new MapperPostProcessor(),
-      //svpWillRemove
-      // observe_PostProcessor(new MapperPostProcessor(), context),
     );
-    console.log('added');
   },
 );
 
@@ -462,19 +446,15 @@ export const mapper_addSchemaMapper = action(
   (
     connectionValueState: RelationalDatabaseConnectionValueState,
     postprocessor: PostProcessor,
-    mapperState: MapperPostProcessorEditorState,
   ): void => {
-    console.log('adding');
-    console.log(postprocessor.hashCode);
     addUniqueEntry(
       (postprocessor as MapperPostProcessor).mappers,
-      observe_SchemaMapper(new SchemaNameMapper('', '')),
+      observe_Mapper(new SchemaNameMapper('', '')),
     );
-    console.log('added');
-
-    connectionValueState.setSelectedSvpMapper(
+    connectionValueState.setSelectedMapper(
       (postprocessor as MapperPostProcessor).mappers.at(-1),
     );
+    connectionValueState.setSelectedSchema(undefined);
   },
 );
 
@@ -485,63 +465,41 @@ export const mapper_addTableMapper = action(
   ): void => {
     addUniqueEntry(
       (postprocessor as MapperPostProcessor).mappers,
-      new TableNameMapper('', '', new SchemaNameMapper('', '')),
+      observe_TableNameMapper(
+        new TableNameMapper('', '', new SchemaNameMapper('', '')),
+      ),
     );
-    connectionValueState.setSelectedSvpMapper(
+    connectionValueState.setSelectedMapper(
       (postprocessor as MapperPostProcessor).mappers.at(-1),
+    );
+    connectionValueState.setSelectedSchema(
+      ((postprocessor as MapperPostProcessor).mappers.at(-1) as TableNameMapper)
+        .schema,
     );
   },
 );
 
 export const postProcessor_setMapperFrom = action(
-  (
-    connectionState: RelationalDatabaseConnectionValueState,
-    val: string,
-  ): void => {
-    console.log('----------------changing to plm----------------');
-
-    if (connectionState.selectedSvpMapper) {
-      connectionState.selectedSvpMapper.from = val;
-    }
+  (mapper: Mapper, val: string): void => {
+    mapper.from = val;
   },
 );
 
 export const postProcessor_setMapperTo = action(
-  (
-    connectionState: RelationalDatabaseConnectionValueState,
-    val: string,
-  ): void => {
-    console.log('----------------changing to plm----------------');
-
-    if (connectionState.selectedSvpMapper) {
-      connectionState.selectedSvpMapper.to = val;
-    }
+  (mapper: Mapper, val: string): void => {
+    mapper.to = val;
   },
 );
 
 export const postProcessor_setMapperSchemaTo = action(
-  (
-    connectionState: RelationalDatabaseConnectionValueState,
-    val: string,
-  ): void => {
-    connectionState.getSelectedSvpTableMapper().schema = new SchemaNameMapper(
-      connectionState.getSelectedSvpTableMapper().schema.from,
-      val,
-    );
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.to = val;
   },
 );
 
 export const postProcessor_setMapperSchemaFrom = action(
-  (
-    connectionState: RelationalDatabaseConnectionValueState,
-    val: string,
-  ): void => {
-    if (connectionState.selectedSvpMapper) {
-      connectionState.getSelectedSvpTableMapper().schema = new SchemaNameMapper(
-        val,
-        connectionState.getSelectedSvpTableMapper().schema.to,
-      );
-    }
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.from = val;
   },
 );
 
@@ -551,7 +509,7 @@ export const postProcessor_deleteMapper = action(
     val: Mapper,
   ): void => {
     deleteEntry(
-      (connectionValueState.selectedSvpPostProcessor as MapperPostProcessor)
+      (connectionValueState.selectedPostProcessor as MapperPostProcessor)
         .mappers,
       val,
     );

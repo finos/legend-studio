@@ -35,11 +35,10 @@ import {
   type PostProcessor,
   type MapperPostProcessor,
   TableNameMapper,
+  SchemaNameMapper,
 } from '@finos/legend-graph';
-import { isObservable, isObservableProp } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import type { MapperPostProcessorEditorState } from '../../../../../stores/editor-state/element-editor-state/connection/MapperPostProcessorEditorState.js';
 import {
   mapper_addSchemaMapper,
   mapper_addTableMapper,
@@ -54,28 +53,24 @@ export const MapperEditor = observer(
   (props: {
     connectionValueState: RelationalDatabaseConnectionValueState;
     mapper: Mapper;
-    mapperEditorState: MapperPostProcessorEditorState;
-    postprocessor: PostProcessor;
     title: string;
     selectedMapper: Mapper | undefined;
+    validationErrorMessage?: string | undefined;
   }) => {
     const {
       connectionValueState,
       mapper,
       title,
-      postprocessor,
-      mapperEditorState,
       selectedMapper,
+      validationErrorMessage,
     } = props;
 
     const setSelectedMapper = (val: Mapper): void => {
-      console.log('here is the mapper that is clicked');
-      console.log(val);
-      mapperEditorState.setselectedMapper(val);
-      connectionValueState.setSelectedSvpMapper(val);
+      connectionValueState.setSelectedMapper(val);
 
-      console.log('here is the editorstate');
-      console.log(mapperEditorState.selectedMapper);
+      if (val instanceof TableNameMapper) {
+        connectionValueState.setSelectedSchema(val.schema);
+      }
     };
     const selectMapper = (): void => setSelectedMapper(mapper);
 
@@ -84,50 +79,30 @@ export const MapperEditor = observer(
         className={clsx(
           'panel__explorer__item',
           {
-            '': !(mapper === props.selectedMapper),
+            '': !(mapper === selectedMapper),
           },
           {
-            'panel__explorer__item--selected': mapper === props.selectedMapper,
+            'panel__explorer__item--selected': mapper === selectedMapper,
+          },
+          {
+            'panel__explorer__item--with-validation--error': Boolean(
+              validationErrorMessage,
+            ),
+          },
+          {
+            'panel__explorer__item--selected--with-validation--error':
+              Boolean(validationErrorMessage) && mapper === selectedMapper,
           },
         )}
         onClick={selectMapper}
       >
-        <div className="panel__explorer__item__label">{title}</div>
+        <div
+          className="panel__explorer__item__label"
+          title={validationErrorMessage}
+        >
+          {title}
+        </div>
       </div>
-    );
-  },
-);
-
-const MapperSchemaEditor = observer(
-  (props: {
-    sourceSpec: RelationalDatabaseConnectionValueState;
-    isReadOnly: boolean;
-  }) => {
-    const { sourceSpec, isReadOnly } = props;
-
-    console.log(isObservable(sourceSpec.selectedSvpMapper?.from));
-    console.log(isObservable(sourceSpec.selectedSvpMapper));
-
-    //svptodelete todo: schema table
-    // console.log(isObservable(sourceSpec.selectedSvpMapper as TableNameMapper));
-    // console.log(
-    //   isObservable((sourceSpec.selectedSvpMapper as TableNameMapper).schema),
-    // );
-
-    console.log(isObservableProp(sourceSpec, 'selectedSvpMapper'));
-
-    return (
-      <>
-        <PanelStringEditor
-          padding={true}
-          isReadOnly={false}
-          value={sourceSpec.selectedSvpMapper?.from}
-          propertyName={'From..'}
-          update={(value: string | undefined): void =>
-            postProcessor_setMapperFrom(sourceSpec, value ?? '')
-          }
-        />
-      </>
     );
   },
 );
@@ -135,22 +110,22 @@ const MapperSchemaEditor = observer(
 export const MapperPostProcessorEditor = observer(
   (props: {
     postprocessor: PostProcessor;
-    mapperEditorState: MapperPostProcessorEditorState;
     connectionValueState: RelationalDatabaseConnectionValueState;
   }) => {
-    const { connectionValueState, postprocessor, mapperEditorState } = props;
+    const { connectionValueState, postprocessor } = props;
 
-    const selectedMapper = connectionValueState.selectedSvpMapper;
+    const selectedMapper = connectionValueState.selectedMapper;
 
-    const addSchemaMapper = () => {
-      mapper_addSchemaMapper(
-        connectionValueState,
-        postprocessor,
-        mapperEditorState,
-      );
+    const selectedSchemaNameMapper =
+      selectedMapper instanceof TableNameMapper
+        ? selectedMapper.schema
+        : undefined;
+
+    const addSchemaMapper = (): (() => void) => (): void => {
+      mapper_addSchemaMapper(connectionValueState, postprocessor);
     };
 
-    const addTableMapper = () => {
+    const addTableMapper = (): (() => void) => (): void => {
       mapper_addTableMapper(connectionValueState, postprocessor);
     };
 
@@ -158,12 +133,39 @@ export const MapperPostProcessorEditor = observer(
       (mapper: Mapper): (() => void) =>
       (): void => {
         postProcessor_deleteMapper(connectionValueState, mapper);
-        if (mapper === connectionValueState.selectedSvpMapper) {
-          connectionValueState.setSelectedSvpMapper(undefined);
+        if (mapper === connectionValueState.selectedMapper) {
+          connectionValueState.setSelectedMapper(undefined);
+          connectionValueState.setSelectedSchema(undefined);
         }
       };
 
     const mappers = (postprocessor as MapperPostProcessor).mappers;
+    const isSchemaMapperDuplicated = (val: Mapper): boolean =>
+      mappers.filter(
+        (p) =>
+          p.from === val.from &&
+          p.to === val.to &&
+          val instanceof SchemaNameMapper &&
+          p instanceof SchemaNameMapper,
+      ).length >= 2;
+
+    const isTableMapperDuplicated = (val: Mapper): boolean =>
+      mappers
+        .filter(
+          (p) => val instanceof TableNameMapper && p instanceof TableNameMapper,
+        )
+        .filter(
+          (p) =>
+            (p as TableNameMapper).schema.from ===
+              (val as TableNameMapper).schema.from &&
+            (p as TableNameMapper).schema.from ===
+              (val as TableNameMapper).schema.from &&
+            (p as TableNameMapper).from === (val as TableNameMapper).from &&
+            (p as TableNameMapper).from === (val as TableNameMapper).from,
+        ).length >= 2;
+
+    const isMapperDuplicated = (val: Mapper): boolean =>
+      isSchemaMapperDuplicated(val) || isTableMapperDuplicated(val);
 
     return (
       <ResizablePanelGroup orientation="horizontal">
@@ -197,9 +199,9 @@ export const MapperPostProcessorEditor = observer(
                 </DropdownMenu>
 
                 <div className="panel__content">
-                  {mappers.map((mapper, idx) => (
+                  {mappers.map((mapper) => (
                     <ContextMenu
-                      key={mapper.hashCode}
+                      key={mapper._UUID}
                       disabled={false}
                       content={
                         <MenuContent>
@@ -212,11 +214,14 @@ export const MapperPostProcessorEditor = observer(
                     >
                       <MapperEditor
                         connectionValueState={connectionValueState}
-                        key={mapper.hashCode}
+                        key={mapper._UUID}
                         mapper={mapper}
-                        mapperEditorState={mapperEditorState}
-                        selectedMapper={mapperEditorState.selectedMapper}
-                        postprocessor={postprocessor}
+                        selectedMapper={connectionValueState.selectedMapper}
+                        validationErrorMessage={
+                          isMapperDuplicated(mapper)
+                            ? 'Mappers have the same values'
+                            : undefined
+                        }
                         title={
                           mapper instanceof TableNameMapper
                             ? 'Table Mapper'
@@ -236,7 +241,7 @@ export const MapperPostProcessorEditor = observer(
                 {selectedMapper && (
                   <PanelHeader
                     title={
-                      connectionValueState.selectedSvpMapper instanceof
+                      connectionValueState.selectedMapper instanceof
                       TableNameMapper
                         ? 'Table Mapper'
                         : 'Schema Mapper'
@@ -256,16 +261,20 @@ export const MapperPostProcessorEditor = observer(
                       }
                     />
                   )}
-
                   {selectedMapper && (
-                    // svp2
                     <>
                       <PanelForm>
-                        <MapperSchemaEditor
-                          // sourceSpec={mapperEditorState}
-                          sourceSpec={connectionValueState}
-                          // sourceSpec={selectedMapper}
-                          isReadOnly={true}
+                        <PanelStringEditor
+                          padding={true}
+                          isReadOnly={false}
+                          value={selectedMapper.from}
+                          propertyName={'From'}
+                          update={(value: string | undefined): void =>
+                            postProcessor_setMapperFrom(
+                              selectedMapper,
+                              value ?? '',
+                            )
+                          }
                         />
                         <PanelStringEditor
                           padding={true}
@@ -274,44 +283,39 @@ export const MapperPostProcessorEditor = observer(
                           propertyName={'To'}
                           update={(value: string | undefined): void =>
                             postProcessor_setMapperTo(
-                              connectionValueState,
+                              selectedMapper,
                               value ?? '',
                             )
                           }
                         />
-
-                        {selectedMapper instanceof TableNameMapper && (
+                        {selectedSchemaNameMapper && (
                           <>
                             <PanelStringEditor
                               padding={true}
                               isReadOnly={false}
-                              value={selectedMapper.schema.from}
+                              value={selectedSchemaNameMapper.from}
                               propertyName={'Schema From'}
-                              update={(value: string | undefined): void =>
+                              update={(value: string | undefined): void => {
                                 postProcessor_setMapperSchemaFrom(
-                                  connectionValueState,
+                                  selectedSchemaNameMapper,
                                   value ?? '',
-                                )
-                              }
+                                );
+                              }}
                             />
                             <PanelStringEditor
                               padding={true}
                               isReadOnly={false}
-                              value={selectedMapper.schema.to}
+                              value={selectedSchemaNameMapper.to}
                               propertyName={'Schema To'}
                               update={(value: string | undefined): void =>
                                 postProcessor_setMapperSchemaTo(
-                                  connectionValueState,
+                                  selectedSchemaNameMapper,
                                   value ?? '',
                                 )
                               }
                             />
                           </>
                         )}
-
-                        {/* {selectedMapper instanceof TableNameMapper
-                        ? 'currently'
-                        : 'not'} */}
                       </PanelForm>
                     </>
                   )}

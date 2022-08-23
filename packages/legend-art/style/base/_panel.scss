@@ -197,6 +197,10 @@
       color: var(--color-white);
       font-size: 1.2rem;
     }
+
+    &--with-validation--error {
+      background: var(--color-red-500);
+    }
   }
 
   &__item:hover {
@@ -207,6 +211,11 @@
   &__item--selected,
   &__item--selected:hover {
     background: var(--color-light-blue-450);
+  }
+
+  &__item--selected--with-validation--error,
+  &__item--selected--with-validation--error:hover {
+    background: var(--color-red-400);
   }
 }
 
