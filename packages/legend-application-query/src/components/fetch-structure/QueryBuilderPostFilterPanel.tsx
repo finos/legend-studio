@@ -71,7 +71,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
-import { getColumnMultiplicity } from '../../stores/fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperatorHelper.js';
+import { getColumnMultiplicity } from '../../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import {
   isTypeCompatibleWithConditionValueType,

@@ -18,29 +18,29 @@ import {
   type AbstractPropertyExpression,
   type PureModel,
   type ValueSpecification,
+  type Type,
+  matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   extractElementNameFromPath,
-  matchFunctionName,
+  PrimitiveInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
   PRIMITIVE_TYPE,
-  type Type,
-  Enumeration,
 } from '@finos/legend-graph';
-import { assertTrue, guaranteeType } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  QueryBuilderAggregateColumnState,
-  QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState.js';
+import { assertTrue, guaranteeType } from '@finos/legend-shared';
+import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from '../../QueryBuilderProjectionState.js';
 
-export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'distinct count';
+    return 'join';
   }
 
   isCompatibleWithColumn(
@@ -52,21 +52,8 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
           .genericType.value.rawType;
-      return (
-        (
-          [
-            PRIMITIVE_TYPE.STRING,
-            PRIMITIVE_TYPE.BOOLEAN,
-            PRIMITIVE_TYPE.NUMBER,
-            PRIMITIVE_TYPE.INTEGER,
-            PRIMITIVE_TYPE.DECIMAL,
-            PRIMITIVE_TYPE.FLOAT,
-            PRIMITIVE_TYPE.DATE,
-            PRIMITIVE_TYPE.STRICTDATE,
-            PRIMITIVE_TYPE.DATETIME,
-          ] as string[]
-        ).includes(propertyType.path) || propertyType instanceof Enumeration
-      );
+      // NOTE: Engine does not support Enumerations at the moment.
+      return PRIMITIVE_TYPE.STRING === propertyType.path;
     }
     return true;
   }
@@ -79,19 +66,24 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     const multiplicityOne = graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-    const distinctExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.DISTINCT),
+    const expression = new SimpleFunctionExpression(
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
+      ),
       multiplicityOne,
     );
-    distinctExpression.parametersValues.push(
+    const delimiter = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
+      ),
+      multiplicityOne,
+    );
+    delimiter.values = [';'];
+    expression.parametersValues.push(
       new VariableExpression(variableName, multiplicityOne),
+      delimiter,
     );
-    const distinctCountExpression = new SimpleFunctionExpression(
-      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT),
-      multiplicityOne,
-    );
-    distinctCountExpression.parametersValues.push(distinctExpression);
-    return distinctCountExpression;
+    return expression;
   }
 
   buildAggregateColumnState(
@@ -102,7 +94,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     if (
       matchFunctionName(
         expression.functionName,
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
       )
     ) {
       const aggregateColumnState = new QueryBuilderAggregateColumnState(
@@ -112,49 +104,37 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       );
       aggregateColumnState.setLambdaParameterName(lambdaParam.name);
 
-      // count expression
       assertTrue(
-        expression.parametersValues.length === 1,
-        `Can't process count() expression: count() expects no argument`,
-      );
-
-      // distinct expression
-      const distinctExpression = guaranteeType(
-        expression.parametersValues[0],
-        SimpleFunctionExpression,
-        `Can't process '${this.getLabel(
-          projectionColumnState,
-        )}' aggregate lambda: only support count() immediately following an expression`,
-      );
-      assertTrue(
-        matchFunctionName(
-          distinctExpression.functionName,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.DISTINCT,
-        ),
-        `Can't process '${this.getLabel(
-          projectionColumnState,
-        )}' aggregate lambda: only support count() immediately following distinct() expression`,
-      );
-      assertTrue(
-        distinctExpression.parametersValues.length === 1,
-        `Can't process distinct() expression: distinct() expects no argument`,
+        expression.parametersValues.length === 2,
+        `Can't process joinStrings() expression: joinStrings() expects 1 argument`,
       );
 
       // variable
       const variableExpression = guaranteeType(
-        distinctExpression.parametersValues[0],
+        expression.parametersValues[0],
         VariableExpression,
-        `Can't process distinct() expression: only support distinct() immediately following a variable expression`,
+        `Can't process joinStrings() expression: only support joinStrings() immediately following a variable expression`,
       );
       assertTrue(
         aggregateColumnState.lambdaParameterName === variableExpression.name,
-        `Can't process distinct() expression: expects variable used in lambda body '${variableExpression.name}' to match lambda parameter '${aggregateColumnState.lambdaParameterName}'`,
+        `Can't process joinStrings() expression: expects variable used in lambda body '${variableExpression.name}' to match lambda parameter '${aggregateColumnState.lambdaParameterName}'`,
+      );
+
+      // delimiter
+      const delimiter = guaranteeType(
+        expression.parametersValues[1],
+        PrimitiveInstanceValue,
+        `Can't process joinStrings() expression: joinStrings() expects arugment #1 to be a primitive instance value`,
+      );
+      assertTrue(
+        delimiter.values.length === 1 && delimiter.values[0] === ';',
+        `Can't process joinStrings() expression: only support ';' as delimiter`,
       );
 
       // operator
       assertTrue(
         this.isCompatibleWithColumn(aggregateColumnState.projectionColumnState),
-        `Can't process disc expression: property is not compatible with operator`,
+        `Can't process joinStrings() expression: property is not compatible with operator`,
       );
       aggregateColumnState.setOperator(this);
 
@@ -170,6 +150,6 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
     const graph =
       aggregateColumnState.aggregationState.projectionState.queryBuilderState
         .graphManagerState.graph;
-    return graph.getType(PRIMITIVE_TYPE.INTEGER);
+    return graph.getType(PRIMITIVE_TYPE.STRING);
   }
 }

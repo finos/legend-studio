@@ -51,10 +51,7 @@ import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpr
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import {
-  type QueryBuilderAggregateOperator,
-  QueryBuilderAggregateColumnState,
-} from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from '../shared/QueryBuilderLambdaEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
@@ -75,6 +72,7 @@ import {
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import { filterByType } from '@finos/legend-shared';
+import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<

@@ -14,74 +14,74 @@
  * limitations under the License.
  */
 
-import { QueryBuilderAggregateOperator_Count } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Count.js';
-import { QueryBuilderAggregateOperator_Distinct } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Distinct.js';
-import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Sum.js';
-import { QueryBuilderAggregateOperator_Average } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Average.js';
-import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_StdDev_Population.js';
-import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_StdDev_Sample.js';
-import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_DistinctCount.js';
-import { QueryBuilderAggregateOperator_Min } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Min.js';
-import { QueryBuilderAggregateOperator_Max } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_Max.js';
-import { QueryBuilderAggregateOperator_JoinString } from './fetch-structure/projection/aggregation/aggregateOperators/QueryBuilderAggregateOperator_JoinString.js';
+import { QueryBuilderAggregateOperator_Count } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Count.js';
+import { QueryBuilderAggregateOperator_Distinct } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Distinct.js';
+import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Sum.js';
+import { QueryBuilderAggregateOperator_Average } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Average.js';
+import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Population.js';
+import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Sample.js';
+import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_DistinctCount.js';
+import { QueryBuilderAggregateOperator_Min } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Min.js';
+import { QueryBuilderAggregateOperator_Max } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Max.js';
+import { QueryBuilderAggregateOperator_JoinString } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_JoinString.js';
 import {
   QueryBuilderFilterOperator_Equal,
   QueryBuilderFilterOperator_NotEqual,
-} from './filter/filterOperators/QueryBuilderFilterOperator_Equal.js';
-import { QueryBuilderFilterOperator_GreaterThan } from './filter/filterOperators/QueryBuilderFilterOperator_GreaterThan.js';
+} from './filter/operators/QueryBuilderFilterOperator_Equal.js';
+import { QueryBuilderFilterOperator_GreaterThan } from './filter/operators/QueryBuilderFilterOperator_GreaterThan.js';
 import {
   QueryBuilderFilterOperator_NotStartWith,
   QueryBuilderFilterOperator_StartWith,
-} from './filter/filterOperators/QueryBuilderFilterOperator_StartWith.js';
-import { QueryBuilderFilterOperator_GreaterThanEqual } from './filter/filterOperators/QueryBuilderFilterOperator_GreaterThanEqual.js';
-import { QueryBuilderFilterOperator_LessThanEqual } from './filter/filterOperators/QueryBuilderFilterOperator_LessThanEqual.js';
-import { QueryBuilderFilterOperator_LessThan } from './filter/filterOperators/QueryBuilderFilterOperator_LessThan.js';
+} from './filter/operators/QueryBuilderFilterOperator_StartWith.js';
+import { QueryBuilderFilterOperator_GreaterThanEqual } from './filter/operators/QueryBuilderFilterOperator_GreaterThanEqual.js';
+import { QueryBuilderFilterOperator_LessThanEqual } from './filter/operators/QueryBuilderFilterOperator_LessThanEqual.js';
+import { QueryBuilderFilterOperator_LessThan } from './filter/operators/QueryBuilderFilterOperator_LessThan.js';
 import {
   QueryBuilderFilterOperator_EndWith,
   QueryBuilderFilterOperator_NotEndWith,
-} from './filter/filterOperators/QueryBuilderFilterOperator_EndWith.js';
+} from './filter/operators/QueryBuilderFilterOperator_EndWith.js';
 import {
   QueryBuilderFilterOperator_Contain,
   QueryBuilderFilterOperator_NotContain,
-} from './filter/filterOperators/QueryBuilderFilterOperator_Contain.js';
+} from './filter/operators/QueryBuilderFilterOperator_Contain.js';
 import {
   QueryBuilderFilterOperator_IsEmpty,
   QueryBuilderFilterOperator_IsNotEmpty,
-} from './filter/filterOperators/QueryBuilderFilterOperator_IsEmpty.js';
+} from './filter/operators/QueryBuilderFilterOperator_IsEmpty.js';
 import {
   QueryBuilderFilterOperator_In,
   QueryBuilderFilterOperator_NotIn,
-} from './filter/filterOperators/QueryBuilderFilterOperator_In.js';
+} from './filter/operators/QueryBuilderFilterOperator_In.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import {
   QueryBuilderPostFilterOperator_IsEmpty,
   QueryBuilderPostFilterOperator_IsNotEmpty,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_IsEmpty.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
-import { QueryBuilderPostFilterOperator_LessThan } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_LessThan.js';
-import { QueryBuilderPostFilterOperator_LessThanEqual } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual.js';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan.js';
-import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
+import { QueryBuilderPostFilterOperator_LessThan } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_LessThan.js';
+import { QueryBuilderPostFilterOperator_LessThanEqual } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_LessThanEqual.js';
+import { QueryBuilderPostFilterOperator_GreaterThan } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_GreaterThan.js';
+import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_GreaterThanEqual.js';
 import {
   QueryBuilderPostFilterOperator_NotStartWith,
   QueryBuilderPostFilterOperator_StartWith,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
 import {
   QueryBuilderPostFilterOperator_Contain,
   QueryBuilderPostFilterOperator_NotContain,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_Contain.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Contain.js';
 import {
   QueryBuilderPostFilterOperator_EndWith,
   QueryBuilderPostFilterOperator_NotEndWith,
-} from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_EndWith.js';
+} from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_EndWith.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterState.js';
-import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
+import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
 import type { QueryBuilderPostFilterOperator } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 
 export const getQueryBuilderCoreAggregrationOperators =

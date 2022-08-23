@@ -76,7 +76,7 @@ import {
   getQueryBuilderCoreFilterOperators,
   getQueryBuilderCorePostFilterOperators,
 } from './QueryBuilderOperatorLoader.js';
-import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
+import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;

@@ -23,7 +23,7 @@ import {
   TdsExecutionResult,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
-import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
+import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
 import type { QueryBuilderAggregateColumnState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import {
   PostFilterConditionState,

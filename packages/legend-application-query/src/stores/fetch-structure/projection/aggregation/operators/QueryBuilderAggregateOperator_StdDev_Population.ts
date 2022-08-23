@@ -15,6 +15,7 @@
  */
 
 import {
+  type Type,
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
@@ -23,10 +24,8 @@ import {
   type PureModel,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  type QueryBuilderAggregateColumnState,
-  QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState.js';
+import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
@@ -36,9 +35,9 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 
-export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_StdDev_Population extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
-    return 'sum';
+    return 'std dev (population)';
   }
 
   isCompatibleWithColumn(
@@ -68,7 +67,7 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
     graph: PureModel,
   ): ValueSpecification {
     return buildAggregateExpression(
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
       graph,
       variableName,
     );
@@ -83,8 +82,17 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
       projectionColumnState,
       lambdaParam,
       expression,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.STD_DEV_POPULATION,
       this,
     );
+  }
+
+  override getReturnType(
+    aggregateColumnState: QueryBuilderAggregateColumnState,
+  ): Type {
+    const graph =
+      aggregateColumnState.projectionColumnState.projectionState
+        .queryBuilderState.graphManagerState.graph;
+    return graph.getType(PRIMITIVE_TYPE.NUMBER);
   }
 }

@@ -24,10 +24,8 @@ import {
   type PureModel,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  type QueryBuilderAggregateColumnState,
-  QueryBuilderAggregateOperator,
-} from '../QueryBuilderAggregationState.js';
+import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,

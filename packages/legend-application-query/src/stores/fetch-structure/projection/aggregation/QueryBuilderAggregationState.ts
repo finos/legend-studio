@@ -15,75 +15,14 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import {
-  uuid,
-  deleteEntry,
-  addUniqueEntry,
-  guaranteeNonNullable,
-} from '@finos/legend-shared';
-import type {
-  AbstractPropertyExpression,
-  PureModel,
-  SimpleFunctionExpression,
-  Type,
-  ValueSpecification,
-  VariableExpression,
-} from '@finos/legend-graph';
+import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
+import type { Type } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../../QueryBuilder_Const.js';
-import {
-  QueryBuilderSimpleProjectionColumnState,
-  type QueryBuilderProjectionColumnState,
-  type QueryBuilderProjectionState,
+import type {
+  QueryBuilderProjectionColumnState,
+  QueryBuilderProjectionState,
 } from '../QueryBuilderProjectionState.js';
-
-export abstract class QueryBuilderAggregateOperator {
-  readonly uuid = uuid();
-
-  abstract getLabel(
-    projectionColumnState: QueryBuilderProjectionColumnState,
-  ): string;
-
-  abstract isCompatibleWithColumn(
-    projectionColumnState: QueryBuilderProjectionColumnState,
-  ): boolean;
-
-  abstract buildAggregateExpression(
-    propertyExpression: AbstractPropertyExpression | undefined,
-    variableName: string,
-    graph: PureModel,
-  ): ValueSpecification;
-
-  buildAggregateExpressionFromState(
-    aggregateColumnState: QueryBuilderAggregateColumnState,
-  ): ValueSpecification {
-    return this.buildAggregateExpression(
-      aggregateColumnState.projectionColumnState instanceof
-        QueryBuilderSimpleProjectionColumnState
-        ? aggregateColumnState.projectionColumnState.propertyExpressionState
-            .propertyExpression
-        : undefined,
-      aggregateColumnState.lambdaParameterName,
-      aggregateColumnState.aggregationState.projectionState.queryBuilderState
-        .graphManagerState.graph,
-    );
-  }
-
-  abstract buildAggregateColumnState(
-    expression: SimpleFunctionExpression,
-    lambdaParam: VariableExpression,
-    projectionColumnState: QueryBuilderProjectionColumnState,
-  ): QueryBuilderAggregateColumnState | undefined;
-
-  /**
-   * Returns the expected return type of the operator.
-   * defaults to using the return type of the projection column state which is being aggregated.
-   */
-  getReturnType(aggregateColumnState: QueryBuilderAggregateColumnState): Type {
-    return guaranteeNonNullable(
-      aggregateColumnState.projectionColumnState.getReturnType(),
-    );
-  }
-}
+import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
 
 export class QueryBuilderAggregateColumnState {
   readonly uuid = uuid();

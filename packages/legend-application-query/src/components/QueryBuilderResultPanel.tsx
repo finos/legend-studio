@@ -72,11 +72,11 @@ import {
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from '../stores/fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from '../stores/fetch-structure/projection/post-filter/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 
 const QueryBuilderResultContextMenu = observer(
