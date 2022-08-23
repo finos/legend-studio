@@ -4,10 +4,12 @@ Class org::legend::Person
   name: String[0..1];
 }
 
+
 ###Mapping
 Mapping org::legend::PersonMapping
 (
 )
+
 
 ###Service
 Service org::legend::PersonService
