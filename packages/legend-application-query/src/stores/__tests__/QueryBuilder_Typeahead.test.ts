@@ -37,11 +37,11 @@ import {
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
 import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
 import {
-  buildProjectionColumnTypeAheadQuery,
-  buildPropertyTypeAheadQuery,
+  buildProjectionColumnTypeaheadQuery,
+  buildPropertyTypeaheadQuery,
 } from '../QueryBuilderTypeaheadHelper.js';
 
-type TypeAheadTestCase = [
+type TypeaheadTestCase = [
   string,
   {
     entities: Entity[];
@@ -51,7 +51,7 @@ type TypeAheadTestCase = [
   boolean,
 ];
 
-const cases: TypeAheadTestCase[] = [
+const cases: TypeaheadTestCase[] = [
   [
     'Simple typeahead search on filter',
     {
@@ -85,11 +85,11 @@ describe(integrationTest('Query builder type ahead'), () => {
   test.each(cases)(
     '%s',
     async (
-      testName: TypeAheadTestCase[0],
-      context: TypeAheadTestCase[1],
-      lambda: TypeAheadTestCase[2],
-      expectedTypeaheadLambda: TypeAheadTestCase[3],
-      testPostFilter: TypeAheadTestCase[4],
+      testName: TypeaheadTestCase[0],
+      context: TypeaheadTestCase[1],
+      lambda: TypeaheadTestCase[2],
+      expectedTypeaheadLambda: TypeaheadTestCase[3],
+      testPostFilter: TypeaheadTestCase[4],
     ) => {
       const { entities } = context;
       const queryBuilderState = await TEST_setUpQueryBuilderState(
@@ -103,7 +103,7 @@ describe(integrationTest('Query builder type ahead'), () => {
           queryBuilderState.postFilterState.getRootNode(),
           QueryBuilderPostFilterTreeConditionNodeData,
         );
-        typeaheadQueryState = buildProjectionColumnTypeAheadQuery(
+        typeaheadQueryState = buildProjectionColumnTypeaheadQuery(
           queryBuilderState,
           postFilterNode.condition.columnState,
           postFilterNode.condition.value,
@@ -113,7 +113,7 @@ describe(integrationTest('Query builder type ahead'), () => {
           queryBuilderState.filterState.getRootNode(),
           QueryBuilderFilterTreeConditionNodeData,
         );
-        typeaheadQueryState = buildPropertyTypeAheadQuery(
+        typeaheadQueryState = buildPropertyTypeaheadQuery(
           queryBuilderState,
           filterNode.condition.propertyExpressionState.propertyExpression,
           filterNode.condition.value,
