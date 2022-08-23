@@ -27,6 +27,10 @@ Service org::legend::PersonService
       ];
     }#;
   }
+  testSuites:
+  [
+
+  ]
   test: Single
   {
     data: 'test';
@@ -56,17 +60,22 @@ MasterRecordDefinition org::legend::PersonMasterRecord
   recordSources:
   [
     {
-      id: 'test-source-id';
+      createBlockedException: false;
+      createPermitted: true;
       description: 'Test Source';
-      status: Development;
-      parseService: org::legend::PersonService;
-      transformService: org::legend::PersonService;
+      id: 'test-source-id';
       partitions:
       [
         {
           id: 'test-partition-1';
+          tags: [];
         }
       ]
+      parseService: org::legend::PersonService;
+      sequentialData: true;
+      stagedLoad: false;
+      status: Development;
+      transformService: org::legend::PersonService;
     }
   ]
 }
