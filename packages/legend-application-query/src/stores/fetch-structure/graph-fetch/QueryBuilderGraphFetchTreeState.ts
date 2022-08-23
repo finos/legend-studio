@@ -15,7 +15,7 @@
  */
 
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
-import { makeAutoObservable, action } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import {
   PackageableElementExplicitReference,
   RootGraphFetchTree,
@@ -41,8 +41,9 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
   constructor(queryBuilderState: QueryBuilderState) {
     super(queryBuilderState);
 
-    makeAutoObservable(this, {
-      queryBuilderState: false,
+    makeObservable(this, {
+      treeData: observable,
+      isChecked: observable,
       setGraphFetchTree: action,
       setChecked: action,
     });
@@ -58,6 +59,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     this.isChecked = val;
   }
 
+  // TODO-BEFORE-PR: consider removing this
   initialize(tree?: RootGraphFetchTree): void {
     if (tree) {
       this.setGraphFetchTree(buildGraphFetchTreeData(tree));

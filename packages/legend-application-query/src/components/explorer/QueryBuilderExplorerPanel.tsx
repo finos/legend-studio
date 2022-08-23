@@ -396,11 +396,9 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const previewData = (): void => {
       if (node instanceof QueryBuilderExplorerTreePropertyNodeData) {
-        flowResult(
-          queryBuilderState.fetchStructureState.projectionState.previewData(
-            node,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
+        flowResult(explorerState.previewData(node)).catch(
+          applicationStore.alertUnhandledError,
+        );
       }
     };
 

@@ -17,16 +17,14 @@
 import {
   action,
   flowResult,
-  makeAutoObservable,
   makeObservable,
   observable,
   flow,
+  computed,
 } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
-  assertType,
-  UnsupportedOperationError,
   assertErrorThrown,
   changeEntry,
   guaranteeType,
@@ -51,12 +49,10 @@ import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
   type AbstractPropertyExpression,
   type CompilationError,
-  type ExecutionResult,
   type Type,
   type VariableExpression,
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
-  TdsExecutionResult,
   PRIMITIVE_TYPE,
   extractSourceInformationCoordinates,
   buildSourceInformationSourceId,
@@ -76,11 +72,6 @@ import {
 import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
-import {
-  type QueryBuilderPreviewData,
-  buildNumericPreviewDataQuery,
-  buildNonNumericPreviewDataQuery,
-} from '../../QueryBuilderPreviewDataHelper.js';
 import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
@@ -364,12 +355,17 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
   constructor(queryBuilderState: QueryBuilderState) {
     super(queryBuilderState);
 
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      removeColumn: action,
+    makeObservable(this, {
+      columns: observable,
+      aggregationState: observable,
+      isConvertDerivationProjectionObjects: observable,
+      derivations: computed,
+      hasParserError: computed,
+      validationIssues: computed,
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
+      convertDerivationProjectionObjects: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -377,6 +373,34 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       this,
       queryBuilderState.aggregationOperators,
     );
+  }
+
+  get derivations(): QueryBuilderDerivationProjectionColumnState[] {
+    return this.columns.filter(
+      filterByType(QueryBuilderDerivationProjectionColumnState),
+    );
+  }
+
+  get hasParserError(): boolean {
+    return this.derivations.some(
+      (derivation) => derivation.derivationLambdaEditorState.parserError,
+    );
+  }
+
+  get validationIssues(): string[] | undefined {
+    const hasDuplicatedProjectionColumns = this.columns.some(
+      (column) =>
+        this.columns.filter((c) => c.columnName === column.columnName).length >
+        1,
+    );
+    if (hasDuplicatedProjectionColumns) {
+      return ['Query has duplicated projection columns'];
+    }
+    const hasNoProjectionColumns = this.columns.length === 0;
+    if (hasNoProjectionColumns) {
+      return ['Query has no projection columns'];
+    }
+    return undefined;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -618,164 +642,11 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     return false;
   }
 
-  get derivations(): QueryBuilderDerivationProjectionColumnState[] {
-    return this.columns.filter(
-      filterByType(QueryBuilderDerivationProjectionColumnState),
-    );
-  }
-
-  get hasParserError(): boolean {
-    return this.derivations.some(
-      (derivation) => derivation.derivationLambdaEditorState.parserError,
-    );
-  }
-
   clearCompilationError(): void {
     this.derivations.forEach((derivationProjectionColumnState) =>
       derivationProjectionColumnState.derivationLambdaEditorState.setCompilationError(
         undefined,
       ),
     );
-  }
-
-  *previewData(
-    node: QueryBuilderExplorerTreePropertyNodeData,
-  ): GeneratorFn<void> {
-    const runtime = this.queryBuilderState.querySetupState.runtimeValue;
-    if (!runtime) {
-      this.queryBuilderState.applicationStore.notifyWarning(
-        `Can't preview data for property '${node.property.name}': runtime is not specified`,
-      );
-      return;
-    }
-    if (
-      !node.mappingData.mapped ||
-      !this.queryBuilderState.querySetupState._class ||
-      !this.queryBuilderState.querySetupState.mapping
-    ) {
-      return;
-    }
-    if (
-      this.queryBuilderState.explorerState.previewDataState
-        .isGeneratingPreviewData
-    ) {
-      this.queryBuilderState.applicationStore.notifyWarning(
-        `Can't preview data for property '${node.property.name}': another preview request is being executed`,
-      );
-      return;
-    }
-    this.queryBuilderState.explorerState.previewDataState.setPropertyName(
-      node.property.name,
-    );
-    this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
-      true,
-    );
-    const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
-      this.queryBuilderState.explorerState.nonNullableTreeData,
-      node,
-      this.queryBuilderState.graphManagerState.graph,
-      this.queryBuilderState.explorerState.propertySearchPanelState
-        .allMappedPropertyNodes,
-    );
-    const propertyType = node.property.genericType.value.rawType;
-    try {
-      switch (propertyType.path) {
-        case PRIMITIVE_TYPE.NUMBER:
-        case PRIMITIVE_TYPE.INTEGER:
-        case PRIMITIVE_TYPE.DECIMAL:
-        case PRIMITIVE_TYPE.FLOAT: {
-          const previewResult =
-            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildNumericPreviewDataQuery(
-                this.queryBuilderState,
-                propertyExpression,
-              ),
-              this.queryBuilderState.querySetupState.mapping,
-              runtime,
-              this.queryBuilderState.graphManagerState.graph,
-            )) as ExecutionResult;
-          assertType(
-            previewResult,
-            TdsExecutionResult,
-            `Unexpected preview data format`,
-          );
-          const previewResultData =
-            previewResult.result as QueryBuilderPreviewData;
-          // transpose the result
-          const transposedPreviewResultData = {
-            columns: ['Aggregation', 'Value'],
-            rows: previewResultData.columns.map((column, idx) => ({
-              values: [
-                column,
-                guaranteeNonNullable(previewResultData.rows[0]).values[
-                  idx
-                ] as string,
-              ],
-            })),
-          };
-          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
-            transposedPreviewResultData,
-          );
-          break;
-        }
-        case PRIMITIVE_TYPE.BOOLEAN:
-        case PRIMITIVE_TYPE.STRING:
-        case PRIMITIVE_TYPE.DATE:
-        case PRIMITIVE_TYPE.STRICTDATE:
-        case PRIMITIVE_TYPE.DATETIME: {
-          const previewResult =
-            (yield this.queryBuilderState.graphManagerState.graphManager.executeMapping(
-              buildNonNumericPreviewDataQuery(
-                this.queryBuilderState,
-                propertyExpression,
-              ),
-              this.queryBuilderState.querySetupState.mapping,
-              runtime,
-              this.queryBuilderState.graphManagerState.graph,
-            )) as ExecutionResult;
-          assertType(
-            previewResult,
-            TdsExecutionResult,
-            `Unexpected preview data format`,
-          );
-          this.queryBuilderState.explorerState.previewDataState.setPreviewData(
-            previewResult.result as QueryBuilderPreviewData,
-          );
-          break;
-        }
-        default:
-          throw new UnsupportedOperationError(
-            `No preview support for property of type '${propertyType.path}'`,
-          );
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.queryBuilderState.applicationStore.notifyWarning(
-        `Can't preview data for property '${node.property.name}'. Error: ${error.message}`,
-      );
-      this.queryBuilderState.explorerState.previewDataState.setPreviewData(
-        undefined,
-      );
-    } finally {
-      this.queryBuilderState.explorerState.previewDataState.setIsGeneratingPreviewData(
-        false,
-      );
-    }
-  }
-
-  get validationIssues(): string[] | undefined {
-    const hasDuplicatedProjectionColumns = this.columns.some(
-      (column) =>
-        this.columns.filter((c) => c.columnName === column.columnName).length >
-        1,
-    );
-    if (hasDuplicatedProjectionColumns) {
-      return ['Query has duplicated projection columns'];
-    }
-    const hasNoProjectionColumns = this.columns.length === 0;
-    if (hasNoProjectionColumns) {
-      return ['Query has no projection columns'];
-    }
-    return undefined;
   }
 }
