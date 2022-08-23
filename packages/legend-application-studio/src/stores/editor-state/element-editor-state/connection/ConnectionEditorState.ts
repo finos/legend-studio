@@ -52,6 +52,9 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
   isStubbed_PackageableElement,
+  type PostProcessor,
+  type Mapper,
+  type TableNameMapper,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -74,6 +77,7 @@ export abstract class ConnectionValueState {
 export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
+  POST_PROCESSORS = 'POST PROCESSORS',
 }
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
@@ -102,7 +106,13 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
+  selectedSvpPostProcessor: PostProcessor | undefined;
 
+  //svpmob todo: postprocessor attach hmm to state and declare  in connection or otherwise
+
+  selectedSvpMapper: Mapper | undefined;
+
+  // svp2
   constructor(
     editorStore: EditorStore,
     connection: RelationalDatabaseConnection,
@@ -112,7 +122,13 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
+      selectedSvpPostProcessor: observable,
+      selectedSvpMapper: observable,
+      setSelectedPostProcessor: action,
+      setSelectedSvpMapper: action,
     });
+    console.log('info-rendering relational database connection value state');
+
     this.connection = connection;
     this.databaseBuilderState = new DatabaseBuilderState(
       editorStore,
@@ -125,6 +141,20 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       ? createValidationError(['Connection database cannot be empty'])
       : undefined;
   }
+
+  setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
+    this.selectedSvpPostProcessor = val;
+  };
+
+  getSelectedSvpTableMapper(): TableNameMapper {
+    return this.selectedSvpMapper as TableNameMapper;
+  }
+  setSelectedSvpMapper = (val: Mapper | undefined): void => {
+    console.log('selecting da post');
+    this.selectedSvpMapper = val;
+    console.log(val);
+    console.log('its selected now??');
+  };
 
   setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;
@@ -172,6 +202,16 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     );
   }
 
+  changeMapperSpec(type: string | undefined): void {
+    if (this.selectedSvpMapper) {
+      // const observerContext= this.editorStore.changeDetectionState.observerContext;
+      // relationalDbConnection_setMapperSpecification(
+      //   this.connection,
+      //   this.selectedSvpMapper,
+      //   observerContext,
+      // );
+    }
+  }
   changeDatasourceSpec(type: string): void {
     const observerContext =
       this.editorStore.changeDetectionState.observerContext;
@@ -414,7 +454,7 @@ export class ConnectionEditorState {
     this.connection = connection;
     this.connectionValueState = this.buildConnectionValueEditorState();
   }
-
+  // svpmob
   buildConnectionValueEditorState(): ConnectionValueState {
     const connection = this.connection;
     if (connection instanceof JsonModelConnection) {
@@ -458,6 +498,8 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       reprocess: action,
     });
 
+    console.log('info-rendering packageable conection eddtiro state');
+
     this.connectionState = new ConnectionEditorState(
       editorStore,
       this.connection.connectionValue,
@@ -480,6 +522,8 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       editorStore,
       newElement,
     );
+    console.log('info-rendering reprocess packageable conection eddtiro state');
+
     return editorState;
   }
 }

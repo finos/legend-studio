@@ -103,6 +103,11 @@ import {
 } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/TableReference.js';
 import type { View } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/View.js';
 import { ViewReference } from '../../../graph/metamodel/pure/packageableElements/store/relational/model/ViewReference.js';
+import {
+  type Mapper,
+  type SchemaNameMapper,
+  TableNameMapper,
+} from '../../../StoreRelational_Exports.js';
 import type { StoreRelational_PureGraphManagerPlugin_Extension } from '../../StoreRelational_PureGraphManagerPlugin_Extension.js';
 import {
   type ObserverContext,
@@ -998,12 +1003,80 @@ export const observe_AuthenticationStrategy = (
   return metamodel;
 };
 
+export const observe_SchemaMapper = skipObserved(
+  (metamodel: SchemaNameMapper): SchemaNameMapper => {
+    makeObservable(metamodel, {
+      from: observable,
+      to: observable,
+    });
+    return metamodel;
+  },
+);
+
+export const observe_TableNameMapper = skipObserved(
+  (metamodel: TableNameMapper): TableNameMapper => {
+    makeObservable(metamodel, {
+      from: observable,
+      to: observable,
+      schema: observable,
+    });
+    observe_SchemaMapper(metamodel.schema);
+    return metamodel;
+  },
+);
+
+// export const observe_RelationalDataTable = skipObserved(
+//   (metamodel: RelationalCSVDataTable): RelationalCSVDataTable => {
+//     makeObservable(metamodel, {
+//       values: observable,
+//       table: observable,
+//       schema: observable,
+//       hashCode: computed,
+//     });
+//     return metamodel;
+//   },
+// );
+
+// (metamodel: RelationalCSVData): RelationalCSVData => {
+//   makeObservable(metamodel, {
+//     tables: observable,
+//     hashCode: computed,
+//   });
+//   metamodel.tables.forEach(observe_RelationalDataTable);
+//   return metamodel;
+// },
+
+//svpmobx
+export const observe_Mapper = skipObserved(
+  (metamodel: Mapper): Mapper =>
+    makeObservable(metamodel, {
+      from: observable,
+      to: observable,
+    }),
+);
+
+export const observe_PostProcessorMapper = (
+  metamodel: MapperPostProcessor,
+): PostProcessor => {
+  makeObservable(metamodel, {
+    mappers: observable,
+  });
+
+  console.log('we are observing the post processor mapper svp');
+  return metamodel;
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
   if (metamodel instanceof MapperPostProcessor) {
     // TODO
+    makeObservable(metamodel, {
+      mappers: observable,
+    });
+
+    console.log('we are observing the post processor mapper svp');
     return metamodel;
   }
   const extraObservers = context.plugins.flatMap(
@@ -1048,9 +1121,19 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
 
     observe_DatasourceSpecification(metamodel.datasourceSpecification, context);
     observe_AuthenticationStrategy(metamodel.authenticationStrategy, context);
-    metamodel.postProcessors.forEach((postProcessor) =>
-      observe_PostProcessor(postProcessor, context),
-    );
+    metamodel.postProcessors.forEach((postProcessor) => {
+      observe_PostProcessor(postProcessor, context);
+      if (postProcessor instanceof MapperPostProcessor) {
+        console.log('------------------true--------------');
+        postProcessor.mappers.forEach((mapper) => {
+          observe_Mapper(mapper);
+          if (mapper instanceof TableNameMapper) {
+            console.log('-----------table mapper--------------------');
+            observe_TableNameMapper(mapper);
+          }
+        });
+      }
+    });
 
     return metamodel;
   },
