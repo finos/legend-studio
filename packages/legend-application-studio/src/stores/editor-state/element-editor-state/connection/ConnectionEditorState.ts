@@ -52,6 +52,10 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
   isStubbed_PackageableElement,
+  type PostProcessor,
+  type Mapper,
+  type SchemaNameMapper,
+  TableNameMapper,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -74,6 +78,7 @@ export abstract class ConnectionValueState {
 export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
+  POST_PROCESSORS = 'POST PROCESSORS',
 }
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
@@ -102,6 +107,9 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
+  selectedPostProcessor: PostProcessor | undefined;
+  selectedMapper: Mapper | undefined;
+  selectedSchema: SchemaNameMapper | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -112,7 +120,14 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
+      selectedPostProcessor: observable,
+      selectedMapper: observable,
+      selectedSchema: observable,
+      setSelectedPostProcessor: action,
+      setSelectedMapper: action,
+      setSelectedSchema: action,
     });
+
     this.connection = connection;
     this.databaseBuilderState = new DatabaseBuilderState(
       editorStore,
@@ -125,6 +140,24 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       ? createValidationError(['Connection database cannot be empty'])
       : undefined;
   }
+
+  setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
+    this.selectedPostProcessor = val;
+    this.setSelectedMapper(undefined);
+    this.setSelectedSchema(undefined);
+  };
+
+  setSelectedSchema = (val: SchemaNameMapper | undefined): void => {
+    //tofix change not detected first, have to change mapper and then changes afterwards detected
+    this.selectedSchema = val;
+  };
+
+  setSelectedMapper = (val: Mapper | undefined): void => {
+    this.selectedMapper = val;
+    if (!(this.selectedMapper instanceof TableNameMapper)) {
+      this.setSelectedSchema(undefined);
+    }
+  };
 
   setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;
@@ -414,7 +447,6 @@ export class ConnectionEditorState {
     this.connection = connection;
     this.connectionValueState = this.buildConnectionValueEditorState();
   }
-
   buildConnectionValueEditorState(): ConnectionValueState {
     const connection = this.connection;
     if (connection instanceof JsonModelConnection) {
@@ -480,6 +512,7 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       editorStore,
       newElement,
     );
+
     return editorState;
   }
 }

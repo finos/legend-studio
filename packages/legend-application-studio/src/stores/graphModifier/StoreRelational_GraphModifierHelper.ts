@@ -42,6 +42,8 @@ import {
   type ObserverContext,
   type EnumerationMappingReference,
   type TableAlias,
+  type Mapper,
+  type PostProcessor,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
@@ -49,8 +51,15 @@ import {
   observe_PropertyMapping,
   observe_EnumerationMappingReference,
   observe_TableAlias,
+  SchemaNameMapper,
+  MapperPostProcessor,
+  TableNameMapper,
+  observe_TableNameMapper,
+  observe_Mapper,
 } from '@finos/legend-graph';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
+import type { RelationalDatabaseConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
 
 // --------------------------------------------- DB Connection -------------------------------------
 
@@ -419,5 +428,99 @@ export const rootRelationalSetImp_setPropertyMappings = action(
     v.propertyMappings = value.map((pm) =>
       observe_PropertyMapping(pm, observeContext),
     );
+  },
+);
+
+// --------------------------------------------- Post Processor -------------------------------------
+
+export const postprocessor_addPostProcessor = action(
+  (connectionValueState: RelationalDatabaseConnectionValueState): void => {
+    addUniqueEntry(
+      connectionValueState.connection.postProcessors,
+      new MapperPostProcessor(),
+    );
+  },
+);
+
+export const mapper_addSchemaMapper = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    postprocessor: PostProcessor,
+  ): void => {
+    addUniqueEntry(
+      (postprocessor as MapperPostProcessor).mappers,
+      observe_Mapper(new SchemaNameMapper('', '')),
+    );
+    connectionValueState.setSelectedMapper(
+      (postprocessor as MapperPostProcessor).mappers.at(-1),
+    );
+    connectionValueState.setSelectedSchema(undefined);
+  },
+);
+
+export const mapper_addTableMapper = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    postprocessor: PostProcessor,
+  ): void => {
+    addUniqueEntry(
+      (postprocessor as MapperPostProcessor).mappers,
+      observe_TableNameMapper(
+        new TableNameMapper('', '', new SchemaNameMapper('', '')),
+      ),
+    );
+    connectionValueState.setSelectedMapper(
+      (postprocessor as MapperPostProcessor).mappers.at(-1),
+    );
+    connectionValueState.setSelectedSchema(
+      ((postprocessor as MapperPostProcessor).mappers.at(-1) as TableNameMapper)
+        .schema,
+    );
+  },
+);
+
+export const postProcessor_setMapperFrom = action(
+  (mapper: Mapper, val: string): void => {
+    mapper.from = val;
+  },
+);
+
+export const postProcessor_setMapperTo = action(
+  (mapper: Mapper, val: string): void => {
+    mapper.to = val;
+  },
+);
+
+export const postProcessor_setMapperSchemaTo = action(
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.to = val;
+  },
+);
+
+export const postProcessor_setMapperSchemaFrom = action(
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.from = val;
+  },
+);
+
+export const postProcessor_deleteMapper = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    val: Mapper,
+  ): void => {
+    deleteEntry(
+      (connectionValueState.selectedPostProcessor as MapperPostProcessor)
+        .mappers,
+      val,
+    );
+  },
+);
+
+export const postProcessor_deletePostProcessor = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    val: PostProcessor,
+  ): void => {
+    deleteEntry(connectionValueState.connection.postProcessors, val);
   },
 );
