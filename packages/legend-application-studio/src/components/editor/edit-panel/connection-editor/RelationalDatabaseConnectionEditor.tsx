@@ -136,7 +136,7 @@ import {
   postProcessor_deletePostProcessor,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
-import { UnsupportedPostProcessorEditor } from './post-processor-editor/UnsupportedPostProcessorEditor.js';
+import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -1159,8 +1159,12 @@ const renderEditorPostProcessor = (
         return editor;
       }
     }
-    //return display for when there are no possible supports
-    return <UnsupportedPostProcessorEditor postprocessor={postprocessor} />;
+    return (
+      <UnsupportedEditorPanel
+        isReadOnly={true}
+        text={`Can't display post processor in form mode`}
+      ></UnsupportedEditorPanel>
+    );
   }
 };
 

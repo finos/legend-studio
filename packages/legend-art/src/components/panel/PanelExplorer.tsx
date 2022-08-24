@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { prettyCONSTName } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 
 export const PanelExplorer: React.FC<{
