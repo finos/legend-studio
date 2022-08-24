@@ -22,13 +22,13 @@ import {
   PlusIcon,
   ResizablePanelSplitter,
   BlankPanelPlaceholder,
-  clsx,
   PanelTextEditor,
   PanelForm,
   ContextMenu,
   MenuContent,
   MenuContentItem,
   DropdownMenu,
+  PanelExplorer,
 } from '@finos/legend-art';
 import {
   type Mapper,
@@ -49,64 +49,6 @@ import {
   postProcessor_setMapperTo,
 } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
-export const MapperEditor = observer(
-  (props: {
-    connectionValueState: RelationalDatabaseConnectionValueState;
-    mapper: Mapper;
-    title: string;
-    selectedMapper: Mapper | undefined;
-    validationErrorMessage?: string | undefined;
-  }) => {
-    const {
-      connectionValueState,
-      mapper,
-      title,
-      selectedMapper,
-      validationErrorMessage,
-    } = props;
-
-    const setSelectedMapper = (val: Mapper): void => {
-      connectionValueState.setSelectedMapper(val);
-
-      if (val instanceof TableNameMapper) {
-        connectionValueState.setSelectedSchema(val.schema);
-      }
-    };
-    const selectMapper = (): void => setSelectedMapper(mapper);
-
-    return (
-      <div
-        className={clsx(
-          'panel__explorer__item',
-          {
-            '': !(mapper === selectedMapper),
-          },
-          {
-            'panel__explorer__item--selected': mapper === selectedMapper,
-          },
-          {
-            'panel__explorer__item--with-validation--error': Boolean(
-              validationErrorMessage,
-            ),
-          },
-          {
-            'panel__explorer__item--selected--with-validation--error':
-              Boolean(validationErrorMessage) && mapper === selectedMapper,
-          },
-        )}
-        onClick={selectMapper}
-      >
-        <div
-          className="panel__explorer__item__label"
-          title={validationErrorMessage}
-        >
-          {title}
-        </div>
-      </div>
-    );
-  },
-);
-
 export const MapperPostProcessorEditor = observer(
   (props: {
     postprocessor: PostProcessor;
@@ -121,12 +63,33 @@ export const MapperPostProcessorEditor = observer(
         ? selectedMapper.schema
         : undefined;
 
+    const selectMapper = (val: Mapper): void => {
+      connectionValueState.setSelectedMapper(val);
+      if (val instanceof TableNameMapper) {
+        connectionValueState.setSelectedSchema(val.schema);
+      }
+    };
+
     const addSchemaMapper = (): void => {
-      mapper_addSchemaMapper(connectionValueState, postprocessor);
+      mapper_addSchemaMapper(postprocessor);
+      connectionValueState.setSelectedMapper(
+        (postprocessor as MapperPostProcessor).mappers.at(-1),
+      );
+      connectionValueState.setSelectedSchema(undefined);
     };
 
     const addTableMapper = (): void => {
-      mapper_addTableMapper(connectionValueState, postprocessor);
+      mapper_addTableMapper(postprocessor);
+      connectionValueState.setSelectedMapper(
+        (postprocessor as MapperPostProcessor).mappers.at(-1),
+      );
+      connectionValueState.setSelectedSchema(
+        (
+          (postprocessor as MapperPostProcessor).mappers.at(
+            -1,
+          ) as TableNameMapper
+        ).schema,
+      );
     };
 
     const deleteMapper =
@@ -212,21 +175,22 @@ export const MapperPostProcessorEditor = observer(
                       }
                       menuProps={{ elevation: 7 }}
                     >
-                      <MapperEditor
-                        connectionValueState={connectionValueState}
+                      <PanelExplorer
                         key={mapper._UUID}
-                        mapper={mapper}
-                        selectedMapper={connectionValueState.selectedMapper}
-                        validationErrorMessage={
-                          isMapperDuplicated(mapper)
-                            ? 'Mappers have the same values'
-                            : undefined
-                        }
                         title={
                           mapper instanceof TableNameMapper
                             ? 'Table Mapper'
                             : 'Schema Mapper'
                         }
+                        validationErrorMessage={
+                          isMapperDuplicated(mapper)
+                            ? 'Mappers have the same values'
+                            : undefined
+                        }
+                        isSelected={
+                          mapper === connectionValueState.selectedMapper
+                        }
+                        selectOnClick={() => selectMapper(mapper)}
                       />
                     </ContextMenu>
                   ))}

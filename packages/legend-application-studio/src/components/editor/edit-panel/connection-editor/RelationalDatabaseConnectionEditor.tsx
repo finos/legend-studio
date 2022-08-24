@@ -41,6 +41,7 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
+  PanelExplorer,
 } from '@finos/legend-art';
 import {
   capitalize,
@@ -133,7 +134,6 @@ import {
   postprocessor_addPostProcessor,
   postProcessor_deletePostProcessor,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
-import { PostProcessorEditor } from './PostProcessorEditor.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 
 /**
@@ -1140,8 +1140,7 @@ const PostProcessorRelationalConnectionEditor = observer(
 
     const postprocessors = connection.postProcessors;
 
-    const firstSelectedPostProcessor =
-      connectionValueState.selectedPostProcessor;
+    const selectedPostProcessor = connectionValueState.selectedPostProcessor;
 
     const deletePostProcessor =
       (postprocessor: PostProcessor): (() => void) =>
@@ -1163,6 +1162,10 @@ const PostProcessorRelationalConnectionEditor = observer(
       connectionValueState.setSelectedMapper(undefined);
       connectionValueState.setSelectedSchema(undefined);
     };
+
+    const selectPostProcessor = (postprocessor: PostProcessor): void =>
+      connectionValueState.setSelectedPostProcessor(postprocessor);
+
     return (
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
@@ -1196,14 +1199,13 @@ const PostProcessorRelationalConnectionEditor = observer(
                           }
                           menuProps={{ elevation: 7 }}
                         >
-                          <PostProcessorEditor
+                          <PanelExplorer
                             key={postprocessor._UUID}
-                            connectionValueState={connectionValueState}
-                            postprocessor={postprocessor}
-                            firstSelectedPostProcessor={
-                              firstSelectedPostProcessor
-                            }
                             title={`Post Processor ${idx + 1}`}
+                            selectOnClick={() =>
+                              selectPostProcessor(postprocessor)
+                            }
+                            isSelected={postprocessor === selectedPostProcessor}
                           />
                         </ContextMenu>
                       ))}
@@ -1213,13 +1215,13 @@ const PostProcessorRelationalConnectionEditor = observer(
                 <ResizablePanelSplitter />
 
                 <ResizablePanel>
-                  {firstSelectedPostProcessor && (
+                  {selectedPostProcessor && (
                     <MapperPostProcessorEditor
                       connectionValueState={connectionValueState}
-                      postprocessor={firstSelectedPostProcessor}
+                      postprocessor={selectedPostProcessor}
                     />
                   )}
-                  {!firstSelectedPostProcessor && !postprocessors.length && (
+                  {!selectedPostProcessor && !postprocessors.length && (
                     <BlankPanelPlaceholder
                       text="Add a post processor"
                       onClick={addPostProcessor}
@@ -1227,7 +1229,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                       tooltipText="Add a post processor"
                     />
                   )}
-                  {!firstSelectedPostProcessor && postprocessors.length && (
+                  {!selectedPostProcessor && postprocessors.length && (
                     <BlankPanelPlaceholder
                       text=""
                       tooltipText=""

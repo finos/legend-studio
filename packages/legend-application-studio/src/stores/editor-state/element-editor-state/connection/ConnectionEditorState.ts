@@ -148,7 +148,6 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   };
 
   setSelectedSchema = (val: SchemaNameMapper | undefined): void => {
-    //tofix change not detected first, have to change mapper and then changes afterwards detected
     this.selectedSchema = val;
   };
 

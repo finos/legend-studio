@@ -1003,15 +1003,6 @@ export const observe_AuthenticationStrategy = (
   return metamodel;
 };
 
-export const observe_Mapper = skipObserved(
-  (metamodel: Mapper): Mapper =>
-    makeObservable(metamodel, {
-      from: observable,
-      to: observable,
-      hashCode: computed,
-    }),
-);
-
 const observe_Abstract_Mapper = (metamodel: Mapper): void => {
   makeObservable(metamodel, {
     from: observable,
@@ -1065,7 +1056,7 @@ export const observe_PostProcessor = (
   return metamodel;
 };
 
-export const observe_Mapper_Thoughts = (
+export const observe_Mapper = (
   metamodel: Mapper,
   context: ObserverContext,
 ): Mapper => {
@@ -1109,7 +1100,7 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
       observe_PostProcessor(postProcessor, context);
       if (postProcessor instanceof MapperPostProcessor) {
         postProcessor.mappers.forEach((mapper) => {
-          observe_Mapper_Thoughts(mapper, context);
+          observe_Mapper(mapper, context);
         });
       }
     });

@@ -55,7 +55,7 @@ import {
   MapperPostProcessor,
   TableNameMapper,
   observe_TableNameMapper,
-  observe_Mapper,
+  observe_SchemaNameMapper,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -443,38 +443,21 @@ export const postprocessor_addPostProcessor = action(
 );
 
 export const mapper_addSchemaMapper = action(
-  (
-    connectionValueState: RelationalDatabaseConnectionValueState,
-    postprocessor: PostProcessor,
-  ): void => {
+  (postprocessor: PostProcessor): void => {
     addUniqueEntry(
       (postprocessor as MapperPostProcessor).mappers,
-      observe_Mapper(new SchemaNameMapper('', '')),
+      observe_SchemaNameMapper(new SchemaNameMapper('', '')),
     );
-    connectionValueState.setSelectedMapper(
-      (postprocessor as MapperPostProcessor).mappers.at(-1),
-    );
-    connectionValueState.setSelectedSchema(undefined);
   },
 );
 
 export const mapper_addTableMapper = action(
-  (
-    connectionValueState: RelationalDatabaseConnectionValueState,
-    postprocessor: PostProcessor,
-  ): void => {
+  (postprocessor: PostProcessor): void => {
     addUniqueEntry(
       (postprocessor as MapperPostProcessor).mappers,
       observe_TableNameMapper(
         new TableNameMapper('', '', new SchemaNameMapper('', '')),
       ),
-    );
-    connectionValueState.setSelectedMapper(
-      (postprocessor as MapperPostProcessor).mappers.at(-1),
-    );
-    connectionValueState.setSelectedSchema(
-      ((postprocessor as MapperPostProcessor).mappers.at(-1) as TableNameMapper)
-        .schema,
     );
   },
 );
