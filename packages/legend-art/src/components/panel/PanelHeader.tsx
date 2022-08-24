@@ -47,7 +47,7 @@ export const PanelHeader: React.FC<{
   return (
     <div className="panel__header">
       <div className="panel__header__title">
-        <div className="panel__header__title__label">{title}</div>
+        <div className="panel__header__title__label">{title.toLowerCase()}</div>
       </div>
       {children && <div className="panel__header__actions">{children}</div>}
     </div>
