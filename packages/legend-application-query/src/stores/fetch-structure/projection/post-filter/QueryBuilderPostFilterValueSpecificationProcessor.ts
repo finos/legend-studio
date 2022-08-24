@@ -49,12 +49,12 @@ import {
   QueryBuilderDerivationProjectionColumnState,
 } from '../QueryBuilderProjectionState.js';
 
-export const findTdsColumnState = (
+const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
   postFilterState: QueryBuilderPostFilterState,
 ): QueryBuilderProjectionColumnState | QueryBuilderAggregateColumnState => {
   const fetchStructureState =
-    postFilterState.queryBuilderState.fetchStructureState;
+    postFilterState.projectionState.fetchStructureState;
   const properyExpressionName = propertyExpression.func.name;
   assertTrue(
     Object.values(TDS_COLUMN_GETTER).includes(
@@ -88,7 +88,8 @@ export const findTdsColumnState = (
     if (columnState instanceof QueryBuilderDerivationProjectionColumnState) {
       const type = getTypeFromDerivedProperty(
         tdsColumnGetter,
-        postFilterState.queryBuilderState.graphManagerState.graph,
+        postFilterState.projectionState.queryBuilderState.graphManagerState
+          .graph,
       );
       if (type) {
         columnState.setReturnType(type);
@@ -120,7 +121,7 @@ export const buildPostFilterConditionState = (
     expression instanceof AbstractPropertyExpression &&
     expression.func.name === tdsColumnGetter
   ) {
-    const columnState = findTdsColumnState(expression, postFilterState);
+    const columnState = findProjectionColumnState(expression, postFilterState);
     postConditionState = new PostFilterConditionState(
       postFilterState,
       columnState,
@@ -149,7 +150,7 @@ export const buildPostFilterConditionState = (
         operatorFunctionFullPath,
       )}() expression: expects property expression in lambda body`,
     );
-    const columnState = findTdsColumnState(
+    const columnState = findProjectionColumnState(
       tdsColumnPropertyExpression,
       postFilterState,
     );
@@ -239,7 +240,7 @@ export const processPostFilterLambda = (
   postFilterState: QueryBuilderPostFilterState,
 ): void => {
   const fetchStructureState =
-    postFilterState.queryBuilderState.fetchStructureState;
+    postFilterState.projectionState.fetchStructureState;
   assertTrue(
     fetchStructureState.fetchStructureMode === FETCH_STRUCTURE_MODE.PROJECTION,
     `Can't process post-filter lambda: post-filter lambda must use projection fetch structure`,

@@ -79,7 +79,7 @@ import {
 } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { QueryBuilderAggregationState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
-import { processPostFilterLambda } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterProcessor.js';
+import { processPostFilterLambda } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationProcessor.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { LambdaParameterState } from '@finos/legend-application';
@@ -613,7 +613,9 @@ export class QueryBuilderLambdaProcessor
           ),
           `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
         );
-        const postFilterState = this.queryBuilderState.postFilterState;
+        const postFilterState =
+          this.queryBuilderState.fetchStructureState.projectionState
+            .postFilterState;
         const postFilterLambda = valueSpecification.parametersValues[1];
         assertType(
           postFilterLambda,
@@ -621,7 +623,9 @@ export class QueryBuilderLambdaProcessor
           `Can't process post-filter expression: expects argument #1 to be a lambda function`,
         );
         processPostFilterLambda(postFilterLambda, postFilterState);
-        this.queryBuilderState.setShowPostFilterPanel(true);
+        this.queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+          true,
+        );
         postFilterState.simplifyTree();
         return;
       } else {
@@ -733,7 +737,9 @@ export class QueryBuilderLambdaProcessor
       const takeValue = getNullableNumberValueFromValueSpec(
         guaranteeNonNullable(valueSpecification.parametersValues[1]),
       );
-      this.queryBuilderState.resultSetModifierState.setLimit(takeValue);
+      this.queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.setLimit(
+        takeValue,
+      );
 
       return;
     } else if (
@@ -769,7 +775,8 @@ export class QueryBuilderLambdaProcessor
         `Can't process distinct() expression: only support distinct() in TDS expression`,
       );
 
-      this.queryBuilderState.resultSetModifierState.distinct = true;
+      this.queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.distinct =
+        true;
 
       return;
     } else if (
@@ -850,7 +857,6 @@ export class QueryBuilderLambdaProcessor
         );
       if (queryBuilderProjectionColumnState) {
         const sortColumnState = new SortColumnState(
-          this.queryBuilderState,
           queryBuilderProjectionColumnState,
         );
         sortColumnState.sortType = matchFunctionName(
@@ -859,7 +865,7 @@ export class QueryBuilderLambdaProcessor
         )
           ? COLUMN_SORT_TYPE.ASC
           : COLUMN_SORT_TYPE.DESC;
-        this.queryBuilderState.resultSetModifierState.addSortColumn(
+        this.queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.addSortColumn(
           sortColumnState,
         );
       }

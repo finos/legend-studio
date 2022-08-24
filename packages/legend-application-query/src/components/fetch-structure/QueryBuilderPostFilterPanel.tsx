@@ -110,7 +110,8 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
     }
   >(function QueryBuilderPostFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
     const createCondition = (): void => {
@@ -291,6 +292,7 @@ export const QueryBuilderColumnBadge = observer(
     ) => Promise<void>;
   }) => {
     const { postFilterConditionState, onColumnChange } = props;
+    const applicationStore = useApplicationStore();
     const type = postFilterConditionState.columnState.getReturnType();
     const handleDrop = useCallback(
       (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
@@ -306,17 +308,14 @@ export const QueryBuilderColumnBadge = observer(
         accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item).catch(
-              postFilterConditionState.postFilterState.queryBuilderState
-                .applicationStore.alertUnhandledError,
-            );
+            handleDrop(item).catch(applicationStore.alertUnhandledError);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
-      [handleDrop],
+      [applicationStore, handleDrop],
     );
 
     return (
@@ -368,7 +367,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
   }) => {
     const { node, isDragOver } = props;
     const graph =
-      node.condition.postFilterState.queryBuilderState.graphManagerState.graph;
+      node.condition.postFilterState.projectionState.queryBuilderState
+        .graphManagerState.graph;
     const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
       node.condition.changeOperator(val);
@@ -564,7 +564,8 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const isExpandable =
       node instanceof QueryBuilderPostFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
@@ -804,7 +805,8 @@ const QueryBuilderPostFilterTreeNodeView = observer(
 const QueryBuilderPostFilterTree = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const rootNodes = postFilterState.rootIds.map((rootId) =>
       postFilterState.getNode(rootId),
     );
@@ -844,7 +846,8 @@ export const QueryBuilderPostFilterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const rootNode = postFilterState.getRootNode();
     // actions
     const collapseTree = (): void => {
@@ -955,16 +958,14 @@ export const QueryBuilderPostFilterPanel = observer(
         accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
-            handleDrop(item).catch(
-              queryBuilderState.applicationStore.alertUnhandledError,
-            );
+            handleDrop(item).catch(applicationStore.alertUnhandledError);
           } // prevent drop event propagation to accomondate for nested DnD
         },
         collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
-      [handleDrop],
+      [applicationStore, handleDrop],
     );
     return (
       <div

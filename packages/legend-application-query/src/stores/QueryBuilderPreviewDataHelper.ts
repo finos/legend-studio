@@ -191,15 +191,11 @@ export const buildNonNumericPreviewDataQuery = (
     valueCountProjectionState,
   );
   // result set
-  builderState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
-  const sortValueCount = new SortColumnState(
-    builderState,
-    valueCountProjectionState,
-  );
+  builderState.fetchStructureState.projectionState.resultSetModifierState.limit =
+    PREVIEW_DATA_TAKE_LIMIT;
+  const sortValueCount = new SortColumnState(valueCountProjectionState);
   sortValueCount.sortType = COLUMN_SORT_TYPE.DESC;
-  builderState.resultSetModifierState.sortColumns = [
-    sortValueCount,
-    new SortColumnState(builderState, valueProjectionColState),
-  ];
+  builderState.fetchStructureState.projectionState.resultSetModifierState.sortColumns =
+    [sortValueCount, new SortColumnState(valueProjectionColState)];
   return builderState.resultState.buildExecutionRawLambda();
 };

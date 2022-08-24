@@ -23,7 +23,7 @@ import {
 } from '@finos/legend-graph';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,

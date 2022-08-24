@@ -15,12 +15,15 @@
  */
 
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
 
 export abstract class QueryBuilderFetchStructureImplementationState {
   queryBuilderState: QueryBuilderState;
+  fetchStructureState: QueryBuilderFetchStructureState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     this.queryBuilderState = queryBuilderState;
+    this.fetchStructureState = queryBuilderState.fetchStructureState;
   }
 
   // abstract addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;

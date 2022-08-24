@@ -239,7 +239,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
     const postFilterColumnStates = Array.from(
-      queryBuilderState.postFilterState.nodes.values(),
+      projectionState.postFilterState.nodes.values(),
     )
       .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
       .map((n) => n.condition.columnState);

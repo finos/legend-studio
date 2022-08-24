@@ -55,9 +55,9 @@ import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOpe
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
+  type QueryBuilderProjectionState,
   QueryBuilderDerivationProjectionColumnState,
 } from '../QueryBuilderProjectionState.js';
-import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import {
   buildProjectionColumnTypeaheadQuery,
   buildTypeaheadOptions,
@@ -321,7 +321,7 @@ export class PostFilterConditionState {
       this.typeaheadSearchResults = undefined;
       if (performTypeahead(this.value)) {
         const builderState = buildProjectionColumnTypeaheadQuery(
-          this.postFilterState.queryBuilderState,
+          this.postFilterState.projectionState.queryBuilderState,
           this.columnState,
           this.value,
         );
@@ -354,7 +354,8 @@ export class PostFilterConditionState {
     this.value = val
       ? observe_ValueSpecification(
           val,
-          this.postFilterState.queryBuilderState.observableContext,
+          this.postFilterState.projectionState.queryBuilderState
+            .observableContext,
         )
       : undefined;
   }
@@ -374,7 +375,7 @@ export class PostFilterConditionState {
   ): GeneratorFn<void> {
     try {
       const aggregateColumnState =
-        this.postFilterState.queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.find(
+        this.postFilterState.projectionState.aggregationState.columns.find(
           (column) => column.projectionColumnState === columnState,
         );
       const colState = aggregateColumnState ?? columnState;
@@ -396,7 +397,7 @@ export class PostFilterConditionState {
       }
     } catch (error) {
       assertErrorThrown(error);
-      this.postFilterState.queryBuilderState.applicationStore.notifyError(
+      this.postFilterState.projectionState.queryBuilderState.applicationStore.notifyError(
         `Can't drag column '${columnState.columnName}' due to: ${error.message}`,
       );
     }
@@ -406,7 +407,7 @@ export class PostFilterConditionState {
 export class QueryBuilderPostFilterState
   implements TreeData<QueryBuilderPostFilterTreeNodeData>
 {
-  queryBuilderState: QueryBuilderState;
+  projectionState: QueryBuilderProjectionState;
   lambdaParameterName = DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME;
   selectedNode?: QueryBuilderPostFilterTreeNodeData | undefined;
   isRearrangingConditions = false;
@@ -416,11 +417,11 @@ export class QueryBuilderPostFilterState
   _suppressClickawayEventListener = false;
 
   constructor(
-    queryBuilderState: QueryBuilderState,
+    projectionState: QueryBuilderProjectionState,
     operators: QueryBuilderPostFilterOperator[],
   ) {
     makeAutoObservable(this, {
-      queryBuilderState: false,
+      projectionState: false,
       setLambdaParameterName: action,
       setSelectedNode: action,
       addNodeFromNode: action,
@@ -435,7 +436,7 @@ export class QueryBuilderPostFilterState
       suppressClickawayEventListener: action,
     });
 
-    this.queryBuilderState = queryBuilderState;
+    this.projectionState = projectionState;
     this.operators = operators;
   }
 

@@ -77,8 +77,8 @@ export const buildPostFilterConditionExpression = (
 ): FunctionExpression => {
   // primitives
   const graph =
-    filterConditionState.postFilterState.queryBuilderState.graphManagerState
-      .graph;
+    filterConditionState.postFilterState.projectionState.queryBuilderState
+      .graphManagerState.graph;
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
   );

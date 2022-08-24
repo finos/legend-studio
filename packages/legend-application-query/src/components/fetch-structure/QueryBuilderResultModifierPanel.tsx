@@ -43,7 +43,9 @@ const ColumnSortEditor = observer(
     const applicationStore = useApplicationStore();
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
-    const sortColumns = queryBuilderState.resultSetModifierState.sortColumns;
+    const sortColumns =
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState.sortColumns;
     const projectionOptions = projectionState.columns
       .filter(
         (projectionCol) =>
@@ -74,7 +76,10 @@ const ColumnSortEditor = observer(
       );
     };
     const deleteColumnSort = (): void =>
-      queryBuilderState.resultSetModifierState.deleteSortColumn(columnSort);
+      queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.deleteSortColumn(
+        columnSort,
+      );
+
     return (
       <div className="panel__content__form__section__list__item query-builder__projection__options__sort">
         <CustomSelectorInput
@@ -112,7 +117,9 @@ const ColumnSortEditor = observer(
 const ColumnsSortEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const resultModifier = queryBuilderState.resultSetModifierState;
+    const resultModifier =
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState;
     const sortColumns = resultModifier.sortColumns;
     const projectionState =
       queryBuilderState.fetchStructureState.projectionState;
@@ -128,7 +135,6 @@ const ColumnsSortEditor = observer(
     const addValue = (): void => {
       if (projectionOptions.length > 0) {
         const sortColumn = new SortColumnState(
-          queryBuilderState,
           guaranteeNonNullable(projectionOptions[0]).value,
         );
         resultModifier.addSortColumn(sortColumn);
@@ -173,7 +179,9 @@ const ColumnsSortEditor = observer(
 export const QueryResultModifierModal = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const resultModifier = queryBuilderState.resultSetModifierState;
+    const resultModifier =
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState;
     const limitResults = resultModifier.limit;
     const distinct = resultModifier.distinct;
     const close = (): void => resultModifier.setShowModal(false);

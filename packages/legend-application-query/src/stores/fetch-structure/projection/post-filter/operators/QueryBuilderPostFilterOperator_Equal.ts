@@ -43,7 +43,7 @@ import {
   unwrapNotExpression,
 } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
@@ -107,16 +107,16 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
       case PRIMITIVE_TYPE.FLOAT:
       case PRIMITIVE_TYPE.INTEGER: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }
       case PRIMITIVE_TYPE.DATE: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -125,7 +125,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
         if (propertyType instanceof Enumeration) {
           if (propertyType.values.length > 0) {
             const multiplicityOne =
-              postFilterConditionState.postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+              postFilterConditionState.postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
                 TYPICAL_MULTIPLICITY_TYPE.ONE,
               );
             const enumValueInstanceValue = new EnumValueInstanceValue(
@@ -199,8 +199,8 @@ export class QueryBuilderPostFilterOperator_NotEqual extends QueryBuilderPostFil
     );
     return expression
       ? buildNotExpression(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           expression,
         )
       : undefined;

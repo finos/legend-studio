@@ -33,7 +33,7 @@ import {
   isTypeCompatibleWithConditionValueType,
 } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
@@ -85,16 +85,16 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
       case PRIMITIVE_TYPE.STRICTDATE:
       case PRIMITIVE_TYPE.DATETIME: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
       }
       case PRIMITIVE_TYPE.DATE: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           PRIMITIVE_TYPE.STRICTDATE,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );

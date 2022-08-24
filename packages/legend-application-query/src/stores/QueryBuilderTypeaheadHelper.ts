@@ -43,8 +43,10 @@ const createAndSetupQueryBuilderStateForTypeahead = (
 ): QueryBuilderState => {
   const builderState = queryBuilderState.createBareBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
-  builderState.resultSetModifierState.distinct = true;
-  builderState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
+  builderState.fetchStructureState.projectionState.resultSetModifierState.distinct =
+    true;
+  builderState.fetchStructureState.projectionState.resultSetModifierState.limit =
+    TYPEAHEAD_TAKE_LIMIT;
   return builderState;
 };
 
@@ -66,7 +68,7 @@ const buildColumnTypeaheadQuery = (
   }
   builderState.fetchStructureState.projectionState.columns = [projectionState];
   const postConditionState = new PostFilterConditionState(
-    builderState.postFilterState,
+    builderState.fetchStructureState.projectionState.postFilterState,
     columnState,
     value,
     new QueryBuilderPostFilterOperator_StartWith(),
@@ -75,7 +77,10 @@ const buildColumnTypeaheadQuery = (
     undefined,
     postConditionState,
   );
-  builderState.postFilterState.addNodeFromNode(postFilterNode, undefined);
+  builderState.fetchStructureState.projectionState.postFilterState.addNodeFromNode(
+    postFilterNode,
+    undefined,
+  );
   return builderState;
 };
 

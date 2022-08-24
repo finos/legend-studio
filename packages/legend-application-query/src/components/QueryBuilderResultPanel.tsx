@@ -94,7 +94,8 @@ const QueryBuilderResultContextMenu = observer(
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.projectionState.columns
         .filter((c) => c.columnName === event?.column.getColId())
@@ -251,7 +252,9 @@ const QueryBuilderResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      queryBuilderState.setShowPostFilterPanel(true);
+      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+        true,
+      );
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]

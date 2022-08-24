@@ -15,11 +15,9 @@
  */
 
 import {
-  assertTrue,
   getNullableFirstElement,
   guaranteeNonNullable,
   guaranteeType,
-  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
@@ -59,13 +57,6 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
-import {
-  type QueryBuilderPostFilterState,
-  type QueryBuilderPostFilterTreeNodeData,
-  QueryBuilderPostFilterTreeConditionNodeData,
-  QueryBuilderPostFilterTreeGroupNodeData,
-} from './fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
-import { fromGroupOperation } from './QueryBuilderOperatorsHelper.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import {
   functionExpression_setParametersValues,
@@ -74,6 +65,8 @@ import {
 } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { FETCH_STRUCTURE_MODE } from './fetch-structure/QueryBuilderFetchStructureState.js';
+import { appendPostFilter } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
+import { appendResultSetModifiers } from './fetch-structure/projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 
 /**
  * Checks if the provided property expression match the criteria for default
@@ -186,99 +179,6 @@ export const buildGetAllFunction = (
   classInstance.values[0] = PackageableElementExplicitReference.create(_class);
   _func.parametersValues.push(classInstance);
   return _func;
-};
-
-const buildPostFilterExpression = (
-  filterState: QueryBuilderPostFilterState,
-  node: QueryBuilderPostFilterTreeNodeData,
-): ValueSpecification | undefined => {
-  if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
-    return node.condition.operator.buildPostFilterConditionExpression(
-      node.condition,
-    );
-  } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
-    const multiplicityOne =
-      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    const func = new SimpleFunctionExpression(
-      extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-      multiplicityOne,
-    );
-    const clauses = node.childrenIds
-      .map((e) => filterState.nodes.get(e))
-      .filter(isNonNullable)
-      .map((e) => buildPostFilterExpression(filterState, e))
-      .filter(isNonNullable);
-    /**
-     * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
-     * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
-     * to create a chain of this operation to accomondate.
-     *
-     * This means that in the read direction, we might need to flatten the chains down to group with
-     * multiple clauses. This means user's intended grouping will not be kept.
-     */
-    if (clauses.length > 2) {
-      const firstClause = clauses[0] as ValueSpecification;
-      let currentClause: ValueSpecification = clauses[
-        clauses.length - 1
-      ] as ValueSpecification;
-      for (let i = clauses.length - 2; i > 0; --i) {
-        const clause1 = clauses[i] as ValueSpecification;
-        const clause2 = currentClause;
-        const groupClause = new SimpleFunctionExpression(
-          extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-          multiplicityOne,
-        );
-        groupClause.parametersValues = [clause1, clause2];
-        currentClause = groupClause;
-      }
-      func.parametersValues = [firstClause, currentClause];
-    } else {
-      func.parametersValues = clauses;
-    }
-    return func.parametersValues.length ? func : undefined;
-  }
-  return undefined;
-};
-
-export const processPostFilterOnLambda = (
-  postFilterState: QueryBuilderPostFilterState,
-  lambda: LambdaFunction,
-): LambdaFunction => {
-  const postFilterConditionExpressions = postFilterState.rootIds
-    .map((e) => guaranteeNonNullable(postFilterState.nodes.get(e)))
-    .map((e) => buildPostFilterExpression(postFilterState, e))
-    .filter(isNonNullable);
-  if (
-    !postFilterConditionExpressions.length ||
-    lambda.expressionSequence.length !== 1
-  ) {
-    return lambda;
-  }
-  assertTrue(
-    postFilterState.queryBuilderState.fetchStructureState.fetchStructureMode ===
-      FETCH_STRUCTURE_MODE.PROJECTION,
-    'Can only apply post-filter while fetching projection columns',
-  );
-  const multiplicityOne =
-    postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const filterLambda = buildGenericLambdaFunctionInstanceValue(
-    postFilterState.lambdaParameterName,
-    postFilterConditionExpressions,
-    postFilterState.queryBuilderState.graphManagerState.graph,
-  );
-  // main filter expression
-  const filterExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
-    multiplicityOne,
-  );
-  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
-  filterExpression.parametersValues = [currentExpression, filterLambda];
-  lambda.expressionSequence[0] = filterExpression;
-  return lambda;
 };
 
 export const buildPropertyExpressionChain = (
@@ -688,9 +588,29 @@ export const buildLambdaFunction = (
         projectFunction.parametersValues = [expression, colLambdas, colAliases];
         lambdaFunction.expressionSequence[0] = projectFunction;
       }
+
+      // build post-filter
+      appendPostFilter(
+        queryBuilderState.fetchStructureState.projectionState.postFilterState,
+        lambdaFunction,
+      );
+
+      // build result set modifiers
+      appendResultSetModifiers(
+        queryBuilderState.fetchStructureState.projectionState
+          .resultSetModifierState,
+        lambdaFunction,
+        {
+          overridingLimit: options?.isBuildingExecutionQuery
+            ? queryBuilderState.resultState.previewLimit
+            : undefined,
+        },
+      );
+
       break;
     }
     case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
+      // build fetch-structure
       if (
         queryBuilderState.fetchStructureState.graphFetchTreeState.treeData &&
         !isGraphFetchTreeDataEmpty(
@@ -728,32 +648,75 @@ export const buildLambdaFunction = (
         ];
         lambdaFunction.expressionSequence[0] = serializeFunction;
       }
+
+      // build result set modifier: i.e. preview limit
+      if (options?.isBuildingExecutionQuery) {
+        if (lambdaFunction.expressionSequence.length === 1) {
+          const func = lambdaFunction.expressionSequence[0];
+          if (func instanceof SimpleFunctionExpression) {
+            if (
+              matchFunctionName(
+                func.functionName,
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+              )
+            ) {
+              // NOTE: we have to separate the handling of `take()` for projection and
+              // graph-fetch as the latter use `meta::pure::functions::collection::take()`
+              // where the former uses `meta::pure::tds::take()`, therefore the placement
+              // in the query are different. Also, note that because of the above distinction,
+              // we won't support using `take()` as result set modifier operations for graph-fetch.
+              // Result set modifier should only be used for projection for now.
+              const limit = new PrimitiveInstanceValue(
+                GenericTypeExplicitReference.create(
+                  new GenericType(
+                    queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                      PRIMITIVE_TYPE.INTEGER,
+                    ),
+                  ),
+                ),
+                multiplicityOne,
+              );
+              limit.values = [queryBuilderState.resultState.previewLimit];
+              const takeFunction = new SimpleFunctionExpression(
+                extractElementNameFromPath(
+                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TAKE,
+                ),
+                multiplicityOne,
+              );
+
+              // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
+              // right next to `all()`
+              const serializeFunction = func;
+              const graphFetchFunc = guaranteeType(
+                serializeFunction.parametersValues[0],
+                SimpleFunctionExpression,
+              );
+              const getAllFunc = graphFetchFunc
+                .parametersValues[0] as ValueSpecification;
+              takeFunction.parametersValues[0] = getAllFunc;
+              takeFunction.parametersValues[1] = limit;
+              graphFetchFunc.parametersValues = [
+                takeFunction,
+                graphFetchFunc.parametersValues[1] as ValueSpecification,
+              ];
+            }
+          }
+        }
+      }
       break;
     }
     default:
       break;
   }
 
-  // build post-filter
-  processPostFilterOnLambda(queryBuilderState.postFilterState, lambdaFunction);
-
-  // build result set modifiers
-  queryBuilderState.resultSetModifierState.buildResultSetModifiers(
-    lambdaFunction,
-    {
-      overridingLimit: options?.isBuildingExecutionQuery
-        ? queryBuilderState.resultState.previewLimit
-        : undefined,
-    },
-  );
   // build parameters
   if (
     !queryBuilderState.mode.isParametersDisabled &&
     queryBuilderState.queryParametersState.parameterStates.length
   ) {
-    // if we are executing:
-    // set the parameters to empty
-    // add let statements for each parameter
+    // NOTE: if we are executing:
+    // 1. set the parameters to empty
+    // 2. add let statements for each parameter
     if (options?.isBuildingExecutionQuery) {
       lambdaFunction.functionType.parameters = [];
       const letsFuncs = buildParametersLetLambdaFunc(
@@ -771,5 +734,6 @@ export const buildLambdaFunction = (
         );
     }
   }
+
   return lambdaFunction;
 };

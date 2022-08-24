@@ -142,8 +142,9 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowPostFilterPanel = (): void => {
-      queryBuilderState.setShowPostFilterPanel(
-        !queryBuilderState.showPostFilterPanel,
+      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+        !queryBuilderState.fetchStructureState.projectionState
+          .showPostFilterPanel,
       );
     };
 
@@ -200,12 +201,13 @@ export const QueryBuilder = observer(
                         .fetchStructureMode !==
                         FETCH_STRUCTURE_MODE.PROJECTION ||
                       Array.from(
-                        queryBuilderState.postFilterState.nodes.values(),
+                        queryBuilderState.fetchStructureState.projectionState.postFilterState.nodes.values(),
                       ).length > 0
                     }
                   >
                     <MenuContentItemIcon>
-                      {queryBuilderState.showPostFilterPanel ? (
+                      {queryBuilderState.fetchStructureState.projectionState
+                        .showPostFilterPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
@@ -337,12 +339,14 @@ export const QueryBuilder = observer(
                       </ResizablePanel>
                       <ResizablePanelSplitter />
                       <ResizablePanel minSize={300}>
-                        {!queryBuilderState.showPostFilterPanel && (
+                        {!queryBuilderState.fetchStructureState.projectionState
+                          .showPostFilterPanel && (
                           <QueryBuilderFilterPanel
                             queryBuilderState={queryBuilderState}
                           />
                         )}
-                        {queryBuilderState.showPostFilterPanel && (
+                        {queryBuilderState.fetchStructureState.projectionState
+                          .showPostFilterPanel && (
                           <ResizablePanelGroup orientation="horizontal">
                             <ResizablePanel minSize={300}>
                               <QueryBuilderFilterPanel

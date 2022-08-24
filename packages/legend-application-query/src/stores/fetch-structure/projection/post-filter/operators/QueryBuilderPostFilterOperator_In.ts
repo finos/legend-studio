@@ -35,7 +35,7 @@ import {
   unwrapNotExpression,
 } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
@@ -75,8 +75,8 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
         return true;
       }
       const collectionType = getCollectionValueSpecificationType(
-        postFilterConditionState.postFilterState.queryBuilderState
-          .graphManagerState.graph,
+        postFilterConditionState.postFilterState.projectionState
+          .queryBuilderState.graphManagerState.graph,
         valueSpec.values,
       );
       if (!collectionType) {
@@ -116,7 +116,7 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const multiplicityOne =
-      postFilterConditionState.postFilterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      postFilterConditionState.postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const propertyType = guaranteeNonNullable(
@@ -164,8 +164,8 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
     );
     return expression
       ? buildNotExpression(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           expression,
         )
       : undefined;

@@ -100,7 +100,7 @@ describe(integrationTest('Query builder type ahead'), () => {
       let typeaheadQueryState: QueryBuilderState;
       if (testPostFilter) {
         const postFilterNode = guaranteeType(
-          queryBuilderState.postFilterState.getRootNode(),
+          queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
           QueryBuilderPostFilterTreeConditionNodeData,
         );
         typeaheadQueryState = buildProjectionColumnTypeaheadQuery(

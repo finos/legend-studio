@@ -73,6 +73,12 @@ import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregat
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
 import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
+import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
+import { QueryBuilderPostFilterState } from './post-filter/QueryBuilderPostFilterState.js';
+import type { QueryBuilderPostFilterOperator } from './post-filter/QueryBuilderPostFilterOperator.js';
+import { getQueryBuilderCorePostFilterOperators } from './post-filter/QueryBuilderPostFilterOperatorLoader.js';
+import type { QueryBuilderAggregateOperator } from './aggregation/QueryBuilderAggregateOperator.js';
+import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBuilderAggregateOperatorLoader.js';
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
@@ -350,7 +356,15 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
 export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
   columns: QueryBuilderProjectionColumnState[] = [];
   aggregationState: QueryBuilderAggregationState;
+  postFilterState: QueryBuilderPostFilterState;
+  resultSetModifierState: QueryResultSetModifierState;
   isConvertDerivationProjectionObjects = false;
+  showPostFilterPanel = false;
+
+  postFilterOperators: QueryBuilderPostFilterOperator[] =
+    getQueryBuilderCorePostFilterOperators();
+  aggregationOperators: QueryBuilderAggregateOperator[] =
+    getQueryBuilderCoreAggregrationOperators();
 
   constructor(queryBuilderState: QueryBuilderState) {
     super(queryBuilderState);
@@ -358,20 +372,29 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     makeObservable(this, {
       columns: observable,
       aggregationState: observable,
+      postFilterState: observable,
+      resultSetModifierState: observable,
       isConvertDerivationProjectionObjects: observable,
+      showPostFilterPanel: observable,
       derivations: computed,
       hasParserError: computed,
       validationIssues: computed,
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
+      setShowPostFilterPanel: action,
       convertDerivationProjectionObjects: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.resultSetModifierState = new QueryResultSetModifierState(this);
+    this.postFilterState = new QueryBuilderPostFilterState(
+      this,
+      this.postFilterOperators,
+    );
     this.aggregationState = new QueryBuilderAggregationState(
       this,
-      queryBuilderState.aggregationOperators,
+      this.aggregationOperators,
     );
   }
 
@@ -401,6 +424,10 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       return ['Query has no projection columns'];
     }
     return undefined;
+  }
+
+  setShowPostFilterPanel(val: boolean): void {
+    this.showPostFilterPanel = val;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {
@@ -497,7 +524,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
 
     // reassociation with column sorting state if applicable
     const corresspondingSortColumnState =
-      this.queryBuilderState.resultSetModifierState.sortColumns.find(
+      this.resultSetModifierState.sortColumns.find(
         (sortColState) => sortColState.columnState === oldVal,
       );
     if (corresspondingSortColumnState) {
@@ -518,8 +545,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       this.aggregationState.removeColumn(existingAggregateColumnState);
     }
 
-    // TODO: do a check here when we support more types of fetch structure
-    this.queryBuilderState.resultSetModifierState.updateSortColumns();
+    this.resultSetModifierState.updateSortColumns();
   }
 
   addColumn(

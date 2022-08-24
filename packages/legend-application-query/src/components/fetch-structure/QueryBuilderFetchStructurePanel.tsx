@@ -61,7 +61,9 @@ export const QueryBuilderFetchStructurePanel = observer(
     const fetchStructureStateMode = fetchStructureState.fetchStructureMode;
     const applicationStore = useApplicationStore();
     const openResultSetModifierEditor = (): void =>
-      queryBuilderState.resultSetModifierState.setShowModal(true);
+      queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.setShowModal(
+        true,
+      );
     const addNewBlankDerivation = (): void =>
       fetchStructureState.projectionState.addNewBlankDerivation();
 
@@ -87,17 +89,21 @@ export const QueryBuilderFetchStructurePanel = observer(
           );
       }
     };
+
     const onChangeFetchStructureMode =
       (fetchMode: FETCH_STRUCTURE_MODE): (() => void) =>
       (): void => {
         const reset = (): void => {
           fetchStructureState.setFetchStructureMode(fetchMode);
           queryBuilderState.changeFetchStructure();
-          queryBuilderState.postFilterState = new QueryBuilderPostFilterState(
-            queryBuilderState,
-            queryBuilderState.postFilterOperators,
+          queryBuilderState.fetchStructureState.projectionState.postFilterState =
+            new QueryBuilderPostFilterState(
+              queryBuilderState.fetchStructureState.projectionState,
+              queryBuilderState.fetchStructureState.projectionState.postFilterOperators,
+            );
+          queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+            false,
           );
-          queryBuilderState.setShowPostFilterPanel(false);
         };
         if (fetchStructureState.fetchStructureMode !== fetchMode) {
           switch (fetchMode) {
@@ -111,8 +117,10 @@ export const QueryBuilderFetchStructurePanel = observer(
               ) {
                 applicationStore.setActionAlertInfo({
                   message:
-                    queryBuilderState.showPostFilterPanel &&
-                    queryBuilderState.postFilterState.nodes.size > 0
+                    queryBuilderState.fetchStructureState.projectionState
+                      .showPostFilterPanel &&
+                    queryBuilderState.fetchStructureState.projectionState
+                      .postFilterState.nodes.size > 0
                       ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
                       : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
                   type: ActionAlertType.CAUTION,

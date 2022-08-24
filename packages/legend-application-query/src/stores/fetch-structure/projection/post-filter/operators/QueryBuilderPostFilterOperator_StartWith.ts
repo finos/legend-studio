@@ -30,7 +30,7 @@ import {
   unwrapNotExpression,
 } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
@@ -66,8 +66,8 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           propertyType.path,
           generateDefaultValueForPrimitiveType(propertyType.path),
         );
@@ -116,8 +116,8 @@ export class QueryBuilderPostFilterOperator_NotStartWith extends QueryBuilderPos
     );
     return expression
       ? buildNotExpression(
-          postFilterConditionState.postFilterState.queryBuilderState
-            .graphManagerState.graph,
+          postFilterConditionState.postFilterState.projectionState
+            .queryBuilderState.graphManagerState.graph,
           expression,
         )
       : undefined;

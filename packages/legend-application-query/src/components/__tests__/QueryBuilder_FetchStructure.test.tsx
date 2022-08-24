@@ -162,7 +162,10 @@ test(
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
     expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState.limit,
+    ).toBeUndefined();
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
@@ -207,7 +210,10 @@ test(
     expect(_firmPropertyExpression.func).toBe(
       getClassProperty(_personClass, 'firm'),
     );
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState.limit,
+    ).toBeUndefined();
 
     // result set modifiers
     const RESULT_LIMIT = 500;
@@ -242,7 +248,9 @@ test(
     expect(
       queryBuilderState.fetchStructureState.projectionState.columns.length,
     ).toBe(3);
-    const resultSetModifierState = queryBuilderState.resultSetModifierState;
+    const resultSetModifierState =
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
