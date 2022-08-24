@@ -1543,7 +1543,7 @@ const RelationalConnectionGeneralEditor = observer(
                     <div className="panel__content relational-connection-editor__source__content">
                       <div className="panel__content__form__section">
                         <div className="panel__content__form__section__header__label">
-                          Authentication{' '}
+                          Authentication
                         </div>
                         <CustomSelectorInput
                           options={authOptions}
