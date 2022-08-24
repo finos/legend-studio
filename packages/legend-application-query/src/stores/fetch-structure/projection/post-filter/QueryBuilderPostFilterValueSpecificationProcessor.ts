@@ -33,7 +33,6 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const.js';
 import type { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
 import { FETCH_STRUCTURE_MODE } from '../../QueryBuilderFetchStructureState.js';
-import { toGroupOperation } from '../../../QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterState,
@@ -48,6 +47,7 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
 } from '../QueryBuilderProjectionState.js';
+import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 
 const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,

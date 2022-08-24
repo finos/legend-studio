@@ -40,13 +40,13 @@ import {
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
-import { generateDefaultValueForPrimitiveType } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   buildNotExpression,
-  unwrapNotExpression,
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
-  isTypeCompatibleWithConditionValueType,
-} from '../../QueryBuilderOperatorsHelper.js';
+  isTypeCompatibleForAssignment,
+  unwrapNotExpression,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -81,7 +81,7 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    return isTypeCompatibleWithConditionValueType(
+    return isTypeCompatibleForAssignment(
       filterConditionState.value
         ? getNonCollectionValueSpecificationType(filterConditionState.value)
         : undefined,

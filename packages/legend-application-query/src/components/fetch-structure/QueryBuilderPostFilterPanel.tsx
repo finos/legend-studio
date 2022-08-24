@@ -73,10 +73,6 @@ import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
 import { getColumnMultiplicity } from '../../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
-import {
-  isTypeCompatibleWithConditionValueType,
-  QUERY_BUILDER_GROUP_OPERATION,
-} from '../../stores/QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
@@ -100,6 +96,8 @@ import {
   QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../../stores/QueryParametersState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -391,10 +389,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
         const conditionValueType = node.condition.columnState.getReturnType();
         if (
           conditionValueType &&
-          isTypeCompatibleWithConditionValueType(
-            parameterType,
-            conditionValueType,
-          )
+          isTypeCompatibleForAssignment(parameterType, conditionValueType)
         ) {
           node.condition.setValue(item.variable.parameter);
         } else {

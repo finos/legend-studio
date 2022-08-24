@@ -188,7 +188,6 @@ export class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  // TODO-BEFORE-PR: consider removing this
   setMode(val: QueryBuilderMode): void {
     this.mode = val;
   }
@@ -441,7 +440,6 @@ export class QueryBuilderState {
     }
   }
 
-  // TODO-BEFORE-PR: consider removing this
   changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this.resetQueryBuilder();
     this.resetQuerySetup();
@@ -463,7 +461,6 @@ export class QueryBuilderState {
     return this.fetchStructureState.validationIssues;
   }
 
-  // TODO-BEFORE-PR: consider removing this
   createBareBuilderState(): QueryBuilderState {
     return new QueryBuilderState(
       this.applicationStore,

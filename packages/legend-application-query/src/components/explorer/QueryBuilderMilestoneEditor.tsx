@@ -35,7 +35,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from '../QueryBuilderParameterPanel.js';
 import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
-import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationBuilderHelper.js';
+import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { BasicValueSpecificationEditor } from '@finos/legend-application';
 
 const MilestoningParameterEditor = observer(

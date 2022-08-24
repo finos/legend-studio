@@ -70,7 +70,7 @@ import {
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../../../QueryBuilder_Const.js';
 import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
-import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
 import { LambdaEditorState } from '@finos/legend-application';
 import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';

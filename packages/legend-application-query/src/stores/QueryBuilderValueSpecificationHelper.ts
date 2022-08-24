@@ -15,19 +15,25 @@
  */
 
 import {
-  type PrimitiveType,
-  type Enumeration,
-  type Type,
   type PureModel,
   type ValueSpecification,
+  CORE_PURE_PATH,
+  FunctionType,
+  LambdaFunction,
+  LambdaFunctionInstanceValue,
   PRIMITIVE_TYPE,
-  extractElementNameFromPath,
-  matchFunctionName,
-  SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  VariableExpression,
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
+  matchFunctionName,
+  type Type,
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  VariableExpression,
+  SimpleFunctionExpression,
+  type PrimitiveType,
+  type Enumeration,
+  extractElementNameFromPath,
   AbstractPropertyExpression,
   isSuperType,
 } from '@finos/legend-graph';
@@ -37,42 +43,8 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
+import { format } from 'date-fns';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
-
-export enum QUERY_BUILDER_GROUP_OPERATION {
-  AND = 'and',
-  OR = 'or',
-}
-
-export const fromGroupOperation = (
-  operation: QUERY_BUILDER_GROUP_OPERATION,
-): string => {
-  switch (operation) {
-    case QUERY_BUILDER_GROUP_OPERATION.AND:
-      return QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND;
-    case QUERY_BUILDER_GROUP_OPERATION.OR:
-      return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR;
-    default:
-      throw new UnsupportedOperationError(
-        `Can't derive function name from group operation '${operation}'`,
-      );
-  }
-};
-
-export const toGroupOperation = (
-  functionName: string,
-): QUERY_BUILDER_GROUP_OPERATION => {
-  if (matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND)) {
-    return QUERY_BUILDER_GROUP_OPERATION.AND;
-  } else if (
-    matchFunctionName(functionName, QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR)
-  ) {
-    return QUERY_BUILDER_GROUP_OPERATION.OR;
-  }
-  throw new UnsupportedOperationError(
-    `Can't derive group operation from function name '${functionName}'`,
-  );
-};
 
 export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,
@@ -191,9 +163,9 @@ export const isPropertyExpressionChainOptional = (
   return isOptional;
 };
 
-export const isTypeCompatibleWithConditionValueType = (
+export const isTypeCompatibleForAssignment = (
   type: Type | undefined,
-  conditionValueType: Type,
+  assignmentType: Type,
 ): boolean => {
   const NUMERIC_PRIMITIVE_TYPES = [
     PRIMITIVE_TYPE.NUMBER,
@@ -214,13 +186,60 @@ export const isTypeCompatibleWithConditionValueType = (
     // Numeric value is handled loosely because of autoboxing
     // e.g. LHS (integer) = RHS (float) is acceptable
     ((NUMERIC_PRIMITIVE_TYPES.includes(type.path) &&
-      NUMERIC_PRIMITIVE_TYPES.includes(conditionValueType.path)) ||
+      NUMERIC_PRIMITIVE_TYPES.includes(assignmentType.path)) ||
       // Date value is handled loosely as well if the LHS is of type DateTime
       // This is because we would simulate auto-boxing for date by altering the
       // Pure function used for the operation
       // e.g. LHS(DateTime) = RHS(Date) -> we use isOnDay() instead of is()
       DATE_PRIMITIVE_TYPES.includes(type.path) ||
-      type === conditionValueType ||
-      isSuperType(conditionValueType, type))
+      type === assignmentType ||
+      isSuperType(assignmentType, type))
   );
+};
+
+export const generateDefaultValueForPrimitiveType = (
+  type: PRIMITIVE_TYPE,
+): unknown => {
+  switch (type) {
+    case PRIMITIVE_TYPE.STRING:
+      return '';
+    case PRIMITIVE_TYPE.BOOLEAN:
+      return false;
+    case PRIMITIVE_TYPE.NUMBER:
+    case PRIMITIVE_TYPE.DECIMAL:
+    case PRIMITIVE_TYPE.FLOAT:
+    case PRIMITIVE_TYPE.INTEGER:
+      return 0;
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+      return format(new Date(Date.now()), DATE_FORMAT);
+    case PRIMITIVE_TYPE.DATETIME:
+      return format(new Date(Date.now()), DATE_TIME_FORMAT);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't generate default value for primitive type '${type}'`,
+      );
+  }
+};
+
+export const buildGenericLambdaFunctionInstanceValue = (
+  lambdaParameterName: string,
+  lambdaBodyExpressions: ValueSpecification[],
+  graph: PureModel,
+): LambdaFunctionInstanceValue => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
+  const functionInstanceValue = new LambdaFunctionInstanceValue(
+    multiplicityOne,
+  );
+  const functionType = new FunctionType(typeAny, multiplicityOne);
+  functionType.parameters.push(
+    new VariableExpression(lambdaParameterName, multiplicityOne),
+  );
+  const lambdaFunction = new LambdaFunction(functionType);
+  lambdaFunction.expressionSequence = lambdaBodyExpressions;
+  functionInstanceValue.values.push(lambdaFunction);
+  return functionInstanceValue;
 };

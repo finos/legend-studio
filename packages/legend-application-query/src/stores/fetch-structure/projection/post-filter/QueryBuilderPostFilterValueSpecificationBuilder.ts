@@ -11,8 +11,8 @@ import {
   isNonNullable,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const.js';
-import { fromGroupOperation } from '../../../QueryBuilderOperatorsHelper.js';
-import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { fromGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
+import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { FETCH_STRUCTURE_MODE } from '../../QueryBuilderFetchStructureState.js';
 import {
   QueryBuilderPostFilterTreeConditionNodeData,

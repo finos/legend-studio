@@ -31,12 +31,12 @@ import {
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
-import { generateDefaultValueForPrimitiveType } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
   buildNotExpression,
-  unwrapNotExpression,
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
-} from '../../QueryBuilderOperatorsHelper.js';
+  unwrapNotExpression,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

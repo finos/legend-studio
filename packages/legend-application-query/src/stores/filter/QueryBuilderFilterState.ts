@@ -30,7 +30,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   IllegalStateError,
-  isNonNullable,
   uuid,
   addUniqueEntry,
   deleteEntry,
@@ -45,20 +44,9 @@ import {
   type ExecutionResult,
   type AbstractPropertyExpression,
   type ValueSpecification,
-  extractElementNameFromPath,
-  SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   observe_ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  DEFAULT_LAMBDA_VARIABLE_NAME,
-  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
-} from '../../QueryBuilder_Const.js';
-import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationBuilderHelper.js';
-import {
-  fromGroupOperation,
-  QUERY_BUILDER_GROUP_OPERATION,
-} from '../QueryBuilderOperatorsHelper.js';
+import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../QueryBuilder_Const.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
 import {
   buildPropertyTypeaheadQuery,
@@ -66,6 +54,7 @@ import {
   performTypeahead,
 } from '../QueryBuilderTypeaheadHelper.js';
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -326,94 +315,6 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
     return '<blank>';
   }
 }
-
-const buildFilterConditionExpression = (
-  filterState: QueryBuilderFilterState,
-  node: QueryBuilderFilterTreeNodeData,
-): ValueSpecification | undefined => {
-  if (node instanceof QueryBuilderFilterTreeConditionNodeData) {
-    return node.condition.operator.buildFilterConditionExpression(
-      node.condition,
-    );
-  } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
-    const multiplicityOne =
-      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
-    const func = new SimpleFunctionExpression(
-      extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-      multiplicityOne,
-    );
-    const clauses = node.childrenIds
-      .map((e) => filterState.nodes.get(e))
-      .filter(isNonNullable)
-      .map((e) => buildFilterConditionExpression(filterState, e))
-      .filter(isNonNullable);
-    /**
-     * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
-     * like and/or do not take more than 2 parameters, as such, if we have more than 2, we need
-     * to create a chain of this operation to accomondate.
-     *
-     * This means that in the read direction, we might need to flatten the chains down to group with
-     * multiple clauses. This means user's intended grouping will not be kept.
-     */
-    if (clauses.length > 2) {
-      const firstClause = clauses[0] as ValueSpecification;
-      let currentClause: ValueSpecification = clauses[
-        clauses.length - 1
-      ] as ValueSpecification;
-      for (let i = clauses.length - 2; i > 0; --i) {
-        const clause1 = clauses[i] as ValueSpecification;
-        const clause2 = currentClause;
-        const groupClause = new SimpleFunctionExpression(
-          extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-          multiplicityOne,
-        );
-        groupClause.parametersValues = [clause1, clause2];
-        currentClause = groupClause;
-      }
-      func.parametersValues = [firstClause, currentClause];
-    } else {
-      func.parametersValues = clauses;
-    }
-    return func.parametersValues.length ? func : undefined;
-  }
-  return undefined;
-};
-
-export const buildFilterExpression = (
-  filterState: QueryBuilderFilterState,
-  getAllFunc: SimpleFunctionExpression,
-): SimpleFunctionExpression | undefined => {
-  const filterConditionExpressions = filterState.rootIds
-    .map((e) => guaranteeNonNullable(filterState.nodes.get(e)))
-    .map((e) => buildFilterConditionExpression(filterState, e))
-    .filter(isNonNullable);
-
-  if (!filterConditionExpressions.length) {
-    return undefined;
-  }
-  const multiplicityOne =
-    filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  // main filter expression
-  const filterExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
-    multiplicityOne,
-  );
-  // param [0]
-  filterExpression.parametersValues.push(getAllFunc);
-  // param [1]
-  filterExpression.parametersValues.push(
-    buildGenericLambdaFunctionInstanceValue(
-      filterState.lambdaParameterName,
-      filterConditionExpressions,
-      filterState.queryBuilderState.graphManagerState.graph,
-    ),
-  );
-  return filterExpression;
-};
 
 export class QueryBuilderFilterState
   implements TreeData<QueryBuilderFilterTreeNodeData>

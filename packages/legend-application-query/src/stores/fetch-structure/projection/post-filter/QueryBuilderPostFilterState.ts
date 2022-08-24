@@ -50,7 +50,6 @@ import {
 } from 'mobx';
 import { DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME } from '../../../../QueryBuilder_Const.js';
 import type { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
-import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderOperatorsHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderProjectionColumnState,
@@ -63,6 +62,7 @@ import {
   buildTypeaheadOptions,
   performTypeahead,
 } from '../../../QueryBuilderTypeaheadHelper.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',

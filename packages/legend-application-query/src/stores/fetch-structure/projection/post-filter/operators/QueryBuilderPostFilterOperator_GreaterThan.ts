@@ -28,17 +28,17 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  getNonCollectionValueSpecificationType,
-  isTypeCompatibleWithConditionValueType,
-} from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { generateDefaultValueForPrimitiveType } from '../../../../QueryBuilderValueSpecificationBuilderHelper.js';
+import {
+  generateDefaultValueForPrimitiveType,
+  getNonCollectionValueSpecificationType,
+  isTypeCompatibleForAssignment,
+} from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPostFilterOperator {
@@ -63,7 +63,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan extends QueryBuilderPost
   isCompatibleWithConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
-    return isTypeCompatibleWithConditionValueType(
+    return isTypeCompatibleForAssignment(
       postFilterConditionState.value
         ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
         : undefined,

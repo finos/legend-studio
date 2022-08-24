@@ -51,12 +51,11 @@ import {
 } from '@finos/legend-graph';
 import { isGraphFetchTreeDataEmpty } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { buildFilterExpression } from './filter/QueryBuilderFilterState.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './fetch-structure/projection/QueryBuilderProjectionState.js';
-import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationHelper.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import {
   functionExpression_setParametersValues,
@@ -67,6 +66,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { FETCH_STRUCTURE_MODE } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { appendPostFilter } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 import { appendResultSetModifiers } from './fetch-structure/projection/QueryBuilderProjectionValueSpecificationBuilder.js';
+import { buildFilterExpression } from './filter/QueryBuilderValueSpecificationBuilder.js';
 
 /**
  * Checks if the provided property expression match the criteria for default

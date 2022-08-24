@@ -54,7 +54,7 @@ import {
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
 } from '@finos/legend-graph';
-import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationBuilderHelper.js';
+import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
 import { functionExpression_setParametersValues } from '@finos/legend-application';

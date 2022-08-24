@@ -36,19 +36,19 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  buildNotExpression,
-  getNonCollectionValueSpecificationType,
-  isTypeCompatibleWithConditionValueType,
-  unwrapNotExpression,
-} from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { generateDefaultValueForPrimitiveType } from '../../../../QueryBuilderValueSpecificationBuilderHelper.js';
+import {
+  buildNotExpression,
+  generateDefaultValueForPrimitiveType,
+  getNonCollectionValueSpecificationType,
+  isTypeCompatibleForAssignment,
+  unwrapNotExpression,
+} from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 
 export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilterOperator {
@@ -81,7 +81,7 @@ export class QueryBuilderPostFilterOperator_Equal extends QueryBuilderPostFilter
   ): boolean {
     const valueSpecification = postFilterConditionState.value;
     if (valueSpecification) {
-      return isTypeCompatibleWithConditionValueType(
+      return isTypeCompatibleForAssignment(
         getNonCollectionValueSpecificationType(valueSpecification),
         guaranteeNonNullable(
           postFilterConditionState.columnState.getReturnType(),

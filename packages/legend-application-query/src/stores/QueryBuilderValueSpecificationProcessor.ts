@@ -78,11 +78,11 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { QueryBuilderAggregationState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
-import { toGroupOperation } from './QueryBuilderOperatorsHelper.js';
 import { processPostFilterLambda } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationProcessor.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { LambdaParameterState } from '@finos/legend-application';
+import { toGroupOperation } from './QueryBuilderGroupOperationHelper.js';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,

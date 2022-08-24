@@ -33,11 +33,11 @@ import {
   buildFilterConditionExpression,
 } from './QueryBuilderFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
-import { generateDefaultValueForPrimitiveType } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import {
+  generateDefaultValueForPrimitiveType,
   getNonCollectionValueSpecificationType,
-  isTypeCompatibleWithConditionValueType,
-} from '../../QueryBuilderOperatorsHelper.js';
+  isTypeCompatibleForAssignment,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
@@ -66,7 +66,7 @@ export class QueryBuilderFilterOperator_GreaterThanEqual extends QueryBuilderFil
   isCompatibleWithFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): boolean {
-    return isTypeCompatibleWithConditionValueType(
+    return isTypeCompatibleForAssignment(
       filterConditionState.value
         ? getNonCollectionValueSpecificationType(filterConditionState.value)
         : undefined,

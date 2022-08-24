@@ -76,10 +76,6 @@ import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../../stores/QueryParametersState.js';
-import {
-  isTypeCompatibleWithConditionValueType,
-  QUERY_BUILDER_GROUP_OPERATION,
-} from '../../stores/QueryBuilderOperatorsHelper.js';
 import type { ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,
@@ -87,6 +83,8 @@ import {
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
+import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
@@ -166,12 +164,7 @@ const QueryBuilderFilterConditionEditor = observer(
         const conditionValueType =
           node.condition.propertyExpressionState.propertyExpression.func
             .genericType.value.rawType;
-        if (
-          isTypeCompatibleWithConditionValueType(
-            parameterType,
-            conditionValueType,
-          )
-        ) {
+        if (isTypeCompatibleForAssignment(parameterType, conditionValueType)) {
           node.condition.setValue(item.variable.parameter);
         } else {
           applicationStore.notifyWarning(

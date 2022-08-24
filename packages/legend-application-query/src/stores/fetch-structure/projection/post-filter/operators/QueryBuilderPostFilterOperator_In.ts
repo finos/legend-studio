@@ -29,11 +29,6 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import {
-  buildNotExpression,
-  getCollectionValueSpecificationType,
-  unwrapNotExpression,
-} from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import type {
@@ -41,6 +36,11 @@ import type {
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import {
+  buildNotExpression,
+  getCollectionValueSpecificationType,
+  unwrapNotExpression,
+} from '../../../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOperator {
   getLabel(): string {

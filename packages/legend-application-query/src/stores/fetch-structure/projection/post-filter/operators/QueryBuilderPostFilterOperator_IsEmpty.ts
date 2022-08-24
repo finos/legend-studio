@@ -21,7 +21,6 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderOperatorsHelper.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
 import {
@@ -31,6 +30,7 @@ import {
 } from '../QueryBuilderPostFilterState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../QueryBuilderProjectionState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilterOperator {
   getLabel(): string {

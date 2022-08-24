@@ -37,9 +37,9 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 import {
   buildNotExpression,
-  unwrapNotExpression,
   getCollectionValueSpecificationType,
-} from '../../QueryBuilderOperatorsHelper.js';
+  unwrapNotExpression,
+} from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {

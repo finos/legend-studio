@@ -34,7 +34,7 @@ import {
   buildNotExpression,
   isPropertyExpressionChainOptional,
   unwrapNotExpression,
-} from '../../QueryBuilderOperatorsHelper.js';
+} from '../../QueryBuilderValueSpecificationHelper.js';
 
 export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
   getLabel(filterConditionState: FilterConditionState): string {
