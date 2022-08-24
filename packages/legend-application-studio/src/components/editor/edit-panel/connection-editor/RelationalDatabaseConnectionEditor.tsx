@@ -69,6 +69,7 @@ import {
   BigQueryDatasourceSpecification,
   RedshiftDatasourceSpecification,
   PackageableElementExplicitReference,
+  MapperPostProcessor,
 } from '@finos/legend-graph';
 import { runInAction } from 'mobx';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
@@ -135,6 +136,7 @@ import {
   postProcessor_deletePostProcessor,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
+import { UnsupportedPostProcessorEditor } from './post-processor-editor/UnsupportedPostProcessorEditor.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -1132,6 +1134,36 @@ const RelationalConnectionStoreEditor = observer(
   },
 );
 
+const renderEditorPostProcessor = (
+  connectionValueState: RelationalDatabaseConnectionValueState,
+  postprocessor: PostProcessor,
+  plugins: LegendStudioApplicationPlugin[],
+): React.ReactNode => {
+  if (postprocessor instanceof MapperPostProcessor) {
+    return (
+      <MapperPostProcessorEditor
+        connectionValueState={connectionValueState}
+        postprocessor={postprocessor}
+      />
+    );
+  } else {
+    const extraPostProcessorEditorRenderers = plugins.flatMap(
+      (plugin) =>
+        (
+          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+        ).getExtraPostProcessorEditorRenderers?.() ?? [],
+    );
+    for (const editorRenderer of extraPostProcessorEditorRenderers) {
+      const editor = editorRenderer(postprocessor, true);
+      if (editor) {
+        return editor;
+      }
+    }
+    //return display for when there are no possible supports
+    return <UnsupportedPostProcessorEditor postprocessor={postprocessor} />;
+  }
+};
+
 const PostProcessorRelationalConnectionEditor = observer(
   (props: { connectionValueState: RelationalDatabaseConnectionValueState }) => {
     const { connectionValueState } = props;
@@ -1139,6 +1171,9 @@ const PostProcessorRelationalConnectionEditor = observer(
     const connection = connectionValueState.connection;
 
     const postprocessors = connection.postProcessors;
+
+    const editorStore = useEditorStore();
+    const plugins = editorStore.pluginManager.getApplicationPlugins();
 
     const selectedPostProcessor = connectionValueState.selectedPostProcessor;
 
@@ -1215,12 +1250,12 @@ const PostProcessorRelationalConnectionEditor = observer(
                 <ResizablePanelSplitter />
 
                 <ResizablePanel>
-                  {selectedPostProcessor && (
-                    <MapperPostProcessorEditor
-                      connectionValueState={connectionValueState}
-                      postprocessor={selectedPostProcessor}
-                    />
-                  )}
+                  {selectedPostProcessor &&
+                    renderEditorPostProcessor(
+                      connectionValueState,
+                      selectedPostProcessor,
+                      plugins,
+                    )}
                   {!selectedPostProcessor && !postprocessors.length && (
                     <BlankPanelPlaceholder
                       text="Add a post processor"

@@ -18,6 +18,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudio
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,
+  PostProcessor,
 } from '@finos/legend-graph';
 
 // connection datasource specification
@@ -47,6 +48,19 @@ export type AuthenticationStrategyCreator = (
 
 export type AuthenticationStrategyEditorRenderer = (
   metamodel: AuthenticationStrategy,
+  isReadOnly: boolean,
+) => React.ReactNode | undefined;
+
+// connection post processor specification
+
+export type PostProcessorTypeGetter = (
+  metamodel: PostProcessor,
+) => string | undefined;
+
+export type PostProcessorCreator = (type: string) => PostProcessor | undefined;
+
+export type PostProcessorEditorRenderer = (
+  metamodel: PostProcessor,
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
 
@@ -97,4 +111,26 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
    * Get the list of renderers for the editor for a relational database authentication strategy.
    */
   getExtraAuthenticationStrategyEditorRenderers?(): AuthenticationStrategyEditorRenderer[];
+
+  // --------------------- relational database connection post processor ------------------
+
+  /**
+   * Get the list of the supported type specifiers for relational post processors
+   */
+  getExtraPostProcessorTypes?(): string[];
+
+  /**
+   * Get the list of classifiers for a relational post processor specification.
+   */
+  getExtraPostProcessorTypeGetters?(): PostProcessorTypeGetter[];
+
+  /**
+   * Get the list of creators for relational post processor specification given the type specifier.
+   */
+  getExtraPostProcessorCreators?(): PostProcessorCreator[];
+
+  /**
+   * Get the list of renderers for the editor for a relational post processor specification.
+   */
+  getExtraPostProcessorEditorRenderers?(): PostProcessorEditorRenderer[];
 }
