@@ -48,7 +48,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
-import { FETCH_STRUCTURE_MODE } from '../stores/fetch-structure/QueryBuilderFetchStructureState.js';
+import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -197,9 +197,10 @@ export const QueryBuilder = observer(
                   <MenuContentItem
                     onClick={toggleShowPostFilterPanel}
                     disabled={
-                      queryBuilderState.fetchStructureState
-                        .fetchStructureMode !==
-                        FETCH_STRUCTURE_MODE.PROJECTION ||
+                      !(
+                        queryBuilderState.fetchStructureState
+                          .implementation instanceof QueryBuilderProjectionState
+                      ) ||
                       Array.from(
                         queryBuilderState.fetchStructureState.projectionState.postFilterState.nodes.values(),
                       ).length > 0

@@ -54,7 +54,10 @@ import {
 } from '../../../QueryBuilder_Const.js';
 import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
-import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
+import {
+  FETCH_STRUCTURE_IMPLEMENTATION,
+  QueryBuilderFetchStructureImplementationState,
+} from '../QueryBuilderFetchStructureImplementationState.js';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
 import { QueryBuilderPostFilterState } from './post-filter/QueryBuilderPostFilterState.js';
 import type { QueryBuilderPostFilterOperator } from './post-filter/QueryBuilderPostFilterOperator.js';
@@ -117,6 +120,20 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       this,
       this.aggregationOperators,
     );
+  }
+
+  recreate(
+    queryBuilderState: QueryBuilderState,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ): QueryBuilderFetchStructureImplementationState {
+    return new QueryBuilderProjectionState(
+      queryBuilderState,
+      fetchStructureState,
+    );
+  }
+
+  get type(): string {
+    return FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION;
   }
 
   get derivations(): QueryBuilderDerivationProjectionColumnState[] {

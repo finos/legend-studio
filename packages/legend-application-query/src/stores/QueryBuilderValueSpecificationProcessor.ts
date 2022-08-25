@@ -37,7 +37,6 @@ import {
   QueryBuilderFilterTreeGroupNodeData,
   QueryBuilderFilterTreeConditionNodeData,
 } from './filter/QueryBuilderFilterState.js';
-import { FETCH_STRUCTURE_MODE } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import {
   type AlloySerializationConfigInstanceValue,
   type EnumValueInstanceValue,
@@ -59,10 +58,8 @@ import {
   matchFunctionName,
   Class,
   CollectionInstanceValue,
-  GraphFetchTreeInstanceValue,
   LambdaFunctionInstanceValue,
   PrimitiveInstanceValue,
-  RootGraphFetchTree,
   SimpleFunctionExpression,
   VariableExpression,
   AbstractPropertyExpression,
@@ -83,6 +80,7 @@ import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderProperty
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
 import { LambdaParameterState } from '@finos/legend-application';
 import { toGroupOperation } from './QueryBuilderGroupOperationHelper.js';
+import { FETCH_STRUCTURE_IMPLEMENTATION } from './fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -697,8 +695,8 @@ export class QueryBuilderLambdaProcessor
         (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
-      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
-        FETCH_STRUCTURE_MODE.PROJECTION,
+      this.queryBuilderState.fetchStructureState.changeImplementation(
+        FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION,
       );
 
       return;
@@ -953,8 +951,8 @@ export class QueryBuilderLambdaProcessor
         (e, idx) => e.setColumnName(aliases[idx] as string),
       );
 
-      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
-        FETCH_STRUCTURE_MODE.PROJECTION,
+      this.queryBuilderState.fetchStructureState.changeImplementation(
+        FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION,
       );
 
       return;
@@ -1041,21 +1039,8 @@ export class QueryBuilderLambdaProcessor
         `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
       );
 
-      const serializeFunc = guaranteeType(
-        valueSpecification.parametersValues[1],
-        GraphFetchTreeInstanceValue,
-        `Can't process serialize() expression: serialize() graph-fetch is missing`,
-      );
-      const value = guaranteeType(
-        serializeFunc.values[0],
-        RootGraphFetchTree,
-        `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
-      );
-      this.queryBuilderState.fetchStructureState.setFetchStructureMode(
-        FETCH_STRUCTURE_MODE.GRAPH_FETCH,
-      );
-      this.queryBuilderState.fetchStructureState.graphFetchTreeState.initialize(
-        value,
+      this.queryBuilderState.fetchStructureState.changeImplementation(
+        FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH,
       );
 
       return;

@@ -65,7 +65,7 @@ import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-stru
 import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { FETCH_STRUCTURE_MODE } from '../../stores/fetch-structure/QueryBuilderFetchStructureState.js';
+import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 
 test(
   integrationTest(
@@ -322,7 +322,7 @@ test(
     // filter with group condition
     act(() => {
       queryBuilderState.resetQueryBuilder();
-      queryBuilderState.resetQuerySetup();
+      queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
@@ -354,7 +354,7 @@ test(
     // projection column with derived property
     act(() => {
       queryBuilderState.resetQueryBuilder();
-      queryBuilderState.resetQuerySetup();
+      queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
@@ -508,8 +508,8 @@ test(
         ),
       );
     });
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+    expect(queryBuilderState.fetchStructureState.implementation).toBeInstanceOf(
+      QueryBuilderGraphFetchTreeState,
     );
 
     await act(async () => {
@@ -520,8 +520,8 @@ test(
         ),
       );
     });
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+    expect(queryBuilderState.fetchStructureState.implementation).toBeInstanceOf(
+      QueryBuilderGraphFetchTreeState,
     );
     const firmGraphFetchTree = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.graphFetchTreeState.treeData,

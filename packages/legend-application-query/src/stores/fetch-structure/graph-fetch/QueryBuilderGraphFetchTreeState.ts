@@ -27,7 +27,10 @@ import {
 } from './QueryBuilderGraphFetchTreeUtil.js';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../../explorer/QueryBuilderExplorerState.js';
 import { assertNonNullable } from '@finos/legend-shared';
-import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
+import {
+  FETCH_STRUCTURE_IMPLEMENTATION,
+  QueryBuilderFetchStructureImplementationState,
+} from '../QueryBuilderFetchStructureImplementationState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
 
 export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
@@ -51,6 +54,20 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
       setGraphFetchTree: action,
       setChecked: action,
     });
+  }
+
+  recreate(
+    queryBuilderState: QueryBuilderState,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ): QueryBuilderFetchStructureImplementationState {
+    return new QueryBuilderGraphFetchTreeState(
+      queryBuilderState,
+      fetchStructureState,
+    );
+  }
+
+  get type(): string {
+    return FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH;
   }
 
   setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {

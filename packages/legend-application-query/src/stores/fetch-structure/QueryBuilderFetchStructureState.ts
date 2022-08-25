@@ -24,34 +24,24 @@ import {
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../explorer/QueryBuilderExplorerState.js';
 import { Class } from '@finos/legend-graph';
-import { filterByType } from '@finos/legend-shared';
+import { filterByType, UnsupportedOperationError } from '@finos/legend-shared';
 import { addQueryBuilderPropertyNode } from './graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
 import { QueryBuilderSimpleProjectionColumnState } from './projection/QueryBuilderProjectionColumnState.js';
-
-export enum FETCH_STRUCTURE_MODE {
-  PROJECTION = 'PROJECTION',
-  GRAPH_FETCH = 'GRAPH_FETCH',
-}
+import {
+  FETCH_STRUCTURE_IMPLEMENTATION,
+  type QueryBuilderFetchStructureImplementationState,
+} from './QueryBuilderFetchStructureImplementationState.js';
 
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
-  /**
-   * TODO: refactor this so we could reduce this to
-   * `implementationState: QueryBuilderFetchStructureImplementationState`
-   * so we don't have graph fetch and projection at the same time
-   *
-   * TODO?: perhaps it would eventually make sense to default to
-   * graph-fetch since `getAll()` naturally works for graph-fetch case
-   * and graph-fetch allows somewhat an empty tree
-   */
-  fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
   projectionState: QueryBuilderProjectionState;
   graphFetchTreeState: QueryBuilderGraphFetchTreeState;
+  implementation: QueryBuilderFetchStructureImplementationState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      setFetchStructureMode: action,
+      changeImplementation: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -65,40 +55,62 @@ export class QueryBuilderFetchStructureState {
       queryBuilderState,
       this,
     );
+    /**
+     * TODO?: perhaps it would eventually make sense to default to
+     * graph-fetch since `getAll()` naturally works for graph-fetch case
+     * and graph-fetch allows somewhat an empty tree
+     */
+    this.implementation = this.projectionState;
   }
 
-  setFetchStructureMode(val: FETCH_STRUCTURE_MODE): void {
-    this.fetchStructureMode = val;
+  // TODO-BEFORE-PR: can we use the `recreate()` method here somehow?
+  changeImplementation(type: string): void {
+    switch (type) {
+      case FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION: {
+        this.implementation = new QueryBuilderProjectionState(
+          this.queryBuilderState,
+          this,
+        );
+        return;
+      }
+      case FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH: {
+        const graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
+          this.queryBuilderState,
+          this,
+        );
+        graphFetchTreeState.initialize();
+        this.implementation = graphFetchTreeState;
+        return;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't change fetch-structure implementation to unsupport type: '${type}'`,
+        );
+    }
   }
 
+  // TODO-BEFORE-PR: refactor this
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {
     if (
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       !(node.type instanceof Class)
     ) {
-      switch (this.fetchStructureMode) {
-        case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-          this.graphFetchTreeState.addProperty(node);
-          return;
-        }
-        case FETCH_STRUCTURE_MODE.PROJECTION: {
-          this.projectionState.addColumn(
-            new QueryBuilderSimpleProjectionColumnState(
-              this.projectionState,
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                this.queryBuilderState.explorerState.nonNullableTreeData,
-                node,
-                this.queryBuilderState.graphManagerState.graph,
-                this.queryBuilderState.explorerState.propertySearchPanelState
-                  .allMappedPropertyNodes,
-              ),
-              this.queryBuilderState.explorerState.humanizePropertyName,
+      if (this.implementation instanceof QueryBuilderGraphFetchTreeState) {
+        this.implementation.addProperty(node);
+      } else if (this.implementation instanceof QueryBuilderProjectionState) {
+        this.implementation.addColumn(
+          new QueryBuilderSimpleProjectionColumnState(
+            this.implementation,
+            buildPropertyExpressionFromExplorerTreeNodeData(
+              this.queryBuilderState.explorerState.nonNullableTreeData,
+              node,
+              this.queryBuilderState.graphManagerState.graph,
+              this.queryBuilderState.explorerState.propertySearchPanelState
+                .allMappedPropertyNodes,
             ),
-          );
-          return;
-        }
-        default:
-          return;
+            this.queryBuilderState.explorerState.humanizePropertyName,
+          ),
+        );
       }
     }
   }
@@ -119,55 +131,45 @@ export class QueryBuilderFetchStructureState {
             !(childNode.type instanceof Class) && childNode.mappingData.mapped,
         );
 
-      switch (this.fetchStructureMode) {
-        case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-          const graphFetchTreeData = this.graphFetchTreeState.treeData;
-          if (graphFetchTreeData) {
-            nodesToAdd.forEach((nodeToAdd) =>
-              addQueryBuilderPropertyNode(
-                graphFetchTreeData,
+      if (this.implementation instanceof QueryBuilderGraphFetchTreeState) {
+        const graphFetchTreeData = this.implementation.treeData;
+        if (graphFetchTreeData) {
+          nodesToAdd.forEach((nodeToAdd) =>
+            addQueryBuilderPropertyNode(
+              graphFetchTreeData,
+              this.queryBuilderState.explorerState.nonNullableTreeData,
+              nodeToAdd,
+              this.queryBuilderState,
+            ),
+          );
+          this.graphFetchTreeState.setGraphFetchTree({
+            ...graphFetchTreeData,
+          });
+        }
+      } else if (this.implementation instanceof QueryBuilderProjectionState) {
+        nodesToAdd.forEach((nodeToAdd) => {
+          this.projectionState.addColumn(
+            new QueryBuilderSimpleProjectionColumnState(
+              this.projectionState,
+              buildPropertyExpressionFromExplorerTreeNodeData(
                 this.queryBuilderState.explorerState.nonNullableTreeData,
                 nodeToAdd,
-                this.queryBuilderState,
+                this.queryBuilderState.graphManagerState.graph,
+                this.queryBuilderState.explorerState.propertySearchPanelState
+                  .allMappedPropertyNodes,
               ),
-            );
-            this.graphFetchTreeState.setGraphFetchTree({
-              ...graphFetchTreeData,
-            });
-          }
-          return;
-        }
-        case FETCH_STRUCTURE_MODE.PROJECTION: {
-          nodesToAdd.forEach((nodeToAdd) => {
-            this.projectionState.addColumn(
-              new QueryBuilderSimpleProjectionColumnState(
-                this.projectionState,
-                buildPropertyExpressionFromExplorerTreeNodeData(
-                  this.queryBuilderState.explorerState.nonNullableTreeData,
-                  nodeToAdd,
-                  this.queryBuilderState.graphManagerState.graph,
-                  this.queryBuilderState.explorerState.propertySearchPanelState
-                    .allMappedPropertyNodes,
-                ),
-                this.queryBuilderState.explorerState.humanizePropertyName,
-              ),
-            );
-          });
-          return;
-        }
-        default:
-          return;
+              this.queryBuilderState.explorerState.humanizePropertyName,
+            ),
+          );
+        });
       }
     }
   }
 
   get validationIssues(): string[] | undefined {
-    switch (this.fetchStructureMode) {
-      case FETCH_STRUCTURE_MODE.PROJECTION:
-        return this.projectionState.validationIssues;
-      case FETCH_STRUCTURE_MODE.GRAPH_FETCH:
-      default:
-        return undefined;
+    if (this.implementation instanceof QueryBuilderProjectionState) {
+      return this.implementation.validationIssues;
     }
+    return undefined;
   }
 }

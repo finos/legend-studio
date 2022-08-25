@@ -63,10 +63,11 @@ import {
   buildParametersLetLambdaFunc,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
-import { FETCH_STRUCTURE_MODE } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { appendPostFilter } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 import { appendResultSetModifiers } from './fetch-structure/projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { buildFilterExpression } from './filter/QueryBuilderValueSpecificationBuilder.js';
+import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderGraphFetchTreeState } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 
 /**
  * Checks if the provided property expression match the criteria for default
@@ -370,343 +371,333 @@ export const buildLambdaFunction = (
     lambdaFunction.expressionSequence[0] = filterFunction;
   }
   // build fetch structure
-  switch (queryBuilderState.fetchStructureState.fetchStructureMode) {
-    case FETCH_STRUCTURE_MODE.PROJECTION: {
-      if (
-        queryBuilderState.fetchStructureState.projectionState.aggregationState
-          .columns.length
-      ) {
-        // aggregation
+  if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderProjectionState
+  ) {
+    if (
+      queryBuilderState.fetchStructureState.projectionState.aggregationState
+        .columns.length
+    ) {
+      // aggregation
 
-        const groupByFunction = new SimpleFunctionExpression(
-          extractElementNameFromPath(
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-          ),
-          multiplicityOne,
-        );
-
-        const colLambdas = new CollectionInstanceValue(
-          new Multiplicity(
-            queryBuilderState.fetchStructureState.projectionState.columns
-              .length -
-              queryBuilderState.fetchStructureState.projectionState
-                .aggregationState.columns.length,
-            queryBuilderState.fetchStructureState.projectionState.columns
-              .length -
-              queryBuilderState.fetchStructureState.projectionState
-                .aggregationState.columns.length,
-          ),
-        );
-        const aggregateLambdas = new CollectionInstanceValue(
-          new Multiplicity(
-            queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
-            queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
-          ),
-        );
-        const colAliases = new CollectionInstanceValue(
-          new Multiplicity(
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-          ),
-        );
-        queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-          (projectionColumnState) => {
-            // column alias
-            const colAlias = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(new GenericType(typeString)),
-              multiplicityOne,
-            );
-            colAlias.values.push(projectionColumnState.columnName);
-            colAliases.values.push(colAlias);
-
-            const aggregateColumnState =
-              queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.find(
-                (column) =>
-                  column.projectionColumnState === projectionColumnState,
-              );
-
-            // column projection
-            let columnLambda: ValueSpecification;
-            if (
-              projectionColumnState instanceof
-              QueryBuilderSimpleProjectionColumnState
-            ) {
-              columnLambda = buildGenericLambdaFunctionInstanceValue(
-                projectionColumnState.lambdaParameterName,
-                [
-                  buildPropertyExpressionChain(
-                    projectionColumnState.propertyExpressionState
-                      .propertyExpression,
-                    projectionColumnState.propertyExpressionState
-                      .queryBuilderState,
-                  ),
-                ],
-                queryBuilderState.graphManagerState.graph,
-              );
-            } else if (
-              projectionColumnState instanceof
-              QueryBuilderDerivationProjectionColumnState
-            ) {
-              columnLambda = new INTERNAL__UnknownValueSpecification(
-                V1_serializeRawValueSpecification(
-                  V1_transformRawLambda(
-                    projectionColumnState.lambda,
-                    new V1_GraphTransformerContextBuilder(
-                      // TODO?: do we need to include the plugins here?
-                      [],
-                    )
-                      .withKeepSourceInformationFlag(
-                        Boolean(options?.keepSourceInformation),
-                      )
-                      .build(),
-                  ),
-                ),
-              );
-            } else {
-              throw new UnsupportedOperationError(
-                `Can't build project() column expression: unsupported projection column state`,
-                projectionColumnState,
-              );
-            }
-
-            // column aggregation
-            if (aggregateColumnState) {
-              const aggregateFunctionExpression = new SimpleFunctionExpression(
-                extractElementNameFromPath(
-                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
-                ),
-                multiplicityOne,
-              );
-              const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
-                aggregateColumnState.lambdaParameterName,
-                [
-                  aggregateColumnState.operator.buildAggregateExpressionFromState(
-                    aggregateColumnState,
-                  ),
-                ],
-                aggregateColumnState.aggregationState.projectionState
-                  .queryBuilderState.graphManagerState.graph,
-              );
-              aggregateFunctionExpression.parametersValues = [
-                columnLambda,
-                aggregateLambda,
-              ];
-
-              aggregateLambdas.values.push(aggregateFunctionExpression);
-            } else {
-              colLambdas.values.push(columnLambda);
-            }
-          },
-        );
-        const expression = lambdaFunction.expressionSequence[0];
-        groupByFunction.parametersValues = [
-          expression,
-          colLambdas,
-          aggregateLambdas,
-          colAliases,
-        ];
-        lambdaFunction.expressionSequence[0] = groupByFunction;
-      } else if (
-        queryBuilderState.fetchStructureState.projectionState.columns.length
-      ) {
-        // projection
-        const projectFunction = new SimpleFunctionExpression(
-          extractElementNameFromPath(
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-          ),
-          multiplicityOne,
-        );
-        const colLambdas = new CollectionInstanceValue(
-          new Multiplicity(
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-          ),
-        );
-        const colAliases = new CollectionInstanceValue(
-          new Multiplicity(
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-            queryBuilderState.fetchStructureState.projectionState.columns.length,
-          ),
-        );
-        queryBuilderState.fetchStructureState.projectionState.columns.forEach(
-          (projectionColumnState) => {
-            // column alias
-            const colAlias = new PrimitiveInstanceValue(
-              GenericTypeExplicitReference.create(new GenericType(typeString)),
-              multiplicityOne,
-            );
-            colAlias.values.push(projectionColumnState.columnName);
-            colAliases.values.push(colAlias);
-
-            // column projection
-            let columnLambda: ValueSpecification;
-            if (
-              projectionColumnState instanceof
-              QueryBuilderSimpleProjectionColumnState
-            ) {
-              columnLambda = buildGenericLambdaFunctionInstanceValue(
-                projectionColumnState.lambdaParameterName,
-                [
-                  buildPropertyExpressionChain(
-                    projectionColumnState.propertyExpressionState
-                      .propertyExpression,
-                    projectionColumnState.propertyExpressionState
-                      .queryBuilderState,
-                  ),
-                ],
-                queryBuilderState.graphManagerState.graph,
-              );
-            } else if (
-              projectionColumnState instanceof
-              QueryBuilderDerivationProjectionColumnState
-            ) {
-              columnLambda = new INTERNAL__UnknownValueSpecification(
-                V1_serializeRawValueSpecification(
-                  V1_transformRawLambda(
-                    projectionColumnState.lambda,
-                    new V1_GraphTransformerContextBuilder(
-                      // TODO?: do we need to include the plugins here?
-                      [],
-                    )
-                      .withKeepSourceInformationFlag(
-                        Boolean(options?.keepSourceInformation),
-                      )
-                      .build(),
-                  ),
-                ),
-              );
-            } else {
-              throw new UnsupportedOperationError(
-                `Can't build project() column expression: unsupported projection column state`,
-                projectionColumnState,
-              );
-            }
-            colLambdas.values.push(columnLambda);
-          },
-        );
-        const expression = lambdaFunction.expressionSequence[0];
-        projectFunction.parametersValues = [expression, colLambdas, colAliases];
-        lambdaFunction.expressionSequence[0] = projectFunction;
-      }
-
-      // build post-filter
-      appendPostFilter(
-        queryBuilderState.fetchStructureState.projectionState.postFilterState,
-        lambdaFunction,
+      const groupByFunction = new SimpleFunctionExpression(
+        extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        ),
+        multiplicityOne,
       );
 
-      // build result set modifiers
-      appendResultSetModifiers(
-        queryBuilderState.fetchStructureState.projectionState
-          .resultSetModifierState,
-        lambdaFunction,
-        {
-          overridingLimit: options?.isBuildingExecutionQuery
-            ? queryBuilderState.resultState.previewLimit
-            : undefined,
+      const colLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length -
+            queryBuilderState.fetchStructureState.projectionState
+              .aggregationState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length -
+            queryBuilderState.fetchStructureState.projectionState
+              .aggregationState.columns.length,
+        ),
+      );
+      const aggregateLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.length,
+        ),
+      );
+      const colAliases = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
+      queryBuilderState.fetchStructureState.projectionState.columns.forEach(
+        (projectionColumnState) => {
+          // column alias
+          const colAlias = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(typeString)),
+            multiplicityOne,
+          );
+          colAlias.values.push(projectionColumnState.columnName);
+          colAliases.values.push(colAlias);
+
+          const aggregateColumnState =
+            queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.find(
+              (column) =>
+                column.projectionColumnState === projectionColumnState,
+            );
+
+          // column projection
+          let columnLambda: ValueSpecification;
+          if (
+            projectionColumnState instanceof
+            QueryBuilderSimpleProjectionColumnState
+          ) {
+            columnLambda = buildGenericLambdaFunctionInstanceValue(
+              projectionColumnState.lambdaParameterName,
+              [
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
+              ],
+              queryBuilderState.graphManagerState.graph,
+            );
+          } else if (
+            projectionColumnState instanceof
+            QueryBuilderDerivationProjectionColumnState
+          ) {
+            columnLambda = new INTERNAL__UnknownValueSpecification(
+              V1_serializeRawValueSpecification(
+                V1_transformRawLambda(
+                  projectionColumnState.lambda,
+                  new V1_GraphTransformerContextBuilder(
+                    // TODO?: do we need to include the plugins here?
+                    [],
+                  )
+                    .withKeepSourceInformationFlag(
+                      Boolean(options?.keepSourceInformation),
+                    )
+                    .build(),
+                ),
+              ),
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build project() column expression: unsupported projection column state`,
+              projectionColumnState,
+            );
+          }
+
+          // column aggregation
+          if (aggregateColumnState) {
+            const aggregateFunctionExpression = new SimpleFunctionExpression(
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
+              ),
+              multiplicityOne,
+            );
+            const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
+              aggregateColumnState.lambdaParameterName,
+              [
+                aggregateColumnState.operator.buildAggregateExpressionFromState(
+                  aggregateColumnState,
+                ),
+              ],
+              aggregateColumnState.aggregationState.projectionState
+                .queryBuilderState.graphManagerState.graph,
+            );
+            aggregateFunctionExpression.parametersValues = [
+              columnLambda,
+              aggregateLambda,
+            ];
+
+            aggregateLambdas.values.push(aggregateFunctionExpression);
+          } else {
+            colLambdas.values.push(columnLambda);
+          }
         },
       );
+      const expression = lambdaFunction.expressionSequence[0];
+      groupByFunction.parametersValues = [
+        expression,
+        colLambdas,
+        aggregateLambdas,
+        colAliases,
+      ];
+      lambdaFunction.expressionSequence[0] = groupByFunction;
+    } else if (
+      queryBuilderState.fetchStructureState.projectionState.columns.length
+    ) {
+      // projection
+      const projectFunction = new SimpleFunctionExpression(
+        extractElementNameFromPath(
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
+        ),
+        multiplicityOne,
+      );
+      const colLambdas = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
+      const colAliases = new CollectionInstanceValue(
+        new Multiplicity(
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+          queryBuilderState.fetchStructureState.projectionState.columns.length,
+        ),
+      );
+      queryBuilderState.fetchStructureState.projectionState.columns.forEach(
+        (projectionColumnState) => {
+          // column alias
+          const colAlias = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(new GenericType(typeString)),
+            multiplicityOne,
+          );
+          colAlias.values.push(projectionColumnState.columnName);
+          colAliases.values.push(colAlias);
 
-      break;
-    }
-    case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-      // build fetch-structure
-      if (
-        queryBuilderState.fetchStructureState.graphFetchTreeState.treeData &&
-        !isGraphFetchTreeDataEmpty(
-          queryBuilderState.fetchStructureState.graphFetchTreeState.treeData,
-        )
-      ) {
-        const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
-          multiplicityOne,
-        );
-        graphFetchInstance.values = [
-          queryBuilderState.fetchStructureState.graphFetchTreeState.treeData
-            .tree,
-        ];
-        const serializeFunction = new SimpleFunctionExpression(
-          extractElementNameFromPath(
-            QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
-          ),
-          multiplicityOne,
-        );
-        const graphFetchFunc = new SimpleFunctionExpression(
-          queryBuilderState.fetchStructureState.graphFetchTreeState.isChecked
-            ? extractElementNameFromPath(
-                QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-              )
-            : extractElementNameFromPath(
-                QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+          // column projection
+          let columnLambda: ValueSpecification;
+          if (
+            projectionColumnState instanceof
+            QueryBuilderSimpleProjectionColumnState
+          ) {
+            columnLambda = buildGenericLambdaFunctionInstanceValue(
+              projectionColumnState.lambdaParameterName,
+              [
+                buildPropertyExpressionChain(
+                  projectionColumnState.propertyExpressionState
+                    .propertyExpression,
+                  projectionColumnState.propertyExpressionState
+                    .queryBuilderState,
+                ),
+              ],
+              queryBuilderState.graphManagerState.graph,
+            );
+          } else if (
+            projectionColumnState instanceof
+            QueryBuilderDerivationProjectionColumnState
+          ) {
+            columnLambda = new INTERNAL__UnknownValueSpecification(
+              V1_serializeRawValueSpecification(
+                V1_transformRawLambda(
+                  projectionColumnState.lambda,
+                  new V1_GraphTransformerContextBuilder(
+                    // TODO?: do we need to include the plugins here?
+                    [],
+                  )
+                    .withKeepSourceInformationFlag(
+                      Boolean(options?.keepSourceInformation),
+                    )
+                    .build(),
+                ),
               ),
-          multiplicityOne,
-        );
-        const expression = lambdaFunction.expressionSequence[0];
-        graphFetchFunc.parametersValues = [expression, graphFetchInstance];
-        serializeFunction.parametersValues = [
-          graphFetchFunc,
-          graphFetchInstance,
-        ];
-        lambdaFunction.expressionSequence[0] = serializeFunction;
-      }
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              `Can't build project() column expression: unsupported projection column state`,
+              projectionColumnState,
+            );
+          }
+          colLambdas.values.push(columnLambda);
+        },
+      );
+      const expression = lambdaFunction.expressionSequence[0];
+      projectFunction.parametersValues = [expression, colLambdas, colAliases];
+      lambdaFunction.expressionSequence[0] = projectFunction;
+    }
 
-      // build result set modifier: i.e. preview limit
-      if (options?.isBuildingExecutionQuery) {
-        if (lambdaFunction.expressionSequence.length === 1) {
-          const func = lambdaFunction.expressionSequence[0];
-          if (func instanceof SimpleFunctionExpression) {
-            if (
-              matchFunctionName(
-                func.functionName,
-                QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
-              )
-            ) {
-              // NOTE: we have to separate the handling of `take()` for projection and
-              // graph-fetch as the latter use `meta::pure::functions::collection::take()`
-              // where the former uses `meta::pure::tds::take()`, therefore the placement
-              // in the query are different. Also, note that because of the above distinction,
-              // we won't support using `take()` as result set modifier operations for graph-fetch.
-              // Result set modifier should only be used for projection for now.
-              const limit = new PrimitiveInstanceValue(
-                GenericTypeExplicitReference.create(
-                  new GenericType(
-                    queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                      PRIMITIVE_TYPE.INTEGER,
-                    ),
+    // build post-filter
+    appendPostFilter(
+      queryBuilderState.fetchStructureState.projectionState.postFilterState,
+      lambdaFunction,
+    );
+
+    // build result set modifiers
+    appendResultSetModifiers(
+      queryBuilderState.fetchStructureState.projectionState
+        .resultSetModifierState,
+      lambdaFunction,
+      {
+        overridingLimit: options?.isBuildingExecutionQuery
+          ? queryBuilderState.resultState.previewLimit
+          : undefined,
+      },
+    );
+  } else if (
+    queryBuilderState.fetchStructureState.implementation instanceof
+    QueryBuilderGraphFetchTreeState
+  ) {
+    // build fetch-structure
+    if (
+      queryBuilderState.fetchStructureState.graphFetchTreeState.treeData &&
+      !isGraphFetchTreeDataEmpty(
+        queryBuilderState.fetchStructureState.graphFetchTreeState.treeData,
+      )
+    ) {
+      const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
+        multiplicityOne,
+      );
+      graphFetchInstance.values = [
+        queryBuilderState.fetchStructureState.graphFetchTreeState.treeData.tree,
+      ];
+      const serializeFunction = new SimpleFunctionExpression(
+        extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
+        multiplicityOne,
+      );
+      const graphFetchFunc = new SimpleFunctionExpression(
+        queryBuilderState.fetchStructureState.graphFetchTreeState.isChecked
+          ? extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+            )
+          : extractElementNameFromPath(
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+            ),
+        multiplicityOne,
+      );
+      const expression = lambdaFunction.expressionSequence[0];
+      graphFetchFunc.parametersValues = [expression, graphFetchInstance];
+      serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
+      lambdaFunction.expressionSequence[0] = serializeFunction;
+    }
+
+    // build result set modifier: i.e. preview limit
+    if (options?.isBuildingExecutionQuery) {
+      if (lambdaFunction.expressionSequence.length === 1) {
+        const func = lambdaFunction.expressionSequence[0];
+        if (func instanceof SimpleFunctionExpression) {
+          if (
+            matchFunctionName(
+              func.functionName,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+            )
+          ) {
+            // NOTE: we have to separate the handling of `take()` for projection and
+            // graph-fetch as the latter use `meta::pure::functions::collection::take()`
+            // where the former uses `meta::pure::tds::take()`, therefore the placement
+            // in the query are different. Also, note that because of the above distinction,
+            // we won't support using `take()` as result set modifier operations for graph-fetch.
+            // Result set modifier should only be used for projection for now.
+            const limit = new PrimitiveInstanceValue(
+              GenericTypeExplicitReference.create(
+                new GenericType(
+                  queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                    PRIMITIVE_TYPE.INTEGER,
                   ),
                 ),
-                multiplicityOne,
-              );
-              limit.values = [queryBuilderState.resultState.previewLimit];
-              const takeFunction = new SimpleFunctionExpression(
-                extractElementNameFromPath(
-                  QUERY_BUILDER_SUPPORTED_FUNCTIONS.TAKE,
-                ),
-                multiplicityOne,
-              );
+              ),
+              multiplicityOne,
+            );
+            limit.values = [queryBuilderState.resultState.previewLimit];
+            const takeFunction = new SimpleFunctionExpression(
+              extractElementNameFromPath(
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.TAKE,
+              ),
+              multiplicityOne,
+            );
 
-              // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
-              // right next to `all()`
-              const serializeFunction = func;
-              const graphFetchFunc = guaranteeType(
-                serializeFunction.parametersValues[0],
-                SimpleFunctionExpression,
-              );
-              const getAllFunc = graphFetchFunc
-                .parametersValues[0] as ValueSpecification;
-              takeFunction.parametersValues[0] = getAllFunc;
-              takeFunction.parametersValues[1] = limit;
-              graphFetchFunc.parametersValues = [
-                takeFunction,
-                graphFetchFunc.parametersValues[1] as ValueSpecification,
-              ];
-            }
+            // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
+            // right next to `all()`
+            const serializeFunction = func;
+            const graphFetchFunc = guaranteeType(
+              serializeFunction.parametersValues[0],
+              SimpleFunctionExpression,
+            );
+            const getAllFunc = graphFetchFunc
+              .parametersValues[0] as ValueSpecification;
+            takeFunction.parametersValues[0] = getAllFunc;
+            takeFunction.parametersValues[1] = limit;
+            graphFetchFunc.parametersValues = [
+              takeFunction,
+              graphFetchFunc.parametersValues[1] as ValueSpecification,
+            ];
           }
         }
       }
-      break;
     }
-    default:
-      break;
   }
 
   // build parameters

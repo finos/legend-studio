@@ -17,6 +17,11 @@
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
 
+export enum FETCH_STRUCTURE_IMPLEMENTATION {
+  PROJECTION = 'PROJECTION',
+  GRAPH_FETCH = 'GRAPH_FETCH',
+}
+
 export abstract class QueryBuilderFetchStructureImplementationState {
   queryBuilderState: QueryBuilderState;
   fetchStructureState: QueryBuilderFetchStructureState;
@@ -28,6 +33,12 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     this.queryBuilderState = queryBuilderState;
     this.fetchStructureState = fetchStructureState;
   }
+
+  abstract get type(): string;
+  abstract recreate(
+    queryBuilderState: QueryBuilderState,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ): QueryBuilderFetchStructureImplementationState;
 
   // abstract addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;
   // abstract addChildrenProperties(node: QueryBuilderExplorerTreePropertyNodeData): void;

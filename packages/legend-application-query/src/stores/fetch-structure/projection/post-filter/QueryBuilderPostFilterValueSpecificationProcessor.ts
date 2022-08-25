@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-graph';
 import {
   assertTrue,
+  assertType,
   guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
@@ -32,7 +33,6 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const.js';
 import type { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
-import { FETCH_STRUCTURE_MODE } from '../../QueryBuilderFetchStructureState.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterState,
@@ -48,6 +48,7 @@ import {
   QueryBuilderDerivationProjectionColumnState,
 } from '../QueryBuilderProjectionColumnState.js';
 import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
+import { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
 
 const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
@@ -241,8 +242,9 @@ export const processPostFilterLambda = (
 ): void => {
   const fetchStructureState =
     postFilterState.projectionState.fetchStructureState;
-  assertTrue(
-    fetchStructureState.fetchStructureMode === FETCH_STRUCTURE_MODE.PROJECTION,
+  assertType(
+    fetchStructureState.implementation,
+    QueryBuilderProjectionState,
     `Can't process post-filter lambda: post-filter lambda must use projection fetch structure`,
   );
   assertTrue(
