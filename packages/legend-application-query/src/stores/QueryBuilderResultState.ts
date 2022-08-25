@@ -36,7 +36,7 @@ import {
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
+import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
   buildParametersLetLambdaFunc,
   ExecutionPlanState,

@@ -42,11 +42,6 @@ import {
   WebApplicationNavigator,
   TEST__getTestApplicationStore,
 } from '@finos/legend-application';
-import {
-  type SDLCServerClient,
-  TEST__SDLCServerClientProvider,
-  TEST__getTestSDLCServerClient,
-} from '@finos/legend-server-sdlc';
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { ExistingQueryEditor } from './QueryEditor.js';
@@ -73,8 +68,6 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
   mock?: ExistingQueryEditorStore;
   applicationStore?: LegendQueryApplicationStore;
   depotServerClient?: DepotServerClient;
-  sdlcServerClient?: SDLCServerClient;
-
   graphManagerState?: GraphManagerState;
   pluginManager?: LegendQueryPluginManager;
 }): ExistingQueryEditorStore => {
@@ -89,7 +82,6 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
           pluginManager,
         ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
-      customization?.sdlcServerClient ?? TEST__getTestSDLCServerClient(),
       pluginManager,
       TEST_QUERY_ID,
     );
@@ -174,8 +166,6 @@ export const TEST__setUpQueryEditor = async (
       );
   }
   MOCK__editorStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
-  // TODO: we need to think of how we will mock these calls when we modularize
-  // See https://github.com/finos/legend-studio/issues/731
   MOCK__editorStore.graphManagerState.graphManager.initialize =
     jest.fn<TEMPORARY__JestMock>();
   MOBX__disableSpyOrMock();
@@ -193,13 +183,11 @@ export const TEST__setUpQueryEditor = async (
         config={TEST__getTestLegendQueryApplicationConfig()}
         pluginManager={LegendQueryPluginManager.create()}
       >
-        <TEST__SDLCServerClientProvider>
-          <TEST__DepotServerClientProvider>
-            <TEST__LegendQueryBaseStoreProvider>
-              <ExistingQueryEditor />
-            </TEST__LegendQueryBaseStoreProvider>
-          </TEST__DepotServerClientProvider>
-        </TEST__SDLCServerClientProvider>
+        <TEST__DepotServerClientProvider>
+          <TEST__LegendQueryBaseStoreProvider>
+            <ExistingQueryEditor />
+          </TEST__LegendQueryBaseStoreProvider>
+        </TEST__DepotServerClientProvider>
       </TEST__ApplicationStoreProvider>
     </Router>,
   );

@@ -33,23 +33,13 @@ import type { LegendQueryApplicationConfig } from '../application/LegendQueryApp
 import {
   LegendQueryBaseStoreProvider,
   useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
 } from './LegendQueryBaseStoreProvider.js';
-import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
-import { useEffect } from 'react';
-import { flowResult } from 'mobx';
 
 const LegendQueryApplicationRoot = observer(() => {
-  const baseStore = useLegendQueryBaseStore();
   const applicationStore = useLegendQueryApplicationStore();
   const extraApplicationPageEntries = applicationStore.pluginManager
     .getApplicationPlugins()
     .flatMap((plugin) => plugin.getExtraApplicationPageEntries?.() ?? []);
-  useEffect(() => {
-    flowResult(
-      baseStore.applicationSDLCSetupState.initializeSDLCServerClient(),
-    ).catch(applicationStore.alertUnhandledError);
-  }, [applicationStore, baseStore]);
 
   return (
     <div className="app">
@@ -96,26 +86,19 @@ export const LegendQueryApplication = observer(
     const { config, pluginManager } = props;
 
     return (
-      <SDLCServerClientProvider
+      <DepotServerClientProvider
         config={{
-          env: config.env,
-          serverUrl: config.sdlcUrl,
+          serverUrl: config.depotServerUrl,
+          TEMPORARY__useLegacyDepotServerAPIRoutes:
+            config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
-        <DepotServerClientProvider
-          config={{
-            serverUrl: config.depotServerUrl,
-            TEMPORARY__useLegacyDepotServerAPIRoutes:
-              config.TEMPORARY__useLegacyDepotServerAPIRoutes,
-          }}
-        >
-          <LegendQueryBaseStoreProvider pluginManager={pluginManager}>
-            <LegendApplicationComponentFrameworkProvider>
-              <LegendQueryApplicationRoot />
-            </LegendApplicationComponentFrameworkProvider>
-          </LegendQueryBaseStoreProvider>
-        </DepotServerClientProvider>
-      </SDLCServerClientProvider>
+        <LegendQueryBaseStoreProvider pluginManager={pluginManager}>
+          <LegendApplicationComponentFrameworkProvider>
+            <LegendQueryApplicationRoot />
+          </LegendApplicationComponentFrameworkProvider>
+        </LegendQueryBaseStoreProvider>
+      </DepotServerClientProvider>
     );
   },
 );

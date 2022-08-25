@@ -50,7 +50,6 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "13.3.0",

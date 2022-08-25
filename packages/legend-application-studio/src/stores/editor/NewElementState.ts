@@ -190,7 +190,7 @@ export class NewPackageableRuntimeDriver extends NewElementDriver<PackageableRun
       isValid: computed,
     });
 
-    const mappings = this.editorStore.graphManagerState.graph.ownMappings;
+    const mappings = this.editorStore.graphManagerState.graph.mappings;
     if (mappings.length) {
       this.mapping = mappings[0];
     }
@@ -240,7 +240,7 @@ export class NewPureModelConnectionDriver extends NewConnectionValueDriver<PureM
       isValid: computed,
     });
 
-    const classes = this.editorStore.graphManagerState.graph.ownClasses;
+    const classes = this.editorStore.graphManagerState.graph.classes;
     if (classes.length) {
       this.class = classes[0];
     }
@@ -302,7 +302,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphManagerState.graph.ownDatabases;
+      const dbs = this.editorStore.graphManagerState.graph.databases;
       selectedStore = dbs.length ? (dbs[0] as Database) : stub_Database();
     }
     return new RelationalDatabaseConnection(
@@ -533,6 +533,7 @@ export class NewGenerationSpecificationDriver extends NewElementDriver<Generatio
   }
 
   get isValid(): boolean {
+    // only one generation specification should exist
     return !this.editorStore.graphManagerState.graph.ownGenerationSpecifications
       .length;
   }
