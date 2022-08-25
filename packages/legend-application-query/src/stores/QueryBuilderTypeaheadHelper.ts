@@ -21,18 +21,19 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TdsExecutionResult,
+  type RawLambda,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
-import { QueryBuilderPostFilterOperator_StartWith } from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
-import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
+import type { QueryBuilderAggregateColumnState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import {
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from './QueryBuilderPostFilterState.js';
+} from './fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './QueryBuilderProjectionState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
@@ -41,10 +42,12 @@ const START_LENGTH = 3;
 const createAndSetupQueryBuilderStateForTypeahead = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = queryBuilderState.createBareBuilderState();
+  const builderState = queryBuilderState.cloneQueryBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
-  builderState.resultSetModifierState.distinct = true;
-  builderState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
+  builderState.fetchStructureState.projectionState.resultSetModifierState.distinct =
+    true;
+  builderState.fetchStructureState.projectionState.resultSetModifierState.limit =
+    TYPEAHEAD_TAKE_LIMIT;
   return builderState;
 };
 
@@ -54,7 +57,7 @@ const buildColumnTypeaheadQuery = (
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   let projectionState;
   if (columnState instanceof QueryBuilderProjectionColumnState) {
     projectionState = columnState;
@@ -66,7 +69,7 @@ const buildColumnTypeaheadQuery = (
   }
   builderState.fetchStructureState.projectionState.columns = [projectionState];
   const postConditionState = new PostFilterConditionState(
-    builderState.postFilterState,
+    builderState.fetchStructureState.projectionState.postFilterState,
     columnState,
     value,
     new QueryBuilderPostFilterOperator_StartWith(),
@@ -75,23 +78,26 @@ const buildColumnTypeaheadQuery = (
     undefined,
     postConditionState,
   );
-  builderState.postFilterState.addNodeFromNode(postFilterNode, undefined);
-  return builderState;
+  builderState.fetchStructureState.projectionState.postFilterState.addNodeFromNode(
+    postFilterNode,
+    undefined,
+  );
+  return builderState.resultState.buildExecutionRawLambda();
 };
 
 export const buildPropertyTypeaheadQuery = (
   queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
-  const projectionState = new QueryBuilderSimpleProjectionColumnState(
+  const columnState = new QueryBuilderSimpleProjectionColumnState(
     builderState.fetchStructureState.projectionState,
     propertyExpression,
     false,
   );
-  return buildColumnTypeaheadQuery(builderState, projectionState, value);
+  return buildColumnTypeaheadQuery(builderState, columnState, value);
 };
 
 export const buildProjectionColumnTypeaheadQuery = (
@@ -100,7 +106,7 @@ export const buildProjectionColumnTypeaheadQuery = (
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
   return buildColumnTypeaheadQuery(builderState, columnState, value);
@@ -110,7 +116,7 @@ export const buildTypeaheadOptions = (result: ExecutionResult): string[] => {
   const tdsResult = guaranteeType(
     result,
     TdsExecutionResult,
-    'Typeahead search is only supported for tds result sets',
+    'Typeahead search is only supported for TDS result sets',
   );
   const options: string[] = [];
   tdsResult.result.rows

@@ -74,7 +74,6 @@ import {
   stub_Stereotype,
   getFirstAssociatedProperty,
   getSecondAssociatedProperty,
-  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 import {
   property_setName,

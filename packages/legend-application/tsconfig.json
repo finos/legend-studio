@@ -10,7 +10,6 @@
   "references": [
     { "path": "../legend-shared" },
     { "path": "../legend-art" },
-    { "path": "../legend-graph" },
-    { "path": "../legend-server-sdlc" }
+    { "path": "../legend-graph" }
   ]
 }

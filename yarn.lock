@@ -2049,7 +2049,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
-    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3
@@ -2264,7 +2263,6 @@ __metadata:
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
-    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 28.1.3
     "@types/css-font-loading-module": 0.0.7
@@ -2465,7 +2463,6 @@ __metadata:
     "@finos/legend-extension-dsl-diagram": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
-    "@finos/legend-server-sdlc": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 28.1.3

@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-query",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "Legend Query application core",
   "keywords": [
     "legend",
@@ -50,7 +50,6 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@testing-library/react": "13.3.0",

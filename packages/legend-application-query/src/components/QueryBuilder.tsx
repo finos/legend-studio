@@ -33,21 +33,22 @@ import {
   CaretDownIcon,
   CogIcon,
 } from '@finos/legend-art';
-import { QueryBuilderFilterPanel } from './QueryBuilderFilterPanel.js';
-import { QueryBuilderExplorerPanel } from './QueryBuilderExplorerPanel.js';
+import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
+import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
 import { QueryBuilderResultPanel } from './QueryBuilderResultPanel.js';
 import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryTextEditorMode } from '../stores/QueryTextEditorState.js';
-import { QueryBuilderFetchStructurePanel } from './QueryBuilderFetchStructurePanel.js';
+import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderFetchStructurePanel.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
-import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel.js';
-import { QueryBuilderFunctionsExplorerPanel } from './QueryBuilderFunctionsExplorerPanel.js';
+import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
+import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
+import { FETCH_STRUCTURE_MODE } from '../stores/fetch-structure/QueryBuilderFetchStructureState.js';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -141,8 +142,9 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowPostFilterPanel = (): void => {
-      queryBuilderState.setShowPostFilterPanel(
-        !queryBuilderState.showPostFilterPanel,
+      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+        !queryBuilderState.fetchStructureState.projectionState
+          .showPostFilterPanel,
       );
     };
 
@@ -195,14 +197,17 @@ export const QueryBuilder = observer(
                   <MenuContentItem
                     onClick={toggleShowPostFilterPanel}
                     disabled={
-                      queryBuilderState.fetchStructureState.isGraphFetchMode() ||
+                      queryBuilderState.fetchStructureState
+                        .fetchStructureMode !==
+                        FETCH_STRUCTURE_MODE.PROJECTION ||
                       Array.from(
-                        queryBuilderState.postFilterState.nodes.values(),
+                        queryBuilderState.fetchStructureState.projectionState.postFilterState.nodes.values(),
                       ).length > 0
                     }
                   >
                     <MenuContentItemIcon>
-                      {queryBuilderState.showPostFilterPanel ? (
+                      {queryBuilderState.fetchStructureState.projectionState
+                        .showPostFilterPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
@@ -334,12 +339,14 @@ export const QueryBuilder = observer(
                       </ResizablePanel>
                       <ResizablePanelSplitter />
                       <ResizablePanel minSize={300}>
-                        {!queryBuilderState.showPostFilterPanel && (
+                        {!queryBuilderState.fetchStructureState.projectionState
+                          .showPostFilterPanel && (
                           <QueryBuilderFilterPanel
                             queryBuilderState={queryBuilderState}
                           />
                         )}
-                        {queryBuilderState.showPostFilterPanel && (
+                        {queryBuilderState.fetchStructureState.projectionState
+                          .showPostFilterPanel && (
                           <ResizablePanelGroup orientation="horizontal">
                             <ResizablePanel minSize={300}>
                               <QueryBuilderFilterPanel

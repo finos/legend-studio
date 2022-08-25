@@ -40,7 +40,7 @@ import {
   type QueryBuilderPropertyMappingData,
   getRootMappingData,
   generatePropertyNodeMappingData,
-} from '../../stores/QueryBuilderExplorerState.js';
+} from '../explorer/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__provideMockedQueryEditorStore } from '../../components/QueryEditorComponentTestUtils.js';

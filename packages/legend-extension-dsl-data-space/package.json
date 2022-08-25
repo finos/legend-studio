@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-space",
-  "version": "6.1.5",
+  "version": "6.1.6",
   "description": "Legend extension for Data Space DSL",
   "keywords": [
     "legend",
@@ -50,7 +50,6 @@
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-graph": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.17",

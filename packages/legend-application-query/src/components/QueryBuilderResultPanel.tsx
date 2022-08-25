@@ -63,21 +63,21 @@ import type { CellMouseOverEvent } from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState.js';
+} from '../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from '../stores/QueryBuilderPostFilterState.js';
+} from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
-import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 
 const QueryBuilderResultContextMenu = observer(
   forwardRef<
@@ -94,7 +94,8 @@ const QueryBuilderResultContextMenu = observer(
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState =
+      queryBuilderState.fetchStructureState.projectionState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
       queryBuilderState.fetchStructureState.projectionState.columns
         .filter((c) => c.columnName === event?.column.getColId())
@@ -251,7 +252,9 @@ const QueryBuilderResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      queryBuilderState.setShowPostFilterPanel(true);
+      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
+        true,
+      );
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]

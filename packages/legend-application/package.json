@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application",
-  "version": "7.1.1",
+  "version": "7.1.2",
   "description": "Legend application core",
   "keywords": [
     "legend",
@@ -45,7 +45,6 @@
   "dependencies": {
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-server-sdlc": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.7",
     "@types/papaparse": "5.3.3",

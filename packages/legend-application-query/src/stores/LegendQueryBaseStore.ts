@@ -15,14 +15,10 @@
  */
 
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import {
-  type ApplicationStore,
-  LegendApplicationSDLCSetupState,
-} from '@finos/legend-application';
+import type { ApplicationStore } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationPlugin } from './LegendQueryApplicationPlugin.js';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export type LegendQueryApplicationStore = ApplicationStore<
   LegendQueryApplicationConfig,
@@ -33,26 +29,17 @@ export class LegendQueryBaseStore {
   applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   pluginManager: LegendQueryPluginManager;
-  applicationSDLCSetupState: LegendApplicationSDLCSetupState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
   ) {
     this.applicationStore = applicationStore;
-    this.applicationSDLCSetupState = new LegendApplicationSDLCSetupState(
-      applicationStore,
-      sdlcServerClient,
-    );
     this.depotServerClient = depotServerClient;
     this.pluginManager = pluginManager;
 
     // Register plugins
-    this.applicationSDLCSetupState.sdlcServerClient.setTracerService(
-      this.applicationStore.tracerService,
-    );
     this.depotServerClient.setTracerService(
       this.applicationStore.tracerService,
     );

@@ -30,7 +30,7 @@ import {
 import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
-} from '../QueryBuilderExplorerState.js';
+} from '../explorer/QueryBuilderExplorerState.js';
 import {
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,

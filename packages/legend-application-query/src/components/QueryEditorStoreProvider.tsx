@@ -31,7 +31,6 @@ import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
 } from './LegendQueryBaseStoreProvider.js';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
 
 export const QueryEditorStoreContext = createContext<
   QueryEditorStore | undefined
@@ -43,14 +42,12 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
 }> = ({ children, queryId }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const sdlcServerClient = useSDLCServerClient();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ExistingQueryEditorStore(
         applicationStore,
         depotServerClient,
-        sdlcServerClient,
         baseStore.pluginManager,
         queryId,
       ),
@@ -72,14 +69,12 @@ export const CreateQueryEditorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const sdlcServerClient = useSDLCServerClient();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new CreateQueryEditorStore(
         applicationStore,
         depotServerClient,
-        sdlcServerClient,
         baseStore.pluginManager,
         groupId,
         artifactId,
@@ -105,14 +100,12 @@ export const ServiceQueryEditorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const sdlcServerClient = useSDLCServerClient();
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ServiceQueryEditorStore(
         applicationStore,
         depotServerClient,
-        sdlcServerClient,
         baseStore.pluginManager,
         groupId,
         artifactId,

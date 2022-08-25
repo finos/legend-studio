@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 5.2.3
+
+### Patch Changes
+
+- [#1423](https://github.com/finos/legend-studio/pull/1423) [`4dacd372`](https://github.com/finos/legend-studio/commit/4dacd372db55f0998a8852855871d693b1d08374) ([@gayathrir11](https://github.com/gayathrir11)) - Fix propagating of default date for milestoned properties from association ([#1422](https://github.com/finos/legend-studio/issues/1422)).
+
 ## 5.2.2
 
 ## 5.2.1

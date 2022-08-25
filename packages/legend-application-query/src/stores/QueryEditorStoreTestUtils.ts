@@ -28,7 +28,6 @@ const TEST_DATA__appConfig = {
   },
   studio: {
     url: 'http://testStudioUrl',
-    sdlcUrl: 'http://testSdlcUrl',
   },
 };
 

@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 14.0.2
+
+### Patch Changes
+
+- [#1238](https://github.com/finos/legend-studio/pull/1238) [`650f85bd`](https://github.com/finos/legend-studio/commit/650f85bd22010b07d95d46648a5d9e2802e2f5c5) ([@jinanisha](https://github.com/jinanisha)) - Add support for middle Tier Authentication Strategy
+
+* [#1428](https://github.com/finos/legend-studio/pull/1428) [`b1670c85`](https://github.com/finos/legend-studio/commit/b1670c85602e2e76a14e4c5739d0ab4a66c05d0d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where default value of `date` type will throw a cast error for parameter ([#1391](https://github.com/finos/legend-studio/issues/1391))
+
 ## 14.0.1
 
 ### Patch Changes

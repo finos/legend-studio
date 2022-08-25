@@ -119,12 +119,12 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      {!baseStore.applicationSDLCSetupState.isSDLCAuthorized && (
+      {!baseStore.isSDLCAuthorized && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
       )}
-      {baseStore.applicationSDLCSetupState.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized && (
         <>
           {/* TODO: consider moving this to `LegendApplicationComponentFrameworkProvider` */}
           <VirtualAssistant />

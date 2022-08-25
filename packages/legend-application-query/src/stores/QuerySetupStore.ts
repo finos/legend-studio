@@ -49,7 +49,6 @@ import type { MappingRuntimeCompatibilityAnalysisResult } from '../graphManager/
 import { APPLICATION_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import type { SDLCServerClient } from '@finos/legend-server-sdlc';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -354,7 +353,6 @@ export class QuerySetupStore {
   applicationStore: LegendQueryApplicationStore;
   graphManagerState: BasicGraphManagerState;
   depotServerClient: DepotServerClient;
-  sdlcServerClient: SDLCServerClient;
   pluginManager: LegendQueryPluginManager;
   querySetupState?: QuerySetupState | undefined;
   initState = ActionState.create();
@@ -362,7 +360,6 @@ export class QuerySetupStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    sdlcServerClient: SDLCServerClient,
     pluginManager: LegendQueryPluginManager,
   ) {
     makeObservable(this, {
@@ -377,7 +374,6 @@ export class QuerySetupStore {
       applicationStore.log,
     );
     this.depotServerClient = depotServerClient;
-    this.sdlcServerClient = sdlcServerClient;
     this.pluginManager = pluginManager;
   }
 

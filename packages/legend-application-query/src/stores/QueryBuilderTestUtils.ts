@@ -23,6 +23,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { jest } from '@jest/globals';
+import { flowResult } from 'mobx';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
@@ -87,7 +88,9 @@ export const TEST_setUpQueryBuilderState = async (
         ),
       );
 
-    await queryBuilderState.explorerState.analyzeMappingModelCoverage();
+    await flowResult(
+      queryBuilderState.explorerState.analyzeMappingModelCoverage(),
+    );
   }
   return queryBuilderState;
 };

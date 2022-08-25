@@ -49,7 +49,7 @@ import {
   buildElementOption,
   useApplicationStore,
 } from '@finos/legend-application';
-import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
+import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
 
 const getParameterValue = (
