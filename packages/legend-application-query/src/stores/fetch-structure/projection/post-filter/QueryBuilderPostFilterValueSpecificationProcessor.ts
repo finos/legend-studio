@@ -54,8 +54,7 @@ const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
   postFilterState: QueryBuilderPostFilterState,
 ): QueryBuilderProjectionColumnState | QueryBuilderAggregateColumnState => {
-  const fetchStructureState =
-    postFilterState.projectionState.fetchStructureState;
+  const projectionState = postFilterState.projectionState;
   const properyExpressionName = propertyExpression.func.name;
   assertTrue(
     Object.values(TDS_COLUMN_GETTER).includes(
@@ -76,8 +75,8 @@ const findProjectionColumnState = (
     'Can`t process TDS column expression: Column should be a string primitive instance value',
   );
   const columnStates = [
-    ...fetchStructureState.projectionState.aggregationState.columns,
-    ...fetchStructureState.projectionState.columns,
+    ...projectionState.aggregationState.columns,
+    ...projectionState.columns,
   ];
   const columnState = guaranteeNonNullable(
     columnStates.find((c) => c.columnName === columnName),
@@ -240,15 +239,15 @@ export const processPostFilterLambda = (
   postFilterLambda: LambdaFunctionInstanceValue,
   postFilterState: QueryBuilderPostFilterState,
 ): void => {
-  const fetchStructureState =
-    postFilterState.projectionState.fetchStructureState;
+  const projectionState = postFilterState.projectionState;
+  const fetchStructureState = projectionState.fetchStructureState;
   assertType(
     fetchStructureState.implementation,
     QueryBuilderProjectionState,
     `Can't process post-filter lambda: post-filter lambda must use projection fetch structure`,
   );
   assertTrue(
-    Boolean(fetchStructureState.projectionState.columns.length),
+    Boolean(projectionState.columns.length),
     `Can't process post-filter lambda: post-filter lambda must have at least one projection column `,
   );
   const lambdaFunc = guaranteeNonNullable(

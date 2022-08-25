@@ -142,10 +142,16 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowPostFilterPanel = (): void => {
-      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
-        !queryBuilderState.fetchStructureState.projectionState
-          .showPostFilterPanel,
-      );
+      if (
+        queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderProjectionState
+      ) {
+        const projectionState =
+          queryBuilderState.fetchStructureState.implementation;
+        projectionState.setShowPostFilterPanel(
+          !projectionState.showPostFilterPanel,
+        );
+      }
     };
 
     // settings
@@ -178,6 +184,7 @@ export const QueryBuilder = observer(
                       Show Function(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
+                  {/* TODO?: consider hiding this menu option when the fetch-structure is not projection */}
                   <MenuContentItem
                     onClick={toggleShowParameterPanel}
                     disabled={
@@ -202,12 +209,15 @@ export const QueryBuilder = observer(
                           .implementation instanceof QueryBuilderProjectionState
                       ) ||
                       Array.from(
-                        queryBuilderState.fetchStructureState.projectionState.postFilterState.nodes.values(),
+                        queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
                       ).length > 0
                     }
                   >
                     <MenuContentItemIcon>
-                      {queryBuilderState.fetchStructureState.projectionState
+                      {queryBuilderState.fetchStructureState
+                        .implementation instanceof
+                        QueryBuilderProjectionState &&
+                      queryBuilderState.fetchStructureState.implementation
                         .showPostFilterPanel ? (
                         <CheckIcon />
                       ) : null}
@@ -340,28 +350,36 @@ export const QueryBuilder = observer(
                       </ResizablePanel>
                       <ResizablePanelSplitter />
                       <ResizablePanel minSize={300}>
-                        {!queryBuilderState.fetchStructureState.projectionState
-                          .showPostFilterPanel && (
+                        {(!(
+                          queryBuilderState.fetchStructureState
+                            .implementation instanceof
+                          QueryBuilderProjectionState
+                        ) ||
+                          !queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel) && (
                           <QueryBuilderFilterPanel
                             queryBuilderState={queryBuilderState}
                           />
                         )}
-                        {queryBuilderState.fetchStructureState.projectionState
-                          .showPostFilterPanel && (
-                          <ResizablePanelGroup orientation="horizontal">
-                            <ResizablePanel minSize={300}>
-                              <QueryBuilderFilterPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                            <ResizablePanelSplitter />
-                            <ResizablePanel>
-                              <QueryBuilderPostFilterPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                          </ResizablePanelGroup>
-                        )}
+                        {queryBuilderState.fetchStructureState
+                          .implementation instanceof
+                          QueryBuilderProjectionState &&
+                          queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel && (
+                            <ResizablePanelGroup orientation="horizontal">
+                              <ResizablePanel minSize={300}>
+                                <QueryBuilderFilterPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                              <ResizablePanelSplitter />
+                              <ResizablePanel>
+                                <QueryBuilderPostFilterPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            </ResizablePanelGroup>
+                          )}
                       </ResizablePanel>
                     </ResizablePanelGroup>
                   ) : (

@@ -19,14 +19,11 @@ import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderProjectionState } from './projection/QueryBuilderProjectionState.js';
 import {
-  buildPropertyExpressionFromExplorerTreeNodeData,
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../explorer/QueryBuilderExplorerState.js';
 import { Class } from '@finos/legend-graph';
 import { filterByType, UnsupportedOperationError } from '@finos/legend-shared';
-import { addQueryBuilderPropertyNode } from './graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
-import { QueryBuilderSimpleProjectionColumnState } from './projection/QueryBuilderProjectionColumnState.js';
 import {
   FETCH_STRUCTURE_IMPLEMENTATION,
   type QueryBuilderFetchStructureImplementationState,
@@ -34,8 +31,6 @@ import {
 
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
-  projectionState: QueryBuilderProjectionState;
-  graphFetchTreeState: QueryBuilderGraphFetchTreeState;
   implementation: QueryBuilderFetchStructureImplementationState;
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -45,22 +40,16 @@ export class QueryBuilderFetchStructureState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    // TODO: we probably should modularize this a bit better
-    // See https://github.com/finos/legend-studio/issues/731
-    this.projectionState = new QueryBuilderProjectionState(
-      queryBuilderState,
-      this,
-    );
-    this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
-      queryBuilderState,
-      this,
-    );
+    // TODO-BEFORE-PR: can we use the `recreate()` method here somehow?
     /**
      * TODO?: perhaps it would eventually make sense to default to
      * graph-fetch since `getAll()` naturally works for graph-fetch case
      * and graph-fetch allows somewhat an empty tree
      */
-    this.implementation = this.projectionState;
+    this.implementation = new QueryBuilderProjectionState(
+      this.queryBuilderState,
+      this,
+    );
   }
 
   // TODO-BEFORE-PR: can we use the `recreate()` method here somehow?
@@ -89,80 +78,33 @@ export class QueryBuilderFetchStructureState {
     }
   }
 
-  // TODO-BEFORE-PR: refactor this
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {
     if (
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       !(node.type instanceof Class)
     ) {
-      if (this.implementation instanceof QueryBuilderGraphFetchTreeState) {
-        this.implementation.addProperty(node);
-      } else if (this.implementation instanceof QueryBuilderProjectionState) {
-        this.implementation.addColumn(
-          new QueryBuilderSimpleProjectionColumnState(
-            this.implementation,
-            buildPropertyExpressionFromExplorerTreeNodeData(
-              this.queryBuilderState.explorerState.nonNullableTreeData,
-              node,
-              this.queryBuilderState.graphManagerState.graph,
-              this.queryBuilderState.explorerState.propertySearchPanelState
-                .allMappedPropertyNodes,
-            ),
-            this.queryBuilderState.explorerState.humanizePropertyName,
-          ),
-        );
-      }
+      this.implementation.fetchProperty(node);
     }
   }
 
   fetchNodeChildrenProperties(node: QueryBuilderExplorerTreeNodeData): void {
     if (node.type instanceof Class) {
-      // NOTE: here we require the node to already been expanded so the child nodes are generated
-      // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
-      const nodesToAdd = node.childrenIds
-        .map((childId) =>
-          this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
-            childId,
+      this.implementation.fetchProperties(
+        // NOTE: here we require the node to already been expanded so the child nodes are generated
+        // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
+        node.childrenIds
+          .map((childId) =>
+            this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
+              childId,
+            ),
+          )
+          .filter(filterByType(QueryBuilderExplorerTreePropertyNodeData))
+          .filter(
+            (childNode) =>
+              !(childNode.type instanceof Class) &&
+              childNode.mappingData.mapped,
           ),
-        )
-        .filter(filterByType(QueryBuilderExplorerTreePropertyNodeData))
-        .filter(
-          (childNode) =>
-            !(childNode.type instanceof Class) && childNode.mappingData.mapped,
-        );
-
-      if (this.implementation instanceof QueryBuilderGraphFetchTreeState) {
-        const graphFetchTreeData = this.implementation.treeData;
-        if (graphFetchTreeData) {
-          nodesToAdd.forEach((nodeToAdd) =>
-            addQueryBuilderPropertyNode(
-              graphFetchTreeData,
-              this.queryBuilderState.explorerState.nonNullableTreeData,
-              nodeToAdd,
-              this.queryBuilderState,
-            ),
-          );
-          this.graphFetchTreeState.setGraphFetchTree({
-            ...graphFetchTreeData,
-          });
-        }
-      } else if (this.implementation instanceof QueryBuilderProjectionState) {
-        nodesToAdd.forEach((nodeToAdd) => {
-          this.projectionState.addColumn(
-            new QueryBuilderSimpleProjectionColumnState(
-              this.projectionState,
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                this.queryBuilderState.explorerState.nonNullableTreeData,
-                nodeToAdd,
-                this.queryBuilderState.graphManagerState.graph,
-                this.queryBuilderState.explorerState.propertySearchPanelState
-                  .allMappedPropertyNodes,
-              ),
-              this.queryBuilderState.explorerState.humanizePropertyName,
-            ),
-          );
-        });
-      }
+      );
     }
   }
 

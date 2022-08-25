@@ -67,13 +67,18 @@ import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBui
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
 import {
-  getPropertyNodeId,
-  getPropertyNodeIdForSubType,
+  buildPropertyExpressionFromExplorerTreeNodeData,
+  type QueryBuilderExplorerTreePropertyNodeData,
 } from '../../explorer/QueryBuilderExplorerState.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 
 export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
   columns: QueryBuilderProjectionColumnState[] = [];
@@ -103,7 +108,6 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       showPostFilterPanel: observable,
       derivations: computed,
       hasParserError: computed,
-      validationIssues: computed,
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
@@ -414,68 +418,75 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     );
   }
 
-  get usedPropertyNodeIds(): string[] {
-    let usedNodeIds: string[] = [];
-    this.columns.forEach((column) => {
-      if (column instanceof QueryBuilderSimpleProjectionColumnState) {
-        let nodeIds: string[] = [];
-        const subClassNames = [];
-        let currentPropertyExpression: ValueSpecification =
-          column.propertyExpressionState.propertyExpression;
-        while (
-          currentPropertyExpression instanceof AbstractPropertyExpression
-        ) {
-          nodeIds.push(currentPropertyExpression.func.name);
-          currentPropertyExpression = guaranteeNonNullable(
-            currentPropertyExpression.parametersValues[0],
-          );
-          if (
-            currentPropertyExpression instanceof SimpleFunctionExpression &&
-            matchFunctionName(
-              currentPropertyExpression.functionName,
-              QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
-            ) &&
-            currentPropertyExpression.parametersValues.length >= 1 &&
-            currentPropertyExpression.parametersValues[1]?.genericType?.value
-              .rawType.path
-          ) {
-            nodeIds.push(
-              currentPropertyExpression.parametersValues[1]?.genericType?.value
-                .rawType.path,
-            );
-            subClassNames.push(
-              currentPropertyExpression.parametersValues[1]?.genericType?.value
-                .rawType.path,
-            );
-            currentPropertyExpression = guaranteeNonNullable(
-              currentPropertyExpression.parametersValues[0],
-            );
-          }
-        }
-        nodeIds = nodeIds.reverse();
-        if (
-          nodeIds.length &&
-          subClassNames.includes(guaranteeNonNullable(nodeIds[0]))
-        ) {
-          nodeIds[0] = getPropertyNodeIdForSubType(
-            '',
-            guaranteeNonNullable(nodeIds[0]),
-          );
-        }
-        for (let i = 1; i < nodeIds.length; i++) {
-          nodeIds[i] = subClassNames.includes(guaranteeNonNullable(nodeIds[i]))
-            ? getPropertyNodeIdForSubType(
-                guaranteeNonNullable(nodeIds[i - 1]),
-                guaranteeNonNullable(nodeIds[i]),
-              )
-            : getPropertyNodeId(
-                guaranteeNonNullable(nodeIds[i - 1]),
-                guaranteeNonNullable(nodeIds[i]),
-              );
-        }
-        usedNodeIds = usedNodeIds.concat(nodeIds);
-      }
+  fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    this.addColumn(
+      new QueryBuilderSimpleProjectionColumnState(
+        this,
+        buildPropertyExpressionFromExplorerTreeNodeData(
+          this.queryBuilderState.explorerState.nonNullableTreeData,
+          node,
+          this.queryBuilderState.graphManagerState.graph,
+          this.queryBuilderState.explorerState.propertySearchPanelState
+            .allMappedPropertyNodes,
+        ),
+        this.queryBuilderState.explorerState.humanizePropertyName,
+      ),
+    );
+  }
+
+  fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {
+    nodes.forEach((nodeToAdd) => {
+      this.addColumn(
+        new QueryBuilderSimpleProjectionColumnState(
+          this,
+          buildPropertyExpressionFromExplorerTreeNodeData(
+            this.queryBuilderState.explorerState.nonNullableTreeData,
+            nodeToAdd,
+            this.queryBuilderState.graphManagerState.graph,
+            this.queryBuilderState.explorerState.propertySearchPanelState
+              .allMappedPropertyNodes,
+          ),
+          this.queryBuilderState.explorerState.humanizePropertyName,
+        ),
+      );
     });
-    return usedNodeIds;
+  }
+
+  changeImplementationWithCheck(implementationType: string): void {
+    if (
+      this.columns.length > 0
+      // NOTE: here we could potentially check for the presence of post-filter as well
+      // but we make the assumption that if there is no projection column, there should
+      // not be any post-filter at all
+    ) {
+      this.queryBuilderState.applicationStore.setActionAlertInfo({
+        message:
+          this.showPostFilterPanel && this.postFilterState.nodes.size > 0
+            ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
+            : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler:
+              this.queryBuilderState.applicationStore.guardUnhandledError(
+                async () => {
+                  this.fetchStructureState.changeImplementation(
+                    implementationType,
+                  );
+                },
+              ),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      this.fetchStructureState.changeImplementation(implementationType);
+    }
   }
 }

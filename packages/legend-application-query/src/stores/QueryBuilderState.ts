@@ -356,7 +356,7 @@ export class QueryBuilderState {
   }
 
   clearCompilationError(): void {
-    this.fetchStructureState.projectionState.clearCompilationError();
+    this.fetchStructureState.implementation.clearCompilationError();
   }
 
   *compileQuery(): GeneratorFn<void> {
@@ -385,7 +385,7 @@ export class QueryBuilderState {
         // if even this fail, we will fall back to show it in text mode
         if (error instanceof CompilationError && error.sourceInformation) {
           fallbackToTextModeForDebugging =
-            !this.fetchStructureState.projectionState.revealCompilationError(
+            !this.fetchStructureState.implementation.revealCompilationError(
               error,
             );
         }

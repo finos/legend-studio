@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import type { CompilationError } from '@finos/legend-graph';
+import { computed, makeObservable } from 'mobx';
+import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
 
@@ -30,6 +33,10 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     queryBuilderState: QueryBuilderState,
     fetchStructureState: QueryBuilderFetchStructureState,
   ) {
+    makeObservable(this, {
+      validationIssues: computed,
+    });
+
     this.queryBuilderState = queryBuilderState;
     this.fetchStructureState = fetchStructureState;
   }
@@ -40,6 +47,12 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     fetchStructureState: QueryBuilderFetchStructureState,
   ): QueryBuilderFetchStructureImplementationState;
 
-  // abstract addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;
-  // abstract addChildrenProperties(node: QueryBuilderExplorerTreePropertyNodeData): void;
+  abstract get validationIssues(): string[] | undefined;
+  abstract revealCompilationError(compilationError: CompilationError): boolean;
+  abstract clearCompilationError(): void;
+  abstract fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;
+  abstract fetchProperties(
+    nodes: QueryBuilderExplorerTreePropertyNodeData[],
+  ): void;
+  abstract changeImplementationWithCheck(implementationType: string): void;
 }

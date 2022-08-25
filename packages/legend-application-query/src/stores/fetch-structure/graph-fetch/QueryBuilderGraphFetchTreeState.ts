@@ -17,6 +17,7 @@
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import { action, makeObservable, observable } from 'mobx';
 import {
+  type CompilationError,
   PackageableElementExplicitReference,
   RootGraphFetchTree,
 } from '@finos/legend-graph';
@@ -32,6 +33,10 @@ import {
   QueryBuilderFetchStructureImplementationState,
 } from '../QueryBuilderFetchStructureImplementationState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 
 export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
   treeData?: QueryBuilderGraphFetchTreeData | undefined;
@@ -68,6 +73,10 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
 
   get type(): string {
     return FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH;
+  }
+
+  get validationIssues(): string[] | undefined {
+    return undefined;
   }
 
   setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {
@@ -113,5 +122,65 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
       this.queryBuilderState,
     );
     this.setGraphFetchTree({ ...this.treeData });
+  }
+
+  revealCompilationError(compilationError: CompilationError): boolean {
+    return false;
+  }
+
+  clearCompilationError(): void {
+    return;
+  }
+
+  fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    this.addProperty(node);
+  }
+
+  fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {
+    const graphFetchTreeData = this.treeData;
+    if (graphFetchTreeData) {
+      nodes.forEach((nodeToAdd) =>
+        addQueryBuilderPropertyNode(
+          graphFetchTreeData,
+          this.queryBuilderState.explorerState.nonNullableTreeData,
+          nodeToAdd,
+          this.queryBuilderState,
+        ),
+      );
+      this.setGraphFetchTree({
+        ...graphFetchTreeData,
+      });
+    }
+  }
+
+  changeImplementationWithCheck(implementationType: string): void {
+    if (this.treeData?.rootIds.length) {
+      this.queryBuilderState.applicationStore.setActionAlertInfo({
+        message:
+          'Current graph-fetch will be lost when switching to projection mode. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler:
+              this.queryBuilderState.applicationStore.guardUnhandledError(
+                async () => {
+                  this.fetchStructureState.changeImplementation(
+                    implementationType,
+                  );
+                },
+              ),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      this.fetchStructureState.changeImplementation(implementationType);
+    }
   }
 }

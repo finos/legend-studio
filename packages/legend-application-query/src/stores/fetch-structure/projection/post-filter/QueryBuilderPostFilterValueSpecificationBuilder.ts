@@ -100,13 +100,6 @@ export const appendPostFilter = (
   ) {
     return lambda;
   }
-
-  // TODO-BEFORE-PR: think about this again after refactoring
-  // assertTrue(
-  //   postFilterState.projectionState.fetchStructureState.fetchStructureMode ===
-  //     FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION,
-  //   'Can only apply post-filter while fetching projection columns',
-  // );
   const multiplicityOne =
     postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,

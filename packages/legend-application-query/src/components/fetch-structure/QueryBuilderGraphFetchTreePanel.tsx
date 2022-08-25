@@ -30,7 +30,6 @@ import {
   InfoCircleIcon,
   PanelDropZone,
 } from '@finos/legend-art';
-import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -209,23 +208,21 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 );
 
 export const QueryBuilderGraphFetchTreePanel = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const fetchStructureState = queryBuilderState.fetchStructureState;
-    const graphFetchState = fetchStructureState.graphFetchTreeState;
-    const treeData = graphFetchState.treeData;
+  (props: { graphFetchTreeState: QueryBuilderGraphFetchTreeState }) => {
+    const { graphFetchTreeState } = props;
+    const treeData = graphFetchTreeState.treeData;
 
     // Deep/Graph Fetch Tree
     const updateTreeData = (data: QueryBuilderGraphFetchTreeData): void => {
-      graphFetchState.setGraphFetchTree(data);
+      graphFetchTreeState.setGraphFetchTree(data);
     };
 
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void => {
-        graphFetchState.addProperty(item.node);
+        graphFetchTreeState.addProperty(item.node);
       },
-      [graphFetchState],
+      [graphFetchTreeState],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
@@ -266,7 +263,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
           )}
           {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
             <QueryBuilderGraphFetchTreeExplorer
-              graphFetchState={graphFetchState}
+              graphFetchState={graphFetchTreeState}
               treeData={treeData}
               isReadOnly={false}
               updateTreeData={updateTreeData}

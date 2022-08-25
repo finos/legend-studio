@@ -39,6 +39,7 @@ import {
   buildProjectionColumnTypeaheadQuery,
   buildPropertyTypeaheadQuery,
 } from '../QueryBuilderTypeaheadHelper.js';
+import { QueryBuilderProjectionState } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
 
 type TypeaheadTestCase = [
   string,
@@ -126,8 +127,13 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );
+
+      const projectionState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderProjectionState,
+      );
       const postFilterNode = guaranteeType(
-        queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
+        projectionState.postFilterState.getRootNode(),
         QueryBuilderPostFilterTreeConditionNodeData,
       );
       const jsonQuery =

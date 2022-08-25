@@ -33,14 +33,16 @@ const QueryBuilderFetchStructureEditor = observer(
 
     if (fetchStructureImplementation instanceof QueryBuilderProjectionState) {
       return (
-        <QueryBuilderProjectionPanel queryBuilderState={queryBuilderState} />
+        <QueryBuilderProjectionPanel
+          projectionState={fetchStructureImplementation}
+        />
       );
     } else if (
       fetchStructureImplementation instanceof QueryBuilderGraphFetchTreeState
     ) {
       return (
         <QueryBuilderGraphFetchTreePanel
-          queryBuilderState={queryBuilderState}
+          graphFetchTreeState={fetchStructureImplementation}
         />
       );
     }
@@ -62,120 +64,16 @@ export const QueryBuilderFetchStructurePanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const fetchStructureState = queryBuilderState.fetchStructureState;
-    // const fetchStructureImplementation = fetchStructureState.implementation;
-    // const applicationStore = useApplicationStore();
 
-    // TODO-BEFORE-PR: move this to inside of query builder projection state
-    // const openResultSetModifierEditor = (): void =>
-    //   queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.setShowModal(
-    //     true,
-    //   );
-    // const addNewBlankDerivation = (): void =>
-    //   fetchStructureState.projectionState.addNewBlankDerivation();
-
-    // TODO-BEFORE-PR: move this to inside of query builder projection state
-    // const onChangeFetchStructureImplementation =
-    //   (implementationType: FETCH_STRUCTURE_IMPLEMENTATION): (() => void) =>
-    //   (): void => {
-    //     const reset = (): void => {
-    //       fetchStructureState.changeImplementation(implementationType);
-    //       queryBuilderState.changeFetchStructure();
-    //       queryBuilderState.fetchStructureState.projectionState.postFilterState =
-    //         new QueryBuilderPostFilterState(
-    //           queryBuilderState.fetchStructureState.projectionState,
-    //           queryBuilderState.fetchStructureState.projectionState.postFilterOperators,
-    //         );
-    //       queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
-    //         false,
-    //       );
-    //     };
-    //     if (fetchStructureState.fetchStructureMode !== implementationType) {
-    //       switch (implementationType) {
-    //         case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-    //           if (
-    //             queryBuilderState.fetchStructureState.projectionState.columns
-    //               .length > 0
-    //             // NOTE: here we could potentially check for the presence of post-filter as well
-    //             // but we make the assumption that if there is no projection column, there should
-    //             // not be any post-filter at all
-    //           ) {
-    //             applicationStore.setActionAlertInfo({
-    //               message:
-    //                 queryBuilderState.fetchStructureState.projectionState
-    //                   .showPostFilterPanel &&
-    //                 queryBuilderState.fetchStructureState.projectionState
-    //                   .postFilterState.nodes.size > 0
-    //                   ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
-    //                   : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
-    //               type: ActionAlertType.CAUTION,
-    //               actions: [
-    //                 {
-    //                   label: 'Proceed',
-    //                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-    //                   handler: applicationStore.guardUnhandledError(
-    //                     async () => {
-    //                       queryBuilderState.fetchStructureState.projectionState =
-    //                         new QueryBuilderProjectionState(
-    //                           queryBuilderState,
-    //                           queryBuilderState.fetchStructureState,
-    //                         );
-    //                       reset();
-    //                     },
-    //                   ),
-    //                 },
-    //                 {
-    //                   label: 'Cancel',
-    //                   type: ActionAlertActionType.PROCEED,
-    //                   default: true,
-    //                 },
-    //               ],
-    //             });
-    //           } else {
-    //             reset();
-    //           }
-    //           return;
-    //         }
-    //         case FETCH_STRUCTURE_MODE.PROJECTION: {
-    //           if (
-    //             queryBuilderState.fetchStructureState.graphFetchTreeState
-    //               .treeData?.rootIds.length
-    //           ) {
-    //             applicationStore.setActionAlertInfo({
-    //               message:
-    //                 'Current graph-fetch will be lost when switching to projection mode. Do you still want to proceed?',
-    //               type: ActionAlertType.CAUTION,
-    //               actions: [
-    //                 {
-    //                   label: 'Proceed',
-    //                   type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-    //                   handler: applicationStore.guardUnhandledError(
-    //                     async () => {
-    //                       queryBuilderState.fetchStructureState.graphFetchTreeState =
-    //                         new QueryBuilderGraphFetchTreeState(
-    //                           queryBuilderState,
-    //                           queryBuilderState.fetchStructureState,
-    //                         );
-    //                       reset();
-    //                     },
-    //                   ),
-    //                 },
-    //                 {
-    //                   label: 'Cancel',
-    //                   type: ActionAlertActionType.PROCEED,
-    //                   default: true,
-    //                 },
-    //               ],
-    //             });
-    //           } else {
-    //             reset();
-    //           }
-    //           return;
-    //         }
-    //         default:
-    //           return;
-    //       }
-    //     }
-    //   };
+    const onChangeFetchStructureImplementation =
+      (implementationType: FETCH_STRUCTURE_IMPLEMENTATION): (() => void) =>
+      (): void => {
+        if (fetchStructureState.implementation.type !== implementationType) {
+          fetchStructureState.implementation.changeImplementationWithCheck(
+            implementationType,
+          );
+        }
+      };
 
     return (
       <div className="panel">
@@ -187,31 +85,10 @@ export const QueryBuilderFetchStructurePanel = observer(
             />
           </div>
           <div className="panel__header__actions">
-            {/* {fetchStructureImplementation instanceof
-              QueryBuilderProjectionState && (
-              <>
-                <button
-                  className="panel__header__action"
-                  onClick={openResultSetModifierEditor}
-                  tabIndex={-1}
-                  title="Configure result set modifiers..."
-                >
-                  <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
-                </button>
-                <button
-                  className="panel__header__action"
-                  onClick={addNewBlankDerivation}
-                  tabIndex={-1}
-                  title="Add a new derivation"
-                >
-                  <PlusIcon />
-                </button>
-              </>
-            )} */}
             <div className="query-builder__fetch__structure__modes">
               {Object.values(FETCH_STRUCTURE_IMPLEMENTATION).map((type) => (
                 <button
-                  // onClick={onChangeFetchStructureImplementation(type)}
+                  onClick={onChangeFetchStructureImplementation(type)}
                   className={clsx('query-builder__fetch__structure__mode', {
                     'query-builder__fetch__structure__mode--selected':
                       type === fetchStructureState.implementation.type,

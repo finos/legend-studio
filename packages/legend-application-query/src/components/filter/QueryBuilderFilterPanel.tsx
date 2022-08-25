@@ -788,7 +788,7 @@ export const QueryBuilderFilterPanel = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
-        className="panel query-builder__filter"
+        className="panel"
       >
         <div className="panel__header">
           <div className="panel__header__title">
@@ -860,7 +860,7 @@ export const QueryBuilderFilterPanel = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content query-builder__filter__content">
+        <div className="panel__content">
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}

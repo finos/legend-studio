@@ -64,8 +64,8 @@ const buildSortExpression = (
   return sortColumnFunction;
 };
 
-export const appendResultSetModifiers = (
-  resultModifiersState: QueryResultSetModifierState,
+export const appendResultSetModifier = (
+  resultModifierState: QueryResultSetModifierState,
   lambda: LambdaFunction,
   options?:
     | {
@@ -74,7 +74,7 @@ export const appendResultSetModifiers = (
     | undefined,
 ): LambdaFunction => {
   const multiplicityOne =
-    resultModifiersState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+    resultModifierState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   if (lambda.expressionSequence.length === 1) {
@@ -97,7 +97,7 @@ export const appendResultSetModifiers = (
         let currentExpression = func;
 
         // build distinct()
-        if (resultModifiersState.distinct) {
+        if (resultModifierState.distinct) {
           const distinctFunction = new SimpleFunctionExpression(
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
@@ -109,7 +109,7 @@ export const appendResultSetModifiers = (
         }
 
         // build sort()
-        if (resultModifiersState.sortColumns.length) {
+        if (resultModifierState.sortColumns.length) {
           const sortFunction = new SimpleFunctionExpression(
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
@@ -117,26 +117,26 @@ export const appendResultSetModifiers = (
             multiplicityOne,
           );
           const multiplicity = new Multiplicity(
-            resultModifiersState.sortColumns.length,
-            resultModifiersState.sortColumns.length,
+            resultModifierState.sortColumns.length,
+            resultModifierState.sortColumns.length,
           );
           const collection = new CollectionInstanceValue(
             multiplicity,
             undefined,
           );
           collection.values =
-            resultModifiersState.sortColumns.map(buildSortExpression);
+            resultModifierState.sortColumns.map(buildSortExpression);
           sortFunction.parametersValues[0] = currentExpression;
           sortFunction.parametersValues[1] = collection;
           currentExpression = sortFunction;
         }
 
         // build take()
-        if (resultModifiersState.limit || options?.overridingLimit) {
+        if (resultModifierState.limit || options?.overridingLimit) {
           const limit = new PrimitiveInstanceValue(
             GenericTypeExplicitReference.create(
               new GenericType(
-                resultModifiersState.projectionState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                resultModifierState.projectionState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
                   PRIMITIVE_TYPE.INTEGER,
                 ),
               ),
@@ -145,7 +145,7 @@ export const appendResultSetModifiers = (
           );
           limit.values = [
             Math.min(
-              resultModifiersState.limit ?? Number.MAX_SAFE_INTEGER,
+              resultModifierState.limit ?? Number.MAX_SAFE_INTEGER,
               options?.overridingLimit ?? Number.MAX_SAFE_INTEGER,
             ),
           ];
