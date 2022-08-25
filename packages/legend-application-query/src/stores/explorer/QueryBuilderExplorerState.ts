@@ -322,9 +322,7 @@ const generateSubtypeNodeMappingData = (
     } else if (parentMappingData.mappedEntity.path === subclass.path) {
       return {
         mapped: true,
-        mappedEntity: modelCoverageAnalysisResult.__ENTITIES_INDEX.get(
-          parentMappingData.mappedEntity.path,
-        ),
+        mappedEntity: parentMappingData.mappedEntity,
       };
     }
   }
