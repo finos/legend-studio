@@ -125,17 +125,20 @@ export class FilterConditionState {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
       if (performTypeahead(this.value)) {
-        const builderState = buildPropertyTypeaheadQuery(
-          this.filterState.queryBuilderState,
-          this.propertyExpressionState.propertyExpression,
-          this.value,
-        );
         const result =
-          (yield builderState.graphManagerState.graphManager.executeMapping(
-            builderState.resultState.buildExecutionRawLambda(),
-            guaranteeNonNullable(builderState.querySetupState.mapping),
-            guaranteeNonNullable(builderState.querySetupState.runtimeValue),
-            builderState.graphManagerState.graph,
+          (yield this.filterState.queryBuilderState.graphManagerState.graphManager.executeMapping(
+            buildPropertyTypeaheadQuery(
+              this.filterState.queryBuilderState,
+              this.propertyExpressionState.propertyExpression,
+              this.value,
+            ),
+            guaranteeNonNullable(
+              this.filterState.queryBuilderState.querySetupState.mapping,
+            ),
+            guaranteeNonNullable(
+              this.filterState.queryBuilderState.querySetupState.runtimeValue,
+            ),
+            this.filterState.queryBuilderState.graphManagerState.graph,
           )) as ExecutionResult;
         this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }

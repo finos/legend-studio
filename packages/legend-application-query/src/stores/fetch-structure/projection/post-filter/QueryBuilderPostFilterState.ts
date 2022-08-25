@@ -320,17 +320,23 @@ export class PostFilterConditionState {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
       if (performTypeahead(this.value)) {
-        const builderState = buildProjectionColumnTypeaheadQuery(
-          this.postFilterState.projectionState.queryBuilderState,
-          this.columnState,
-          this.value,
-        );
         const result =
-          (yield builderState.graphManagerState.graphManager.executeMapping(
-            builderState.resultState.buildExecutionRawLambda(),
-            guaranteeNonNullable(builderState.querySetupState.mapping),
-            guaranteeNonNullable(builderState.querySetupState.runtimeValue),
-            builderState.graphManagerState.graph,
+          (yield this.postFilterState.projectionState.queryBuilderState.graphManagerState.graphManager.executeMapping(
+            buildProjectionColumnTypeaheadQuery(
+              this.postFilterState.projectionState.queryBuilderState,
+              this.columnState,
+              this.value,
+            ),
+            guaranteeNonNullable(
+              this.postFilterState.projectionState.queryBuilderState
+                .querySetupState.mapping,
+            ),
+            guaranteeNonNullable(
+              this.postFilterState.projectionState.queryBuilderState
+                .querySetupState.runtimeValue,
+            ),
+            this.postFilterState.projectionState.queryBuilderState
+              .graphManagerState.graph,
           )) as ExecutionResult;
         this.typeaheadSearchResults = buildTypeaheadOptions(result);
       }

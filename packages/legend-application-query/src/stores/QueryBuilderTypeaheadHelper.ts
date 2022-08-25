@@ -21,6 +21,7 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   TdsExecutionResult,
+  type RawLambda,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
@@ -56,7 +57,7 @@ const buildColumnTypeaheadQuery = (
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   let projectionState;
   if (columnState instanceof QueryBuilderProjectionColumnState) {
     projectionState = columnState;
@@ -81,14 +82,14 @@ const buildColumnTypeaheadQuery = (
     postFilterNode,
     undefined,
   );
-  return builderState;
+  return builderState.resultState.buildExecutionRawLambda();
 };
 
 export const buildPropertyTypeaheadQuery = (
   queryBuilderState: QueryBuilderState,
   propertyExpression: AbstractPropertyExpression,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
   const columnState = new QueryBuilderSimpleProjectionColumnState(
@@ -105,7 +106,7 @@ export const buildProjectionColumnTypeaheadQuery = (
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
-): QueryBuilderState => {
+): RawLambda => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
   return buildColumnTypeaheadQuery(builderState, columnState, value);
@@ -115,7 +116,7 @@ export const buildTypeaheadOptions = (result: ExecutionResult): string[] => {
   const tdsResult = guaranteeType(
     result,
     TdsExecutionResult,
-    'Typeahead search is only supported for tds result sets',
+    'Typeahead search is only supported for TDS result sets',
   );
   const options: string[] = [];
   tdsResult.result.rows

@@ -78,14 +78,13 @@ describe(integrationTest('Query builder type ahead: post-filter'), () => {
         queryBuilderState.filterState.getRootNode(),
         QueryBuilderFilterTreeConditionNodeData,
       );
-      const typeaheadQueryState = buildPropertyTypeaheadQuery(
-        queryBuilderState,
-        filterNode.condition.propertyExpressionState.propertyExpression,
-        filterNode.condition.value,
-      );
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-          typeaheadQueryState.resultState.buildExecutionRawLambda(),
+          buildPropertyTypeaheadQuery(
+            queryBuilderState,
+            filterNode.condition.propertyExpressionState.propertyExpression,
+            filterNode.condition.value,
+          ),
         );
       (
         expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
@@ -131,14 +130,13 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
         queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
         QueryBuilderPostFilterTreeConditionNodeData,
       );
-      const typeaheadQueryState = buildProjectionColumnTypeaheadQuery(
-        queryBuilderState,
-        postFilterNode.condition.columnState,
-        postFilterNode.condition.value,
-      );
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
-          typeaheadQueryState.resultState.buildExecutionRawLambda(),
+          buildProjectionColumnTypeaheadQuery(
+            queryBuilderState,
+            postFilterNode.condition.columnState,
+            postFilterNode.condition.value,
+          ),
         );
       (
         expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
