@@ -46,7 +46,7 @@ import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+} from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';

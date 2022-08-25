@@ -28,7 +28,6 @@ import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderF
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
-import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
   TEST_DATA__lambda_expected_typeahead_filter,
   TEST_DATA__lambda_expected_typeahead_postFilter,
@@ -48,10 +47,9 @@ type TypeaheadTestCase = [
   },
   { parameters?: object; body?: object },
   { parameters?: object; body?: object },
-  boolean,
 ];
 
-const cases: TypeaheadTestCase[] = [
+const FILTER_CASES: TypeaheadTestCase[] = [
   [
     'Simple typeahead search on filter',
     {
@@ -59,8 +57,44 @@ const cases: TypeaheadTestCase[] = [
     },
     TEST_DATA__lambda_simpleSingleConditionFilter,
     TEST_DATA__lambda_expected_typeahead_filter,
-    false,
   ],
+];
+
+describe(integrationTest('Query builder type ahead: post-filter'), () => {
+  test.each(FILTER_CASES)(
+    '%s',
+    async (
+      testName: TypeaheadTestCase[0],
+      context: TypeaheadTestCase[1],
+      lambda: TypeaheadTestCase[2],
+      expectedTypeaheadLambda: TypeaheadTestCase[3],
+    ) => {
+      const { entities } = context;
+      const queryBuilderState = await TEST_setUpQueryBuilderState(
+        entities,
+        new RawLambda(lambda.parameters, lambda.body),
+      );
+      const filterNode = guaranteeType(
+        queryBuilderState.filterState.getRootNode(),
+        QueryBuilderFilterTreeConditionNodeData,
+      );
+      const typeaheadQueryState = buildPropertyTypeaheadQuery(
+        queryBuilderState,
+        filterNode.condition.propertyExpressionState.propertyExpression,
+        filterNode.condition.value,
+      );
+      const jsonQuery =
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          typeaheadQueryState.resultState.buildExecutionRawLambda(),
+        );
+      (
+        expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
+      ).toIncludeSameMembers([jsonQuery]);
+    },
+  );
+});
+
+const POST_FILTER_CASES: TypeaheadTestCase[] = [
   [
     'Simple typeahead search on post-filter',
     {
@@ -68,7 +102,6 @@ const cases: TypeaheadTestCase[] = [
     },
     TEST_DATA__lambda_typeahead_simple_postFilter,
     TEST_DATA__lambda_expected_typeahead_postFilter,
-    true,
   ],
   [
     'Simple typeahead search on post-filter with derivation column',
@@ -77,48 +110,32 @@ const cases: TypeaheadTestCase[] = [
     },
     TEST_DATA__lambda_derivationPostFilter,
     TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
-    true,
   ],
 ];
 
-describe(integrationTest('Query builder type ahead'), () => {
-  test.each(cases)(
+describe(integrationTest('Query builder type ahead: filter'), () => {
+  test.each(POST_FILTER_CASES)(
     '%s',
     async (
       testName: TypeaheadTestCase[0],
       context: TypeaheadTestCase[1],
       lambda: TypeaheadTestCase[2],
       expectedTypeaheadLambda: TypeaheadTestCase[3],
-      testPostFilter: TypeaheadTestCase[4],
     ) => {
       const { entities } = context;
       const queryBuilderState = await TEST_setUpQueryBuilderState(
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );
-
-      let typeaheadQueryState: QueryBuilderState;
-      if (testPostFilter) {
-        const postFilterNode = guaranteeType(
-          queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
-          QueryBuilderPostFilterTreeConditionNodeData,
-        );
-        typeaheadQueryState = buildProjectionColumnTypeaheadQuery(
-          queryBuilderState,
-          postFilterNode.condition.columnState,
-          postFilterNode.condition.value,
-        );
-      } else {
-        const filterNode = guaranteeType(
-          queryBuilderState.filterState.getRootNode(),
-          QueryBuilderFilterTreeConditionNodeData,
-        );
-        typeaheadQueryState = buildPropertyTypeaheadQuery(
-          queryBuilderState,
-          filterNode.condition.propertyExpressionState.propertyExpression,
-          filterNode.condition.value,
-        );
-      }
+      const postFilterNode = guaranteeType(
+        queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
+        QueryBuilderPostFilterTreeConditionNodeData,
+      );
+      const typeaheadQueryState = buildProjectionColumnTypeaheadQuery(
+        queryBuilderState,
+        postFilterNode.condition.columnState,
+        postFilterNode.condition.value,
+      );
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           typeaheadQueryState.resultState.buildExecutionRawLambda(),

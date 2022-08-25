@@ -43,7 +43,7 @@ import {
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../../QueryBuilderProjectionState.js';
+} from '../../QueryBuilderProjectionColumnState.js';
 
 export const getColumnMultiplicity = (
   columnState:

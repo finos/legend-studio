@@ -24,9 +24,9 @@ import type {
   VariableExpression,
 } from '@finos/legend-graph';
 import {
-  QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
-} from '../QueryBuilderProjectionState.js';
+  QueryBuilderSimpleProjectionColumnState,
+} from '../QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
 
 export abstract class QueryBuilderAggregateOperator {

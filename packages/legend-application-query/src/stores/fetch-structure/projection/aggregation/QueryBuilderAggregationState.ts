@@ -18,11 +18,9 @@ import { action, makeAutoObservable } from 'mobx';
 import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
 import type { Type } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../../QueryBuilder_Const.js';
-import type {
-  QueryBuilderProjectionColumnState,
-  QueryBuilderProjectionState,
-} from '../QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
+import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionColumnState.js';
 
 export class QueryBuilderAggregateColumnState {
   readonly uuid = uuid();

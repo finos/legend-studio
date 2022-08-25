@@ -76,7 +76,7 @@ import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './fetch-structure/projection/QueryBuilderProjectionState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregationState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
 import { processPostFilterLambda } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterValueSpecificationProcessor.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';

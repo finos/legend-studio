@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
-import type { QueryBuilderProjectionColumnState } from '../../QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionColumnState } from '../../QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
 
 export const buildAggregateExpression = (

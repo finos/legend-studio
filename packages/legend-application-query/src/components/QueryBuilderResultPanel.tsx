@@ -63,7 +63,7 @@ import type { CellMouseOverEvent } from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
-} from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+} from '../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,

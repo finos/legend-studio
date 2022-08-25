@@ -131,7 +131,10 @@ export const QueryBuilderFetchStructurePanel = observer(
                       handler: applicationStore.guardUnhandledError(
                         async () => {
                           queryBuilderState.fetchStructureState.projectionState =
-                            new QueryBuilderProjectionState(queryBuilderState);
+                            new QueryBuilderProjectionState(
+                              queryBuilderState,
+                              queryBuilderState.fetchStructureState,
+                            );
                           reset();
                         },
                       ),
@@ -166,6 +169,7 @@ export const QueryBuilderFetchStructurePanel = observer(
                           queryBuilderState.fetchStructureState.graphFetchTreeState =
                             new QueryBuilderGraphFetchTreeState(
                               queryBuilderState,
+                              queryBuilderState.fetchStructureState,
                             );
                           reset();
                         },

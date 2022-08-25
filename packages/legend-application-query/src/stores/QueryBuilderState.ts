@@ -243,8 +243,8 @@ export class QueryBuilderState {
       this.fetchStructureState.fetchStructureMode,
     );
     this.fetchStructureState = fetchStructureState;
-    this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.fetchStructureState.graphFetchTreeState.initialize();
+    this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
   }
 
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
@@ -461,7 +461,7 @@ export class QueryBuilderState {
     return this.fetchStructureState.validationIssues;
   }
 
-  createBareBuilderState(): QueryBuilderState {
+  cloneQueryBuilderState(): QueryBuilderState {
     return new QueryBuilderState(
       this.applicationStore,
       this.graphManagerState,

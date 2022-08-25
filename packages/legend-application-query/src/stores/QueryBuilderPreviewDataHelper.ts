@@ -27,7 +27,7 @@ import { QueryBuilderAggregateOperator_Min } from './fetch-structure/projection/
 import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Population.js';
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Sample.js';
 import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Sum.js';
-import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
@@ -90,7 +90,7 @@ const createProjectionColumn = (
 const createQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = queryBuilderState.createBareBuilderState();
+  const builderState = queryBuilderState.cloneQueryBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
   return builderState;
 };

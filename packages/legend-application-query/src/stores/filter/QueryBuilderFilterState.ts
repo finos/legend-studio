@@ -47,7 +47,7 @@ import {
   observe_ValueSpecification,
 } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../QueryBuilder_Const.js';
-import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionColumnDragSource } from '../fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import {
   buildPropertyTypeaheadQuery,
   buildTypeaheadOptions,

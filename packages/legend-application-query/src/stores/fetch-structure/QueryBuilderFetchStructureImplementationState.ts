@@ -21,9 +21,12 @@ export abstract class QueryBuilderFetchStructureImplementationState {
   queryBuilderState: QueryBuilderState;
   fetchStructureState: QueryBuilderFetchStructureState;
 
-  constructor(queryBuilderState: QueryBuilderState) {
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ) {
     this.queryBuilderState = queryBuilderState;
-    this.fetchStructureState = queryBuilderState.fetchStructureState;
+    this.fetchStructureState = fetchStructureState;
   }
 
   // abstract addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;

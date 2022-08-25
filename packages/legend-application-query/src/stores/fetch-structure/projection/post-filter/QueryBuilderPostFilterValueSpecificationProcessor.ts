@@ -46,7 +46,7 @@ import {
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
-} from '../QueryBuilderProjectionState.js';
+} from '../QueryBuilderProjectionColumnState.js';
 import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 
 const findProjectionColumnState = (

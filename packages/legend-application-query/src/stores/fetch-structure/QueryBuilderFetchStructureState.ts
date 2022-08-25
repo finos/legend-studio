@@ -17,10 +17,7 @@
 import { action, makeAutoObservable } from 'mobx';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import {
-  QueryBuilderProjectionState,
-  QueryBuilderSimpleProjectionColumnState,
-} from './projection/QueryBuilderProjectionState.js';
+import { QueryBuilderProjectionState } from './projection/QueryBuilderProjectionState.js';
 import {
   buildPropertyExpressionFromExplorerTreeNodeData,
   type QueryBuilderExplorerTreeNodeData,
@@ -29,6 +26,7 @@ import {
 import { Class } from '@finos/legend-graph';
 import { filterByType } from '@finos/legend-shared';
 import { addQueryBuilderPropertyNode } from './graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
+import { QueryBuilderSimpleProjectionColumnState } from './projection/QueryBuilderProjectionColumnState.js';
 
 export enum FETCH_STRUCTURE_MODE {
   PROJECTION = 'PROJECTION',
@@ -59,9 +57,13 @@ export class QueryBuilderFetchStructureState {
     this.queryBuilderState = queryBuilderState;
     // TODO: we probably should modularize this a bit better
     // See https://github.com/finos/legend-studio/issues/731
-    this.projectionState = new QueryBuilderProjectionState(queryBuilderState);
+    this.projectionState = new QueryBuilderProjectionState(
+      queryBuilderState,
+      this,
+    );
     this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
       queryBuilderState,
+      this,
     );
   }
 

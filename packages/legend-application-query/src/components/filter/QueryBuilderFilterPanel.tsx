@@ -81,7 +81,7 @@ import {
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderSimpleProjectionColumnState,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+} from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';

@@ -30,7 +30,7 @@ import {
   SortColumnState,
 } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
-import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 

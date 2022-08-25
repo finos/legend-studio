@@ -29,7 +29,7 @@ import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../../QueryBuilderProjectionState.js';
+} from '../../QueryBuilderProjectionColumnState.js';
 import {
   buildAggregateColumnState,
   buildAggregateExpression,

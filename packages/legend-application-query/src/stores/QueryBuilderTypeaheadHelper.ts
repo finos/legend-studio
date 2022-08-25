@@ -32,7 +32,7 @@ import {
 import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './fetch-structure/projection/QueryBuilderProjectionState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
@@ -41,7 +41,7 @@ const START_LENGTH = 3;
 const createAndSetupQueryBuilderStateForTypeahead = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = queryBuilderState.createBareBuilderState();
+  const builderState = queryBuilderState.cloneQueryBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
   builderState.fetchStructureState.projectionState.resultSetModifierState.distinct =
     true;
@@ -91,12 +91,12 @@ export const buildPropertyTypeaheadQuery = (
 ): QueryBuilderState => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
-  const projectionState = new QueryBuilderSimpleProjectionColumnState(
+  const columnState = new QueryBuilderSimpleProjectionColumnState(
     builderState.fetchStructureState.projectionState,
     propertyExpression,
     false,
   );
-  return buildColumnTypeaheadQuery(builderState, projectionState, value);
+  return buildColumnTypeaheadQuery(builderState, columnState, value);
 };
 
 export const buildProjectionColumnTypeaheadQuery = (

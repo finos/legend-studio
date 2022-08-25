@@ -34,7 +34,7 @@ import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from '../../QueryBuilderProjectionState.js';
+} from '../../QueryBuilderProjectionColumnState.js';
 
 export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAggregateOperator {
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {

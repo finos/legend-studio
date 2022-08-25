@@ -89,7 +89,7 @@ import {
   type QueryBuilderProjectionColumnDragSource,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
-} from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+} from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,

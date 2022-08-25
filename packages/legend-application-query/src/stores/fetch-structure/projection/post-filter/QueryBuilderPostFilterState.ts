@@ -54,15 +54,15 @@ import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOpe
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
-  type QueryBuilderProjectionState,
   QueryBuilderDerivationProjectionColumnState,
-} from '../QueryBuilderProjectionState.js';
+} from '../QueryBuilderProjectionColumnState.js';
 import {
   buildProjectionColumnTypeaheadQuery,
   buildTypeaheadOptions,
   performTypeahead,
 } from '../../../QueryBuilderTypeaheadHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
+import type { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',

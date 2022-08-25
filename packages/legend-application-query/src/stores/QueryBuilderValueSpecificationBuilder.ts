@@ -54,7 +54,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './fetch-structure/projection/QueryBuilderProjectionState.js';
+} from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { buildGenericLambdaFunctionInstanceValue } from './QueryBuilderValueSpecificationHelper.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import {

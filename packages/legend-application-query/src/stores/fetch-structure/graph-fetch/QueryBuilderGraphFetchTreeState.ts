@@ -28,6 +28,7 @@ import {
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../../explorer/QueryBuilderExplorerState.js';
 import { assertNonNullable } from '@finos/legend-shared';
 import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
+import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
 
 export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
   treeData?: QueryBuilderGraphFetchTreeData | undefined;
@@ -38,8 +39,11 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
    */
   isChecked = false;
 
-  constructor(queryBuilderState: QueryBuilderState) {
-    super(queryBuilderState);
+  constructor(
+    queryBuilderState: QueryBuilderState,
+    fetchStructureState: QueryBuilderFetchStructureState,
+  ) {
+    super(queryBuilderState, fetchStructureState);
 
     makeObservable(this, {
       treeData: observable,
@@ -47,8 +51,6 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
       setGraphFetchTree: action,
       setChecked: action,
     });
-
-    this.queryBuilderState = queryBuilderState;
   }
 
   setGraphFetchTree(val: QueryBuilderGraphFetchTreeData | undefined): void {

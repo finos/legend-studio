@@ -15,10 +15,8 @@
  */
 
 import { action, makeAutoObservable } from 'mobx';
-import type {
-  QueryBuilderProjectionColumnState,
-  QueryBuilderProjectionState,
-} from './QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
+import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionColumnState.js';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 
 export enum COLUMN_SORT_TYPE {

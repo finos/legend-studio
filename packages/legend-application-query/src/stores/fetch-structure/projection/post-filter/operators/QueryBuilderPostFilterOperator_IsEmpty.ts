@@ -28,7 +28,7 @@ import {
   type QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
 } from '../QueryBuilderPostFilterState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../QueryBuilderProjectionColumnState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
 
