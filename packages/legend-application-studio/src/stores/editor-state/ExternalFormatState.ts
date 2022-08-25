@@ -18,7 +18,6 @@ import type { ExternalFormatDescription } from '@finos/legend-graph';
 import {
   type GeneratorFn,
   assertErrorThrown,
-  guaranteeNonNullable,
   LogEvent,
   ActionState,
 } from '@finos/legend-shared';
@@ -58,10 +57,20 @@ export class ExternalFormatState {
   }
 
   get formatTypeOptions(): ExternalFormatTypeOption[] {
-    return this.externalFormatsDescriptions.map((e) => ({
-      value: e.name,
-      label: e.name,
+    return this.externalFormatsDescriptions.map((types) => ({
+      value: types.name,
+      label: types.name,
     }));
+  }
+
+  get formatContentTypes(): string[] {
+    return this.externalFormatsDescriptions.map((e) => e.contentTypes).flat();
+  }
+
+  get externalFormatDescriptionsWithModelGenerationSupport(): ExternalFormatDescription[] {
+    return this.externalFormatsDescriptions.filter(
+      (d) => d.supportsModelGeneration,
+    );
   }
 
   getFormatTypeForContentType(contentType: string): string | undefined {
@@ -69,10 +78,6 @@ export class ExternalFormatState {
       (externalFormatDescription) =>
         externalFormatDescription.contentTypes[0] === contentType,
     )?.name;
-  }
-
-  get formatContentTypes(): string[] {
-    return this.externalFormatsDescriptions.map((e) => e.contentTypes).flat();
   }
 
   setExternalFormatsDescriptions(
@@ -99,9 +104,7 @@ export class ExternalFormatState {
     }
   }
 
-  getTypeDescription(type: string): ExternalFormatDescription {
-    return guaranteeNonNullable(
-      this.externalFormatsDescriptions.find((e) => e.name === type),
-    );
+  getTypeDescription(type: string): ExternalFormatDescription | undefined {
+    return this.externalFormatsDescriptions.find((e) => e.name === type);
   }
 }

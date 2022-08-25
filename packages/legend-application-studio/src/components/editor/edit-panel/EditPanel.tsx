@@ -40,8 +40,8 @@ import {
   EntityDiffViewState,
 } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffView } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
-import { ModelLoader } from '../../editor/edit-panel/ModelLoader.js';
-import { ModelLoaderState } from '../../../stores/editor-state/ModelLoaderState.js';
+import { ModelImporter } from './ModelImporter.js';
+import { ModelImporterState } from '../../../stores/editor-state/ModelImporterState.js';
 import { FunctionEditorState } from '../../../stores/editor-state/element-editor-state/FunctionEditorState.js';
 import { ServiceEditorState } from '../../../stores/editor-state/element-editor-state/service/ServiceEditorState.js';
 import { ProjectConfigurationEditorState } from '../../../stores/editor-state/ProjectConfigurationEditorState.js';
@@ -321,8 +321,8 @@ export const EditPanel = observer(() => {
       );
     } else if (currentEditorState instanceof FileGenerationViewerState) {
       return <FileGenerationViewer key={currentEditorState.uuid} />;
-    } else if (currentEditorState instanceof ModelLoaderState) {
-      return <ModelLoader />;
+    } else if (currentEditorState instanceof ModelImporterState) {
+      return <ModelImporter />;
     } else if (currentEditorState instanceof ProjectConfigurationEditorState) {
       return <ProjectConfigurationEditor />;
     }

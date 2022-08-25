@@ -32,11 +32,6 @@ import { DEPRECATED__ServiceTestResult } from '../../../../../graphManager/actio
 import type { V1_DEPRECATED__ServiceTestResult } from './service/V1_DEPRECATED__ServiceTestResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import { ServiceRegistrationResult } from '../../../../../graphManager/action/service/ServiceRegistrationResult.js';
-import {
-  getImportMode,
-  ImportConfigurationDescription,
-} from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
-import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription.js';
 import { GenerationOutput } from '../../../../../graphManager/action/generation/GenerationOutput.js';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import {
@@ -282,27 +277,6 @@ export const V1_buildServiceRegistrationResult = (
     protocol.pattern,
     protocol.serviceInstanceId,
   );
-};
-
-export const V1_buildImportConfigurationDescription = (
-  protocol: V1_ImportConfigurationDescription,
-): ImportConfigurationDescription => {
-  const metamodel = new ImportConfigurationDescription();
-  metamodel.key = guaranteeNonNullable(
-    protocol.key,
-    `Import configuration description 'key' field is missing`,
-  );
-  metamodel.label = guaranteeNonNullable(
-    protocol.label,
-    `Import configuration description 'label' field is missing`,
-  );
-  metamodel.modelImportMode = getImportMode(
-    guaranteeNonNullable(
-      protocol.modelImportMode,
-      `Import configuration description 'modelImportMode' field is missing`,
-    ),
-  );
-  return metamodel;
 };
 
 export const V1_buildGenerationProperty = (
