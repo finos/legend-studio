@@ -1,5 +1,7 @@
 # @finos/legend-extension-application-studio-management-toolkit
 
+## 3.0.7
+
 ## 3.0.6
 
 ## 3.0.5
