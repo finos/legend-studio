@@ -73,7 +73,7 @@ export class QueryBuilderFetchStructureState {
       }
       default:
         throw new UnsupportedOperationError(
-          `Can't change fetch-structure implementation to unsupport type: '${type}'`,
+          `Can't change fetch-structure implementation to unsupported type: '${type}'`,
         );
     }
   }

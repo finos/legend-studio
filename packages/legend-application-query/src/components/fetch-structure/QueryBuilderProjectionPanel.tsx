@@ -32,6 +32,8 @@ import {
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
+  OptionsIcon,
+  PlusIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -497,6 +499,14 @@ export const QueryBuilderProjectionPanel = observer(
     const applicationStore = useApplicationStore();
     const { projectionState } = props;
     const projectionColumns = projectionState.columns;
+
+    // Toolbar
+    const openResultSetModifierEditor = (): void =>
+      projectionState.resultSetModifierState.setShowModal(true);
+    const addNewBlankDerivation = (): void =>
+      projectionState.addNewBlankDerivation();
+
+    // Drag and Drop
     const handleDrop = useCallback(
       (
         item:
@@ -578,41 +588,61 @@ export const QueryBuilderProjectionPanel = observer(
 
     return (
       <div className="panel__content">
-        <PanelDropZone
-          isDragOver={isDragOver}
-          dropTargetConnector={dropTargetConnector}
-        >
-          {!projectionColumns.length && (
-            <BlankPanelPlaceholder
-              text="Add a projection column"
-              tooltipText="Drag and drop properties here"
-            />
-          )}
-          {Boolean(projectionColumns.length) && (
-            <div
-              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-              className="query-builder__projection__columns"
-            >
-              <DragPreviewLayer
-                labelGetter={(
-                  item: QueryBuilderProjectionColumnDragSource,
-                ): string =>
-                  item.columnState.columnName === ''
-                    ? '(unknown)'
-                    : item.columnState.columnName
-                }
-                types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
+        <div className="query-builder__projection__toolbar">
+          <button
+            className="panel__header__action"
+            onClick={openResultSetModifierEditor}
+            tabIndex={-1}
+            title="Configure result set modifiers..."
+          >
+            <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
+          </button>
+          <button
+            className="panel__header__action"
+            onClick={addNewBlankDerivation}
+            tabIndex={-1}
+            title="Add a new derivation"
+          >
+            <PlusIcon />
+          </button>
+        </div>
+        <div className="query-builder__projection__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {!projectionColumns.length && (
+              <BlankPanelPlaceholder
+                text="Add a projection column"
+                tooltipText="Drag and drop properties here"
               />
-              {projectionColumns.map((projectionColumnState) => (
-                <QueryBuilderProjectionColumnEditor
-                  key={projectionColumnState.uuid}
-                  projectionColumnState={projectionColumnState}
+            )}
+            {Boolean(projectionColumns.length) && (
+              <div
+                data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
+                className="query-builder__projection__columns"
+              >
+                <DragPreviewLayer
+                  labelGetter={(
+                    item: QueryBuilderProjectionColumnDragSource,
+                  ): string =>
+                    item.columnState.columnName === ''
+                      ? '(unknown)'
+                      : item.columnState.columnName
+                  }
+                  types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                 />
-              ))}
-            </div>
-          )}
-          <QueryResultModifierModal projectionState={projectionState} />
-        </PanelDropZone>
+                {projectionColumns.map((projectionColumnState) => (
+                  <QueryBuilderProjectionColumnEditor
+                    key={projectionColumnState.uuid}
+                    projectionColumnState={projectionColumnState}
+                  />
+                ))}
+              </div>
+            )}
+            <QueryResultModifierModal projectionState={projectionState} />
+          </PanelDropZone>
+        </div>
       </div>
     );
   },

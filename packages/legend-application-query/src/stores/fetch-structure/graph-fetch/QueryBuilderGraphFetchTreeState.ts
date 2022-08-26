@@ -87,7 +87,8 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     this.isChecked = val;
   }
 
-  // TODO-BEFORE-PR: consider removing this
+  // TODO-BEFORE-PR: consider removing this or make it private or call it in constructor or sth
+  // the goal is try to make graph-fetch the default and then see how things work
   initialize(tree?: RootGraphFetchTree): void {
     if (tree) {
       this.setGraphFetchTree(buildGraphFetchTreeData(tree));

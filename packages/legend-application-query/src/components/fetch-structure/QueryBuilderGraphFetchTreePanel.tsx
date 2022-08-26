@@ -167,7 +167,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 
     return (
       <div className="query-builder-graph-fetch-tree">
-        <div className="query-builder-graph-fetch-tree__settings">
+        <div className="query-builder-graph-fetch-tree__toolbar">
           <div
             className={clsx('panel__content__form__section__toggler')}
             onClick={toggleChecked}
@@ -183,7 +183,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
             <div className="panel__content__form__section__toggler__prompt">
               Check graph fetch
             </div>
-            <div className="query-builder-graph-fetch-tree__settings__hint-icon">
+            <div className="query-builder-graph-fetch-tree__toolbar__hint-icon">
               <InfoCircleIcon title="With this enabled, while executing, violations of constraints will reported as part of the result, rather than causing a failure" />
             </div>
           </div>
