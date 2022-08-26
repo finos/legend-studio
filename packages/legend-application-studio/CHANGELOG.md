@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 15.0.0
+
+### Major Changes
+
+- [#1445](https://github.com/finos/legend-studio/pull/1445) [`a66230e9`](https://github.com/finos/legend-studio/commit/a66230e9ce6e391572e0224cfe48ad4f411baf17) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Add `ExtensionModelImportRendererState` to `ModelImporterExtensionConfiguration`
+
 ## 14.0.0
 
 ### Major Changes
