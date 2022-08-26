@@ -27,6 +27,10 @@ import {
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type {
+  ExtensionModelImportRendererState,
+  ModelImporterState,
+} from './editor-state/ModelImporterState.js';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
@@ -53,10 +57,15 @@ export type ModelImporterExtensionConfiguration = {
   key: string;
   label?: string | undefined;
   allowHardReplace?: boolean;
-  // TODO: document about this behavior better, right now the behavior is not well
-  // structured yet, also, model importer seems rather fragmented at the moment
-  load: (editorStore: EditorStore) => Promise<void>;
-  renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
+  getExtensionModelImportRendererStateCreator: (
+    modelImporterState: ModelImporterState,
+  ) => ExtensionModelImportRendererState;
+  renderer: (
+    rendererState: ExtensionModelImportRendererState,
+  ) => React.ReactNode | undefined;
+  loadModel: (
+    rendererState: ExtensionModelImportRendererState,
+  ) => Promise<void>;
 };
 
 export type TestableMetadataGetter = (
