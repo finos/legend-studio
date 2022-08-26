@@ -111,7 +111,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   childrenIds: string[] = [];
   isPartOfDerivedPropertyBranch: boolean;
   type: Type;
-  mappingData: QueryBuilderPropertyMappingData;
+  mappingData: QueryBuilderExplorerTreeNodeMappingData;
 
   constructor(
     id: string,
@@ -119,7 +119,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
     dndText: string,
     isPartOfDerivedPropertyBranch: boolean,
     type: Type,
-    mappingData: QueryBuilderPropertyMappingData,
+    mappingData: QueryBuilderExplorerTreeNodeMappingData,
   ) {
     makeObservable(this, {
       isSelected: observable,
@@ -139,7 +139,7 @@ export abstract class QueryBuilderExplorerTreeNodeData implements TreeNodeData {
   }
 }
 
-export type QueryBuilderPropertyMappingData = {
+export type QueryBuilderExplorerTreeNodeMappingData = {
   mapped: boolean;
   mappedEntity?: MappedEntity | undefined;
 };
@@ -157,7 +157,7 @@ export class QueryBuilderExplorerTreePropertyNodeData extends QueryBuilderExplor
     property: AbstractProperty,
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
-    mappingData: QueryBuilderPropertyMappingData,
+    mappingData: QueryBuilderExplorerTreeNodeMappingData,
   ) {
     super(
       id,
@@ -184,7 +184,7 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
     subclass: Class,
     parentId: string,
     isPartOfDerivedPropertyBranch: boolean,
-    mappingData: QueryBuilderPropertyMappingData,
+    mappingData: QueryBuilderExplorerTreeNodeMappingData,
     multiplicity: Multiplicity,
   ) {
     super(
@@ -285,11 +285,11 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
 
 export const generatePropertyNodeMappingData = (
   property: AbstractProperty,
-  parentMappingData: QueryBuilderPropertyMappingData,
+  parentMappingData: QueryBuilderExplorerTreeNodeMappingData,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-): QueryBuilderPropertyMappingData => {
-  // If this property's owner has no corresponding entity, i.e. it means the parent is not mapped
-  // Therefore, this property is not mapped either.
+): QueryBuilderExplorerTreeNodeMappingData => {
+  // If the property node's parent node does not have a mapped entity,
+  // it means the owner class is not mapped, i.e. this property is not mapped.
   if (parentMappingData.mappedEntity) {
     const mappedProp = parentMappingData.mappedEntity.__PROPERTIES_INDEX.get(
       property.name,
@@ -316,23 +316,41 @@ export const generatePropertyNodeMappingData = (
 
 const generateSubtypeNodeMappingData = (
   subclass: Class,
-  parentMappingData: QueryBuilderPropertyMappingData,
+  parentMappingData: QueryBuilderExplorerTreeNodeMappingData,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-): QueryBuilderPropertyMappingData => {
-  // If this property's owner has no corresponding entity, i.e. it means the parent is not mapped
-  // Therefore, this property is not mapped either.
+): QueryBuilderExplorerTreeNodeMappingData => {
+  // If the subtype node's parent node does not have a mapped entity,
+  // it means the superclass is not mapped, i.e. this subtype is not mapped
   if (parentMappingData.mappedEntity) {
-    const mappedProperty = parentMappingData.mappedEntity.properties.filter(
-      (p) => p instanceof EntityMappedProperty && p.subType === subclass.path,
+    const mappedSubtype = parentMappingData.mappedEntity.properties.find(
+      (p): p is EntityMappedProperty =>
+        // NOTE: if `subType` is specified in `EntityMappedProperty` it means
+        // that subtype is mapped
+        p instanceof EntityMappedProperty && p.subType === subclass.path,
     );
-    if (mappedProperty.length > 0) {
+    if (mappedSubtype) {
       return {
         mapped: true,
         mappedEntity: modelCoverageAnalysisResult.__ENTITIES_INDEX.get(
-          (mappedProperty[0] as EntityMappedProperty).entityPath,
+          mappedSubtype.entityPath,
         ),
       };
     } else if (parentMappingData.mappedEntity.path === subclass.path) {
+      // This is to handle the case where the property mapping is pointing
+      // directly at the class mapping of a subtype of the type of that property
+      //
+      // For example: we have class `A` extends `B`, and we're looking at class `C` with property
+      // `b` of type B. However, the mapping we use has property mapping for `b` pointing at
+      // a class mapping for `A`.
+      //
+      // In this case, when building explorer tree node for property `b` of `C`, according to
+      // the mapping model coverage result, the mapped entity corresponding to this property
+      // will be mapped entity for `A`. However, as we build the explorer tree,
+      // so we will not immediately build the subtype node for `A`. As such, we have to propagate
+      // the mapped entity data downstream like the following. As a result, when building
+      // the mapping data for subtype node, we have to take this case into consideration
+      //
+      // See https://github.com/finos/legend-studio/issues/1437
       return {
         mapped: true,
         mappedEntity: parentMappingData.mappedEntity,
@@ -345,7 +363,7 @@ const generateSubtypeNodeMappingData = (
 export const getRootMappingData = (
   _class: Class,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-): QueryBuilderPropertyMappingData => ({
+): QueryBuilderExplorerTreeNodeMappingData => ({
   mapped: true,
   mappedEntity: modelCoverageAnalysisResult.__ENTITIES_INDEX.get(_class.path),
 });

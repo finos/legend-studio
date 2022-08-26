@@ -43,7 +43,7 @@ import {
   type MappingModelCoverageAnalysisResult,
 } from '@finos/legend-graph';
 import {
-  type QueryBuilderPropertyMappingData,
+  type QueryBuilderExplorerTreeNodeMappingData,
   getRootMappingData,
   generatePropertyNodeMappingData,
   QueryBuilderExplorerTreeRootNodeData,
@@ -88,7 +88,7 @@ import { isNodeAlreadyUsed } from '../../components/explorer/QueryBuilderExplore
 
 interface NodePropertyMappingData {
   property: AbstractProperty;
-  mappingData: QueryBuilderPropertyMappingData;
+  mappingData: QueryBuilderExplorerTreeNodeMappingData;
   childNodes: NodePropertyMappingData[];
 }
 
@@ -191,7 +191,7 @@ const cases: TestCase[] = [
 const buildMappingData = (
   property: AbstractProperty,
   graphManagerState: GraphManagerState,
-  mappingData: QueryBuilderPropertyMappingData,
+  mappingData: QueryBuilderExplorerTreeNodeMappingData,
   max_depth: number,
   mapping: Mapping,
   mappingModelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
