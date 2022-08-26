@@ -55,6 +55,11 @@ export const externalFormat_schemaSet_setFormat = action(
     ss.format = value;
   },
 );
+export const externalFormat_schemaSet_setSchemas = action(
+  (ss: SchemaSet, value: ExternalFormatSchema[]): void => {
+    ss.schemas = value;
+  },
+);
 export const externalFormat_schemaSet_addSchema = action(
   (ss: SchemaSet, value: ExternalFormatSchema): void => {
     addUniqueEntry(ss.schemas, observe_ExternalFormatSchema(value));

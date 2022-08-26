@@ -27,10 +27,6 @@ import {
   returnUndefOnError,
   deserializeMap,
 } from '@finos/legend-shared';
-import {
-  type ImportConfigurationDescription,
-  ImportMode,
-} from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   GenerationMode,
@@ -49,7 +45,6 @@ import {
 import { V1_serializeRawValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_transformRawLambda } from '../transformation/pureGraph/from/V1_RawValueSpecificationTransformer.js';
 import { V1_GenerateFileInput } from '../engine/generation/V1_FileGenerationInput.js';
-import { V1_ImportConfigurationDescription } from '../engine/import/V1_ImportConfigurationDescription.js';
 import { V1_GenerationConfigurationDescription } from '../engine/generation/V1_GenerationConfigurationDescription.js';
 import { V1_GenerationOutput } from '../engine/generation/V1_GenerationOutput.js';
 import { V1_ParserError } from '../engine/grammar/V1_ParserError.js';
@@ -63,7 +58,6 @@ import {
   V1_buildExecutionError,
   V1_buildExternalFormatDescription,
   V1_buildGenerationConfigurationDescription,
-  V1_buildImportConfigurationDescription,
   V1_buildParserError,
 } from './V1_EngineHelper.js';
 import { V1_LightQuery, V1_Query } from './query/V1_Query.js';
@@ -601,39 +595,6 @@ export class V1_Engine {
       V1_RenderStyle.STANDARD,
     );
     return pureCode;
-  }
-
-  // ------------------------------------------- Schema Import -------------------------------------------
-
-  async transformExternalFormatToProtocol(
-    externalFormat: string,
-    type: string,
-    mode: ImportMode,
-  ): Promise<V1_PureModelContextData> {
-    return V1_deserializePureModelContextData(
-      await this.engineServerClient.transformExternalFormatToProtocol(
-        JSON.parse(externalFormat),
-        type,
-        mode,
-      ),
-    );
-  }
-
-  async getAvailableImportConfigurationDescriptions(): Promise<
-    ImportConfigurationDescription[]
-  > {
-    const schemaImportDescriptions = (
-      await this.engineServerClient.getAvailableSchemaImportDescriptions()
-    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.SCHEMA_IMPORT }));
-    const codeImportDescriptions = (
-      await this.engineServerClient.getAvailableCodeImportDescriptions()
-    ).map((gen) => ({ ...gen, modelImportMode: ImportMode.CODE_IMPORT }));
-    return [...schemaImportDescriptions, ...codeImportDescriptions].map(
-      (description) =>
-        V1_buildImportConfigurationDescription(
-          V1_ImportConfigurationDescription.serialization.fromJson(description),
-        ),
-    );
   }
 
   // ------------------------------------------- Service -------------------------------------------

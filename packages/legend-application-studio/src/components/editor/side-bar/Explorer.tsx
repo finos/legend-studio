@@ -483,8 +483,8 @@ const ExplorerDropdownMenu = observer(() => {
 const ExplorerTrees = observer(() => {
   const editorStore = useEditorStore();
   const { isInGrammarTextMode, isInViewerMode } = editorStore;
-  const openModelLoader = (): void =>
-    editorStore.openSingletonEditorState(editorStore.modelLoaderState);
+  const openModelImport = (): void =>
+    editorStore.openSingletonEditorState(editorStore.modelImporterState);
   const graph = editorStore.graphManagerState.graph;
   // Explorer tree
   const treeData = editorStore.explorerTreeState.getTreeData();
@@ -661,9 +661,9 @@ const ExplorerTrees = observer(() => {
               </div>
               <button
                 className="btn--dark explorer__content--empty__btn"
-                onClick={openModelLoader}
+                onClick={openModelImport}
               >
-                Open Model Loader
+                Open Model Importer
               </button>
             </div>
           )}
@@ -688,8 +688,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
     });
     editorStore.explorerTreeState.setTreeData({ ...treeData });
   };
-  const showModelLoader = (): void =>
-    editorStore.openState(editorStore.modelLoaderState);
+  const showModelImporter = (): void =>
+    editorStore.openState(editorStore.modelImporterState);
 
   return (
     <div className="panel__header__actions">
@@ -697,8 +697,8 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
         <button
           className="panel__header__action"
           disabled={disabled}
-          title="Open Model Loader (F2)"
-          onClick={showModelLoader}
+          title="Open Model Importer (F2)"
+          onClick={showModelImporter}
         >
           <FileImportIcon />
         </button>

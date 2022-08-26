@@ -49,10 +49,6 @@ import {
 } from '../../../../graphManager/AbstractPureGraphManager.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-} from '../../../../graphManager/action/generation/ImportConfigurationDescription.js';
 import type { PackageableElement } from '../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import {
   type SystemModel,
@@ -254,6 +250,7 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
+import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1821,6 +1818,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   }
 
   generateModelFromExternalFormat(
+    schemaSet: SchemaSet,
+    targetBinding: string | undefined,
     configurationProperties: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string> {
@@ -1829,30 +1828,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       config[property.name] = property.value as Record<PropertyKey, unknown>;
     });
     const model = this.getFullGraphModelData(graph);
-    const input = new V1_ExternalFormatModelGenerationInput();
-    input.clientVersion = V1_PureGraphManager.TARGET_PROTOCOL_VERSION;
-    input.model = model;
-    input.config = config;
+    const input = new V1_ExternalFormatModelGenerationInput(
+      schemaSet.path,
+      model,
+      config,
+    );
+    if (targetBinding) {
+      input.generateBinding = true;
+      input.targetBindingPath = targetBinding;
+    }
+    // TODO: once api defaults to latest prod pure client version
+    input.clientVersion = PureClientVersion.VX_X_X;
     return this.engine.generateModel(input);
   }
 
   // ------------------------------------------- Import -------------------------------------------
-
-  getAvailableImportConfigurationDescriptions(): Promise<
-    ImportConfigurationDescription[]
-  > {
-    return this.engine.getAvailableImportConfigurationDescriptions();
-  }
-
-  async externalFormatTextToEntities(
-    code: string,
-    type: string,
-    mode: ImportMode,
-  ): Promise<Entity[]> {
-    return this.pureModelContextDataToEntities(
-      await this.engine.transformExternalFormatToProtocol(code, type, mode),
-    );
-  }
 
   getExamplePureProtocolText(): string {
     return JSON.stringify(

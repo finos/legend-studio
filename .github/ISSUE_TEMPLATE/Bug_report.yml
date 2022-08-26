@@ -50,7 +50,7 @@ body:
       label: Model data
       description: |
         Please provide the **minimal** `Pure code` or `models' JSON` necessary to reproduce the bug.
-        **Tip:** In Studio, use `text-mode (F8)` to obtain models' Pure code, and `model loader (F2)` to obtain models' JSON.
+        **Tip:** In Studio, use `text-mode (F8)` to obtain models' Pure code, and `model importer (F2)` to obtain models' JSON.
         If a single file is not sufficient, providing a `repository link`, or attaching an `archive` will do just fine.
         **Tip:** To attach files, click on this area to highlight it and then drag them in. See [this guide](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files).
       placeholder: |

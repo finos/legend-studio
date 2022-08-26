@@ -113,10 +113,6 @@ const setup = async (
       ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
-    availableImportDescriptions: [
-      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
-      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
-    ],
     projects: [],
     projectData: [],
     projectDependency: [],

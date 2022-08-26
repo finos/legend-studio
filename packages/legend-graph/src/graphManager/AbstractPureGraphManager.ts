@@ -20,10 +20,6 @@ import type {
 } from './action/execution/ExecutionResult.js';
 import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-} from './action/generation/ImportConfigurationDescription.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -71,6 +67,7 @@ import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
+import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -311,20 +308,13 @@ export abstract class AbstractPureGraphManager {
   >;
 
   abstract generateModelFromExternalFormat(
+    schemaSet: SchemaSet,
+    targetBinding: string | undefined,
     configs: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string>;
 
   // ------------------------------------------- Import -------------------------------------------
-
-  abstract getAvailableImportConfigurationDescriptions(): Promise<
-    ImportConfigurationDescription[]
-  >;
-  abstract externalFormatTextToEntities(
-    code: string,
-    type: string,
-    mode: ImportMode,
-  ): Promise<Entity[]>;
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
