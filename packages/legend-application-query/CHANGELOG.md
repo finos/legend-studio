@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 5.2.4
+
+### Patch Changes
+
+- [#1439](https://github.com/finos/legend-studio/pull/1439) [`376a0bd5`](https://github.com/finos/legend-studio/commit/376a0bd58961b92101a401d07d5d24eb86f04106) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug that fails to display subtypes if a propertyMapping of type parent directly points to a child classMapping ([#1437](https://github.com/finos/legend-studio/issues/1437)).
+
 ## 5.2.3
 
 ### Patch Changes
