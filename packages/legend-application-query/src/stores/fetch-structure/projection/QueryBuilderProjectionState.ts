@@ -126,16 +126,6 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     );
   }
 
-  recreate(
-    queryBuilderState: QueryBuilderState,
-    fetchStructureState: QueryBuilderFetchStructureState,
-  ): QueryBuilderFetchStructureImplementationState {
-    return new QueryBuilderProjectionState(
-      queryBuilderState,
-      fetchStructureState,
-    );
-  }
-
   get type(): string {
     return FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION;
   }
@@ -452,7 +442,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     });
   }
 
-  changeImplementationWithCheck(implementationType: string): void {
+  checkBeforeChangingImplementation(onChange: () => void): void {
     if (
       this.columns.length > 0
       // NOTE: here we could potentially check for the presence of post-filter as well
@@ -471,11 +461,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler:
               this.queryBuilderState.applicationStore.guardUnhandledError(
-                async () => {
-                  this.fetchStructureState.changeImplementation(
-                    implementationType,
-                  );
-                },
+                async () => onChange(),
               ),
           },
           {
@@ -486,7 +472,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
         ],
       });
     } else {
-      this.fetchStructureState.changeImplementation(implementationType);
+      onChange();
     }
   }
 }

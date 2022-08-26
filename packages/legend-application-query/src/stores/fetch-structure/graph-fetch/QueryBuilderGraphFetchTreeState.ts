@@ -61,16 +61,6 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     });
   }
 
-  recreate(
-    queryBuilderState: QueryBuilderState,
-    fetchStructureState: QueryBuilderFetchStructureState,
-  ): QueryBuilderFetchStructureImplementationState {
-    return new QueryBuilderGraphFetchTreeState(
-      queryBuilderState,
-      fetchStructureState,
-    );
-  }
-
   get type(): string {
     return FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH;
   }
@@ -154,7 +144,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     }
   }
 
-  changeImplementationWithCheck(implementationType: string): void {
+  checkBeforeChangingImplementation(onChange: () => void): void {
     if (this.treeData?.rootIds.length) {
       this.queryBuilderState.applicationStore.setActionAlertInfo({
         message:
@@ -166,11 +156,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler:
               this.queryBuilderState.applicationStore.guardUnhandledError(
-                async () => {
-                  this.fetchStructureState.changeImplementation(
-                    implementationType,
-                  );
-                },
+                async () => onChange(),
               ),
           },
           {
@@ -181,7 +167,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
         ],
       });
     } else {
-      this.fetchStructureState.changeImplementation(implementationType);
+      onChange();
     }
   }
 }

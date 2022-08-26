@@ -42,11 +42,6 @@ export abstract class QueryBuilderFetchStructureImplementationState {
   }
 
   abstract get type(): string;
-  abstract recreate(
-    queryBuilderState: QueryBuilderState,
-    fetchStructureState: QueryBuilderFetchStructureState,
-  ): QueryBuilderFetchStructureImplementationState;
-
   abstract get validationIssues(): string[] | undefined;
   abstract revealCompilationError(compilationError: CompilationError): boolean;
   abstract clearCompilationError(): void;
@@ -54,5 +49,5 @@ export abstract class QueryBuilderFetchStructureImplementationState {
   abstract fetchProperties(
     nodes: QueryBuilderExplorerTreePropertyNodeData[],
   ): void;
-  abstract changeImplementationWithCheck(implementationType: string): void;
+  abstract checkBeforeChangingImplementation(onChange: () => void): void;
 }

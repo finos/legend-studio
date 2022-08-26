@@ -40,7 +40,6 @@ export class QueryBuilderFetchStructureState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    // TODO-BEFORE-PR: can we use the `recreate()` method here somehow?
     /**
      * TODO?: perhaps it would eventually make sense to default to
      * graph-fetch since `getAll()` naturally works for graph-fetch case
@@ -52,7 +51,6 @@ export class QueryBuilderFetchStructureState {
     );
   }
 
-  // TODO-BEFORE-PR: can we use the `recreate()` method here somehow?
   changeImplementation(type: string): void {
     switch (type) {
       case FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION: {
@@ -106,12 +104,5 @@ export class QueryBuilderFetchStructureState {
           ),
       );
     }
-  }
-
-  get validationIssues(): string[] | undefined {
-    if (this.implementation instanceof QueryBuilderProjectionState) {
-      return this.implementation.validationIssues;
-    }
-    return undefined;
   }
 }

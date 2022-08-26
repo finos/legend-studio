@@ -451,7 +451,7 @@ export class QueryBuilderState {
   }
 
   get validationIssues(): string[] | undefined {
-    return this.fetchStructureState.validationIssues;
+    return this.fetchStructureState.implementation.validationIssues;
   }
 
   cloneQueryBuilderState(): QueryBuilderState {

@@ -68,6 +68,8 @@ import {
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
   type PureModel,
+  GraphFetchTreeInstanceValue,
+  RootGraphFetchTree,
 } from '@finos/legend-graph';
 import {
   QueryBuilderDerivationProjectionColumnState,
@@ -1090,6 +1092,25 @@ export class QueryBuilderLambdaProcessor
         `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
       );
 
+      if (
+        this.queryBuilderState.fetchStructureState.implementation instanceof
+        QueryBuilderGraphFetchTreeState
+      ) {
+        const serializeFunc = guaranteeType(
+          valueSpecification.parametersValues[1],
+          GraphFetchTreeInstanceValue,
+          `Can't process serialize() expression: serialize() graph-fetch is missing`,
+        );
+        const value = guaranteeType(
+          serializeFunc.values[0],
+          RootGraphFetchTree,
+          `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
+        );
+        this.queryBuilderState.fetchStructureState.implementation.initialize(
+          value,
+        );
+      }
+
       return;
     } else if (
       (matchFunctionName(
@@ -1136,9 +1157,7 @@ export class QueryBuilderLambdaProcessor
         this.queryBuilderState.fetchStructureState.implementation instanceof
         QueryBuilderGraphFetchTreeState
       ) {
-        const graphFetchTreeState =
-          this.queryBuilderState.fetchStructureState.implementation;
-        graphFetchTreeState.setChecked(
+        this.queryBuilderState.fetchStructureState.implementation.setChecked(
           matchFunctionName(
             functionName,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,

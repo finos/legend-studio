@@ -142,7 +142,7 @@ test(
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
-    const projectionState = guaranteeType(
+    let projectionState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
       QueryBuilderProjectionState,
     );
@@ -175,6 +175,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -218,6 +222,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -292,6 +300,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -318,6 +330,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -348,6 +364,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -494,11 +514,8 @@ test(
         ),
       );
     });
-    const graphFetchTreeState = guaranteeType(
-      queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderGraphFetchTreeState,
-    );
 
+    // switch to complex graph fetch
     await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
@@ -507,6 +524,10 @@ test(
         ),
       );
     });
+    const graphFetchTreeState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderGraphFetchTreeState,
+    );
 
     // check fetch-structure
     const firmGraphFetchTree = guaranteeNonNullable(
@@ -515,5 +536,4 @@ test(
     const firmGraphFetchTreeNode = firmGraphFetchTree.tree;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
   },
-  // TODO: add more test when we rework the graph fetch tree
 );

@@ -69,8 +69,10 @@ export const QueryBuilderFetchStructurePanel = observer(
       (implementationType: FETCH_STRUCTURE_IMPLEMENTATION): (() => void) =>
       (): void => {
         if (fetchStructureState.implementation.type !== implementationType) {
-          fetchStructureState.implementation.changeImplementationWithCheck(
-            implementationType,
+          fetchStructureState.implementation.checkBeforeChangingImplementation(
+            () => {
+              fetchStructureState.changeImplementation(implementationType);
+            },
           );
         }
       };
@@ -81,7 +83,7 @@ export const QueryBuilderFetchStructurePanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
             <QueryBuilderPanelIssueCountBadge
-              issues={fetchStructureState.validationIssues}
+              issues={fetchStructureState.implementation.validationIssues}
             />
           </div>
           <div className="panel__header__actions">
