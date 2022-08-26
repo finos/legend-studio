@@ -320,7 +320,7 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
   }
 
   *loadModel(): GeneratorFn<void> {
-    this.config.loadModel(this.rendererState);
+    flowResult(this.config.loadModel(this.rendererState));
   }
 }
 
