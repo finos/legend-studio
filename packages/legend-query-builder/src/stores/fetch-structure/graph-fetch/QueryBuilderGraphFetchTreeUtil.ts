@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { assertType, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  assertType,
+  addUniqueEntry,
+  deleteEntry,
+  type Hashable,
+  hashArray,
+} from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type AbstractProperty,
@@ -37,8 +43,11 @@ import {
   graphFetchTree_addSubTree,
   graphFetchTree_removeSubTree,
 } from '@finos/legend-application';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
+export class QueryBuilderGraphFetchTreeNodeData
+  implements TreeNodeData, Hashable
+{
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
   id: string;
@@ -63,6 +72,17 @@ export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
 
   get type(): Type {
     return this.tree.property.value.genericType.value.rawType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.GRAPH_FETCH_TREE_NODE_DATA,
+      this.id,
+      this.label,
+      hashArray(this.childrenIds),
+      this.parentId ?? '',
+      this.tree,
+    ]);
   }
 }
 

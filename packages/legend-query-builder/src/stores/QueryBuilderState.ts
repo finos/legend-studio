@@ -23,6 +23,7 @@ import {
   guaranteeType,
   filterByType,
   ActionState,
+  hashArray,
 } from '@finos/legend-shared';
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
@@ -62,6 +63,7 @@ import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOper
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 
 export abstract class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
@@ -134,6 +136,7 @@ export abstract class QueryBuilderState {
       rebuildWithQuery: action,
       saveQuery: action,
       compileQuery: flow,
+      hashCode: computed,
     });
 
     this.applicationStore = applicationStore;
@@ -276,6 +279,13 @@ export abstract class QueryBuilderState {
       }),
       this.graphManagerState,
     );
+  }
+
+  async initializeQueryWithChangeDetection(
+    rawLambda: RawLambda,
+  ): Promise<void> {
+    this.initializeWithQuery(rawLambda);
+    await this.changeDetectionState.start();
   }
 
   initializeWithQuery(rawLambda: RawLambda): void {
@@ -449,6 +459,16 @@ export abstract class QueryBuilderState {
     basicState.mapping = this.mapping;
     basicState.runtimeValue = this.runtimeValue;
     return basicState;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.QUERY_BUILDER_STATE,
+      this.filterState,
+      this.parametersState,
+      this.milestoningState,
+      this.fetchStructureState.implementation,
+    ]);
   }
 }
 

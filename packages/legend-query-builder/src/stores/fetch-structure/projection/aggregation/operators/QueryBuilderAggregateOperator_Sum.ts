@@ -33,8 +33,21 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { makeObservable, computed } from 'mobx';
 
-export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Sum
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
+  constructor() {
+    super();
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'sum';
   }
@@ -84,5 +97,9 @@ export class QueryBuilderAggregateOperator_Sum extends QueryBuilderAggregateOper
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
       this,
     );
+  }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_SUM]);
   }
 }

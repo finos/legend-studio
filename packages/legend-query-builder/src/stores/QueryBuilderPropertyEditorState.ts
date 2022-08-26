@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeAutoObservable, observable } from 'mobx';
 import {
   getNullableFirstElement,
   guaranteeNonNullable,
   guaranteeType,
+  type Hashable,
+  hashArray,
   isCamelCase,
   prettyCamelCase,
   prettyCONSTName,
@@ -59,6 +61,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import { functionExpression_setParametersValues } from '@finos/legend-application';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
@@ -556,7 +559,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
   }
 }
 
-export class QueryBuilderPropertyExpressionState {
+export class QueryBuilderPropertyExpressionState implements Hashable {
   queryBuilderState: QueryBuilderState;
   path: string;
   title: string;
@@ -584,9 +587,10 @@ export class QueryBuilderPropertyExpressionState {
       QueryBuilderPropertyExpressionState,
       'initDerivedPropertyExpressionStates'
     >(this, {
-      queryBuilderState: false,
+      propertyExpression: observable,
       setIsEditingDerivedProperty: action,
       initDerivedPropertyExpressionStates: action,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -664,5 +668,12 @@ export class QueryBuilderPropertyExpressionState {
     }
     this.requiresExistsHandling = requiresExistsHandling;
     this.derivedPropertyExpressionStates = result.slice().reverse();
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.PROPERTY_EXPRESSION_STATE,
+      this.propertyExpression,
+    ]);
   }
 }

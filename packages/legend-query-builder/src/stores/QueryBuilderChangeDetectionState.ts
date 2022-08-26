@@ -14,24 +14,49 @@
  * limitations under the License.
  */
 
-import { RawLambda } from '@finos/legend-graph';
-import { hashObject } from '@finos/legend-shared';
+import {
+  type GeneratorFn,
+  LogEvent,
+  assertErrorThrown,
+  IllegalStateError,
+} from '@finos/legend-shared';
+import { action, flow, makeObservable, observable } from 'mobx';
+import { QUERY_BUILDER_CHANGE_DETECTION_EVENT } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export class QueryBuilderChangeDetectionState {
-  querybuildState: QueryBuilderState;
-  queryHashCode = hashObject(new RawLambda(undefined, undefined));
-  isEnabled = false;
+  querybuilderState: QueryBuilderState;
+  hashCode?: string | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    this.querybuildState = queryBuilderState;
+    makeObservable(this, {
+      hashCode: observable,
+      setHashCode: action,
+      start: flow,
+    });
+
+    this.querybuilderState = queryBuilderState;
   }
 
-  setQueryHashCode(val: string): void {
-    this.queryHashCode = val;
+  setHashCode(val: string | undefined): void {
+    this.hashCode = val;
   }
 
-  setIsEnabled(val: boolean): void {
-    this.isEnabled = val;
+  *start(): GeneratorFn<void> {
+    // build hash indexes
+    try {
+      const hashesIndex = this.querybuilderState.hashCode;
+      this.setHashCode(hashesIndex);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.querybuilderState.applicationStore.log.error(
+        LogEvent.create(
+          QUERY_BUILDER_CHANGE_DETECTION_EVENT.CHANGE_DETECTION_FAILURE,
+        ),
+        `Can't build hashes index for query builder`,
+      );
+      this.setHashCode(undefined);
+      throw new IllegalStateError(error);
+    }
   }
 }

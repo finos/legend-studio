@@ -25,6 +25,8 @@ import {
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
+  type Hashable,
+  hashArray,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -40,8 +42,12 @@ import {
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_LessThan
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return '<';
   }
@@ -139,5 +145,11 @@ export class QueryBuilderPostFilterOperator_LessThan extends QueryBuilderPostFil
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN,
       this,
     );
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_LESS_THAN,
+    ]);
   }
 }

@@ -31,8 +31,13 @@ import {
 import { QueryBuilderSimpleProjectionColumnState } from '../../QueryBuilderProjectionColumnState.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_IsEmpty
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return 'is empty';
   }
@@ -100,6 +105,12 @@ export class QueryBuilderPostFilterOperator_IsEmpty extends QueryBuilderPostFilt
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_EMPTY,
+    ]);
+  }
 }
 
 export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostFilterOperator_IsEmpty {
@@ -109,5 +120,11 @@ export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostF
 
   override getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return TDS_COLUMN_GETTER.IS_NOT_NULL;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IS_NOT_EMPTY,
+    ]);
   }
 }

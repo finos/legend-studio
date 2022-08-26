@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -53,14 +53,27 @@ export class QueryBuilderResultState {
   executionResult?: ExecutionResult | undefined;
   executionPlanState: ExecutionPlanState;
   executionDuration?: number | undefined;
+  currentExecutedQueryHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      executionPlanState: false,
+    makeObservable(this, {
+      exportDataState: observable,
+      executionResult: observable,
+      previewLimit: observable,
+      isGeneratingPlan: observable,
+      executionDuration: observable,
+      currentExecutedQueryHashCode: observable,
+      queryRunPromise: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
+      setCurrentExecutedQueryHashCode: action,
+      setExecutionDuration: action,
+      setPreviewLimit: action,
+      setQueryRunPromise: action,
+      exportData: flow,
+      runQuery: flow,
+      generatePlan: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -69,6 +82,10 @@ export class QueryBuilderResultState {
       this.queryBuilderState.graphManagerState,
     );
   }
+
+  setCurrentExecutedQueryHashCode = (val: string | undefined): void => {
+    this.currentExecutedQueryHashCode = val;
+  };
 
   setIsRunningQuery = (val: boolean): void => {
     this.isRunningQuery = val;
@@ -91,6 +108,13 @@ export class QueryBuilderResultState {
   ): void => {
     this.queryRunPromise = promise;
   };
+
+  get checkForStaleResults(): boolean {
+    if (this.currentExecutedQueryHashCode !== this.queryBuilderState.hashCode) {
+      return true;
+    }
+    return false;
+  }
 
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;

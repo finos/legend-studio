@@ -26,6 +26,7 @@ import {
   ContextMenu,
   clsx,
   PauseCircleIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -444,6 +445,7 @@ export const QueryBuilderResultPanel = observer(
     const isQueryValid =
       !queryBuilderState.isQuerySupported || !queryValidationIssues;
     const runQuery = (): void => {
+      resultState.setCurrentExecutedQueryHashCode(queryBuilderState.hashCode);
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
@@ -491,6 +493,16 @@ export const QueryBuilderResultPanel = observer(
             <div className="query-builder__result__analytics">
               {resultSetSize(executionResult)}
             </div>
+            {executionResult && resultState.checkForStaleResults && (
+              <div className="query-builder__result__stale-results">
+                <div className="query-builder__result__stale-results__icon">
+                  <WarningIcon />
+                </div>
+                <div className="query-builder__result__stale-results__label">
+                  Preview data might be stale
+                </div>
+              </div>
+            )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {allowSettingPreviewLimit && (

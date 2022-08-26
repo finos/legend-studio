@@ -34,8 +34,21 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { makeObservable, computed } from 'mobx';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Min
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
+  constructor() {
+    super();
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'min';
   }
@@ -170,5 +183,9 @@ export class QueryBuilderAggregateOperator_Min extends QueryBuilderAggregateOper
       );
     }
     return undefined;
+  }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_MIN]);
   }
 }

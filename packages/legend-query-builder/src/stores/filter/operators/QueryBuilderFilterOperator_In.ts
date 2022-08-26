@@ -40,8 +40,13 @@ import {
   getCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
+export class QueryBuilderFilterOperator_In
+  extends QueryBuilderFilterOperator
+  implements Hashable
+{
   getLabel(filterConditionState: FilterConditionState): string {
     return 'is in';
   }
@@ -152,6 +157,10 @@ export class QueryBuilderFilterOperator_In extends QueryBuilderFilterOperator {
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IN]);
+  }
 }
 
 export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator_In {
@@ -177,5 +186,9 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_IN]);
   }
 }

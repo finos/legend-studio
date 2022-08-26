@@ -33,6 +33,8 @@ import {
   guaranteeNonNullable,
   findLast,
   filterByType,
+  type Hashable,
+  hashArray,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import {
@@ -85,8 +87,12 @@ import {
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendProjection } from './QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
+export class QueryBuilderProjectionState
+  extends QueryBuilderFetchStructureImplementationState
+  implements Hashable
+{
   columns: QueryBuilderProjectionColumnState[] = [];
   aggregationState: QueryBuilderAggregationState;
   postFilterState: QueryBuilderPostFilterState;
@@ -559,5 +565,15 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     } else {
       onChange();
     }
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.PROJECTION_STATE,
+      hashArray(this.columns),
+      this.aggregationState,
+      this.postFilterState,
+      this.resultSetModifierState,
+    ]);
   }
 }

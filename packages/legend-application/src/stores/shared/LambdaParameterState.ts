@@ -38,11 +38,13 @@ import {
 import {
   addUniqueEntry,
   deleteEntry,
+  type Hashable,
+  hashArray,
   IllegalStateError,
   isNonNullable,
   uuid,
 } from '@finos/legend-shared';
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
 import {
   genericType_setRawType,
   multiplicity_setLowerBound,
@@ -52,6 +54,11 @@ import {
 export enum PARAMETER_SUBMIT_ACTION {
   EXECUTE = 'EXECUTE',
   EXPORT = 'EXPORT',
+}
+
+enum LAMABA_PARAMETER_HASH_STRUCTURE {
+  LAMBDA_PARAMETER_STATE = 'LAMBDA_PARAMETER_STATE',
+  LAMBDA_PARAMETERS_STATE = 'LAMBDA_PARAMETERS_STATE',
 }
 
 export const buildParametersLetLambdaFunc = (
@@ -87,7 +94,7 @@ export const buildParametersLetLambdaFunc = (
     .filter(isNonNullable);
   return letlambdaFunction;
 };
-export class LambdaParameterState {
+export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
   readonly graph: PureModel;
@@ -103,10 +110,19 @@ export class LambdaParameterState {
       value: observable,
       setValue: action,
       mockParameterValue: action,
+      hashCode: computed,
     });
     this.observableContext = observableContext;
     this.parameter = observe_VariableExpression(variableExpression);
     this.graph = graph;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      LAMABA_PARAMETER_HASH_STRUCTURE.LAMBDA_PARAMETER_STATE,
+      this.value ?? '',
+      this.parameter.name,
+    ]);
   }
 
   mockParameterValue(): void {
@@ -204,9 +220,23 @@ export class ParameterInstanceValuesEditorState {
     this.setShowModal(false);
   }
 }
-export class LambdaParametersState {
+
+export class LambdaParametersState implements Hashable {
   parameterStates: LambdaParameterState[] = [];
   parameterValuesEditorState = new ParameterInstanceValuesEditorState();
+
+  constructor() {
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      LAMABA_PARAMETER_HASH_STRUCTURE.LAMBDA_PARAMETERS_STATE,
+      hashArray(this.parameterStates),
+    ]);
+  }
 
   addParameter(val: LambdaParameterState): void {
     addUniqueEntry(this.parameterStates, val);

@@ -36,7 +36,7 @@ import {
   PauseCircleIcon,
   PencilIcon,
 } from '@finos/legend-art';
-import { assertErrorThrown, debounce, hashObject } from '@finos/legend-shared';
+import { assertErrorThrown, debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -269,13 +269,9 @@ export const ServiceExecutionQueryEditor = observer(
                       ? selectedExecutionState.executionContext.key
                       : undefined,
                   );
-                  queryBuilderState.initializeWithQuery(
+                  queryBuilderState.initializeQueryWithChangeDetection(
                     executionState.execution.func,
                   );
-                  queryBuilderState.changeDetectionState.setQueryHashCode(
-                    hashObject(executionState.execution.func),
-                  );
-                  queryBuilderState.changeDetectionState.setIsEnabled(true);
                   return queryBuilderState;
                 },
                 actionConfigs: [
@@ -293,9 +289,6 @@ export const ServiceExecutionQueryEditor = observer(
                             );
                             applicationStore.notifySuccess(
                               `Service query is updated`,
-                            );
-                            queryBuilderState.changeDetectionState.setQueryHashCode(
-                              hashObject(rawLambda),
                             );
                             embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
                               undefined,

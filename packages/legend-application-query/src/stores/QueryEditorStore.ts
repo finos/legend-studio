@@ -527,7 +527,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         ),
       ),
     );
-
     return queryBuilderState;
   }
 
@@ -603,7 +602,9 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initializeWithQuery(service.execution.func);
+    await queryBuilderState.initializeQueryWithChangeDetection(
+      service.execution.func,
+    );
 
     return queryBuilderState;
   }
@@ -696,7 +697,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initializeWithQuery(
+    await queryBuilderState.initializeQueryWithChangeDetection(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
     );
 

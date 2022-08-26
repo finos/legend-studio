@@ -56,7 +56,6 @@ import {
   IllegalStateError,
   guaranteeType,
   tryToFormatLosslessJSONString,
-  hashObject,
   assertErrorThrown,
 } from '@finos/legend-shared';
 import {
@@ -114,11 +113,9 @@ const MappingTestQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
               );
-              queryBuilderState.initializeWithQuery(testState.queryState.query);
-              queryBuilderState.changeDetectionState.setQueryHashCode(
-                hashObject(testState.queryState.query),
+              queryBuilderState.initializeQueryWithChangeDetection(
+                testState.queryState.query,
               );
-              queryBuilderState.changeDetectionState.setIsEnabled(true);
               return queryBuilderState;
             },
             actionConfigs: [
@@ -136,9 +133,6 @@ const MappingTestQueryEditor = observer(
                         );
                         applicationStore.notifySuccess(
                           `Mapping test query is updated`,
-                        );
-                        queryBuilderState.changeDetectionState.setQueryHashCode(
-                          hashObject(rawLambda),
                         );
                         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
                           undefined,

@@ -22,8 +22,10 @@ import type {
   ValueSpecificationVisitor,
 } from './ValueSpecification.js';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 
-export class FunctionType {
+export class FunctionType implements Hashable {
   returnType?: Type | undefined;
   parameters: VariableExpression[] = [];
   returnMultiplicity: Multiplicity;
@@ -32,9 +34,18 @@ export class FunctionType {
     this.returnType = returnType;
     this.returnMultiplicity = returnMultiplicity;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_TYPE,
+      this.returnType ?? '',
+      hashArray(this.parameters),
+      this.returnMultiplicity,
+    ]);
+  }
 }
 
-export class LambdaFunction {
+export class LambdaFunction implements Hashable {
   functionType: FunctionType;
   openVariables: string[] = [];
   expressionSequence: ValueSpecification[] = [];
@@ -42,10 +53,31 @@ export class LambdaFunction {
   constructor(type: FunctionType) {
     this.functionType = type;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.LAMBDA_FUNCTION,
+      this.functionType,
+      hashArray(this.openVariables),
+      hashArray(this.expressionSequence),
+    ]);
+  }
 }
 
-export class LambdaFunctionInstanceValue extends InstanceValue {
+export class LambdaFunctionInstanceValue
+  extends InstanceValue
+  implements Hashable
+{
   override values: LambdaFunction[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.LAMBDA_FUNCTION_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

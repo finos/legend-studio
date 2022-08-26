@@ -59,14 +59,7 @@ import {
   getAllSubclasses,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import {
-  action,
-  flow,
-  flowResult,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import {
   buildNonNumericPreviewDataQuery,
@@ -568,8 +561,10 @@ export class QueryBuilderExplorerPreviewDataState {
   previewData?: QueryBuilderPreviewData | undefined;
 
   constructor() {
-    makeAutoObservable(this, {
+    makeObservable(this, {
       previewData: observable.ref,
+      isGeneratingPreviewData: observable,
+      propertyName: observable,
       setPropertyName: action,
       setIsGeneratingPreviewData: action,
       setPreviewData: action,
@@ -601,11 +596,14 @@ export class QueryBuilderExplorerState {
   mappingModelCoverageAnalysisState = ActionState.create();
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      previewDataState: false,
+    makeObservable(this, {
       treeData: observable.ref,
+      humanizePropertyName: observable,
+      showUnmappedProperties: observable,
       highlightUsedProperties: observable,
+      mappingModelCoverageAnalysisState: observable,
+      mappingModelCoverageAnalysisResult: observable,
+      propertySearchState: observable,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,

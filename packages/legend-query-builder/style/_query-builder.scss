@@ -287,6 +287,22 @@
     font-family: 'Roboto Mono', monospace;
   }
 
+  &__stale-results {
+    @include flexVCenter;
+  }
+
+  &__stale-results__label {
+    font-size: 1.1rem;
+    color: var(--color-red-100);
+    margin-left: 0.5rem;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  &__stale-results__icon {
+    color: var(--color-red-100);
+    margin-left: 0.5rem;
+  }
+
   &__limit {
     @include flexVCenter;
 

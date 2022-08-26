@@ -19,14 +19,14 @@ import type {
   Type,
   ValueSpecification,
 } from '@finos/legend-graph';
-import { uuid } from '@finos/legend-shared';
+import { type Hashable, uuid } from '@finos/legend-shared';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
   TDS_COLUMN_GETTER,
 } from './QueryBuilderPostFilterState.js';
 
-export abstract class QueryBuilderPostFilterOperator {
+export abstract class QueryBuilderPostFilterOperator implements Hashable {
   readonly uuid = uuid();
 
   abstract getLabel(): string;
@@ -63,4 +63,6 @@ export abstract class QueryBuilderPostFilterOperator {
     postFilterState: QueryBuilderPostFilterState,
     expression: FunctionExpression,
   ): PostFilterConditionState | undefined;
+
+  abstract get hashCode(): string;
 }

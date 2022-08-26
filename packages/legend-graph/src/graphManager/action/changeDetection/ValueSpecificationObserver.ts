@@ -15,7 +15,7 @@
  */
 
 import { filterByType, Pair } from '@finos/legend-shared';
-import { computed, makeObservable, observable } from 'mobx';
+import { computed, makeObservable, observable, override } from 'mobx';
 import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Runtime } from '../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import {
@@ -75,6 +75,7 @@ const observe_Abstract_ValueSpecification = (
 ): void => {
   makeObservable<ValueSpecification>(metamodel, {
     multiplicity: observable,
+    hashCode: computed,
   });
 
   if (metamodel.genericType) {
@@ -106,6 +107,7 @@ export const observe_SimpleFunctionExpression = skipObservedWithContext(
 
     makeObservable(metamodel, {
       func: observable,
+      hashCode: override,
     });
 
     if (metamodel.func) {
@@ -125,6 +127,7 @@ export const observe_AbstractPropertyExpression = skipObservedWithContext(
 
     makeObservable(metamodel, {
       func: observable,
+      hashCode: override,
     });
 
     return metamodel;
@@ -134,6 +137,9 @@ export const observe_AbstractPropertyExpression = skipObservedWithContext(
 export const observe_PrimitiveInstanceValue = skipObservedWithContext(
   (metamodel: PrimitiveInstanceValue, context): PrimitiveInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     return metamodel;
   },
@@ -142,6 +148,9 @@ export const observe_PrimitiveInstanceValue = skipObservedWithContext(
 export const observe_EnumValueInstanceValue = skipObservedWithContext(
   (metamodel: EnumValueInstanceValue, context): EnumValueInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values.forEach(observe_EnumValueReference);
 
@@ -170,6 +179,9 @@ export const observe_PropertyGraphFetchTreeInstanceValue =
       context,
     ): PropertyGraphFetchTreeInstanceValue => {
       observe_Abstract_InstanceValue(metamodel, context);
+      makeObservable(metamodel, {
+        hashCode: override,
+      });
 
       metamodel.values
         .filter(filterByType(PropertyGraphFetchTree))
@@ -185,6 +197,9 @@ export const observe_RootGraphFetchTreeInstanceValue = skipObservedWithContext(
     context,
   ): RootGraphFetchTreeInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values.forEach((value) =>
       observe_RootGraphFetchTree(value, context),
@@ -204,6 +219,7 @@ const observe_AlloySerializationConfig = skipObserved(
       removePropertiesWithEmptySets: observable,
       fullyQualifiedTypePath: observable,
       includeObjectReference: observable,
+      hashCode: computed,
     });
 
     return metamodel;
@@ -216,6 +232,9 @@ const observe_AlloySerializationConfigInstanceValue = skipObservedWithContext(
     context,
   ): AlloySerializationConfigInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values
       .filter(filterByType(AlloySerializationConfig))
@@ -232,6 +251,9 @@ const observe_LambdaFunctionInstanceValue = skipObservedWithContext(
     context,
   ): LambdaFunctionInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values
       .filter(filterByType(LambdaFunction))
@@ -247,6 +269,7 @@ const observe_FunctionType = skipObserved(
       returnType: observable,
       parameters: observable,
       returnMultiplicity: observable,
+      hashCode: computed,
     });
 
     // TODO? returnType? - when we make this reference
@@ -276,6 +299,9 @@ const observe_INTERNAL__UnknownValueSpecification = skipObserved(
 const observe_RuntimeInstanceValue = skipObservedWithContext(
   (metamodel: RuntimeInstanceValue, context): RuntimeInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values
       .filter(filterByType(Runtime))
@@ -292,6 +318,9 @@ const observe_PairInstanceValue = skipObservedWithContext(
 const observe_MappingInstanceValue = skipObservedWithContext(
   (metamodel: MappingInstanceValue, context): MappingInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     metamodel.values
       .filter(filterByType(PackageableElementReference))
@@ -304,6 +333,9 @@ const observe_MappingInstanceValue = skipObservedWithContext(
 const observe_PureListInstanceValue = skipObservedWithContext(
   (metamodel: PureListInstanceValue, context): PureListInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
+    makeObservable(metamodel, {
+      hashCode: override,
+    });
 
     return metamodel;
   },
@@ -449,6 +481,9 @@ function _observe_CollectionInstanceValue(
   context: ObserverContext,
 ): CollectionInstanceValue {
   observe_Abstract_InstanceValue(metamodel, context);
+  makeObservable(metamodel, {
+    hashCode: override,
+  });
 
   return metamodel;
 }
@@ -463,6 +498,7 @@ function observe_Abstract_FunctionExpression(
     functionName: observable,
     parametersValues: observable,
     classifierGenericType: observable,
+    hashCode: override,
   });
 
   metamodel.parametersValues.forEach((value) =>
@@ -479,6 +515,7 @@ function observe_Abstract_GraphFetchTree(
   makeObservable(metamodel, {
     subTrees: observable,
     isEmpty: computed,
+    hashCode: computed,
   });
 
   metamodel.subTrees.forEach((subTree) => {
@@ -540,6 +577,7 @@ function _observe_LambdaFunction(
     functionType: observable,
     openVariables: observable,
     expressionSequence: observable,
+    hashCode: computed,
   });
 
   observe_FunctionType(metamodel.functionType);
@@ -555,6 +593,9 @@ function _observe_PairInstanceValue(
   context: ObserverContext,
 ): PairInstanceValue {
   observe_Abstract_InstanceValue(metamodel, context);
+  makeObservable(metamodel, {
+    hashCode: override,
+  });
 
   metamodel.values.filter(filterByType(Pair)).forEach((value) => {
     makeObservable(value, {

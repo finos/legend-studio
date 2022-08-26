@@ -24,6 +24,8 @@ import {
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
+  type Hashable,
+  hashArray,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -40,8 +42,12 @@ import {
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_Contain
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return 'contains';
   }
@@ -107,6 +113,12 @@ export class QueryBuilderPostFilterOperator_Contain extends QueryBuilderPostFilt
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_CONTAIN,
+    ]);
+  }
 }
 
 export class QueryBuilderPostFilterOperator_NotContain extends QueryBuilderPostFilterOperator_Contain {
@@ -136,5 +148,11 @@ export class QueryBuilderPostFilterOperator_NotContain extends QueryBuilderPostF
     return innerExpression
       ? super.buildPostFilterConditionState(postFilterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_CONTAIN,
+    ]);
   }
 }

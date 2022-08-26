@@ -23,10 +23,24 @@ import {
 } from './ValueSpecification.js';
 import type { Function } from '../packageableElements/domain/Function.js';
 import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty.js';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 
-export class Expression extends ValueSpecification {
+export class Expression extends ValueSpecification implements Hashable {
   classifierGenericType?: GenericTypeReference | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.EXPRESSION,
+      this.classifierGenericType?.ownerReference.valueForSerialization ?? '',
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+    ]);
+  }
 
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -35,13 +49,24 @@ export class Expression extends ValueSpecification {
   }
 }
 
-export class FunctionExpression extends Expression {
+export class FunctionExpression extends Expression implements Hashable {
   functionName: string;
   parametersValues: ValueSpecification[] = [];
 
   constructor(functionName: string, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
     this.functionName = functionName;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_EXPRESSION,
+      this.classifierGenericType?.ownerReference.valueForSerialization ?? '',
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      this.functionName,
+      hashArray(this.parametersValues),
+    ]);
   }
 
   override accept_ValueSpecificationVisitor<T>(
@@ -51,9 +76,24 @@ export class FunctionExpression extends Expression {
   }
 }
 
-export class SimpleFunctionExpression extends FunctionExpression {
+export class SimpleFunctionExpression
+  extends FunctionExpression
+  implements Hashable
+{
   // eslint-disable-next-line @typescript-eslint/ban-types
   func?: PackageableElementReference<Function> | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_EXPRESSION,
+      this.classifierGenericType?.ownerReference.valueForSerialization ?? '',
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      this.functionName,
+      hashArray(this.parametersValues),
+      this.func?.valueForSerialization ?? '',
+    ]);
+  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -62,8 +102,23 @@ export class SimpleFunctionExpression extends FunctionExpression {
   }
 }
 
-export class AbstractPropertyExpression extends FunctionExpression {
+export class AbstractPropertyExpression
+  extends FunctionExpression
+  implements Hashable
+{
   func!: AbstractProperty;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.FUNCTION_EXPRESSION,
+      this.classifierGenericType?.ownerReference.valueForSerialization ?? '',
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      this.functionName,
+      hashArray(this.parametersValues),
+      this.func,
+    ]);
+  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

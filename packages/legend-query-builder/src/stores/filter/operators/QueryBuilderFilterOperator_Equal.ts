@@ -34,7 +34,11 @@ import {
   SUPPORTED_FUNCTIONS,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
@@ -47,8 +51,12 @@ import {
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator {
+export class QueryBuilderFilterOperator_Equal
+  extends QueryBuilderFilterOperator
+  implements Hashable
+{
   getLabel(filterConditionState: FilterConditionState): string {
     return 'is';
   }
@@ -182,6 +190,10 @@ export class QueryBuilderFilterOperator_Equal extends QueryBuilderFilterOperator
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_EQUAL]);
+  }
 }
 
 export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOperator_Equal {
@@ -207,5 +219,9 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_EQUAL]);
   }
 }

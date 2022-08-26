@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { uuid, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  uuid,
+  guaranteeNonNullable,
+  type Hashable,
+} from '@finos/legend-shared';
 import type {
   AbstractPropertyExpression,
   PureModel,
@@ -29,7 +33,7 @@ import {
 } from '../QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
 
-export abstract class QueryBuilderAggregateOperator {
+export abstract class QueryBuilderAggregateOperator implements Hashable {
   readonly uuid = uuid();
 
   abstract getLabel(
@@ -76,4 +80,6 @@ export abstract class QueryBuilderAggregateOperator {
       aggregateColumnState.projectionColumnState.getReturnType(),
     );
   }
+
+  abstract get hashCode(): string;
 }
