@@ -319,6 +319,11 @@ const generateSubtypeNodeMappingData = (
           (mappedProperty[0] as EntityMappedProperty).entityPath,
         ),
       };
+    } else if (parentMappingData.mappedEntity.path === subclass.path) {
+      return {
+        mapped: true,
+        mappedEntity: parentMappingData.mappedEntity,
+      };
     }
   }
   return { mapped: false };
