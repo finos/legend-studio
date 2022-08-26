@@ -42,6 +42,7 @@ import {
   MenuContent,
   MenuContentItem,
   PanelExplorer,
+  DropdownMenu,
 } from '@finos/legend-art';
 import {
   capitalize,
@@ -1086,6 +1087,7 @@ const RelationalConnectionStoreEditor = observer(
       connectionValueState.editorStore.graphManagerState.graph.ownStores;
     const options = stores.map(buildElementOption);
     const store = connection.store.value;
+
     const selectedStore = {
       value: store,
       label: isStoreEmpty ? noStoreLabel : store.path,
@@ -1154,7 +1156,7 @@ const renderEditorPostProcessor = (
         ).getExtraPostProcessorEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraPostProcessorEditorRenderers) {
-      const editor = editorRenderer(postprocessor, true);
+      const editor = editorRenderer(postprocessor, connectionValueState, false);
       if (editor) {
         return editor;
       }
@@ -1214,14 +1216,33 @@ const PostProcessorRelationalConnectionEditor = observer(
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel size={150} minSize={70}>
                   <div className="relational-connection-editor__auth">
-                    <PanelHeader title="post processor">
-                      <PanelHeaderActionItem
-                        onClick={addPostProcessor}
-                        tip="Create Post Processor"
-                      >
-                        <PlusIcon />
-                      </PanelHeaderActionItem>
-                    </PanelHeader>
+                    <DropdownMenu
+                      className=""
+                      content={
+                        <MenuContent>
+                          <MenuContentItem onClick={addPostProcessor}>
+                            New Post Processor
+                          </MenuContentItem>
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                        elevation: 7,
+                      }}
+                    >
+                      <PanelHeader title="post processor">
+                        <PanelHeaderActionItem tip="Create Post Processor">
+                          <PlusIcon />
+                        </PanelHeaderActionItem>
+                      </PanelHeader>
+                    </DropdownMenu>
                     <div className="panel__content">
                       {postprocessors.map((postprocessor, idx) => (
                         <ContextMenu

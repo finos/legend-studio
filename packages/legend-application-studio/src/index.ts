@@ -70,7 +70,10 @@ export * from './stores/EditorStoreTestUtils.js';
 
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
-export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+export {
+  ConnectionValueState,
+  RelationalDatabaseConnectionValueState,
+} from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';

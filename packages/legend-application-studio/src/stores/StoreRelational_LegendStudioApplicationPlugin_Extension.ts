@@ -20,6 +20,7 @@ import type {
   AuthenticationStrategy,
   PostProcessor,
 } from '@finos/legend-graph';
+import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 
 // connection datasource specification
 
@@ -61,6 +62,7 @@ export type PostProcessorCreator = (type: string) => PostProcessor | undefined;
 
 export type PostProcessorEditorRenderer = (
   metamodel: PostProcessor,
+  connectionValueState: RelationalDatabaseConnectionValueState,
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
 
