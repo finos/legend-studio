@@ -42,10 +42,7 @@ import {
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
-  AbstractPropertyExpression,
-  matchFunctionName,
-  SimpleFunctionExpression,
-  type ValueSpecification,
+  type Class,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -156,6 +153,10 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       return ['Query has no projection columns'];
     }
     return undefined;
+  }
+
+  onClassChange(_class: Class | undefined): void {
+    return;
   }
 
   setShowPostFilterPanel(val: boolean): void {

@@ -220,7 +220,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void => {
-        graphFetchTreeState.addProperty(item.node);
+        graphFetchTreeState.addProperty(item.node, { refreshTreeData: true });
       },
       [graphFetchTreeState],
     );

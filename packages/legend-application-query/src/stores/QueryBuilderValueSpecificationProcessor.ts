@@ -85,6 +85,7 @@ import { toGroupOperation } from './QueryBuilderGroupOperationHelper.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from './fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 import { QueryBuilderGraphFetchTreeState } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
+import { buildGraphFetchTreeData } from './fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
 
 const getNullableStringValueFromValueSpec = (
   valueSpec: ValueSpecification,
@@ -1106,8 +1107,8 @@ export class QueryBuilderLambdaProcessor
           RootGraphFetchTree,
           `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
         );
-        this.queryBuilderState.fetchStructureState.implementation.initialize(
-          value,
+        this.queryBuilderState.fetchStructureState.implementation.setGraphFetchTree(
+          buildGraphFetchTreeData(value),
         );
       }
 

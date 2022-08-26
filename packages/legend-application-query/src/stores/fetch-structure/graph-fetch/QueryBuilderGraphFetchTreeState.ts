@@ -20,6 +20,7 @@ import {
   type CompilationError,
   PackageableElementExplicitReference,
   RootGraphFetchTree,
+  type Class,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderGraphFetchTreeData,
@@ -27,7 +28,6 @@ import {
   buildGraphFetchTreeData,
 } from './QueryBuilderGraphFetchTreeUtil.js';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../../explorer/QueryBuilderExplorerState.js';
-import { assertNonNullable } from '@finos/legend-shared';
 import {
   FETCH_STRUCTURE_IMPLEMENTATION,
   QueryBuilderFetchStructureImplementationState,
@@ -59,6 +59,9 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
       setGraphFetchTree: action,
       setChecked: action,
     });
+
+    // try to initialize the graph-fetch tree data using the setup class
+    this.updateTreeData(this.queryBuilderState.querySetupState._class);
   }
 
   get type(): string {
@@ -77,42 +80,43 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     this.isChecked = val;
   }
 
-  // TODO-BEFORE-PR: consider removing this or make it private or call it in constructor or sth
-  // the goal is try to make graph-fetch the default and then see how things work
-  initialize(tree?: RootGraphFetchTree): void {
-    if (tree) {
-      this.setGraphFetchTree(buildGraphFetchTreeData(tree));
-    } else {
-      const _class = this.queryBuilderState.querySetupState._class;
-      if (_class) {
-        this.setGraphFetchTree(
-          buildGraphFetchTreeData(
+  private updateTreeData(_class: Class | undefined): void {
+    this.setGraphFetchTree(
+      _class
+        ? buildGraphFetchTreeData(
             new RootGraphFetchTree(
               PackageableElementExplicitReference.create(_class),
             ),
-          ),
-        );
-      } else {
-        this.setGraphFetchTree(undefined);
-      }
-    }
+          )
+        : undefined,
+    );
   }
 
-  addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+  onClassChange(_class: Class | undefined): void {
+    this.updateTreeData(_class);
+  }
+
+  addProperty(
+    node: QueryBuilderExplorerTreePropertyNodeData,
+    options?: {
+      refreshTreeData?: boolean;
+    },
+  ): void {
     if (!this.treeData) {
-      this.initialize();
+      this.queryBuilderState.applicationStore.notifyWarning(
+        `Can't add property: graph-fetch tree has not been properly initialized`,
+      );
+      return;
     }
-    assertNonNullable(
-      this.treeData,
-      `Graph-fetch tree has not been properly initialized`,
-    );
     addQueryBuilderPropertyNode(
       this.treeData,
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
       this.queryBuilderState,
     );
-    this.setGraphFetchTree({ ...this.treeData });
+    if (options?.refreshTreeData) {
+      this.setGraphFetchTree({ ...this.treeData });
+    }
   }
 
   revealCompilationError(compilationError: CompilationError): boolean {
@@ -124,24 +128,20 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
   }
 
   fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
-    this.addProperty(node);
+    this.addProperty(node, { refreshTreeData: true });
   }
 
   fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {
-    const graphFetchTreeData = this.treeData;
-    if (graphFetchTreeData) {
-      nodes.forEach((nodeToAdd) =>
-        addQueryBuilderPropertyNode(
-          graphFetchTreeData,
-          this.queryBuilderState.explorerState.nonNullableTreeData,
-          nodeToAdd,
-          this.queryBuilderState,
-        ),
+    if (!this.treeData) {
+      this.queryBuilderState.applicationStore.notifyWarning(
+        `Can't add property: graph-fetch tree has not been properly initialized`,
       );
-      this.setGraphFetchTree({
-        ...graphFetchTreeData,
-      });
+      return;
     }
+    nodes.forEach((nodeToAdd) => this.addProperty(nodeToAdd));
+    this.setGraphFetchTree({
+      ...this.treeData,
+    });
   }
 
   checkBeforeChangingImplementation(onChange: () => void): void {

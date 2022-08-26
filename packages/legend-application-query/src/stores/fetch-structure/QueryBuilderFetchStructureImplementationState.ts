@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CompilationError } from '@finos/legend-graph';
+import type { Class, CompilationError } from '@finos/legend-graph';
 import { computed, makeObservable } from 'mobx';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
@@ -43,6 +43,7 @@ export abstract class QueryBuilderFetchStructureImplementationState {
 
   abstract get type(): string;
   abstract get validationIssues(): string[] | undefined;
+  abstract onClassChange(_class: Class | undefined): void;
   abstract revealCompilationError(compilationError: CompilationError): boolean;
   abstract clearCompilationError(): void;
   abstract fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;

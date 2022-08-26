@@ -44,6 +44,8 @@ export class QueryBuilderFetchStructureState {
      * TODO?: perhaps it would eventually make sense to default to
      * graph-fetch since `getAll()` naturally works for graph-fetch case
      * and graph-fetch allows somewhat an empty tree
+     *
+     * TODO?: we could consider making this configurable
      */
     this.implementation = new QueryBuilderProjectionState(
       this.queryBuilderState,
@@ -61,12 +63,10 @@ export class QueryBuilderFetchStructureState {
         return;
       }
       case FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH: {
-        const graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
+        this.implementation = new QueryBuilderGraphFetchTreeState(
           this.queryBuilderState,
           this,
         );
-        graphFetchTreeState.initialize();
-        this.implementation = graphFetchTreeState;
         return;
       }
       default:

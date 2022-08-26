@@ -448,6 +448,7 @@ export class QueryBuilderState {
     this.resetQueryContent();
     this.querySetupState.setClass(val, isRebuildingState);
     this.explorerState.refreshTreeData();
+    this.fetchStructureState.implementation.onClassChange(val);
   }
 
   get validationIssues(): string[] | undefined {
