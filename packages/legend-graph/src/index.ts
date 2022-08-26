@@ -226,7 +226,6 @@ export * from './graphManager/action/query/Query.js';
 export * from './graphManager/action/query/QuerySearchSpecification.js';
 export * from './graphManager/action/EngineError.js';
 export * from './graphManager/action/SourceInformationHelper.js';
-export * from './graphManager/action/generation/ImportConfigurationDescription.js';
 export * from './graphManager/action/generation/DatabaseBuilderInput.js';
 export * from './graphManager/action/generation/GenerationConfigurationDescription.js';
 export { GenerationOutput } from './graphManager/action/generation/GenerationOutput.js';

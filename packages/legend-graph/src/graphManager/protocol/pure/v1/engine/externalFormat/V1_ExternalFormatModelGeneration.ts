@@ -14,19 +14,37 @@
  * limitations under the License.
  */
 
-import { createModelSchema, object, primitive, raw } from 'serializr';
+import { createModelSchema, optional, primitive, raw } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { V1_GenerationInput } from '../generation/V1_GenerationInput.js';
-import { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
+import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
+import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
-export class V1_ExternalFormatModelGenerationInput extends V1_GenerationInput {
+export class V1_ExternalFormatModelGenerationInput {
+  clientVersion?: string | undefined;
+  sourceSchemaSet: string;
+  model: V1_PureModelContext;
   config?: Record<PropertyKey, unknown> | undefined;
+  generateBinding: boolean | undefined;
+  targetBindingPath: string | undefined;
 
-  static override readonly serialization = new SerializationFactory(
+  constructor(
+    sourceSchemaSet: string,
+    model: V1_PureModelContext,
+    config?: Record<PropertyKey, unknown>,
+  ) {
+    this.model = model;
+    this.sourceSchemaSet = sourceSchemaSet;
+    this.config = config;
+  }
+
+  static readonly serialization = new SerializationFactory(
     createModelSchema(V1_ExternalFormatModelGenerationInput, {
-      clientVersion: primitive(),
-      model: object(V1_PureModelContextData),
+      clientVersion: optional(primitive()),
       config: raw(),
+      model: V1_pureModelContextPropSchema,
+      generateBinding: optional(primitive()),
+      targetBindingPath: optional(primitive()),
+      sourceSchemaSet: primitive(),
     }),
   );
 }

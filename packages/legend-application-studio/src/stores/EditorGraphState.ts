@@ -35,7 +35,7 @@ import {
 import type { EditorStore } from './EditorStore.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
-import { MODEL_UPDATER_INPUT_TYPE } from './editor-state/ModelLoaderState.js';
+import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -303,8 +303,8 @@ export class EditorGraphState {
         );
         this.editorStore.setCurrentEditorState(projectConfigurationEditorState);
       } else if (error instanceof GraphDataDeserializationError) {
-        // if something goes wrong with de-serialization, redirect to model loader to fix
-        this.redirectToModelLoaderForDebugging(error);
+        // if something goes wrong with de-serialization, redirect to model importer to fix
+        this.redirectToModelImporterForDebugging(error);
       } else if (error instanceof NetworkClientError) {
         this.editorStore.graphManagerState.graphBuildState.fail();
         this.editorStore.applicationStore.notifyWarning(
@@ -332,8 +332,8 @@ export class EditorGraphState {
             error2,
           );
           if (error2 instanceof NetworkClientError) {
-            // in case the server cannot even transform the JSON due to corrupted protocol, we can redirect to model loader
-            this.redirectToModelLoaderForDebugging(error2);
+            // in case the server cannot even transform the JSON due to corrupted protocol, we can redirect to model importer
+            this.redirectToModelImporterForDebugging(error2);
             return {
               status: GraphBuilderStatus.FAILED,
               error: error2,
@@ -361,7 +361,7 @@ export class EditorGraphState {
     }
   }
 
-  private redirectToModelLoaderForDebugging(error: Error): void {
+  private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
       this.editorStore.setBlockingAlert({
         message: `Can't de-serialize graph model from entities`,
@@ -370,14 +370,15 @@ export class EditorGraphState {
       return;
     }
     this.editorStore.applicationStore.notifyWarning(
-      `Can't de-serialize graph model from entities. Redirected to model loader for debugging. Error: ${error.message}`,
+      `Can't de-serialize graph model from entities. Redirected to model importer for debugging. Error: ${error.message}`,
     );
-    this.editorStore.modelLoaderState.setCurrentModelLoadType(
-      MODEL_UPDATER_INPUT_TYPE.ENTITIES,
-    );
+    const nativeImporterState =
+      this.editorStore.modelImporterState.setNativeImportType(
+        MODEL_IMPORT_NATIVE_INPUT_TYPE.ENTITIES,
+      );
     // Making an async call
-    this.editorStore.modelLoaderState.loadCurrentProjectEntities();
-    this.editorStore.openState(this.editorStore.modelLoaderState);
+    nativeImporterState.loadCurrentProjectEntities();
+    this.editorStore.openState(this.editorStore.modelImporterState);
   }
 
   /**

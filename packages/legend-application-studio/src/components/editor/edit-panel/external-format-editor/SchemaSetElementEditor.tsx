@@ -24,7 +24,6 @@ import {
   ResizablePanelSplitterLine,
   LockIcon,
   PlusIcon,
-  RefreshIcon,
   PanelLoadingIndicator,
   UploadIcon,
   Dialog,
@@ -33,25 +32,17 @@ import {
   MenuContent,
   MenuContentItem,
 } from '@finos/legend-art';
-import {
-  type GenerationProperty,
-  ExternalFormatSchema as Schema,
-} from '@finos/legend-graph';
+import { ExternalFormatSchema as Schema } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
-import { useMemo } from 'react';
 import {
   SchemaSetEditorState,
+  type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/external-format/SchemaSetEditorState.js';
 import { EDITOR_LANGUAGE } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
-import {
-  debounce,
-  guaranteeNonNullable,
-  prettyCONSTName,
-} from '@finos/legend-shared';
-import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
+import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   externalFormat_schemaSet_addSchema,
@@ -60,9 +51,12 @@ import {
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
 } from '../../../../stores/graphModifier/DSLExternalFormat_GraphModifierHelper.js';
+import { SchemaSetModelGenerationEditor } from './SchemaSetModelGenerationEditor.js';
 
 const SchemaLoader = observer(
-  (props: { schemaSetEditorState: SchemaSetEditorState }) => {
+  (props: {
+    schemaSetEditorState: InnerSchemaSetEditorState | SchemaSetEditorState;
+  }) => {
     const { schemaSetEditorState } = props;
     const importState = schemaSetEditorState.importSchemaContentState;
     const onClose = (): void => importState.closeModal();
@@ -199,19 +193,23 @@ const SchemaBasicEditor = observer(
   },
 );
 
-const SchemaSetGeneralEditor = observer(
-  (props: { schemaSetEditorState: SchemaSetEditorState }) => {
-    const { schemaSetEditorState } = props;
+export const SchemaSetGeneralEditor = observer(
+  (props: {
+    schemaSetEditorState: InnerSchemaSetEditorState | SchemaSetEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const { schemaSetEditorState, isReadOnly } = props;
     const schemaSet = schemaSetEditorState.schemaSet;
     const applicationStore = schemaSetEditorState.editorStore.applicationStore;
     const importSchemaContentState =
       schemaSetEditorState.importSchemaContentState;
     const currentSchema = schemaSetEditorState.currentSchema;
-    const isReadOnly = schemaSetEditorState.isReadOnly;
     const description =
       schemaSetEditorState.schemaSetModelGenerationState.description;
     // TEMPROARY engine api should return `fileformat`.
-    const language = getEditorLanguageFromFormat(description.name);
+    const language = description
+      ? getEditorLanguageFromFormat(description.name)
+      : EDITOR_LANGUAGE.TEXT;
     const changeState =
       (schema: Schema): (() => void) =>
       (): void => {
@@ -246,7 +244,10 @@ const SchemaSetGeneralEditor = observer(
         }
       };
     const validateSchema = (): void => {
-      if (currentSchema) {
+      if (
+        currentSchema &&
+        schemaSetEditorState instanceof SchemaSetEditorState
+      ) {
         flowResult(schemaSetEditorState.validateSchema(currentSchema)).catch(
           applicationStore.alertUnhandledError,
         );
@@ -332,15 +333,17 @@ const SchemaSetGeneralEditor = observer(
                 </div>
               </div>
               <div className="panel__header__actions">
-                <button
-                  className="btn--dark model-loader__header__load-btn"
-                  onClick={validateSchema}
-                  disabled={!currentSchema}
-                  tabIndex={-1}
-                  title="Validate Schema"
-                >
-                  Validate
-                </button>
+                {schemaSetEditorState instanceof SchemaSetEditorState && (
+                  <button
+                    className="btn--dark model-loader__header__load-btn"
+                    onClick={validateSchema}
+                    disabled={!currentSchema}
+                    tabIndex={-1}
+                    title="Validate Schema"
+                  >
+                    Validate
+                  </button>
+                )}
               </div>
             </div>
             <div className="schema-set-panel__content">
@@ -366,133 +369,6 @@ const SchemaSetGeneralEditor = observer(
   },
 );
 
-const SchemaSetModelGenerationEditor = observer(
-  (props: { schemaSetEditorState: SchemaSetEditorState }) => {
-    const { schemaSetEditorState } = props;
-    const applicationStore = schemaSetEditorState.editorStore.applicationStore;
-    const schemaSet = schemaSetEditorState.schemaSet;
-    const modelGenerationState =
-      schemaSetEditorState.schemaSetModelGenerationState;
-    const description = modelGenerationState.description;
-    const properties = description.modelGenerationProperties;
-    const isReadOnly = schemaSetEditorState.isReadOnly;
-    const debouncedRegenerate = useMemo(
-      () =>
-        debounce(() => flowResult(modelGenerationState.generateModel()), 500),
-      [modelGenerationState],
-    );
-    const update = (
-      generationProperty: GenerationProperty,
-      newValue: object,
-    ): void => {
-      debouncedRegenerate.cancel();
-      modelGenerationState.updateGenerationParameters(
-        generationProperty,
-        newValue,
-      );
-      debouncedRegenerate()?.catch(applicationStore.alertUnhandledError);
-    };
-    const regenerate = (): void => {
-      modelGenerationState.generateModel();
-    };
-    const getConfigValue = (name: string): unknown | undefined =>
-      modelGenerationState.getConfigValue(name);
-
-    const importGeneratedElements = (): void => {
-      modelGenerationState.importGrammar();
-    };
-    return (
-      <div className="panel__content file-generation-editor__content">
-        <ResizablePanelGroup orientation="vertical">
-          <ResizablePanel size={250} minSize={50}>
-            <div className="panel file-generation-editor__configuration">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">{`${schemaSet.format} configuration`}</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className="panel__header__action file-generation-editor__configuration__reset-btn"
-                    tabIndex={-1}
-                    disabled={isReadOnly || !properties.length}
-                    onClick={regenerate}
-                    title={'Reset to default configuration'}
-                  >
-                    <RefreshIcon />
-                  </button>
-                </div>
-              </div>
-              <div className="panel__content">
-                <div className="file-generation-editor__configuration__content">
-                  {modelGenerationState.modelGenerationProperties.map(
-                    (abstractGenerationProperty) => (
-                      <GenerationPropertyEditor
-                        key={abstractGenerationProperty.name}
-                        update={update}
-                        isReadOnly={isReadOnly}
-                        getConfigValue={getConfigValue}
-                        property={abstractGenerationProperty}
-                      />
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
-          </ResizablePanel>
-          <ResizablePanelSplitter>
-            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-          </ResizablePanelSplitter>
-          <ResizablePanel>
-            <div className="panel generation-result-viewer__file">
-              <div className="panel__header">
-                <div className="panel__header__title">
-                  <div className="panel__header__title__label">result</div>
-                </div>
-                <div className="panel__header__actions">
-                  <button
-                    className={clsx(
-                      'panel__header__action  generation-result-viewer__regenerate-btn',
-                      {
-                        ' generation-result-viewer__regenerate-btn--loading':
-                          modelGenerationState.isGenerating,
-                      },
-                    )}
-                    tabIndex={-1}
-                    disabled={modelGenerationState.isGenerating}
-                    onClick={regenerate}
-                    title={'Re-generate'}
-                  >
-                    <RefreshIcon />
-                  </button>
-                  <button
-                    className="btn--dark model-loader__header__load-btn"
-                    onClick={importGeneratedElements}
-                    disabled={modelGenerationState.generationValue === ''}
-                    tabIndex={-1}
-                    title="Import generated elements"
-                  >
-                    Import
-                  </button>
-                </div>
-              </div>
-              <div className="panel__content">
-                <PanelLoadingIndicator
-                  isLoading={modelGenerationState.isGenerating}
-                />
-                <StudioTextInputEditor
-                  inputValue={modelGenerationState.generationValue}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.PURE}
-                />
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    );
-  },
-);
-
 export const SchemaSetEditor = observer(() => {
   const editorStore = useEditorStore();
   const schemaSetEditorState =
@@ -513,17 +389,23 @@ export const SchemaSetEditor = observer(() => {
         <BlankPanelContent>Fetching format descriptions</BlankPanelContent>
       );
     }
-    if (currentTab === SCHEMA_SET_TAB_TYPE.GENERAL) {
+    if (currentTab === SCHEMA_SET_TAB_TYPE.SCHEMAS) {
       return (
-        <SchemaSetGeneralEditor schemaSetEditorState={schemaSetEditorState} />
+        <SchemaSetGeneralEditor
+          schemaSetEditorState={schemaSetEditorState}
+          isReadOnly={isReadOnly}
+        />
       );
     }
     const supportsModelGeneraiton =
       schemaSetEditorState.schemaSetModelGenerationState.description
-        .supportsModelGeneration;
+        ?.supportsModelGeneration;
     return supportsModelGeneraiton ? (
       <SchemaSetModelGenerationEditor
-        schemaSetEditorState={schemaSetEditorState}
+        modelGenerationState={
+          schemaSetEditorState.schemaSetModelGenerationState
+        }
+        isReadOnly={isReadOnly}
       />
     ) : (
       <BlankPanelContent>
@@ -531,11 +413,12 @@ export const SchemaSetEditor = observer(() => {
       </BlankPanelContent>
     );
   };
+
   return (
     <div className="panel schema-set-panel">
       <div className="schema-set-panel__header">
         <div className="schema-set-panel__header__title">
-          {isReadOnly && (
+          {schemaSetEditorState.isReadOnly && (
             <div className="schema-set-panel__header__lock">
               <LockIcon />
             </div>
@@ -544,7 +427,7 @@ export const SchemaSetEditor = observer(() => {
             Schema Set
           </div>
           <div className="schema-set-panel__header__title__content">
-            {schemaSet.name}
+            {schemaSetEditorState.schemaSet.name}
           </div>
         </div>
       </div>
@@ -568,13 +451,14 @@ export const SchemaSetEditor = observer(() => {
         </div>
 
         <div className="panel__content file-generation-editor__content">
-          {currentTab === SCHEMA_SET_TAB_TYPE.GENERAL && (
+          {currentTab === SCHEMA_SET_TAB_TYPE.SCHEMAS && (
             <SchemaSetGeneralEditor
               schemaSetEditorState={schemaSetEditorState}
+              isReadOnly={isReadOnly}
             />
           )}
 
-          {currentTab === SCHEMA_SET_TAB_TYPE.MODEL_GENERATION &&
+          {currentTab === SCHEMA_SET_TAB_TYPE.GENERATE_MODEL &&
             renderMainEditPanel()}
         </div>
       </div>
