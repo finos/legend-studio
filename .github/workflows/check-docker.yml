@@ -3,15 +3,26 @@ name: Check Docker
 # NOTE: this job does not scan for the latest image published on Docker Hub
 # We might need to use some other tools such as http://snyk.io/ to monitor
 on:
+  # NOTE: all of our Docker images are built fairly simply, we rely on https://hub.docker.com/r/finos/legend-shared-server
+  # to serve the web application statically
+  #
+  # However, this suffers from the fact that the image is often flagged for CVEs from underlying OS images (i.e. debian)
+  # As such, to lessen the noise, we only run this workflow on schedule or when there are changes to the Dockerfiles
   schedule:
     - cron: '0 0 * * 2' # every Tuesday on default branch
   push:
     branches:
       - master
       - 'release/**'
+    paths:
+      - '**/Dockerfile'
   pull_request:
     branches:
       - '**'
+    paths:
+      - '**/Dockerfile'
+  # Allow triggering this workflow manually
+  workflow_dispatch: {}
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
@@ -23,11 +34,6 @@ concurrency:
 jobs:
   check-docker-image:
     name: Run Docker Image Checks
-    # NOTE: all of our Docker images are built fairly simply, we rely on https://hub.docker.com/r/finos/legend-shared-server
-    # to serve the web application statically
-    # However, this suffers from the fact that the image is often flagged for CVEs from underlying OS images (i.e. debian)
-    # As such, to lessen the noise, **sometimes** we could turn off these pipelines for forks
-    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
