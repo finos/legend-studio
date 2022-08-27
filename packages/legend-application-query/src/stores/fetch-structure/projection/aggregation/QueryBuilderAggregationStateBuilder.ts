@@ -155,10 +155,10 @@ export const processTDSGroupByExpression = (
     `Can't process groupBy() expression: only support groupBy() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process groupBy() expression: only support groupBy() immediately following either getAll() or filter()`,
   );
   QueryBuilderValueSpecificationProcessor.process(

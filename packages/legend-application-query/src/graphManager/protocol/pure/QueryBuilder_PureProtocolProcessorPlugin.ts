@@ -70,14 +70,10 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          matchFunctionName(
-            functionName,
+          matchFunctionName(functionName, [
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-          ) ||
-          matchFunctionName(
-            functionName,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-          )
+          ])
         ) {
           return V1_buildFilterFunctionExpression(
             functionName,
@@ -126,8 +122,9 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             processingContext,
           );
         } else if (
-          Object.values(QUERY_BUILDER_SUPPORTED_FUNCTIONS).some((fn) =>
-            matchFunctionName(functionName, fn),
+          matchFunctionName(
+            functionName,
+            Object.values(QUERY_BUILDER_SUPPORTED_FUNCTIONS),
           )
         ) {
           // NOTE: this is a catch-all builder that is only meant for basic function expression

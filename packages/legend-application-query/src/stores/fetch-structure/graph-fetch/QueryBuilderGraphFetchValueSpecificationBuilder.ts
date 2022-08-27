@@ -70,8 +70,8 @@ const appendTakeLimit = (
           multiplicityOne,
         );
 
-        // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we will put it
-        // right next to `all()`
+        // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we need to
+        // put it next to `all()`
         const serializeFunction = func;
         const graphFetchFunc = guaranteeType(
           serializeFunction.parametersValues[0],

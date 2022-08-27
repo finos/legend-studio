@@ -47,10 +47,10 @@ export const processGraphFetchExpression = (
     `Can't process ${functionName}() expression: only support ${functionName}() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -96,10 +96,10 @@ export const processGraphFetchSerializeExpression = (
     `Can't process serialize() expression: only support serialize() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(

@@ -78,10 +78,10 @@ export const processTDSProjectExpression = (
     `Can't process project() expression: only support project() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process project() expression: only support project() immediately following either getAll() or filter()`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -250,14 +250,16 @@ export const processTDSTakeExpression = (
     SimpleFunctionExpression,
     `Can't process take() expression: only support take() immediately following an expression`,
   );
+
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
+    ]),
     `Can't process take() expression: only support take() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -296,14 +298,14 @@ export const processTDSDistinctExpression = (
     `Can't process distinct() expression: only support distinct() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process distinct() expression: only support distinct() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(
@@ -339,14 +341,14 @@ export const processTDSSortExpression = (
     `Can't process sort() expression: only support sort() immediately following an expression`,
   );
   assertTrue(
-    [
+    matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-    ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
+    ]),
     `Can't process sort() expression: only support sort() in TDS expression`,
   );
   QueryBuilderValueSpecificationProcessor.process(

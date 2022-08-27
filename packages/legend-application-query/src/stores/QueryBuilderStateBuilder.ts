@@ -189,13 +189,12 @@ export class QueryBuilderValueSpecificationProcessor
       `Can't process unknown value: unknown value parent expression cannot be retrieved`,
     );
 
-    const precedingExpressionFunctionName = this.parentExpression.functionName;
     if (
-      [
+      matchFunctionName(this.parentExpression.functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
-      ].some((fn) => matchFunctionName(precedingExpressionFunctionName, fn))
+      ])
     ) {
       processTDSProjectionDerivationExpression(
         valueSpecification,
@@ -282,14 +281,10 @@ export class QueryBuilderValueSpecificationProcessor
       processGetAllExpression(valueSpecification, this.queryBuilderState);
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
-      ) ||
-      matchFunctionName(
-        functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-      )
+      ])
     ) {
       // NOTE: for filter, since it sometimes can be ambiguous
       // whether meta::pure::functions::collection::filter() was used
@@ -329,21 +324,17 @@ export class QueryBuilderValueSpecificationProcessor
         processFilterExpression(valueSpecification, this.queryBuilderState);
         return;
       } else if (
-        matchFunctionName(
-          precedingExpression.functionName,
+        matchFunctionName(precedingExpression.functionName, [
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-        ) ||
-        matchFunctionName(
-          precedingExpression.functionName,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-        )
+        ])
       ) {
         assertTrue(
           matchFunctionName(
             functionName,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
           ),
-          `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following TDS project()/groupBy() (got '${functionName}')`,
+          `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following project()/groupBy() (got '${functionName}')`,
         );
         processTDSPostFilterExpression(
           valueSpecification,
@@ -352,7 +343,7 @@ export class QueryBuilderValueSpecificationProcessor
         return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or TDS project()/groupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/groupBy()`,
         );
       }
     } else if (
@@ -388,14 +379,10 @@ export class QueryBuilderValueSpecificationProcessor
       processTDSSortExpression(valueSpecification, this.queryBuilderState);
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC,
-      ) ||
-      matchFunctionName(
-        functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC,
-      )
+      ])
     ) {
       processTDSSortDirectionExpression(
         valueSpecification,
@@ -432,14 +419,10 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
-      ) ||
-      matchFunctionName(
-        functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-      )
+      ])
     ) {
       processGraphFetchExpression(valueSpecification, this.queryBuilderState);
       return;
@@ -476,13 +459,12 @@ export class QueryBuilderValueSpecificationProcessor
       `Can't process property expression: property expression parent expression cannot be retrieved`,
     );
 
-    const precedingExpressionFunctionName = this.parentExpression.functionName;
     if (
-      [
+      matchFunctionName(this.parentExpression.functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG,
-      ].some((fn) => matchFunctionName(precedingExpressionFunctionName, fn))
+      ])
     ) {
       processTDSProjectionColumnPropertyExpression(
         valueSpecification,

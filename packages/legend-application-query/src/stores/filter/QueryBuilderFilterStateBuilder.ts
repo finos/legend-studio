@@ -48,10 +48,10 @@ const processFilterTree = (
     ? filterState.getNode(parentFilterNodeId)
     : undefined;
   if (
-    [
+    matchFunctionName(expression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.AND,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.OR,
-    ].some((fn) => matchFunctionName(expression.functionName, fn))
+    ])
   ) {
     const groupNode = new QueryBuilderFilterTreeGroupNodeData(
       parentFilterNodeId,

@@ -135,6 +135,18 @@ test(unitTest('Matches function name'), () => {
   expect(matchFunctionName('p5::fnX', 'p1::p2::p3::fnX')).toBe(false);
   expect(matchFunctionName('p3::fnX', 'p1::p2::p3::fnX')).toBe(false);
   expect(matchFunctionName('fnY', 'fnX')).toBe(false);
+  expect(matchFunctionName('fnX', ['p1::p2::p3::fnX'])).toBe(true);
+  expect(matchFunctionName('fnX', ['p1::p2::p3::fnX', 'p1::p2::p3::fnY'])).toBe(
+    true,
+  );
+  expect(matchFunctionName('fnX', ['fnX'])).toBe(true);
+  expect(
+    matchFunctionName('p5::fnX', ['p1::p2::p3::fnX', 'p1::p2::p5::fnX']),
+  ).toBe(false);
+  expect(
+    matchFunctionName('p3::fnX', ['p1::p2::p3::fnX', 'p2::p3::fnX', 'p2::fnY']),
+  ).toBe(false);
+  expect(matchFunctionName('fnY', ['fnX'])).toBe(false);
 });
 
 test(unitTest('Converts element path to mapping element default ID'), () => {

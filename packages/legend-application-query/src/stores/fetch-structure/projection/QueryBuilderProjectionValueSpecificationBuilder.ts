@@ -20,7 +20,6 @@ import {
   extractElementNameFromPath,
   GenericType,
   GenericTypeExplicitReference,
-  matchFunctionName,
   Multiplicity,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
@@ -31,6 +30,7 @@ import {
   V1_serializeRawValueSpecification,
   V1_transformRawLambda,
   V1_GraphTransformerContextBuilder,
+  matchFunctionName,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -98,18 +98,11 @@ const appendResultSetModifier = (
     const func = lambda.expressionSequence[0];
     if (func instanceof SimpleFunctionExpression) {
       if (
-        matchFunctionName(
-          func.functionName,
+        matchFunctionName(func.functionName, [
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
-        ) ||
-        matchFunctionName(
-          func.functionName,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-        ) ||
-        matchFunctionName(
-          func.functionName,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
-        )
+        ])
       ) {
         let currentExpression = func;
 
