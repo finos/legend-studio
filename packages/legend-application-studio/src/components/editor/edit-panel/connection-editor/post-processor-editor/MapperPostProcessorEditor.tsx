@@ -254,7 +254,7 @@ export const MapperPostProcessorEditor = observer(
                             padding={true}
                             isReadOnly={false}
                             value={selectedSchemaNameMapper.from}
-                            propertyName={'Schema From'}
+                            propertyName={'Schema - From'}
                             update={(value: string | undefined): void => {
                               postProcessor_setMapperSchemaFrom(
                                 selectedSchemaNameMapper,
@@ -266,7 +266,7 @@ export const MapperPostProcessorEditor = observer(
                             padding={true}
                             isReadOnly={false}
                             value={selectedSchemaNameMapper.to}
-                            propertyName={'Schema To'}
+                            propertyName={'Schema - To'}
                             update={(value: string | undefined): void =>
                               postProcessor_setMapperSchemaTo(
                                 selectedSchemaNameMapper,
