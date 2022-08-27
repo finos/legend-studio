@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,

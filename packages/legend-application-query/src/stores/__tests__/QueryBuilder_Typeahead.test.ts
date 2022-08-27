@@ -34,7 +34,7 @@ import {
   TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
-import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
 import {
   buildProjectionColumnTypeaheadQuery,
   buildPropertyTypeaheadQuery,
@@ -71,7 +71,7 @@ describe(integrationTest('Query builder type ahead: post-filter'), () => {
       expectedTypeaheadLambda: TypeaheadTestCase[3],
     ) => {
       const { entities } = context;
-      const queryBuilderState = await TEST_setUpQueryBuilderState(
+      const queryBuilderState = await TEST__setUpQueryBuilderState(
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );
@@ -123,7 +123,7 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
       expectedTypeaheadLambda: TypeaheadTestCase[3],
     ) => {
       const { entities } = context;
-      const queryBuilderState = await TEST_setUpQueryBuilderState(
+      const queryBuilderState = await TEST__setUpQueryBuilderState(
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );

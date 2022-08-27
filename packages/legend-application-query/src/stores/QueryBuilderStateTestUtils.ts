@@ -32,7 +32,7 @@ import {
 } from './QueryBuilderState.js';
 import { TEST__getTestLegendQueryApplicationConfig } from './QueryEditorStoreTestUtils.js';
 
-export const TEST_setUpQueryBuilderState = async (
+export const TEST__setUpQueryBuilderState = async (
   entities: Entity[],
   rawLambda?: RawLambda | undefined,
   executionContext?:

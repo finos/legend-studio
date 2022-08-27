@@ -25,12 +25,15 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
   type LambdaFunction,
+  RootGraphFetchTreeInstanceValue,
 } from '@finos/legend-graph';
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
+import type { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState.js';
+import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil.js';
 
-export const appendTakeLimit = (
+const appendTakeLimit = (
   queryBuilderState: QueryBuilderState,
   lambda: LambdaFunction,
   previewLimit?: number | undefined,
@@ -87,4 +90,65 @@ export const appendTakeLimit = (
     }
   }
   return lambda;
+};
+
+export const appendGraphFetch = (
+  graphFetchTreeState: QueryBuilderGraphFetchTreeState,
+  lambdaFunction: LambdaFunction,
+  options?: {
+    /**
+     * Set queryBuilderState to `true` when we construct query for execution within the app.
+     * queryBuilderState will make the lambda function building process overrides several query values, such as the row limit.
+     */
+    isBuildingExecutionQuery?: boolean | undefined;
+    keepSourceInformation?: boolean | undefined;
+  },
+): void => {
+  const queryBuilderState = graphFetchTreeState.queryBuilderState;
+  const precedingExpression = guaranteeNonNullable(
+    lambdaFunction.expressionSequence[0],
+    `Can't build graph-fetch tree expression: preceding expression is not defined`,
+  );
+  const multiplicityOne =
+    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+
+  // build graph-fetch tree
+  if (
+    graphFetchTreeState.treeData &&
+    !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
+  ) {
+    const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
+      multiplicityOne,
+    );
+    graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
+    const serializeFunction = new SimpleFunctionExpression(
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
+      multiplicityOne,
+    );
+    const graphFetchFunc = new SimpleFunctionExpression(
+      graphFetchTreeState.isChecked
+        ? extractElementNameFromPath(
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
+          )
+        : extractElementNameFromPath(
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
+          ),
+      multiplicityOne,
+    );
+
+    graphFetchFunc.parametersValues = [precedingExpression, graphFetchInstance];
+    serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
+    lambdaFunction.expressionSequence[0] = serializeFunction;
+  }
+
+  // build result set modifier: i.e. preview limit
+  if (options?.isBuildingExecutionQuery) {
+    appendTakeLimit(
+      queryBuilderState,
+      lambdaFunction,
+      queryBuilderState.resultState.previewLimit,
+    );
+  }
 };

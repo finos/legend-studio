@@ -43,6 +43,7 @@ import {
   RawLambda,
   isStubbed_RawLambda,
   type Class,
+  type LambdaFunction,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -76,6 +77,8 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
+import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { appendProjection } from './QueryBuilderProjectionValueSpecificationBuilder.js';
 
 export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
   columns: QueryBuilderProjectionColumnState[] = [];
@@ -157,6 +160,13 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
 
   onClassChange(_class: Class | undefined): void {
     return;
+  }
+
+  appendFetchStructure(
+    lambdaFunction: LambdaFunction,
+    options?: LambdaFunctionBuilderOption,
+  ): void {
+    appendProjection(this, lambdaFunction, options);
   }
 
   setShowPostFilterPanel(val: boolean): void {

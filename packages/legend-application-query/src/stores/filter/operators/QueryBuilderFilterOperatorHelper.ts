@@ -36,8 +36,8 @@ import {
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
-import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilder.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
+import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,

@@ -34,9 +34,9 @@ import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
 import { QueryBuilderExplorerState } from './explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
-  processQueryBuilderLambdaFunction,
-  processQueryParameters,
-} from './QueryBuilderValueSpecificationProcessor.js';
+  processQueryLambdaFunction,
+  processParameters,
+} from './QueryBuilderStateBuilder.js';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
@@ -267,7 +267,7 @@ export class QueryBuilderState {
           observe_ValueSpecification(param, this.observableContext),
         )
         .filter(filterByType(VariableExpression));
-      processQueryParameters(parameters, this);
+      processParameters(parameters, this);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Can't initialize query builder: ${error.message}`,
@@ -302,10 +302,10 @@ export class QueryBuilderState {
         LambdaFunctionInstanceValue,
         `Can't build query state: query builder only support lambda`,
       );
-      const compiledLambda = guaranteeNonNullable(
-        compiledValueSpecification.values[0],
+      processQueryLambdaFunction(
+        guaranteeNonNullable(compiledValueSpecification.values[0]),
+        this,
       );
-      processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
 

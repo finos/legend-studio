@@ -26,8 +26,25 @@ import {
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   TYPICAL_MULTIPLICITY_TYPE,
+  type ValueSpecification,
+  INTERNAL__UnknownValueSpecification,
+  V1_serializeRawValueSpecification,
+  V1_transformRawLambda,
+  V1_GraphTransformerContextBuilder,
 } from '@finos/legend-graph';
+import {
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
+import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
+import { appendPostFilter } from './post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
+import {
+  QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
+} from './QueryBuilderProjectionColumnState.js';
+import type { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
 import {
   COLUMN_SORT_TYPE,
   type QueryResultSetModifierState,
@@ -64,7 +81,7 @@ const buildSortExpression = (
   return sortColumnFunction;
 };
 
-export const appendResultSetModifier = (
+const appendResultSetModifier = (
   resultModifierState: QueryResultSetModifierState,
   lambda: LambdaFunction,
   options?:
@@ -167,4 +184,239 @@ export const appendResultSetModifier = (
     }
   }
   return lambda;
+};
+
+export const appendProjection = (
+  projectionState: QueryBuilderProjectionState,
+  lambdaFunction: LambdaFunction,
+  options?: {
+    /**
+     * Set queryBuilderState to `true` when we construct query for execution within the app.
+     * queryBuilderState will make the lambda function building process overrides several query values, such as the row limit.
+     */
+    isBuildingExecutionQuery?: boolean | undefined;
+    keepSourceInformation?: boolean | undefined;
+  },
+): void => {
+  const queryBuilderState = projectionState.queryBuilderState;
+  const precedingExpression = guaranteeNonNullable(
+    lambdaFunction.expressionSequence[0],
+    `Can't build projection expression: preceding expression is not defined`,
+  );
+  const multiplicityOne =
+    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
+    PRIMITIVE_TYPE.STRING,
+  );
+
+  // build projection
+  if (projectionState.aggregationState.columns.length) {
+    // aggregation
+    const groupByFunction = new SimpleFunctionExpression(
+      extractElementNameFromPath(
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+      ),
+      multiplicityOne,
+    );
+
+    const colLambdas = new CollectionInstanceValue(
+      new Multiplicity(
+        projectionState.columns.length -
+          projectionState.aggregationState.columns.length,
+        projectionState.columns.length -
+          projectionState.aggregationState.columns.length,
+      ),
+    );
+    const aggregateLambdas = new CollectionInstanceValue(
+      new Multiplicity(
+        projectionState.aggregationState.columns.length,
+        projectionState.aggregationState.columns.length,
+      ),
+    );
+    const colAliases = new CollectionInstanceValue(
+      new Multiplicity(
+        projectionState.columns.length,
+        projectionState.columns.length,
+      ),
+    );
+    projectionState.columns.forEach((projectionColumnState) => {
+      // column alias
+      const colAlias = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(new GenericType(typeString)),
+        multiplicityOne,
+      );
+      colAlias.values.push(projectionColumnState.columnName);
+      colAliases.values.push(colAlias);
+
+      const aggregateColumnState =
+        projectionState.aggregationState.columns.find(
+          (column) => column.projectionColumnState === projectionColumnState,
+        );
+
+      // column projection
+      let columnLambda: ValueSpecification;
+      if (
+        projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+      ) {
+        columnLambda = buildGenericLambdaFunctionInstanceValue(
+          projectionColumnState.lambdaParameterName,
+          [
+            buildPropertyExpressionChain(
+              projectionColumnState.propertyExpressionState.propertyExpression,
+              projectionColumnState.propertyExpressionState.queryBuilderState,
+            ),
+          ],
+          queryBuilderState.graphManagerState.graph,
+        );
+      } else if (
+        projectionColumnState instanceof
+        QueryBuilderDerivationProjectionColumnState
+      ) {
+        columnLambda = new INTERNAL__UnknownValueSpecification(
+          V1_serializeRawValueSpecification(
+            V1_transformRawLambda(
+              projectionColumnState.lambda,
+              new V1_GraphTransformerContextBuilder(
+                // TODO?: do we need to include the plugins here?
+                [],
+              )
+                .withKeepSourceInformationFlag(
+                  Boolean(options?.keepSourceInformation),
+                )
+                .build(),
+            ),
+          ),
+        );
+      } else {
+        throw new UnsupportedOperationError(
+          `Can't build project() column expression: unsupported projection column state`,
+          projectionColumnState,
+        );
+      }
+
+      // column aggregation
+      if (aggregateColumnState) {
+        const aggregateFunctionExpression = new SimpleFunctionExpression(
+          extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
+          multiplicityOne,
+        );
+        const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
+          aggregateColumnState.lambdaParameterName,
+          [
+            aggregateColumnState.operator.buildAggregateExpressionFromState(
+              aggregateColumnState,
+            ),
+          ],
+          aggregateColumnState.aggregationState.projectionState
+            .queryBuilderState.graphManagerState.graph,
+        );
+        aggregateFunctionExpression.parametersValues = [
+          columnLambda,
+          aggregateLambda,
+        ];
+
+        aggregateLambdas.values.push(aggregateFunctionExpression);
+      } else {
+        colLambdas.values.push(columnLambda);
+      }
+    });
+    groupByFunction.parametersValues = [
+      precedingExpression,
+      colLambdas,
+      aggregateLambdas,
+      colAliases,
+    ];
+    lambdaFunction.expressionSequence[0] = groupByFunction;
+  } else if (projectionState.columns.length) {
+    // projection
+    const projectFunction = new SimpleFunctionExpression(
+      extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT),
+      multiplicityOne,
+    );
+    const colLambdas = new CollectionInstanceValue(
+      new Multiplicity(
+        projectionState.columns.length,
+        projectionState.columns.length,
+      ),
+    );
+    const colAliases = new CollectionInstanceValue(
+      new Multiplicity(
+        projectionState.columns.length,
+        projectionState.columns.length,
+      ),
+    );
+    projectionState.columns.forEach((projectionColumnState) => {
+      // column alias
+      const colAlias = new PrimitiveInstanceValue(
+        GenericTypeExplicitReference.create(new GenericType(typeString)),
+        multiplicityOne,
+      );
+      colAlias.values.push(projectionColumnState.columnName);
+      colAliases.values.push(colAlias);
+
+      // column projection
+      let columnLambda: ValueSpecification;
+      if (
+        projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
+      ) {
+        columnLambda = buildGenericLambdaFunctionInstanceValue(
+          projectionColumnState.lambdaParameterName,
+          [
+            buildPropertyExpressionChain(
+              projectionColumnState.propertyExpressionState.propertyExpression,
+              projectionColumnState.propertyExpressionState.queryBuilderState,
+            ),
+          ],
+          queryBuilderState.graphManagerState.graph,
+        );
+      } else if (
+        projectionColumnState instanceof
+        QueryBuilderDerivationProjectionColumnState
+      ) {
+        columnLambda = new INTERNAL__UnknownValueSpecification(
+          V1_serializeRawValueSpecification(
+            V1_transformRawLambda(
+              projectionColumnState.lambda,
+              new V1_GraphTransformerContextBuilder(
+                // TODO?: do we need to include the plugins here?
+                [],
+              )
+                .withKeepSourceInformationFlag(
+                  Boolean(options?.keepSourceInformation),
+                )
+                .build(),
+            ),
+          ),
+        );
+      } else {
+        throw new UnsupportedOperationError(
+          `Can't build project() column expression: unsupported projection column state`,
+          projectionColumnState,
+        );
+      }
+      colLambdas.values.push(columnLambda);
+    });
+    projectFunction.parametersValues = [
+      precedingExpression,
+      colLambdas,
+      colAliases,
+    ];
+    lambdaFunction.expressionSequence[0] = projectFunction;
+  }
+
+  // build post-filter
+  appendPostFilter(projectionState.postFilterState, lambdaFunction);
+
+  // build result set modifiers
+  appendResultSetModifier(
+    projectionState.resultSetModifierState,
+    lambdaFunction,
+    {
+      overridingLimit: options?.isBuildingExecutionQuery
+        ? queryBuilderState.resultState.previewLimit
+        : undefined,
+    },
+  );
 };

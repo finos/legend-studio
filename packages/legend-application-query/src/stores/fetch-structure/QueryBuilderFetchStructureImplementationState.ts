@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import type { Class, CompilationError } from '@finos/legend-graph';
+import type {
+  Class,
+  CompilationError,
+  LambdaFunction,
+} from '@finos/legend-graph';
 import { computed, makeObservable } from 'mobx';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import type { LambdaFunctionBuilderOption } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
 
 export enum FETCH_STRUCTURE_IMPLEMENTATION {
@@ -51,4 +56,8 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     nodes: QueryBuilderExplorerTreePropertyNodeData[],
   ): void;
   abstract checkBeforeChangingImplementation(onChange: () => void): void;
+  abstract appendFetchStructure(
+    lambdaFunction: LambdaFunction,
+    options?: LambdaFunctionBuilderOption,
+  ): void;
 }

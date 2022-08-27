@@ -21,6 +21,7 @@ import {
   PackageableElementExplicitReference,
   RootGraphFetchTree,
   type Class,
+  type LambdaFunction,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderGraphFetchTreeData,
@@ -37,6 +38,8 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
+import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { appendGraphFetch } from './QueryBuilderGraphFetchValueSpecificationBuilder.js';
 
 export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
   treeData?: QueryBuilderGraphFetchTreeData | undefined;
@@ -94,6 +97,13 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
 
   onClassChange(_class: Class | undefined): void {
     this.updateTreeData(_class);
+  }
+
+  appendFetchStructure(
+    lambdaFunction: LambdaFunction,
+    options?: LambdaFunctionBuilderOption,
+  ): void {
+    appendGraphFetch(this, lambdaFunction, options);
   }
 
   addProperty(
