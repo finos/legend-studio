@@ -34,27 +34,29 @@ export const processGraphFetchExpression = (
 ): void => {
   const functionName = expression.functionName;
 
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 2,
     `Can't process ${functionName}() expression: ${functionName}() expects 1 argument`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process ${functionName}() expression: only support ${functionName}() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, expression),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
+  );
+  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+    precedingExpression,
+    queryBuilderState,
+    expression,
   );
 
   // build state
@@ -82,27 +84,29 @@ export const processGraphFetchSerializeExpression = (
     FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH,
   );
 
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 2,
     `Can't process serialize() expression: serialize() expects 1 argument`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process serialize() expression: only support serialize() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, expression),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
+  );
+  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+    precedingExpression,
+    queryBuilderState,
+    expression,
   );
 
   // build state

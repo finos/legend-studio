@@ -40,27 +40,30 @@ import { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
 
 export const processTDSAggregateExpression = (
   expression: SimpleFunctionExpression,
-  precedingExpression: SimpleFunctionExpression | undefined,
+  parentExpression: SimpleFunctionExpression | undefined,
   queryBuilderState: QueryBuilderState,
 ): void => {
+  // check parent expression
+  assertNonNullable(parentExpression);
+  assertTrue(
+    matchFunctionName(
+      parentExpression.functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+    ),
+    `Can't process agg() expression: only support agg() used within a groupBy() expression`,
+  );
+
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 2,
     `Can't process agg() expression: agg() expects 2 arguments`,
   );
 
-  // check caller
-  assertNonNullable(precedingExpression);
-  assertTrue(
-    matchFunctionName(
-      precedingExpression.functionName,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
-    ),
-    `Can't process agg() expression: only support agg() in aggregation`,
-  );
-
-  const columnLambdas = guaranteeNonNullable(expression.parametersValues[0]);
-  columnLambdas.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, expression),
+  // process columns
+  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+    guaranteeNonNullable(expression.parametersValues[0]),
+    queryBuilderState,
+    expression,
   );
 
   // build state
@@ -139,22 +142,18 @@ export const processTDSGroupByExpression = (
     FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION,
   );
 
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 4,
     `Can't process groupBy() expression: groupBy() expects 3 arguments`,
   );
 
-  const params = expression.parametersValues;
+  // check preceding expression
   const precedingExpression = guaranteeType(
-    params[0],
+    expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process groupBy() expression: only support groupBy() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
@@ -162,41 +161,43 @@ export const processTDSGroupByExpression = (
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process groupBy() expression: only support groupBy() immediately following either getAll() or filter()`,
   );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    queryBuilderState,
+  );
 
-  // columns
-  const columnExpressions = params[1];
+  // process columns
+  const columnExpressions = expression.parametersValues[1];
   assertType(
     columnExpressions,
     CollectionInstanceValue,
     `Can't process groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
-  columnExpressions.values.map((e) =>
-    e.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(
-        queryBuilderState,
-        expression,
-      ),
+  columnExpressions.values.map((value) =>
+    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+      value,
+      queryBuilderState,
+      expression,
     ),
   );
 
-  // aggregations
-  const aggregationExpressions = params[2];
+  // process aggregations
+  const aggregationExpressions = expression.parametersValues[2];
   assertType(
     aggregationExpressions,
     CollectionInstanceValue,
     `Can't process groupBy() expression: groupBy() expects argument #2 to be a collection`,
   );
-  aggregationExpressions.values.map((e) =>
-    e.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(
-        queryBuilderState,
-        expression,
-      ),
+  aggregationExpressions.values.map((value) =>
+    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+      value,
+      queryBuilderState,
+      expression,
     ),
   );
 
-  // aliases
-  const columnAliases = params[3];
+  // process column aliases
+  const columnAliases = expression.parametersValues[3];
   assertType(
     columnAliases,
     CollectionInstanceValue,

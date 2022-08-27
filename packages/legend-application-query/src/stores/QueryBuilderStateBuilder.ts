@@ -47,6 +47,7 @@ import {
   type AbstractPropertyExpression,
   getMilestoneTemporalStereotype,
   type INTERNAL__PropagatedValue,
+  type ValueSpecification,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
@@ -83,7 +84,7 @@ const processGetAllExpression = (
   queryBuilderState.querySetupState.setClass(_class, true);
   queryBuilderState.explorerState.refreshTreeData();
 
-  // check milestoning
+  // check parameters (milestoning) and build state
   let acceptedNoOfParameters = 1;
   const stereotype = getMilestoneTemporalStereotype(
     _class,
@@ -147,26 +148,48 @@ const processGetAllExpression = (
 export class QueryBuilderValueSpecificationProcessor
   implements ValueSpecificationVisitor<void>
 {
-  queryBuilderState: QueryBuilderState;
-  precedingExpression?: SimpleFunctionExpression | undefined;
+  readonly queryBuilderState: QueryBuilderState;
+  readonly parentExpression?: SimpleFunctionExpression | undefined;
 
-  constructor(
+  private constructor(
     queryBuilderState: QueryBuilderState,
-    precedingExpression: SimpleFunctionExpression | undefined,
+    parentExpression: SimpleFunctionExpression | undefined,
   ) {
     this.queryBuilderState = queryBuilderState;
-    this.precedingExpression = precedingExpression;
+    this.parentExpression = parentExpression;
+  }
+
+  static process(
+    valueSpecification: ValueSpecification,
+    queryBuilderState: QueryBuilderState,
+  ): void {
+    valueSpecification.accept_ValueSpecificationVisitor(
+      new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
+    );
+  }
+
+  static processWithParentExpression(
+    valueSpecification: ValueSpecification,
+    queryBuilderState: QueryBuilderState,
+    parentExpression: SimpleFunctionExpression,
+  ): void {
+    valueSpecification.accept_ValueSpecificationVisitor(
+      new QueryBuilderValueSpecificationProcessor(
+        queryBuilderState,
+        parentExpression,
+      ),
+    );
   }
 
   visit_INTERNAL__UnknownValueSpecification(
     valueSpecification: INTERNAL__UnknownValueSpecification,
   ): void {
     assertNonNullable(
-      this.precedingExpression,
-      `Can't process unknown value: unknown value preceding expression cannot be retrieved`,
+      this.parentExpression,
+      `Can't process unknown value: unknown value parent expression cannot be retrieved`,
     );
-    const precedingExpressionFunctionName =
-      this.precedingExpression.functionName;
+
+    const precedingExpressionFunctionName = this.parentExpression.functionName;
     if (
       [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
@@ -176,13 +199,14 @@ export class QueryBuilderValueSpecificationProcessor
     ) {
       processTDSProjectionDerivationExpression(
         valueSpecification,
-        this.precedingExpression,
+        this.parentExpression,
         this.queryBuilderState,
       );
       return;
     }
+
     throw new UnsupportedOperationError(
-      `Can't process unknown value with preceding expression of function ${this.precedingExpression.functionName}()`,
+      `Can't process unknown value with parent expression of function ${this.parentExpression.functionName}()`,
     );
   }
 
@@ -272,22 +296,21 @@ export class QueryBuilderValueSpecificationProcessor
       // or meta::pure::tds::filter() was used, we have to have custom logic
       // to determine
 
+      // check parameters
       assertTrue(
         valueSpecification.parametersValues.length === 2,
         `Can't process filter() expression: filter() expects 1 argument`,
       );
 
-      // check caller
+      // check preceding expression
       const precedingExpression = guaranteeType(
         valueSpecification.parametersValues[0],
         SimpleFunctionExpression,
         `Can't process filter() expression: only support filter() immediately following an expression`,
       );
-      precedingExpression.accept_ValueSpecificationVisitor(
-        new QueryBuilderValueSpecificationProcessor(
-          this.queryBuilderState,
-          undefined,
-        ),
+      QueryBuilderValueSpecificationProcessor.process(
+        precedingExpression,
+        this.queryBuilderState,
       );
 
       if (
@@ -376,7 +399,7 @@ export class QueryBuilderValueSpecificationProcessor
     ) {
       processTDSSortDirectionExpression(
         valueSpecification,
-        this.precedingExpression,
+        this.parentExpression,
         this.queryBuilderState,
       );
       return;
@@ -393,7 +416,7 @@ export class QueryBuilderValueSpecificationProcessor
     ) {
       processTDSAggregateExpression(
         valueSpecification,
-        this.precedingExpression,
+        this.parentExpression,
         this.queryBuilderState,
       );
       return;
@@ -417,9 +440,9 @@ export class QueryBuilderValueSpecificationProcessor
           functionName,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
         )) &&
-      this.precedingExpression &&
+      this.parentExpression &&
       matchFunctionName(
-        this.precedingExpression.functionName,
+        this.parentExpression.functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
       )
     ) {
@@ -443,7 +466,7 @@ export class QueryBuilderValueSpecificationProcessor
         expression.accept_ValueSpecificationVisitor(
           new QueryBuilderValueSpecificationProcessor(
             this.queryBuilderState,
-            this.precedingExpression,
+            this.parentExpression,
           ),
         ),
       ),
@@ -454,12 +477,11 @@ export class QueryBuilderValueSpecificationProcessor
     valueSpecification: AbstractPropertyExpression,
   ): void {
     assertNonNullable(
-      this.precedingExpression,
-      `Can't process property expression: property expression preceding expression cannot be retrieved`,
+      this.parentExpression,
+      `Can't process property expression: property expression parent expression cannot be retrieved`,
     );
 
-    const precedingExpressionFunctionName =
-      this.precedingExpression.functionName;
+    const precedingExpressionFunctionName = this.parentExpression.functionName;
     if (
       [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
@@ -473,8 +495,9 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     }
+
     throw new UnsupportedOperationError(
-      `Can't process property expression with preceding expression of function ${this.precedingExpression.functionName}()`,
+      `Can't process property expression with parent expression of function ${this.parentExpression.functionName}()`,
     );
   }
 
@@ -510,8 +533,9 @@ export const processQueryLambdaFunction = (
     );
   }
   lambdaFunction.expressionSequence.map((expression) =>
-    expression.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
+    QueryBuilderValueSpecificationProcessor.process(
+      expression,
+      queryBuilderState,
     ),
   );
 };

@@ -613,14 +613,14 @@ export function V1_buildLambdaBody(
 ): LambdaFunction {
   processingContext.push('Creating new lambda');
   const pureParameters = parameters.map(
-    (p) =>
-      p.accept_ValueSpecificationVisitor(
+    (parameter) =>
+      parameter.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationBuilder(context, processingContext, []),
       ) as VariableExpression,
   );
   const openVariables: string[] = [];
-  const _expressions = expressions.map((e) =>
-    e.accept_ValueSpecificationVisitor(
+  const _expressions = expressions.map((value) =>
+    value.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
         processingContext,
@@ -849,8 +849,8 @@ export function V1_processProperty(
   property: string,
 ): ValueSpecification {
   const firstParameter = parameters[0];
-  const processedParameters = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
+  const processedParameters = parameters.map((parameter) =>
+    parameter.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
         processingContext,

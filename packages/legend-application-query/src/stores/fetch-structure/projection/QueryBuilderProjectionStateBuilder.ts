@@ -65,23 +65,18 @@ export const processTDSProjectExpression = (
     FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION,
   );
 
-  const params = expression.parametersValues;
+  // check parameters
   assertTrue(
-    params.length === 3,
+    expression.parametersValues.length === 3,
     `Can't process project() expression: project() expects 2 arguments`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
-    params[0],
+    expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process project() expression: only support project() immediately following an expression`,
   );
-
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
@@ -89,25 +84,28 @@ export const processTDSProjectExpression = (
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process project() expression: only support project() immediately following either getAll() or filter()`,
   );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    queryBuilderState,
+  );
 
   // columns
-  const columnLambdas = params[1];
+  const columnLambdas = expression.parametersValues[1];
   assertType(
     columnLambdas,
     CollectionInstanceValue,
     `Can't process project() expression: project() expects argument #1 to be a collection`,
   );
   columnLambdas.values.map((value) =>
-    value.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(
-        queryBuilderState,
-        expression,
-      ),
+    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+      value,
+      queryBuilderState,
+      expression,
     ),
   );
 
   // aliases
-  const columnAliases = params[2];
+  const columnAliases = expression.parametersValues[2];
   assertType(
     columnAliases,
     CollectionInstanceValue,
@@ -206,7 +204,7 @@ export const processTDSProjectionColumnPropertyExpression = (
 
 export const processTDSProjectionDerivationExpression = (
   value: INTERNAL__UnknownValueSpecification,
-  precedingExpression: SimpleFunctionExpression,
+  parentExpression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
   if (
@@ -225,7 +223,7 @@ export const processTDSProjectionDerivationExpression = (
     );
     assertNonNullable(
       rawLambdaProtocol,
-      `Can't process unknown value: only support ${precedingExpression.functionName}() column expression as a lambda`,
+      `Can't process unknown value: only support ${parentExpression.functionName}() column expression as a lambda`,
     );
 
     const columnState = new QueryBuilderDerivationProjectionColumnState(
@@ -240,21 +238,18 @@ export const processTDSTakeExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 2,
     `Can't process take() expression: take() expects 1 argument`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process take() expression: only support take() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
@@ -264,6 +259,10 @@ export const processTDSTakeExpression = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process take() expression: only support take() in TDS expression`,
+  );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    queryBuilderState,
   );
 
   // build state
@@ -284,21 +283,18 @@ export const processTDSDistinctExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 1,
     `Can't process disctinct() expression: distinct() expects no parameter`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process distinct() expression: only support distinct() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
@@ -309,6 +305,10 @@ export const processTDSDistinctExpression = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process distinct() expression: only support distinct() in TDS expression`,
+  );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    queryBuilderState,
   );
 
   // build state
@@ -326,21 +326,18 @@ export const processTDSSortExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 2,
     `Can't process sort() expression: sort() expects 1 argument`,
   );
 
+  // check preceding expression
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
     `Can't process sort() expression: only support sort() immediately following an expression`,
   );
-  precedingExpression.accept_ValueSpecificationVisitor(
-    new QueryBuilderValueSpecificationProcessor(queryBuilderState, undefined),
-  );
-
-  // check caller
   assertTrue(
     [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
@@ -352,42 +349,48 @@ export const processTDSSortExpression = (
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process sort() expression: only support sort() in TDS expression`,
   );
+  QueryBuilderValueSpecificationProcessor.process(
+    precedingExpression,
+    queryBuilderState,
+  );
 
+  // sort configuration
   const sortParam = expression.parametersValues[1];
   assertType(
     sortParam,
     CollectionInstanceValue,
     `Can't process sort() expression: sort() argument should be a collection`,
   );
-  sortParam.values.map((e) =>
-    e.accept_ValueSpecificationVisitor(
-      new QueryBuilderValueSpecificationProcessor(
-        queryBuilderState,
-        expression,
-      ),
+  sortParam.values.map((value) =>
+    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+      value,
+      queryBuilderState,
+      expression,
     ),
   );
 };
 
 export const processTDSSortDirectionExpression = (
   expression: SimpleFunctionExpression,
-  precedingExpression: SimpleFunctionExpression | undefined,
+  parentExpression: SimpleFunctionExpression | undefined,
   queryBuilderState: QueryBuilderState,
 ): void => {
   const functionName = expression.functionName;
+
+  // check parent expression
+  assertNonNullable(parentExpression);
+  assertTrue(
+    matchFunctionName(
+      parentExpression.functionName,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+    ),
+    `Can't process ${functionName}() expression: only support ${functionName}() used within a sort() expression`,
+  );
+
+  // check parameters
   assertTrue(
     expression.parametersValues.length === 1,
     `Can't process ${functionName}() expression: ${functionName}() expects no argument`,
-  );
-
-  // check caller
-  assertNonNullable(precedingExpression);
-  assertTrue(
-    matchFunctionName(
-      precedingExpression.functionName,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
-    ),
-    `Can't process ${functionName}() expression: only support ${functionName}() immediately following a sort() expression`,
   );
 
   // build state
