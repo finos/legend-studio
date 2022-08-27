@@ -53,10 +53,9 @@ export const processGraphFetchExpression = (
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process ${functionName}(): only support ${functionName}() immediately following either getAll() or filter()`,
   );
-  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+  QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
     queryBuilderState,
-    expression,
   );
 
   // build state
@@ -103,10 +102,9 @@ export const processGraphFetchSerializeExpression = (
     ].some((fn) => matchFunctionName(precedingExpression.functionName, fn)),
     `Can't process serialize() expression: only support serialize() in graph-fetch expression`,
   );
-  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+  QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,
     queryBuilderState,
-    expression,
   );
 
   // build state

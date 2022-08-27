@@ -432,18 +432,13 @@ export class QueryBuilderValueSpecificationProcessor
       );
       return;
     } else if (
-      (matchFunctionName(
+      matchFunctionName(
         functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH_CHECKED,
       ) ||
-        matchFunctionName(
-          functionName,
-          QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
-        )) &&
-      this.parentExpression &&
       matchFunctionName(
-        this.parentExpression.functionName,
-        QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE,
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
       )
     ) {
       processGraphFetchExpression(valueSpecification, this.queryBuilderState);
