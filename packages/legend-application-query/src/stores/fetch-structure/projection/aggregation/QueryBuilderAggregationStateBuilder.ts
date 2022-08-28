@@ -22,7 +22,6 @@ import {
   VariableExpression,
 } from '@finos/legend-graph';
 import {
-  assertNonNullable,
   assertTrue,
   assertType,
   guaranteeNonNullable,
@@ -44,11 +43,13 @@ export const processTDSAggregateExpression = (
   queryBuilderState: QueryBuilderState,
 ): void => {
   // check parent expression
-  assertNonNullable(parentExpression);
   assertTrue(
-    matchFunctionName(
-      parentExpression.functionName,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+    Boolean(
+      parentExpression &&
+        matchFunctionName(
+          parentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+        ),
     ),
     `Can't process agg() expression: only support agg() used within a groupBy() expression`,
   );
@@ -59,11 +60,12 @@ export const processTDSAggregateExpression = (
     `Can't process agg() expression: agg() expects 2 arguments`,
   );
 
-  // process columns
-  QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+  // process column lambda
+  QueryBuilderValueSpecificationProcessor.processChild(
+    // TODO?: do we want to do more validation here for the shape of the column lambda?
     guaranteeNonNullable(expression.parametersValues[0]),
-    queryBuilderState,
     expression,
+    queryBuilderState,
   );
 
   // build state
@@ -174,25 +176,25 @@ export const processTDSGroupByExpression = (
     `Can't process groupBy() expression: groupBy() expects argument #1 to be a collection`,
   );
   columnExpressions.values.map((value) =>
-    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+    QueryBuilderValueSpecificationProcessor.processChild(
       value,
-      queryBuilderState,
       expression,
+      queryBuilderState,
     ),
   );
 
   // process aggregations
-  const aggregationExpressions = expression.parametersValues[2];
+  const aggregateLambdas = expression.parametersValues[2];
   assertType(
-    aggregationExpressions,
+    aggregateLambdas,
     CollectionInstanceValue,
     `Can't process groupBy() expression: groupBy() expects argument #2 to be a collection`,
   );
-  aggregationExpressions.values.map((value) =>
-    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+  aggregateLambdas.values.map((value) =>
+    QueryBuilderValueSpecificationProcessor.processChild(
       value,
-      queryBuilderState,
       expression,
+      queryBuilderState,
     ),
   );
 
@@ -205,7 +207,7 @@ export const processTDSGroupByExpression = (
   );
   assertTrue(
     columnAliases.values.length ===
-      columnExpressions.values.length + aggregationExpressions.values.length,
+      columnExpressions.values.length + aggregateLambdas.values.length,
     `Can't process groupBy() expression: number of aliases does not match the number of columns`,
   );
   const aliases = columnAliases.values

@@ -89,7 +89,7 @@ export const processTDSProjectExpression = (
     queryBuilderState,
   );
 
-  // columns
+  // check columns
   const columnLambdas = expression.parametersValues[1];
   assertType(
     columnLambdas,
@@ -97,14 +97,14 @@ export const processTDSProjectExpression = (
     `Can't process project() expression: project() expects argument #1 to be a collection`,
   );
   columnLambdas.values.map((value) =>
-    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+    QueryBuilderValueSpecificationProcessor.processChild(
       value,
-      queryBuilderState,
       expression,
+      queryBuilderState,
     ),
   );
 
-  // aliases
+  // check column aliases
   const columnAliases = expression.parametersValues[2];
   assertType(
     columnAliases,
@@ -356,18 +356,18 @@ export const processTDSSortExpression = (
     queryBuilderState,
   );
 
-  // sort configuration
-  const sortParam = expression.parametersValues[1];
+  // check sort configuration
+  const sortLambdas = expression.parametersValues[1];
   assertType(
-    sortParam,
+    sortLambdas,
     CollectionInstanceValue,
     `Can't process sort() expression: sort() argument should be a collection`,
   );
-  sortParam.values.map((value) =>
-    QueryBuilderValueSpecificationProcessor.processWithParentExpression(
+  sortLambdas.values.map((value) =>
+    QueryBuilderValueSpecificationProcessor.processChild(
       value,
-      queryBuilderState,
       expression,
+      queryBuilderState,
     ),
   );
 };
@@ -380,11 +380,13 @@ export const processTDSSortDirectionExpression = (
   const functionName = expression.functionName;
 
   // check parent expression
-  assertNonNullable(parentExpression);
   assertTrue(
-    matchFunctionName(
-      parentExpression.functionName,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+    Boolean(
+      parentExpression &&
+        matchFunctionName(
+          parentExpression.functionName,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
+        ),
     ),
     `Can't process ${functionName}() expression: only support ${functionName}() used within a sort() expression`,
   );

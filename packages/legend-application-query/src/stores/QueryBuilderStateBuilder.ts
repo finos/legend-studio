@@ -133,22 +133,84 @@ const processGetAllExpression = (
 };
 
 /**
- * This is the expression processor for query builder.
- * Unlike expression builder which takes care of transforming the value specification
- * from `protocol` to `metamodel`, and type-inferencing, this takes care
- * of traversing the expression to populate the query builder UI state.
+ * This is the value specification processor (a.k.a state builder) for query builder.
+ *
+ * Unlike value specification builder which takes care of transforming the value specification
+ * from `protocol` to `metamodel`, and doing some (naive) type-inferencing, the processor takes care
+ * of traversing the query, analyzing it to build the query builder state. The processor represents
+ * a particular way we want to look at the query, if the query is not like what the processor
+ * expects, or understands, query builder state could not be built, i.e. the query will be deemed
+ * unsupported by query builder
  *
  * NOTE: While traversing the expression, this processor also does a fair amount of
- * validations and assertsions but just so enough to populate the UI state.
- *
- * Validation and assertion should be done by both the builder and processor, but the builder
- * will do more structural checks to build the proper metamodel. The processor should never
- * modify the metamodel, just traversing it.
+ * validations and assertions--enough to properly build the state. Unlike the builder,
+ * the processor should NEVER modify the metamodel, just traversing it.
  */
 export class QueryBuilderValueSpecificationProcessor
   implements ValueSpecificationVisitor<void>
 {
   readonly queryBuilderState: QueryBuilderState;
+  /**
+   * A value specification is a tree of value specifications.
+   *
+   * This structure may not intuitively correspond to how we write it in Pure
+   * For example, consider the following expression in Pure:
+   *
+   * | Person.all()->filter(x|$x.age > 0)->project([x|$x.name], ['Name'])->sort([desc('Name')]);
+   *
+   * which is equivalent to the more cryptic version:
+   *
+   * | sort(project(filter(all(Person), x|$x.age > 0), [x|$x.name], ['Name']), [desc('Name')]);
+   *
+   * Hence, the metamodel looks something like this (with some parts redacted)
+   * {
+   *   "function": "sort",
+   *   "parameters": [
+   *     {
+   *       "function": "project",
+   *       "parameters": [
+   *         {
+   *           "function": "filter",
+   *           "parameters": [
+   *             {
+   *               "function": "getAll",
+   *               ...
+   *             },
+   *             ... // filter() expression
+   *           ]
+   *         },
+   *         ... // project() expression column and alias
+   *       ]
+   *     },
+   *     {
+   *       "_type": "collection",
+   *       "values": [
+   *         {
+   *           "function": "desc",
+   *           ... // desc() expression
+   *         }
+   *       ]
+   *     }
+   *   ]
+   * }
+   *
+   * The first grammar form is farily declarative in nature and perhaps more intuitive.
+   * We tend to think, in terms of order of running:
+   * all() --> filter() --> project() --> sort()
+   *
+   * However, in reality, when the expression is used or read, the order of traversal is reversed:
+   * sort() --> project() --> filter() --> all()
+   *
+   * Now, in the context of the value specification processor, we need information about preceding
+   * expression in order to validate the usage context of functions, (for example, we want to only
+   * support project() after all() or filter()). In the case of function expression chain,
+   * we have to look at the function expression first parameter. There are some other context,
+   * such as what happens within the second parameter of the sort() expression
+   * in this case, we have the desc() expression, but it's not part of the main expression chain;
+   * however, we need to verify desc() is used within sort(), in this case, we have to record
+   * the parent expression. This is when the following attribute comes into use when processing
+   * value specification.
+   */
   readonly parentExpression?: SimpleFunctionExpression | undefined;
 
   private constructor(
@@ -168,10 +230,14 @@ export class QueryBuilderValueSpecificationProcessor
     );
   }
 
-  static processWithParentExpression(
+  /**
+   * Process value specification with information about parent function expression
+   * in order to be used in some validation/assertion
+   */
+  static processChild(
     valueSpecification: ValueSpecification,
-    queryBuilderState: QueryBuilderState,
     parentExpression: SimpleFunctionExpression,
+    queryBuilderState: QueryBuilderState,
   ): void {
     valueSpecification.accept_ValueSpecificationVisitor(
       new QueryBuilderValueSpecificationProcessor(
@@ -186,7 +252,7 @@ export class QueryBuilderValueSpecificationProcessor
   ): void {
     assertNonNullable(
       this.parentExpression,
-      `Can't process unknown value: unknown value parent expression cannot be retrieved`,
+      `Can't process unknown value: parent expression cannot be retrieved`,
     );
 
     if (
@@ -456,7 +522,7 @@ export class QueryBuilderValueSpecificationProcessor
   ): void {
     assertNonNullable(
       this.parentExpression,
-      `Can't process property expression: property expression parent expression cannot be retrieved`,
+      `Can't process property expression: parent expression cannot be retrieved`,
     );
 
     if (

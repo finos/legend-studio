@@ -114,16 +114,18 @@ export const processGraphFetchSerializeExpression = (
   ) {
     const graphFetchTreeState =
       queryBuilderState.fetchStructureState.implementation;
-    const serializeFunc = guaranteeType(
+    const graphFetchTree = guaranteeType(
       expression.parametersValues[1],
       GraphFetchTreeInstanceValue,
       `Can't process serialize() expression: serialize() graph-fetch is missing`,
     );
-    const value = guaranteeType(
-      serializeFunc.values[0],
+    const graphFetchTreeRoot = guaranteeType(
+      graphFetchTree.values[0],
       RootGraphFetchTree,
       `Can't process serialize() expression: serialize() graph-fetch tree root is missing`,
     );
-    graphFetchTreeState.setGraphFetchTree(buildGraphFetchTreeData(value));
+    graphFetchTreeState.setGraphFetchTree(
+      buildGraphFetchTreeData(graphFetchTreeRoot),
+    );
   }
 };

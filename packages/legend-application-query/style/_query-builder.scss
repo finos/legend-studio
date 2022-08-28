@@ -505,13 +505,19 @@
   height: 2.2rem;
   padding: 0 1rem;
   border-radius: 0.2rem;
-  font-size: 1rem;
-  font-weight: 700;
   color: var(--color-light-grey-0);
   white-space: nowrap;
 
   &__icon {
     margin-right: 0.5rem;
+  }
+
+  &__text {
+    @include flexVCenter;
+
+    height: 100%;
+    font-size: 1rem;
+    font-weight: 700;
   }
 }
 
