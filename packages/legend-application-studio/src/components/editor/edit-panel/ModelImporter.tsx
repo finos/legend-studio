@@ -151,11 +151,7 @@ export const ModelImporter = observer(() => {
   const label = modelImporterState.modelImportEditorState.label;
   const modelImportEditorState = modelImporterState.modelImportEditorState;
   const loadModel = (): void => {
-    if (modelImportEditorState instanceof ExtensionModelImporterEditorState) {
-      modelImportEditorState.extensionConfiguration
-        .load(editorStore)
-        .catch(applicationStore.alertUnhandledError);
-    } else if (editorStore.hasUnpushedChanges) {
+    if (editorStore.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -211,8 +207,8 @@ export const ModelImporter = observer(() => {
   };
   const renderModelImporterEditor = (): React.ReactNode => {
     if (modelImportEditorState instanceof ExtensionModelImporterEditorState) {
-      return modelImportEditorState.extensionConfiguration.renderer(
-        editorStore,
+      return modelImportEditorState.config.renderer(
+        modelImportEditorState.rendererState,
       );
     } else if (
       modelImportEditorState instanceof NativeModelImporterEditorState

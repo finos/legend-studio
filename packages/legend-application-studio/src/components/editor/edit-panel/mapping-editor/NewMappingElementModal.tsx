@@ -145,8 +145,7 @@ export const NewMappingElementModal = observer(() => {
 
   // Submit button
   const disableCreateButton =
-    !spec ||
-    !spec.target ||
+    !spec?.target ||
     !isMappingIdUnique ||
     !id ||
     (spec.target instanceof Class && !classMappingType);

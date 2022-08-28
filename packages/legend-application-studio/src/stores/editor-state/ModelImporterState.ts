@@ -269,19 +269,32 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
   }
 }
 
-export class ExtensionModelImporterEditorState extends ModelImporterEditorState {
-  extensionConfiguration: ModelImporterExtensionConfiguration;
+export abstract class ExtensionModelImportRendererState {
+  externalFormatModelImporterState: ExternalFormatModelImporterState;
 
   constructor(
-    extensionConfiguration: ModelImporterExtensionConfiguration,
+    externalFormatModelImporterState: ExternalFormatModelImporterState,
+  ) {
+    this.externalFormatModelImporterState = externalFormatModelImporterState;
+  }
+}
+export class ExtensionModelImporterEditorState extends ModelImporterEditorState {
+  config: ModelImporterExtensionConfiguration;
+  rendererState: ExtensionModelImportRendererState;
+
+  constructor(
+    config: ModelImporterExtensionConfiguration,
+    rendererState: ExtensionModelImportRendererState,
     modelImporterState: ModelImporterState,
   ) {
     super(modelImporterState);
-    this.extensionConfiguration = extensionConfiguration;
+    this.config = config;
+    this.rendererState = rendererState;
     makeObservable(this, {
-      extensionConfiguration: observable,
+      config: observable,
       modelImporterState: observable,
       loadModelActionState: observable,
+      rendererState: observable,
       isLoadingDisabled: computed,
       setExtension: action,
       loadModel: flow,
@@ -289,11 +302,11 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
   }
 
   get label(): string {
-    return this.extensionConfiguration.label ?? this.extensionConfiguration.key;
+    return this.config.label ?? this.config.key;
   }
 
   get allowHardReplace(): boolean {
-    return Boolean(this.extensionConfiguration.allowHardReplace);
+    return Boolean(this.config.allowHardReplace);
   }
 
   get isLoadingDisabled(): boolean {
@@ -303,18 +316,11 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
   setExtension(
     extensionConfiguration: ModelImporterExtensionConfiguration,
   ): void {
-    this.extensionConfiguration = extensionConfiguration;
+    this.config = extensionConfiguration;
   }
 
   *loadModel(): GeneratorFn<void> {
-    this.loadModelActionState.inProgress();
-    try {
-      yield flowResult(this.extensionConfiguration.load(this.editorStore));
-    } catch (error) {
-      assertErrorThrown(error);
-    } finally {
-      this.loadModelActionState.complete();
-    }
+    flowResult(this.config.loadModel(this.rendererState));
   }
 }
 
@@ -498,7 +504,11 @@ export class ModelImporterState extends EditorState {
     const externalEditorState =
       this.modelImportEditorState instanceof ExtensionModelImporterEditorState
         ? this.modelImportEditorState
-        : new ExtensionModelImporterEditorState(extension, this);
+        : new ExtensionModelImporterEditorState(
+            extension,
+            extension.getExtensionModelImportRendererStateCreator(this),
+            this,
+          );
     externalEditorState.setExtension(extension);
     this.setImportEditorState(externalEditorState);
     return externalEditorState;
