@@ -85,6 +85,19 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
 
+export const getPropertyNodeId = (
+  parentId: string,
+  propertyName: string,
+): string => (parentId ? `${parentId}.${propertyName}` : propertyName);
+
+export const getPropertyNodeIdForSubType = (
+  parentId: string,
+  subClassPath: string,
+): string =>
+  parentId
+    ? `${parentId}${TYPE_CAST_TOKEN}${subClassPath}`
+    : `${TYPE_CAST_TOKEN}${subClassPath}`;
+
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
 }
@@ -385,11 +398,12 @@ export const getQueryBuilderPropertyNodeData = (
     return undefined;
   }
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
-    `${
+    getPropertyNodeId(
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
         ? ''
-        : `${parentNode.id}.`
-    }${property.name}`,
+        : parentNode.id,
+      property.name,
+    ),
     property.name,
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -414,11 +428,12 @@ export const getQueryBuilderSubTypeNodeData = (
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreeSubTypeNodeData => {
   const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
-    `${
+    getPropertyNodeIdForSubType(
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
-        ? `${TYPE_CAST_TOKEN}${subclass.path}`
-        : `${parentNode.id}${TYPE_CAST_TOKEN}${subclass.path}`
-    }`,
+        ? ''
+        : parentNode.id,
+      subclass.path,
+    ),
     subclass.name,
     `${
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
@@ -464,7 +479,6 @@ const getQueryBuilderTreeData = (
     '@dummy_rootNode',
     rootClass.name,
     rootClass.path,
-
     false,
     rootClass,
     mappingData,
@@ -536,6 +550,7 @@ export class QueryBuilderExplorerState {
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
+  highlightUsedProperties = true;
   propertySearchPanelState: QueryBuilderPropertySearchPanelState;
   mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   mappingModelCoverageAnalysisState = ActionState.create();
@@ -545,12 +560,14 @@ export class QueryBuilderExplorerState {
       queryBuilderState: false,
       previewDataState: false,
       treeData: observable.ref,
+      highlightUsedProperties: observable,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
       previewData: flow,
+      setHighlightUsedProperties: action,
       analyzeMappingModelCoverage: flow,
     });
 
@@ -585,6 +602,10 @@ export class QueryBuilderExplorerState {
 
   setShowUnmappedProperties(val: boolean): void {
     this.showUnmappedProperties = val;
+  }
+
+  setHighlightUsedProperties(val: boolean): void {
+    this.highlightUsedProperties = val;
   }
 
   refreshTreeData(): void {

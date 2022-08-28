@@ -25,6 +25,7 @@ import {
   Class,
   PropertyGraphFetchTree,
   PackageableElementExplicitReference,
+  TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -72,11 +73,16 @@ export interface QueryBuilderGraphFetchTreeData
 
 const generateNodeId = (
   property: AbstractProperty,
-  subType: Type | undefined,
+  parentNodeId: string | undefined,
+): string => `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}`;
+
+const generateNodeIdForSubType = (
+  property: AbstractProperty,
+  subType: Type,
   parentNodeId: string | undefined,
 ): string =>
-  `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${
-    subType ? subType.path : ''
+  `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${TYPE_CAST_TOKEN}${
+    subType.path
   }`;
 
 const buildGraphFetchSubTree = (
@@ -93,7 +99,9 @@ const buildGraphFetchSubTree = (
   const subType = tree.subType?.value;
   const parentNodeId = parentNode?.id;
   const node = new QueryBuilderGraphFetchTreeNodeData(
-    generateNodeId(property, subType, parentNodeId),
+    subType
+      ? generateNodeIdForSubType(property, subType, parentNodeId)
+      : generateNodeId(property, parentNodeId),
     property.name,
     parentNodeId,
     tree,
@@ -248,11 +256,13 @@ export const addQueryBuilderPropertyNode = (
   let parentNode: QueryBuilderGraphFetchTreeNodeData | undefined = undefined;
   let newSubTree: PropertyGraphFetchTree | undefined;
   for (const propertyGraphFetchTree of propertyGraphFetchTrees) {
-    currentNodeId = generateNodeId(
-      propertyGraphFetchTree.property.value,
-      propertyGraphFetchTree.subType?.value,
-      currentNodeId,
-    );
+    currentNodeId = propertyGraphFetchTree.subType?.value
+      ? generateNodeIdForSubType(
+          propertyGraphFetchTree.property.value,
+          propertyGraphFetchTree.subType.value,
+          currentNodeId,
+        )
+      : generateNodeId(propertyGraphFetchTree.property.value, currentNodeId);
     const existingGraphFetchNode = treeData.nodes.get(currentNodeId);
     if (existingGraphFetchNode) {
       parentNode = existingGraphFetchNode;

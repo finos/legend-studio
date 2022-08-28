@@ -42,10 +42,15 @@ import {
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
+  AbstractPropertyExpression,
+  matchFunctionName,
+  SimpleFunctionExpression,
+  type ValueSpecification,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../../QueryBuilder_Const.js';
 import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
@@ -58,10 +63,14 @@ import type { QueryBuilderAggregateOperator } from './aggregation/QueryBuilderAg
 import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBuilderAggregateOperatorLoader.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
-  type QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
+import {
+  getPropertyNodeId,
+  getPropertyNodeIdForSubType,
+} from '../../explorer/QueryBuilderExplorerState.js';
 
 export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
   columns: QueryBuilderProjectionColumnState[] = [];
@@ -386,5 +395,70 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
         undefined,
       ),
     );
+  }
+
+  get usedPropertyNodeIds(): string[] {
+    let usedNodeIds: string[] = [];
+    this.columns.forEach((column) => {
+      if (column instanceof QueryBuilderSimpleProjectionColumnState) {
+        let nodeIds: string[] = [];
+        const subClassNames = [];
+        let currentPropertyExpression: ValueSpecification =
+          column.propertyExpressionState.propertyExpression;
+        while (
+          currentPropertyExpression instanceof AbstractPropertyExpression
+        ) {
+          nodeIds.push(currentPropertyExpression.func.name);
+          currentPropertyExpression = guaranteeNonNullable(
+            currentPropertyExpression.parametersValues[0],
+          );
+          if (
+            currentPropertyExpression instanceof SimpleFunctionExpression &&
+            matchFunctionName(
+              currentPropertyExpression.functionName,
+              QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+            ) &&
+            currentPropertyExpression.parametersValues.length >= 1 &&
+            currentPropertyExpression.parametersValues[1]?.genericType?.value
+              .rawType.path
+          ) {
+            nodeIds.push(
+              currentPropertyExpression.parametersValues[1]?.genericType?.value
+                .rawType.path,
+            );
+            subClassNames.push(
+              currentPropertyExpression.parametersValues[1]?.genericType?.value
+                .rawType.path,
+            );
+            currentPropertyExpression = guaranteeNonNullable(
+              currentPropertyExpression.parametersValues[0],
+            );
+          }
+        }
+        nodeIds = nodeIds.reverse();
+        if (
+          nodeIds.length &&
+          subClassNames.includes(guaranteeNonNullable(nodeIds[0]))
+        ) {
+          nodeIds[0] = getPropertyNodeIdForSubType(
+            '',
+            guaranteeNonNullable(nodeIds[0]),
+          );
+        }
+        for (let i = 1; i < nodeIds.length; i++) {
+          nodeIds[i] = subClassNames.includes(guaranteeNonNullable(nodeIds[i]))
+            ? getPropertyNodeIdForSubType(
+                guaranteeNonNullable(nodeIds[i - 1]),
+                guaranteeNonNullable(nodeIds[i]),
+              )
+            : getPropertyNodeId(
+                guaranteeNonNullable(nodeIds[i - 1]),
+                guaranteeNonNullable(nodeIds[i]),
+              );
+        }
+        usedNodeIds = usedNodeIds.concat(nodeIds);
+      }
+    });
+    return usedNodeIds;
   }
 }
