@@ -752,7 +752,7 @@ export const QueryBuilderExplorerPanel = observer(
     const { queryBuilderState } = props;
     const searchButtonRef = useRef<HTMLButtonElement>(null);
     const explorerState = queryBuilderState.explorerState;
-    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const propertySearchPanelState = explorerState.propertySearchState;
     const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {

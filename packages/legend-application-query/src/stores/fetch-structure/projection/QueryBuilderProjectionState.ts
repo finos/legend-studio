@@ -507,7 +507,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
           this.queryBuilderState.explorerState.nonNullableTreeData,
           node,
           this.queryBuilderState.graphManagerState.graph,
-          this.queryBuilderState.explorerState.propertySearchPanelState
+          this.queryBuilderState.explorerState.propertySearchState
             .allMappedPropertyNodes,
         ),
         this.queryBuilderState.explorerState.humanizePropertyName,
@@ -524,7 +524,7 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
             this.queryBuilderState.explorerState.nonNullableTreeData,
             nodeToAdd,
             this.queryBuilderState.graphManagerState.graph,
-            this.queryBuilderState.explorerState.propertySearchPanelState
+            this.queryBuilderState.explorerState.propertySearchState
               .allMappedPropertyNodes,
           ),
           this.queryBuilderState.explorerState.humanizePropertyName,

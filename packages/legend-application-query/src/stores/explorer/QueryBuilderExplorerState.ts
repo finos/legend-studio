@@ -77,7 +77,7 @@ import {
   buildNumericPreviewDataQuery,
   type QueryBuilderPreviewData,
 } from '../QueryBuilderPreviewDataHelper.js';
-import { QueryBuilderPropertySearchPanelState } from './QueryBuilderPropertySearchPanelState.js';
+import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchPanelState.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -591,7 +591,7 @@ export class QueryBuilderExplorerState {
   humanizePropertyName = true;
   showUnmappedProperties = false;
   highlightUsedProperties = true;
-  propertySearchPanelState: QueryBuilderPropertySearchPanelState;
+  propertySearchState: QueryBuilderPropertySearchState;
   mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   mappingModelCoverageAnalysisState = ActionState.create();
 
@@ -612,7 +612,7 @@ export class QueryBuilderExplorerState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.propertySearchPanelState = new QueryBuilderPropertySearchPanelState(
+    this.propertySearchState = new QueryBuilderPropertySearchState(
       this.queryBuilderState,
     );
   }
@@ -719,7 +719,7 @@ export class QueryBuilderExplorerState {
       this.queryBuilderState.explorerState.nonNullableTreeData,
       node,
       this.queryBuilderState.graphManagerState.graph,
-      this.queryBuilderState.explorerState.propertySearchPanelState
+      this.queryBuilderState.explorerState.propertySearchState
         .allMappedPropertyNodes,
     );
     const propertyType = node.property.genericType.value.rawType;
