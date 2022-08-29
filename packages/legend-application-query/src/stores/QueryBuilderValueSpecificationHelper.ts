@@ -36,15 +36,22 @@ import {
   extractElementNameFromPath,
   AbstractPropertyExpression,
   isSuperType,
+  Class,
+  getMilestoneTemporalStereotype,
+  DerivedProperty,
+  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
   guaranteeNonNullable,
   guaranteeType,
+  isNumber,
+  isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { format } from 'date-fns';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 
 export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,
@@ -242,4 +249,111 @@ export const buildGenericLambdaFunctionInstanceValue = (
   lambdaFunction.expressionSequence = lambdaBodyExpressions;
   functionInstanceValue.values.push(lambdaFunction);
   return functionInstanceValue;
+};
+
+/**
+ * Checks if the milestoning property expression is valid in terms of number of parameter values provided
+ * in relation to its milestoning type.
+ *
+ * NOTE: this takes date propgation into account. See the table below for all
+ * the combination:
+ *
+ *             | [source] |          |          |          |          |
+ * ----------------------------------------------------------------------
+ *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
+ * ----------------------------------------------------------------------
+ *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
+ * ----------------------------------------------------------------------
+ *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
+ * ----------------------------------------------------------------------
+ *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
+ * ----------------------------------------------------------------------
+ *
+ * Annotations:
+ *
+ * [source]: source temporal type
+ * [target]: target temporal type
+ *
+ * PR_TMP  : processing temporal
+ * BI_TMP  : bitemporal
+ * BU_TMP  : business temporal
+ *
+ * X       : no default date propagated
+ * PRD     : default processing date is propagated
+ * BUD     : default business date is propgated
+ */
+export const validatePropertyExpressionChain = (
+  propertyExpression: AbstractPropertyExpression,
+  graph: PureModel,
+): void => {
+  if (
+    propertyExpression.func.genericType.value.rawType instanceof Class &&
+    propertyExpression.func._OWNER._generatedMilestonedProperties.length !== 0
+  ) {
+    const name = propertyExpression.func.name;
+    const func =
+      propertyExpression.func._OWNER._generatedMilestonedProperties.find(
+        (e) => e.name === name,
+      );
+    if (func) {
+      const targetStereotype = getMilestoneTemporalStereotype(
+        propertyExpression.func.genericType.value.rawType,
+        graph,
+      );
+
+      if (targetStereotype) {
+        const sourceStereotype = getDerivedPropertyMilestoningSteoreotype(
+          guaranteeType(func, DerivedProperty),
+          graph,
+        );
+        if (
+          sourceStereotype !== MILESTONING_STEREOTYPE.BITEMPORAL &&
+          targetStereotype !== sourceStereotype
+        ) {
+          if (targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
+            if (
+              propertyExpression.parametersValues.length !== 3 &&
+              !sourceStereotype
+            ) {
+              throw new UnsupportedOperationError(
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have exactly two parameters`,
+              );
+            } else if (propertyExpression.parametersValues.length < 2) {
+              throw new UnsupportedOperationError(
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should have at least one parameter`,
+              );
+            } else if (propertyExpression.parametersValues.length > 3) {
+              throw new UnsupportedOperationError(
+                `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should not have more than two parameters`,
+              );
+            }
+          } else if (propertyExpression.parametersValues.length !== 2) {
+            throw new UnsupportedOperationError(
+              `Property of milestoning sterotype '${targetStereotype}' should have exactly one parameter`,
+            );
+          }
+        }
+      }
+    }
+  }
+};
+
+export const extractNullableStringFromInstanceValue = (
+  value: ValueSpecification,
+): string | undefined => {
+  if (value instanceof PrimitiveInstanceValue && isString(value.values[0])) {
+    return value.values[0];
+  }
+  return undefined;
+};
+
+export const extractNullableNumberFromInstanceValue = (
+  value: ValueSpecification,
+): number | undefined => {
+  if (value instanceof PrimitiveInstanceValue && isNumber(value.values[0])) {
+    return value.values[0];
+  }
+  return undefined;
 };

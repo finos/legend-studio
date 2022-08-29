@@ -187,7 +187,7 @@ export const QueryBuilderSetupPanel = observer(
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
         querySetupState.setMapping(val.value);
         queryBuilderState.resetQueryBuilder();
-        queryBuilderState.resetQuerySetup();
+        queryBuilderState.resetQueryContent();
       }
     };
     // runtime

@@ -22,13 +22,14 @@
   display: flex;
   flex-direction: column;
 
-  &__settings {
+  &__toolbar {
     @include flexVCenter;
 
     justify-content: flex-end;
-    height: 3.4rem;
-    background: var(--color-dark-grey-85);
+    height: 2.8rem;
     padding: 0 1rem;
+    font-size: 1.2rem;
+    border-bottom: 0.1rem solid var(--color-dark-grey-100);
 
     &__hint-icon {
       @include flexCenter;
@@ -42,7 +43,7 @@
   }
 
   &__container {
-    height: calc(100% - 3.4rem);
+    height: calc(100% - 2.8rem);
     width: 100%;
     padding: 0.5rem 0;
   }

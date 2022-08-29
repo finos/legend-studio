@@ -78,29 +78,29 @@ import {
   QueryBuilderPostFilterOperator_NotIn,
 } from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
+import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
-const QueryBuilderResultContextMenu = observer(
+const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
       event: CellMouseOverEvent | null;
-      queryBuilderState: QueryBuilderState;
+      projectionState: QueryBuilderProjectionState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { event, queryBuilderState } = props;
+    const { event, projectionState } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-    const postFilterState =
-      queryBuilderState.fetchStructureState.projectionState.postFilterState;
+    const postFilterState = projectionState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns
+      projectionState.columns
         .filter((c) => c.columnName === event?.column.getColId())
         .concat(
-          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns
+          projectionState.aggregationState.columns
             .filter((c) => c.columnName === event?.column.getColId())
             .map((ag) => ag.projectionColumnState),
         )[0],
@@ -252,9 +252,7 @@ const QueryBuilderResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      queryBuilderState.fetchStructureState.projectionState.setShowPostFilterPanel(
-        true,
-      );
+      projectionState.setShowPostFilterPanel(true);
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
@@ -297,6 +295,8 @@ const QueryBuilderGridResult = observer(
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
+    const fetchStructureImplementation =
+      queryBuilderState.fetchStructureState.implementation;
     const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
       useState<CellMouseOverEvent | null>(null);
     const columns = executionResult.result.columns;
@@ -315,10 +315,17 @@ const QueryBuilderGridResult = observer(
     return (
       <ContextMenu
         content={
-          <QueryBuilderResultContextMenu
-            event={cellDoubleClickedEvent}
-            queryBuilderState={queryBuilderState}
-          />
+          // NOTE: we only support this functionality for grid result with a projection fetch-structure
+          fetchStructureImplementation instanceof
+          QueryBuilderProjectionState ? (
+            <QueryBuilderGridResultContextMenu
+              event={cellDoubleClickedEvent}
+              projectionState={fetchStructureImplementation}
+            />
+          ) : null
+        }
+        disabled={
+          !(fetchStructureImplementation instanceof QueryBuilderProjectionState)
         }
         menuProps={{ elevation: 7 }}
         key={executionResult._UUID}

@@ -36,8 +36,8 @@ import {
 } from '../QueryBuilderFilterState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilder_Const.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
-import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilder.js';
 import type { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
+import { buildPropertyExpressionChain } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 
 const getPropertyExpressionChainVariable = (
   propertyExpression: AbstractPropertyExpression,
@@ -261,12 +261,12 @@ export const buildFilterConditionExpression = (
  */
 const buildFilterConditionStateWithExists = (
   filterState: QueryBuilderFilterState,
-  precedingExpression: SimpleFunctionExpression,
+  parentExpression: SimpleFunctionExpression,
   operatorFunctionFullPath: string,
 ): [FilterConditionState | undefined, SimpleFunctionExpression | undefined] => {
   if (
     matchFunctionName(
-      precedingExpression.functionName,
+      parentExpression.functionName,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS,
     )
   ) {
@@ -277,7 +277,7 @@ const buildFilterConditionStateWithExists = (
     // e.g. |Firm.all()->filter(x|$x.employees->exists(x_1|$x_1->subType(@Develper).id->exists(x_2|$x_2 == 1))
     // In the first exists() lambda, `$x_1->subType(@Develper).id` is an `AbstractPropertyExpression`.
     const existsLambdaExpressions: AbstractPropertyExpression[] = [];
-    let mainFilterExpression: SimpleFunctionExpression = precedingExpression;
+    let mainFilterExpression: SimpleFunctionExpression = parentExpression;
     while (
       matchFunctionName(
         mainFilterExpression.functionName,
@@ -338,7 +338,7 @@ const buildFilterConditionStateWithExists = (
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const initialPropertyExpression = guaranteeType(
-      precedingExpression.parametersValues[0],
+      parentExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
     let flattenedPropertyExpressionChain = new AbstractPropertyExpression(

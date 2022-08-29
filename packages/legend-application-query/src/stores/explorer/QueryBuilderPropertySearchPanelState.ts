@@ -42,8 +42,10 @@ import {
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 
-export class QueryBuilderPropertySearchPanelState {
+export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
+  // TODO: Check if we could clean this up as this seems quite complicated and its purpose is not clear to me
+  // See https://github.com/finos/legend-studio/pull/1212
   allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   isSearchPanelOpen = false;

@@ -22,7 +22,7 @@ import {
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import {
   type PostFilterConditionState,
   type QueryBuilderPostFilterState,

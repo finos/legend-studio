@@ -32,6 +32,8 @@ import {
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
+  OptionsIcon,
+  PlusIcon,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -48,7 +50,6 @@ import {
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
-import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
@@ -73,6 +74,7 @@ import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../QueryBuilder_Const.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import { filterByType } from '@finos/legend-shared';
 import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
+import type { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -234,10 +236,7 @@ const QueryBuilderProjectionColumnEditor = observer(
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
     const { projectionColumnState } = props;
-    const queryBuilderState =
-      projectionColumnState.projectionState.queryBuilderState;
-    const projectionState =
-      queryBuilderState.fetchStructureState.projectionState;
+    const projectionState = projectionColumnState.projectionState;
     const postFilterColumnStates = Array.from(
       projectionState.postFilterState.nodes.values(),
     )
@@ -496,12 +495,18 @@ const QueryBuilderProjectionColumnEditor = observer(
 );
 
 export const QueryBuilderProjectionPanel = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
+  (props: { projectionState: QueryBuilderProjectionState }) => {
     const applicationStore = useApplicationStore();
-    const { queryBuilderState } = props;
-    const projectionState =
-      queryBuilderState.fetchStructureState.projectionState;
+    const { projectionState } = props;
     const projectionColumns = projectionState.columns;
+
+    // Toolbar
+    const openResultSetModifierEditor = (): void =>
+      projectionState.resultSetModifierState.setShowModal(true);
+    const addNewBlankDerivation = (): void =>
+      projectionState.addNewBlankDerivation();
+
+    // Drag and Drop
     const handleDrop = useCallback(
       (
         item:
@@ -514,7 +519,7 @@ export const QueryBuilderProjectionPanel = observer(
             const derivationProjectionColumn =
               new QueryBuilderDerivationProjectionColumnState(
                 projectionState,
-                queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
+                projectionState.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(
                   { addDummyParameter: true },
                 ),
               );
@@ -533,13 +538,14 @@ export const QueryBuilderProjectionPanel = observer(
               new QueryBuilderSimpleProjectionColumnState(
                 projectionState,
                 buildPropertyExpressionFromExplorerTreeNodeData(
-                  queryBuilderState.explorerState.nonNullableTreeData,
+                  projectionState.queryBuilderState.explorerState
+                    .nonNullableTreeData,
                   (item as QueryBuilderExplorerTreeDragSource).node,
                   projectionState.queryBuilderState.graphManagerState.graph,
-                  queryBuilderState.explorerState.propertySearchPanelState
-                    .allMappedPropertyNodes,
+                  projectionState.queryBuilderState.explorerState
+                    .propertySearchState.allMappedPropertyNodes,
                 ),
-                queryBuilderState.explorerState.humanizePropertyName,
+                projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),
             );
             break;
@@ -547,7 +553,7 @@ export const QueryBuilderProjectionPanel = observer(
             break;
         }
       },
-      [queryBuilderState, projectionState],
+      [projectionState],
     );
 
     const [{ isDragOver }, dropTargetConnector] = useDrop<
@@ -582,41 +588,61 @@ export const QueryBuilderProjectionPanel = observer(
 
     return (
       <div className="panel__content">
-        <PanelDropZone
-          isDragOver={isDragOver}
-          dropTargetConnector={dropTargetConnector}
-        >
-          {!projectionColumns.length && (
-            <BlankPanelPlaceholder
-              text="Add a projection column"
-              tooltipText="Drag and drop properties here"
-            />
-          )}
-          {Boolean(projectionColumns.length) && (
-            <div
-              data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
-              className="query-builder__projection__columns"
-            >
-              <DragPreviewLayer
-                labelGetter={(
-                  item: QueryBuilderProjectionColumnDragSource,
-                ): string =>
-                  item.columnState.columnName === ''
-                    ? '(unknown)'
-                    : item.columnState.columnName
-                }
-                types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
+        <div className="query-builder__projection__toolbar">
+          <button
+            className="panel__header__action"
+            onClick={openResultSetModifierEditor}
+            tabIndex={-1}
+            title="Configure result set modifiers..."
+          >
+            <OptionsIcon className="query-builder__icon query-builder__icon__query-option" />
+          </button>
+          <button
+            className="panel__header__action"
+            onClick={addNewBlankDerivation}
+            tabIndex={-1}
+            title="Add a new derivation"
+          >
+            <PlusIcon />
+          </button>
+        </div>
+        <div className="query-builder__projection__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {!projectionColumns.length && (
+              <BlankPanelPlaceholder
+                text="Add a projection column"
+                tooltipText="Drag and drop properties here"
               />
-              {projectionColumns.map((projectionColumnState) => (
-                <QueryBuilderProjectionColumnEditor
-                  key={projectionColumnState.uuid}
-                  projectionColumnState={projectionColumnState}
+            )}
+            {Boolean(projectionColumns.length) && (
+              <div
+                data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION}
+                className="query-builder__projection__columns"
+              >
+                <DragPreviewLayer
+                  labelGetter={(
+                    item: QueryBuilderProjectionColumnDragSource,
+                  ): string =>
+                    item.columnState.columnName === ''
+                      ? '(unknown)'
+                      : item.columnState.columnName
+                  }
+                  types={[QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE]}
                 />
-              ))}
-            </div>
-          )}
-          <QueryResultModifierModal queryBuilderState={queryBuilderState} />
-        </PanelDropZone>
+                {projectionColumns.map((projectionColumnState) => (
+                  <QueryBuilderProjectionColumnEditor
+                    key={projectionColumnState.uuid}
+                    projectionColumnState={projectionColumnState}
+                  />
+                ))}
+              </div>
+            )}
+            <QueryResultModifierModal projectionState={projectionState} />
+          </PanelDropZone>
+        </div>
       </div>
     );
   },

@@ -131,8 +131,8 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
           .nonNullableTreeData,
         node,
         this.projectionState.queryBuilderState.graphManagerState.graph,
-        this.projectionState.queryBuilderState.explorerState
-          .propertySearchPanelState.allMappedPropertyNodes,
+        this.projectionState.queryBuilderState.explorerState.propertySearchState
+          .allMappedPropertyNodes,
       ),
     );
     this.columnName = getPropertyChainName(

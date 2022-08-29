@@ -19,56 +19,61 @@ import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderProjectionState } from './projection/QueryBuilderProjectionState.js';
 import {
-  buildPropertyExpressionFromExplorerTreeNodeData,
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
 } from '../explorer/QueryBuilderExplorerState.js';
 import { Class } from '@finos/legend-graph';
-import { filterByType } from '@finos/legend-shared';
-import { addQueryBuilderPropertyNode } from './graph-fetch/QueryBuilderGraphFetchTreeUtil.js';
-import { QueryBuilderSimpleProjectionColumnState } from './projection/QueryBuilderProjectionColumnState.js';
-
-export enum FETCH_STRUCTURE_MODE {
-  PROJECTION = 'PROJECTION',
-  GRAPH_FETCH = 'GRAPH_FETCH',
-}
+import { filterByType, UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  FETCH_STRUCTURE_IMPLEMENTATION,
+  type QueryBuilderFetchStructureImplementationState,
+} from './QueryBuilderFetchStructureImplementationState.js';
 
 export class QueryBuilderFetchStructureState {
   queryBuilderState: QueryBuilderState;
-  /**
-   * TODO: refactor this so we could reduce this to
-   * `implementationState: QueryBuilderFetchStructureImplementationState`
-   * so we don't have graph fetch and projection at the same time
-   *
-   * TODO?: perhaps it would eventually make sense to default to
-   * graph-fetch since `getAll()` naturally works for graph-fetch case
-   * and graph-fetch allows somewhat an empty tree
-   */
-  fetchStructureMode = FETCH_STRUCTURE_MODE.PROJECTION;
-  projectionState: QueryBuilderProjectionState;
-  graphFetchTreeState: QueryBuilderGraphFetchTreeState;
+  implementation: QueryBuilderFetchStructureImplementationState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      setFetchStructureMode: action,
+      changeImplementation: action,
     });
 
     this.queryBuilderState = queryBuilderState;
-    // TODO: we probably should modularize this a bit better
-    // See https://github.com/finos/legend-studio/issues/731
-    this.projectionState = new QueryBuilderProjectionState(
-      queryBuilderState,
-      this,
-    );
-    this.graphFetchTreeState = new QueryBuilderGraphFetchTreeState(
-      queryBuilderState,
+    /**
+     * TODO?: perhaps it would eventually make sense to default to
+     * graph-fetch since `getAll()` naturally works for graph-fetch case
+     * and graph-fetch allows somewhat an empty tree
+     *
+     * TODO?: we could consider making this configurable
+     */
+    this.implementation = new QueryBuilderProjectionState(
+      this.queryBuilderState,
       this,
     );
   }
 
-  setFetchStructureMode(val: FETCH_STRUCTURE_MODE): void {
-    this.fetchStructureMode = val;
+  changeImplementation(type: string): void {
+    switch (type) {
+      case FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION: {
+        this.implementation = new QueryBuilderProjectionState(
+          this.queryBuilderState,
+          this,
+        );
+        return;
+      }
+      case FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH: {
+        this.implementation = new QueryBuilderGraphFetchTreeState(
+          this.queryBuilderState,
+          this,
+        );
+        return;
+      }
+      default:
+        throw new UnsupportedOperationError(
+          `Can't change fetch-structure implementation to unsupported type: '${type}'`,
+        );
+    }
   }
 
   fetchProperty(node: QueryBuilderExplorerTreeNodeData): void {
@@ -76,98 +81,28 @@ export class QueryBuilderFetchStructureState {
       node instanceof QueryBuilderExplorerTreePropertyNodeData &&
       !(node.type instanceof Class)
     ) {
-      switch (this.fetchStructureMode) {
-        case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-          this.graphFetchTreeState.addProperty(node);
-          return;
-        }
-        case FETCH_STRUCTURE_MODE.PROJECTION: {
-          this.projectionState.addColumn(
-            new QueryBuilderSimpleProjectionColumnState(
-              this.projectionState,
-              buildPropertyExpressionFromExplorerTreeNodeData(
-                this.queryBuilderState.explorerState.nonNullableTreeData,
-                node,
-                this.queryBuilderState.graphManagerState.graph,
-                this.queryBuilderState.explorerState.propertySearchPanelState
-                  .allMappedPropertyNodes,
-              ),
-              this.queryBuilderState.explorerState.humanizePropertyName,
-            ),
-          );
-          return;
-        }
-        default:
-          return;
-      }
+      this.implementation.fetchProperty(node);
     }
   }
 
   fetchNodeChildrenProperties(node: QueryBuilderExplorerTreeNodeData): void {
     if (node.type instanceof Class) {
-      // NOTE: here we require the node to already been expanded so the child nodes are generated
-      // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
-      const nodesToAdd = node.childrenIds
-        .map((childId) =>
-          this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
-            childId,
+      this.implementation.fetchProperties(
+        // NOTE: here we require the node to already been expanded so the child nodes are generated
+        // we don't allow adding unopened node. Maybe if it helps, we can show a warning.
+        node.childrenIds
+          .map((childId) =>
+            this.queryBuilderState.explorerState.nonNullableTreeData.nodes.get(
+              childId,
+            ),
+          )
+          .filter(filterByType(QueryBuilderExplorerTreePropertyNodeData))
+          .filter(
+            (childNode) =>
+              !(childNode.type instanceof Class) &&
+              childNode.mappingData.mapped,
           ),
-        )
-        .filter(filterByType(QueryBuilderExplorerTreePropertyNodeData))
-        .filter(
-          (childNode) =>
-            !(childNode.type instanceof Class) && childNode.mappingData.mapped,
-        );
-
-      switch (this.fetchStructureMode) {
-        case FETCH_STRUCTURE_MODE.GRAPH_FETCH: {
-          const graphFetchTreeData = this.graphFetchTreeState.treeData;
-          if (graphFetchTreeData) {
-            nodesToAdd.forEach((nodeToAdd) =>
-              addQueryBuilderPropertyNode(
-                graphFetchTreeData,
-                this.queryBuilderState.explorerState.nonNullableTreeData,
-                nodeToAdd,
-                this.queryBuilderState,
-              ),
-            );
-            this.graphFetchTreeState.setGraphFetchTree({
-              ...graphFetchTreeData,
-            });
-          }
-          return;
-        }
-        case FETCH_STRUCTURE_MODE.PROJECTION: {
-          nodesToAdd.forEach((nodeToAdd) => {
-            this.projectionState.addColumn(
-              new QueryBuilderSimpleProjectionColumnState(
-                this.projectionState,
-                buildPropertyExpressionFromExplorerTreeNodeData(
-                  this.queryBuilderState.explorerState.nonNullableTreeData,
-                  nodeToAdd,
-                  this.queryBuilderState.graphManagerState.graph,
-                  this.queryBuilderState.explorerState.propertySearchPanelState
-                    .allMappedPropertyNodes,
-                ),
-                this.queryBuilderState.explorerState.humanizePropertyName,
-              ),
-            );
-          });
-          return;
-        }
-        default:
-          return;
-      }
-    }
-  }
-
-  get validationIssues(): string[] | undefined {
-    switch (this.fetchStructureMode) {
-      case FETCH_STRUCTURE_MODE.PROJECTION:
-        return this.projectionState.validationIssues;
-      case FETCH_STRUCTURE_MODE.GRAPH_FETCH:
-      default:
-        return undefined;
+      );
     }
   }
 }

@@ -410,35 +410,6 @@
     }
   }
 
-  &__root-node__label {
-    display: flex;
-    height: 2rem;
-    border-radius: 0.2rem;
-    margin: 0;
-    color: var(--color-light-grey-150);
-    background: var(--color-purple-400);
-  }
-
-  &__root-node__label__icon {
-    @include flexCenter;
-
-    width: 2rem;
-    min-width: 2rem;
-    background: var(--color-dark-shade-100);
-    border-radius: 0.2rem 0 0 0.2rem;
-  }
-
-  &__root-node__label__icon .icon {
-    color: var(--color-light-grey-50);
-  }
-
-  &__root-node__label__text {
-    @include flexVCenter;
-
-    padding: 0 1rem;
-    user-select: none;
-  }
-
   &__icon {
     color: var(--color-primitive);
 
@@ -458,11 +429,10 @@
     color: var(--color-dark-grey-350);
   }
 
-  &__node__container--highlighted &__type-icon .icon,
-  &__node__container--highlighted &__type-icon .icon svg,
-  &__node__container--highlighted &__type-icon &__icon,
-  &__node__container--highlighted &__root-node__label__icon .icon {
-    color: var(--color-orange-100);
+  &__node__container--highlighted &__node__label,
+  &__node__container--highlighted &__node__label__derived-property,
+  &__node__container--highlighted &__node__label__multiple {
+    color: var(--color-skin-200);
   }
 
   &__node__info {

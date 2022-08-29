@@ -172,3 +172,39 @@ export const TEST_DATA__MappingData__AssociationMapping = [
   { childNodes: [], mappingData: { mapped: true }, name: 'firstName' },
   { childNodes: [], mappingData: { mapped: true }, name: 'lastName' },
 ];
+
+export const TEST_DATA__Mappingdata__NestedSubtype = [
+  { childNodes: [], mappingData: { mapped: true }, name: 'name' },
+  {
+    childNodes: [
+      { childNodes: [], mappingData: { mapped: true }, name: 'streetName' },
+      {
+        childNodes: [
+          { childNodes: [], mappingData: { mapped: true }, name: 'streetName' },
+          { childNodes: [], mappingData: { mapped: true }, name: 'zipcode' },
+          {
+            childNodes: [
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'zipcode',
+              },
+              {
+                childNodes: [],
+                mappingData: { mapped: true },
+                name: 'streetName',
+              },
+              { childNodes: [], mappingData: { mapped: true }, name: 'zip' },
+            ],
+            mappingData: { mapped: true },
+            name: 'model::AddressType2',
+          },
+        ],
+        mappingData: { mapped: true },
+        name: 'model::AddressType1',
+      },
+    ],
+    mappingData: { mapped: true },
+    name: 'address',
+  },
+];

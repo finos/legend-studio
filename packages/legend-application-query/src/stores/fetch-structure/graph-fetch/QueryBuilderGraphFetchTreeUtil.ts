@@ -71,18 +71,13 @@ export interface QueryBuilderGraphFetchTreeData
   tree: RootGraphFetchTree;
 }
 
-const generateNodeId = (
+export const generateGraphFetchTreeNodeID = (
   property: AbstractProperty,
   parentNodeId: string | undefined,
-): string => `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}`;
-
-const generateNodeIdForSubType = (
-  property: AbstractProperty,
-  subType: Type,
-  parentNodeId: string | undefined,
+  subType: Type | undefined,
 ): string =>
-  `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${TYPE_CAST_TOKEN}${
-    subType.path
+  `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${
+    subType ? `${TYPE_CAST_TOKEN}${subType.path}` : ''
   }`;
 
 const buildGraphFetchSubTree = (
@@ -99,9 +94,7 @@ const buildGraphFetchSubTree = (
   const subType = tree.subType?.value;
   const parentNodeId = parentNode?.id;
   const node = new QueryBuilderGraphFetchTreeNodeData(
-    subType
-      ? generateNodeIdForSubType(property, subType, parentNodeId)
-      : generateNodeId(property, parentNodeId),
+    generateGraphFetchTreeNodeID(property, parentNodeId, subType),
     property.name,
     parentNodeId,
     tree,
@@ -256,13 +249,11 @@ export const addQueryBuilderPropertyNode = (
   let parentNode: QueryBuilderGraphFetchTreeNodeData | undefined = undefined;
   let newSubTree: PropertyGraphFetchTree | undefined;
   for (const propertyGraphFetchTree of propertyGraphFetchTrees) {
-    currentNodeId = propertyGraphFetchTree.subType?.value
-      ? generateNodeIdForSubType(
-          propertyGraphFetchTree.property.value,
-          propertyGraphFetchTree.subType.value,
-          currentNodeId,
-        )
-      : generateNodeId(propertyGraphFetchTree.property.value, currentNodeId);
+    currentNodeId = generateGraphFetchTreeNodeID(
+      propertyGraphFetchTree.property.value,
+      currentNodeId,
+      propertyGraphFetchTree.subType?.value,
+    );
     const existingGraphFetchNode = treeData.nodes.get(currentNodeId);
     if (existingGraphFetchNode) {
       parentNode = existingGraphFetchNode;

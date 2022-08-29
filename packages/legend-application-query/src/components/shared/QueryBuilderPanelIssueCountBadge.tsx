@@ -32,7 +32,9 @@ export const QueryBuilderPanelIssueCountBadge: React.FC<{
         .join('\n')}`}
     >
       <TimesCircleIcon className="query-builder-panel-issue-count-badge__icon" />
-      {labelText}
+      <div className="query-builder-panel-issue-count-badge__text">
+        {labelText}
+      </div>
     </div>
   );
 };

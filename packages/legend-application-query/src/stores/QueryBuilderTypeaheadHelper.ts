@@ -35,6 +35,7 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
@@ -44,10 +45,12 @@ const createAndSetupQueryBuilderStateForTypeahead = (
 ): QueryBuilderState => {
   const builderState = queryBuilderState.cloneQueryBuilderState();
   builderState.querySetupState = queryBuilderState.querySetupState;
-  builderState.fetchStructureState.projectionState.resultSetModifierState.distinct =
-    true;
-  builderState.fetchStructureState.projectionState.resultSetModifierState.limit =
-    TYPEAHEAD_TAKE_LIMIT;
+  const projectionState = guaranteeType(
+    builderState.fetchStructureState.implementation,
+    QueryBuilderProjectionState,
+  );
+  projectionState.resultSetModifierState.distinct = true;
+  projectionState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
   return builderState;
 };
 
@@ -58,18 +61,21 @@ const buildColumnTypeaheadQuery = (
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
 ): RawLambda => {
-  let projectionState;
+  const projectionState = guaranteeType(
+    builderState.fetchStructureState.implementation,
+    QueryBuilderProjectionState,
+  );
+  let projectionColumnState;
   if (columnState instanceof QueryBuilderProjectionColumnState) {
-    projectionState = columnState;
+    projectionColumnState = columnState;
   } else {
-    projectionState = columnState.projectionColumnState;
-    const aggregationState =
-      builderState.fetchStructureState.projectionState.aggregationState;
+    projectionColumnState = columnState.projectionColumnState;
+    const aggregationState = projectionState.aggregationState;
     aggregationState.columns = [columnState];
   }
-  builderState.fetchStructureState.projectionState.columns = [projectionState];
+  projectionState.columns = [projectionColumnState];
   const postConditionState = new PostFilterConditionState(
-    builderState.fetchStructureState.projectionState.postFilterState,
+    projectionState.postFilterState,
     columnState,
     value,
     new QueryBuilderPostFilterOperator_StartWith(),
@@ -78,10 +84,7 @@ const buildColumnTypeaheadQuery = (
     undefined,
     postConditionState,
   );
-  builderState.fetchStructureState.projectionState.postFilterState.addNodeFromNode(
-    postFilterNode,
-    undefined,
-  );
+  projectionState.postFilterState.addNodeFromNode(postFilterNode, undefined);
   return builderState.resultState.buildExecutionRawLambda();
 };
 
@@ -92,8 +95,12 @@ export const buildPropertyTypeaheadQuery = (
 ): RawLambda => {
   const builderState =
     createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
+  const projectionState = guaranteeType(
+    builderState.fetchStructureState.implementation,
+    QueryBuilderProjectionState,
+  );
   const columnState = new QueryBuilderSimpleProjectionColumnState(
-    builderState.fetchStructureState.projectionState,
+    projectionState,
     propertyExpression,
     false,
   );

@@ -85,8 +85,6 @@ import { getClassPropertyIcon } from '../shared/ElementIconUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { QueryBuilderPropertySearchPanel } from './QueryBuilderPropertySearchPanel.js';
-import type { QueryBuilderFetchStructureState } from '../../stores/fetch-structure/QueryBuilderFetchStructureState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 
 const checkForDeprecatedNode = (
   node: QueryBuilderExplorerTreeNodeData,
@@ -113,35 +111,26 @@ const checkForDeprecatedNode = (
   return false;
 };
 
-export const isNodeAlreadyUsed = (
+export const isExplorerTreeNodeAlreadyUsed = (
   node: QueryBuilderExplorerTreeNodeData,
-  fetchStructureState: QueryBuilderFetchStructureState,
+  queryBuilderState: QueryBuilderState,
 ): boolean => {
+  // if the fetch-structure is non-empty, it means we can mark the root node as used
   if (
     node instanceof QueryBuilderExplorerTreeRootNodeData &&
-    (fetchStructureState.projectionState.columns.filter(
-      (column) => column instanceof QueryBuilderSimpleProjectionColumnState,
-    ).length > 0 ||
-      (fetchStructureState.graphFetchTreeState.treeData !== undefined &&
-        fetchStructureState.graphFetchTreeState.treeData.rootIds.length > 0))
+    queryBuilderState.fetchStructureState.implementation
+      .usedExplorerTreePropertyNodeIDs.length > 0
   ) {
     return true;
   }
-  return (
-    fetchStructureState.projectionState.usedPropertyNodeIds.includes(node.id) ||
-    (fetchStructureState.graphFetchTreeState.treeData !== undefined &&
-      fetchStructureState.graphFetchTreeState.treeData.rootIds.length > 0 &&
-      (Array.from(
-        guaranteeNonNullable(
-          fetchStructureState.graphFetchTreeState.treeData,
-        ).nodes.values(),
-      ).find((n) => n.id === node.id) !== undefined ||
-        Array.from(
-          guaranteeNonNullable(
-            fetchStructureState.graphFetchTreeState.treeData,
-          ).nodes.values(),
-        ).find((n) => n.id.split(TYPE_CAST_TOKEN)[0] === node.id) !==
-          undefined))
+  // in the explorer tree, we represent subtype as a subtree, we want to flatten this to only
+  // the subtype that actually being used to make comparison simpler
+  const simplifiedNodeID = node.id.replaceAll(/(?:@[^.]+)+/g, (val) => {
+    const chunks = val.split(TYPE_CAST_TOKEN);
+    return `${TYPE_CAST_TOKEN}${chunks[chunks.length - 1]}`;
+  });
+  return queryBuilderState.fetchStructureState.implementation.usedExplorerTreePropertyNodeIDs.includes(
+    simplifiedNodeID,
   );
 };
 
@@ -466,10 +455,7 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
 
               'query-builder-explorer-tree__node__container--highlighted':
                 explorerState.highlightUsedProperties &&
-                isNodeAlreadyUsed(
-                  node,
-                  explorerState.queryBuilderState.fetchStructureState,
-                ),
+                isExplorerTreeNodeAlreadyUsed(node, queryBuilderState),
             },
           )}
           title={
@@ -485,18 +471,17 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           }}
         >
           {node instanceof QueryBuilderExplorerTreeRootNodeData && (
-            // NOTE: since the root of the tree is the class, not the property, we want to display it differently
             <>
-              <div className="query-builder-explorer-tree__expand-icon">
-                {nodeExpandIcon}
-              </div>
-              <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
-                <div className="query-builder-explorer-tree__root-node__label__icon">
+              <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
+                <div className="query-builder-explorer-tree__expand-icon">
+                  {nodeExpandIcon}
+                </div>
+                <div className="query-builder-explorer-tree__type-icon">
                   <PURE_ClassIcon />
                 </div>
-                <div className="query-builder-explorer-tree__root-node__label__text">
-                  {node.label}
-                </div>
+              </div>
+              <div className="tree-view__node__label query-builder-explorer-tree__node__label">
+                {node.label}
               </div>
             </>
           )}
@@ -767,7 +752,7 @@ export const QueryBuilderExplorerPanel = observer(
     const { queryBuilderState } = props;
     const searchButtonRef = useRef<HTMLButtonElement>(null);
     const explorerState = queryBuilderState.explorerState;
-    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const propertySearchPanelState = explorerState.propertySearchState;
     const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {

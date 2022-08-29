@@ -110,7 +110,7 @@ export class QueryBuilderAggregateOperator_DistinctCount extends QueryBuilderAgg
       );
       aggregateColumnState.setLambdaParameterName(lambdaParam.name);
 
-      // count expression
+      // process count expression
       assertTrue(
         expression.parametersValues.length === 1,
         `Can't process count() expression: count() expects no argument`,

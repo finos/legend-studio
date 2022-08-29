@@ -90,6 +90,102 @@ export const TEST_DATA__simpleProjection = {
   parameters: [],
 };
 
+export const TEST_DATA__projectionWithNestedSubtype = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'project',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::Person',
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'func',
+                      function: 'subType',
+                      parameters: [
+                        {
+                          _type: 'func',
+                          function: 'subType',
+                          parameters: [
+                            {
+                              _type: 'property',
+                              parameters: [
+                                {
+                                  _type: 'var',
+                                  name: 'x',
+                                },
+                              ],
+                              property: 'address',
+                            },
+                            {
+                              _type: 'hackedClass',
+                              fullPath: 'model::AddressType1',
+                            },
+                          ],
+                        },
+                        {
+                          _type: 'hackedClass',
+                          fullPath: 'model::AddressType2',
+                        },
+                      ],
+                    },
+                  ],
+                  property: 'zip',
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'x',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          values: [
+            {
+              _type: 'string',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              values: ['Zip'],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};
+
 export const TEST_DATA__simpleGraphFetch = {
   _type: 'lambda',
   body: [
@@ -143,7 +239,7 @@ export const TEST_DATA__simpleGraphFetch = {
   parameters: [],
 };
 
-export const TEST_DATA_simpleGraphFetchWithSubType = {
+export const TEST_DATA__graphFetchWithNestedSubtype = {
   _type: 'lambda',
   body: [
     {
@@ -160,47 +256,13 @@ export const TEST_DATA_simpleGraphFetchWithSubType = {
               parameters: [
                 {
                   _type: 'packageableElementPtr',
-                  fullPath: 'model::Firm',
+                  fullPath: 'model::Person',
                 },
               ],
             },
             {
               _type: 'rootGraphFetchTree',
-              class: 'model::Firm',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'employees',
-                  subTrees: [
-                    {
-                      _type: 'propertyGraphFetchTree',
-                      parameters: [],
-                      property: 'address',
-                      subTrees: [
-                        {
-                          _type: 'propertyGraphFetchTree',
-                          parameters: [],
-                          property: 'zipcode',
-                          subTrees: [],
-                        },
-                      ],
-                      subType: 'model::Street',
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          _type: 'rootGraphFetchTree',
-          class: 'model::Firm',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'employees',
+              class: 'model::Person',
               subTrees: [
                 {
                   _type: 'propertyGraphFetchTree',
@@ -210,13 +272,33 @@ export const TEST_DATA_simpleGraphFetchWithSubType = {
                     {
                       _type: 'propertyGraphFetchTree',
                       parameters: [],
-                      property: 'zipcode',
+                      property: 'zip',
                       subTrees: [],
                     },
                   ],
-                  subType: 'model::Street',
+                  subType: 'model::AddressType2',
                 },
               ],
+            },
+          ],
+        },
+        {
+          _type: 'rootGraphFetchTree',
+          class: 'model::Person',
+          subTrees: [
+            {
+              _type: 'propertyGraphFetchTree',
+              parameters: [],
+              property: 'address',
+              subTrees: [
+                {
+                  _type: 'propertyGraphFetchTree',
+                  parameters: [],
+                  property: 'zip',
+                  subTrees: [],
+                },
+              ],
+              subType: 'model::AddressType2',
             },
           ],
         },

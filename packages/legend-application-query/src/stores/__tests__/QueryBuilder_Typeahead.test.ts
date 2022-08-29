@@ -34,11 +34,12 @@ import {
   TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation,
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
-import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
 import {
   buildProjectionColumnTypeaheadQuery,
   buildPropertyTypeaheadQuery,
 } from '../QueryBuilderTypeaheadHelper.js';
+import { QueryBuilderProjectionState } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
 
 type TypeaheadTestCase = [
   string,
@@ -70,7 +71,7 @@ describe(integrationTest('Query builder type ahead: post-filter'), () => {
       expectedTypeaheadLambda: TypeaheadTestCase[3],
     ) => {
       const { entities } = context;
-      const queryBuilderState = await TEST_setUpQueryBuilderState(
+      const queryBuilderState = await TEST__setUpQueryBuilderState(
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );
@@ -122,12 +123,17 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
       expectedTypeaheadLambda: TypeaheadTestCase[3],
     ) => {
       const { entities } = context;
-      const queryBuilderState = await TEST_setUpQueryBuilderState(
+      const queryBuilderState = await TEST__setUpQueryBuilderState(
         entities,
         new RawLambda(lambda.parameters, lambda.body),
       );
+
+      const projectionState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderProjectionState,
+      );
       const postFilterNode = guaranteeType(
-        queryBuilderState.fetchStructureState.projectionState.postFilterState.getRootNode(),
+        projectionState.postFilterState.getRootNode(),
         QueryBuilderPostFilterTreeConditionNodeData,
       );
       const jsonQuery =

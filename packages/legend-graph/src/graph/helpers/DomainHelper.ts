@@ -361,7 +361,7 @@ export const getOwnProperty = (
   );
 
 /**
- * Get all super types of a class, accounted for loop and duplication (which should be caught by compiler)
+ * Get all superclasses of a class, accounted for loop and duplication (which should be caught by compiler)
  * NOTE: we intentionally leave out `Any`
  */
 export const getAllSuperclasses = (c: Class): Class[] => {
