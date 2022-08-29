@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 5.2.6
+
+### Patch Changes
+
+- [#1367](https://github.com/finos/legend-studio/pull/1367) [`0504cca7`](https://github.com/finos/legend-studio/commit/0504cca78844e74915cb74de045f4eed608af249) ([@gayathrir11](https://github.com/gayathrir11)) - Highlight already used properties in the explorer tree of query builder ([#1344](https://github.com/finos/legend-studio/issues/1344)).
+
 ## 5.2.5
 
 ## 5.2.4
