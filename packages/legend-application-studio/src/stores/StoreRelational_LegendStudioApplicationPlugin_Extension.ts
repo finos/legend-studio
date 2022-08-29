@@ -129,7 +129,9 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   /**
    * Get the list of creators for relational post processor specification given the type specifier.
    */
-  getExtraPostProcessorCreators?(): PostProcessorCreator[];
+  getExtraPostProcessorCreators?(
+    connectionValueState: RelationalDatabaseConnectionValueState,
+  ): PostProcessorCreator[];
 
   /**
    * Get the list of renderers for the editor for a relational post processor specification.

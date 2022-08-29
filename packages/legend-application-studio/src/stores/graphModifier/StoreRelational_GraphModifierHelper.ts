@@ -433,7 +433,7 @@ export const rootRelationalSetImp_setPropertyMappings = action(
 
 // --------------------------------------------- Post Processor -------------------------------------
 
-export const postprocessor_addPostProcessor = action(
+export const postprocessor_addMapperPostProcessor = action(
   (connectionValueState: RelationalDatabaseConnectionValueState): void => {
     addUniqueEntry(
       connectionValueState.connection.postProcessors,

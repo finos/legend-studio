@@ -1030,6 +1030,15 @@ export const observe_TableNameMapper = skipObserved(
   },
 );
 
+export const observe_Mapper = (metamodel: Mapper): Mapper => {
+  if (metamodel instanceof SchemaNameMapper) {
+    return observe_SchemaNameMapper(metamodel);
+  } else if (metamodel instanceof TableNameMapper) {
+    return observe_TableNameMapper(metamodel);
+  }
+  return metamodel;
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
@@ -1038,6 +1047,9 @@ export const observe_PostProcessor = (
     makeObservable(metamodel, {
       mappers: observable,
       hashCode: computed,
+    });
+    metamodel.mappers.forEach((mapper) => {
+      observe_Mapper(mapper);
     });
     return metamodel;
   }
@@ -1052,18 +1064,6 @@ export const observe_PostProcessor = (
     if (observedPostProcessor) {
       return observedPostProcessor;
     }
-  }
-  return metamodel;
-};
-
-export const observe_Mapper = (
-  metamodel: Mapper,
-  context: ObserverContext,
-): Mapper => {
-  if (metamodel instanceof SchemaNameMapper) {
-    return observe_SchemaNameMapper(metamodel);
-  } else if (metamodel instanceof TableNameMapper) {
-    return observe_TableNameMapper(metamodel);
   }
   return metamodel;
 };
@@ -1098,11 +1098,6 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     observe_AuthenticationStrategy(metamodel.authenticationStrategy, context);
     metamodel.postProcessors.forEach((postProcessor) => {
       observe_PostProcessor(postProcessor, context);
-      if (postProcessor instanceof MapperPostProcessor) {
-        postProcessor.mappers.forEach((mapper) => {
-          observe_Mapper(mapper, context);
-        });
-      }
     });
 
     return metamodel;

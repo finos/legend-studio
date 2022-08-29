@@ -20,6 +20,7 @@ import {
   CORE_AUTHENTICATION_STRATEGY_TYPE,
   CORE_DATASOURCE_SPEC_TYPE,
   RELATIONAL_DATABASE_TAB_TYPE,
+  POST_PROCESSOR_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { useState } from 'react';
 import {
@@ -133,7 +134,7 @@ import {
   gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
-  postprocessor_addPostProcessor,
+  postprocessor_addMapperPostProcessor,
   postProcessor_deletePostProcessor,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
@@ -1192,17 +1193,59 @@ const PostProcessorRelationalConnectionEditor = observer(
         }
       };
 
-    const addPostProcessor = (): void => {
-      postprocessor_addPostProcessor(connectionValueState);
+    //todo map this to postprocessortype
+    // source spec type
+    const postprocessorOptions = (
+      Object.values(POST_PROCESSOR_TYPE) as string[]
+    )
+      .concat(
+        plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+            ).getExtraPostProcessorTypes?.() ?? [],
+        ),
+      )
+      .map((e) => ({
+        value: e,
+        label: prettyCONSTName(e),
+      }));
 
-      connectionValueState.setSelectedPostProcessor(
-        connectionValueState.connection.postProcessors[
-          connectionValueState.connection.postProcessors.length - 1
-        ],
-      );
-      connectionValueState.setSelectedMapper(undefined);
-      connectionValueState.setSelectedSchema(undefined);
-    };
+    const addPostProcessor =
+      (postprocessorType: string): (() => void) =>
+      (): void => {
+        switch (postprocessorType) {
+          case POST_PROCESSOR_TYPE.MAPPER: {
+            postprocessor_addMapperPostProcessor(connectionValueState);
+            break;
+          }
+          default: {
+            const extraPostProcessorCreators = plugins.flatMap(
+              (plugin) =>
+                (
+                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                ).getExtraPostProcessorCreators?.(connectionValueState) ?? [],
+            );
+            for (const creator of extraPostProcessorCreators) {
+              const spec = creator(postprocessorType);
+              if (spec) {
+                console.log('svp delete on transfer');
+                console.log(spec);
+                console.log(postprocessorType);
+                break;
+              }
+            }
+          }
+        }
+
+        connectionValueState.setSelectedPostProcessor(
+          connectionValueState.connection.postProcessors[
+            connectionValueState.connection.postProcessors.length - 1
+          ],
+        );
+        connectionValueState.setSelectedMapper(undefined);
+        connectionValueState.setSelectedSchema(undefined);
+      };
 
     const selectPostProcessor = (postprocessor: PostProcessor): void =>
       connectionValueState.setSelectedPostProcessor(postprocessor);
@@ -1218,13 +1261,14 @@ const PostProcessorRelationalConnectionEditor = observer(
                   <div className="relational-connection-editor__auth">
                     <DropdownMenu
                       className=""
-                      content={
-                        <MenuContent>
-                          <MenuContentItem onClick={addPostProcessor}>
-                            New Post Processor
-                          </MenuContentItem>
-                        </MenuContent>
-                      }
+                      content={postprocessorOptions.map((postprocessorType) => (
+                        <MenuContentItem
+                          key={postprocessorType.value}
+                          onClick={addPostProcessor(postprocessorType.value)}
+                        >
+                          New {postprocessorType.label} Post Processor
+                        </MenuContentItem>
+                      ))}
                       menuProps={{
                         anchorOrigin: {
                           vertical: 'bottom',
@@ -1283,10 +1327,10 @@ const PostProcessorRelationalConnectionEditor = observer(
                     )}
                   {!selectedPostProcessor && !postprocessors.length && (
                     <BlankPanelPlaceholder
-                      text="Add a post processor"
-                      onClick={addPostProcessor}
-                      clickActionType="add"
-                      tooltipText="Add a post processor"
+                      text=""
+                      tooltipText=""
+                      disabled={true}
+                      previewText="Add a post processor to view properties"
                     />
                   )}
                   {!selectedPostProcessor && postprocessors.length && (
