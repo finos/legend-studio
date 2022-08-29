@@ -63,7 +63,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     super(queryBuilderState, fetchStructureState);
 
     makeObservable(this, {
-      treeData: observable,
+      treeData: observable.ref,
       isChecked: observable,
       setGraphFetchTree: action,
       setChecked: action,
@@ -121,7 +121,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
 
       // update list of nodes to process
       nodesToProcess.shift();
-      node.childrenIds?.forEach((childId) => nodesToProcess.push(childId));
+      node.childrenIds.forEach((childId) => nodesToProcess.push(childId));
     }
 
     // de-duplicate

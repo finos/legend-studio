@@ -435,10 +435,10 @@ test(
     );
     expect(subTypeNodes.length).toBe(1);
     expect(guaranteeNonNullable(subTypeNodes[0]).mappingData.mapped).toBe(true);
-    const queryBuilderExplorerTreeSetup = await waitFor(() =>
+    const explorerPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
-    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Firm'));
+    await waitFor(() => getByText(explorerPanel, '@Firm'));
 
     // simpleProjection with subType
     await act(async () => {
@@ -451,17 +451,6 @@ test(
     });
 
     // check fetch-structure
-    const projectionColsWithSubType = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
-    );
-    const NAME_ALIAS = '(@Firm)/Employees/First Name';
-    await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
-    expect(
-      await waitFor(() =>
-        projectionColsWithSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
-      ),
-    ).not.toBeNull();
-
     const projectionState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
       QueryBuilderProjectionState,

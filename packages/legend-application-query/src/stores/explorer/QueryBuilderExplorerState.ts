@@ -227,6 +227,16 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
     parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
   ) {
+    // NOTE: here, we deliverately simplify subtypes chain
+    // $x.employees->subType(@Person)->subType(@Staff).department will be simplified to $x.employees->subType(@Staff).department
+    if (
+      parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
+      currentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
+    ) {
+      parentNode = treeData.nodes.get(parentNode.parentId);
+      continue;
+    }
+
     let parentPropertyExpression;
     if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
       parentPropertyExpression = new SimpleFunctionExpression(

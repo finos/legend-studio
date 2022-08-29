@@ -176,7 +176,7 @@ export const TEST_DATA__projectionWithNestedSubtype = {
                 lowerBound: 1,
                 upperBound: 1,
               },
-              values: ['(@Addresstype1)Address/(@Addresstype2)/Zip'],
+              values: ['Zip'],
             },
           ],
         },

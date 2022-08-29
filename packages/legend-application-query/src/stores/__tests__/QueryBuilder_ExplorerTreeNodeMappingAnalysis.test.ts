@@ -171,9 +171,8 @@ function buildChildNodeMappingData(
   mapping: Mapping,
   mappingModelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
   max_depth: number,
-  current_depth: number,
+  depth: number,
 ): NodeMappingData {
-  const depth = current_depth === undefined ? 0 : current_depth;
   const nodeMappingData: NodeMappingData = {
     name: node instanceof Class ? node.path : node.name,
     mappingData:
