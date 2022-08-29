@@ -270,12 +270,10 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
 }
 
 export abstract class ExtensionModelImportRendererState {
-  externalFormatModelImporterState: ExternalFormatModelImporterState;
+  importerState: ModelImporterState;
 
-  constructor(
-    externalFormatModelImporterState: ExternalFormatModelImporterState,
-  ) {
-    this.externalFormatModelImporterState = externalFormatModelImporterState;
+  constructor(importerState: ModelImporterState) {
+    this.importerState = importerState;
   }
 }
 export class ExtensionModelImporterEditorState extends ModelImporterEditorState {
