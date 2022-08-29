@@ -57,6 +57,7 @@ import {
   PRIMITIVE_TYPE,
   TdsExecutionResult,
   type ExecutionResult,
+  getAllSubclasses,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import {
@@ -85,18 +86,21 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
 
-export const getPropertyNodeId = (
+export const simplifySubtypeChainInExplorerTreeNodeID = (id: string): string =>
+  id.replaceAll(/(?:@[^.]+)+/g, (val) => {
+    const chunks = val.split(TYPE_CAST_TOKEN);
+    return `${TYPE_CAST_TOKEN}${chunks[chunks.length - 1]}`;
+  });
+
+export const generateExplorerTreePropertyNodeID = (
   parentId: string,
   propertyName: string,
-): string => (parentId ? `${parentId}.${propertyName}` : propertyName);
+): string => `${parentId ? `${parentId}.` : ''}${propertyName}`;
 
-export const getPropertyNodeIdForSubType = (
+export const generateExplorerTreeSubtypeNodeID = (
   parentId: string,
   subClassPath: string,
-): string =>
-  parentId
-    ? `${parentId}${TYPE_CAST_TOKEN}${subClassPath}`
-    : `${TYPE_CAST_TOKEN}${subClassPath}`;
+): string => `${parentId ? parentId : ''}${TYPE_CAST_TOKEN}${subClassPath}`;
 
 export interface QueryBuilderExplorerTreeDragSource {
   node: QueryBuilderExplorerTreePropertyNodeData;
@@ -319,14 +323,26 @@ const generateSubtypeNodeMappingData = (
   parentMappingData: QueryBuilderExplorerTreeNodeMappingData,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreeNodeMappingData => {
+  // NOTE: since we build subclass trees, there's a chance in a particular case,
+  // a _deep_ subclass is mapped, for example: A extends B extends C extends D ... extends Z
+  // and Z is mapped, when we build the mapping data for node A, B, C, we need to make sure
+  // we are aware of the fact that Z is mapped and pass the mapping data information properly
+  // until we process the node Z.
+  const allCompatibleTypePaths = getAllSubclasses(subclass)
+    .concat(subclass)
+    .map((_class) => _class.path);
   // If the subtype node's parent node does not have a mapped entity,
   // it means the superclass is not mapped, i.e. this subtype is not mapped
   if (parentMappingData.mappedEntity) {
     const mappedSubtype = parentMappingData.mappedEntity.properties.find(
-      (p): p is EntityMappedProperty =>
-        // NOTE: if `subType` is specified in `EntityMappedProperty` it means
-        // that subtype is mapped
-        p instanceof EntityMappedProperty && p.subType === subclass.path,
+      (mappedProperty): mappedProperty is EntityMappedProperty =>
+        Boolean(
+          // NOTE: if `subType` is specified in `EntityMappedProperty` it means
+          // that subtype is mapped
+          mappedProperty instanceof EntityMappedProperty &&
+            mappedProperty.subType &&
+            allCompatibleTypePaths.includes(mappedProperty.subType),
+        ),
     );
     if (mappedSubtype) {
       return {
@@ -335,7 +351,9 @@ const generateSubtypeNodeMappingData = (
           mappedSubtype.entityPath,
         ),
       };
-    } else if (parentMappingData.mappedEntity.path === subclass.path) {
+    } else if (
+      allCompatibleTypePaths.includes(parentMappingData.mappedEntity.path)
+    ) {
       // This is to handle the case where the property mapping is pointing
       // directly at the class mapping of a subtype of the type of that property
       //
@@ -416,7 +434,7 @@ export const getQueryBuilderPropertyNodeData = (
     return undefined;
   }
   const propertyNode = new QueryBuilderExplorerTreePropertyNodeData(
-    getPropertyNodeId(
+    generateExplorerTreePropertyNodeID(
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
         ? ''
         : parentNode.id,
@@ -446,7 +464,7 @@ export const getQueryBuilderSubTypeNodeData = (
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
 ): QueryBuilderExplorerTreeSubTypeNodeData => {
   const subTypeNode = new QueryBuilderExplorerTreeSubTypeNodeData(
-    getPropertyNodeIdForSubType(
+    generateExplorerTreeSubtypeNodeID(
       parentNode instanceof QueryBuilderExplorerTreeRootNodeData
         ? ''
         : parentNode.id,

@@ -140,33 +140,12 @@
                   "parameters": [
                     {
                       "_type": "var",
-                      "name": "this",
-                      "sourceInformation": {
-                        "endColumn": 23,
-                        "endLine": 54,
-                        "sourceId": "",
-                        "startColumn": 19,
-                        "startLine": 54
-                      }
+                      "name": "this"
                     }
                   ],
-                  "property": "employees",
-                  "sourceInformation": {
-                    "endColumn": 33,
-                    "endLine": 54,
-                    "sourceId": "",
-                    "startColumn": 25,
-                    "startLine": 54
-                  }
+                  "property": "employees"
                 }
-              ],
-              "sourceInformation": {
-                "endColumn": 40,
-                "endLine": 54,
-                "sourceId": "",
-                "startColumn": 36,
-                "startLine": 54
-              }
+              ]
             }
           ],
           "name": "employeeSize",

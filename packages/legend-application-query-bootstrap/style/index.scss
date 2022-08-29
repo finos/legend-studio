@@ -482,6 +482,15 @@
     }
   }
 
+  .query-builder-explorer-tree__node__container--highlighted
+    .query-builder-explorer-tree__node__label,
+  .query-builder-explorer-tree__node__container--highlighted
+    .query-builder-explorer-tree__node__label__derived-property,
+  .query-builder-explorer-tree__node__container--highlighted
+    .query-builder-explorer-tree__node__label__multiple {
+    color: var(--color-legacy-orange-100);
+  }
+
   // ------------------------------------ Function Explorer Panel ---------------------------------------
 
   .query-builder__functions-explorer__tree__type-icon svg {

@@ -22,13 +22,18 @@ import {
   RootGraphFetchTree,
   type Class,
   type LambdaFunction,
+  getAllSuperclasses,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderGraphFetchTreeData,
   addQueryBuilderPropertyNode,
   buildGraphFetchTreeData,
 } from './QueryBuilderGraphFetchTreeUtil.js';
-import type { QueryBuilderExplorerTreePropertyNodeData } from '../../explorer/QueryBuilderExplorerState.js';
+import {
+  generateExplorerTreePropertyNodeID,
+  generateExplorerTreeSubtypeNodeID,
+  type QueryBuilderExplorerTreePropertyNodeData,
+} from '../../explorer/QueryBuilderExplorerState.js';
 import {
   FETCH_STRUCTURE_IMPLEMENTATION,
   QueryBuilderFetchStructureImplementationState,
@@ -40,6 +45,7 @@ import {
 } from '@finos/legend-application';
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendGraphFetch } from './QueryBuilderGraphFetchValueSpecificationBuilder.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
   treeData?: QueryBuilderGraphFetchTreeData | undefined;
@@ -69,6 +75,57 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
 
   get type(): string {
     return FETCH_STRUCTURE_IMPLEMENTATION.GRAPH_FETCH;
+  }
+
+  get usedExplorerTreePropertyNodeIDs(): string[] {
+    if (!this.treeData) {
+      return [];
+    }
+    const explorerTreeNodeIDIndex = new Map<string, string>();
+    const ids: string[] = [];
+
+    // traverse in breadth-first fashion
+    const nodesToProcess: string[] = this.treeData.rootIds.slice();
+    while (nodesToProcess.length) {
+      const currentNodeID = guaranteeNonNullable(nodesToProcess[0]);
+      const node = this.treeData.nodes.get(currentNodeID);
+      if (!node) {
+        continue;
+      }
+      let nodeID: string;
+      const parentNodeID = node.parentId
+        ? // since we traverse the nodes in order, parent node ID should already been computed
+          guaranteeNonNullable(explorerTreeNodeIDIndex.get(node.parentId))
+        : '';
+      const propertyNodeID = generateExplorerTreePropertyNodeID(
+        parentNodeID,
+        node.tree.property.value.name,
+      );
+      ids.push(propertyNodeID);
+      if (node.tree.subType) {
+        nodeID = generateExplorerTreeSubtypeNodeID(
+          propertyNodeID,
+          node.tree.subType.value.path,
+        );
+        getAllSuperclasses(node.tree.subType.value)
+          .concat(node.tree.subType.value)
+          .forEach((_class) =>
+            ids.push(
+              generateExplorerTreeSubtypeNodeID(propertyNodeID, _class.path),
+            ),
+          );
+      } else {
+        nodeID = propertyNodeID;
+      }
+      explorerTreeNodeIDIndex.set(node.id, nodeID);
+
+      // update list of nodes to process
+      nodesToProcess.shift();
+      node.childrenIds?.forEach((childId) => nodesToProcess.push(childId));
+    }
+
+    // de-duplicate
+    return Array.from(new Set(ids).values());
   }
 
   get validationIssues(): string[] | undefined {

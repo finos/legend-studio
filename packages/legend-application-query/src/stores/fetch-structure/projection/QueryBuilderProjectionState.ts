@@ -42,8 +42,13 @@ import {
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
-  type Class,
+  Class,
   type LambdaFunction,
+  type ValueSpecification,
+  AbstractPropertyExpression,
+  matchFunctionName,
+  SimpleFunctionExpression,
+  getAllSuperclasses,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
@@ -65,12 +70,13 @@ import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBui
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-  QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
 import {
   buildPropertyExpressionFromExplorerTreeNodeData,
+  generateExplorerTreePropertyNodeID,
+  generateExplorerTreeSubtypeNodeID,
   type QueryBuilderExplorerTreePropertyNodeData,
 } from '../../explorer/QueryBuilderExplorerState.js';
 import {
@@ -140,6 +146,80 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     return this.derivations.some(
       (derivation) => derivation.derivationLambdaEditorState.parserError,
     );
+  }
+
+  get usedExplorerTreePropertyNodeIDs(): string[] {
+    let nodeIDs: string[] = [];
+    this.columns.forEach((column) => {
+      if (column instanceof QueryBuilderSimpleProjectionColumnState) {
+        let chunks: (string | Class)[] = [];
+        let currentExpression: ValueSpecification =
+          column.propertyExpressionState.propertyExpression;
+        while (currentExpression instanceof AbstractPropertyExpression) {
+          chunks.push(currentExpression.func.name);
+          currentExpression = guaranteeNonNullable(
+            currentExpression.parametersValues[0],
+          );
+          while (currentExpression instanceof SimpleFunctionExpression) {
+            if (
+              matchFunctionName(
+                currentExpression.functionName,
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+              ) &&
+              currentExpression.parametersValues.length >= 1 &&
+              currentExpression.parametersValues[1]?.genericType?.value
+                .rawType instanceof Class
+            ) {
+              // flatten subtype casting chain: stop pushing more classes
+              if (!(chunks[chunks.length - 1] instanceof Class)) {
+                chunks.push(
+                  currentExpression.parametersValues[1]?.genericType?.value
+                    .rawType,
+                );
+              }
+              currentExpression = guaranteeNonNullable(
+                currentExpression.parametersValues[0],
+              );
+            } else {
+              // unknown property expression
+              return;
+            }
+          }
+        }
+        chunks = chunks.reverse();
+        const chunkIDs: string[] = [];
+        const ids: string[] = [];
+
+        for (let i = 0; i < chunks.length; i++) {
+          const currentChunk = guaranteeNonNullable(chunks[i]);
+          const previousID = i > 0 ? guaranteeNonNullable(chunkIDs[i - 1]) : '';
+          if (currentChunk instanceof Class) {
+            getAllSuperclasses(currentChunk)
+              .concat(currentChunk)
+              .forEach((_class) =>
+                ids.push(
+                  generateExplorerTreeSubtypeNodeID(previousID, _class.path),
+                ),
+              );
+            chunkIDs.push(
+              generateExplorerTreeSubtypeNodeID(previousID, currentChunk.path),
+            );
+          } else {
+            const id = generateExplorerTreePropertyNodeID(
+              previousID,
+              currentChunk,
+            );
+            chunkIDs.push(id);
+            ids.push(id);
+          }
+        }
+
+        nodeIDs = nodeIDs.concat(ids);
+      }
+    });
+
+    // deduplicate
+    return Array.from(new Set(nodeIDs).values());
   }
 
   get validationIssues(): string[] | undefined {
