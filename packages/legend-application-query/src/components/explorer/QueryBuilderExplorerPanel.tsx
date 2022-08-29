@@ -58,7 +58,6 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
   getQueryBuilderPropertyNodeData,
   getQueryBuilderSubTypeNodeData,
-  simplifySubtypeChainInExplorerTreeNodeID,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
 import { useDrag } from 'react-dnd';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
@@ -116,6 +115,7 @@ export const isExplorerTreeNodeAlreadyUsed = (
   node: QueryBuilderExplorerTreeNodeData,
   queryBuilderState: QueryBuilderState,
 ): boolean => {
+  // if the fetch-structure is non-empty, it means we can mark the root node as used
   if (
     node instanceof QueryBuilderExplorerTreeRootNodeData &&
     queryBuilderState.fetchStructureState.implementation
@@ -123,8 +123,14 @@ export const isExplorerTreeNodeAlreadyUsed = (
   ) {
     return true;
   }
+  // in the explorer tree, we represent subtype as a subtree, we want to flatten this to only
+  // the subtype that actually being used to make comparison simpler
+  const simplifiedNodeID = node.id.replaceAll(/(?:@[^.]+)+/g, (val) => {
+    const chunks = val.split(TYPE_CAST_TOKEN);
+    return `${TYPE_CAST_TOKEN}${chunks[chunks.length - 1]}`;
+  });
   return queryBuilderState.fetchStructureState.implementation.usedExplorerTreePropertyNodeIDs.includes(
-    simplifySubtypeChainInExplorerTreeNodeID(node.id),
+    simplifiedNodeID,
   );
 };
 

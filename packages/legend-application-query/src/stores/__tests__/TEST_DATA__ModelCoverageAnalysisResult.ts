@@ -1112,50 +1112,27 @@ export const TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties = {
   ],
 };
 
-export const TEST_DATA__ModelCoverageAnalysisResult_ComplexSubtype = {
+export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
   mappedEntities: [
+    {
+      path: 'model::AddressType2',
+      properties: [
+        { _type: 'MappedProperty', name: 'streetName' },
+        { _type: 'MappedProperty', name: 'zip' },
+        { _type: 'MappedProperty', name: 'zipcode' },
+      ],
+    },
     {
       path: 'model::Person',
       properties: [
         {
           _type: 'entity',
-          entityPath: 'model::Street',
+          entityPath: 'model::AddressType2',
           name: 'address',
-          subType: 'model::Street',
+          subType: 'model::AddressType2',
         },
-        { _type: 'MappedProperty', name: 'firstName' },
-        { _type: 'MappedProperty', name: 'lastName' },
+        { _type: 'MappedProperty', name: 'name' },
       ],
-    },
-    {
-      path: 'model::LegalEntity',
-      properties: [
-        { _type: 'entity', entityPath: 'model::Person', name: 'employees' },
-        {
-          _type: 'entity',
-          entityPath: '@model::Firm',
-          name: 'firm',
-          subType: 'model::Firm',
-        },
-      ],
-    },
-    {
-      path: '@model::Firm',
-      properties: [
-        { _type: 'entity', entityPath: 'model::Person', name: 'employees' },
-        { _type: 'MappedProperty', name: 'employeeSize' },
-      ],
-    },
-    {
-      path: 'model::Firm',
-      properties: [
-        { _type: 'entity', entityPath: 'model::Person', name: 'employees' },
-        { _type: 'MappedProperty', name: 'employeeSize' },
-      ],
-    },
-    {
-      path: 'model::Street',
-      properties: [{ _type: 'MappedProperty', name: 'zipcode' }],
     },
   ],
 };

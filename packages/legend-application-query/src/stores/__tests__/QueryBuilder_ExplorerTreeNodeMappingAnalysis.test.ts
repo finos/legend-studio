@@ -17,6 +17,7 @@
 import { test, expect, describe } from '@jest/globals';
 import TEST_DATA__ComplexM2MModel from './TEST_DATA__QueryBuilder_Model_ComplexM2M.json';
 import TEST_DATA__SimpleRelationalInheritanceModel from './TEST_DATA__QueryBuilder_Model_SimpleRelationalInheritanceModel.json';
+import TEST_DATA__NestedSubTypeModel from './TEST_DATA__QueryBuilder_Model_NestedSubType.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import TEST_DATA__AssociationMappingModel from './TEST_DATA__QueryBuilder_Model_AssociationMappingModel.json';
 import TEST_DATA__M2MAutoMapped from './TEST_DATA__QueryBuilder_Model_M2MAutoMapped.json';
@@ -39,6 +40,7 @@ import {
 import {
   getRootMappingData,
   generatePropertyNodeMappingData,
+  generateSubtypeNodeMappingData,
   type QueryBuilderExplorerTreeNodeMappingData,
 } from '../explorer/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
@@ -51,6 +53,7 @@ import {
   TEST_DATA__MappingData__COVIDDataSimpleModel,
   TEST_DATA__MappingData__Relational_Inheritance,
   TEST_DATA__MappingData_RelationalInline,
+  TEST_DATA__Mappingdata__NestedSubtype,
 } from './TEST_DATA__MappingData.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
@@ -59,28 +62,21 @@ import {
   TEST_DATA__ModelCoverageAnalysisResult_COVIDDataSimple,
   TEST_DATA__ModelCoverageAnalysisResult_RelationalInline,
   TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
+  TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
 } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 
-interface NodePropertyMappingData {
-  property: AbstractProperty;
-  mappingData: QueryBuilderExplorerTreeNodeMappingData;
-  childNodes: NodePropertyMappingData[];
-}
-
-interface TestNodePropertyMappingData {
+interface NodeMappingData {
   name: string;
-  mappingData: {
-    mapped: boolean;
-  };
-  childNodes: TestNodePropertyMappingData[];
+  mappingData: QueryBuilderExplorerTreeNodeMappingData;
+  childNodes: NodeMappingData[];
 }
 
 type TestCase = [
   string,
   {
-    mapping: string;
-    rootClass: string;
-    expectedMappingData: TestNodePropertyMappingData[];
+    mappingPath: string;
+    classPath: string;
+    expectedMappingData: object;
     entities: Entity[];
     rawMappingModelCoverageAnalysisResult: PlainObject<unknown>;
     maxDepth?: number;
@@ -91,10 +87,9 @@ const cases: TestCase[] = [
   [
     'Simple NFirm with employee Person property and model to model mapping',
     {
-      mapping: 'model::MyMapping',
-      rootClass: 'model::target::NFirm',
-      expectedMappingData:
-        TEST_DATA__MappingData__ComplexM2MModel as TestNodePropertyMappingData[],
+      mappingPath: 'model::MyMapping',
+      classPath: 'model::target::NFirm',
+      expectedMappingData: TEST_DATA__MappingData__ComplexM2MModel,
       entities: TEST_DATA__ComplexM2MModel,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_ComplexM2M,
@@ -103,10 +98,9 @@ const cases: TestCase[] = [
   [
     'Simple Covid Data with complex property and relational mapping',
     {
-      mapping: 'mapping::CovidDataMapping',
-      rootClass: 'domain::COVIDData',
-      expectedMappingData:
-        TEST_DATA__MappingData__COVIDDataSimpleModel as TestNodePropertyMappingData[],
+      mappingPath: 'mapping::CovidDataMapping',
+      classPath: 'domain::COVIDData',
+      expectedMappingData: TEST_DATA__MappingData__COVIDDataSimpleModel,
       entities: TEST_DATA__COVIDDataSimpleModel,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_COVIDDataSimple,
@@ -115,10 +109,9 @@ const cases: TestCase[] = [
   [
     'Simple Firm Mapping with M2M Mapping using auto property mappings',
     {
-      mapping: 'test::autoMapping::AutoMapping',
-      rootClass: 'test::autoMapping::Firm',
-      expectedMappingData:
-        TEST_DATA__MappingData_M2MAutoMapped as TestNodePropertyMappingData[],
+      mappingPath: 'test::autoMapping::AutoMapping',
+      classPath: 'test::autoMapping::Firm',
+      expectedMappingData: TEST_DATA__MappingData_M2MAutoMapped,
       entities: TEST_DATA__M2MAutoMapped,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_M2MAutoMapped,
@@ -127,10 +120,9 @@ const cases: TestCase[] = [
   [
     'Simple Relational Mapping with inline property mapping',
     {
-      mapping: 'Oct::mappings::simpleRelationalMapping',
-      rootClass: 'Oct::models::Person',
-      expectedMappingData:
-        TEST_DATA__MappingData_RelationalInline as TestNodePropertyMappingData[],
+      mappingPath: 'Oct::mappings::simpleRelationalMapping',
+      classPath: 'Oct::models::Person',
+      expectedMappingData: TEST_DATA__MappingData_RelationalInline,
       entities: TEST_DATA__RelationalInline,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_RelationalInline,
@@ -139,10 +131,9 @@ const cases: TestCase[] = [
   [
     'Simple relational mapping with inhertiance class mapping',
     {
-      mapping: 'model::NewMapping',
-      rootClass: 'model::Firm',
-      expectedMappingData:
-        TEST_DATA__MappingData__Relational_Inheritance as TestNodePropertyMappingData[],
+      mappingPath: 'model::NewMapping',
+      classPath: 'model::Firm',
+      expectedMappingData: TEST_DATA__MappingData__Relational_Inheritance,
       entities: TEST_DATA__SimpleRelationalInheritanceModel,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_SimpleRelationalInheritance,
@@ -151,91 +142,116 @@ const cases: TestCase[] = [
   [
     'Simple association mapping with inlcudes',
     {
-      mapping: 'model::parentMapping',
-      rootClass: 'model::Person',
-      expectedMappingData:
-        TEST_DATA__MappingData__AssociationMapping as TestNodePropertyMappingData[],
+      mappingPath: 'model::parentMapping',
+      classPath: 'model::Person',
+      expectedMappingData: TEST_DATA__MappingData__AssociationMapping,
       entities: TEST_DATA__AssociationMappingModel,
       maxDepth: 2,
       rawMappingModelCoverageAnalysisResult:
         TEST_DATA__ModelCoverageAnalysisResult_AssociationMapping,
     },
   ],
+  [
+    'Nested subtype',
+    {
+      mappingPath: 'model::NewMapping',
+      classPath: 'model::Person',
+      expectedMappingData: TEST_DATA__Mappingdata__NestedSubtype,
+      entities: TEST_DATA__NestedSubTypeModel,
+      rawMappingModelCoverageAnalysisResult:
+        TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype,
+    },
+  ],
 ];
 
-const buildMappingData = (
-  property: AbstractProperty,
+function buildChildNodeMappingData(
+  node: AbstractProperty | Class,
   graphManagerState: GraphManagerState,
-  mappingData: QueryBuilderExplorerTreeNodeMappingData,
-  max_depth: number,
+  parentMappingData: QueryBuilderExplorerTreeNodeMappingData,
   mapping: Mapping,
   mappingModelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-  current_depth?: number | undefined,
-): NodePropertyMappingData => {
+  max_depth: number,
+  current_depth: number,
+): NodeMappingData {
   const depth = current_depth === undefined ? 0 : current_depth;
-  const type = property.genericType.value.rawType;
-  const propertyMappingData: NodePropertyMappingData = {
-    property,
-    mappingData: generatePropertyNodeMappingData(
-      property,
-      mappingData,
-      mappingModelCoverageAnalysisResult,
-    ),
+  const nodeMappingData: NodeMappingData = {
+    name: node instanceof Class ? node.path : node.name,
+    mappingData:
+      node instanceof Class
+        ? generateSubtypeNodeMappingData(
+            node,
+            parentMappingData,
+            mappingModelCoverageAnalysisResult,
+          )
+        : generatePropertyNodeMappingData(
+            node,
+            parentMappingData,
+            mappingModelCoverageAnalysisResult,
+          ),
     childNodes: [],
   };
-  if (type instanceof Class) {
-    if (depth <= max_depth) {
-      const properties = getAllClassProperties(type).concat(
-        getAllClassDerivedProperties(type),
-      );
-      propertyMappingData.childNodes = properties.map((p) =>
-        buildMappingData(
-          p,
-          graphManagerState,
-          propertyMappingData.mappingData,
-          max_depth,
-          mapping,
-          mappingModelCoverageAnalysisResult,
-          depth + 1,
-        ),
-      );
+  if (depth <= max_depth) {
+    const _class =
+      node instanceof Class ? node : node.genericType.value.rawType;
+    if (_class instanceof Class) {
+      nodeMappingData.childNodes = (
+        getAllClassProperties(_class).concat(
+          getAllClassDerivedProperties(_class),
+        ) as (AbstractProperty | Class)[]
+      )
+        .concat(_class._subclasses)
+        .map((childNode) =>
+          buildChildNodeMappingData(
+            childNode,
+            graphManagerState,
+            nodeMappingData.mappingData,
+            mapping,
+            mappingModelCoverageAnalysisResult,
+            max_depth,
+            depth + 1,
+          ),
+        );
     }
   }
-  return propertyMappingData;
-};
+  return nodeMappingData;
+}
 
-const generatePropertyMappingDataTree = (
+const buildExplorerTreeMappingData = (
   mapping: Mapping,
   _class: Class,
   graphManagerState: GraphManagerState,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
   max_depth: number,
-): NodePropertyMappingData[] => {
+): NodeMappingData[] => {
   const mappingData = getRootMappingData(_class, modelCoverageAnalysisResult);
-  const properties = getAllClassProperties(_class).concat(
-    getAllClassDerivedProperties(_class),
-  );
-  return properties.map((p) =>
-    buildMappingData(
-      p,
-      graphManagerState,
-      mappingData,
-      max_depth,
-      mapping,
-      modelCoverageAnalysisResult,
-    ),
-  );
+  return (
+    getAllClassProperties(_class).concat(
+      getAllClassDerivedProperties(_class),
+    ) as (AbstractProperty | Class)[]
+  )
+    .concat(_class._subclasses)
+    .map((childNode) =>
+      buildChildNodeMappingData(
+        childNode,
+        graphManagerState,
+        mappingData,
+        mapping,
+        modelCoverageAnalysisResult,
+        max_depth,
+        0,
+      ),
+    );
 };
 
-const transformToTestPropertyMappingData = (
-  propertyMappingDataNodes: NodePropertyMappingData[],
-): TestNodePropertyMappingData[] =>
+const serializeMappingData = (
+  propertyMappingDataNodes: NodeMappingData[],
+): object =>
   propertyMappingDataNodes.map((node) => ({
-    name: node.property.name,
+    name: node.name,
     mappingData: {
       mapped: node.mappingData.mapped,
     },
-    childNodes: transformToTestPropertyMappingData(node.childNodes),
+    childNodes: serializeMappingData(node.childNodes),
   }));
 
 describe(integrationTest('Build property mapping data'), () => {
@@ -243,8 +259,8 @@ describe(integrationTest('Build property mapping data'), () => {
     '%s',
     async (testName: TestCase[0], testCase: TestCase[1]) => {
       const {
-        mapping,
-        rootClass,
+        mappingPath,
+        classPath,
         expectedMappingData,
         entities,
         maxDepth,
@@ -265,9 +281,9 @@ describe(integrationTest('Build property mapping data'), () => {
         entities,
         graphManagerState.graphBuildState,
       );
-      const _mapping = graphManagerState.graph.getMapping(mapping);
-      const _class = graphManagerState.graph.getClass(rootClass);
-      const actualMappingData = generatePropertyMappingDataTree(
+      const _mapping = graphManagerState.graph.getMapping(mappingPath);
+      const _class = graphManagerState.graph.getClass(classPath);
+      const actualMappingData = buildExplorerTreeMappingData(
         _mapping,
         _class,
         graphManagerState,
@@ -278,9 +294,7 @@ describe(integrationTest('Build property mapping data'), () => {
       );
       (
         expect(expectedMappingData) as TEMPORARY__JestMatcher
-      ).toIncludeSameMembers(
-        transformToTestPropertyMappingData(actualMappingData),
-      );
+      ).toIncludeSameMembers(serializeMappingData(actualMappingData));
     },
   );
 });

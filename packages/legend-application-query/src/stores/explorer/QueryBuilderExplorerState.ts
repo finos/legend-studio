@@ -86,12 +86,6 @@ export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   PRIMITIVE_PROPERTY = 'PRIMITIVE_PROPERTY',
 }
 
-export const simplifySubtypeChainInExplorerTreeNodeID = (id: string): string =>
-  id.replaceAll(/(?:@[^.]+)+/g, (val) => {
-    const chunks = val.split(TYPE_CAST_TOKEN);
-    return `${TYPE_CAST_TOKEN}${chunks[chunks.length - 1]}`;
-  });
-
 export const generateExplorerTreePropertyNodeID = (
   parentId: string,
   propertyName: string,
@@ -318,7 +312,7 @@ export const generatePropertyNodeMappingData = (
   return { mapped: false };
 };
 
-const generateSubtypeNodeMappingData = (
+export const generateSubtypeNodeMappingData = (
   subclass: Class,
   parentMappingData: QueryBuilderExplorerTreeNodeMappingData,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
