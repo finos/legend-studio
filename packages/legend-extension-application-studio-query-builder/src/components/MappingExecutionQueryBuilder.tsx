@@ -22,12 +22,12 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { QueryBuilderMode } from '@finos/legend-application-query';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';
+import { QueryBuilderState } from '@finos/legend-application-query';
 
-export class MappingExecutionQueryBuilderMode extends QueryBuilderMode {
+export class MappingExecutionQueryBuilderState extends QueryBuilderState {
   get isParametersDisabled(): boolean {
     return true;
   }
@@ -47,50 +47,46 @@ export const MappingExecutionQueryBuilder = observer(
     );
     const editWithQueryBuilder = applicationStore.guardUnhandledError(
       async () => {
-        const mapping = executionState.mappingEditorState.mapping;
-        queryBuilderExtension.reset();
-        queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
-          mapping,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeValue(
-          undefined,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
-          true,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
-          true,
-        );
-        queryBuilderExtension.queryBuilderState.initialize(
-          executionState.queryState.query,
-        );
-        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
-          hashObject(executionState.queryState.query),
-        );
-        queryBuilderExtension.queryBuilderState.changeDetectionState.setIsEnabled(
-          true,
-        );
         await flowResult(
-          queryBuilderExtension.setEmbeddedQueryBuilderMode({
+          queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
+                queryBuilderExtension.editorStore.applicationStore,
+                queryBuilderExtension.editorStore.graphManagerState,
+              );
+              queryBuilderState.querySetupState.setMapping(
+                executionState.mappingEditorState.mapping,
+              );
+              queryBuilderState.querySetupState.setRuntimeValue(undefined);
+              queryBuilderState.querySetupState.setMappingIsReadOnly(true);
+              queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+              queryBuilderState.initialize(executionState.queryState.query);
+              queryBuilderState.changeDetectionState.setQueryHashCode(
+                hashObject(executionState.queryState.query),
+              );
+              queryBuilderState.changeDetectionState.setIsEnabled(true);
+              return queryBuilderState;
+            },
             actionConfigs: [
               {
                 key: 'save-query-btn',
-                renderer: (): React.ReactNode => {
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
                   const save = applicationStore.guardUnhandledError(
                     async (): Promise<void> => {
                       try {
-                        const rawLambda =
-                          queryBuilderExtension.queryBuilderState.getQuery();
+                        const rawLambda = queryBuilderState.getQuery();
                         await flowResult(
                           executionState.queryState.updateLamba(rawLambda),
                         );
                         applicationStore.notifySuccess(
                           `Mapping execution query is updated`,
                         );
-                        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+                        queryBuilderState.changeDetectionState.setQueryHashCode(
                           hashObject(rawLambda),
                         );
-                        queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                        queryBuilderExtension.setEmbeddedQueryBuilderConfiguration(
                           undefined,
                         );
                       } catch (error) {
@@ -116,7 +112,6 @@ export const MappingExecutionQueryBuilder = observer(
             disableCompile: isStubbed_RawLambda(
               executionState.queryState.query,
             ),
-            queryBuilderMode: new MappingExecutionQueryBuilderMode(),
           }),
         );
       },

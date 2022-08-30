@@ -763,7 +763,7 @@ export const QueryBuilderFilterPanel = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: queryBuilderState.mode.isDnDFetchStructureToFilterSupported
+        accept: queryBuilderState.isDnDFetchStructureToFilterSupported
           ? [
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
               QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,

@@ -36,10 +36,7 @@ import {
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
-} from '../QueryBuilderState.js';
+import { BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
 
 type TestCase = [
@@ -128,10 +125,9 @@ describe(
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
-        const queryBuilderState = new QueryBuilderState(
+        const queryBuilderState = BasicQueryBuilderState.create(
           applicationStore,
           graphManagerState,
-          new StandardQueryBuilderMode(),
         );
         expect(() =>
           queryBuilderState.buildStateFromRawLambda(

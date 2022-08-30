@@ -33,117 +33,121 @@ import {
   ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilder } from '@finos/legend-application-query';
+import {
+  QueryBuilder,
+  type QueryBuilderState,
+} from '@finos/legend-application-query';
 import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
  * See https://material.io/components/dialogs#full-screen-dialog
  */
-const QueryBuilderDialog = observer(() => {
-  const applicationStore = useApplicationStore();
-  const editorStore = useEditorStore();
-  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
-    QueryBuilder_EditorExtensionState,
-  );
-  const [isMaximized, setIsMaximized] = useState(false);
-  const toggleMaximize = (): void => setIsMaximized(!isMaximized);
-  const closeQueryBuilder = (): void => {
-    flowResult(
-      queryBuilderExtensionState.setEmbeddedQueryBuilderMode(undefined),
-    ).catch(applicationStore.alertUnhandledError);
-    queryBuilderExtensionState.reset();
-  };
+const QueryBuilderDialog = observer(
+  (props: {
+    queryBuilderExtensionState: QueryBuilder_EditorExtensionState;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { queryBuilderExtensionState, queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
+    const [isMaximized, setIsMaximized] = useState(false);
+    const toggleMaximize = (): void => setIsMaximized(!isMaximized);
+    const closeQueryBuilder = (): void => {
+      flowResult(
+        queryBuilderExtensionState.setEmbeddedQueryBuilderConfiguration(
+          undefined,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
+    };
 
-  useApplicationNavigationContext(
-    QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
-  );
+    useApplicationNavigationContext(
+      QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
+    );
 
-  const confirmCloseQueryBuilder = (): void => {
-    // NOTE: This is poor-man change detection for query
-    // in the future, we could consider a similar approach to how we do change detection in Studio
-    if (
-      queryBuilderExtensionState.queryBuilderState.changeDetectionState
-        .isEnabled &&
-      queryBuilderExtensionState.queryBuilderState.changeDetectionState
-        .queryHashCode !==
-        hashObject(queryBuilderExtensionState.queryBuilderState.getQuery())
-    ) {
-      applicationStore.setActionAlertInfo({
-        message:
-          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Proceed',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: applicationStore.guardUnhandledError(async () =>
-              closeQueryBuilder(),
-            ),
-          },
-          {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
-      closeQueryBuilder();
-    }
-  };
+    const confirmCloseQueryBuilder = (): void => {
+      // NOTE: This is poor-man change detection for query
+      // in the future, we could consider a similar approach to how we do change detection in Studio
+      if (
+        queryBuilderState.changeDetectionState.isEnabled &&
+        queryBuilderState.changeDetectionState.queryHashCode !==
+          hashObject(queryBuilderState.getQuery())
+      ) {
+        applicationStore.setActionAlertInfo({
+          message:
+            'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: applicationStore.guardUnhandledError(async () =>
+                closeQueryBuilder(),
+              ),
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        closeQueryBuilder();
+      }
+    };
 
-  return (
-    <Dialog
-      open={Boolean(queryBuilderExtensionState.mode)}
-      onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
-      classes={{
-        root: 'editor-modal__root-container',
-        container: 'editor-modal__container',
-        paper:
-          'editor-modal__content query-builder__dialog__container__content',
-      }}
-    >
-      <div
-        className={clsx(
-          'modal modal--dark editor-modal query-builder__dialog',
-          { 'query-builder__dialog--expanded': isMaximized },
-        )}
+    return (
+      <Dialog
+        open={Boolean(queryBuilderExtensionState.queryBuilderState)}
+        onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper:
+            'editor-modal__content query-builder__dialog__container__content',
+        }}
       >
-        <div className="query-builder__dialog__header">
-          <div className="query-builder__dialog__header__actions">
-            {queryBuilderExtensionState.mode?.actionConfigs.map((config) => (
-              <Fragment key={config.key}>{config.renderer()}</Fragment>
-            ))}
-            <button
-              className="query-builder__dialog__header__action"
-              tabIndex={-1}
-              onClick={toggleMaximize}
-            >
-              {isMaximized ? (
-                <EmptyWindowRestoreIcon />
-              ) : (
-                <WindowMaximizeIcon />
-              )}
-            </button>
-            <button
-              className="query-builder__dialog__header__action"
-              tabIndex={-1}
-              onClick={confirmCloseQueryBuilder}
-            >
-              <TimesIcon />
-            </button>
+        <div
+          className={clsx(
+            'modal modal--dark editor-modal query-builder__dialog',
+            { 'query-builder__dialog--expanded': isMaximized },
+          )}
+        >
+          <div className="query-builder__dialog__header">
+            <div className="query-builder__dialog__header__actions">
+              {queryBuilderExtensionState.actionConfigs.map((config) => (
+                <Fragment key={config.key}>
+                  {config.renderer(queryBuilderState)}
+                </Fragment>
+              ))}
+              <button
+                className="query-builder__dialog__header__action"
+                tabIndex={-1}
+                onClick={toggleMaximize}
+              >
+                {isMaximized ? (
+                  <EmptyWindowRestoreIcon />
+                ) : (
+                  <WindowMaximizeIcon />
+                )}
+              </button>
+              <button
+                className="query-builder__dialog__header__action"
+                tabIndex={-1}
+                onClick={confirmCloseQueryBuilder}
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          </div>
+          <div className="query-builder__dialog__content">
+            <QueryBuilder queryBuilderState={queryBuilderState} />
           </div>
         </div>
-        <div className="query-builder__dialog__content">
-          <QueryBuilder
-            queryBuilderState={queryBuilderExtensionState.queryBuilderState}
-          />
-        </div>
-      </div>
-    </Dialog>
-  );
-});
+      </Dialog>
+    );
+  },
+);
 
 export const EmbeddedQueryBuilder = observer(() => {
   const editorStore = useEditorStore();
@@ -151,8 +155,13 @@ export const EmbeddedQueryBuilder = observer(() => {
     QueryBuilder_EditorExtensionState,
   );
 
-  if (!queryBuilderExtensionState.mode) {
+  if (!queryBuilderExtensionState.queryBuilderState) {
     return null;
   }
-  return <QueryBuilderDialog />;
+  return (
+    <QueryBuilderDialog
+      queryBuilderExtensionState={queryBuilderExtensionState}
+      queryBuilderState={queryBuilderExtensionState.queryBuilderState}
+    />
+  );
 });

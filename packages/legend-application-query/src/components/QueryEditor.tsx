@@ -37,6 +37,7 @@ import {
   type ExistingQueryEditorPathParams,
   type ServiceQueryEditorPathParams,
   type ServiceQueryEditorQueryParams,
+  type CreateQueryEditorQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -365,10 +366,10 @@ export const CreateQueryEditor = observer(() => {
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
-  const classPath = getQueryParameters<ServiceQueryEditorQueryParams>(
+  const classPath = getQueryParameters<CreateQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
-  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
+  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH];
 
   return (
     <CreateQueryEditorStoreProvider

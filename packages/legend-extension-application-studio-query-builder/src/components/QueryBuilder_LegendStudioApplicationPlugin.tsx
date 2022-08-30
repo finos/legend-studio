@@ -55,8 +55,9 @@ import {
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import {
+  type QueryBuilderState,
+  BasicQueryBuilderState,
   setupLegendQueryUILibrary,
-  StandardQueryBuilderMode,
 } from '@finos/legend-application-query';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
@@ -67,11 +68,11 @@ import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '
 const promoteQueryToService = async (
   packagePath: string,
   serviceName: string,
-  queryBuilderExtension: QueryBuilder_EditorExtensionState,
+  queryBuilderExtensionState: QueryBuilder_EditorExtensionState,
+  queryBuilderState: QueryBuilderState,
 ): Promise<void> => {
-  const editorStore = queryBuilderExtension.editorStore;
+  const editorStore = queryBuilderExtensionState.editorStore;
   const applicationStore = editorStore.applicationStore;
-  const queryBuilderState = queryBuilderExtension.queryBuilderState;
   try {
     const mapping = guaranteeNonNullable(
       queryBuilderState.querySetupState.mapping,
@@ -96,7 +97,9 @@ const promoteQueryToService = async (
     );
     await flowResult(editorStore.addElement(service, packagePath, true));
     await flowResult(
-      queryBuilderExtension.setEmbeddedQueryBuilderMode(undefined),
+      queryBuilderExtensionState.setEmbeddedQueryBuilderConfiguration(
+        undefined,
+      ),
     ).catch(applicationStore.alertUnhandledError);
     applicationStore.notifySuccess(`Service '${service.name}' created`);
   } catch (error) {
@@ -105,53 +108,55 @@ const promoteQueryToService = async (
   }
 };
 
-const PromoteToServiceQueryBuilderAction = observer(() => {
-  const editorStore = useEditorStore();
-  const queryBuilderExtension = editorStore.getEditorExtensionState(
-    QueryBuilder_EditorExtensionState,
-  );
-  const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
-  const showNewServiceModal = (): void => setOpenNewServiceModal(true);
-  const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
-  const allowPromoteToService = Boolean(
-    queryBuilderExtension.queryBuilderState.querySetupState.mapping &&
-      queryBuilderExtension.queryBuilderState.querySetupState.runtimeValue,
-  );
-  const promoteToService = async (
-    packagePath: string,
-    serviceName: string,
-  ): Promise<void> => {
-    if (allowPromoteToService) {
-      await promoteQueryToService(
-        packagePath,
-        serviceName,
-        queryBuilderExtension,
-      );
-    }
-  };
-  return (
-    <>
-      <button
-        className="query-builder__dialog__header__custom-action"
-        tabIndex={-1}
-        onClick={showNewServiceModal}
-        disabled={!allowPromoteToService}
-      >
-        Promote to Service
-      </button>
-      {queryBuilderExtension.queryBuilderState.querySetupState.mapping && (
-        <NewServiceModal
-          mapping={
-            queryBuilderExtension.queryBuilderState.querySetupState.mapping
-          }
-          close={closeNewServiceModal}
-          showModal={openNewServiceModal}
-          promoteToService={promoteToService}
-        />
-      )}
-    </>
-  );
-});
+const PromoteToServiceQueryBuilderAction = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const editorStore = useEditorStore();
+    const queryBuilderExtension = editorStore.getEditorExtensionState(
+      QueryBuilder_EditorExtensionState,
+    );
+    const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
+    const showNewServiceModal = (): void => setOpenNewServiceModal(true);
+    const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
+    const allowPromoteToService = Boolean(
+      queryBuilderState.querySetupState.mapping &&
+        queryBuilderState.querySetupState.runtimeValue,
+    );
+    const promoteToService = async (
+      packagePath: string,
+      serviceName: string,
+    ): Promise<void> => {
+      if (allowPromoteToService) {
+        await promoteQueryToService(
+          packagePath,
+          serviceName,
+          queryBuilderExtension,
+          queryBuilderState,
+        );
+      }
+    };
+    return (
+      <>
+        <button
+          className="query-builder__dialog__header__custom-action"
+          tabIndex={-1}
+          onClick={showNewServiceModal}
+          disabled={!allowPromoteToService}
+        >
+          Promote to Service
+        </button>
+        {queryBuilderState.querySetupState.mapping && (
+          <NewServiceModal
+            mapping={queryBuilderState.querySetupState.mapping}
+            close={closeNewServiceModal}
+            showModal={openNewServiceModal}
+            promoteToService={promoteToService}
+          />
+        )}
+      </>
+    );
+  },
+);
 
 export class QueryBuilder_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -207,26 +212,34 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                     QueryBuilder_EditorExtensionState,
                   );
                 await flowResult(
-                  queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                  queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
+                    setupQueryBuilderState: () => {
+                      const queryBuilderState = BasicQueryBuilderState.create(
+                        queryBuilderExtension.editorStore.applicationStore,
+                        queryBuilderExtension.editorStore.graphManagerState,
+                      );
+                      queryBuilderState.initialize(
+                        editorStore.graphManagerState.graphManager.createGetAllRawLambda(
+                          element,
+                        ),
+                      );
+                      queryBuilderState.changeClass(element);
+                      return queryBuilderState;
+                    },
                     actionConfigs: [
                       {
                         key: 'promote-to-service-btn',
-                        renderer: (): React.ReactNode => (
-                          <PromoteToServiceQueryBuilderAction />
+                        renderer: (
+                          queryBuilderState: QueryBuilderState,
+                        ): React.ReactNode => (
+                          <PromoteToServiceQueryBuilderAction
+                            queryBuilderState={queryBuilderState}
+                          />
                         ),
                       },
                     ],
-                    queryBuilderMode: new StandardQueryBuilderMode(),
                   }),
                 );
-                if (queryBuilderExtension.mode) {
-                  queryBuilderExtension.queryBuilderState.initialize(
-                    editorStore.graphManagerState.graphManager.createGetAllRawLambda(
-                      element,
-                    ),
-                  );
-                  queryBuilderExtension.queryBuilderState.changeClass(element);
-                }
               },
             );
 
@@ -316,28 +329,34 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                       QueryBuilder_EditorExtensionState,
                     );
                   await flowResult(
-                    queryBuilderExtension.setEmbeddedQueryBuilderMode({
+                    queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
+                      setupQueryBuilderState: () => {
+                        const queryBuilderState = BasicQueryBuilderState.create(
+                          queryBuilderExtension.editorStore.applicationStore,
+                          queryBuilderExtension.editorStore.graphManagerState,
+                        );
+                        queryBuilderState.initialize(
+                          diagramEditorState.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
+                            classView.class.value,
+                          ),
+                        );
+                        queryBuilderState.changeClass(classView.class.value);
+                        return queryBuilderState;
+                      },
                       actionConfigs: [
                         {
                           key: 'promote-to-service-btn',
-                          renderer: (): React.ReactNode => (
-                            <PromoteToServiceQueryBuilderAction />
+                          renderer: (
+                            queryBuilderState: QueryBuilderState,
+                          ): React.ReactNode => (
+                            <PromoteToServiceQueryBuilderAction
+                              queryBuilderState={queryBuilderState}
+                            />
                           ),
                         },
                       ],
-                      queryBuilderMode: new StandardQueryBuilderMode(),
                     }),
                   );
-                  if (queryBuilderExtension.mode) {
-                    queryBuilderExtension.queryBuilderState.initialize(
-                      diagramEditorState.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
-                        classView.class.value,
-                      ),
-                    );
-                    queryBuilderExtension.queryBuilderState.changeClass(
-                      classView.class.value,
-                    );
-                  }
                 },
               );
 

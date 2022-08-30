@@ -53,8 +53,8 @@ import {
   isSystemElement,
 } from '@finos/legend-graph';
 import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
+  BasicQueryBuilderState,
+  type QueryBuilderState,
 } from './QueryBuilderState.js';
 import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
@@ -225,10 +225,9 @@ export abstract class QueryEditorStore {
       this.pluginManager,
       this.applicationStore.log,
     );
-    this.queryBuilderState = new QueryBuilderState(
+    this.queryBuilderState = BasicQueryBuilderState.create(
       this.applicationStore,
       this.graphManagerState,
-      new StandardQueryBuilderMode(),
     );
   }
 

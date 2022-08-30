@@ -27,8 +27,8 @@ import { flowResult } from 'mobx';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
+  BasicQueryBuilderState,
+  type QueryBuilderState,
 } from './QueryBuilderState.js';
 import { TEST__getTestLegendQueryApplicationConfig } from './QueryEditorStoreTestUtils.js';
 
@@ -54,10 +54,9 @@ export const TEST__setUpQueryBuilderState = async (
   );
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
   await TEST__buildGraphWithEntities(graphManagerState, entities);
-  const queryBuilderState = new QueryBuilderState(
+  const queryBuilderState = BasicQueryBuilderState.create(
     applicationStore,
     graphManagerState,
-    new StandardQueryBuilderMode(),
   );
   if (rawLambda) {
     queryBuilderState.buildStateFromRawLambda(rawLambda);
