@@ -61,7 +61,12 @@ export class ServiceEditorState extends ElementEditorState {
     });
 
     this.executionState = this.buildExecutionState();
-    this.registrationState = new ServiceRegistrationState(editorStore, this);
+    this.registrationState = new ServiceRegistrationState(
+      editorStore,
+      this.service,
+      editorStore.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig,
+      editorStore.sdlcServerClient.features.canCreateVersion,
+    );
     this.testableState = new ServiceTestableState(editorStore, this);
   }
 

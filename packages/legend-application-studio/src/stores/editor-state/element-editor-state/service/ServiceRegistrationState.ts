@@ -15,10 +15,7 @@
  */
 
 import { action, computed, makeAutoObservable } from 'mobx';
-import {
-  type ServiceEditorState,
-  MINIMUM_SERVICE_OWNERS,
-} from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
+import { MINIMUM_SERVICE_OWNERS } from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   type GeneratorFn,
@@ -35,6 +32,7 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
 import {
+  type Service,
   type ServiceRegistrationResult,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
@@ -50,6 +48,8 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   switch (mode) {
     case ServiceExecutionMode.FULL_INTERACTIVE:
       return ServiceExecutionMode.FULL_INTERACTIVE;
+    case ServiceExecutionMode.FULL_INTERACTIVE_LIGHT:
+      return ServiceExecutionMode.FULL_INTERACTIVE_LIGHT;
     case ServiceExecutionMode.SEMI_INTERACTIVE:
       return ServiceExecutionMode.SEMI_INTERACTIVE;
     case ServiceExecutionMode.PROD:
@@ -73,18 +73,34 @@ export enum SERVICE_REGISTRATION_PHASE {
   ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
 }
 
+const isFullInteractiveMode = (
+  mode: ServiceExecutionMode | string | undefined,
+): boolean => {
+  if (
+    mode === ServiceExecutionMode.FULL_INTERACTIVE ||
+    mode === ServiceExecutionMode.FULL_INTERACTIVE_LIGHT
+  ) {
+    return true;
+  }
+  return false;
+};
+
 export class ServiceRegistrationState {
-  editorStore: EditorStore;
-  serviceEditorState: ServiceEditorState;
+  readonly editorStore: EditorStore;
+  readonly service: Service;
+  readonly registrationOptions: ServiceRegistrationEnvInfo[] = [];
   registrationState = ActionState.create();
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
   activatePostRegistration = true;
+  enableModesWithVersioning: boolean;
 
   constructor(
     editorStore: EditorStore,
-    serviceEditorState: ServiceEditorState,
+    service: Service,
+    registrationOptions: ServiceRegistrationEnvInfo[],
+    enableModesWithVersioning: boolean,
   ) {
     makeAutoObservable(this, {
       editorStore: false,
@@ -98,7 +114,9 @@ export class ServiceRegistrationState {
     });
 
     this.editorStore = editorStore;
-    this.serviceEditorState = serviceEditorState;
+    this.service = service;
+    this.registrationOptions = registrationOptions;
+    this.enableModesWithVersioning = enableModesWithVersioning;
     this.initialize();
     this.registrationState.setMessageFormatter(prettyCONSTName);
   }
@@ -118,10 +136,7 @@ export class ServiceRegistrationState {
   }
 
   initialize(): void {
-    this.serviceEnv = getNullableFirstElement(
-      this.editorStore.applicationStore.config.options
-        .TEMPORARY__serviceRegistrationConfig,
-    )?.env;
+    this.serviceEnv = getNullableFirstElement(this.registrationOptions)?.env;
     this.serviceExecutionMode = this.executionModes[0];
     this.updateVersion();
   }
@@ -147,23 +162,22 @@ export class ServiceRegistrationState {
   }
 
   get options(): ServiceRegistrationEnvInfo[] {
-    if (this.editorStore.sdlcServerClient.features.canCreateVersion) {
-      return this.editorStore.applicationStore.config.options
-        .TEMPORARY__serviceRegistrationConfig;
+    if (this.enableModesWithVersioning) {
+      return this.registrationOptions;
     }
-    return this.editorStore.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig.map(
-      (_envConfig) => {
+    return this.registrationOptions
+      .map((_envConfig) => {
         const envConfig = new ServiceRegistrationEnvInfo();
         envConfig.env = _envConfig.env;
         envConfig.executionUrl = _envConfig.executionUrl;
         envConfig.managementUrl = _envConfig.managementUrl;
         // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
-        envConfig.modes = _envConfig.modes.filter(
-          (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
+        envConfig.modes = _envConfig.modes.filter((mode) =>
+          isFullInteractiveMode(mode),
         );
         return envConfig;
-      },
-    ).filter((envConfig) => envConfig.modes.length);
+      })
+      .filter((envConfig) => envConfig.modes.length);
   }
 
   get executionModes(): ServiceExecutionMode[] {
@@ -174,8 +188,8 @@ export class ServiceRegistrationState {
 
   get versionOptions(): ServiceVersionOption[] | undefined {
     if (
-      this.editorStore.sdlcServerClient.features.canCreateVersion &&
-      this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
+      this.enableModesWithVersioning &&
+      !isFullInteractiveMode(this.serviceExecutionMode)
     ) {
       const options: ServiceVersionOption[] =
         this.editorStore.sdlcState.projectVersions.map((version) => ({
@@ -216,7 +230,7 @@ export class ServiceRegistrationState {
       );
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
-          this.serviceEditorState.service,
+          this.service,
           this.editorStore.graphManagerState.graph,
           projectConfig.groupId,
           projectConfig.artifactId,
@@ -284,11 +298,11 @@ export class ServiceRegistrationState {
   }
 
   validateServiceForRegistration(): void {
-    this.serviceEditorState.service.owners.forEach((owner) =>
+    this.service.owners.forEach((owner) =>
       assertNonEmptyString(owner, `Service can't have an empty owner name`),
     );
     assertTrue(
-      this.serviceEditorState.service.owners.length >= MINIMUM_SERVICE_OWNERS,
+      this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
       `Service needs to have at least 2 owners in order to be registered`,
     );
     guaranteeNonNullable(
