@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-graph';
 import { makeObservable, observable, override } from 'mobx';
 
+// TODO: Add an observe on all the non primitives properties once form mode is enabled
 export const observe_Mastery = skipObserved(
   (metamodel: MasterRecordDefinition): MasterRecordDefinition => {
     observe_Abstract_PackageableElement(metamodel);
