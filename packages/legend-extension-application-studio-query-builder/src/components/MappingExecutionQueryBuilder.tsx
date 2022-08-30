@@ -54,12 +54,12 @@ export const MappingExecutionQueryBuilder = observer(
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,
               );
-              queryBuilderState.querySetupState.setMapping(
+              queryBuilderState.setupState.setMapping(
                 executionState.mappingEditorState.mapping,
               );
-              queryBuilderState.querySetupState.setRuntimeValue(undefined);
-              queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-              queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+              queryBuilderState.setupState.setRuntimeValue(undefined);
+              queryBuilderState.setupState.setMappingIsReadOnly(true);
+              queryBuilderState.setupState.setRuntimeIsReadOnly(true);
               queryBuilderState.initialize(executionState.queryState.query);
               queryBuilderState.changeDetectionState.setQueryHashCode(
                 hashObject(executionState.queryState.query),

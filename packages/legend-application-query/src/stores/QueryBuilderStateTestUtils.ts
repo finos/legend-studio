@@ -63,14 +63,14 @@ export const TEST__setUpQueryBuilderState = async (
   }
   if (executionContext) {
     const graph = queryBuilderState.graphManagerState.graph;
-    queryBuilderState.querySetupState._class = graph.getClass(
+    queryBuilderState.setupState._class = graph.getClass(
       executionContext._class,
     );
-    queryBuilderState.querySetupState.mapping = graph.getMapping(
+    queryBuilderState.setupState.mapping = graph.getMapping(
       executionContext.mapping,
     );
     if (executionContext.runtime) {
-      queryBuilderState.querySetupState.runtimeValue = graph.getRuntime(
+      queryBuilderState.setupState.runtimeValue = graph.getRuntime(
         executionContext.runtime,
       );
     }

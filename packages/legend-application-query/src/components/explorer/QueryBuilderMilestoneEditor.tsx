@@ -47,11 +47,11 @@ const MilestoningParameterEditor = observer(
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
         if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-          queryBuilderState.querySetupState.setBusinessDate(
+          queryBuilderState.milestoningState.setBusinessDate(
             item.variable.parameter,
           );
         } else {
-          queryBuilderState.querySetupState.setProcessingDate(
+          queryBuilderState.milestoningState.setProcessingDate(
             item.variable.parameter,
           );
         }
@@ -83,11 +83,11 @@ const MilestoningParameterEditor = observer(
     let milestoningParameter;
     if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState.businessDate,
+        queryBuilderState.milestoningState.businessDate,
       );
     } else {
       milestoningParameter = guaranteeNonNullable(
-        queryBuilderState.querySetupState.processingDate,
+        queryBuilderState.milestoningState.processingDate,
       );
     }
     const resetMilestoningParameter = (): void => {
@@ -110,9 +110,9 @@ const MilestoningParameterEditor = observer(
         generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
       ];
       if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-        queryBuilderState.querySetupState.setBusinessDate(parameter);
+        queryBuilderState.milestoningState.setBusinessDate(parameter);
       } else {
-        queryBuilderState.querySetupState.setProcessingDate(parameter);
+        queryBuilderState.milestoningState.setProcessingDate(parameter);
       }
     };
 
@@ -128,8 +128,8 @@ const MilestoningParameterEditor = observer(
             graph={queryBuilderState.graphManagerState.graph}
             setValueSpecification={(val: ValueSpecification): void =>
               stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
-                ? queryBuilderState.querySetupState.setBusinessDate(val)
-                : queryBuilderState.querySetupState.setProcessingDate(val)
+                ? queryBuilderState.milestoningState.setBusinessDate(val)
+                : queryBuilderState.milestoningState.setProcessingDate(val)
             }
             typeCheckOption={{
               expectedType:
@@ -215,15 +215,15 @@ const TemporalMilestoneEditor: React.FC<{
   const { queryBuilderState } = props;
 
   if (
-    queryBuilderState.querySetupState.processingDate &&
-    queryBuilderState.querySetupState.businessDate
+    queryBuilderState.milestoningState.processingDate &&
+    queryBuilderState.milestoningState.businessDate
   ) {
     return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
-  } else if (queryBuilderState.querySetupState.businessDate) {
+  } else if (queryBuilderState.milestoningState.businessDate) {
     return (
       <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
     );
-  } else if (queryBuilderState.querySetupState.processingDate) {
+  } else if (queryBuilderState.milestoningState.processingDate) {
     return (
       <ProcessingTemporalMilestoneEditor
         queryBuilderState={queryBuilderState}
@@ -258,7 +258,7 @@ export const MilestoningParametersEditor = observer(
               List of compatible milestoning parameters
             </div>
             <div className="panel__content__form__section__list__items">
-              {queryBuilderState.queryParametersState.parameterStates
+              {queryBuilderState.parametersState.parameterStates
                 .filter(
                   (parameter) =>
                     parameter.parameter.genericType?.value.rawType.name ===

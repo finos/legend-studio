@@ -303,7 +303,7 @@ const QueryBuilderPackableElementExplorerTree = observer(
   }) => {
     const { queryBuilderState, rootPackageName, showDependencyFuncions } =
       props;
-    const queryFunctionsState = queryBuilderState.queryFunctionsExplorerState;
+    const queryFunctionsState = queryBuilderState.functionsExplorerState;
     const treeData = queryFunctionsState.nonNullableTreeData;
     const onNodeSelect = (
       node: QueryBuilderFunctionsExplorerTreeNodeData,
@@ -388,7 +388,7 @@ const QueryBuilderPackableElementExplorerTree = observer(
 export const QueryBuilderFunctionsExplorerPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const queryFunctionsState = queryBuilderState.queryFunctionsExplorerState;
+    const queryFunctionsState = queryBuilderState.functionsExplorerState;
     const [viewAsTree, setViewAsTree] = useState(false);
     const [showDependencyFuncions, setShowDependencyFuncions] = useState(false);
     const toggleViewAsListOrAsTree = (): void => {

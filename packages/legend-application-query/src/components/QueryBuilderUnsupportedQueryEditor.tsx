@@ -52,9 +52,7 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
       ? ` due to: ${lambdaError.message}`
       : '';
     const openLambdaModal = (): void =>
-      queryBuilderState.queryTextEditorState.openModal(
-        QueryTextEditorMode.TEXT,
-      );
+      queryBuilderState.textEditorState.openModal(QueryTextEditorMode.TEXT);
     return (
       <div className="panel">
         <div className="panel__header">

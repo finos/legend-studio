@@ -59,12 +59,12 @@ export const ServiceQueryBuilder = observer(
                     queryBuilderExtension.editorStore.applicationStore,
                     queryBuilderExtension.editorStore.graphManagerState,
                   );
-                  queryBuilderState.querySetupState.setMapping(mapping);
-                  queryBuilderState.querySetupState.setRuntimeValue(
+                  queryBuilderState.setupState.setMapping(mapping);
+                  queryBuilderState.setupState.setRuntimeValue(
                     selectedExecutionState.executionContext.runtime,
                   );
-                  queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-                  queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+                  queryBuilderState.setupState.setMappingIsReadOnly(true);
+                  queryBuilderState.setupState.setRuntimeIsReadOnly(true);
                   queryBuilderState.initialize(executionState.execution.func);
                   queryBuilderState.changeDetectionState.setQueryHashCode(
                     hashObject(executionState.execution.func),

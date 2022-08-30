@@ -296,7 +296,7 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
       multiplicityOne,
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(
-          this.projectionState.queryBuilderState.querySetupState._class,
+          this.projectionState.queryBuilderState.setupState._class,
         ),
       ),
     );

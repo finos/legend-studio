@@ -328,12 +328,12 @@ export class PostFilterConditionState {
               this.value,
             ),
             guaranteeNonNullable(
-              this.postFilterState.projectionState.queryBuilderState
-                .querySetupState.mapping,
+              this.postFilterState.projectionState.queryBuilderState.setupState
+                .mapping,
             ),
             guaranteeNonNullable(
-              this.postFilterState.projectionState.queryBuilderState
-                .querySetupState.runtimeValue,
+              this.postFilterState.projectionState.queryBuilderState.setupState
+                .runtimeValue,
             ),
             this.postFilterState.projectionState.queryBuilderState
               .graphManagerState.graph,

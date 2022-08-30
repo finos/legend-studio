@@ -31,12 +31,12 @@ export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const queryTextEditorState = queryBuilderState.queryTextEditorState;
+    const queryTextEditorState = queryBuilderState.textEditorState;
     const close = applicationStore.guardUnhandledError(() =>
-      flowResult(queryBuilderState.queryTextEditorState.closeModal()),
+      flowResult(queryBuilderState.textEditorState.closeModal()),
     );
     const discardChanges = (): void => {
-      queryBuilderState.queryTextEditorState.setMode(undefined);
+      queryBuilderState.textEditorState.setMode(undefined);
       // force close the backdrop just in case changes are discarded when there are grammar issues
       queryBuilderState.setBackdrop(false);
     };

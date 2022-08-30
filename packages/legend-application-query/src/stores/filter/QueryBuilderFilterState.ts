@@ -133,10 +133,10 @@ export class FilterConditionState {
               this.value,
             ),
             guaranteeNonNullable(
-              this.filterState.queryBuilderState.querySetupState.mapping,
+              this.filterState.queryBuilderState.setupState.mapping,
             ),
             guaranteeNonNullable(
-              this.filterState.queryBuilderState.querySetupState.runtimeValue,
+              this.filterState.queryBuilderState.setupState.runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
           )) as ExecutionResult;

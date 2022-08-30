@@ -95,8 +95,8 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
 
     const dataSpace = getDataSpace(
       this.dataSpacePath,
@@ -108,10 +108,10 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
-    this.queryBuilderState.querySetupState.setMapping(
+    this.queryBuilderState.setupState.setMapping(
       executionContext.mapping.value,
     );
-    this.queryBuilderState.querySetupState.setRuntimeValue(
+    this.queryBuilderState.setupState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.runtimePath
@@ -125,7 +125,7 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       this.queryBuilderState.changeClass(
         this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
       );
-      this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
+      this.queryBuilderState.setupState.setClassIsReadOnly(true);
     } else {
       // try to find a class to set
       // first, find classes which is mapped by the mapping
@@ -133,9 +133,9 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       // if none found, default to a dummy blank query
       const defaultClass =
         getNullableFirstElement(
-          this.queryBuilderState.querySetupState.mapping
+          this.queryBuilderState.setupState.mapping
             ? getAllClassMappings(
-                this.queryBuilderState.querySetupState.mapping,
+                this.queryBuilderState.setupState.mapping,
               ).map((classMapping) => classMapping.class.value)
             : [],
         ) ??

@@ -61,11 +61,10 @@ const getValidDisplayablePackageSet = (
 ): Set<Package> => {
   switch (rootPackageName) {
     case ROOT_PACKAGE_NAME.PROJECT_DEPENDENCY_ROOT:
-      return queryBuilderState.queryFunctionsExplorerState
+      return queryBuilderState.functionsExplorerState
         .dependencyDisplayablePackagesSet;
     default:
-      return queryBuilderState.queryFunctionsExplorerState
-        .displayablePackagesSet;
+      return queryBuilderState.functionsExplorerState.displayablePackagesSet;
   }
 };
 

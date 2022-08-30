@@ -56,9 +56,9 @@ import {
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import type { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
 import { functionExpression_setParametersValues } from '@finos/legend-application';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../QueryBuilder_Const.js';
+import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
@@ -91,7 +91,7 @@ const matchMilestoningParameterValue = (
   stereotype: MILESTONING_STEREOTYPE,
   idx: number,
   parameterValue: ValueSpecification,
-  querySetupState: QueryBuilderSetupState,
+  milestoningDate: QueryBuilderMilestoningState,
 ): boolean => {
   const checkIfEquivalent = (
     param1: ValueSpecification | undefined,
@@ -124,14 +124,14 @@ const matchMilestoningParameterValue = (
     case MILESTONING_STEREOTYPE.BITEMPORAL:
       return (
         (idx === 0 &&
-          checkIfEquivalent(parameterValue, querySetupState.processingDate)) ||
+          checkIfEquivalent(parameterValue, milestoningDate.processingDate)) ||
         (idx === 1 &&
-          checkIfEquivalent(parameterValue, querySetupState.businessDate))
+          checkIfEquivalent(parameterValue, milestoningDate.businessDate))
       );
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      return checkIfEquivalent(parameterValue, querySetupState.processingDate);
+      return checkIfEquivalent(parameterValue, milestoningDate.processingDate);
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      return checkIfEquivalent(parameterValue, querySetupState.businessDate);
+      return checkIfEquivalent(parameterValue, milestoningDate.businessDate);
     default:
   }
   return false;
@@ -158,8 +158,8 @@ export const generateMilestonedPropertyParameterValue = (
   ) {
     return undefined;
   }
-  const querySetupState =
-    derivedPropertyExpressionState.queryBuilderState.querySetupState;
+  const milestoningState =
+    derivedPropertyExpressionState.queryBuilderState.milestoningState;
   const temporalSource = getDerivedPropertyMilestoningSteoreotype(
     derivedPropertyExpressionState.derivedProperty,
     derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
@@ -185,7 +185,7 @@ export const generateMilestonedPropertyParameterValue = (
         guaranteeNonNullable(
           derivedPropertyExpressionState.parameterValues[idx],
         ),
-        derivedPropertyExpressionState.queryBuilderState.querySetupState,
+        milestoningState,
       ) ||
         /**
          * Checks if the given milestoning needs to be overwritten or not.
@@ -207,8 +207,8 @@ export const generateMilestonedPropertyParameterValue = (
 
   switch (temporalTarget) {
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-      if (!querySetupState.businessDate) {
-        querySetupState.setBusinessDate(
+      if (!milestoningState.businessDate) {
+        milestoningState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
@@ -220,19 +220,19 @@ export const generateMilestonedPropertyParameterValue = (
         ),
       );
       parameter.getValue = (): ValueSpecification =>
-        guaranteeNonNullable(querySetupState.businessDate);
+        guaranteeNonNullable(milestoningState.businessDate);
       return parameter;
     }
     case MILESTONING_STEREOTYPE.BITEMPORAL: {
-      if (!querySetupState.processingDate) {
-        querySetupState.setProcessingDate(
+      if (!milestoningState.processingDate) {
+        milestoningState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
-      if (!querySetupState.businessDate) {
-        querySetupState.setBusinessDate(
+      if (!milestoningState.businessDate) {
+        milestoningState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
@@ -255,7 +255,7 @@ export const generateMilestonedPropertyParameterValue = (
           ),
         );
         parameter.getValue = (): ValueSpecification =>
-          guaranteeNonNullable(querySetupState.processingDate);
+          guaranteeNonNullable(milestoningState.processingDate);
         return parameter;
       } else {
         if (
@@ -279,13 +279,13 @@ export const generateMilestonedPropertyParameterValue = (
           ),
         );
         parameter.getValue = (): ValueSpecification =>
-          guaranteeNonNullable(querySetupState.businessDate);
+          guaranteeNonNullable(milestoningState.businessDate);
         return parameter;
       }
     }
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-      if (!querySetupState.processingDate) {
-        querySetupState.setProcessingDate(
+      if (!milestoningState.processingDate) {
+        milestoningState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
@@ -297,7 +297,7 @@ export const generateMilestonedPropertyParameterValue = (
         ),
       );
       parameter.getValue = (): ValueSpecification =>
-        guaranteeNonNullable(querySetupState.processingDate);
+        guaranteeNonNullable(milestoningState.processingDate);
       return parameter;
     }
     default:
