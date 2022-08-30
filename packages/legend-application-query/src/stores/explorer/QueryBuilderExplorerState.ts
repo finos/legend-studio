@@ -77,7 +77,7 @@ import {
   buildNumericPreviewDataQuery,
   type QueryBuilderPreviewData,
 } from '../QueryBuilderPreviewDataHelper.js';
-import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchPanelState.js';
+import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchState.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',

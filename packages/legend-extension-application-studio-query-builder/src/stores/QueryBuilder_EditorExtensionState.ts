@@ -14,71 +14,54 @@
  * limitations under the License.
  */
 
-import {
-  type QueryBuilderMode,
-  StandardQueryBuilderMode,
-  QueryBuilderState,
-} from '@finos/legend-application-query';
+import type { QueryBuilderState } from '@finos/legend-application-query';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   type EditorStore,
   EditorExtensionState,
   FormModeCompilationOutcome,
 } from '@finos/legend-application-studio';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import { flow, flowResult, makeObservable, observable } from 'mobx';
 
-interface EmbeddedQueryBuilderMode {
-  queryBuilderMode: QueryBuilderMode;
+type EmbeddedQueryBuilderActionConfiguration = {
+  key: string;
+  renderer: (queryBuilderState: QueryBuilderState) => React.ReactNode;
+};
+
+type EmbeddedQueryBuilderConfiguration = {
+  setupQueryBuilderState: () => QueryBuilderState;
   disableCompile?: boolean | undefined;
-  actionConfigs: {
-    key: string;
-    renderer: () => React.ReactNode;
-  }[];
-}
+  actionConfigs: EmbeddedQueryBuilderActionConfiguration[];
+};
 
 export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
   editorStore: EditorStore;
-  queryBuilderState: QueryBuilderState;
-  mode?: EmbeddedQueryBuilderMode | undefined;
+  queryBuilderState?: QueryBuilderState | undefined;
+  actionConfigs: EmbeddedQueryBuilderActionConfiguration[] = [];
 
   constructor(editorStore: EditorStore) {
     super();
 
     makeObservable(this, {
       queryBuilderState: observable,
-      mode: observable.ref,
-      reset: action,
-      setEmbeddedQueryBuilderMode: flow,
+      actionConfigs: observable,
+      setEmbeddedQueryBuilderConfiguration: flow,
     });
 
     this.editorStore = editorStore;
-    this.queryBuilderState = new QueryBuilderState(
-      editorStore.applicationStore,
-      editorStore.graphManagerState,
-      new StandardQueryBuilderMode(),
-    );
-  }
-
-  reset(): void {
-    this.queryBuilderState = new QueryBuilderState(
-      this.editorStore.applicationStore,
-      this.editorStore.graphManagerState,
-      this.queryBuilderState.mode,
-    );
   }
 
   /**
    * When opening query builder, we ensure the graph compiles successfully
    */
-  *setEmbeddedQueryBuilderMode(
-    mode: EmbeddedQueryBuilderMode | undefined,
+  *setEmbeddedQueryBuilderConfiguration(
+    config: EmbeddedQueryBuilderConfiguration | undefined,
   ): GeneratorFn<void> {
-    if (mode) {
+    if (config) {
       if (!this.editorStore.isInFormMode) {
         return;
       }
-      this.queryBuilderState.setMode(mode.queryBuilderMode);
-      if (!mode.disableCompile) {
+      if (!config.disableCompile) {
         this.editorStore.setBlockingAlert({
           message: 'Compiling graph before building query...',
           showLoading: true,
@@ -112,12 +95,14 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
         }
       }
       if (!this.editorStore.graphState.hasCompilationError) {
-        this.mode = mode;
+        this.queryBuilderState = config.setupQueryBuilderState();
+        this.actionConfigs = config.actionConfigs;
       }
       this.editorStore.setBlockGlobalHotkeys(true);
       this.editorStore.setHotkeys([]);
     } else {
-      this.mode = undefined;
+      this.queryBuilderState = undefined;
+      this.actionConfigs = [];
       this.editorStore.setBlockGlobalHotkeys(false);
       this.editorStore.resetHotkeys();
     }

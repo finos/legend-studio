@@ -322,9 +322,7 @@ export const QueryBuilderParameterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.queryParametersState;
-    const parametersDisabled = Boolean(
-      queryBuilderState.mode.isParametersDisabled,
-    );
+    const parametersDisabled = Boolean(queryBuilderState.isParametersDisabled);
     const varNames = queryBuilderState.queryParametersState.parameterStates.map(
       (e) => e.variableName,
     );

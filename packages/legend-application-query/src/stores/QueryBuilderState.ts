@@ -22,7 +22,6 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   filterByType,
-  hashObject,
 } from '@finos/legend-shared';
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
@@ -67,54 +66,12 @@ import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerSt
 import { QueryParametersState } from './QueryParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
+import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 
-export abstract class QueryBuilderMode {
-  abstract get isParametersDisabled(): boolean;
-
-  abstract get isResultPanelHidden(): boolean;
-
-  /**
-   * This flag is for turning on/off dnd from projection panel to filter panel,
-   * and will be leveraged when the concepts of workflows are introduced into query builder.
-   */
-  get isDnDFetchStructureToFilterSupported(): boolean {
-    return true;
-  }
-}
-
-export class StandardQueryBuilderMode extends QueryBuilderMode {
-  get isParametersDisabled(): boolean {
-    return false;
-  }
-
-  get isResultPanelHidden(): boolean {
-    return false;
-  }
-}
-
-class QueryBuilderChangeDetectionState {
-  querybuildState: QueryBuilderState;
-  queryHashCode = hashObject(new RawLambda(undefined, undefined));
-  isEnabled = false;
-
-  constructor(queryBuilderState: QueryBuilderState) {
-    this.querybuildState = queryBuilderState;
-  }
-
-  setQueryHashCode(val: string): void {
-    this.queryHashCode = val;
-  }
-
-  setIsEnabled(val: boolean): void {
-    this.isEnabled = val;
-  }
-}
-
-export class QueryBuilderState {
+export abstract class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
-  mode: QueryBuilderMode;
   querySetupState: QueryBuilderSetupState;
   explorerState: QueryBuilderExplorerState;
   queryParametersState: QueryParametersState;
@@ -137,7 +94,6 @@ export class QueryBuilderState {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
-    queryBuilderMode: QueryBuilderMode,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -151,11 +107,9 @@ export class QueryBuilderState {
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
-      mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
       changeDetectionState: observable,
-      setMode: action,
       resetQueryBuilder: action,
       resetQueryContent: action,
       buildStateFromRawLambda: action,
@@ -179,15 +133,20 @@ export class QueryBuilderState {
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
-    this.mode = queryBuilderMode;
     this.observableContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
     );
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  setMode(val: QueryBuilderMode): void {
-    this.mode = val;
+  abstract get isParametersDisabled(): boolean;
+  abstract get isResultPanelHidden(): boolean;
+  /**
+   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * and will be leveraged when the concepts of workflows are introduced into query builder.
+   */
+  get isDnDFetchStructureToFilterSupported(): boolean {
+    return true;
   }
 
   setBackdrop(val: boolean): void {
@@ -454,12 +413,29 @@ export class QueryBuilderState {
   get validationIssues(): string[] | undefined {
     return this.fetchStructureState.implementation.validationIssues;
   }
+}
 
-  cloneQueryBuilderState(): QueryBuilderState {
-    return new QueryBuilderState(
-      this.applicationStore,
-      this.graphManagerState,
-      this.mode,
-    );
+// TODO-BEFORE-PR: consider if we should put this in a different file and documentation of this class
+export class BasicQueryBuilderState extends QueryBuilderState {
+  private constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+  ) {
+    super(applicationStore, graphManagerState);
+  }
+
+  static create(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+  ): BasicQueryBuilderState {
+    return new BasicQueryBuilderState(applicationStore, graphManagerState);
+  }
+
+  get isParametersDisabled(): boolean {
+    return false;
+  }
+
+  get isResultPanelHidden(): boolean {
+    return false;
   }
 }

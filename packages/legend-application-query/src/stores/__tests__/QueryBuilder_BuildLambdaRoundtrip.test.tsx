@@ -74,10 +74,7 @@ import {
   integrationTest,
   type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
-import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
-} from '../QueryBuilderState.js';
+import { BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
@@ -354,10 +351,9 @@ describe(
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
-        const queryBuilderState = new QueryBuilderState(
+        const queryBuilderState = BasicQueryBuilderState.create(
           applicationStore,
           graphManagerState,
-          new StandardQueryBuilderMode(),
         );
         // do the check using input and output lambda
         const rawLambda = inputLambda ?? lambda;

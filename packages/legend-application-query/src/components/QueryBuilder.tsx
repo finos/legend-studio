@@ -388,10 +388,10 @@ export const QueryBuilder = observer(
                     />
                   )}
                 </ResizablePanel>
-                {queryBuilderState.mode.isResultPanelHidden ? null : (
+                {queryBuilderState.isResultPanelHidden ? null : (
                   <ResizablePanelSplitter />
                 )}
-                {queryBuilderState.mode.isResultPanelHidden ? null : (
+                {queryBuilderState.isResultPanelHidden ? null : (
                   <ResizablePanel size={300} minSize={40}>
                     <QueryBuilderResultPanel
                       queryBuilderState={queryBuilderState}
