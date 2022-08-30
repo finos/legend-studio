@@ -75,7 +75,6 @@ import {
 import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
-import { ServiceExecutionMode } from '../../../../../graphManager/action/service/ServiceExecutionMode.js';
 import { deserialize, serialize } from 'serializr';
 import { V1_ExecutionError } from './execution/V1_ExecutionError.js';
 import { V1_PureModelContextText } from '../model/context/V1_PureModelContextText.js';
@@ -92,6 +91,7 @@ import {
   V1_MappingModelCoverageAnalysisInput,
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
+import type { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -612,11 +612,7 @@ export class V1_Engine {
       await this.engineServerClient.registerService(
         V1_serializePureModelContext(input),
         server,
-        executionMode === ServiceExecutionMode.FULL_INTERACTIVE
-          ? 'fullInteractive'
-          : executionMode === ServiceExecutionMode.SEMI_INTERACTIVE
-          ? 'semiInteractive'
-          : undefined,
+        executionMode,
       ),
     );
   }
