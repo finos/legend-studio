@@ -79,7 +79,6 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
-    "async": "^2.6.4",
     "glob-parent": "^6.0.1"
   },
   "devDependencies": {
