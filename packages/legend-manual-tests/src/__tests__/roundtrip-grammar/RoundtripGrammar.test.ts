@@ -50,6 +50,7 @@ import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
 import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSLMastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
 
@@ -131,6 +132,7 @@ const checkGrammarRoundtrip = async (
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),
+      new DSLMastery_GraphManagerPreset(),
       new DSLPersistenceCloud_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
     ])

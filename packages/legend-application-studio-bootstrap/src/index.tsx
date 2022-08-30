@@ -40,6 +40,10 @@ import {
   DSLPersistence_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-persistence';
 import {
+  DSLMastery_GraphManagerPreset,
+  DSLMastery_LegendStudioApplicationPlugin,
+} from '@finos/legend-extension-dsl-mastery';
+import {
   ESService_GraphManagerPreset,
   ESService_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-external-store-service';
@@ -58,6 +62,7 @@ export class LegendStudioWebApplication {
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),
+      new DSLMastery_GraphManagerPreset(),
       new DSLPersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
@@ -75,6 +80,7 @@ export class LegendStudioWebApplication {
       new DSLDataSpace_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
       new DSLPersistence_LegendStudioApplicationPlugin(),
+      new DSLMastery_LegendStudioApplicationPlugin(),
       new ESService_LegendStudioApplicationPlugin(),
       new ELMorphir_LegendStudioApplicationPlugin(),
 
