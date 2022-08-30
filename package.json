@@ -79,19 +79,18 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
-    "async": "^2.6.4",
     "glob-parent": "^6.0.1"
   },
   "devDependencies": {
     "@actions/core": "1.9.1",
     "@actions/github": "5.0.3",
     "@babel/core": "7.18.13",
-    "@changesets/cli": "2.24.3",
+    "@changesets/cli": "2.24.4",
     "@finos/babel-preset-legend-studio": "workspace:*",
     "@finos/eslint-plugin-legend-studio": "workspace:*",
     "@finos/legend-dev-utils": "workspace:*",
     "@finos/stylelint-config-legend-studio": "workspace:*",
-    "@types/node": "18.7.13",
+    "@types/node": "18.7.14",
     "chalk": "5.0.1",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
@@ -105,7 +104,7 @@
     "npm-run-all": "4.1.5",
     "prettier": "2.7.1",
     "rimraf": "3.0.2",
-    "sass": "1.54.5",
+    "sass": "1.54.6",
     "semver": "7.3.7",
     "sort-package-json": "1.57.0",
     "stylelint": "14.11.0",
