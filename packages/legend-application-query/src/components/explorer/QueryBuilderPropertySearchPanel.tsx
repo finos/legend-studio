@@ -115,7 +115,7 @@ const QueryBuilderTreeNodeViewer = observer(
     const { node, queryBuilderState, explorerState, level, stepPaddingInRem } =
       props;
     const [isExpandable, setIsExpandable] = useState(false);
-    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const propertySearchPanelState = explorerState.propertySearchState;
     const [, dragConnector, dragPreviewConnector] = useDrag<{
       node?: QueryBuilderExplorerTreePropertyNodeData;
     }>(
@@ -281,7 +281,7 @@ export const QueryBuilderPropertySearchPanel = observer(
   }) => {
     const { queryBuilderState, triggerElement } = props;
     const explorerState = queryBuilderState.explorerState;
-    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const propertySearchPanelState = explorerState.propertySearchState;
     const searchInputRef = useRef<HTMLInputElement>(null);
     const changePropertyName: React.ChangeEventHandler<HTMLInputElement> = (
       event,

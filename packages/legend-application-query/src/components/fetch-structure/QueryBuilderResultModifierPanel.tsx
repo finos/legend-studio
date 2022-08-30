@@ -29,27 +29,23 @@ import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
-import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
+import type { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const ColumnSortEditor = observer(
   (props: {
-    queryBuilderState: QueryBuilderState;
-    columnSort: SortColumnState;
+    projectionState: QueryBuilderProjectionState;
+    sortState: SortColumnState;
   }) => {
-    const { queryBuilderState, columnSort } = props;
+    const { projectionState, sortState } = props;
     const applicationStore = useApplicationStore();
-    const projectionState =
-      queryBuilderState.fetchStructureState.projectionState;
-    const sortColumns =
-      queryBuilderState.fetchStructureState.projectionState
-        .resultSetModifierState.sortColumns;
+    const sortColumns = projectionState.resultSetModifierState.sortColumns;
     const projectionOptions = projectionState.columns
       .filter(
         (projectionCol) =>
-          projectionCol === columnSort.columnState ||
+          projectionCol === sortState.columnState ||
           !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
       )
       .map((projectionCol) => ({
@@ -57,28 +53,26 @@ const ColumnSortEditor = observer(
         value: projectionCol,
       }));
     const value = {
-      label: columnSort.columnState.columnName,
-      value: columnSort,
+      label: sortState.columnState.columnName,
+      value: sortState,
     };
     const onChange = (
       val: { label: string; value: QueryBuilderProjectionColumnState } | null,
     ): void => {
       if (val !== null) {
-        columnSort.setColumnState(val.value);
+        sortState.setColumnState(val.value);
       }
     };
-    const sortType = columnSort.sortType;
+    const sortType = sortState.sortType;
     const toggleSortType = (): void => {
-      columnSort.setSortType(
+      sortState.setSortType(
         sortType === COLUMN_SORT_TYPE.ASC
           ? COLUMN_SORT_TYPE.DESC
           : COLUMN_SORT_TYPE.ASC,
       );
     };
     const deleteColumnSort = (): void =>
-      queryBuilderState.fetchStructureState.projectionState.resultSetModifierState.deleteSortColumn(
-        columnSort,
-      );
+      projectionState.resultSetModifierState.deleteSortColumn(sortState);
 
     return (
       <div className="panel__content__form__section__list__item query-builder__projection__options__sort">
@@ -115,14 +109,10 @@ const ColumnSortEditor = observer(
 );
 
 const ColumnsSortEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const resultModifier =
-      queryBuilderState.fetchStructureState.projectionState
-        .resultSetModifierState;
-    const sortColumns = resultModifier.sortColumns;
-    const projectionState =
-      queryBuilderState.fetchStructureState.projectionState;
+  (props: { projectionState: QueryBuilderProjectionState }) => {
+    const { projectionState } = props;
+    const resultSetModifierState = projectionState.resultSetModifierState;
+    const sortColumns = resultSetModifierState.sortColumns;
     const projectionOptions = projectionState.columns
       .filter(
         (projectionCol) =>
@@ -137,9 +127,10 @@ const ColumnsSortEditor = observer(
         const sortColumn = new SortColumnState(
           guaranteeNonNullable(projectionOptions[0]).value,
         );
-        resultModifier.addSortColumn(sortColumn);
+        resultSetModifierState.addSortColumn(sortColumn);
       }
     };
+
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -155,8 +146,8 @@ const ColumnsSortEditor = observer(
             {sortColumns.map((value) => (
               <ColumnSortEditor
                 key={value.columnState.uuid}
-                queryBuilderState={queryBuilderState}
-                columnSort={value}
+                projectionState={projectionState}
+                sortState={value}
               />
             ))}
           </div>
@@ -177,22 +168,23 @@ const ColumnsSortEditor = observer(
 );
 
 export const QueryResultModifierModal = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const resultModifier =
-      queryBuilderState.fetchStructureState.projectionState
-        .resultSetModifierState;
-    const limitResults = resultModifier.limit;
-    const distinct = resultModifier.distinct;
-    const close = (): void => resultModifier.setShowModal(false);
-    const toggleDistinct = (): void => resultModifier.toggleDistinct();
+  (props: { projectionState: QueryBuilderProjectionState }) => {
+    const { projectionState: projectionState } = props;
+    const resultSetModifierState = projectionState.resultSetModifierState;
+    const limitResults = resultSetModifierState.limit;
+    const distinct = resultSetModifierState.distinct;
+    const close = (): void => resultSetModifierState.setShowModal(false);
+    const toggleDistinct = (): void => resultSetModifierState.toggleDistinct();
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
-      resultModifier.setLimit(val === '' ? undefined : parseInt(val, 10));
+      resultSetModifierState.setLimit(
+        val === '' ? undefined : parseInt(val, 10),
+      );
     };
+
     return (
       <Dialog
-        open={Boolean(resultModifier.showModal)}
+        open={Boolean(resultSetModifierState.showModal)}
         onClose={close}
         classes={{
           root: 'editor-modal__root-container',
@@ -206,7 +198,7 @@ export const QueryResultModifierModal = observer(
           </div>
           <div className="modal__body query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
-              <ColumnsSortEditor queryBuilderState={queryBuilderState} />
+              <ColumnsSortEditor projectionState={projectionState} />
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
                   Eliminate Duplicate Rows

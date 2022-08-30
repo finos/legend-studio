@@ -35,7 +35,7 @@ import {
   buildNonNumericPreviewDataQuery,
   buildNumericPreviewDataQuery,
 } from '../QueryBuilderPreviewDataHelper.js';
-import { TEST_setUpQueryBuilderState } from '../QueryBuilderTestUtils.js';
+import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
 import type { RawMappingModelCoverageAnalysisResult } from '@finos/legend-graph';
 
 type PreviewDataTestCase = [
@@ -96,7 +96,7 @@ describe(integrationTest('Query builder preview data'), () => {
         mapping,
         rawMappingModelCoverageAnalysisResult,
       } = context;
-      const queryBuilderState = await TEST_setUpQueryBuilderState(
+      const queryBuilderState = await TEST__setUpQueryBuilderState(
         entities,
         undefined,
         {
@@ -115,7 +115,7 @@ describe(integrationTest('Query builder preview data'), () => {
           queryBuilderState.explorerState.nonNullableTreeData,
           propertyNode,
           queryBuilderState.graphManagerState.graph,
-          queryBuilderState.explorerState.propertySearchPanelState
+          queryBuilderState.explorerState.propertySearchState
             .allMappedPropertyNodes,
         );
       const rawLambda = numeric

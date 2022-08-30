@@ -34,9 +34,9 @@ import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
 import { QueryBuilderExplorerState } from './explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
-  processQueryBuilderLambdaFunction,
-  processQueryParameters,
-} from './QueryBuilderValueSpecificationProcessor.js';
+  processQueryLambdaFunction,
+  processParameters,
+} from './QueryBuilderStateBuilder.js';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
@@ -67,7 +67,6 @@ import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerSt
 import { QueryParametersState } from './QueryParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
-import { QueryResultSetModifierState } from './fetch-structure/projection/QueryResultSetModifierState.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
@@ -158,14 +157,13 @@ export class QueryBuilderState {
       changeDetectionState: observable,
       setMode: action,
       resetQueryBuilder: action,
-      resetQuerySetup: action,
+      resetQueryContent: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
       setShowFunctionPanel: action,
       setShowParameterPanel: action,
       changeClass: action,
-      changeFetchStructure: action,
       compileQuery: flow,
     });
 
@@ -233,18 +231,23 @@ export class QueryBuilderState {
     this.setShowParameterPanel(false);
   }
 
-  resetQuerySetup(): void {
+  resetQueryContent(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    const fetchStructureState = new QueryBuilderFetchStructureState(this);
-    fetchStructureState.setFetchStructureMode(
-      this.fetchStructureState.fetchStructureMode,
-    );
-    this.fetchStructureState = fetchStructureState;
-    this.fetchStructureState.graphFetchTreeState.initialize();
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    const currentFetchStructureImplementationType =
+      this.fetchStructureState.implementation.type;
+    this.fetchStructureState = new QueryBuilderFetchStructureState(this);
+    if (
+      currentFetchStructureImplementationType !==
+      this.fetchStructureState.implementation.type
+    ) {
+      this.fetchStructureState.changeImplementation(
+        currentFetchStructureImplementationType,
+      );
+    }
   }
 
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
@@ -264,7 +267,7 @@ export class QueryBuilderState {
           observe_ValueSpecification(param, this.observableContext),
         )
         .filter(filterByType(VariableExpression));
-      processQueryParameters(parameters, this);
+      processParameters(parameters, this);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Can't initialize query builder: ${error.message}`,
@@ -283,7 +286,7 @@ export class QueryBuilderState {
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
     this.resetQueryBuilder();
-    this.resetQuerySetup();
+    this.resetQueryContent();
     if (!isStubbed_RawLambda(rawLambda)) {
       const valueSpec = observe_ValueSpecification(
         this.graphManagerState.graphManager.buildValueSpecification(
@@ -299,10 +302,10 @@ export class QueryBuilderState {
         LambdaFunctionInstanceValue,
         `Can't build query state: query builder only support lambda`,
       );
-      const compiledLambda = guaranteeNonNullable(
-        compiledValueSpecification.values[0],
+      processQueryLambdaFunction(
+        guaranteeNonNullable(compiledValueSpecification.values[0]),
+        this,
       );
-      processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
 
@@ -353,7 +356,7 @@ export class QueryBuilderState {
   }
 
   clearCompilationError(): void {
-    this.fetchStructureState.projectionState.clearCompilationError();
+    this.fetchStructureState.implementation.clearCompilationError();
   }
 
   *compileQuery(): GeneratorFn<void> {
@@ -382,7 +385,7 @@ export class QueryBuilderState {
         // if even this fail, we will fall back to show it in text mode
         if (error instanceof CompilationError && error.sourceInformation) {
           fallbackToTextModeForDebugging =
-            !this.fetchStructureState.projectionState.revealCompilationError(
+            !this.fetchStructureState.implementation.revealCompilationError(
               error,
             );
         }
@@ -442,23 +445,14 @@ export class QueryBuilderState {
 
   changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this.resetQueryBuilder();
-    this.resetQuerySetup();
+    this.resetQueryContent();
     this.querySetupState.setClass(val, isRebuildingState);
     this.explorerState.refreshTreeData();
-  }
-
-  // TODO-BEFORE-PR: consider removing this
-  changeFetchStructure(): void {
-    this.fetchStructureState.projectionState.resultSetModifierState =
-      new QueryResultSetModifierState(this.fetchStructureState.projectionState);
-    const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
-    if (!treeData) {
-      this.fetchStructureState.graphFetchTreeState.initialize();
-    }
+    this.fetchStructureState.implementation.onClassChange(val);
   }
 
   get validationIssues(): string[] | undefined {
-    return this.fetchStructureState.validationIssues;
+    return this.fetchStructureState.implementation.validationIssues;
   }
 
   cloneQueryBuilderState(): QueryBuilderState {

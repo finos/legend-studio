@@ -41,6 +41,13 @@ export class MappedProperty {
 
 export class EntityMappedProperty extends MappedProperty {
   entityPath: string;
+  /**
+   * If this attribute is set, we need to understand this `mapped property` slightly differently
+   * as this will represent a subtype of the class corresponding to the parent mapped entity.
+   *
+   * For example: class A extends B, assuming that A is mapped and B is mapped, in the list of
+   * mapped properties of B, we should see a mapped property with subtype A.
+   */
   subType: string | undefined;
 
   constructor(name: string, entityPath: string, subType: string | undefined) {

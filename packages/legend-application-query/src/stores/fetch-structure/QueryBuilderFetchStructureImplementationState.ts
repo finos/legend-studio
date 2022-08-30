@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
+import type {
+  Class,
+  CompilationError,
+  LambdaFunction,
+} from '@finos/legend-graph';
+import { computed, makeObservable } from 'mobx';
+import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import type { LambdaFunctionBuilderOption } from '../QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
+
+export enum FETCH_STRUCTURE_IMPLEMENTATION {
+  PROJECTION = 'PROJECTION',
+  GRAPH_FETCH = 'GRAPH_FETCH',
+}
 
 export abstract class QueryBuilderFetchStructureImplementationState {
   queryBuilderState: QueryBuilderState;
@@ -25,10 +38,28 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     queryBuilderState: QueryBuilderState,
     fetchStructureState: QueryBuilderFetchStructureState,
   ) {
+    makeObservable(this, {
+      usedExplorerTreePropertyNodeIDs: computed,
+      validationIssues: computed,
+    });
+
     this.queryBuilderState = queryBuilderState;
     this.fetchStructureState = fetchStructureState;
   }
 
-  // abstract addProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;
-  // abstract addChildrenProperties(node: QueryBuilderExplorerTreePropertyNodeData): void;
+  abstract get type(): string;
+  abstract get usedExplorerTreePropertyNodeIDs(): string[];
+  abstract get validationIssues(): string[] | undefined;
+  abstract onClassChange(_class: Class | undefined): void;
+  abstract revealCompilationError(compilationError: CompilationError): boolean;
+  abstract clearCompilationError(): void;
+  abstract fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void;
+  abstract fetchProperties(
+    nodes: QueryBuilderExplorerTreePropertyNodeData[],
+  ): void;
+  abstract checkBeforeChangingImplementation(onChange: () => void): void;
+  abstract appendFetchStructure(
+    lambdaFunction: LambdaFunction,
+    options?: LambdaFunctionBuilderOption,
+  ): void;
 }

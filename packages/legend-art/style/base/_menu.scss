@@ -58,6 +58,7 @@
 
   &__item[disabled] {
     color: var(--color-dark-grey-400);
+    cursor: not-allowed;
   }
 
   &__item:not([disabled]):hover {

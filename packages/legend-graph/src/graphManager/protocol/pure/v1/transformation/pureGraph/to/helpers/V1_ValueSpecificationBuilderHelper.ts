@@ -613,14 +613,14 @@ export function V1_buildLambdaBody(
 ): LambdaFunction {
   processingContext.push('Creating new lambda');
   const pureParameters = parameters.map(
-    (p) =>
-      p.accept_ValueSpecificationVisitor(
+    (parameter) =>
+      parameter.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationBuilder(context, processingContext, []),
       ) as VariableExpression,
   );
   const openVariables: string[] = [];
-  const _expressions = expressions.map((e) =>
-    e.accept_ValueSpecificationVisitor(
+  const _expressions = expressions.map((value) =>
+    value.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
         processingContext,
@@ -849,8 +849,8 @@ export function V1_processProperty(
   property: string,
 ): ValueSpecification {
   const firstParameter = parameters[0];
-  const processedParameters = parameters.map((p) =>
-    p.accept_ValueSpecificationVisitor(
+  const processedParameters = parameters.map((parameter) =>
+    parameter.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationBuilder(
         context,
         processingContext,
@@ -968,8 +968,10 @@ export function V1_buildFunctionExpression(
   processingContext: V1_ProcessingContext,
 ): [SimpleFunctionExpression, ValueSpecification[]] {
   if (
-    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.TODAY) ||
-    matchFunctionName(functionName, SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER)
+    matchFunctionName(functionName, [
+      SUPPORTED_FUNCTIONS.TODAY,
+      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
+    ])
   ) {
     const expression = V1_buildGenericFunctionExpression(
       functionName,
@@ -999,15 +1001,13 @@ export function V1_buildFunctionExpression(
     );
     return expression;
   } else if (
-    (
-      [
-        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
-        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
-        SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
-        SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
-        SUPPORTED_FUNCTIONS.ADJUST,
-      ] as string[]
-    ).some((fn) => matchFunctionName(functionName, fn))
+    matchFunctionName(functionName, [
+      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
+      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
+      SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
+      SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
+      SUPPORTED_FUNCTIONS.ADJUST,
+    ])
   ) {
     const expression = V1_buildGenericFunctionExpression(
       functionName,
@@ -1023,9 +1023,7 @@ export function V1_buildFunctionExpression(
     );
     return expression;
   } else if (
-    Object.values(SUPPORTED_FUNCTIONS).some((fn) =>
-      matchFunctionName(functionName, fn),
-    )
+    matchFunctionName(functionName, Object.values(SUPPORTED_FUNCTIONS))
   ) {
     // NOTE: this is a catch-all builder that is only meant for basic function expression
     // such as and(), or(), etc. It will fail when type-inferencing/function-matching is required

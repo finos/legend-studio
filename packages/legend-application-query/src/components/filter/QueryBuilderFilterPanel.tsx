@@ -153,7 +153,7 @@ const QueryBuilderFilterConditionEditor = observer(
           propertyNode,
           graph,
           node.condition.filterState.queryBuilderState.explorerState
-            .propertySearchPanelState.allMappedPropertyNodes,
+            .propertySearchState.allMappedPropertyNodes,
         ),
       );
     // Drag and Drop on filter condition value
@@ -405,8 +405,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
                 filterState.queryBuilderState.graphManagerState.graph,
-                filterState.queryBuilderState.explorerState
-                  .propertySearchPanelState.allMappedPropertyNodes,
+                filterState.queryBuilderState.explorerState.propertySearchState
+                  .allMappedPropertyNodes,
               ),
             );
           } catch (error) {
@@ -732,8 +732,8 @@ export const QueryBuilderFilterPanel = observer(
                 filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 (item as QueryBuilderExplorerTreeDragSource).node,
                 filterState.queryBuilderState.graphManagerState.graph,
-                filterState.queryBuilderState.explorerState
-                  .propertySearchPanelState.allMappedPropertyNodes,
+                filterState.queryBuilderState.explorerState.propertySearchState
+                  .allMappedPropertyNodes,
               );
           }
           filterConditionState = new FilterConditionState(
@@ -788,7 +788,7 @@ export const QueryBuilderFilterPanel = observer(
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER}
-        className="panel query-builder__filter"
+        className="panel"
       >
         <div className="panel__header">
           <div className="panel__header__title">
@@ -860,7 +860,7 @@ export const QueryBuilderFilterPanel = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content query-builder__filter__content">
+        <div className="panel__content">
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}

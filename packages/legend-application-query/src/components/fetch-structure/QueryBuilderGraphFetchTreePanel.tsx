@@ -30,7 +30,6 @@ import {
   InfoCircleIcon,
   PanelDropZone,
 } from '@finos/legend-art';
-import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isNonNullable } from '@finos/legend-shared';
 import {
@@ -168,7 +167,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 
     return (
       <div className="query-builder-graph-fetch-tree">
-        <div className="query-builder-graph-fetch-tree__settings">
+        <div className="query-builder-graph-fetch-tree__toolbar">
           <div
             className={clsx('panel__content__form__section__toggler')}
             onClick={toggleChecked}
@@ -184,7 +183,7 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
             <div className="panel__content__form__section__toggler__prompt">
               Check graph fetch
             </div>
-            <div className="query-builder-graph-fetch-tree__settings__hint-icon">
+            <div className="query-builder-graph-fetch-tree__toolbar__hint-icon">
               <InfoCircleIcon title="With this enabled, while executing, violations of constraints will reported as part of the result, rather than causing a failure" />
             </div>
           </div>
@@ -209,23 +208,21 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
 );
 
 export const QueryBuilderGraphFetchTreePanel = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const fetchStructureState = queryBuilderState.fetchStructureState;
-    const graphFetchState = fetchStructureState.graphFetchTreeState;
-    const treeData = graphFetchState.treeData;
+  (props: { graphFetchTreeState: QueryBuilderGraphFetchTreeState }) => {
+    const { graphFetchTreeState } = props;
+    const treeData = graphFetchTreeState.treeData;
 
     // Deep/Graph Fetch Tree
     const updateTreeData = (data: QueryBuilderGraphFetchTreeData): void => {
-      graphFetchState.setGraphFetchTree(data);
+      graphFetchTreeState.setGraphFetchTree(data);
     };
 
     // Drag and Drop
     const handleDrop = useCallback(
       (item: QueryBuilderExplorerTreeDragSource): void => {
-        graphFetchState.addProperty(item.node);
+        graphFetchTreeState.addProperty(item.node, { refreshTreeData: true });
       },
-      [graphFetchState],
+      [graphFetchTreeState],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderExplorerTreeDragSource,
@@ -266,7 +263,7 @@ export const QueryBuilderGraphFetchTreePanel = observer(
           )}
           {treeData && !isGraphFetchTreeDataEmpty(treeData) && (
             <QueryBuilderGraphFetchTreeExplorer
-              graphFetchState={graphFetchState}
+              graphFetchState={graphFetchTreeState}
               treeData={treeData}
               isReadOnly={false}
               updateTreeData={updateTreeData}

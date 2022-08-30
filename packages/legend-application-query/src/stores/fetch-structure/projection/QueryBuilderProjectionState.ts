@@ -42,14 +42,25 @@ import {
   LAMBDA_PIPE,
   RawLambda,
   isStubbed_RawLambda,
+  Class,
+  type LambdaFunction,
+  type ValueSpecification,
+  AbstractPropertyExpression,
+  matchFunctionName,
+  SimpleFunctionExpression,
+  getAllSuperclasses,
 } from '@finos/legend-graph';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
 } from '../../../QueryBuilder_Const.js';
 import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
-import { QueryBuilderFetchStructureImplementationState } from '../QueryBuilderFetchStructureImplementationState.js';
+import {
+  FETCH_STRUCTURE_IMPLEMENTATION,
+  QueryBuilderFetchStructureImplementationState,
+} from '../QueryBuilderFetchStructureImplementationState.js';
 import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
 import { QueryBuilderPostFilterState } from './post-filter/QueryBuilderPostFilterState.js';
 import type { QueryBuilderPostFilterOperator } from './post-filter/QueryBuilderPostFilterOperator.js';
@@ -58,10 +69,22 @@ import type { QueryBuilderAggregateOperator } from './aggregation/QueryBuilderAg
 import { getQueryBuilderCoreAggregrationOperators } from './aggregation/QueryBuilderAggregateOperatorLoader.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderSimpleProjectionColumnState,
   type QueryBuilderProjectionColumnState,
-  type QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderFetchStructureState } from '../QueryBuilderFetchStructureState.js';
+import {
+  buildPropertyExpressionFromExplorerTreeNodeData,
+  generateExplorerTreePropertyNodeID,
+  generateExplorerTreeSubtypeNodeID,
+  type QueryBuilderExplorerTreePropertyNodeData,
+} from '../../explorer/QueryBuilderExplorerState.js';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { appendProjection } from './QueryBuilderProjectionValueSpecificationBuilder.js';
 
 export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImplementationState {
   columns: QueryBuilderProjectionColumnState[] = [];
@@ -91,7 +114,6 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       showPostFilterPanel: observable,
       derivations: computed,
       hasParserError: computed,
-      validationIssues: computed,
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
@@ -110,6 +132,10 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     );
   }
 
+  get type(): string {
+    return FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION;
+  }
+
   get derivations(): QueryBuilderDerivationProjectionColumnState[] {
     return this.columns.filter(
       filterByType(QueryBuilderDerivationProjectionColumnState),
@@ -120,6 +146,80 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
     return this.derivations.some(
       (derivation) => derivation.derivationLambdaEditorState.parserError,
     );
+  }
+
+  get usedExplorerTreePropertyNodeIDs(): string[] {
+    let nodeIDs: string[] = [];
+    this.columns.forEach((column) => {
+      if (column instanceof QueryBuilderSimpleProjectionColumnState) {
+        let chunks: (string | Class)[] = [];
+        let currentExpression: ValueSpecification =
+          column.propertyExpressionState.propertyExpression;
+        while (currentExpression instanceof AbstractPropertyExpression) {
+          chunks.push(currentExpression.func.name);
+          currentExpression = guaranteeNonNullable(
+            currentExpression.parametersValues[0],
+          );
+          while (currentExpression instanceof SimpleFunctionExpression) {
+            if (
+              matchFunctionName(
+                currentExpression.functionName,
+                QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
+              ) &&
+              currentExpression.parametersValues.length >= 1 &&
+              currentExpression.parametersValues[1]?.genericType?.value
+                .rawType instanceof Class
+            ) {
+              // flatten subtype casting chain: stop pushing more classes
+              if (!(chunks[chunks.length - 1] instanceof Class)) {
+                chunks.push(
+                  currentExpression.parametersValues[1]?.genericType?.value
+                    .rawType,
+                );
+              }
+              currentExpression = guaranteeNonNullable(
+                currentExpression.parametersValues[0],
+              );
+            } else {
+              // unknown property expression
+              return;
+            }
+          }
+        }
+        chunks = chunks.reverse();
+        const chunkIDs: string[] = [];
+        const ids: string[] = [];
+
+        for (let i = 0; i < chunks.length; i++) {
+          const currentChunk = guaranteeNonNullable(chunks[i]);
+          const previousID = i > 0 ? guaranteeNonNullable(chunkIDs[i - 1]) : '';
+          if (currentChunk instanceof Class) {
+            getAllSuperclasses(currentChunk)
+              .concat(currentChunk)
+              .forEach((_class) =>
+                ids.push(
+                  generateExplorerTreeSubtypeNodeID(previousID, _class.path),
+                ),
+              );
+            chunkIDs.push(
+              generateExplorerTreeSubtypeNodeID(previousID, currentChunk.path),
+            );
+          } else {
+            const id = generateExplorerTreePropertyNodeID(
+              previousID,
+              currentChunk,
+            );
+            chunkIDs.push(id);
+            ids.push(id);
+          }
+        }
+
+        nodeIDs = nodeIDs.concat(ids);
+      }
+    });
+
+    // deduplicate
+    return Array.from(new Set(nodeIDs).values());
   }
 
   get validationIssues(): string[] | undefined {
@@ -136,6 +236,17 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       return ['Query has no projection columns'];
     }
     return undefined;
+  }
+
+  onClassChange(_class: Class | undefined): void {
+    return;
+  }
+
+  appendFetchStructure(
+    lambdaFunction: LambdaFunction,
+    options?: LambdaFunctionBuilderOption,
+  ): void {
+    appendProjection(this, lambdaFunction, options);
   }
 
   setShowPostFilterPanel(val: boolean): void {
@@ -386,5 +497,73 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
         undefined,
       ),
     );
+  }
+
+  fetchProperty(node: QueryBuilderExplorerTreePropertyNodeData): void {
+    this.addColumn(
+      new QueryBuilderSimpleProjectionColumnState(
+        this,
+        buildPropertyExpressionFromExplorerTreeNodeData(
+          this.queryBuilderState.explorerState.nonNullableTreeData,
+          node,
+          this.queryBuilderState.graphManagerState.graph,
+          this.queryBuilderState.explorerState.propertySearchState
+            .allMappedPropertyNodes,
+        ),
+        this.queryBuilderState.explorerState.humanizePropertyName,
+      ),
+    );
+  }
+
+  fetchProperties(nodes: QueryBuilderExplorerTreePropertyNodeData[]): void {
+    nodes.forEach((nodeToAdd) => {
+      this.addColumn(
+        new QueryBuilderSimpleProjectionColumnState(
+          this,
+          buildPropertyExpressionFromExplorerTreeNodeData(
+            this.queryBuilderState.explorerState.nonNullableTreeData,
+            nodeToAdd,
+            this.queryBuilderState.graphManagerState.graph,
+            this.queryBuilderState.explorerState.propertySearchState
+              .allMappedPropertyNodes,
+          ),
+          this.queryBuilderState.explorerState.humanizePropertyName,
+        ),
+      );
+    });
+  }
+
+  checkBeforeChangingImplementation(onChange: () => void): void {
+    if (
+      this.columns.length > 0
+      // NOTE: here we could potentially check for the presence of post-filter as well
+      // but we make the assumption that if there is no projection column, there should
+      // not be any post-filter at all
+    ) {
+      this.queryBuilderState.applicationStore.setActionAlertInfo({
+        message:
+          this.showPostFilterPanel && this.postFilterState.nodes.size > 0
+            ? 'With graph-fetch mode, post filter is not supported. Current projection columns and post filters will be lost when switching to the graph-fetch mode. Do you still want to proceed?'
+            : 'Current projection columns will be lost when switching to the graph-fetch mode. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler:
+              this.queryBuilderState.applicationStore.guardUnhandledError(
+                async () => onChange(),
+              ),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onChange();
+    }
   }
 }

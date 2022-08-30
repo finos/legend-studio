@@ -21,15 +21,10 @@ import {
   type LambdaFunction,
   type ValueSpecification,
 } from '@finos/legend-graph';
-import {
-  assertTrue,
-  guaranteeNonNullable,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../QueryBuilder_Const.js';
 import { fromGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
-import { FETCH_STRUCTURE_MODE } from '../../QueryBuilderFetchStructureState.js';
 import {
   QueryBuilderPostFilterTreeConditionNodeData,
   QueryBuilderPostFilterTreeGroupNodeData,
@@ -105,11 +100,6 @@ export const appendPostFilter = (
   ) {
     return lambda;
   }
-  assertTrue(
-    postFilterState.projectionState.fetchStructureState.fetchStructureMode ===
-      FETCH_STRUCTURE_MODE.PROJECTION,
-    'Can only apply post-filter while fetching projection columns',
-  );
   const multiplicityOne =
     postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,

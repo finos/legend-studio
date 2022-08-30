@@ -25,6 +25,7 @@ import {
   Class,
   PropertyGraphFetchTree,
   PackageableElementExplicitReference,
+  TYPE_CAST_TOKEN,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -70,13 +71,13 @@ export interface QueryBuilderGraphFetchTreeData
   tree: RootGraphFetchTree;
 }
 
-const generateNodeId = (
+export const generateGraphFetchTreeNodeID = (
   property: AbstractProperty,
-  subType: Type | undefined,
   parentNodeId: string | undefined,
+  subType: Type | undefined,
 ): string =>
   `${parentNodeId ? `${parentNodeId}.` : ''}${property.name}${
-    subType ? subType.path : ''
+    subType ? `${TYPE_CAST_TOKEN}${subType.path}` : ''
   }`;
 
 const buildGraphFetchSubTree = (
@@ -93,7 +94,7 @@ const buildGraphFetchSubTree = (
   const subType = tree.subType?.value;
   const parentNodeId = parentNode?.id;
   const node = new QueryBuilderGraphFetchTreeNodeData(
-    generateNodeId(property, subType, parentNodeId),
+    generateGraphFetchTreeNodeID(property, parentNodeId, subType),
     property.name,
     parentNodeId,
     tree,
@@ -248,10 +249,10 @@ export const addQueryBuilderPropertyNode = (
   let parentNode: QueryBuilderGraphFetchTreeNodeData | undefined = undefined;
   let newSubTree: PropertyGraphFetchTree | undefined;
   for (const propertyGraphFetchTree of propertyGraphFetchTrees) {
-    currentNodeId = generateNodeId(
+    currentNodeId = generateGraphFetchTreeNodeID(
       propertyGraphFetchTree.property.value,
-      propertyGraphFetchTree.subType?.value,
       currentNodeId,
+      propertyGraphFetchTree.subType?.value,
     );
     const existingGraphFetchNode = treeData.nodes.get(currentNodeId);
     if (existingGraphFetchNode) {

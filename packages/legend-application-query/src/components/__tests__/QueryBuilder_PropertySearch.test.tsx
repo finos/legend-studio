@@ -78,16 +78,16 @@ test(
     const searchInput = getByDisplayValue(searchPanel, '');
     fireEvent.change(searchInput, { target: { value: 'name' } });
     await waitFor(() => getByDisplayValue(searchPanel, 'name'));
+    expect(queryBuilderState.explorerState.propertySearchState.searchText).toBe(
+      'name',
+    );
     expect(
-      queryBuilderState.explorerState.propertySearchPanelState.searchText,
-    ).toBe('name');
-    expect(
-      queryBuilderState.explorerState.propertySearchPanelState
+      queryBuilderState.explorerState.propertySearchState
         .searchedMappedPropertyNodes.length,
     ).toBe(3);
     fireEvent.click(getByTitle(searchPanel, 'Clear'));
     expect(
-      queryBuilderState.explorerState.propertySearchPanelState
+      queryBuilderState.explorerState.propertySearchState
         .searchedMappedPropertyNodes.length,
     ).toBe(0);
   },

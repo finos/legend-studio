@@ -111,6 +111,29 @@ const checkForDeprecatedNode = (
   return false;
 };
 
+export const isExplorerTreeNodeAlreadyUsed = (
+  node: QueryBuilderExplorerTreeNodeData,
+  queryBuilderState: QueryBuilderState,
+): boolean => {
+  // if the fetch-structure is non-empty, it means we can mark the root node as used
+  if (
+    node instanceof QueryBuilderExplorerTreeRootNodeData &&
+    queryBuilderState.fetchStructureState.implementation
+      .usedExplorerTreePropertyNodeIDs.length > 0
+  ) {
+    return true;
+  }
+  // in the explorer tree, we represent subtype as a subtree, we want to flatten this to only
+  // the subtype that actually being used to make comparison simpler
+  const simplifiedNodeID = node.id.replaceAll(/(?:@[^.]+)+/g, (val) => {
+    const chunks = val.split(TYPE_CAST_TOKEN);
+    return `${TYPE_CAST_TOKEN}${chunks[chunks.length - 1]}`;
+  });
+  return queryBuilderState.fetchStructureState.implementation.usedExplorerTreePropertyNodeIDs.includes(
+    simplifiedNodeID,
+  );
+};
+
 export const QueryBuilderSubclassInfoTooltip: React.FC<{
   subclass: Class;
   path: string;
@@ -429,6 +452,10 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
                 !node.mappingData.mapped,
               'query-builder-explorer-tree__node__container--selected':
                 node.isSelected,
+
+              'query-builder-explorer-tree__node__container--highlighted':
+                explorerState.highlightUsedProperties &&
+                isExplorerTreeNodeAlreadyUsed(node, queryBuilderState),
             },
           )}
           title={
@@ -444,18 +471,17 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           }}
         >
           {node instanceof QueryBuilderExplorerTreeRootNodeData && (
-            // NOTE: since the root of the tree is the class, not the property, we want to display it differently
             <>
-              <div className="query-builder-explorer-tree__expand-icon">
-                {nodeExpandIcon}
-              </div>
-              <div className="tree-view__node__label query-builder-explorer-tree__root-node__label">
-                <div className="query-builder-explorer-tree__root-node__label__icon">
+              <div className="tree-view__node__icon query-builder-explorer-tree__node__icon">
+                <div className="query-builder-explorer-tree__expand-icon">
+                  {nodeExpandIcon}
+                </div>
+                <div className="query-builder-explorer-tree__type-icon">
                   <PURE_ClassIcon />
                 </div>
-                <div className="query-builder-explorer-tree__root-node__label__text">
-                  {node.label}
-                </div>
+              </div>
+              <div className="tree-view__node__label query-builder-explorer-tree__node__label">
+                {node.label}
               </div>
             </>
           )}
@@ -726,7 +752,7 @@ export const QueryBuilderExplorerPanel = observer(
     const { queryBuilderState } = props;
     const searchButtonRef = useRef<HTMLButtonElement>(null);
     const explorerState = queryBuilderState.explorerState;
-    const propertySearchPanelState = explorerState.propertySearchPanelState;
+    const propertySearchPanelState = explorerState.propertySearchState;
     const applicationStore = useApplicationStore();
     const collapseTree = (): void => {
       if (explorerState.treeData) {
@@ -743,6 +769,10 @@ export const QueryBuilderExplorerPanel = observer(
     const toggleHumanizePropertyName = (): void =>
       explorerState.setHumanizePropertyName(
         !explorerState.humanizePropertyName,
+      );
+    const toggleHighlightUsedProperties = (): void =>
+      explorerState.setHighlightUsedProperties(
+        !explorerState.highlightUsedProperties,
       );
     const togglePropertySearch = (): void => {
       if (explorerState.treeData) {
@@ -821,6 +851,16 @@ export const QueryBuilderExplorerPanel = observer(
                     </MenuContentItemIcon>
                     <MenuContentItemLabel>
                       Humanize Property Name
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                  <MenuContentItem onClick={toggleHighlightUsedProperties}>
+                    <MenuContentItemIcon>
+                      {explorerState.highlightUsedProperties ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Highlight already used properties
                     </MenuContentItemLabel>
                   </MenuContentItem>
                 </MenuContent>

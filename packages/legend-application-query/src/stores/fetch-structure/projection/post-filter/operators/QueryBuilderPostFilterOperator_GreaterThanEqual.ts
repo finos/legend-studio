@@ -22,7 +22,7 @@ import {
   SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../QueryBuilder_Const.js';
-import { buildPostFilterConditionState } from '../QueryBuilderPostFilterValueSpecificationProcessor.js';
+import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,

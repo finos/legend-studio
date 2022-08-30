@@ -175,7 +175,7 @@ export const TEST_DATA__simpleProjectionWithSubtype = {
           values: [
             {
               _type: 'string',
-              values: ['(@Person)/First Name'],
+              values: ['First Name'],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
@@ -1727,7 +1727,7 @@ export const TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel = {
           values: [
             {
               _type: 'string',
-              values: ['(@Firm)/Employees/First Name'],
+              values: ['First Name'],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,

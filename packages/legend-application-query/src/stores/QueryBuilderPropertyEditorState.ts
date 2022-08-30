@@ -312,21 +312,14 @@ export const getPropertyChainName = (
   const propertyNameDecorator = humanizePropertyName
     ? prettyPropertyName
     : (val: string): string => val;
-  const propertyNameChain = [
-    propertyNameDecorator(propertyExpression.func.name),
-  ];
+  const chunks = [propertyNameDecorator(propertyExpression.func.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
     currentExpression = getNullableFirstElement(
       currentExpression.parametersValues,
     );
-    if (currentExpression instanceof AbstractPropertyExpression) {
-      propertyNameChain.unshift(
-        propertyNameDecorator(currentExpression.func.name),
-      );
-    }
-    // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)
-    // $x.employees->subType(@Person)->subType(@Staff)
+    // Take care of chain of subtypes (a pattern that is not useful, but we want to support and potentially rectify)
+    // $x.employees->subType(@Person)->subType(@Staff).department
     while (
       currentExpression instanceof SimpleFunctionExpression &&
       matchFunctionName(
@@ -334,23 +327,38 @@ export const getPropertyChainName = (
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
       )
     ) {
-      const propertyWithSubtype = `(${TYPE_CAST_TOKEN}${propertyNameDecorator(
+      const subtypeChunk = `${TYPE_CAST_TOKEN}(${propertyNameDecorator(
         currentExpression.parametersValues.filter(
           (param) => param instanceof InstanceValue,
         )[0]?.genericType?.value.rawType.name ?? '',
-      )})${propertyNameDecorator(
-        currentExpression.parametersValues[0] instanceof
-          AbstractPropertyExpression
-          ? currentExpression.parametersValues[0]?.func.name
-          : '',
-      )}`;
-      propertyNameChain.unshift(propertyWithSubtype);
+      )})`;
+      chunks.unshift(subtypeChunk);
       currentExpression = getNullableFirstElement(
         currentExpression.parametersValues,
       );
     }
+    if (currentExpression instanceof AbstractPropertyExpression) {
+      chunks.unshift(propertyNameDecorator(currentExpression.func.name));
+    }
   }
-  return propertyNameChain.join(humanizePropertyName ? '/' : '.');
+  const processedChunks: string[] = [];
+  for (const chunk of chunks) {
+    if (!processedChunks.length) {
+      processedChunks.push(chunk);
+    } else {
+      const latestProcessedChunk = guaranteeNonNullable(
+        processedChunks[processedChunks.length - 1],
+      );
+      if (latestProcessedChunk.startsWith(TYPE_CAST_TOKEN)) {
+        processedChunks[
+          processedChunks.length - 1
+        ] = `${latestProcessedChunk}${chunk}`;
+      } else {
+        processedChunks.push(chunk);
+      }
+    }
+  }
+  return processedChunks.join(humanizePropertyName ? '/' : '.');
 };
 
 export const getPropertyPath = (

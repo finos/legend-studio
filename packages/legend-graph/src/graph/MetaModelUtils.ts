@@ -39,10 +39,14 @@ export const extractElementNameFromPath = (fullPath: string): string =>
 
 export const matchFunctionName = (
   functionName: string,
-  functionFullPath: string,
+  functionFullPaths: string | string[],
 ): boolean =>
-  functionName === functionFullPath ||
-  extractElementNameFromPath(functionFullPath) === functionName;
+  Array.isArray(functionFullPaths)
+    ? functionFullPaths.some((functionFullPath) =>
+        matchFunctionName(functionName, functionFullPath),
+      )
+    : functionName === functionFullPaths ||
+      extractElementNameFromPath(functionFullPaths) === functionName;
 
 /**
  * This method concatenate 2 fully-qualified elementh paths to form a single one

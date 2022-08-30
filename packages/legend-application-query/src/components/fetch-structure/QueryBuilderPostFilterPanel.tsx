@@ -51,6 +51,7 @@ import {
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -98,18 +99,18 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
+import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      queryBuilderState: QueryBuilderState;
+      projectionState: QueryBuilderProjectionState;
       node: QueryBuilderPostFilterTreeNodeData;
     }
   >(function QueryBuilderPostFilterConditionContextMenu(props, ref) {
-    const { queryBuilderState, node } = props;
-    const postFilterState =
-      queryBuilderState.fetchStructureState.projectionState.postFilterState;
+    const { projectionState, node } = props;
+    const postFilterState = projectionState.postFilterState;
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
     const createCondition = (): void => {
@@ -549,18 +550,17 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     props: TreeNodeContainerProps<
       QueryBuilderPostFilterTreeNodeData,
       {
-        queryBuilderState: QueryBuilderState;
+        projectionState: QueryBuilderProjectionState;
       }
     >,
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-    const { queryBuilderState } = innerProps;
+    const { projectionState: projectionState } = innerProps;
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
-    const postFilterState =
-      queryBuilderState.fetchStructureState.projectionState.postFilterState;
+    const postFilterState = projectionState.postFilterState;
     const isExpandable =
       node instanceof QueryBuilderPostFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
@@ -671,7 +671,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       <ContextMenu
         content={
           <QueryBuilderPostFilterConditionContextMenu
-            queryBuilderState={queryBuilderState}
+            projectionState={projectionState}
             node={node}
           />
         }
@@ -760,7 +760,7 @@ const QueryBuilderPostFilterTreeNodeView = observer(
     props: TreeNodeViewProps<
       QueryBuilderPostFilterTreeNodeData,
       {
-        queryBuilderState: QueryBuilderState;
+        projectionState: QueryBuilderProjectionState;
       }
     >,
   ) => {
@@ -798,10 +798,9 @@ const QueryBuilderPostFilterTreeNodeView = observer(
 );
 
 const QueryBuilderPostFilterTree = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
-    const postFilterState =
-      queryBuilderState.fetchStructureState.projectionState.postFilterState;
+  (props: { projectionState: QueryBuilderProjectionState }) => {
+    const { projectionState } = props;
+    const postFilterState = projectionState.postFilterState;
     const rootNodes = postFilterState.rootIds.map((rootId) =>
       postFilterState.getNode(rootId),
     );
@@ -827,7 +826,7 @@ const QueryBuilderPostFilterTree = observer(
               getChildNodes={getChildNodes}
               onNodeSelect={onNodeSelect}
               innerProps={{
-                queryBuilderState,
+                projectionState: projectionState,
               }}
             />
           ))}
@@ -837,12 +836,11 @@ const QueryBuilderPostFilterTree = observer(
   },
 );
 
-export const QueryBuilderPostFilterPanel = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
+const QueryBuilderPostFilterPanelContent = observer(
+  (props: { projectionState: QueryBuilderProjectionState }) => {
+    const { projectionState } = props;
     const applicationStore = useApplicationStore();
-    const postFilterState =
-      queryBuilderState.fetchStructureState.projectionState.postFilterState;
+    const postFilterState = projectionState.postFilterState;
     const rootNode = postFilterState.getRootNode();
     // actions
     const collapseTree = (): void => {
@@ -902,7 +900,7 @@ export const QueryBuilderPostFilterPanel = observer(
           const columnState = (item as QueryBuilderProjectionColumnDragSource)
             .columnState;
           const aggregateColumnState =
-            queryBuilderState.fetchStructureState.projectionState.aggregationState.columns.find(
+            projectionState.aggregationState.columns.find(
               (column) => column.projectionColumnState === columnState,
             );
           if (
@@ -940,8 +938,7 @@ export const QueryBuilderPostFilterPanel = observer(
       [
         applicationStore,
         postFilterState,
-        queryBuilderState.fetchStructureState.projectionState.aggregationState
-          .columns,
+        projectionState.aggregationState.columns,
       ],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
@@ -962,10 +959,11 @@ export const QueryBuilderPostFilterPanel = observer(
       }),
       [applicationStore, handleDrop],
     );
+
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
-        className="panel query-builder__filter"
+        className="panel"
       >
         <div className="panel__header">
           <div className="panel__header__title">
@@ -1037,7 +1035,7 @@ export const QueryBuilderPostFilterPanel = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content query-builder__filter__content">
+        <div className="panel__content">
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -1056,13 +1054,49 @@ export const QueryBuilderPostFilterPanel = observer(
                   ): string => item.node.dragPreviewLabel}
                   types={Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE)}
                 />
-                <QueryBuilderPostFilterTree
-                  queryBuilderState={queryBuilderState}
-                />
+                <QueryBuilderPostFilterTree projectionState={projectionState} />
               </>
             )}
           </PanelDropZone>
         </div>
+      </div>
+    );
+  },
+);
+
+export const QueryBuilderPostFilterPanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const fetchStructureImplementation =
+      queryBuilderState.fetchStructureState.implementation;
+
+    return (
+      <div
+        data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
+        className="panel"
+      >
+        {fetchStructureImplementation instanceof
+          QueryBuilderProjectionState && (
+          <QueryBuilderPostFilterPanelContent
+            projectionState={fetchStructureImplementation}
+          />
+        )}
+        {!(
+          fetchStructureImplementation instanceof QueryBuilderProjectionState
+        ) && (
+          <>
+            <div className="panel__header">
+              <div className="panel__header__title">
+                <div className="panel__header__title__label">post-filter</div>
+              </div>
+            </div>
+            <div className="panel__content">
+              <BlankPanelContent>
+                Post-filter is not supported for the current fetch-structure
+              </BlankPanelContent>
+            </div>
+          </>
+        )}
       </div>
     );
   },

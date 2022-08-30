@@ -18,7 +18,7 @@ import type {
   RawLambda,
   AbstractPropertyExpression,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderAggregateOperator_Average } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Average.js';
 import { QueryBuilderAggregateOperator_Count } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Count.js';
 import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_DistinctCount.js';
@@ -34,6 +34,7 @@ import {
   SortColumnState,
 } from './fetch-structure/projection/QueryResultSetModifierState.js';
 import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
+import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';
@@ -73,13 +74,13 @@ const NUMERIC_AGG_FUNC_TO_AGG_OP: [
   ],
 ];
 
-const createProjectionColumn = (
-  queryBuilderState: QueryBuilderState,
+const createSimpleProjectionColumn = (
+  projectionState: QueryBuilderProjectionState,
   propertyExpression: AbstractPropertyExpression,
   columnName: string,
 ): QueryBuilderSimpleProjectionColumnState => {
   const col = new QueryBuilderSimpleProjectionColumnState(
-    queryBuilderState.fetchStructureState.projectionState,
+    projectionState,
     propertyExpression,
     false,
   );
@@ -130,11 +131,14 @@ export const buildNumericPreviewDataQuery = (
   //   ]
   // )
   const builderState = createQueryBuilderState(queryBuilderState);
-  const projectionState = builderState.fetchStructureState.projectionState;
+  const projectionState = guaranteeType(
+    builderState.fetchStructureState.implementation,
+    QueryBuilderProjectionState,
+  );
   const aggregationState = projectionState.aggregationState;
   NUMERIC_AGG_FUNC_TO_AGG_OP.forEach((val) => {
-    const colState = createProjectionColumn(
-      builderState,
+    const colState = createSimpleProjectionColumn(
+      projectionState,
       propertyExpression,
       val[0],
     );
@@ -167,35 +171,40 @@ export const buildNonNumericPreviewDataQuery = (
   //   ]
   // )->sort([desc('Count'), asc('Value')])->take(10)
   const builderState = createQueryBuilderState(queryBuilderState);
-  const valueProjectionColState = createProjectionColumn(
-    builderState,
+  const projectionState = guaranteeType(
+    builderState.fetchStructureState.implementation,
+    QueryBuilderProjectionState,
+  );
+  const valueProjectionColState = createSimpleProjectionColumn(
+    projectionState,
     propertyExpression,
     PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME,
   );
-  const valueCountProjectionState = createProjectionColumn(
-    builderState,
+  const valueCountProjectionState = createSimpleProjectionColumn(
+    projectionState,
     propertyExpression,
     PREVIEW_DATA_NON_NUMERIC_COUNT_COLUMN_NAME,
   );
-  builderState.fetchStructureState.projectionState.columns = [
+  projectionState.columns = [
     valueProjectionColState,
     valueCountProjectionState,
   ];
   const distinctCountOp = guaranteeNonNullable(
-    builderState.fetchStructureState.projectionState.aggregationState.operators.find(
+    projectionState.aggregationState.operators.find(
       (t) => t instanceof QueryBuilderAggregateOperator_Count,
     ),
   );
-  builderState.fetchStructureState.projectionState.aggregationState.changeColumnAggregateOperator(
+  projectionState.aggregationState.changeColumnAggregateOperator(
     distinctCountOp,
     valueCountProjectionState,
   );
   // result set
-  builderState.fetchStructureState.projectionState.resultSetModifierState.limit =
-    PREVIEW_DATA_TAKE_LIMIT;
+  projectionState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
   const sortValueCount = new SortColumnState(valueCountProjectionState);
   sortValueCount.sortType = COLUMN_SORT_TYPE.DESC;
-  builderState.fetchStructureState.projectionState.resultSetModifierState.sortColumns =
-    [sortValueCount, new SortColumnState(valueProjectionColState)];
+  projectionState.resultSetModifierState.sortColumns = [
+    sortValueCount,
+    new SortColumnState(valueProjectionColState),
+  ];
   return builderState.resultState.buildExecutionRawLambda();
 };
