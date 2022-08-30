@@ -67,19 +67,21 @@ import { QueryParametersState } from './QueryParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
+import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 
 export abstract class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
-  querySetupState: QueryBuilderSetupState;
+  setupState: QueryBuilderSetupState;
+  milestoningState: QueryBuilderMilestoningState;
   explorerState: QueryBuilderExplorerState;
-  queryParametersState: QueryParametersState;
-  queryFunctionsExplorerState: QueryFunctionsExplorerState;
+  parametersState: QueryParametersState;
+  functionsExplorerState: QueryFunctionsExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultState: QueryBuilderResultState;
-  queryTextEditorState: QueryTextEditorState;
+  textEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   observableContext: ObserverContext;
   changeDetectionState: QueryBuilderChangeDetectionState;
@@ -96,14 +98,14 @@ export abstract class QueryBuilderState {
     graphManagerState: GraphManagerState,
   ) {
     makeObservable(this, {
-      querySetupState: observable,
+      setupState: observable,
       explorerState: observable,
-      queryParametersState: observable,
-      queryFunctionsExplorerState: observable,
+      parametersState: observable,
+      functionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
       resultState: observable,
-      queryTextEditorState: observable,
+      textEditorState: observable,
       queryUnsupportedState: observable,
       isCompiling: observable,
       backdrop: observable,
@@ -124,14 +126,15 @@ export abstract class QueryBuilderState {
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
 
-    this.querySetupState = new QueryBuilderSetupState(this);
+    this.setupState = new QueryBuilderSetupState(this);
+    this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.queryParametersState = new QueryParametersState(this);
-    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
+    this.parametersState = new QueryParametersState(this);
+    this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultState = new QueryBuilderResultState(this);
-    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.textEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.observableContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
@@ -163,7 +166,7 @@ export abstract class QueryBuilderState {
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
     if (!this.isQuerySupported()) {
-      const parameters = this.queryParametersState.parameterStates.map((e) =>
+      const parameters = this.parametersState.parameterStates.map((e) =>
         this.graphManagerState.graphManager.serializeValueSpecification(
           e.parameter,
         ),
@@ -185,16 +188,17 @@ export abstract class QueryBuilderState {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
     this.resultState = resultState;
-    this.queryTextEditorState = new QueryTextEditorState(this);
+    this.textEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.setShowParameterPanel(false);
   }
 
   resetQueryContent(): void {
+    this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
-    this.queryParametersState = new QueryParametersState(this);
-    this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
+    this.parametersState = new QueryParametersState(this);
+    this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     const currentFetchStructureImplementationType =
       this.fetchStructureState.implementation.type;
@@ -212,7 +216,7 @@ export abstract class QueryBuilderState {
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
     try {
       this.buildStateFromRawLambda(rawLambda);
-      if (this.queryParametersState.parameterStates.length > 0) {
+      if (this.parametersState.parameterStates.length > 0) {
         this.setShowParameterPanel(true);
       }
     } catch (error) {
@@ -276,24 +280,24 @@ export abstract class QueryBuilderState {
       ),
       GenericTypeExplicitReference.create(
         new GenericType(
-          this.queryParametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+          this.parametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
             PRIMITIVE_TYPE.DATE,
           ),
         ),
       ),
     );
     if (
-      !this.queryParametersState.parameterStates.find(
+      !this.parametersState.parameterStates.find(
         (p) => p.variableName === parameterName,
       )
     ) {
       const variableState = new LambdaParameterState(
         milestoningParameter,
-        this.querySetupState.queryBuilderState.observableContext,
-        this.querySetupState.queryBuilderState.graphManagerState.graph,
+        this.setupState.queryBuilderState.observableContext,
+        this.setupState.queryBuilderState.graphManagerState.graph,
       );
       variableState.mockParameterValue();
-      this.queryParametersState.addParameter(variableState);
+      this.parametersState.addParameter(variableState);
     }
     return milestoningParameter;
   }
@@ -319,12 +323,12 @@ export abstract class QueryBuilderState {
   }
 
   *compileQuery(): GeneratorFn<void> {
-    if (!this.queryTextEditorState.mode) {
+    if (!this.textEditorState.mode) {
       this.isCompiling = true;
       this.clearCompilationError();
       // form mode
       try {
-        this.queryTextEditorState.setCompilationError(undefined);
+        this.textEditorState.setCompilationError(undefined);
         // NOTE: retain the source information on the lambda in order to be able
         // to pin-point compilation issue in form mode
         (yield this.graphManagerState.graphManager.getLambdaReturnType(
@@ -354,7 +358,7 @@ export abstract class QueryBuilderState {
           this.applicationStore.notifyWarning(
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
           );
-          this.queryTextEditorState.openModal(QueryTextEditorMode.TEXT);
+          this.textEditorState.openModal(QueryTextEditorMode.TEXT);
           // TODO: trigger another compilation to pin-point the issue
           // since we're using the lambda editor right now, we are a little bit limitted
           // in terms of the timing to do compilation (since we're using an `useEffect` to
@@ -369,12 +373,12 @@ export abstract class QueryBuilderState {
       } finally {
         this.isCompiling = false;
       }
-    } else if (this.queryTextEditorState.mode === QueryTextEditorMode.TEXT) {
+    } else if (this.textEditorState.mode === QueryTextEditorMode.TEXT) {
       this.isCompiling = true;
       try {
-        this.queryTextEditorState.setCompilationError(undefined);
+        this.textEditorState.setCompilationError(undefined);
         (yield this.graphManagerState.graphManager.getLambdaReturnType(
-          this.queryTextEditorState.rawLambdaState.lambda,
+          this.textEditorState.rawLambdaState.lambda,
           this.graphManagerState.graph,
           { keepSourceInformation: true },
         )) as string;
@@ -393,7 +397,7 @@ export abstract class QueryBuilderState {
             error.sourceInformation,
           );
           if (errorElementCoordinates) {
-            this.queryTextEditorState.setCompilationError(error);
+            this.textEditorState.setCompilationError(error);
           }
         }
       } finally {
@@ -405,8 +409,9 @@ export abstract class QueryBuilderState {
   changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this.resetQueryBuilder();
     this.resetQueryContent();
-    this.querySetupState.setClass(val, isRebuildingState);
+    this.setupState.setClass(val, isRebuildingState);
     this.explorerState.refreshTreeData();
+    this.milestoningState.updateMilestoningConfiguration();
     this.fetchStructureState.implementation.onClassChange(val);
   }
 

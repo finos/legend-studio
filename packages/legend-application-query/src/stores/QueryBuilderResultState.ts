@@ -109,11 +109,11 @@ export class QueryBuilderResultState {
       );
       if (
         !this.queryBuilderState.isParametersDisabled &&
-        this.queryBuilderState.queryParametersState.parameterStates.length
+        this.queryBuilderState.parametersState.parameterStates.length
       ) {
         const letlambdaFunction = buildParametersLetLambdaFunc(
           this.queryBuilderState.graphManagerState.graph,
-          this.queryBuilderState.queryParametersState.parameterStates,
+          this.queryBuilderState.parametersState.parameterStates,
         );
         const letRawLambda = buildRawLambdaFromLambdaFunction(
           letlambdaFunction,
@@ -138,11 +138,11 @@ export class QueryBuilderResultState {
     try {
       this.exportDataState.inProgress();
       const mapping = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.mapping,
+        this.queryBuilderState.setupState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtimeValue,
+        this.queryBuilderState.setupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
@@ -190,11 +190,11 @@ export class QueryBuilderResultState {
     try {
       this.isRunningQuery = true;
       const mapping = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.mapping,
+        this.queryBuilderState.setupState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtimeValue,
+        this.queryBuilderState.setupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
@@ -228,11 +228,11 @@ export class QueryBuilderResultState {
     try {
       this.isGeneratingPlan = true;
       const mapping = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.mapping,
+        this.queryBuilderState.setupState.mapping,
         'Mapping is required to execute query',
       );
       const runtime = guaranteeNonNullable(
-        this.queryBuilderState.querySetupState.runtimeValue,
+        this.queryBuilderState.setupState.runtimeValue,
         `Runtime is required to execute query`,
       );
       const query = this.queryBuilderState.getQuery();

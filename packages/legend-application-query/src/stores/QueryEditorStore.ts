@@ -111,18 +111,18 @@ export class QueryExportState {
   get allowPersist(): boolean {
     return (
       !this.persistQueryState.isInProgress &&
-      Boolean(this.editorStore.queryBuilderState.querySetupState.mapping) &&
-      this.editorStore.queryBuilderState.querySetupState.runtimeValue instanceof
+      Boolean(this.editorStore.queryBuilderState.setupState.mapping) &&
+      this.editorStore.queryBuilderState.setupState.runtimeValue instanceof
         RuntimePointer
     );
   }
 
   async persistQuery(createNew: boolean): Promise<void> {
     if (
-      !this.editorStore.queryBuilderState.querySetupState.mapping ||
+      !this.editorStore.queryBuilderState.setupState.mapping ||
       !(
-        this.editorStore.queryBuilderState.querySetupState
-          .runtimeValue instanceof RuntimePointer
+        this.editorStore.queryBuilderState.setupState.runtimeValue instanceof
+        RuntimePointer
       )
     ) {
       return;
@@ -131,10 +131,10 @@ export class QueryExportState {
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
-      this.editorStore.queryBuilderState.querySetupState.mapping,
+      this.editorStore.queryBuilderState.setupState.mapping,
     );
     query.runtime =
-      this.editorStore.queryBuilderState.querySetupState.runtimeValue.packageableRuntime;
+      this.editorStore.queryBuilderState.setupState.runtimeValue.packageableRuntime;
     this.decorator?.(query);
     try {
       query.content =
@@ -430,12 +430,12 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setMapping(
+    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.setupState.setMapping(
       this.graphManagerState.graph.getMapping(this.mappingPath),
     );
-    this.queryBuilderState.querySetupState.setRuntimeValue(
+    this.queryBuilderState.setupState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.graphManagerState.graph.getRuntime(this.runtimePath),
@@ -446,7 +446,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       this.queryBuilderState.changeClass(
         this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
       );
-      this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
+      this.queryBuilderState.setupState.setClassIsReadOnly(true);
     } else {
       // try to find a class to set
       // first, find classes which is mapped by the mapping
@@ -454,9 +454,9 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       // if none found, default to a dummy blank query
       const defaultClass =
         getNullableFirstElement(
-          this.queryBuilderState.querySetupState.mapping
+          this.queryBuilderState.setupState.mapping
             ? getAllClassMappings(
-                this.queryBuilderState.querySetupState.mapping,
+                this.queryBuilderState.setupState.mapping,
               ).map((classMapping) => classMapping.class.value)
             : [],
         ) ??
@@ -522,8 +522,8 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
 
     const service = this.graphManagerState.graph.getService(this.servicePath);
     assertType(
@@ -543,10 +543,10 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
         ),
         `Can't process service execution: execution with key '${this.executionKey}' is not found`,
       );
-      this.queryBuilderState.querySetupState.setMapping(
+      this.queryBuilderState.setupState.setMapping(
         serviceExecution.mapping.value,
       );
-      this.queryBuilderState.querySetupState.setRuntimeValue(
+      this.queryBuilderState.setupState.setRuntimeValue(
         serviceExecution.runtime,
       );
     } else {
@@ -555,10 +555,10 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
         PureSingleExecution,
         `Can't process service execution: no execution key is provided, expecting Pure single execution`,
       );
-      this.queryBuilderState.querySetupState.setMapping(
+      this.queryBuilderState.setupState.setMapping(
         service.execution.mapping.value,
       );
-      this.queryBuilderState.querySetupState.setRuntimeValue(
+      this.queryBuilderState.setupState.setRuntimeValue(
         service.execution.runtime,
       );
     }
@@ -625,15 +625,15 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
+    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
+    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
 
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
     );
-    this.queryBuilderState.querySetupState.setMapping(query.mapping.value);
-    this.queryBuilderState.querySetupState.setRuntimeValue(
+    this.queryBuilderState.setupState.setMapping(query.mapping.value);
+    this.queryBuilderState.setupState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       ),

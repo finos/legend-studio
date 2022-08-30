@@ -63,7 +63,7 @@ const VariableExpressionEditor = observer(
     // main state
     const { queryBuilderState, lambdaParameterState } = props;
     const applicationStore = useApplicationStore();
-    const queryParametersState = queryBuilderState.queryParametersState;
+    const queryParametersState = queryBuilderState.parametersState;
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
     const varState = lambdaParameterState.parameter;
@@ -252,7 +252,7 @@ export const VariableExpressionViewer = observer(
     variableExpressionState: LambdaParameterState;
   }) => {
     const { queryBuilderState, variableExpressionState } = props;
-    const queryParameterState = queryBuilderState.queryParametersState;
+    const queryParameterState = queryBuilderState.parametersState;
     const variable = variableExpressionState.parameter;
     const name = variable.name;
     const variableType = variable.genericType?.value.rawType;
@@ -321,9 +321,9 @@ export const VariableExpressionViewer = observer(
 export const QueryBuilderParameterPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const queryParameterState = queryBuilderState.queryParametersState;
+    const queryParameterState = queryBuilderState.parametersState;
     const parametersDisabled = Boolean(queryBuilderState.isParametersDisabled);
-    const varNames = queryBuilderState.queryParametersState.parameterStates.map(
+    const varNames = queryBuilderState.parametersState.parameterStates.map(
       (e) => e.variableName,
     );
     const addParameter = (): void => {

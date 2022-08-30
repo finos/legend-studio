@@ -81,7 +81,7 @@ const processGetAllExpression = (
     Class,
     `Can't process getAll() expression: getAll() return type is missing`,
   );
-  queryBuilderState.querySetupState.setClass(_class, true);
+  queryBuilderState.setupState.setClass(_class, true);
   queryBuilderState.explorerState.refreshTreeData();
 
   // check parameters (milestoning) and build state
@@ -97,10 +97,10 @@ const processGetAllExpression = (
         expression.parametersValues.length === acceptedNoOfParameters,
         `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters`,
       );
-      queryBuilderState.querySetupState.setProcessingDate(
+      queryBuilderState.milestoningState.setProcessingDate(
         expression.parametersValues[1],
       );
-      queryBuilderState.querySetupState.setBusinessDate(
+      queryBuilderState.milestoningState.setBusinessDate(
         expression.parametersValues[2],
       );
       break;
@@ -110,7 +110,7 @@ const processGetAllExpression = (
         expression.parametersValues.length === acceptedNoOfParameters,
         `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
       );
-      queryBuilderState.querySetupState.setBusinessDate(
+      queryBuilderState.milestoningState.setBusinessDate(
         expression.parametersValues[1],
       );
       break;
@@ -120,7 +120,7 @@ const processGetAllExpression = (
         expression.parametersValues.length === acceptedNoOfParameters,
         `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
       );
-      queryBuilderState.querySetupState.setProcessingDate(
+      queryBuilderState.milestoningState.setProcessingDate(
         expression.parametersValues[1],
       );
       break;
@@ -553,7 +553,7 @@ export const processParameters = (
   parameters: VariableExpression[],
   queryBuilderState: QueryBuilderState,
 ): void => {
-  const queryParameterState = queryBuilderState.queryParametersState;
+  const queryParameterState = queryBuilderState.parametersState;
   parameters.forEach((parameter) => {
     const parameterState = new LambdaParameterState(
       parameter,

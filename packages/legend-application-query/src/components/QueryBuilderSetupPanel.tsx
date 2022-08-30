@@ -92,19 +92,19 @@ const generateClassLabel = (
     switch (milestoneStereotype) {
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
         milestoningParameterValues = `Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.businessDate,
+          queryBuilderState.milestoningState.businessDate,
         )}`;
         break;
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.processingDate,
+          queryBuilderState.milestoningState.processingDate,
         )}`;
         break;
       case MILESTONING_STEREOTYPE.BITEMPORAL:
         milestoningParameterValues = `Processing Date: ${getParameterValue(
-          queryBuilderState.querySetupState.processingDate,
+          queryBuilderState.milestoningState.processingDate,
         )}, Business Date: ${getParameterValue(
-          queryBuilderState.querySetupState.businessDate,
+          queryBuilderState.milestoningState.businessDate,
         )}`;
         break;
       default:
@@ -152,7 +152,7 @@ export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const querySetupState = queryBuilderState.querySetupState;
+    const querySetupState = queryBuilderState.setupState;
     const [isMilestoneEditorOpened, setIsMilestoneEditorOpened] =
       useState<boolean>(false);
     const elementFilterOption = createFilter({
@@ -163,12 +163,10 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = queryBuilderState.querySetupState.classes.map(
-      (_class) => ({
-        value: _class,
-        label: generateClassLabel(_class, queryBuilderState),
-      }),
-    );
+    const classOptions = queryBuilderState.setupState.classes.map((_class) => ({
+      value: _class,
+      label: generateClassLabel(_class, queryBuilderState),
+    }));
     const selectedClassOption = querySetupState._class
       ? {
           value: querySetupState._class,
@@ -243,7 +241,8 @@ export const QueryBuilderSetupPanel = observer(
       setIsMilestoneEditorOpened(false);
     };
     const isMilestonedQuery = Boolean(
-      querySetupState.businessDate ?? querySetupState.processingDate,
+      queryBuilderState.milestoningState.businessDate ??
+        queryBuilderState.milestoningState.processingDate,
     );
 
     return (

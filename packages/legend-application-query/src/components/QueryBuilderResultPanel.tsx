@@ -396,14 +396,14 @@ export const QueryBuilderResultPanel = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const resultState = queryBuilderState.resultState;
-    const queryParametersState = queryBuilderState.queryParametersState;
+    const queryParametersState = queryBuilderState.parametersState;
     const executionResult = resultState.executionResult;
     const USER_ATTESTATION_MESSAGE =
       'I attest that I am aware of the sensitive data leakage risk when exporting queried data. The data I export will only be used by me.';
     const exportQueryResults = async (
       format: EXECUTION_SERIALIZATION_FORMAT,
     ): Promise<void> => {
-      if (queryBuilderState.queryParametersState.parameterStates.length) {
+      if (queryBuilderState.parametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
           (): Promise<void> =>
             flowResult(resultState.exportData(format)).catch(

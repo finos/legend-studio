@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, observable } from 'mobx';
+import { action, makeAutoObservable } from 'mobx';
 import { getNullableFirstElement, uniq } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -22,14 +22,8 @@ import {
   type Mapping,
   type PackageableRuntime,
   type Runtime,
-  type ValueSpecification,
-  getMilestoneTemporalStereotype,
   PackageableElementExplicitReference,
   RuntimePointer,
-  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-  MILESTONING_STEREOTYPE,
-  observe_ValueSpecification,
   getAllIncludedMappings,
 } from '@finos/legend-graph';
 
@@ -43,22 +37,13 @@ export class QueryBuilderSetupState {
   runtimeIsReadOnly = false;
   showSetupPanel = true;
 
-  // TODO: Change this when we modify how we deal with milestoning.
-  // See https://github.com/finos/legend-studio/issues/1149
-  businessDate?: ValueSpecification | undefined;
-  processingDate?: ValueSpecification | undefined;
-
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
-      processingDate: observable,
-      businessDate: observable,
       setQueryBuilderState: action,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
-      setProcessingDate: action,
-      setBusinessDate: action,
       setShowSetupPanel: action,
       setClassIsReadOnly: action,
       setMappingIsReadOnly: action,
@@ -66,41 +51,6 @@ export class QueryBuilderSetupState {
     });
 
     this.queryBuilderState = queryBuilderState;
-  }
-
-  private initializeQueryMilestoningParameters(stereotype: string): void {
-    switch (stereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        this.setBusinessDate(
-          this.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        this.setProcessingDate(
-          this.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        this.setProcessingDate(
-          this.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        this.setBusinessDate(
-          this.queryBuilderState.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-          ),
-        );
-        break;
-      }
-      default:
-    }
   }
 
   get classes(): Class[] {
@@ -183,19 +133,6 @@ export class QueryBuilderSetupState {
         this.setMapping(possibleMapping);
       }
     }
-    if (val !== undefined) {
-      const stereotype = getMilestoneTemporalStereotype(
-        val,
-        this.queryBuilderState.graphManagerState.graph,
-      );
-      this.setBusinessDate(undefined);
-      this.setProcessingDate(undefined);
-      if (stereotype) {
-        this.initializeQueryMilestoningParameters(stereotype);
-        // Show the parameter panel because we populate paramaters state with milestoning parameters
-        this.queryBuilderState.setShowParameterPanel(true);
-      }
-    }
   }
 
   setMapping(val: Mapping | undefined): void {
@@ -214,23 +151,5 @@ export class QueryBuilderSetupState {
       // TODO?: we should consider if we allow users to use custom runtime here
       this.setRuntimeValue(undefined);
     }
-  }
-
-  setProcessingDate(val: ValueSpecification | undefined): void {
-    this.processingDate = val
-      ? observe_ValueSpecification(
-          val,
-          this.queryBuilderState.observableContext,
-        )
-      : val;
-  }
-
-  setBusinessDate(val: ValueSpecification | undefined): void {
-    this.businessDate = val
-      ? observe_ValueSpecification(
-          val,
-          this.queryBuilderState.observableContext,
-        )
-      : val;
   }
 }

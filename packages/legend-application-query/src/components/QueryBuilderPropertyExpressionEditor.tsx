@@ -234,7 +234,7 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 List of available parameters
               </div>
               <div className="panel__content__form__section__list__items">
-                {propertyExpressionState.queryBuilderState.queryParametersState.parameterStates.map(
+                {propertyExpressionState.queryBuilderState.parametersState.parameterStates.map(
                   (parameter) => (
                     <VariableExpressionViewer
                       key={parameter.uuid}

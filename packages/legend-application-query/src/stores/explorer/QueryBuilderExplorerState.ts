@@ -649,8 +649,8 @@ export class QueryBuilderExplorerState {
   }
 
   refreshTreeData(): void {
-    const _class = this.queryBuilderState.querySetupState._class;
-    const _mapping = this.queryBuilderState.querySetupState.mapping;
+    const _class = this.queryBuilderState.setupState._class;
+    const _mapping = this.queryBuilderState.setupState.mapping;
     this.setTreeData(
       _class && _mapping && this.mappingModelCoverageAnalysisResult
         ? getQueryBuilderTreeData(
@@ -662,7 +662,7 @@ export class QueryBuilderExplorerState {
   }
 
   *analyzeMappingModelCoverage(): GeneratorFn<void> {
-    if (this.queryBuilderState.querySetupState.mapping) {
+    if (this.queryBuilderState.setupState.mapping) {
       this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.inProgress();
       this.queryBuilderState.explorerState.mappingModelCoverageAnalysisState.setMessage(
         'Analyzing Mapping...',
@@ -670,7 +670,7 @@ export class QueryBuilderExplorerState {
       try {
         this.mappingModelCoverageAnalysisResult = (yield flowResult(
           this.queryBuilderState.graphManagerState.graphManager.analyzeMappingModelCoverage(
-            this.queryBuilderState.querySetupState.mapping,
+            this.queryBuilderState.setupState.mapping,
             this.queryBuilderState.graphManagerState.graph,
           ),
         )) as MappingModelCoverageAnalysisResult;
@@ -686,7 +686,7 @@ export class QueryBuilderExplorerState {
   *previewData(
     node: QueryBuilderExplorerTreePropertyNodeData,
   ): GeneratorFn<void> {
-    const runtime = this.queryBuilderState.querySetupState.runtimeValue;
+    const runtime = this.queryBuilderState.setupState.runtimeValue;
     if (!runtime) {
       this.queryBuilderState.applicationStore.notifyWarning(
         `Can't preview data for property '${node.property.name}': runtime is not specified`,
@@ -695,8 +695,8 @@ export class QueryBuilderExplorerState {
     }
     if (
       !node.mappingData.mapped ||
-      !this.queryBuilderState.querySetupState._class ||
-      !this.queryBuilderState.querySetupState.mapping
+      !this.queryBuilderState.setupState._class ||
+      !this.queryBuilderState.setupState.mapping
     ) {
       return;
     }
@@ -735,7 +735,7 @@ export class QueryBuilderExplorerState {
                 this.queryBuilderState,
                 propertyExpression,
               ),
-              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.setupState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;
@@ -774,7 +774,7 @@ export class QueryBuilderExplorerState {
                 this.queryBuilderState,
                 propertyExpression,
               ),
-              this.queryBuilderState.querySetupState.mapping,
+              this.queryBuilderState.setupState.mapping,
               runtime,
               this.queryBuilderState.graphManagerState.graph,
             )) as ExecutionResult;

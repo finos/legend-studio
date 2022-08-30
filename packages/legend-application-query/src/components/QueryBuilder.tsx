@@ -63,7 +63,7 @@ const QueryBuilderStatusBar = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const openLambdaEditor = (mode: QueryTextEditorMode): void =>
-      queryBuilderState.queryTextEditorState.openModal(mode);
+      queryBuilderState.textEditorState.openModal(mode);
     const compile = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.compileQuery()),
     );
@@ -188,8 +188,8 @@ export const QueryBuilder = observer(
                   <MenuContentItem
                     onClick={toggleShowParameterPanel}
                     disabled={
-                      queryBuilderState.queryParametersState.parameterStates
-                        .length > 0
+                      queryBuilderState.parametersState.parameterStates.length >
+                      0
                     }
                   >
                     <MenuContentItemIcon>
@@ -289,15 +289,14 @@ export const QueryBuilder = observer(
                     <ResizablePanelGroup orientation="vertical">
                       <ResizablePanel size={450} minSize={300}>
                         <ResizablePanelGroup orientation="horizontal">
-                          {queryBuilderState.querySetupState.showSetupPanel && (
+                          {queryBuilderState.setupState.showSetupPanel && (
                             <ResizablePanel minSize={40} direction={1}>
                               <QueryBuilderSetupPanel
                                 queryBuilderState={queryBuilderState}
                               />
                             </ResizablePanel>
                           )}
-                          {!queryBuilderState.querySetupState
-                            .showSetupPanel && (
+                          {!queryBuilderState.setupState.showSetupPanel && (
                             <ResizablePanel
                               minSize={40}
                               size={40}
@@ -402,7 +401,7 @@ export const QueryBuilder = observer(
             </div>
           </div>
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-          {queryBuilderState.queryTextEditorState.mode && (
+          {queryBuilderState.textEditorState.mode && (
             <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
           )}
         </GlobalHotKeys>

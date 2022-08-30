@@ -71,7 +71,7 @@ export const buildLambdaFunction = (
   options?: LambdaFunctionBuilderOption,
 ): LambdaFunction => {
   const _class = guaranteeNonNullable(
-    queryBuilderState.querySetupState._class,
+    queryBuilderState.setupState._class,
     'Class is required to build query',
   );
   const multiplicityOne =
@@ -98,7 +98,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.businessDate,
+            queryBuilderState.milestoningState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -107,7 +107,7 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.processingDate,
+            queryBuilderState.milestoningState.processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -116,13 +116,13 @@ export const buildLambdaFunction = (
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.processingDate,
+            queryBuilderState.milestoningState.processingDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
         getAllFunction.parametersValues.push(
           guaranteeNonNullable(
-            queryBuilderState.querySetupState.businessDate,
+            queryBuilderState.milestoningState.businessDate,
             `Milestoning class should have a parameter of type 'Date'`,
           ),
         );
@@ -152,7 +152,7 @@ export const buildLambdaFunction = (
   // build parameters
   if (
     !queryBuilderState.isParametersDisabled &&
-    queryBuilderState.queryParametersState.parameterStates.length
+    queryBuilderState.parametersState.parameterStates.length
   ) {
     // NOTE: if we are executing:
     // 1. set the parameters to empty
@@ -161,7 +161,7 @@ export const buildLambdaFunction = (
       lambdaFunction.functionType.parameters = [];
       const letsFuncs = buildParametersLetLambdaFunc(
         queryBuilderState.graphManagerState.graph,
-        queryBuilderState.queryParametersState.parameterStates,
+        queryBuilderState.parametersState.parameterStates,
       );
       lambdaFunction.expressionSequence = [
         ...letsFuncs.expressionSequence,
@@ -169,7 +169,7 @@ export const buildLambdaFunction = (
       ];
     } else {
       lambdaFunction.functionType.parameters =
-        queryBuilderState.queryParametersState.parameterStates.map(
+        queryBuilderState.parametersState.parameterStates.map(
           (e) => e.parameter,
         );
     }

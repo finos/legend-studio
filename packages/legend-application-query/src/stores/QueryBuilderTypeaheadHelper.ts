@@ -50,7 +50,7 @@ const createAndSetupQueryBuilderStateForTypeahead = (
     queryBuilderState.applicationStore,
     queryBuilderState.graphManagerState,
   );
-  builderState.querySetupState = queryBuilderState.querySetupState;
+  builderState.setupState = queryBuilderState.setupState;
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,
