@@ -106,7 +106,7 @@ export class QueryBuilderSetupState {
   get classes(): Class[] {
     return this.queryBuilderState.graphManagerState.graph.ownClasses
       .concat(
-        this.queryBuilderState.graphManagerState.filterSystemElementOptions(
+        this.queryBuilderState.graphManagerState.collectExposedSystemElements(
           this.queryBuilderState.graphManagerState.graph.systemModel.ownClasses,
         ),
       )

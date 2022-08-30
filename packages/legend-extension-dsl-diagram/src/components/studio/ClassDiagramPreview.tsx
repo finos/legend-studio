@@ -18,16 +18,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { Class } from '@finos/legend-graph';
+import { type Class, isElementReadOnly } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
 import { DSL_DIAGRAM_TEST_ID } from './DSLDiagram_TestID.js';
-import { useEditorStore } from '@finos/legend-application-studio';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;
   const applicationStore = useApplicationStore();
-  const editorStore = useEditorStore();
-  const classHash = editorStore.graphManagerState.isElementReadOnly(_class)
+  const classHash = isElementReadOnly(_class)
     ? undefined
     : applicationStore.notifyAndReturnAlternativeOnError(
         () => _class.hashCode,

@@ -41,12 +41,19 @@ import {
   PlusIcon,
   ArrowCircleRightIcon,
   LongArrowRightIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
-import { StereotypeSelector } from './StereotypeSelector.js';
-import { TaggedValueEditor } from './TaggedValueEditor.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from './StereotypeSelector.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from './TaggedValueEditor.js';
 import { PropertyEditor } from './PropertyEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -67,7 +74,6 @@ import {
   stub_Stereotype,
   getFirstAssociatedProperty,
   getSecondAssociatedProperty,
-  getOtherAssociatedProperty,
 } from '@finos/legend-graph';
 import {
   property_setName,
@@ -113,12 +119,7 @@ const AssociationPropertyBasicEditor = observer(
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // TODO: make this so that association can only refer to classes from the same graph space
-    const propertyTypeOptions = editorStore.classOptions.filter(
-      (classOption) =>
-        classOption.value !==
-        getOtherAssociatedProperty(association, property).genericType.value
-          .rawType,
-    );
+    const propertyTypeOptions = editorStore.classOptions;
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -388,11 +389,15 @@ export const AssociationEditor = observer(
       },
       [association, isReadOnly],
     );
-    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+    const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isTaggedValueDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-        collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+        drop: (item) => handleDropTaggedValue(item),
+        collect: (monitor) => ({
           isTaggedValueDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -411,11 +416,15 @@ export const AssociationEditor = observer(
       },
       [association, isReadOnly],
     );
-    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+    const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isStereotypeDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-        drop: (item: ElementDragSource): void => handleDropStereotype(item),
-        collect: (monitor): { isStereotypeDragOver: boolean } => ({
+        drop: (item) => handleDropStereotype(item),
+        collect: (monitor) => ({
           isStereotypeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -503,40 +512,42 @@ export const AssociationEditor = observer(
                   </div>
                 )}
                 {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
-                  <div
-                    ref={dropTaggedValueRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isTaggedValueDragOver && !isReadOnly,
-                    })}
+                  <PanelDropZone
+                    isDragOver={isTaggedValueDragOver && !isReadOnly}
+                    dropTargetConnector={dropTaggedValueRef}
                   >
-                    {association.taggedValues.map((taggedValue) => (
-                      <TaggedValueEditor
-                        key={taggedValue._UUID}
-                        taggedValue={taggedValue}
-                        deleteValue={_deleteTaggedValue(taggedValue)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                    <div className="panel__content__lists">
+                      <TaggedValueDragPreviewLayer />
+                      {association.taggedValues.map((taggedValue) => (
+                        <TaggedValueEditor
+                          annotatedElement={association}
+                          key={taggedValue._UUID}
+                          taggedValue={taggedValue}
+                          deleteValue={_deleteTaggedValue(taggedValue)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                    </div>
+                  </PanelDropZone>
                 )}
                 {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
-                  <div
-                    ref={dropStereotypeRef}
-                    className={clsx('panel__content__lists', {
-                      'panel__content__lists--dnd-over':
-                        isStereotypeDragOver && !isReadOnly,
-                    })}
+                  <PanelDropZone
+                    isDragOver={isStereotypeDragOver && !isReadOnly}
+                    dropTargetConnector={dropStereotypeRef}
                   >
-                    {association.stereotypes.map((stereotype) => (
-                      <StereotypeSelector
-                        key={stereotype.value._UUID}
-                        stereotype={stereotype}
-                        deleteStereotype={_deleteStereotype(stereotype)}
-                        isReadOnly={isReadOnly}
-                      />
-                    ))}
-                  </div>
+                    <div className="panel__content__lists">
+                      <StereotypeDragPreviewLayer />
+                      {association.stereotypes.map((stereotype) => (
+                        <StereotypeSelector
+                          key={stereotype.value._UUID}
+                          annotatedElement={association}
+                          stereotype={stereotype}
+                          deleteStereotype={_deleteStereotype(stereotype)}
+                          isReadOnly={isReadOnly}
+                        />
+                      ))}
+                    </div>
+                  </PanelDropZone>
                 )}
               </div>
             </div>

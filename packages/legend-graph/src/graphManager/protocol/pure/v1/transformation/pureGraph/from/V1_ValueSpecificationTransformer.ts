@@ -298,8 +298,8 @@ class V1_ValueSpecificationTransformer
       valueSpecification.multiplicity.upperBound;
     collection.values = valueSpecification.values
       .filter(filterByType(ValueSpecification))
-      .map((e) =>
-        e.accept_ValueSpecificationVisitor(
+      .map((value) =>
+        value.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationTransformer(
             this.inScope,
             this.open,
@@ -316,8 +316,8 @@ class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const appliedFunc = new V1_AppliedFunction();
     appliedFunc.function = valueSpecification.functionName;
-    appliedFunc.parameters = valueSpecification.parametersValues.map((e) =>
-      e.accept_ValueSpecificationVisitor(
+    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(
           this.inScope,
           this.open,
@@ -334,8 +334,8 @@ class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const appliedFunc = new V1_AppliedFunction();
     appliedFunc.function = valueSpecification.functionName;
-    appliedFunc.parameters = valueSpecification.parametersValues.map((e) =>
-      e.accept_ValueSpecificationVisitor(
+    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(
           this.inScope,
           this.open,
@@ -374,8 +374,8 @@ class V1_ValueSpecificationTransformer
   ): V1_ValueSpecification {
     const _property = new V1_AppliedProperty();
     _property.property = valueSpecification.func.name;
-    _property.parameters = valueSpecification.parametersValues.map((e) =>
-      e.accept_ValueSpecificationVisitor(
+    _property.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(
           this.inScope,
           this.open,
@@ -417,8 +417,8 @@ export function V1_transformGraphFetchTree(
   } else if (value instanceof PropertyGraphFetchTree) {
     const _propertyGraphTree = new V1_PropertyGraphFetchTree();
     _propertyGraphTree.alias = value.alias;
-    _propertyGraphTree.parameters = value.parameters.map((e) =>
-      e.accept_ValueSpecificationVisitor(
+    _propertyGraphTree.parameters = value.parameters.map((parameter) =>
+      parameter.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(
           inScope,
           open,
@@ -429,9 +429,9 @@ export function V1_transformGraphFetchTree(
     );
     _propertyGraphTree.property = value.property.value.name;
     _propertyGraphTree.subType = value.subType?.value.path;
-    _propertyGraphTree.subTrees = value.subTrees.map((e) =>
+    _propertyGraphTree.subTrees = value.subTrees.map((subTree) =>
       V1_transformGraphFetchTree(
-        e,
+        subTree,
         inScope,
         open,
         isParameter,
@@ -450,8 +450,8 @@ export const V1_transformLambdaBody = (
   useAppliedFunction: boolean,
 ): V1_ValueSpecification[] => {
   const inScope = lambdaFunc.functionType.parameters.map((p) => p.name);
-  return lambdaFunc.expressionSequence.map((p) =>
-    p.accept_ValueSpecificationVisitor(
+  return lambdaFunc.expressionSequence.map((expression) =>
+    expression.accept_ValueSpecificationVisitor(
       new V1_ValueSpecificationTransformer(
         inScope,
         new Map<string, unknown[]>(),
@@ -468,9 +468,9 @@ export function V1_transformLambdaFunctionInstanceValue(
 ): V1_Lambda {
   const lambdaFunc = guaranteeNonNullable(valueSpecification.values[0]);
   const lambda = new V1_Lambda();
-  lambda.parameters = lambdaFunc.functionType.parameters.map((p) =>
+  lambda.parameters = lambdaFunc.functionType.parameters.map((parameter) =>
     guaranteeType(
-      p.accept_ValueSpecificationVisitor(
+      parameter.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(
           [],
           new Map<string, unknown[]>(),

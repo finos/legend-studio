@@ -135,7 +135,7 @@ const TYPESCRIPT_RULES = {
   '@typescript-eslint/consistent-type-imports': WARN,
   '@typescript-eslint/explicit-function-return-type': [
     WARN,
-    { allowTypedFunctionExpressions: true },
+    { allowExpressions: true, allowTypedFunctionExpressions: true },
   ],
   '@typescript-eslint/func-call-spacing': ERROR,
   '@typescript-eslint/no-inferrable-types': [WARN, { ignoreParameters: true }],

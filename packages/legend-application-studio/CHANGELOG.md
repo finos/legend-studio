@@ -1,5 +1,49 @@
 # @finos/legend-application-studio
 
+## 15.0.1
+
+## 15.0.0
+
+### Major Changes
+
+- [#1445](https://github.com/finos/legend-studio/pull/1445) [`a66230e9`](https://github.com/finos/legend-studio/commit/a66230e9ce6e391572e0224cfe48ad4f411baf17) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Add `ExtensionModelImportRendererState` to `ModelImporterExtensionConfiguration`
+
+## 14.0.0
+
+### Major Changes
+
+- [#1432](https://github.com/finos/legend-studio/pull/1432) [`10475f94`](https://github.com/finos/legend-studio/commit/10475f94fceddb4c70d370f1ea7a3e02fc67efd2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - **BREAKING CHANGE:** Rename `ModelLoaderExtensionConfiguration` to `ModelImporterExtensionConfiguration`
+
+### Minor Changes
+
+- [#1432](https://github.com/finos/legend-studio/pull/1432) [`10475f94`](https://github.com/finos/legend-studio/commit/10475f94fceddb4c70d370f1ea7a3e02fc67efd2) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Leverage external format apis for model importing.
+
+## 13.1.2
+
+### Patch Changes
+
+- [#1238](https://github.com/finos/legend-studio/pull/1238) [`650f85bd`](https://github.com/finos/legend-studio/commit/650f85bd22010b07d95d46648a5d9e2802e2f5c5) ([@jinanisha](https://github.com/jinanisha)) - Add support for middle Tier Authentication Strategy
+
+* [#1425](https://github.com/finos/legend-studio/pull/1425) [`3fc5ab8f`](https://github.com/finos/legend-studio/commit/3fc5ab8f4b28529e096000337691c1cafb98c38f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support creation of self-referenced associations in form mode ([#1398](https://github.com/finos/legend-studio/issues/1398)).
+
+## 13.1.1
+
+## 13.1.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Improve project search command to show full element package path; we also allow searching for elements from dependencies and generated elements.
+
+* [#1395](https://github.com/finos/legend-studio/pull/1395) [`4c81ab5a`](https://github.com/finos/legend-studio/commit/4c81ab5aba69220fb5c2a4ac1ea97e05492ea110) ([@xannem](https://github.com/xannem)) - Allow re-arranging sub-elements (class properties, tagged values, etc.) in UML editors ([#303](https://github.com/finos/legend-studio/pull/303)).
+
+## 13.0.3
+
+## 13.0.2
+
+### Patch Changes
+
+- [#1377](https://github.com/finos/legend-studio/pull/1377) [`4c7169e3`](https://github.com/finos/legend-studio/commit/4c7169e348887bf462830cb64812ef4b1792875c) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support execution cancellation for `mapping editor` and `service editor` ([#1376](https://github.com/finos/legend-studio/issues/1376)).
+
 ## 13.0.1
 
 ### Patch Changes

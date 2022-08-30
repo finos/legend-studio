@@ -16,6 +16,7 @@
 
 import {
   type TooltipPlacement,
+  type InputActionMeta,
   Tooltip,
   DollarIcon,
   clsx,
@@ -49,11 +50,14 @@ import {
   getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
+  type DebouncedFunc,
+  type GeneratorFn,
   guaranteeNonNullable,
   isNonNullable,
   returnUndefOnError,
   uniq,
 } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
@@ -61,6 +65,7 @@ import {
   instanceValue_changeValue,
   instanceValue_changeValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
+import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 
 type TypeCheckOption = {
@@ -170,23 +175,100 @@ const StringPrimitiveInstanceValueEditor = observer(
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
     resetValue: () => void;
+    selectorConfig?:
+      | {
+          values: string[] | undefined;
+          isLoading: boolean;
+          reloadValues:
+            | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+            | undefined;
+          cleanUpReloadValues?: () => void;
+        }
+      | undefined;
   }) => {
-    const { valueSpecification, className, resetValue, setValueSpecification } =
-      props;
+    const {
+      valueSpecification,
+      className,
+      resetValue,
+      setValueSpecification,
+      selectorConfig,
+    } = props;
+    const useSelector = Boolean(selectorConfig);
+    const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
+    const updateValueSpec = (val: string): void => {
+      instanceValue_changeValue(valueSpecification, val, 0);
       setValueSpecification(valueSpecification);
     };
+    const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => {
+      updateValueSpec(event.target.value);
+    };
+    // custom select
+    const selectedValue = { value: value, label: value };
+    const reloadValuesFunc = selectorConfig?.reloadValues;
+    const changeValue = (
+      val: null | { value: number | string; label: string },
+    ): void => {
+      const newValue = val === null ? '' : val.value.toString();
+      updateValueSpec(newValue);
+    };
+    const handleInputChange = (
+      inputValue: string,
+      actionChange: InputActionMeta,
+    ): void => {
+      if (actionChange.action === 'input-change') {
+        updateValueSpec(inputValue);
+        reloadValuesFunc?.cancel();
+        const reloadValuesFuncTransformation = reloadValuesFunc?.(inputValue);
+        if (reloadValuesFuncTransformation) {
+          flowResult(reloadValuesFuncTransformation).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
+      }
+      if (actionChange.action === 'input-blur') {
+        reloadValuesFunc?.cancel();
+        selectorConfig?.cleanUpReloadValues?.();
+      }
+    };
+    const isLoading = selectorConfig?.isLoading;
+    const queryOptions = selectorConfig?.values?.length
+      ? selectorConfig.values.map((e) => ({
+          value: e,
+          label: e.toString(),
+        }))
+      : undefined;
+    const noOptionsMessage =
+      selectorConfig?.values === undefined ? (): null => null : undefined;
+
     return (
       <div className={clsx('value-spec-editor', className)}>
-        <input
-          className="panel__content__form__section__input value-spec-editor__input"
-          spellCheck={false}
-          value={value}
-          placeholder={value === '' ? '(empty)' : undefined}
-          onChange={changeValue}
-        />
+        {useSelector ? (
+          <CustomSelectorInput
+            className="value-spec-editor__enum-selector"
+            options={queryOptions}
+            onChange={changeValue}
+            value={selectedValue}
+            onInputChange={handleInputChange}
+            darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+            isLoading={isLoading}
+            allowCreateWhileLoading={true}
+            noOptionsMessage={noOptionsMessage}
+            components={{
+              DropdownIndicator: null,
+            }}
+          />
+        ) : (
+          <input
+            className="panel__content__form__section__input value-spec-editor__input"
+            spellCheck={false}
+            value={value}
+            placeholder={value === '' ? '(empty)' : undefined}
+            onChange={changeInputValue}
+          />
+        )}
         <button
           className="value-spec-editor__reset-btn"
           title="Reset"
@@ -604,6 +686,16 @@ export const BasicValueSpecificationEditor: React.FC<{
   className?: string | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
   resetValue: () => void;
+  selectorConfig?:
+    | {
+        values: string[] | undefined;
+        isLoading: boolean;
+        reloadValues:
+          | DebouncedFunc<(inputValue: string) => GeneratorFn<void>>
+          | undefined;
+        cleanUpReloadValues?: () => void;
+      }
+    | undefined;
 }> = (props) => {
   const {
     className,
@@ -612,6 +704,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     typeCheckOption,
     setValueSpecification,
     resetValue,
+    selectorConfig,
   } = props;
   if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _type = valueSpecification.genericType.value.rawType;
@@ -623,6 +716,7 @@ export const BasicValueSpecificationEditor: React.FC<{
             setValueSpecification={setValueSpecification}
             className={className}
             resetValue={resetValue}
+            selectorConfig={selectorConfig}
           />
         );
       case PRIMITIVE_TYPE.BOOLEAN:

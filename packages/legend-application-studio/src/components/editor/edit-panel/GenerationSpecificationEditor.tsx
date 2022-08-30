@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   GenerationSpecificationEditorState,
@@ -22,14 +22,7 @@ import {
   type GenerationSpecNodeDropTarget,
   type GenerationTreeNodeState,
 } from '../../../stores/editor-state/GenerationSpecificationEditorState.js';
-import { getEmptyImage } from 'react-dnd-html5-backend';
-import {
-  type DropTargetMonitor,
-  type XYCoord,
-  useDragLayer,
-  useDrag,
-  useDrop,
-} from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   clsx,
@@ -45,6 +38,10 @@ import {
   TimesIcon,
   PlusIcon,
   LongArrowRightIcon,
+  PanelDropZone,
+  DragPreviewLayer,
+  useDragPreviewLayer,
+  PanelEntryDropZonePlaceholder,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -75,48 +72,16 @@ import {
   generationSpecification_setId,
 } from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
 
-const ModelGenerationDragLayer: React.FC = () => {
-  const { itemType, item, isDragging, currentPosition } = useDragLayer(
-    (monitor) => ({
-      itemType: monitor.getItemType(),
-      item: monitor.getItem<GenerationSpecNodeDragSource | null>(),
-      isDragging: monitor.isDragging(),
-      initialOffset: monitor.getInitialSourceClientOffset(),
-      currentPosition: monitor.getClientOffset(),
-    }),
-  );
-  if (!isDragging || !item || itemType !== CORE_DND_TYPE.GENERATION_SPEC_NODE) {
-    return null;
-  }
-  return (
-    <div className="generation-spec-model-generation-editor__item__drag-preview-layer">
-      <div
-        className="generation-spec-model-generation-editor__item__drag-preview"
-        style={
-          !currentPosition
-            ? { display: 'none' }
-            : {
-                transform: `translate(${currentPosition.x + 20}px, ${
-                  currentPosition.y + 10
-                }px)`,
-              }
-        }
-      >
-        {item.nodeState.node.generationElement.value.name}
-      </div>
-    </div>
-  );
-};
+const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 
 const ModelGenerationItem = observer(
   (props: {
     specState: GenerationSpecificationEditorState;
     nodeState: GenerationTreeNodeState;
     options: PackageableElementOption<PackageableElement>[];
-    isRearrangingNodes: boolean;
   }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { nodeState, specState, options, isRearrangingNodes } = props;
+    const { nodeState, specState, options } = props;
     const generationTreeNode = nodeState.node;
     const editorStore = useEditorStore();
     const modelGenerationRef = generationTreeNode.generationElement;
@@ -164,8 +129,7 @@ const ModelGenerationItem = observer(
           ((hoverBoundingReact?.bottom ?? 0) - (hoverBoundingReact?.top ?? 0)) /
           2;
         const dragDistance =
-          (monitor.getClientOffset() as XYCoord).y -
-          (hoverBoundingReact?.top ?? 0);
+          (monitor.getClientOffset()?.y ?? 0) - (hoverBoundingReact?.top ?? 0);
         if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
           return;
         }
@@ -176,89 +140,84 @@ const ModelGenerationItem = observer(
       },
       [nodeState, specState],
     );
-    const [, dropConnector] = useDrop(
+    const [{ nodeBeingDragged }, dropConnector] = useDrop<
+      GenerationSpecNodeDragSource,
+      void,
+      { nodeBeingDragged: GenerationTreeNode | undefined }
+    >(
       () => ({
-        accept: [CORE_DND_TYPE.GENERATION_SPEC_NODE],
-        hover: (
-          item: GenerationSpecNodeDragSource,
-          monitor: DropTargetMonitor,
-        ): void => handleHover(item, monitor),
+        accept: [GENERATION_SPEC_NODE_DND_TYPE],
+        hover: (item, monitor): void => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): { nodeBeingDragged: GenerationTreeNode | undefined } => ({
+          /**
+           * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
+           */
+          nodeBeingDragged:
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            (monitor.getItem() as GenerationSpecNodeDragSource | null)
+              ?.nodeState.node,
+        }),
       }),
       [handleHover],
     );
-    const [, dragConnector, dragPreviewConnector] = useDrag(
-      () => ({
-        type: CORE_DND_TYPE.GENERATION_SPEC_NODE,
-        item: (): GenerationSpecNodeDragSource => {
-          nodeState.setIsBeingDragged(true);
-          return { nodeState };
-        },
-        end: (item: GenerationSpecNodeDragSource | undefined): void =>
-          item?.nodeState.setIsBeingDragged(false),
-      }),
-      [nodeState],
-    );
+    const isBeingDragged = nodeState.node === nodeBeingDragged;
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<GenerationSpecNodeDragSource>(
+        () => ({
+          type: GENERATION_SPEC_NODE_DND_TYPE,
+          item: () => ({ nodeState }),
+        }),
+        [nodeState],
+      );
     dragConnector(dropConnector(ref));
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
-      <div
-        ref={ref}
-        className={clsx('generation-spec-model-generation-editor__item', {
-          'generation-spec-model-generation-editor__item--dragged':
-            nodeState.isBeingDragged,
-          'generation-spec-model-generation-editor__item---no-hover':
-            isRearrangingNodes,
-        })}
-      >
-        {nodeState.isBeingDragged && (
-          <div className="generation-spec-editor__dnd__placeholder" />
-        )}
-        {!nodeState.isBeingDragged && (
-          <>
-            <div className="btn--sm generation-spec-model-generation-editor__item__label">
-              {getElementIcon(editorStore, modelGeneration)}
-            </div>
-            <input
-              className={clsx(
-                'generation-spec-model-generation-editor__item__id',
-                {
-                  'generation-spec-model-generation-editor__item__id--has-error':
-                    !isUnique,
-                },
-              )}
-              spellCheck={false}
-              value={isDefault ? 'DEFAULT' : generationTreeNode.id}
-              onChange={changeNodeId}
-              disabled={isDefault}
-            />
-            <CustomSelectorInput
-              className="generation-spec-model-generation-editor__item__dropdown"
-              options={options}
-              onChange={onChange}
-              value={value}
-              darkMode={true}
-            />
-            <button
-              className="btn--dark btn--sm"
-              onClick={visitModelGeneration}
-              tabIndex={-1}
-              title={'See mapping'}
-            >
-              <LongArrowRightIcon />
-            </button>
-            <button
-              className="generation-spec-model-generation-editor__item__remove-btn"
-              onClick={deleteNode}
-              tabIndex={-1}
-              title={'Remove'}
-            >
-              <TimesIcon />
-            </button>
-          </>
-        )}
+      <div ref={ref} className="generation-spec-model-generation-editor__item">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="btn--sm generation-spec-model-generation-editor__item__label">
+            {getElementIcon(editorStore, modelGeneration)}
+          </div>
+          <input
+            className={clsx(
+              'generation-spec-model-generation-editor__item__id',
+              {
+                'generation-spec-model-generation-editor__item__id--has-error':
+                  !isUnique,
+              },
+            )}
+            spellCheck={false}
+            value={isDefault ? 'DEFAULT' : generationTreeNode.id}
+            onChange={changeNodeId}
+            disabled={isDefault}
+          />
+          <CustomSelectorInput
+            className="generation-spec-model-generation-editor__item__dropdown"
+            options={options}
+            onChange={onChange}
+            value={value}
+            darkMode={true}
+          />
+          <button
+            className="btn--dark btn--sm"
+            onClick={visitModelGeneration}
+            tabIndex={-1}
+            title={'See mapping'}
+          >
+            <LongArrowRightIcon />
+          </button>
+          <button
+            className="generation-spec-model-generation-editor__item__remove-btn"
+            onClick={deleteNode}
+            tabIndex={-1}
+            title={'Remove'}
+          >
+            <TimesIcon />
+          </button>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -300,9 +259,6 @@ const ModelGenerationSpecifications = observer(
       }
     };
     // Drag and Drop
-    const isRearrangingNodes = specNodesStates.some(
-      (nodeState) => nodeState.isBeingDragged,
-    );
     const handleDrop = useCallback(
       (item: ElementDragSource): void =>
         specState.addGenerationTreeNode(
@@ -314,16 +270,20 @@ const ModelGenerationSpecifications = observer(
         ),
       [specState],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: extraModelGenerationSpecificationElementDnDTypes,
-        drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -346,31 +306,36 @@ const ModelGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div
-          className="panel__content dnd__overlay__container"
-          ref={dropConnector}
-        >
-          <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-          {specNodesStates.length ? (
-            <div className="generation-spec-model-generation-editor__items">
-              <ModelGenerationDragLayer />
-              {specNodesStates.map((nodeState) => (
-                <ModelGenerationItem
-                  key={nodeState.uuid}
-                  isRearrangingNodes={isRearrangingNodes}
-                  specState={specState}
-                  nodeState={nodeState}
-                  options={modelGenerationElementOptions}
+        <div className="panel__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {specNodesStates.length ? (
+              <div className="generation-spec-model-generation-editor__items">
+                <DragPreviewLayer
+                  labelGetter={(item: GenerationSpecNodeDragSource): string =>
+                    item.nodeState.node.generationElement.value.name
+                  }
+                  types={[GENERATION_SPEC_NODE_DND_TYPE]}
                 />
-              ))}
-            </div>
-          ) : (
-            <BlankPanelContent>
-              {modelGenerationElementsInGraph.length
-                ? 'No model generation included in spec'
-                : 'Create a model generation element to include in spec'}
-            </BlankPanelContent>
-          )}
+                {specNodesStates.map((nodeState) => (
+                  <ModelGenerationItem
+                    key={nodeState.uuid}
+                    specState={specState}
+                    nodeState={nodeState}
+                    options={modelGenerationElementOptions}
+                  />
+                ))}
+              </div>
+            ) : (
+              <BlankPanelContent>
+                {modelGenerationElementsInGraph.length
+                  ? 'No model generation included in spec'
+                  : 'Create a model generation element to include in spec'}
+              </BlankPanelContent>
+            )}
+          </PanelDropZone>
         </div>
       </div>
     );
@@ -402,7 +367,7 @@ const FileGenerationItem = observer(
       );
     const visitFileGen = (): void => editorStore.openElement(fileGeneration);
     return (
-      <div className="panel__content__form__section__list__item generation-spec-file-generation-editor__item">
+      <div className="generation-spec-file-generation-editor__item">
         <div className="btn--sm generation-spec-file-generation-editor__item__label">
           <PURE_FileGenerationIcon />
         </div>
@@ -469,16 +434,20 @@ const FileGenerationSpecifications = observer(
       },
       [fileGenerations, generationSpec],
     );
-    const [{ isPropertyDragOver }, dropConnector] = useDrop(
+    const [{ isDragOver }, dropTargetConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean }
+    >(
       () => ({
         accept: [CORE_DND_TYPE.PROJECT_EXPLORER_FILE_GENERATION],
-        drop: (item: ElementDragSource, monitor: DropTargetMonitor): void => {
+        drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item);
-          }
+          } // prevent drop event propagation to accomondate for nested DnD
         },
-        collect: (monitor): { isPropertyDragOver: boolean } => ({
-          isPropertyDragOver: monitor.isOver({ shallow: true }),
+        collect: (monitor) => ({
+          isDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
       [handleDrop],
@@ -501,31 +470,32 @@ const FileGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div
-          className="panel__content dnd__overlay__container"
-          ref={dropConnector}
-        >
-          <div className={clsx({ dnd__overlay: isPropertyDragOver })} />
-          {generationSpec.fileGenerations.length ? (
-            <div className="generation-spec-file-generation-editor__items">
-              {generationSpec.fileGenerations.map((fileGen) => (
-                <FileGenerationItem
-                  key={fileGen.value.path}
-                  generationSpecificationEditorState={
-                    generationSpecificationEditorState
-                  }
-                  fileGeneraitonRef={fileGen}
-                  options={fileGenerationsOptions}
-                />
-              ))}
-            </div>
-          ) : (
-            <BlankPanelContent>
-              {fileGenerationInGraph.length
-                ? 'Add file generation to spec'
-                : 'Create a file generation to include in spec'}
-            </BlankPanelContent>
-          )}
+        <div className="panel__content">
+          <PanelDropZone
+            isDragOver={isDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            {generationSpec.fileGenerations.length ? (
+              <div className="generation-spec-file-generation-editor__items">
+                {generationSpec.fileGenerations.map((fileGen) => (
+                  <FileGenerationItem
+                    key={fileGen.value.path}
+                    generationSpecificationEditorState={
+                      generationSpecificationEditorState
+                    }
+                    fileGeneraitonRef={fileGen}
+                    options={fileGenerationsOptions}
+                  />
+                ))}
+              </div>
+            ) : (
+              <BlankPanelContent>
+                {fileGenerationInGraph.length
+                  ? 'Add file generation to spec'
+                  : 'Create a file generation to include in spec'}
+              </BlankPanelContent>
+            )}
+          </PanelDropZone>
         </div>
       </div>
     );

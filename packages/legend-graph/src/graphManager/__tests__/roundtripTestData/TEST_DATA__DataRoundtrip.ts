@@ -130,13 +130,6 @@ export const TEST_DATA__DataRoundtrip = [
                                 lowerBound: 1,
                                 upperBound: 1,
                               },
-                              sourceInformation: {
-                                endColumn: 40,
-                                endLine: 8,
-                                sourceId: '',
-                                startColumn: 35,
-                                startLine: 8,
-                              },
                               values: ['Fred'],
                             },
                             {
@@ -144,13 +137,6 @@ export const TEST_DATA__DataRoundtrip = [
                               multiplicity: {
                                 lowerBound: 1,
                                 upperBound: 1,
-                              },
-                              sourceInformation: {
-                                endColumn: 51,
-                                endLine: 8,
-                                sourceId: '',
-                                startColumn: 43,
-                                startLine: 8,
                               },
                               values: ['William'],
                             },

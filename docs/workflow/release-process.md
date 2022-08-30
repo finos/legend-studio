@@ -36,6 +36,9 @@ To initiate a `standard release`:
 
 - Run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual__prepare-new-release.yml) with bump type `major`
 - Merge the `Release x.0.0` PR
+
+> ⚠️ Note: before mergining make sure the PR is up-to-date with the latest change merged, sometimes, it can take a while for this PR to get updated. Merging this PR before it gets updated could result in a failed release and we would have to re-release.
+
 - After publishing, post-release automation will run and do some cleanups as well as prepare for the next development cycle
 
 > Post-release procedure comprises several steps, if for some reasons, parts of the automation fails, please do these manually:
@@ -60,6 +63,8 @@ To initiate a `standard release`:
 
 - Run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual__prepare-new-release.yml) with bump type `minor`
 - Merge the `Iteration Release x.y.0` PR
+
+> ⚠️ Note: before mergining make sure the PR is up-to-date with the latest change merged, sometimes, it can take a while for this PR to get updated. Merging this PR before it gets updated could result in a failed release and we would have to re-release.
 
 ## Recovery releases
 

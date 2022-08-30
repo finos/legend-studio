@@ -27,6 +27,10 @@ import {
   LegendApplicationPlugin,
 } from '@finos/legend-application';
 import type { TestableMetadata } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import type {
+  ExtensionModelImportRendererState,
+  ModelImporterState,
+} from './editor-state/ModelImporterState.js';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
@@ -49,14 +53,19 @@ export type ClassPreviewRenderer = (
   _class: Class,
 ) => React.ReactNode | undefined;
 
-export type ModelLoaderExtensionConfiguration = {
+export type ModelImporterExtensionConfiguration = {
   key: string;
   label?: string | undefined;
   allowHardReplace?: boolean;
-  // TODO: document about this behavior better, right now the behavior is not well
-  // structured yet, also, model loader seems rather fragmented at the moment
-  load: (editorStore: EditorStore) => Promise<void>;
-  renderer: (editorStore: EditorStore) => React.ReactNode | undefined;
+  getExtensionModelImportRendererStateCreator: (
+    modelImporterState: ModelImporterState,
+  ) => ExtensionModelImportRendererState;
+  renderer: (
+    rendererState: ExtensionModelImportRendererState,
+  ) => React.ReactNode | undefined;
+  loadModel: (
+    rendererState: ExtensionModelImportRendererState,
+  ) => Promise<void>;
 };
 
 export type TestableMetadataGetter = (
@@ -98,9 +107,9 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
   getExtraEditorExtensionComponentRendererConfigurations?(): EditorExtensionComponentRendererConfiguration[];
 
   /**
-   * Get the list of extension configurations for model loader.
+   * Get the list of extension configurations for model importer.
    */
-  getExtraModelLoaderExtensionConfigurations?(): ModelLoaderExtensionConfiguration[];
+  getExtraModelImporterExtensionConfigurations?(): ModelImporterExtensionConfiguration[];
 
   /**
    * Get the list of extension for testables

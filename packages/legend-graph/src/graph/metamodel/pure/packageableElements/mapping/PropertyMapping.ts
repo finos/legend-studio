@@ -102,7 +102,7 @@ export abstract class PropertyMapping implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_MAPPING,
       this.property.pointerHashCode,
-      this.targetSetImplementation?.value.id.value ?? '',
+      this.targetSetImplementation?.valueForSerialization ?? '',
       this.localMappingProperty ?? '',
     ]);
   }

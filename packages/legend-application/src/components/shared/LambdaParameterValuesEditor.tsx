@@ -53,11 +53,11 @@ export const LambdaParameterValuesEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal lambda__parameters__editor__modal">
+        <div className="modal modal--dark editor-modal lambda-parameter-values__modal">
           <div className="modal__header">
             <div className="modal__title">Set Parameter Values</div>
           </div>
-          <div className="modal__body lambda__parameters__editor__modal__body">
+          <div className="modal__body lambda-parameter-values__modal__body">
             {lambdaParametersState.parameterStates.map((paramState) => {
               const stringType = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
               const variableType = paramState.variableType ?? stringType;
@@ -66,9 +66,11 @@ export const LambdaParameterValuesEditor = observer(
                   key={paramState.uuid}
                   className="panel__content__form__section"
                 >
-                  <div className="lambda__parameters__editor__value__label">
-                    <div>{paramState.parameter.name}</div>
-                    <div className="lambda__parameters__editor__value__name">
+                  <div className="lambda-parameter-values__value__label">
+                    <div className="lambda-parameter-values__value__label__name">
+                      {paramState.parameter.name}
+                    </div>
+                    <div className="lambda-parameter-values__value__label__type">
                       {variableType.name}
                     </div>
                   </div>

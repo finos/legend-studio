@@ -20,10 +20,6 @@ import type {
 } from './action/execution/ExecutionResult.js';
 import type { ServiceRegistrationResult } from './action/service/ServiceRegistrationResult.js';
 import type { Service } from '../graph/metamodel/pure/packageableElements/service/Service.js';
-import type {
-  ImportConfigurationDescription,
-  ImportMode,
-} from './action/generation/ImportConfigurationDescription.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationOutput } from './action/generation/GenerationOutput.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -71,6 +67,7 @@ import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
+import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -279,6 +276,16 @@ export abstract class AbstractPureGraphManager {
     rawValueSpecification: RawValueSpecification,
   ): Record<PropertyKey, unknown>;
 
+  // These methods are utilities that we could use to quickly construct compilable
+  // raw lambdas.
+  // NOTE: As of now, to simplify the code, these methods are implemented in quite a hacky way, as we create
+  // the lambdas from a templated JSON object. Formally, we could remove these method by building them
+  // in metamodel form and convert to raw form as these are relatively simple lambda to construct
+  abstract createGetAllRawLambda(_class: Class): RawLambda;
+  abstract createDefaultBasicRawLambda(options?: {
+    addDummyParameter?: boolean;
+  }): RawLambda;
+
   // ------------------------------------------- Generation -------------------------------------------
 
   abstract getAvailableGenerationConfigurationDescriptions(): Promise<
@@ -301,20 +308,13 @@ export abstract class AbstractPureGraphManager {
   >;
 
   abstract generateModelFromExternalFormat(
+    schemaSet: SchemaSet,
+    targetBinding: string | undefined,
     configs: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string>;
 
   // ------------------------------------------- Import -------------------------------------------
-
-  abstract getAvailableImportConfigurationDescriptions(): Promise<
-    ImportConfigurationDescription[]
-  >;
-  abstract externalFormatTextToEntities(
-    code: string,
-    type: string,
-    mode: ImportMode,
-  ): Promise<Entity[]>;
   abstract getExamplePureProtocolText(): string;
   abstract getExampleExternalFormatImportText(): string;
   abstract entitiesToPureProtocolText(entities: Entity[]): Promise<string>;
@@ -420,6 +420,10 @@ export abstract class AbstractPureGraphManager {
     input: RawMappingModelCoverageAnalysisResult,
   ): MappingModelCoverageAnalysisResult;
 
+  // ------------------------------------------- Change detection -------------------------------------------
+
+  abstract buildHashesIndex(entities: Entity[]): Promise<Map<string, string>>;
+
   // ------------------------------------------- Utilities -------------------------------------------
 
   abstract elementToEntity(
@@ -448,24 +452,4 @@ export abstract class AbstractPureGraphManager {
     );
     return graph;
   }
-
-  // ------------------------------------------- Change detection -------------------------------------------
-
-  abstract buildHashesIndex(entities: Entity[]): Promise<Map<string, string>>;
-
-  // --------------------------------------------- HACKY ---------------------------------------------
-  // As the name suggested, these methods are temporary hacks since we don't handle value-specification
-  // structurally in Studio
-
-  // Eventually, we could remove these method by building them in metamodel form and convert to raw form
-  // as these are relatively simple lambda to construct
-  abstract HACKY__createGetAllLambda(_class: Class): RawLambda;
-  abstract HACKY__createDefaultBlankLambda(): RawLambda;
-
-  // NOTE: after we refactor service, we probably can remove these methods
-  // See https://github.com/finos/legend-studio/issues/1077
-  abstract HACKY__createServiceTestAssertLambda(assertData: string): RawLambda;
-  abstract HACKY__extractServiceTestAssertionData(
-    query: RawLambda,
-  ): string | undefined;
 }

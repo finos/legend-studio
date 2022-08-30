@@ -1092,3 +1092,47 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational = {
     },
   ],
 };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_HighlightProperties = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        { _type: 'entity', entityPath: 'my::Person', name: 'employees' },
+        { _type: 'MappedProperty', name: 'legalName' },
+      ],
+    },
+    {
+      path: 'my::Person',
+      properties: [
+        { _type: 'MappedProperty', name: 'name' },
+        { _type: 'entity', entityPath: 'my::Firm', name: 'firm' },
+      ],
+    },
+  ],
+};
+
+export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
+  mappedEntities: [
+    {
+      path: 'model::AddressType2',
+      properties: [
+        { _type: 'MappedProperty', name: 'streetName' },
+        { _type: 'MappedProperty', name: 'zip' },
+        { _type: 'MappedProperty', name: 'zipcode' },
+      ],
+    },
+    {
+      path: 'model::Person',
+      properties: [
+        {
+          _type: 'entity',
+          entityPath: 'model::AddressType2',
+          name: 'address',
+          subType: 'model::AddressType2',
+        },
+        { _type: 'MappedProperty', name: 'name' },
+      ],
+    },
+  ],
+};

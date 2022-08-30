@@ -63,7 +63,6 @@ export interface LegendTaxonomyApplicationConfigurationData
   query: { url: string };
   studio: { url: string };
   taxonomy: PlainObject<TaxonomyTreeOption>[];
-  extensions?: Record<PropertyKey, unknown>;
 }
 
 export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {

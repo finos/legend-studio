@@ -42,6 +42,7 @@ import {
   SnowflakePublicAuthenticationStrategy,
   GCPApplicationDefaultCredentialsAuthenticationStrategy,
   GCPWorkloadIdentityFederationAuthenticationStrategy,
+  MiddleTierUsernamePasswordAuthenticationStrategy,
   EmbeddedH2DatasourceSpecification,
   LocalH2DatasourceSpecification,
   DatabricksDatasourceSpecification,
@@ -96,6 +97,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
   OAUTH = 'OAUTH',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
   GCP_WORKLOAD_IDENTITY_FEDERATION = 'GCP_WORKLOAD_IDENTITY_FEDERATION',
+  MIDDLE_TIER_USERNAME_PASSWORD = 'MIDDLE_TIER_USERNAME_PASSWORD',
 }
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
@@ -270,6 +272,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       auth instanceof GCPWorkloadIdentityFederationAuthenticationStrategy
     ) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.GCP_WORKLOAD_IDENTITY_FEDERATION;
+    } else if (
+      auth instanceof MiddleTierUsernamePasswordAuthenticationStrategy
+    ) {
+      return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
     }
 
     const extraAuthenticationStrategyTypeGetters =
@@ -332,6 +338,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       }
       case CORE_AUTHENTICATION_STRATEGY_TYPE.OAUTH: {
         authStrategy = new OAuthAuthenticationStrategy('', '');
+        break;
+      }
+      case CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD: {
+        authStrategy = new MiddleTierUsernamePasswordAuthenticationStrategy('');
         break;
       }
       default: {

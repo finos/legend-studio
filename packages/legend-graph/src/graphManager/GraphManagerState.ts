@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type Log,
-  uniq,
-  ActionState,
-  assertErrorThrown,
-} from '@finos/legend-shared';
+import { type Log, ActionState, assertErrorThrown } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
 import { DependencyManager } from '../graph/DependencyManager.js';
 import {
@@ -33,21 +28,14 @@ import type {
   GraphBuilderOptions,
 } from '../graphManager/AbstractPureGraphManager.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
-import { getElementRootPackage } from '../graph/helpers/DomainHelper.js';
-import { getLeafSetImplementations } from '../graph/helpers/DSLMapping_Helper.js';
-import { ROOT_PACKAGE_NAME } from '../graph/MetaModelConst.js';
-import { AssociationImplementation } from '../graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
 import type { EnumerationMapping } from '../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
 import { InstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
-import { OperationSetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
-import type { PropertyMapping } from '../graph/metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import type { SetImplementation } from '../graph/metamodel/pure/packageableElements/mapping/SetImplementation.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { EmbeddedFlatDataPropertyMapping } from '../graph/metamodel/pure/packageableElements/store/flatData/mapping/EmbeddedFlatDataPropertyMapping.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
-import { InlineEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/InlineEmbeddedRelationalInstanceSetImplementation.js';
-import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { buildPureGraphManager } from '../graphManager/protocol/pure/PureGraphManagerBuilder.js';
+import type { AssociationImplementation } from '../graph/metamodel/pure/packageableElements/mapping/AssociationImplementation.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -62,18 +50,17 @@ export class BasicGraphManagerState {
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
-  /**
-   * NOTE: Notice how this utility draws resources from all of metamodels and uses `instanceof` to classify behavior/response.
-   * As such, methods in this utility cannot be placed in place they should belong to.
-   *
-   * For example: `getSetImplemetnationType` cannot be placed in `SetImplementation` because of circular module dependency
-   * So this utility is born for such purpose, to avoid circular module dependency, and it should just be used for only that
-   * Other utilities that really should reside in the domain-specific meta model should be placed in the meta model module.
-   *
-   * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
-   * methods here so that we can load plugins.
-   */
 
+  /**
+   * Check if a mapping element is an instance set implementation
+   *
+   * NOTE: This would account for embedded property mappings as well
+   * these are technically instance of `InstanceSetImplementation`
+   * but since unlike Pure, Typescript cannot do multiple inheritance
+   * we only can make embedded property mapping extends `PropertyMapping`
+   *
+   * Potentially, we might need to apply an extension mechanism on this
+   */
   isInstanceSetImplementation(
     setImplementation:
       | EnumerationMapping
@@ -87,67 +74,13 @@ export class BasicGraphManagerState {
     );
   }
 
-  getInstanceSetImplementationPropertyMappings(
-    instanceSetImpl: InstanceSetImplementation,
-  ): PropertyMapping[] {
-    if (
-      instanceSetImpl instanceof
-      InlineEmbeddedRelationalInstanceSetImplementation
-    ) {
-      return this.getMappingElementPropertyMappings(
-        instanceSetImpl.inlineSetImplementation,
-      );
-    } else if (
-      instanceSetImpl instanceof
-      OtherwiseEmbeddedRelationalInstanceSetImplementation
-    ) {
-      // NOTE: for now we will grab all property mappings from the main otherwise embedded mapping and the otherwise property mapping.
-      // In the future we may want to incorporate some smartness as to when the otherwise set implementation isinvoked.
-      const otherwisePropertyMappings = instanceSetImpl.otherwisePropertyMapping
-        .targetSetImplementation?.value
-        ? this.getMappingElementPropertyMappings(
-            instanceSetImpl.otherwisePropertyMapping.targetSetImplementation
-              .value,
-          )
-        : [];
-      return [
-        ...instanceSetImpl.propertyMappings,
-        ...otherwisePropertyMappings,
-      ];
-    }
-    return instanceSetImpl.propertyMappings;
-  }
-
-  getMappingElementPropertyMappings(
-    mappingElement:
-      | EnumerationMapping
-      | SetImplementation
-      | AssociationImplementation,
-  ): PropertyMapping[] {
-    let mappedProperties: PropertyMapping[] = [];
-    if (this.isInstanceSetImplementation(mappingElement)) {
-      mappedProperties =
-        this.getInstanceSetImplementationPropertyMappings(mappingElement);
-    } else if (mappingElement instanceof AssociationImplementation) {
-      mappedProperties = mappingElement.propertyMappings;
-    } else if (mappingElement instanceof OperationSetImplementation) {
-      mappedProperties = getLeafSetImplementations(mappingElement)
-        .filter((me): me is InstanceSetImplementation =>
-          this.isInstanceSetImplementation(me),
-        )
-        .map((si) => si.propertyMappings)
-        .flat();
-    }
-    return uniq(mappedProperties);
-  }
-
   /**
    * Filter the list of system elements that will be shown in selection options
    * to users. This is helpful to avoid overwhelming and confusing users in form
    * mode since many system elements are needed to build the graph, but should
    * not present at all as selection options in form mode.
    */
-  filterSystemElementOptions<T extends PackageableElement>(
+  collectExposedSystemElements<T extends PackageableElement>(
     systemElements: T[],
   ): T[] {
     const allowedSystemElements = this.pluginManager
@@ -156,10 +89,6 @@ export class BasicGraphManagerState {
     return systemElements.filter((element) =>
       allowedSystemElements.includes(element.path),
     );
-  }
-
-  isElementReadOnly(element: PackageableElement): boolean {
-    return getElementRootPackage(element).name !== ROOT_PACKAGE_NAME.MAIN;
   }
 }
 

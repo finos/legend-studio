@@ -63,43 +63,44 @@ import type { CellMouseOverEvent } from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
-} from '../stores/QueryBuilderProjectionState.js';
+} from '../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from '../stores/QueryBuilderPostFilterState.js';
+} from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from '../stores/postFilterOperators/QueryBuilderPostFilterOperator_In.js';
-import type { QueryBuilderPostFilterOperator } from '../stores/QueryBuilderPostFilterOperator.js';
+} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
+import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
-const QueryBuilderResultContextMenu = observer(
+const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
       event: CellMouseOverEvent | null;
-      queryBuilderState: QueryBuilderState;
+      projectionState: QueryBuilderProjectionState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { event, queryBuilderState } = props;
+    const { event, projectionState } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-    const postFilterState = queryBuilderState.postFilterState;
+    const postFilterState = projectionState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns
+      projectionState.columns
         .filter((c) => c.columnName === event?.column.getColId())
         .concat(
-          queryBuilderState.fetchStructureState.projectionState.aggregationState.columns
+          projectionState.aggregationState.columns
             .filter((c) => c.columnName === event?.column.getColId())
             .map((ag) => ag.projectionColumnState),
         )[0],
@@ -251,7 +252,7 @@ const QueryBuilderResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      queryBuilderState.setShowPostFilterPanel(true);
+      projectionState.setShowPostFilterPanel(true);
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
@@ -288,6 +289,70 @@ const QueryBuilderResultContextMenu = observer(
   }),
 );
 
+const QueryBuilderGridResult = observer(
+  (props: {
+    executionResult: TdsExecutionResult;
+    queryBuilderState: QueryBuilderState;
+  }) => {
+    const { executionResult, queryBuilderState } = props;
+    const fetchStructureImplementation =
+      queryBuilderState.fetchStructureState.implementation;
+    const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
+      useState<CellMouseOverEvent | null>(null);
+    const columns = executionResult.result.columns;
+    const rowData = executionResult.result.rows.map((_row) => {
+      const row: Record<PropertyKey, unknown> = {};
+      const cols = executionResult.result.columns;
+      _row.values.forEach((value, idx) => {
+        // `ag-grid` shows `false` value as empty string so we have
+        // call `.toString()` to avoid this behavior.
+        // See https://github.com/finos/legend-studio/issues/1008
+        row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
+      });
+      return row;
+    });
+
+    return (
+      <ContextMenu
+        content={
+          // NOTE: we only support this functionality for grid result with a projection fetch-structure
+          fetchStructureImplementation instanceof
+          QueryBuilderProjectionState ? (
+            <QueryBuilderGridResultContextMenu
+              event={cellDoubleClickedEvent}
+              projectionState={fetchStructureImplementation}
+            />
+          ) : null
+        }
+        disabled={
+          !(fetchStructureImplementation instanceof QueryBuilderProjectionState)
+        }
+        menuProps={{ elevation: 7 }}
+        key={executionResult._UUID}
+        className={clsx('ag-theme-balham-dark query-builder__result__tds-grid')}
+      >
+        <AgGridReact
+          rowData={rowData}
+          onCellMouseOver={(event): void => {
+            setCellDoubleClickedEvent(event);
+          }}
+        >
+          {columns.map((colName) => (
+            <AgGridColumn
+              minWidth={50}
+              sortable={true}
+              resizable={true}
+              field={colName}
+              key={colName}
+              flex={1}
+            />
+          ))}
+        </AgGridReact>
+      </ContextMenu>
+    );
+  },
+);
+
 const QueryBuilderResultValues = observer(
   (props: {
     executionResult: ExecutionResult;
@@ -295,52 +360,11 @@ const QueryBuilderResultValues = observer(
   }) => {
     const { executionResult, queryBuilderState } = props;
     if (executionResult instanceof TdsExecutionResult) {
-      const [cellDoubleClickedEvent, setCellDoubleClickedEvent] =
-        useState<CellMouseOverEvent | null>(null);
-      const columns = executionResult.result.columns;
-      const rowData = executionResult.result.rows.map((_row) => {
-        const row: Record<PropertyKey, unknown> = {};
-        const cols = executionResult.result.columns;
-        _row.values.forEach((value, idx) => {
-          // `ag-grid` shows `false` value as empty string so we have
-          // call `.toString()` to avoid this behavior.
-          // See https://github.com/finos/legend-studio/issues/1008
-          row[cols[idx] as string] = isBoolean(value) ? String(value) : value;
-        });
-        return row;
-      });
       return (
-        <ContextMenu
-          content={
-            <QueryBuilderResultContextMenu
-              event={cellDoubleClickedEvent}
-              queryBuilderState={queryBuilderState}
-            />
-          }
-          menuProps={{ elevation: 7 }}
-          key={executionResult._UUID}
-          className={clsx(
-            'ag-theme-balham-dark query-builder__result__tds-grid',
-          )}
-        >
-          <AgGridReact
-            rowData={rowData}
-            onCellMouseOver={(event): void => {
-              setCellDoubleClickedEvent(event);
-            }}
-          >
-            {columns.map((colName) => (
-              <AgGridColumn
-                minWidth={50}
-                sortable={true}
-                resizable={true}
-                field={colName}
-                key={colName}
-                flex={1}
-              />
-            ))}
-          </AgGridReact>
-        </ContextMenu>
+        <QueryBuilderGridResult
+          queryBuilderState={queryBuilderState}
+          executionResult={executionResult}
+        />
       );
     } else if (executionResult instanceof RawExecutionResult) {
       return (
@@ -414,6 +438,9 @@ export const QueryBuilderResultPanel = observer(
         ],
       });
     };
+    const queryValidationIssues = queryBuilderState.validationIssues;
+    const isQueryValid =
+      !queryBuilderState.isQuerySupported() || !queryValidationIssues;
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
@@ -439,6 +466,7 @@ export const QueryBuilderResultPanel = observer(
     const debugPlanGeneration = applicationStore.guardUnhandledError(() =>
       flowResult(resultState.generatePlan(true)),
     );
+
     const changeLimit: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const val = event.target.value;
       queryBuilderState.resultState.setPreviewLimit(
@@ -474,6 +502,7 @@ export const QueryBuilderResultPanel = observer(
                   type="number"
                   value={resultState.previewLimit}
                   onChange={changeLimit}
+                  disabled={!isQueryValid}
                 />
               </div>
             )}
@@ -482,6 +511,7 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__stop-btn"
                 onClick={cancelQuery}
                 tabIndex={-1}
+                disabled={!isQueryValid}
               >
                 <div className="btn--dark btn--caution query-builder__result__stop-btn__label">
                   <PauseCircleIcon className="query-builder__result__stop-btn__label__icon" />
@@ -495,6 +525,14 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__execute-btn"
                 onClick={runQuery}
                 tabIndex={-1}
+                title={
+                  queryValidationIssues
+                    ? `Query is not valid:\n${queryValidationIssues
+                        .map((issue) => `\u2022 ${issue}`)
+                        .join('\n')}`
+                    : undefined
+                }
+                disabled={!isQueryValid}
               >
                 <div className="query-builder__result__execute-btn__label">
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
@@ -557,12 +595,17 @@ export const QueryBuilderResultPanel = observer(
                 className="query-builder__result__export__dropdown__label"
                 tabIndex={-1}
                 title="Export"
+                disabled={!isQueryValid}
               >
                 Export
               </button>
-              <div className="query-builder__result__export__dropdown__trigger">
+              <button
+                className="query-builder__result__export__dropdown__trigger"
+                tabIndex={-1}
+                disabled={!isQueryValid}
+              >
                 <CaretDownIcon />
-              </div>
+              </button>
             </DropdownMenu>
           </div>
         </div>

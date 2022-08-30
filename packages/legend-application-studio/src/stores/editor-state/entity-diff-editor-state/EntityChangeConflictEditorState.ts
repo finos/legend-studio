@@ -67,7 +67,7 @@ const scanMergeConflict = (text: string): MergeConflict[] => {
     const lineNumber = i + 1;
 
     // ignore empty lines
-    if (!line || !line.trim()) {
+    if (!line?.trim()) {
       continue;
     }
 

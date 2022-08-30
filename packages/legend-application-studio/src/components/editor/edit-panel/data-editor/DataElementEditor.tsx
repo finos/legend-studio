@@ -28,6 +28,7 @@ import {
   LockIcon,
   MenuContent,
   MenuContentItem,
+  PanelDropZone,
   PlusIcon,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
@@ -53,9 +54,15 @@ import {
   type UMLEditorElementDropTarget,
   type ElementDragSource,
 } from '../../../../stores/shared/DnDUtil.js';
-import { TaggedValueEditor } from '../uml-editor/TaggedValueEditor.js';
+import {
+  TaggedValueDragPreviewLayer,
+  TaggedValueEditor,
+} from '../uml-editor/TaggedValueEditor.js';
 import { useCallback, useEffect, useRef } from 'react';
-import { StereotypeSelector } from '../uml-editor/StereotypeSelector.js';
+import {
+  StereotypeDragPreviewLayer,
+  StereotypeSelector,
+} from '../uml-editor/StereotypeSelector.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
@@ -212,11 +219,15 @@ export const DataElementEditor = observer(() => {
     },
     [dataElement, isReadOnly],
   );
-  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop(
+  const [{ isTaggedValueDragOver }, dropTaggedValueRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isTaggedValueDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropTaggedValue(item),
-      collect: (monitor): { isTaggedValueDragOver: boolean } => ({
+      drop: (item) => handleDropTaggedValue(item),
+      collect: (monitor) => ({
         isTaggedValueDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -235,11 +246,15 @@ export const DataElementEditor = observer(() => {
     },
     [dataElement, isReadOnly],
   );
-  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop(
+  const [{ isStereotypeDragOver }, dropStereotypeRef] = useDrop<
+    ElementDragSource,
+    void,
+    { isStereotypeDragOver: boolean }
+  >(
     () => ({
       accept: [CORE_DND_TYPE.PROJECT_EXPLORER_PROFILE],
-      drop: (item: ElementDragSource): void => handleDropStereotype(item),
-      collect: (monitor): { isStereotypeDragOver: boolean } => ({
+      drop: (item) => handleDropStereotype(item),
+      collect: (monitor) => ({
         isStereotypeDragOver: monitor.isOver({ shallow: true }),
       }),
     }),
@@ -308,23 +323,24 @@ export const DataElementEditor = observer(() => {
             </div>
             <div className="data-editor__content">
               <div className="data-editor__content__lists">
-                <div
-                  ref={dropStereotypeRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isStereotypeDragOver && !isReadOnly,
-                  })}
+                <PanelDropZone
+                  isDragOver={isStereotypeDragOver && !isReadOnly}
+                  dropTargetConnector={dropStereotypeRef}
                 >
-                  {dataElement.stereotypes.map((stereotype) => (
-                    <StereotypeSelector
-                      key={stereotype.value._UUID}
-                      stereotype={stereotype}
-                      deleteStereotype={_deleteStereotype(stereotype)}
-                      isReadOnly={isReadOnly}
-                      darkTheme={true}
-                    />
-                  ))}
-                </div>
+                  <div className="panel__content__lists">
+                    <StereotypeDragPreviewLayer />
+                    {dataElement.stereotypes.map((stereotype) => (
+                      <StereotypeSelector
+                        key={stereotype.value._UUID}
+                        annotatedElement={dataElement}
+                        stereotype={stereotype}
+                        deleteStereotype={_deleteStereotype(stereotype)}
+                        isReadOnly={isReadOnly}
+                        darkTheme={true}
+                      />
+                    ))}
+                  </div>
+                </PanelDropZone>
               </div>
             </div>
           </>
@@ -356,23 +372,24 @@ export const DataElementEditor = observer(() => {
             </div>
             <div className="data-editor__content">
               <div className="data-editor__content__lists">
-                <div
-                  ref={dropTaggedValueRef}
-                  className={clsx('panel__content__lists', {
-                    'panel__content__lists--dnd-over':
-                      isTaggedValueDragOver && !isReadOnly,
-                  })}
+                <PanelDropZone
+                  isDragOver={isTaggedValueDragOver && !isReadOnly}
+                  dropTargetConnector={dropTaggedValueRef}
                 >
-                  {dataElement.taggedValues.map((taggedValue) => (
-                    <TaggedValueEditor
-                      key={taggedValue._UUID}
-                      taggedValue={taggedValue}
-                      deleteValue={deleteTaggedValue(taggedValue)}
-                      isReadOnly={isReadOnly}
-                      darkTheme={true}
-                    />
-                  ))}
-                </div>
+                  <div className="panel__content__lists">
+                    <TaggedValueDragPreviewLayer />
+                    {dataElement.taggedValues.map((taggedValue) => (
+                      <TaggedValueEditor
+                        annotatedElement={dataElement}
+                        key={taggedValue._UUID}
+                        taggedValue={taggedValue}
+                        deleteValue={deleteTaggedValue(taggedValue)}
+                        isReadOnly={isReadOnly}
+                        darkTheme={true}
+                      />
+                    ))}
+                  </div>
+                </PanelDropZone>
               </div>
             </div>
           </>

@@ -60,12 +60,13 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
-} from '../../stores/QueryBuilderExplorerState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
-import { COLUMN_SORT_TYPE } from '../../stores/QueryResultSetModifierState.js';
+} from '../../stores/explorer/QueryBuilderExplorerState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { FETCH_STRUCTURE_MODE } from '../../stores/QueryBuilderFetchStructureState.js';
+import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 
 test(
   integrationTest(
@@ -124,6 +125,8 @@ test(
         ),
       );
     });
+
+    // check fetch-structure
     let projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -139,13 +142,13 @@ test(
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(2);
+    let projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
+    expect(projectionState.columns.length).toBe(2);
     let fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
-        (e) => e.columnName === FIRST_NAME_ALIAS,
-      ),
+      projectionState.columns.find((e) => e.columnName === FIRST_NAME_ALIAS),
     );
     const firstNameProperty = guaranteeType(
       fistNameCol,
@@ -153,16 +156,14 @@ test(
     ).propertyExpressionState.propertyExpression.func;
     expect(firstNameProperty).toBe(getClassProperty(_personClass, 'firstName'));
     const lastNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
-        (e) => e.columnName === LAST_NAME_ALIAS,
-      ),
+      projectionState.columns.find((e) => e.columnName === LAST_NAME_ALIAS),
     );
     const lastNameProperty = guaranteeType(
       lastNameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func;
     expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(projectionState.resultSetModifierState.limit).toBeUndefined();
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
@@ -174,6 +175,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionWithChainedPropertyCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -184,11 +189,9 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(1);
+    expect(projectionState.columns.length).toBe(1);
     let legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -207,7 +210,7 @@ test(
     expect(_firmPropertyExpression.func).toBe(
       getClassProperty(_personClass, 'firm'),
     );
-    expect(queryBuilderState.resultSetModifierState.limit).toBeUndefined();
+    expect(projectionState.resultSetModifierState.limit).toBeUndefined();
 
     // result set modifiers
     const RESULT_LIMIT = 500;
@@ -219,6 +222,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -239,20 +246,16 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(3);
-    const resultSetModifierState = queryBuilderState.resultSetModifierState;
+    expect(projectionState.columns.length).toBe(3);
+    const resultSetModifierState = projectionState.resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
     fistNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
-        (e) => e.columnName === FIRST_NAME_ALIAS,
-      ),
+      projectionState.columns.find((e) => e.columnName === FIRST_NAME_ALIAS),
     );
     legalNameCol = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.projectionState.columns.find(
+      projectionState.columns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -297,27 +300,26 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${filterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, filterValue));
+
     await waitFor(() => getByText(filterPanel, 'First Name'));
     await waitFor(() => getByText(filterPanel, 'is'));
     const filterState = queryBuilderState.filterState;
     expect(filterState.nodes.size).toBe(1);
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(0);
+    expect(projectionState.columns.length).toBe(0);
 
     // filter with group condition
     act(() => {
       queryBuilderState.resetQueryBuilder();
-      queryBuilderState.resetQuerySetup();
+      queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
@@ -328,6 +330,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
     );
@@ -336,28 +342,18 @@ test(
     );
     await waitFor(() => getByText(filterPanel, 'or'));
     filterValue = 'lastNameTest';
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${filterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, filterValue));
     await waitFor(() => getByText(filterPanel, 'First Name'));
     const lastNameFilterValue = 'lastNameTest';
-    expect(
-      await waitFor(() =>
-        filterPanel.querySelector(`input[value="${lastNameFilterValue}"]`),
-      ),
-    ).not.toBeNull();
+    await waitFor(() => getByText(filterPanel, lastNameFilterValue));
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(0);
+    expect(projectionState.columns.length).toBe(0);
 
     // projection column with derived property
     act(() => {
       queryBuilderState.resetQueryBuilder();
-      queryBuilderState.resetQuerySetup();
+      queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
@@ -368,6 +364,10 @@ test(
         ),
       );
     });
+    projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     projectionCols = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
     );
@@ -377,9 +377,7 @@ test(
       ),
     ).not.toBeNull();
     await waitFor(() => getByText(projectionCols, 'Name With Title'));
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(1);
+    expect(projectionState.columns.length).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
     );
@@ -437,10 +435,10 @@ test(
     );
     expect(subTypeNodes.length).toBe(1);
     expect(guaranteeNonNullable(subTypeNodes[0]).mappingData.mapped).toBe(true);
-    const queryBuilderExplorerTreeSetup = await waitFor(() =>
+    const explorerPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
     );
-    await waitFor(() => getByText(queryBuilderExplorerTreeSetup, '@Firm'));
+    await waitFor(() => getByText(explorerPanel, '@Firm'));
 
     // simpleProjection with subType
     await act(async () => {
@@ -451,19 +449,13 @@ test(
         ),
       );
     });
-    const projectionColsWithSubType = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+
+    // check fetch-structure
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
     );
-    const NAME_ALIAS = '(@Firm)/Employees/First Name';
-    await waitFor(() => getByText(projectionColsWithSubType, NAME_ALIAS));
-    expect(
-      await waitFor(() =>
-        projectionColsWithSubType.querySelector(`input[value="${NAME_ALIAS}"]`),
-      ),
-    ).not.toBeNull();
-    expect(
-      queryBuilderState.fetchStructureState.projectionState.columns.length,
-    ).toBe(1);
+    expect(projectionState.columns.length).toBe(1);
   },
 );
 
@@ -511,10 +503,8 @@ test(
         ),
       );
     });
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
-    );
 
+    // switch to complex graph fetch
     await act(async () => {
       queryBuilderState.initialize(
         create_RawLambda(
@@ -523,14 +513,16 @@ test(
         ),
       );
     });
-    expect(queryBuilderState.fetchStructureState.fetchStructureMode).toBe(
-      FETCH_STRUCTURE_MODE.GRAPH_FETCH,
+    const graphFetchTreeState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderGraphFetchTreeState,
     );
+
+    // check fetch-structure
     const firmGraphFetchTree = guaranteeNonNullable(
-      queryBuilderState.fetchStructureState.graphFetchTreeState.treeData,
+      graphFetchTreeState.treeData,
     );
     const firmGraphFetchTreeNode = firmGraphFetchTree.tree;
     expect(firmGraphFetchTreeNode.class.value).toBe(_firmClass);
   },
-  // TODO: add more test when we rework the graph fetch tree
 );

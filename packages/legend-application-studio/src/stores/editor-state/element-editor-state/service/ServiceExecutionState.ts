@@ -125,6 +125,7 @@ export class ServiceExecutionParameterState extends LambdaParametersState {
       const parmeterState = new LambdaParameterState(
         p,
         this.executionState.editorStore.changeDetectionState.observerContext,
+        this.executionState.editorStore.graphManagerState.graph,
       );
       parmeterState.mockParameterValue();
       return parmeterState;

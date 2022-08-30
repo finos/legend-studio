@@ -22,6 +22,9 @@ import {
   RobotIcon,
   SaveIcon,
   BlankPanelContent,
+  clsx,
+  EmptyLightBulbIcon,
+  LightBulbIcon,
 } from '@finos/legend-art';
 import { getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -108,6 +111,8 @@ const QueryExportDialogContent = observer(
           )}
           <button
             className="btn modal__footer__close-btn btn--dark"
+            // TODO?: we should probably annotate here why,
+            // when we disable this action
             disabled={!allowCreate}
             onClick={create}
           >
@@ -199,6 +204,10 @@ const QueryEditorHeaderContent = observer(() => {
       ),
     );
   };
+  const toggleLightDarkTheme = (): void =>
+    applicationStore.TEMPORARY__setIsLightThemeEnabled(
+      !applicationStore.TEMPORARY__isLightThemeEnabled,
+    );
   const saveQuery = (): void => {
     editorStore.queryBuilderState
       .saveQuery(async (lambda: RawLambda) => {
@@ -227,6 +236,20 @@ const QueryEditorHeaderContent = observer(() => {
         >
           <ExternalLinkSquareIcon />
         </button>
+        {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+          <button
+            className="query-editor__header__action query-editor__header__action--simple btn--dark"
+            tabIndex={-1}
+            title="Toggle Light/Dark Theme"
+            onClick={toggleLightDarkTheme}
+          >
+            {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+              <EmptyLightBulbIcon />
+            ) : (
+              <LightBulbIcon />
+            )}
+          </button>
+        )}
         <button
           className="query-editor__header__action btn--dark"
           tabIndex={-1}
@@ -256,9 +279,24 @@ export const QueryEditor = observer(() => {
     );
   }, [editorStore, applicationStore]);
 
+  useEffect(() => {
+    document.body.classList.toggle(
+      'light-theme',
+      applicationStore.TEMPORARY__isLightThemeEnabled,
+    );
+  }, [applicationStore.TEMPORARY__isLightThemeEnabled]);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="query-editor">
+      <div
+        className={clsx([
+          'query-editor ',
+          {
+            'query-editor--light':
+              applicationStore.TEMPORARY__isLightThemeEnabled,
+          },
+        ])}
+      >
         <div className="query-editor__header">
           <button
             className="query-editor__header__back-btn btn--dark"

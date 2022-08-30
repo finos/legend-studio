@@ -85,12 +85,12 @@ beforeEach(async () => {
 });
 
 test(
-  integrationTest('Model loader shows up if no elements in graph'),
+  integrationTest('Model Importer shows up if no elements in graph'),
   async () => {
     const packageExplorer = renderResult.getByTestId(
       LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
     );
-    getByText(packageExplorer, 'Open Model Loader');
+    getByText(packageExplorer, 'Open Model Importer');
     // TODO
   },
 );

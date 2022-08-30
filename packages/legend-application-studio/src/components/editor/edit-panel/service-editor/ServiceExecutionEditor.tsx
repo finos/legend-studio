@@ -54,6 +54,7 @@ import {
   PlusIcon,
   ArrowsJoinIcon,
   ArrowsSplitIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -218,15 +219,18 @@ const PureExecutionContextConfigurationEditor = observer(
       },
       [isReadOnly, mapping, executionContextState, pureExecutionState],
     );
-    const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop(
+    const [{ isMappingOrRuntimeDragOver }, dropMappingOrRuntimeRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isMappingOrRuntimeDragOver: boolean }
+    >(
       () => ({
         accept: [
           CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
           CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
         ],
-        drop: (item: ElementDragSource): void =>
-          handleMappingOrRuntimeDrop(item),
-        collect: (monitor): { isMappingOrRuntimeDragOver: boolean } => ({
+        drop: (item) => handleMappingOrRuntimeDrop(item),
+        collect: (monitor) => ({
           isMappingOrRuntimeDragOver: monitor.isOver({ shallow: true }),
         }),
       }),
@@ -239,78 +243,77 @@ const PureExecutionContextConfigurationEditor = observer(
     );
 
     return (
-      <div
-        ref={dropMappingOrRuntimeRef}
-        className="panel__content dnd__overlay__container"
-      >
-        <div
-          className={clsx({
-            dnd__overlay: isMappingOrRuntimeDragOver && !isReadOnly,
-          })}
-        />
-        <div className="service-execution-editor__configuration__items">
-          <div className="service-execution-editor__configuration__item">
-            <div className="btn--sm service-execution-editor__configuration__item__label">
-              <PURE_MappingIcon />
-            </div>
-            <CustomSelectorInput
-              className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
-              disabled={isReadOnly}
-              options={mappingOptions}
-              onChange={onMappingSelectionChange}
-              value={selectedMappingOption}
-              darkMode={true}
-              hasError={isMappingEmpty}
-            />
-            <button
-              className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
-              onClick={visitMapping}
-              tabIndex={-1}
-              title={'See mapping'}
-            >
-              <LongArrowRightIcon />
-            </button>
-          </div>
-          <div className="service-execution-editor__configuration__item">
-            <div className="btn--sm service-execution-editor__configuration__item__label">
-              <PURE_RuntimeIcon />
-            </div>
-            <CustomSelectorInput
-              className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
-              disabled={isReadOnly}
-              options={runtimeOptions}
-              onChange={onRuntimeSelectionChange}
-              value={selectedRuntimeOption}
-              darkMode={true}
-            />
-            {!isRuntimePointer && (
+      <div className="panel__content">
+        <PanelDropZone
+          dropTargetConnector={dropMappingOrRuntimeRef}
+          isDragOver={isMappingOrRuntimeDragOver && !isReadOnly}
+        >
+          <div className="service-execution-editor__configuration__items">
+            <div className="service-execution-editor__configuration__item">
+              <div className="btn--sm service-execution-editor__configuration__item__label">
+                <PURE_MappingIcon />
+              </div>
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
+                disabled={isReadOnly}
+                options={mappingOptions}
+                onChange={onMappingSelectionChange}
+                value={selectedMappingOption}
+                darkMode={true}
+                hasError={isMappingEmpty}
+              />
               <button
-                className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
-                disabled={Boolean(isReadOnly || isMappingEmpty)}
-                onClick={openRuntimeEditor}
+                className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
+                onClick={visitMapping}
                 tabIndex={-1}
-                title={isReadOnly ? 'See runtime' : 'Configure custom runtime'}
-              >
-                <CogIcon />
-              </button>
-            )}
-            {isRuntimePointer && (
-              <button
-                className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
-                onClick={visitRuntime}
-                tabIndex={-1}
-                title={'See runtime'}
+                title={'See mapping'}
               >
                 <LongArrowRightIcon />
               </button>
-            )}
-            <EmbeddedRuntimeEditor
-              runtimeEditorState={pureExecutionState.runtimeEditorState}
-              isReadOnly={serviceState.isReadOnly}
-              onClose={(): void => pureExecutionState.closeRuntimeEditor()}
-            />
+            </div>
+            <div className="service-execution-editor__configuration__item">
+              <div className="btn--sm service-execution-editor__configuration__item__label">
+                <PURE_RuntimeIcon />
+              </div>
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
+                disabled={isReadOnly}
+                options={runtimeOptions}
+                onChange={onRuntimeSelectionChange}
+                value={selectedRuntimeOption}
+                darkMode={true}
+              />
+              {!isRuntimePointer && (
+                <button
+                  className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
+                  disabled={Boolean(isReadOnly || isMappingEmpty)}
+                  onClick={openRuntimeEditor}
+                  tabIndex={-1}
+                  title={
+                    isReadOnly ? 'See runtime' : 'Configure custom runtime'
+                  }
+                >
+                  <CogIcon />
+                </button>
+              )}
+              {isRuntimePointer && (
+                <button
+                  className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
+                  onClick={visitRuntime}
+                  tabIndex={-1}
+                  title={'See runtime'}
+                >
+                  <LongArrowRightIcon />
+                </button>
+              )}
+              <EmbeddedRuntimeEditor
+                runtimeEditorState={pureExecutionState.runtimeEditorState}
+                isReadOnly={serviceState.isReadOnly}
+                onClose={(): void => pureExecutionState.closeRuntimeEditor()}
+              />
+            </div>
           </div>
-        </div>
+        </PanelDropZone>
       </div>
     );
   },
@@ -696,7 +699,7 @@ const MultiPureExecutionEditor = observer(
               ))}
               {!multiExecution.executionParameters.length && (
                 <BlankPanelPlaceholder
-                  placeholderText="Add an execution context"
+                  text="Add an execution context"
                   onClick={addExecutionKey}
                   clickActionType="add"
                   tooltipText="Click to add an execution context"
@@ -739,7 +742,7 @@ const MultiPureExecutionEditor = observer(
               />
             ) : (
               <BlankPanelPlaceholder
-                placeholderText="Add an execution context"
+                text="Add an execution context"
                 onClick={addExecutionKey}
                 clickActionType="add"
                 tooltipText="Click to add an execution context"

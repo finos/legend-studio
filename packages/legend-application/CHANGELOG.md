@@ -1,5 +1,33 @@
 # @finos/legend-application
 
+## 7.1.5
+
+## 7.1.4
+
+## 7.1.3
+
+## 7.1.2
+
+## 7.1.1
+
+## 7.1.0
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Add support for `focus` event handler for `LambdaEditor` via the new prop `onEditorFocusEventHandler`.
+
+## 7.0.4
+
+### Patch Changes
+
+- [#1381](https://github.com/finos/legend-studio/pull/1381) [`7a892e6b`](https://github.com/finos/legend-studio/commit/7a892e6b3906b7429ee89ee0fe573e4215553fbf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for selection of value specification values through options.
+
+## 7.0.3
+
+### Patch Changes
+
+- [#1378](https://github.com/finos/legend-studio/pull/1378) [`e6812be0`](https://github.com/finos/legend-studio/commit/e6812be09157cbceb52744c55533d5fc094cb119) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix generating expected results for multi execution ([#1352](https://github.com/finos/legend-studio/issues/1352)).
+
 ## 7.0.2
 
 ## 7.0.1

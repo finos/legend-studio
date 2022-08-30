@@ -25,7 +25,8 @@
     @include flexVCenter;
 
     color: var(--color-dark-grey-500);
-    background: var(--color-light-grey-180);
+    background: var(--color-light-grey-50);
+    border: 0.1rem solid var(--color-light-grey-180);
     margin-left: 1rem;
     border-radius: 0.2rem;
     font-size: 1rem;
@@ -38,6 +39,25 @@
     @include flexVCenter;
 
     height: 1.8rem;
+  }
+}
+
+.packageable-element-format-option-label-type {
+  margin: -1rem 0.8rem -1rem -1.2rem;
+  height: 3.2rem;
+  padding: 0 0 0 0.5rem;
+  background: transparent;
+
+  &--system {
+    background: var(--color-system);
+  }
+
+  &--generated {
+    background: var(--color-generated);
+  }
+
+  &--dependency {
+    background: var(--color-dependency);
   }
 }
 

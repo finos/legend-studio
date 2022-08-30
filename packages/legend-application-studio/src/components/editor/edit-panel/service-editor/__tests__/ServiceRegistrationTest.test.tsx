@@ -113,10 +113,6 @@ const setup = async (
       ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
     ],
-    availableImportDescriptions: [
-      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
-      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
-    ],
     projects: [],
     projectData: [],
     projectDependency: [],
@@ -340,7 +336,7 @@ test(
     await waitFor(() => getByText(actionAlertDialog, 'Launch Service'));
     getByText(
       actionAlertDialog,
-      'Service with patten /myservice registered and activated',
+      'Service with pattern /myservice registered and activated',
     );
     fireEvent.click(renderResult.getByText('Close'));
     // check no owners check

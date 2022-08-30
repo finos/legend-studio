@@ -48,11 +48,6 @@
       padding: 1rem;
       overflow: overlay;
     }
-
-    &__content__lists--dnd-over {
-      filter: brightness(95%) blur(0.05rem);
-      box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
-    }
   }
 
   &__header__lock {

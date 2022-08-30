@@ -26,15 +26,19 @@ import {
   PlusIcon,
   TimesIcon,
   LockIcon,
+  PanelEntryDragHandle,
+  PanelEntryDropZonePlaceholder,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Profile,
-  type Tag,
   type Stereotype,
   stub_Tag,
   stub_Stereotype,
+  type Tag,
 } from '@finos/legend-graph';
 import {
   profile_addTag,
@@ -42,55 +46,122 @@ import {
   profile_deleteTag,
   profile_deleteStereotype,
   tagStereotype_setValue,
+  profile_swapTags,
+  profile_swapStereotypes,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { useRef, useCallback } from 'react';
+import { useDrop, useDrag } from 'react-dnd';
+
+type TagDragSource = {
+  tag: Tag;
+};
+
+const TAG_DND_TYPE = 'TAG';
 
 const TagBasicEditor = observer(
-  (props: { tag: Tag; deleteValue: () => void; isReadOnly: boolean }) => {
-    const { tag, deleteValue, isReadOnly } = props;
+  (props: {
+    tag: Tag;
+    deleteValue: () => void;
+    _profile: Profile;
+    isReadOnly: boolean;
+  }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const { tag, _profile, deleteValue, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(tag, event.target.value);
     };
     const isTagDuplicated = (val: Tag): boolean =>
       tag._OWNER.p_tags.filter((t) => t.value === val.value).length >= 2;
 
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: TagDragSource): void => {
+        const draggingTag = item.tag;
+        const hoveredTag = tag;
+        profile_swapTags(_profile, draggingTag, hoveredTag);
+      },
+      [_profile, tag],
+    );
+
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      TagDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
+      () => ({
+        accept: [TAG_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedTag: monitor.getItem<TagDragSource | null>()?.tag,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = tag === isBeingDraggedTag;
+
+    const [, dragConnector, dragPreviewConnector] = useDrag<TagDragSource>(
+      () => ({
+        type: TAG_DND_TYPE,
+        item: () => ({
+          tag: tag,
+        }),
+      }),
+      [tag],
+    );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
-      <div className="tag-basic-editor">
-        <InputWithInlineValidation
-          className="tag-basic-editor__value input-group__input"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={tag.value}
-          onChange={changeValue}
-          placeholder={`Tag value`}
-          validationErrorMessage={
-            isTagDuplicated(tag) ? 'Duplicated tag' : undefined
-          }
-        />
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteValue}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
-        )}
+      <div ref={ref} className="tag-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="tag-basic-editor">
+            <PanelEntryDragHandle />
+            <InputWithInlineValidation
+              className="tag-basic-editor__value input-group__input"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={tag.value}
+              onChange={changeValue}
+              placeholder={`Tag value`}
+              validationErrorMessage={
+                isTagDuplicated(tag) ? 'Duplicated tag' : undefined
+              }
+            />
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteValue}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
 );
 
+type StereotypeDragSource = {
+  stereotype: Stereotype;
+};
+
+const STEREOTYPE_DND_TYPE = 'STEREOTYPE';
+
 const StereotypeBasicEditor = observer(
   (props: {
     stereotype: Stereotype;
     deleteStereotype: () => void;
+    _profile: Profile;
     isReadOnly: boolean;
   }) => {
-    const { stereotype, deleteStereotype, isReadOnly } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const { stereotype, _profile, deleteStereotype, isReadOnly } = props;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       tagStereotype_setValue(stereotype, event.target.value);
     };
@@ -98,32 +169,77 @@ const StereotypeBasicEditor = observer(
       stereotype._OWNER.p_stereotypes.filter((s) => s.value === val.value)
         .length >= 2;
 
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: StereotypeDragSource): void => {
+        const draggingTag = item.stereotype;
+        const hoveredTag = stereotype;
+        profile_swapStereotypes(_profile, draggingTag, hoveredTag);
+      },
+      [_profile, stereotype],
+    );
+
+    const [{ isBeingDraggedTag }, dropConnector] = useDrop<
+      StereotypeDragSource,
+      void,
+      { isBeingDraggedTag: Tag | undefined }
+    >(
+      () => ({
+        accept: [STEREOTYPE_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (monitor) => ({
+          isBeingDraggedTag: monitor.getItem<StereotypeDragSource | null>()
+            ?.stereotype,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = stereotype === isBeingDraggedTag;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<StereotypeDragSource>(
+        () => ({
+          type: STEREOTYPE_DND_TYPE,
+          item: () => ({
+            stereotype: stereotype,
+          }),
+        }),
+        [stereotype],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
-      <div className="stereotype-basic-editor">
-        <InputWithInlineValidation
-          className="stereotype-basic-editor__value input-group__input"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={stereotype.value}
-          onChange={changeValue}
-          placeholder={`Stereotype value`}
-          validationErrorMessage={
-            isStereotypeDuplicated(stereotype)
-              ? 'Duplicated stereotype'
-              : undefined
-          }
-        />
-        {!isReadOnly && (
-          <button
-            className="uml-element-editor__remove-btn"
-            disabled={isReadOnly}
-            onClick={deleteStereotype}
-            tabIndex={-1}
-            title={'Remove'}
-          >
-            <TimesIcon />
-          </button>
-        )}
+      <div ref={ref} className="stereotype-basic-editor__container">
+        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+          <div className="stereotype-basic-editor">
+            <PanelEntryDragHandle />
+            <InputWithInlineValidation
+              className="stereotype-basic-editor__value input-group__input"
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={stereotype.value}
+              onChange={changeValue}
+              placeholder={`Stereotype value`}
+              validationErrorMessage={
+                isStereotypeDuplicated(stereotype)
+                  ? 'Duplicated stereotype'
+                  : undefined
+              }
+            />
+            {!isReadOnly && (
+              <button
+                className="uml-element-editor__remove-btn"
+                disabled={isReadOnly}
+                onClick={deleteStereotype}
+                tabIndex={-1}
+                title={'Remove'}
+              >
+                <TimesIcon />
+              </button>
+            )}
+          </div>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },
@@ -221,10 +337,17 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
         <div className="panel__content">
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: TagDragSource): string =>
+                  item.tag.value === '' ? '(unknown)' : item.tag.value
+                }
+                types={[TAG_DND_TYPE]}
+              />
               {profile.p_tags.map((tag) => (
                 <TagBasicEditor
                   key={tag._UUID}
                   tag={tag}
+                  _profile={profile}
                   deleteValue={deleteTag(tag)}
                   isReadOnly={isReadOnly}
                 />
@@ -233,9 +356,18 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
           )}
           {selectedTab === UML_EDITOR_TAB.STEREOTYPES && (
             <div className="panel__content__lists">
+              <DragPreviewLayer
+                labelGetter={(item: StereotypeDragSource): string =>
+                  item.stereotype.value === ''
+                    ? '(unknown)'
+                    : item.stereotype.value
+                }
+                types={[STEREOTYPE_DND_TYPE]}
+              />
               {profile.p_stereotypes.map((stereotype) => (
                 <StereotypeBasicEditor
                   key={stereotype._UUID}
+                  _profile={profile}
                   stereotype={stereotype}
                   deleteStereotype={deleteStereotype(stereotype)}
                   isReadOnly={isReadOnly}

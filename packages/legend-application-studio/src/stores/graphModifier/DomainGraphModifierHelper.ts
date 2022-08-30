@@ -19,6 +19,7 @@ import {
   assertTrue,
   deleteEntry,
   guaranteeType,
+  swapEntry,
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 import {
@@ -90,6 +91,12 @@ export const class_addProperty = action(
   },
 );
 
+export const class_swapProperties = action(
+  (_class: Class, sourceProperty: Property, targetProperty: Property): void => {
+    swapEntry(_class.properties, sourceProperty, targetProperty);
+  },
+);
+
 export const class_deleteDerivedProperty = action(
   (_class: Class, val: DerivedProperty): void => {
     deleteEntry(_class.derivedProperties, val);
@@ -100,6 +107,17 @@ export const class_addDerivedProperty = action(
     addUniqueEntry(_class.derivedProperties, observe_DerivedProperty(val));
   },
 );
+
+export const class_swapDerivedProperties = action(
+  (
+    _class: Class,
+    sourceProperty: DerivedProperty,
+    targetProperty: DerivedProperty,
+  ): void => {
+    swapEntry(_class.derivedProperties, sourceProperty, targetProperty);
+  },
+);
+
 export const class_addContraint = action(
   (_class: Class, val: Constraint): void => {
     addUniqueEntry(_class.constraints, observe_Constraint(val));
@@ -110,6 +128,16 @@ export const class_deleteConstraint = action(
     deleteEntry(_class.constraints, val);
   },
 );
+export const class_swapConstraints = action(
+  (
+    _class: Class,
+    sourceConstraint: Constraint,
+    targetConstraint: Constraint,
+  ): void => {
+    swapEntry(_class.constraints, sourceConstraint, targetConstraint);
+  },
+);
+
 export const class_addSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
     addUniqueEntry(_class.generalizations, observe_GenericTypeReference(val));
@@ -118,6 +146,15 @@ export const class_addSuperType = action(
 export const class_deleteSuperType = action(
   (_class: Class, val: GenericTypeReference): void => {
     deleteEntry(_class.generalizations, val);
+  },
+);
+export const class_swapSuperTypes = action(
+  (
+    _class: Class,
+    sourceSuperType: GenericTypeReference,
+    targetSuperType: GenericTypeReference,
+  ): void => {
+    swapEntry(_class.generalizations, sourceSuperType, targetSuperType);
   },
 );
 export const class_addSubclass = action((_class: Class, val: Class): void => {
@@ -211,6 +248,30 @@ export const tagStereotype_setValue = action(
   },
 );
 
+export const annotatedElement_swapTaggedValues = action(
+  (
+    annotatedElement: AnnotatedElement,
+    sourceTaggedValue: TaggedValue,
+    targetTaggedValue: TaggedValue,
+  ): void => {
+    swapEntry(
+      annotatedElement.taggedValues,
+      sourceTaggedValue,
+      targetTaggedValue,
+    );
+  },
+);
+
+export const annotatedElement_swapStereotypes = action(
+  (
+    annotatedElement: AnnotatedElement,
+    sourceStereotype: StereotypeReference,
+    targetStereotype: StereotypeReference,
+  ): void => {
+    swapEntry(annotatedElement.stereotypes, sourceStereotype, targetStereotype);
+  },
+);
+
 // --------------------------------------------- DerivedProperty -------------------------------------
 
 export const derivedProperty_setBody = (
@@ -260,6 +321,22 @@ export const profile_deleteStereotype = action(
   },
 );
 
+export const profile_swapTags = action(
+  (profile: Profile, sourceTag: Tag, targetTag: Tag): void => {
+    swapEntry(profile.p_tags, sourceTag, targetTag);
+  },
+);
+
+export const profile_swapStereotypes = action(
+  (
+    profile: Profile,
+    sourceStereotype: Stereotype,
+    targetStereotype: Stereotype,
+  ): void => {
+    swapEntry(profile.p_stereotypes, sourceStereotype, targetStereotype);
+  },
+);
+
 // --------------------------------------------- Function -------------------------------------
 
 export const function_deleteParameter = action(
@@ -283,6 +360,16 @@ export const function_setReturnMultiplicity = action(
   },
 );
 
+export const function_swapParameters = action(
+  (
+    _func: ConcreteFunctionDefinition,
+    sourceParameter: RawVariableExpression,
+    targetParameter: RawVariableExpression,
+  ): void => {
+    swapEntry(_func.parameters, sourceParameter, targetParameter);
+  },
+);
+
 // --------------------------------------------- Enumeration -------------------------------------
 
 export const enum_setName = action((val: Enum, value: string): void => {
@@ -296,6 +383,11 @@ export const enum_addValue = action(
 export const enum_deleteValue = action(
   (enumeration: Enumeration, value: Enum): void => {
     deleteEntry(enumeration.values, value);
+  },
+);
+export const enum_swapValues = action(
+  (enumeration: Enumeration, sourceEnum: Enum, targetEnum: Enum): void => {
+    swapEntry(enumeration.values, sourceEnum, targetEnum);
   },
 );
 export const enumValueReference_setValue = action(

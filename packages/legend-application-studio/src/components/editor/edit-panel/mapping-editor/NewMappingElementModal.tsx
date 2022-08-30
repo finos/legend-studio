@@ -45,7 +45,7 @@ import {
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
 import {
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
 
@@ -145,8 +145,7 @@ export const NewMappingElementModal = observer(() => {
 
   // Submit button
   const disableCreateButton =
-    !spec ||
-    !spec.target ||
+    !spec?.target ||
     !isMappingIdUnique ||
     !id ||
     (spec.target instanceof Class && !classMappingType);
@@ -235,7 +234,7 @@ export const NewMappingElementModal = observer(() => {
               filterOption={filterOption}
               onChange={handleTargetChange}
               value={selectedOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter()}
+              formatOptionLabel={getPackageableElementOptionFormatter({})}
               placeholder="Choose a target"
               isClearable={true}
             />

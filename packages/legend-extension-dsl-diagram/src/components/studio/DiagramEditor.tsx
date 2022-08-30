@@ -1228,11 +1228,10 @@ const DiagramEditorDiagramCanvas = observer(
       },
       [diagramEditorState, isReadOnly],
     );
-    const [, dropConnector] = useDrop(
+    const [, dropConnector] = useDrop<ElementDragSource>(
       () => ({
         accept: CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
-        drop: (item: ElementDragSource, monitor): void =>
-          handleDrop(item, monitor),
+        drop: (item, monitor): void => handleDrop(item, monitor),
       }),
       [handleDrop],
     );

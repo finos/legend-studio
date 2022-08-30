@@ -25,6 +25,7 @@ import {
   AsteriskIcon,
   LongArrowAltDownIcon,
   PencilEditIcon,
+  PanelDropZone,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -244,11 +245,15 @@ export const InstanceSetImplementationSourceExplorer = observer(
         setImplementation,
       ],
     );
-    const [{ isDragOver, canDrop }, dropRef] = useDrop(
+    const [{ isDragOver, canDrop }, dropRef] = useDrop<
+      ElementDragSource,
+      void,
+      { isDragOver: boolean; canDrop: boolean }
+    >(
       () => ({
         accept: dndType,
-        drop: (item: ElementDragSource): void => handleDrop(item),
-        collect: (monitor): { isDragOver: boolean; canDrop: boolean } => ({
+        drop: (item) => handleDrop(item),
+        collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),
           canDrop: monitor.canDrop(),
         }),
@@ -318,11 +323,11 @@ export const InstanceSetImplementationSourceExplorer = observer(
             </button>
           </div>
         </div>
-        <div ref={dropRef} className="panel__content dnd__dropzone">
-          <>
-            {srcElement && isDragOver && !isReadOnly && (
-              <div className="dnd__overlay" />
-            )}
+        <div className="panel__content">
+          <PanelDropZone
+            dropTargetConnector={dropRef}
+            isDragOver={isDragOver && !isReadOnly}
+          >
             {srcElement ? (
               <div className="source-panel__explorer">
                 {srcElement instanceof Type && (
@@ -346,21 +351,13 @@ export const InstanceSetImplementationSourceExplorer = observer(
               </div>
             ) : (
               <BlankPanelPlaceholder
-                placeholderText="Choose a source"
+                text="Choose a source"
                 onClick={showSourceSelectorModal}
                 clickActionType="add"
                 tooltipText="Drop a class mapping source, or click to choose one"
-                dndProps={{
-                  isDragOver: isDragOver && !isReadOnly,
-                  canDrop: canDrop && !isReadOnly,
-                }}
-                readOnlyProps={
-                  !isReadOnly
-                    ? undefined
-                    : {
-                        placeholderText: 'No source',
-                      }
-                }
+                isDropZoneActive={canDrop}
+                disabled={isReadOnly}
+                previewText="No source"
               />
             )}
             {isUnsupported && (
@@ -377,7 +374,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
                 closeModal={hideSourceSelectorModal}
               />
             )}
-          </>
+          </PanelDropZone>
         </div>
       </div>
     );

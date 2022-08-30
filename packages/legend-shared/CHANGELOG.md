@@ -1,5 +1,21 @@
 # @finos/legend-shared
 
+## 6.0.3
+
+## 6.0.2
+
+## 6.0.1
+
+## 6.0.0
+
+### Major Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `hashString()` has been replaced by a more generic version `hashValue()` which accepts `string`, `boolean`, and `number` values.
+
+## 5.0.3
+
+## 5.0.2
+
 ## 5.0.1
 
 ## 5.0.0

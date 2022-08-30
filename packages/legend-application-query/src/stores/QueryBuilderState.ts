@@ -24,23 +24,19 @@ import {
   filterByType,
   hashObject,
 } from '@finos/legend-shared';
-import {
-  type QueryBuilderFilterOperator,
-  QueryBuilderFilterState,
-} from './QueryBuilderFilterState.js';
-import { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
-import { QueryResultSetModifierState } from './QueryResultSetModifierState.js';
+import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
+import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import {
   QueryTextEditorMode,
   QueryTextEditorState,
 } from './QueryTextEditorState.js';
 import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
-import { QueryBuilderExplorerState } from './QueryBuilderExplorerState.js';
+import { QueryBuilderExplorerState } from './explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
-  processQueryBuilderLambdaFunction,
-  processQueryParameters,
-} from './QueryBuilderLambdaProcessor.js';
+  processQueryLambdaFunction,
+  processParameters,
+} from './QueryBuilderStateBuilder.js';
 import { QueryBuilderUnsupportedState } from './QueryBuilderUnsupportedState.js';
 import {
   type Class,
@@ -62,76 +58,28 @@ import {
   buildLambdaVariableExpressions,
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
-import {
-  QueryBuilderFilterOperator_Equal,
-  QueryBuilderFilterOperator_NotEqual,
-} from './filterOperators/QueryBuilderFilterOperator_Equal.js';
-import { QueryBuilderFilterOperator_GreaterThan } from './filterOperators/QueryBuilderFilterOperator_GreaterThan.js';
-import {
-  QueryBuilderFilterOperator_NotStartWith,
-  QueryBuilderFilterOperator_StartWith,
-} from './filterOperators/QueryBuilderFilterOperator_StartWith.js';
-import { QueryBuilderFilterOperator_GreaterThanEqual } from './filterOperators/QueryBuilderFilterOperator_GreaterThanEqual.js';
-import { QueryBuilderFilterOperator_LessThanEqual } from './filterOperators/QueryBuilderFilterOperator_LessThanEqual.js';
-import { QueryBuilderFilterOperator_LessThan } from './filterOperators/QueryBuilderFilterOperator_LessThan.js';
-import {
-  QueryBuilderFilterOperator_EndWith,
-  QueryBuilderFilterOperator_NotEndWith,
-} from './filterOperators/QueryBuilderFilterOperator_EndWith.js';
-import {
-  QueryBuilderFilterOperator_Contain,
-  QueryBuilderFilterOperator_NotContain,
-} from './filterOperators/QueryBuilderFilterOperator_Contain.js';
-import {
-  QueryBuilderFilterOperator_IsEmpty,
-  QueryBuilderFilterOperator_IsNotEmpty,
-} from './filterOperators/QueryBuilderFilterOperator_IsEmpty.js';
-import {
-  QueryBuilderFilterOperator_In,
-  QueryBuilderFilterOperator_NotIn,
-} from './filterOperators/QueryBuilderFilterOperator_In.js';
-import { buildLambdaFunction } from './QueryBuilderLambdaBuilder.js';
+import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import {
   LambdaParameterState,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilderPostFilterState } from './QueryBuilderPostFilterState.js';
-import {
-  QueryBuilderPostFilterOperator_Equal,
-  QueryBuilderPostFilterOperator_NotEqual,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Equal.js';
-import { QueryBuilderPostFilterOperator_LessThan } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThan.js';
-import { QueryBuilderPostFilterOperator_LessThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_LessThanEqual.js';
-import { QueryBuilderPostFilterOperator_GreaterThan } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThan.js';
-import { QueryBuilderPostFilterOperator_GreaterThanEqual } from './postFilterOperators/QueryBuilderPostFilterOperator_GreaterThanEqual.js';
-import {
-  QueryBuilderPostFilterOperator_NotStartWith,
-  QueryBuilderPostFilterOperator_StartWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_StartWith.js';
-import {
-  QueryBuilderPostFilterOperator_Contain,
-  QueryBuilderPostFilterOperator_NotContain,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_Contain.js';
-import {
-  QueryBuilderPostFilterOperator_EndWith,
-  QueryBuilderPostFilterOperator_NotEndWith,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_EndWith.js';
-import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
-import {
-  QueryBuilderPostFilterOperator_In,
-  QueryBuilderPostFilterOperator_NotIn,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_In.js';
-import {
-  QueryBuilderPostFilterOperator_IsEmpty,
-  QueryBuilderPostFilterOperator_IsNotEmpty,
-} from './postFilterOperators/QueryBuilderPostFilterOperator_IsEmpty.js';
-import { QueryFunctionsExplorerState } from './QueryFunctionsExplorerState.js';
+import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import { QueryParametersState } from './QueryParametersState.js';
+import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
+import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 
 export abstract class QueryBuilderMode {
   abstract get isParametersDisabled(): boolean;
 
   abstract get isResultPanelHidden(): boolean;
+
+  /**
+   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * and will be leveraged when the concepts of workflows are introduced into query builder.
+   */
+  get isDnDFetchStructureToFilterSupported(): boolean {
+    return true;
+  }
 }
 
 export class StandardQueryBuilderMode extends QueryBuilderMode {
@@ -173,54 +121,18 @@ export class QueryBuilderState {
   queryFunctionsExplorerState: QueryFunctionsExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
-  postFilterState: QueryBuilderPostFilterState;
-  resultSetModifierState: QueryResultSetModifierState;
   resultState: QueryBuilderResultState;
   queryTextEditorState: QueryTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   observableContext: ObserverContext;
-  filterOperators: QueryBuilderFilterOperator[] = [
-    new QueryBuilderFilterOperator_Equal(),
-    new QueryBuilderFilterOperator_NotEqual(),
-    new QueryBuilderFilterOperator_LessThan(),
-    new QueryBuilderFilterOperator_LessThanEqual(),
-    new QueryBuilderFilterOperator_GreaterThan(),
-    new QueryBuilderFilterOperator_GreaterThanEqual(),
-    new QueryBuilderFilterOperator_StartWith(),
-    new QueryBuilderFilterOperator_NotStartWith(),
-    new QueryBuilderFilterOperator_Contain(),
-    new QueryBuilderFilterOperator_NotContain(),
-    new QueryBuilderFilterOperator_EndWith(),
-    new QueryBuilderFilterOperator_NotEndWith(),
-    new QueryBuilderFilterOperator_In(),
-    new QueryBuilderFilterOperator_NotIn(),
-    new QueryBuilderFilterOperator_IsEmpty(),
-    new QueryBuilderFilterOperator_IsNotEmpty(),
-  ];
-  postFilterOperators: QueryBuilderPostFilterOperator[] = [
-    new QueryBuilderPostFilterOperator_Equal(),
-    new QueryBuilderPostFilterOperator_NotEqual(),
-    new QueryBuilderPostFilterOperator_LessThan(),
-    new QueryBuilderPostFilterOperator_LessThanEqual(),
-    new QueryBuilderPostFilterOperator_GreaterThan(),
-    new QueryBuilderPostFilterOperator_GreaterThanEqual(),
-    new QueryBuilderPostFilterOperator_StartWith(),
-    new QueryBuilderPostFilterOperator_NotStartWith(),
-    new QueryBuilderPostFilterOperator_Contain(),
-    new QueryBuilderPostFilterOperator_NotContain(),
-    new QueryBuilderPostFilterOperator_EndWith(),
-    new QueryBuilderPostFilterOperator_NotEndWith(),
-    new QueryBuilderPostFilterOperator_In(),
-    new QueryBuilderPostFilterOperator_NotIn(),
-    new QueryBuilderPostFilterOperator_IsEmpty(),
-    new QueryBuilderPostFilterOperator_IsNotEmpty(),
-  ];
+  changeDetectionState: QueryBuilderChangeDetectionState;
   isCompiling = false;
   backdrop = false;
   showFunctionPanel = false;
   showParameterPanel = false;
-  showPostFilterPanel = false;
-  changeDetectionState: QueryBuilderChangeDetectionState;
+
+  filterOperators: QueryBuilderFilterOperator[] =
+    getQueryBuilderCoreFilterOperators();
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -234,8 +146,6 @@ export class QueryBuilderState {
       queryFunctionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
-      postFilterState: observable,
-      resultSetModifierState: observable,
       resultState: observable,
       queryTextEditorState: observable,
       queryUnsupportedState: observable,
@@ -244,19 +154,16 @@ export class QueryBuilderState {
       mode: observable,
       showFunctionPanel: observable,
       showParameterPanel: observable,
-      showPostFilterPanel: observable,
       changeDetectionState: observable,
       setMode: action,
       resetQueryBuilder: action,
-      resetQuerySetup: action,
+      resetQueryContent: action,
       buildStateFromRawLambda: action,
       saveQuery: action,
       setBackdrop: action,
       setShowFunctionPanel: action,
       setShowParameterPanel: action,
-      setShowPostFilterPanel: action,
       changeClass: action,
-      changeFetchStructure: action,
       compileQuery: flow,
     });
 
@@ -269,11 +176,6 @@ export class QueryBuilderState {
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
-    this.postFilterState = new QueryBuilderPostFilterState(
-      this,
-      this.postFilterOperators,
-    );
-    this.resultSetModifierState = new QueryResultSetModifierState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.queryTextEditorState = new QueryTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
@@ -298,10 +200,6 @@ export class QueryBuilderState {
 
   setShowParameterPanel(val: boolean): void {
     this.showParameterPanel = val;
-  }
-
-  setShowPostFilterPanel(val: boolean): void {
-    this.showPostFilterPanel = val;
   }
 
   getQuery(options?: { keepSourceInformation: boolean }): RawLambda {
@@ -333,23 +231,23 @@ export class QueryBuilderState {
     this.setShowParameterPanel(false);
   }
 
-  resetQuerySetup(): void {
+  resetQueryContent(): void {
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
     this.queryParametersState = new QueryParametersState(this);
     this.queryFunctionsExplorerState = new QueryFunctionsExplorerState(this);
-    const fetchStructureState = new QueryBuilderFetchStructureState(this);
-    fetchStructureState.setFetchStructureMode(
-      this.fetchStructureState.fetchStructureMode,
-    );
-    this.fetchStructureState = fetchStructureState;
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
-    this.postFilterState = new QueryBuilderPostFilterState(
-      this,
-      this.postFilterOperators,
-    );
-    this.resultSetModifierState = new QueryResultSetModifierState(this);
-    this.fetchStructureState.graphFetchTreeState.initialize();
+    const currentFetchStructureImplementationType =
+      this.fetchStructureState.implementation.type;
+    this.fetchStructureState = new QueryBuilderFetchStructureState(this);
+    if (
+      currentFetchStructureImplementationType !==
+      this.fetchStructureState.implementation.type
+    ) {
+      this.fetchStructureState.changeImplementation(
+        currentFetchStructureImplementationType,
+      );
+    }
   }
 
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
@@ -369,7 +267,7 @@ export class QueryBuilderState {
           observe_ValueSpecification(param, this.observableContext),
         )
         .filter(filterByType(VariableExpression));
-      processQueryParameters(parameters, this);
+      processParameters(parameters, this);
       if (options?.notifyError) {
         this.applicationStore.notifyError(
           `Can't initialize query builder: ${error.message}`,
@@ -388,7 +286,7 @@ export class QueryBuilderState {
    */
   buildStateFromRawLambda(rawLambda: RawLambda): void {
     this.resetQueryBuilder();
-    this.resetQuerySetup();
+    this.resetQueryContent();
     if (!isStubbed_RawLambda(rawLambda)) {
       const valueSpec = observe_ValueSpecification(
         this.graphManagerState.graphManager.buildValueSpecification(
@@ -404,10 +302,10 @@ export class QueryBuilderState {
         LambdaFunctionInstanceValue,
         `Can't build query state: query builder only support lambda`,
       );
-      const compiledLambda = guaranteeNonNullable(
-        compiledValueSpecification.values[0],
+      processQueryLambdaFunction(
+        guaranteeNonNullable(compiledValueSpecification.values[0]),
+        this,
       );
-      processQueryBuilderLambdaFunction(this, compiledLambda);
     }
   }
 
@@ -433,6 +331,7 @@ export class QueryBuilderState {
       const variableState = new LambdaParameterState(
         milestoningParameter,
         this.querySetupState.queryBuilderState.observableContext,
+        this.querySetupState.queryBuilderState.graphManagerState.graph,
       );
       variableState.mockParameterValue();
       this.queryParametersState.addParameter(variableState);
@@ -457,7 +356,7 @@ export class QueryBuilderState {
   }
 
   clearCompilationError(): void {
-    this.fetchStructureState.projectionState.clearCompilationError();
+    this.fetchStructureState.implementation.clearCompilationError();
   }
 
   *compileQuery(): GeneratorFn<void> {
@@ -486,7 +385,7 @@ export class QueryBuilderState {
         // if even this fail, we will fall back to show it in text mode
         if (error instanceof CompilationError && error.sourceInformation) {
           fallbackToTextModeForDebugging =
-            !this.fetchStructureState.projectionState.revealCompilationError(
+            !this.fetchStructureState.implementation.revealCompilationError(
               error,
             );
         }
@@ -546,16 +445,21 @@ export class QueryBuilderState {
 
   changeClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this.resetQueryBuilder();
-    this.resetQuerySetup();
+    this.resetQueryContent();
     this.querySetupState.setClass(val, isRebuildingState);
     this.explorerState.refreshTreeData();
+    this.fetchStructureState.implementation.onClassChange(val);
   }
 
-  changeFetchStructure(): void {
-    this.resultSetModifierState = new QueryResultSetModifierState(this);
-    const treeData = this.fetchStructureState.graphFetchTreeState.treeData;
-    if (!treeData) {
-      this.fetchStructureState.graphFetchTreeState.initialize();
-    }
+  get validationIssues(): string[] | undefined {
+    return this.fetchStructureState.implementation.validationIssues;
+  }
+
+  cloneQueryBuilderState(): QueryBuilderState {
+    return new QueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.mode,
+    );
   }
 }

@@ -50,8 +50,6 @@ import {
   SDLCServerFeaturesConfiguration,
 } from '@finos/legend-server-sdlc';
 import {
-  type ImportConfigurationDescription,
-  type ImportMode,
   type GenerationConfigurationDescription,
   type GenerationMode,
   type GraphManagerState,
@@ -109,20 +107,8 @@ export const TEST_DATA__DefaultSDLCInfo = {
     version: 6,
     extensionVersion: 3,
   },
-  availableSchemaImports: [
-    {
-      label: 'XSD',
-      key: 'Xsd',
-      modelImportMode: 'schemaImport' as ImportMode,
-    },
-  ],
-  availableCodeImports: [
-    {
-      label: 'Java',
-      key: 'java',
-      modelImportMode: 'codeImport' as ImportMode,
-    },
-  ],
+  availableSchemaImports: [],
+  availableCodeImports: [],
   availableSchemaGenerations: [
     {
       label: 'Avro',
@@ -237,7 +223,6 @@ export const TEST__setUpEditor = async (
     projectConfiguration: PlainObject<ProjectConfiguration>;
     latestProjectStructureVersion: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions: GenerationConfigurationDescription[];
-    availableImportDescriptions: ImportConfigurationDescription[];
     projects: PlainObject<ProjectData>[];
     projectData: PlainObject<ProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
@@ -252,7 +237,6 @@ export const TEST__setUpEditor = async (
     entities,
     latestProjectStructureVersion,
     availableGenerationDescriptions,
-    availableImportDescriptions,
     projectData,
     projects,
     projectDependency,
@@ -322,12 +306,6 @@ export const TEST__setUpEditor = async (
       'getAvailableGenerationConfigurationDescriptions',
     )
     .mockResolvedValue(availableGenerationDescriptions);
-  jest
-    .spyOn(
-      MOCK__editorStore.graphManagerState.graphManager,
-      'getAvailableImportConfigurationDescriptions',
-    )
-    .mockResolvedValue(availableImportDescriptions);
 
   // mock change detections (since we do not test them now)
   MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
@@ -422,7 +400,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projectConfiguration?: PlainObject<ProjectConfiguration>;
     latestProjectStructureVersion?: PlainObject<ProjectStructureVersion>;
     availableGenerationDescriptions?: GenerationConfigurationDescription[];
-    availableImportDescriptions?: ImportConfigurationDescription[];
     projects?: PlainObject<ProjectData>[];
     projectData?: PlainObject<ProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
@@ -440,10 +417,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     availableGenerationDescriptions: [
       ...TEST_DATA__DefaultSDLCInfo.availableSchemaGenerations,
       ...TEST_DATA__DefaultSDLCInfo.availableCodeGenerations,
-    ],
-    availableImportDescriptions: [
-      ...TEST_DATA__DefaultSDLCInfo.availableSchemaImports,
-      ...TEST_DATA__DefaultSDLCInfo.availableCodeImports,
     ],
     projects: [],
     projectData: [],

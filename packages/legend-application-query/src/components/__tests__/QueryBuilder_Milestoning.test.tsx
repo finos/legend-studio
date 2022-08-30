@@ -42,9 +42,10 @@ import {
   TEST__setUpQueryEditor,
 } from '../QueryEditorComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 
 test(
   integrationTest(
@@ -85,8 +86,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -143,8 +149,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -201,8 +212,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -259,8 +275,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -317,8 +338,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -375,8 +401,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -433,8 +464,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -491,8 +527,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -549,8 +590,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -607,8 +653,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -665,8 +716,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =
@@ -723,8 +779,13 @@ test(
         ),
       );
     });
+
+    const projectionState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderProjectionState,
+    );
     const projectionColumnState = guaranteeType(
-      queryBuilderState.fetchStructureState.projectionState.columns[0],
+      projectionState.columns[0],
       QueryBuilderSimpleProjectionColumnState,
     );
     const derivedPropertyExpressionStates =

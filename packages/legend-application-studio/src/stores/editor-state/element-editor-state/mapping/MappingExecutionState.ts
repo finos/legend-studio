@@ -834,7 +834,7 @@ export class MappingExecutionState {
     yield flowResult(
       this.queryState.updateLamba(
         setImplementation
-          ? this.editorStore.graphManagerState.graphManager.HACKY__createGetAllLambda(
+          ? this.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
               guaranteeType(getMappingElementTarget(setImplementation), Class),
             )
           : stub_RawLambda(),

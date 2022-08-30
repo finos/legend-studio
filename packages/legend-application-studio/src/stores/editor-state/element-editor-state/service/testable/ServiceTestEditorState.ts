@@ -136,7 +136,10 @@ export class ServiceValueSpecificationTestParameterState extends ServiceTestPara
   }
 
   resetValueSpec(): void {
-    const mockValue = generateVariableExpressionMockValue(this.varExpression);
+    const mockValue = generateVariableExpressionMockValue(
+      this.varExpression,
+      this.editorStore.graphManagerState.graph,
+    );
     if (mockValue) {
       this.updateValueSpecification(mockValue);
     }
@@ -258,7 +261,10 @@ export class ServiceTestSetupState {
   addExpressionParameterValue(expression: VariableExpression): void {
     try {
       const mockValue = guaranteeNonNullable(
-        generateVariableExpressionMockValue(expression),
+        generateVariableExpressionMockValue(
+          expression,
+          this.editorStore.graphManagerState.graph,
+        ),
       );
       const paramValue = new ParameterValue();
       paramValue.name = expression.name;
@@ -338,7 +344,10 @@ export class ServiceTestSetupState {
       const varExpressions = this.queryVariableExpressions;
       const parameterValueStates = varExpressions
         .map((varExpression) => {
-          const mockValue = generateVariableExpressionMockValue(varExpression);
+          const mockValue = generateVariableExpressionMockValue(
+            varExpression,
+            this.editorStore.graphManagerState.graph,
+          );
           if (mockValue) {
             const paramValue = new ParameterValue();
             paramValue.name = varExpression.name;

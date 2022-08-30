@@ -59,7 +59,7 @@ import {
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
 import { EditorSDLCState } from './EditorSDLCState.js';
-import { ModelLoaderState } from './editor-state/ModelLoaderState.js';
+import { ModelImporterState } from './editor-state/ModelImporterState.js';
 import type { EditorState } from './editor-state/EditorState.js';
 import { EntityDiffViewState } from './editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { FunctionEditorState } from './editor-state/element-editor-state/FunctionEditorState.js';
@@ -117,6 +117,7 @@ import {
   PRIMITIVE_TYPE,
   Package,
   DataElement,
+  isElementReadOnly,
 } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
@@ -185,7 +186,7 @@ export class EditorStore {
   graphManagerState: GraphManagerState;
   changeDetectionState: ChangeDetectionState;
   grammarTextEditorState: GrammarTextEditorState;
-  modelLoaderState: ModelLoaderState;
+  modelImporterState: ModelImporterState;
   projectConfigurationEditorState: ProjectConfigurationEditorState;
   projectOverviewState: ProjectOverviewState;
   workspaceWorkflowManagerState: WorkspaceWorkflowManagerState;
@@ -314,7 +315,7 @@ export class EditorStore {
     this.newElementState = new NewElementState(this);
     // special (singleton) editors
     this.grammarTextEditorState = new GrammarTextEditorState(this);
-    this.modelLoaderState = new ModelLoaderState(this);
+    this.modelImporterState = new ModelImporterState(this);
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
       this.sdlcState,
@@ -374,7 +375,7 @@ export class EditorStore {
         LEGEND_STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
         [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
         this.createGlobalHotKeyAction(() =>
-          this.openState(this.modelLoaderState),
+          this.openState(this.modelImporterState),
         ),
       ),
       new HotkeyConfiguration(
@@ -735,7 +736,6 @@ export class EditorStore {
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
-      this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
   }
@@ -774,7 +774,6 @@ export class EditorStore {
       this.projectConfigurationEditorState.fetchLatestProjectStructureVersion(),
       this.graphState.graphGenerationState.fetchAvailableFileGenerationDescriptions(),
       this.graphState.graphGenerationState.externalFormatState.fetchExternalFormatsDescriptions(),
-      this.modelLoaderState.fetchAvailableModelImportDescriptions(),
       this.sdlcState.fetchProjectVersions(),
     ]);
   }
@@ -958,8 +957,8 @@ export class EditorStore {
       this.openEntityChangeConflict(editorState);
     } else if (editorState instanceof FileGenerationViewerState) {
       this.openGeneratedFile(editorState.generatedFile);
-    } else if (editorState === this.modelLoaderState) {
-      this.openSingletonEditorState(this.modelLoaderState);
+    } else if (editorState === this.modelImporterState) {
+      this.openSingletonEditorState(this.modelImporterState);
     } else if (editorState === this.projectConfigurationEditorState) {
       this.openSingletonEditorState(this.projectConfigurationEditorState);
     } else {
@@ -1007,7 +1006,7 @@ export class EditorStore {
    * This method helps open editor that only exists one instance at at time such as model-loader, project config, settings ...
    */
   openSingletonEditorState(
-    singularEditorState: ModelLoaderState | ProjectConfigurationEditorState,
+    singularEditorState: ModelImporterState | ProjectConfigurationEditorState,
   ): void {
     const existingEditorState = this.openedEditorStates.find(
       (e) => e === singularEditorState,
@@ -1121,7 +1120,7 @@ export class EditorStore {
   *deleteElement(element: PackageableElement): GeneratorFn<void> {
     if (
       this.graphState.checkIfApplicationUpdateOperationIsRunning() ||
-      this.graphManagerState.isElementReadOnly(element)
+      isElementReadOnly(element)
     ) {
       return;
     }
@@ -1187,7 +1186,7 @@ export class EditorStore {
     element: PackageableElement,
     newPath: string,
   ): GeneratorFn<void> {
-    if (this.graphManagerState.isElementReadOnly(element)) {
+    if (isElementReadOnly(element)) {
       return;
     }
     graph_renameElement(
@@ -1354,7 +1353,7 @@ export class EditorStore {
   get classOptions(): PackageableElementOption<Class>[] {
     return this.graphManagerState.graph.ownClasses
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownClasses,
         ),
       )
@@ -1365,7 +1364,7 @@ export class EditorStore {
   get associationOptions(): PackageableElementOption<Association>[] {
     return this.graphManagerState.graph.ownAssociations
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownAssociations,
         ),
       )
@@ -1376,7 +1375,7 @@ export class EditorStore {
   get profileOptions(): PackageableElementOption<Profile>[] {
     return this.graphManagerState.graph.ownProfiles
       .concat(
-        this.graphManagerState.filterSystemElementOptions(
+        this.graphManagerState.collectExposedSystemElements(
           this.graphManagerState.graph.systemModel.ownProfiles,
         ),
       )
@@ -1391,7 +1390,7 @@ export class EditorStore {
       .concat(
         this.graphManagerState.graph.ownTypes
           .concat(
-            this.graphManagerState.filterSystemElementOptions(
+            this.graphManagerState.collectExposedSystemElements(
               this.graphManagerState.graph.systemModel.ownTypes,
             ),
           )

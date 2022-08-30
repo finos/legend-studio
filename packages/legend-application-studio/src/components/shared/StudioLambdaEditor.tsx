@@ -46,6 +46,7 @@ export const StudioLambdaEditor = observer(
     disablePopUp?: boolean | undefined;
     useBaseTextEditorSettings?: boolean | undefined;
     hideErrorBar?: boolean | undefined;
+    onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -60,6 +61,7 @@ export const StudioLambdaEditor = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
+      onEditorFocusEventHandler,
     } = props;
     const applicationStore = useApplicationStore();
     const editorStore = useEditorStore();
@@ -134,6 +136,7 @@ export const StudioLambdaEditor = observer(
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         onKeyDownEventHandlers={onKeyDownEventHandlers}
+        onEditorFocusEventHandler={onEditorFocusEventHandler}
       />
     );
   },

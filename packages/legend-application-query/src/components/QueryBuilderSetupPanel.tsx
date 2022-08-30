@@ -21,7 +21,6 @@ import {
   PURE_ClassIcon,
   PURE_MappingIcon,
   PURE_RuntimeIcon,
-  EyeIcon,
   ClockIcon,
   clsx,
 } from '@finos/legend-art';
@@ -46,10 +45,11 @@ import {
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
   buildElementOption,
+  useApplicationStore,
 } from '@finos/legend-application';
-import { MilestoningParametersEditor } from './QueryBuilderMilestoneEditor.js';
+import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
 
 const getParameterValue = (
@@ -124,8 +124,8 @@ const generateClassLabel = (
         >
           {val.name}
         </div>
-        <EyeIcon
-          className="query-builder__setup__config__item__class-label__btn"
+        <ClockIcon
+          className="query-builder__setup__config__item__class-label__milestoning"
           title={milestoningParameterValues}
         />
       </div>
@@ -151,6 +151,7 @@ const generateClassLabel = (
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const querySetupState = queryBuilderState.querySetupState;
     const [isMilestoneEditorOpened, setIsMilestoneEditorOpened] =
       useState<boolean>(false);
@@ -186,7 +187,7 @@ export const QueryBuilderSetupPanel = observer(
       if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
         querySetupState.setMapping(val.value);
         queryBuilderState.resetQueryBuilder();
-        queryBuilderState.resetQuerySetup();
+        queryBuilderState.resetQueryContent();
       }
     };
     // runtime
@@ -266,15 +267,15 @@ export const QueryBuilderSetupPanel = observer(
               options={classOptions}
               onChange={changeClass}
               value={selectedClassOption}
-              darkMode={true}
+              darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               disabled={!isQuerySupported || querySetupState.classIsReadOnly}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter({
-                darkMode: true,
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
               })}
             />
             <button
-              className="btn--dark btn__icon--dark"
+              className="btn--dark btn__icon--dark query-builder__setup__milestoning"
               tabIndex={-1}
               onClick={(): void => setIsMilestoneEditorOpened(true)}
               disabled={!isMilestonedQuery}
@@ -302,10 +303,10 @@ export const QueryBuilderSetupPanel = observer(
               options={mappingOptions}
               onChange={changeMapping}
               value={selectedMappingOption}
-              darkMode={true}
+              darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               filterOption={elementFilterOption}
-              formatOptionLabel={getPackageableElementOptionalFormatter({
-                darkMode: true,
+              formatOptionLabel={getPackageableElementOptionFormatter({
+                darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
               })}
             />
           </div>
@@ -330,7 +331,7 @@ export const QueryBuilderSetupPanel = observer(
               options={runtimeOptions}
               onChange={changeRuntime}
               value={selectedRuntimeOption}
-              darkMode={true}
+              darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               filterOption={runtimeFilterOption}
             />
           </div>

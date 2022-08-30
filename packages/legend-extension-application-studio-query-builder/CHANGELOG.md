@@ -1,5 +1,23 @@
 # @finos/legend-extension-application-studio-query-builder
 
+## 3.0.10
+
+## 3.0.9
+
+## 3.0.8
+
+## 3.0.7
+
+## 3.0.6
+
+## 3.0.5
+
+## 3.0.4
+
+## 3.0.3
+
+## 3.0.2
+
 ## 3.0.1
 
 ### Patch Changes

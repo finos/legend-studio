@@ -51,13 +51,13 @@
     width: 100%;
   }
 
-  &__config__item__class-label__btn {
+  &__config__item__class-label__milestoning {
     @include flexCenter;
 
-    svg {
-      font-size: 1.3rem;
-      color: var(--color-light-grey-400);
-    }
+    cursor: default;
+    width: 2rem;
+    font-size: 1.2rem;
+    color: var(--color-light-grey-400);
   }
 
   &__config__item__class-label--deprecated {
@@ -284,29 +284,8 @@
     background: var(--color-dark-blue-shade-100);
   }
 
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-pink-400);
-    border-radius: 0.2rem;
-  }
-
   &__value__editor {
-    height: 3rem;
+    height: 2.8rem;
 
     input {
       font-size: 1.4rem !important;
@@ -366,7 +345,7 @@
     user-select: none;
   }
 
-  &__node__label--property--name {
+  &__node__label--property__name {
     display: inline-flex;
   }
 
@@ -431,35 +410,6 @@
     }
   }
 
-  &__root-node__label {
-    display: flex;
-    height: 2rem;
-    border-radius: 0.2rem;
-    margin: 0;
-    color: var(--color-light-grey-150);
-    background: var(--color-purple-400);
-  }
-
-  &__root-node__label__icon {
-    @include flexCenter;
-
-    width: 2rem;
-    min-width: 2rem;
-    background: var(--color-dark-shade-100);
-    border-radius: 0.2rem 0 0 0.2rem;
-  }
-
-  &__root-node__label__icon .icon {
-    color: var(--color-light-grey-50);
-  }
-
-  &__root-node__label__text {
-    @include flexVCenter;
-
-    padding: 0 1rem;
-    user-select: none;
-  }
-
   &__icon {
     color: var(--color-primitive);
 
@@ -479,28 +429,13 @@
     color: var(--color-dark-grey-350);
   }
 
+  &__node__container--highlighted &__node__label,
+  &__node__container--highlighted &__node__label__derived-property,
+  &__node__container--highlighted &__node__label__multiple {
+    color: var(--color-skin-200);
+  }
+
   &__node__info {
     cursor: help;
-  }
-
-  &__drag-preview-layer {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &__drag-preview {
-    @include flexCenter;
-
-    display: inline-flex;
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 1.2rem;
-    background: var(--color-blue-200);
-    border-radius: 0.2rem;
   }
 }

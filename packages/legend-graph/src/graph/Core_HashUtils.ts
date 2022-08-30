@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, hashObject, hashString } from '@finos/legend-shared';
+import { hashArray, hashObject, hashValue } from '@finos/legend-shared';
 import { SOURCE_INFORMATION_PROPERTY_KEY_SUFFIX } from './MetaModelConst.js';
 
 /**
@@ -157,6 +157,7 @@ export enum CORE_HASH_STRUCTURE {
   USERNAME_PASSWORD_AUTHENTICATION_STRATEGY = 'USERNAME_PASSWORD_AUTHENTICATION_STRATEGY',
   OAUTH_AUTHENTICATION_STRATEGY = 'OAUTH_AUTHENTICATION_STRATEGY',
   GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY = 'GCP_WORKLOAD_IDENTITY_FEDERATION_AUTHENTICATION_STRATEGY',
+  MIDDLE_TIER_USERNAME_PASSWORD_AUTHENTICATION_STRATEGY = 'MIDDLE_TIER_USERNAME_PASSWORD_AUTHENTICATION_STRATEGY',
   // relational database connection post processors
   MAPPER_POST_PROCESSOR = 'MAPPER_POST_PROCESSOR',
   SCHEMA_MAPPER = 'SCHEMA_MAPPER',
@@ -262,5 +263,5 @@ export const hashRawLambda = (
 
 export const hashElementPointer = (pointerType: string, path: string): string =>
   [CORE_HASH_STRUCTURE.PACKAGEABLE_ELEMENT_POINTER, pointerType, path]
-    .map(hashString)
+    .map(hashValue)
     .join(',');

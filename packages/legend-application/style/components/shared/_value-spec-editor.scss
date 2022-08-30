@@ -66,7 +66,7 @@
       width: 100%;
       height: 2.8rem;
       color: var(--color-light-grey-400);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      background: var(--color-dark-grey-100);
       font-size: 1.2rem;
     }
 
@@ -284,6 +284,38 @@
   &:hover &__list-editor__edit-icon {
     background: var(--color-dark-grey-300);
   }
+
+  .selector-input__indicators,
+  .selector-input__value-container {
+    height: 2.8rem;
+  }
+
+  .selector-input__indicator-separator,
+  .selector-input--dark__loading-indicator,
+  .selector-menu--dark .selector-input--dark__loading-indicator,
+  .selector-input--dark .selector-input--dark__loading-indicator {
+    height: 2.6rem;
+  }
+
+  .selector-input__single-value,
+  .selector-input--dark__single-value {
+    height: 2.8rem;
+    top: 1.7rem;
+
+    & + div {
+      height: 2.8rem;
+    }
+  }
+
+  .selector-input--dark__input,
+  .selector-input__input {
+    height: 2.8rem;
+
+    & input {
+      height: 2.8rem;
+      line-height: 2.8rem;
+    }
+  }
 }
 
 .value-spec-paramater__tooltip {
@@ -325,7 +357,7 @@
   }
 }
 
-.lambda__parameters__editor {
+.lambda-parameter-values {
   padding: 2rem;
   width: 100%;
 
@@ -350,7 +382,7 @@
       cursor: default;
     }
 
-    &__name {
+    &__label__type {
       @include flexVCenter;
 
       background: var(--color-dark-grey-250);

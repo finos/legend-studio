@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
@@ -25,12 +26,13 @@ import {
   DollarIcon,
   PlusIcon,
   InputWithInlineValidation,
+  DragPreviewLayer,
+  useDragPreviewLayer,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
-  QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
+  QUERY_BUILDER_PARAMETER_DND_TYPE,
 } from '../stores/QueryParametersState.js';
-import { useEffect, useState } from 'react';
 import {
   type Type,
   MULTIPLICITY_INFINITE,
@@ -46,10 +48,10 @@ import {
   variableExpression_setName,
   LambdaParameterState,
   LambdaParameterValuesEditor,
-  getPackageableElementOptionalFormatter,
+  getPackageableElementOptionFormatter,
+  useApplicationStore,
 } from '@finos/legend-application';
-import { useDrag, useDragLayer } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useDrag } from 'react-dnd';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../QueryBuilder_Const.js';
 
@@ -60,6 +62,7 @@ const VariableExpressionEditor = observer(
   }) => {
     // main state
     const { queryBuilderState, lambdaParameterState } = props;
+    const applicationStore = useApplicationStore();
     const queryParametersState = queryBuilderState.queryParametersState;
     const isCreating =
       !queryParametersState.parameterStates.includes(lambdaParameterState);
@@ -145,6 +148,7 @@ const VariableExpressionEditor = observer(
       }
       close();
     };
+
     return (
       <Dialog
         open={Boolean(lambdaParameterState)}
@@ -192,9 +196,9 @@ const VariableExpressionEditor = observer(
                 options={typeOptions}
                 onChange={changeType}
                 value={selectedType}
-                darkMode={true}
-                formatOptionLabel={getPackageableElementOptionalFormatter({
-                  darkMode: true,
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                formatOptionLabel={getPackageableElementOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
                 })}
               />
             </div>
@@ -242,47 +246,6 @@ const VariableExpressionEditor = observer(
   },
 );
 
-const QueryBuilderParameterDragLayer = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { itemType, item, isDragging, currentPosition } = useDragLayer(
-      (monitor) => ({
-        itemType:
-          monitor.getItemType() as QUERY_BUILDER_PARAMETER_TREE_DND_TYPE,
-        item: monitor.getItem<QueryBuilderParameterDragSource | null>(),
-        isDragging: monitor.isDragging(),
-        initialOffset: monitor.getInitialSourceClientOffset(),
-        currentPosition: monitor.getClientOffset(),
-      }),
-    );
-
-    if (
-      !isDragging ||
-      !item ||
-      !Object.values(QUERY_BUILDER_PARAMETER_TREE_DND_TYPE).includes(itemType)
-    ) {
-      return null;
-    }
-    return (
-      <div className="query-builder__parameters__drag-preview-layer">
-        <div
-          className="query-builder__parameters__drag-preview"
-          style={
-            !currentPosition
-              ? { display: 'none' }
-              : {
-                  transform: `translate(${currentPosition.x + 20}px, ${
-                    currentPosition.y + 10
-                  }px)`,
-                }
-          }
-        >
-          {item.variable.variableName}
-        </div>
-      </div>
-    );
-  },
-);
-
 export const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
@@ -301,18 +264,23 @@ export const VariableExpressionViewer = observer(
       queryParameterState.removeParameter(variableExpressionState);
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
-        type: QUERY_BUILDER_PARAMETER_TREE_DND_TYPE.VARIABLE,
+        type: QUERY_BUILDER_PARAMETER_DND_TYPE,
         item: { variable: variableExpressionState },
       }),
       [variableExpressionState],
     );
-    // hide default HTML5 preview image
-    useEffect(() => {
-      dragPreviewConnector(getEmptyImage(), { captureDraggingState: true });
-    }, [dragPreviewConnector]);
+    useDragPreviewLayer(dragPreviewConnector);
+
     return (
       <div className="query-builder__parameters__parameter" ref={dragConnector}>
-        <QueryBuilderParameterDragLayer queryBuilderState={queryBuilderState} />
+        <DragPreviewLayer
+          labelGetter={(item: QueryBuilderParameterDragSource): string =>
+            item.variable.variableName === ''
+              ? '(unknown)'
+              : item.variable.variableName
+          }
+          types={[QUERY_BUILDER_PARAMETER_DND_TYPE]}
+        />
         <div className="query-builder__parameters__parameter__content">
           <div className="query-builder__parameters__parameter__icon">
             <div className="query-builder__parameters__parameter-icon">
@@ -375,6 +343,7 @@ export const QueryBuilderParameterPanel = observer(
             ),
           ),
           queryBuilderState.observableContext,
+          queryBuilderState.graphManagerState.graph,
         );
         queryParameterState.setSelectedParameter(parmaterState);
         parmaterState.mockParameterValue();

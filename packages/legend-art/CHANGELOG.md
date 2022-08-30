@@ -1,5 +1,29 @@
 # @finos/legend-art
 
+## 3.0.3
+
+## 3.0.2
+
+## 3.0.1
+
+## 3.0.0
+
+### Major Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Cleanup and simplify `BlankPanelPlaceholder` props: (1) `placeholderText` is now renamed to `text`, (2) replaced `dndProps` by `isDropZoneActive` which when defined as a boolean will indicate if the drop zone should be animated when dropable item is dragged over, and (3) removed `readonlyProps` and added `disabled` props and `previewText` which will be shown when `disabled=true`.
+
+### Minor Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Added component `PanelDropZone` which will show the drag-and-drop overlay when dropable item is dragged over the panel.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#1370](https://github.com/finos/legend-studio/pull/1370) [`a5a547d9`](https://github.com/finos/legend-studio/commit/a5a547d9b19376a62bbdefd0e3cf658a0fe7cac0) ([@xannem](https://github.com/xannem)) - Add indicator for `PackageableElementOption` to show the graph the elements belong to (i.e. `system`, `dependencies`, etc.) ([#457](https://github.com/finos/legend-studio/issues/457)).
+
+## 2.0.12
+
 ## 2.0.11
 
 ## 2.0.10

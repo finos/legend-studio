@@ -22,14 +22,12 @@ import {
   type TraceData,
   HttpHeader,
 } from '@finos/legend-shared';
-import type { ImportMode } from '../../../../../graphManager/action/generation/ImportConfigurationDescription.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type { V1_LambdaReturnTypeResult } from './compilation/V1_LambdaReturnTypeResult.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_ServiceConfigurationInfo } from './service/V1_ServiceConfiguration.js';
 import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
-import type { V1_PureModelContextGenerationInput } from './import/V1_PureModelContextGenerationInput.js';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput.js';
 import type { V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
 import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription.js';
@@ -369,21 +367,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
   getAvailableSchemaImportDescriptions = (): Promise<
     PlainObject<V1_ImportConfigurationDescription>[]
   > => this.get(`${this._pure()}/schemaImport/availableImports`);
-  transformExternalFormatToProtocol = (
-    input: PlainObject<V1_PureModelContextGenerationInput>,
-    type: string,
-    mode: ImportMode,
-  ): Promise<PlainObject<V1_PureModelContextData>> =>
-    this.postWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.EXTERNAL_FORMAT_TO_PROTOCOL),
-      `${this._pure()}/${mode}/${type}`,
-      input,
-      {},
-      undefined,
-      undefined,
-      { enableCompression: true },
-    );
-
   // ------------------------------------------- Code Generation -------------------------------------------
 
   getAvailableCodeGenerationDescriptions = (): Promise<

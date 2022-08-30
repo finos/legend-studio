@@ -16,7 +16,10 @@
 
 .enum-basic-editor {
   display: flex;
-  margin-top: 0.5rem;
+
+  &__container {
+    margin: 0.5rem 0;
+  }
 
   &__name {
     flex: auto;

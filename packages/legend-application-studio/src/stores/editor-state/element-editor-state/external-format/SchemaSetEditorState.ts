@@ -33,16 +33,22 @@ import {
   isEmpty,
   ActionState,
   deleteEntry,
+  assertTrue,
+  generateEnumerableNameFromToken,
 } from '@finos/legend-shared';
 import {
   type GenerationProperty,
   type PackageableElement,
+  GenerationPropertyItemType,
   type ExternalFormatDescription,
+  type PureModel,
   CompilationError,
   ConfigurationProperty,
-  GenerationPropertyItemType,
   ExternalFormatSchema as Schema,
   SchemaSet,
+  isValidFullPath,
+  resolvePackagePathAndElementName,
+  Package,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
@@ -52,43 +58,72 @@ import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { configurationProperty_setValue } from '../../../graphModifier/DSLGeneration_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
-  GENERAL = 'GENERAL',
-  MODEL_GENERATION = 'MODEL_GENERATION',
+  SCHEMAS = 'SCHEMAS',
+  GENERATE_MODEL = 'GENERATE_MODEL',
 }
 
+const DEFAULT_SCHEMA_NAME = 'MyShemaSet';
+
 export class SchemaSetModelGenerationState {
-  isGenerating = false;
-  isImportingGeneratedElements = false;
-  schemaSetEditorState: SchemaSetEditorState;
+  readonly editorStore: EditorStore;
+  readonly schemaSet: SchemaSet;
+  generatingModelsState = ActionState.create();
+  importGeneratedElementsState = ActionState.create();
+
   configurationProperties: ConfigurationProperty[] = [];
   generationValue = '';
+  targetBinding = '';
+  isolatedGraph: PureModel | undefined;
 
-  constructor(schemaSetEditorState: SchemaSetEditorState) {
-    this.schemaSetEditorState = schemaSetEditorState;
-
+  constructor(
+    schemaSet: SchemaSet,
+    editorStore: EditorStore,
+    graph?: PureModel | undefined,
+  ) {
+    this.schemaSet = schemaSet;
+    this.editorStore = editorStore;
     makeObservable(this, {
       configurationProperties: observable,
-      isGenerating: observable,
+      generatingModelsState: observable,
+      importGeneratedElementsState: observable,
       generationValue: observable,
+      targetBinding: observable,
       setConfigurationProperty: action,
       setGenerationValue: action,
+      setTargetBindingPath: action,
+      handleTargetBindingPathChange: action,
+      canGenerate: computed,
       generateModel: flow,
-      importGrammar: flow,
+      importGeneratedModelsIntoGraph: flow,
+      getImportEntities: flow,
     });
+    this.isolatedGraph = graph;
+    assertTrue(this.isolatedGraph !== this.editorStore.graphManagerState.graph);
   }
 
   setConfigurationProperty(val: ConfigurationProperty[]): void {
     this.configurationProperties = val;
   }
 
-  get description(): ExternalFormatDescription {
-    return this.schemaSetEditorState.editorStore.graphState.graphGenerationState.externalFormatState.getTypeDescription(
-      this.schemaSetEditorState.schemaSet.format,
+  get description(): ExternalFormatDescription | undefined {
+    return this.editorStore.graphState.graphGenerationState.externalFormatState.getTypeDescription(
+      this.schemaSet.format,
     );
   }
 
   get modelGenerationProperties(): GenerationProperty[] {
-    return this.description.modelGenerationProperties;
+    return this.description?.modelGenerationProperties ?? [];
+  }
+
+  get canGenerate(): boolean {
+    if (this.targetBinding === '') {
+      return true;
+    }
+    return isValidFullPath(this.targetBinding);
+  }
+
+  setTargetBindingPath(val: string): void {
+    this.targetBinding = val;
   }
 
   getConfigValue(name: string): unknown | undefined {
@@ -103,6 +138,39 @@ export class SchemaSetModelGenerationState {
 
   setGenerationValue(val: string): void {
     this.generationValue = val;
+  }
+
+  handleTargetBindingPathChange(): void {
+    const isolatedGraph = this.isolatedGraph;
+    if (isolatedGraph && isValidFullPath(this.targetBinding)) {
+      try {
+        const [packagePath, bindingName] = resolvePackagePathAndElementName(
+          this.targetBinding,
+        );
+        const schemaName = `${DEFAULT_SCHEMA_NAME}For${bindingName}`;
+        const _package =
+          this.editorStore.graphManagerState.graph.getNullableElement(
+            packagePath,
+            true,
+          );
+        let reservedNames: string[] = [];
+        if (_package instanceof Package) {
+          reservedNames = _package.children.map((e) => e.name);
+        }
+        const newSchemaName = reservedNames.includes(schemaName)
+          ? generateEnumerableNameFromToken(reservedNames, schemaName)
+          : schemaName;
+        const newPath = `${packagePath}::${newSchemaName}`;
+        if (newPath !== this.schemaSet.path) {
+          isolatedGraph.renameElement(
+            this.schemaSet,
+            `${packagePath}::${newSchemaName}`,
+          );
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+      }
+    }
   }
 
   updateGenerationParameters(
@@ -159,85 +227,101 @@ export class SchemaSetModelGenerationState {
     }
   }
 
-  *generateModel(): GeneratorFn<void> {
-    this.isGenerating = true;
+  *generateModel(): GeneratorFn<boolean> {
+    this.generatingModelsState.inProgress();
     try {
-      const SCHEMA_SET_PROPERTY_NAME = 'sourceSchemaSet';
       const SCHEMA_FORMAT_PROPERTY_NAME = 'format';
       const properties = [...this.configurationProperties];
-      if (!properties.find((e) => e.name === SCHEMA_SET_PROPERTY_NAME)) {
-        const genProperty = new ConfigurationProperty(
-          SCHEMA_SET_PROPERTY_NAME,
-          this.schemaSetEditorState.schemaSet.path,
-        );
-        properties.push(genProperty);
-      }
       if (!properties.find((e) => e.name === SCHEMA_FORMAT_PROPERTY_NAME)) {
         const genProperty = new ConfigurationProperty(
           SCHEMA_FORMAT_PROPERTY_NAME,
-          this.schemaSetEditorState.schemaSet.format,
+          this.schemaSet.format,
         );
         properties.push(genProperty);
       }
       const val =
-        (yield this.schemaSetEditorState.editorStore.graphManagerState.graphManager.generateModelFromExternalFormat(
+        (yield this.editorStore.graphManagerState.graphManager.generateModelFromExternalFormat(
+          this.schemaSet,
+          this.targetBinding,
           properties,
-          this.schemaSetEditorState.editorStore.graphManagerState.graph,
+          this.isolatedGraph ?? this.editorStore.graphManagerState.graph,
         )) as string;
       this.setGenerationValue(val);
+      return true;
     } catch (error) {
       assertErrorThrown(error);
-      this.schemaSetEditorState.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.log.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.schemaSetEditorState.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(error);
+      this.setGenerationValue('');
+      return false;
     } finally {
-      this.isGenerating = false;
+      this.generatingModelsState.complete();
     }
   }
 
-  *importGrammar(): GeneratorFn<void> {
+  *importGeneratedModelsIntoGraph(): GeneratorFn<void> {
     try {
-      this.isImportingGeneratedElements = true;
-      const entities =
-        (yield this.schemaSetEditorState.editorStore.graphManagerState.graphManager.pureCodeToEntities(
-          this.generationValue,
-        )) as Entity[];
+      this.importGeneratedElementsState.inProgress();
+      const entities = (yield flowResult(this.getImportEntities())) as Entity[];
       const newEntities: EntityChange[] = entities.map((e) => ({
         type: EntityChangeType.CREATE,
         entityPath: e.path,
         content: e.content,
       }));
       yield flowResult(
-        this.schemaSetEditorState.editorStore.graphState.loadEntityChangesToGraph(
+        this.editorStore.graphState.loadEntityChangesToGraph(
           newEntities,
           undefined,
         ),
       );
-      this.schemaSetEditorState.editorStore.applicationStore.notifySuccess(
+      this.editorStore.applicationStore.notifySuccess(
         'Generated elements imported into project',
       );
     } catch (error) {
       assertErrorThrown(error);
-      this.schemaSetEditorState.editorStore.applicationStore.log.error(
+      this.editorStore.applicationStore.log.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
         error,
       );
-      this.schemaSetEditorState.editorStore.applicationStore.notifyError(error);
+      this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.isImportingGeneratedElements = false;
+      this.importGeneratedElementsState.complete();
+    }
+  }
+
+  *getImportEntities(): GeneratorFn<Entity[]> {
+    try {
+      this.importGeneratedElementsState.inProgress();
+      const entities =
+        (yield this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+          this.generationValue,
+        )) as Entity[];
+      return entities;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.EXTERNAL_FORMAT_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notifyError(error);
+      throw error;
+    } finally {
+      this.importGeneratedElementsState.complete();
     }
   }
 }
+
 export class ImportSchemaContentState {
   editorStore: EditorStore;
-  schemaSetEditorState: SchemaSetEditorState;
+  schemaSetEditorState: InnerSchemaSetEditorState | SchemaSetEditorState;
   loadingSchemaContentState = ActionState.create();
   files: File[] | undefined;
   importSchemaModal = false;
   constructor(
-    schemaSetEditorState: SchemaSetEditorState,
+    schemaSetEditorState: InnerSchemaSetEditorState | SchemaSetEditorState,
     editorStore: EditorStore,
   ) {
     this.editorStore = editorStore;
@@ -304,9 +388,81 @@ export class ImportSchemaContentState {
   }
 }
 
+export class InnerSchemaSetEditorState {
+  readonly editorStore: EditorStore;
+  isReadOnly: boolean;
+  schemaSet: SchemaSet;
+  currentSchema?: Schema | undefined;
+  selectedTab = SCHEMA_SET_TAB_TYPE.SCHEMAS;
+  schemaValidationError?: CompilationError;
+  importSchemaContentState: ImportSchemaContentState;
+  schemaSetModelGenerationState: SchemaSetModelGenerationState;
+
+  constructor(
+    isReadOnly: boolean,
+    schemaSet: SchemaSet,
+    editorStore: EditorStore,
+    graph: PureModel,
+  ) {
+    this.editorStore = editorStore;
+    makeObservable(this, {
+      schemaValidationError: observable,
+      currentSchema: observable,
+      selectedTab: observable,
+      schemaSet: observable,
+      schemaSetModelGenerationState: observable,
+      setSelectedTab: action,
+      setCurrentSchema: action,
+      setSchemaValidationerror: action,
+      reset: action,
+    });
+    this.schemaSet = schemaSet;
+    this.isReadOnly = isReadOnly;
+    if (this.schemaSet.schemas.length !== 0) {
+      this.currentSchema =
+        this.schemaSet.schemas[this.schemaSet.schemas.length - 1];
+    }
+    this.schemaSetModelGenerationState = new SchemaSetModelGenerationState(
+      this.schemaSet,
+      this.editorStore,
+      graph,
+    );
+    this.importSchemaContentState = new ImportSchemaContentState(
+      this,
+      this.editorStore,
+    );
+  }
+
+  reset(): void {
+    this.currentSchema = undefined;
+    this.selectedTab = SCHEMA_SET_TAB_TYPE.SCHEMAS;
+    this.schemaSetModelGenerationState = new SchemaSetModelGenerationState(
+      this.schemaSet,
+      this.editorStore,
+      this.schemaSetModelGenerationState.isolatedGraph,
+    );
+    this.importSchemaContentState = new ImportSchemaContentState(
+      this,
+      this.editorStore,
+    );
+  }
+
+  setCurrentSchema(value: Schema | undefined): void {
+    this.currentSchema = value;
+  }
+
+  setSelectedTab(tab: SCHEMA_SET_TAB_TYPE): void {
+    this.selectedTab = tab;
+  }
+
+  setSchemaValidationerror(error: CompilationError): void {
+    this.schemaValidationError = error;
+  }
+}
+
 export class SchemaSetEditorState extends ElementEditorState {
   currentSchema?: Schema | undefined;
-  selectedTab = SCHEMA_SET_TAB_TYPE.GENERAL;
+  selectedTab = SCHEMA_SET_TAB_TYPE.SCHEMAS;
   schemaValidationError?: CompilationError;
   importSchemaContentState: ImportSchemaContentState;
 
@@ -331,7 +487,8 @@ export class SchemaSetEditorState extends ElementEditorState {
         this.schemaSet.schemas[this.schemaSet.schemas.length - 1];
     }
     this.schemaSetModelGenerationState = new SchemaSetModelGenerationState(
-      this,
+      this.schemaSet,
+      this.editorStore,
     );
     this.importSchemaContentState = new ImportSchemaContentState(
       this,

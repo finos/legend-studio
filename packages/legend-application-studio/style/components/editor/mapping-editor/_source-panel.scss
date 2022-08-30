@@ -35,11 +35,6 @@
     &__content > div:first-child {
       margin-top: 0;
     }
-
-    &__content--dnd-over {
-      filter: brightness(95%) blur(0.05rem);
-      box-shadow: inset 0 0 0.4rem var(--color-dark-grey-50);
-    }
   }
 
   &__header__title {

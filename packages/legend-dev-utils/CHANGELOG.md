@@ -1,5 +1,21 @@
 # @finos/legend-dev-utils
 
+## 2.0.13
+
+## 2.0.12
+
+## 2.0.11
+
+## 2.0.10
+
+### Patch Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - Update the `changesets` generator and checker to not account for private packages without a version.
+
+## 2.0.9
+
+## 2.0.8
+
 ## 2.0.7
 
 ## 2.0.6

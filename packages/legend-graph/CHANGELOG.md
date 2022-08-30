@@ -1,5 +1,35 @@
 # @finos/legend-graph
 
+## 14.0.5
+
+## 14.0.4
+
+## 14.0.3
+
+## 14.0.2
+
+### Patch Changes
+
+- [#1238](https://github.com/finos/legend-studio/pull/1238) [`650f85bd`](https://github.com/finos/legend-studio/commit/650f85bd22010b07d95d46648a5d9e2802e2f5c5) ([@jinanisha](https://github.com/jinanisha)) - Add support for middle Tier Authentication Strategy
+
+* [#1428](https://github.com/finos/legend-studio/pull/1428) [`b1670c85`](https://github.com/finos/legend-studio/commit/b1670c85602e2e76a14e4c5739d0ab4a66c05d0d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where default value of `date` type will throw a cast error for parameter ([#1391](https://github.com/finos/legend-studio/issues/1391))
+
+## 14.0.1
+
+### Patch Changes
+
+- [#1412](https://github.com/finos/legend-studio/pull/1412) [`4fdf8689`](https://github.com/finos/legend-studio/commit/4fdf86893b1cb9a4ab68667ef1aa693fde026b4f) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fix a bug where there is a false-positive change detection for property mapping without `targetId` ([#1406](https://github.com/finos/legend-studio/issues/1406)).
+
+## 14.0.0
+
+### Major Changes
+
+- [#1388](https://github.com/finos/legend-studio/pull/1388) [`f30a591e`](https://github.com/finos/legend-studio/commit/f30a591e75687a52e93faa577731c2f7f372f8bf) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `HACKY__createGetAllLambda()` to `createGetAllRawLambda()` and `HACKY__createDefaultBlankLambda()` to `createDefaultBasicRawLambda()` which now will also accept an option to control whether or not the dummy variable `x` should be added by default to the generated raw lambda.
+
+## 13.0.2
+
+## 13.0.1
+
 ## 13.0.0
 
 ### Major Changes
