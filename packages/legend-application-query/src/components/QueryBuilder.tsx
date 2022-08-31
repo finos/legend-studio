@@ -289,24 +289,11 @@ export const QueryBuilder = observer(
                     <ResizablePanelGroup orientation="vertical">
                       <ResizablePanel size={450} minSize={300}>
                         <ResizablePanelGroup orientation="horizontal">
-                          {queryBuilderState.setupState.showSetupPanel && (
-                            <ResizablePanel minSize={40} direction={1}>
-                              <QueryBuilderSetupPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                          )}
-                          {!queryBuilderState.setupState.showSetupPanel && (
-                            <ResizablePanel
-                              minSize={40}
-                              size={40}
-                              direction={1}
-                            >
-                              <QueryBuilderSetupPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                          )}
+                          <ResizablePanel minSize={40} direction={1}>
+                            <QueryBuilderSetupPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
                           <ResizablePanelSplitter />
                           <ResizablePanel minSize={40} direction={[1, -1]}>
                             <QueryBuilderExplorerPanel

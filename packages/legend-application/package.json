@@ -48,7 +48,7 @@
     "@finos/legend-shared": "workspace:*",
     "@types/css-font-loading-module": "0.0.7",
     "@types/papaparse": "5.3.5",
-    "@types/react": "18.0.18",
+    "@types/react": "18.0.17",
     "@types/react-dom": "18.0.6",
     "date-fns": "2.29.2",
     "fuse.js": "6.6.2",
