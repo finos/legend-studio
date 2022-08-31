@@ -35,7 +35,6 @@ export class QueryBuilderSetupState {
   classIsReadOnly = false;
   mappingIsReadOnly = false;
   runtimeIsReadOnly = false;
-  showSetupPanel = true;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
@@ -44,7 +43,6 @@ export class QueryBuilderSetupState {
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
-      setShowSetupPanel: action,
       setClassIsReadOnly: action,
       setMappingIsReadOnly: action,
       setRuntimeIsReadOnly: action,
@@ -107,9 +105,6 @@ export class QueryBuilderSetupState {
   }
   setRuntimeValue(val: Runtime | undefined): void {
     this.runtimeValue = val;
-  }
-  setShowSetupPanel(val: boolean): void {
-    this.showSetupPanel = val;
   }
   setClassIsReadOnly(val: boolean): void {
     this.classIsReadOnly = val;
