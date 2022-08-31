@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
+import * as yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { existsSync, writeFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import { exitWithError, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import chalk from 'chalk';
+import fsExtra from 'fs-extra';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const argv = yargs.default(hideBin(process.argv)).argv;
+let localAssemblageRelativePath = argv._[0];
+const useSnapshot = argv.snapshot;
+
 const ROOT_DIR = resolve(__dirname, '../../');
-let localAssemblageRelativePath = process.argv[2];
 
 if (!localAssemblageRelativePath) {
   console.log(
@@ -33,6 +40,7 @@ if (!localAssemblageRelativePath) {
   );
   localAssemblageRelativePath = '.';
 }
+const localAssemblagePath = resolve(ROOT_DIR, localAssemblageRelativePath);
 
 /**
  * There are times when one needs to work on an external repository
@@ -44,7 +52,6 @@ if (!localAssemblageRelativePath) {
  * coming from NPM to do this, we could make use of Yarn's portal protocol.
  *
  * See https://yarnpkg.com/features/protocols
- * See https://yarnpkg.com/features/protocols#whats-the-difference-between-link-and-portal
  *
  * Which makes use of Yarn `resolutions` mechanism. This method makes the process less tedious
  * by generating the needed package resolutions.
@@ -52,7 +59,21 @@ if (!localAssemblageRelativePath) {
  * See https://yarnpkg.com/configuration/manifest#resolutions
  */
 const generateLocalAssemblagePackageResolutions = async () => {
-  const resolutionsText = execSync('yarn workspaces list --json', {
+  const localAssemblagePackageJsonPath = resolve(
+    localAssemblagePath,
+    'package.json',
+  );
+  const localAssemblagePackageJson = loadJSON(localAssemblagePackageJsonPath);
+  const localAssemblageCopyOverPath = resolve(
+    localAssemblagePath,
+    'assemblage',
+  );
+
+  if (!existsSync(localAssemblageCopyOverPath)) {
+    fsExtra.mkdirs(localAssemblageCopyOverPath);
+  }
+
+  execSync('yarn workspaces list --json', {
     encoding: 'utf-8',
     cwd: ROOT_DIR,
   })
@@ -62,15 +83,40 @@ const generateLocalAssemblagePackageResolutions = async () => {
     .filter(
       (ws) => !loadJSON(resolve(ROOT_DIR, ws.location, 'package.json')).private,
     )
-    .map(
-      (ws) =>
-        `    "${ws.name}": "portal:${relative(
+    .forEach((ws) => {
+      if (!localAssemblagePackageJson.resolutions) {
+        localAssemblagePackageJson.resolutions = {};
+      }
+      if (useSnapshot) {
+        const artifactRelativePath = resolve(
+          ws.location,
+          'build/local-snapshot.tgz',
+        );
+        const artifactPath = resolve(ROOT_DIR, artifactRelativePath);
+        if (!existsSync(artifactPath)) {
+          exitWithError(
+            `Can't find local snapshot artifact: ${artifactRelativePath}`,
+          );
+        }
+        localAssemblagePackageJson.resolutions[ws.name] = `file:${relative(
+          resolve(ROOT_DIR, localAssemblageRelativePath),
+          artifactPath,
+        )}`;
+      } else {
+        // If we don't use snapshot artifacts, we can just use `Yarn` portal protocol
+        // to point at package directories. However, this has some caveat
+        // See https://yarnpkg.com/features/protocols#whats-the-difference-between-link-and-portal
+        // See https://github.com/finos/legend-studio/blob/master/docs/workflow/local-development-assemblage.md
+        localAssemblagePackageJson.resolutions[ws.name] = `portal:${relative(
           resolve(ROOT_DIR, localAssemblageRelativePath),
           resolve(ROOT_DIR, ws.location),
-        )}"`,
-    )
-    .join(',\n');
-  console.log(`{\n  "resolutions": {\n${resolutionsText}\n  }\n}`);
+        )}`;
+      }
+    });
+  writeFileSync(
+    localAssemblagePackageJsonPath,
+    JSON.stringify(localAssemblagePackageJson, undefined, 2),
+  );
 };
 
 generateLocalAssemblagePackageResolutions();
