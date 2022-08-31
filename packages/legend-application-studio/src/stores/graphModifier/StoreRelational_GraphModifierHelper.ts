@@ -56,6 +56,7 @@ import {
   TableNameMapper,
   observe_TableNameMapper,
   observe_SchemaNameMapper,
+  observe_PostProcessor,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -434,10 +435,13 @@ export const rootRelationalSetImp_setPropertyMappings = action(
 // --------------------------------------------- Post Processor -------------------------------------
 
 export const postprocessor_addMapperPostProcessor = action(
-  (connectionValueState: RelationalDatabaseConnectionValueState): void => {
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    observeContext: ObserverContext,
+  ): void => {
     addUniqueEntry(
       connectionValueState.connection.postProcessors,
-      new MapperPostProcessor(),
+      observe_PostProcessor(new MapperPostProcessor(), observeContext),
     );
   },
 );

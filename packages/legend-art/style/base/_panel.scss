@@ -179,6 +179,19 @@
   }
 }
 
+.panel__container {
+  height: 100%;
+  width: 100%;
+
+  &--border-top {
+    border-top: 0.1rem solid var(--color-dark-grey-100);
+  }
+
+  &--border-right {
+    border-right: 0.1rem solid var(--color-dark-grey-100);
+  }
+}
+
 .panel__explorer {
   &__panel {
     display: flex;

@@ -135,9 +135,8 @@ export const MapperPostProcessorEditor = observer(
         <ResizablePanel>
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={170} minSize={70}>
-              <div className="relational-connection-editor__auth">
+              <div className="panel__container panel__container--border-right">
                 <DropdownMenu
-                  className=""
                   content={
                     <MenuContent>
                       <MenuContentItem onClick={addSchemaMapper}>
@@ -201,7 +200,7 @@ export const MapperPostProcessorEditor = observer(
             <ResizablePanelSplitter />
 
             <ResizablePanel>
-              <div className="relational-connection-editor__source">
+              <div className="panel__container">
                 {selectedMapper && (
                   <PanelHeader
                     title={

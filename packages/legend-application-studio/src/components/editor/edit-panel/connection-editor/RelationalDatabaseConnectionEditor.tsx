@@ -1180,6 +1180,7 @@ const PostProcessorRelationalConnectionEditor = observer(
     const postprocessors = connection.postProcessors;
 
     const editorStore = useEditorStore();
+    const observerContext = editorStore.changeDetectionState.observerContext;
     const plugins = editorStore.pluginManager.getApplicationPlugins();
 
     const selectedPostProcessor = connectionValueState.selectedPostProcessor;
@@ -1192,9 +1193,6 @@ const PostProcessorRelationalConnectionEditor = observer(
           connectionValueState.setSelectedPostProcessor(undefined);
         }
       };
-
-    //todo map this to postprocessortype
-    // source spec type
     const postprocessorOptions = (
       Object.values(POST_PROCESSOR_TYPE) as string[]
     )
@@ -1216,7 +1214,10 @@ const PostProcessorRelationalConnectionEditor = observer(
       (): void => {
         switch (postprocessorType) {
           case POST_PROCESSOR_TYPE.MAPPER: {
-            postprocessor_addMapperPostProcessor(connectionValueState);
+            postprocessor_addMapperPostProcessor(
+              connectionValueState,
+              observerContext,
+            );
             break;
           }
           default: {
@@ -1224,16 +1225,13 @@ const PostProcessorRelationalConnectionEditor = observer(
               (plugin) =>
                 (
                   plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-                ).getExtraPostProcessorCreators?.(connectionValueState) ?? [],
+                ).getExtraPostProcessorCreators?.(
+                  connectionValueState,
+                  observerContext,
+                ) ?? [],
             );
             for (const creator of extraPostProcessorCreators) {
-              const spec = creator(postprocessorType);
-              if (spec) {
-                console.log('svp delete on transfer');
-                console.log(spec);
-                console.log(postprocessorType);
-                break;
-              }
+              creator(postprocessorType);
             }
           }
         }
@@ -1251,16 +1249,15 @@ const PostProcessorRelationalConnectionEditor = observer(
       connectionValueState.setSelectedPostProcessor(postprocessor);
 
     return (
-      <div className="relational-connection-editor">
+      <div className="panel__container ">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanelSplitter />
           <ResizablePanel>
-            <div className="relational-connection-editor__content">
+            <div className="panel__container panel__container--border-top">
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel size={150} minSize={70}>
-                  <div className="relational-connection-editor__auth">
+                  <div className="panel__container panel__container--border-right">
                     <DropdownMenu
-                      className=""
                       content={postprocessorOptions.map((postprocessorType) => (
                         <MenuContentItem
                           key={postprocessorType.value}

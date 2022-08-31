@@ -19,6 +19,7 @@ import type {
   DatasourceSpecification,
   AuthenticationStrategy,
   PostProcessor,
+  ObserverContext,
 } from '@finos/legend-graph';
 import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 
@@ -131,6 +132,7 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
    */
   getExtraPostProcessorCreators?(
     connectionValueState: RelationalDatabaseConnectionValueState,
+    observerContext: ObserverContext,
   ): PostProcessorCreator[];
 
   /**

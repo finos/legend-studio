@@ -23,6 +23,8 @@ export * from './graph/metamodel/pure/packageableElements/PackageableElementRefe
 export * from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 export { SectionIndex } from './graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 
+export { createExplicitRelationReference } from './graph/metamodel/pure/packageableElements/store/relational/model/RelationReference.js';
+
 export { Multiplicity } from './graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 export { Type } from './graph/metamodel/pure/packageableElements/domain/Type.js';
 export { DataType } from './graph/metamodel/pure/packageableElements/domain/DataType.js';
