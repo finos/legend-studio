@@ -24,6 +24,10 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import {
+  DSLText_GraphManagerPreset,
+  DSLText_LegendStudioApplicationPlugin,
+} from '@finos/legend-extension-dsl-text';
+import {
   DSLDiagram_GraphManagerPreset,
   DSLDiagram_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-diagram';
@@ -53,6 +57,7 @@ export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
+      new DSLText_GraphManagerPreset(),
       new DSLDiagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
@@ -70,6 +75,7 @@ export class LegendStudioWebApplication {
   static getPluginCollection(): AbstractPlugin[] {
     return [
       // application
+      new DSLText_LegendStudioApplicationPlugin(),
       new DSLDiagram_LegendStudioApplicationPlugin(),
       new DSLDataSpace_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
@@ -83,21 +89,11 @@ export class LegendStudioWebApplication {
     ];
   }
 
-  static run(
-    baseUrl: string,
-    extraPresets: AbstractPreset[] = [],
-    extraPlugins: AbstractPlugin[] = [],
-  ): void {
+  static run(baseUrl: string): void {
     LegendStudio.create()
       .setup({ baseUrl })
-      .withPresets([
-        ...LegendStudioWebApplication.getPresetCollection(),
-        ...extraPresets,
-      ])
-      .withPlugins([
-        ...LegendStudioWebApplication.getPluginCollection(),
-        ...extraPlugins,
-      ])
+      .withPresets(LegendStudioWebApplication.getPresetCollection())
+      .withPlugins(LegendStudioWebApplication.getPluginCollection())
       .start()
       .catch((e: unknown) => {
         throw e;
