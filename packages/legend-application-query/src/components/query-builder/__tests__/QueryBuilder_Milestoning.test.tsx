@@ -57,17 +57,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -120,17 +119,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -183,17 +181,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -246,17 +243,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -309,17 +305,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -372,17 +367,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person1');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person1');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -435,17 +429,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -498,17 +491,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -561,17 +553,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Person2');
+      queryBuilderState.graphManagerState.graph.getClass('my::Person2');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -624,17 +615,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -687,17 +677,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });
@@ -750,17 +739,16 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_MilestoningModel,
       stub_RawLambda(),
       'my::map',
       'my::runtime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
     const _personClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
+      queryBuilderState.graphManagerState.graph.getClass('my::Firm');
     await act(async () => {
       queryBuilderState.changeClass(_personClass);
     });

@@ -78,7 +78,7 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_DATA__ComplexRelationalModel,
       stub_RawLambda(),
@@ -86,12 +86,11 @@ test(
       'model::MyRuntime',
       TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
-    const _personClass = MOCK__editorStore.graphManagerState.graph.getClass(
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Person',
     );
-    const _firmClass = MOCK__editorStore.graphManagerState.graph.getClass(
+    const _firmClass = queryBuilderState.graphManagerState.graph.getClass(
       'model::pure::tests::model::simple::Firm',
     );
 
@@ -401,7 +400,7 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_DATA_SimpleSubtypeModel,
       stub_RawLambda(),
@@ -409,7 +408,6 @@ test(
       'model::Runtime',
       TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype,
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
     const _legalEntityClass =
       MOCK__editorStore.graphManagerState.graph.getClass('model::LegalEntity');
     await act(async () => {
@@ -469,19 +467,18 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_DATA__ComplexM2MModel,
       stub_RawLambda(),
       'model::MyMapping',
       'model::MyRuntime',
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
-    const _personClass = MOCK__editorStore.graphManagerState.graph.getClass(
+    const _personClass = queryBuilderState.graphManagerState.graph.getClass(
       'model::target::NPerson',
     );
-    const _firmClass = MOCK__editorStore.graphManagerState.graph.getClass(
+    const _firmClass = queryBuilderState.graphManagerState.graph.getClass(
       'model::target::NFirm',
     );
 

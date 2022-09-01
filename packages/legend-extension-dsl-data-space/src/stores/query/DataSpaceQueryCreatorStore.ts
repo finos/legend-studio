@@ -115,14 +115,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     this.classPath = executionKey;
   }
 
-  protected createQueryBuilderState(): QueryBuilderState {
-    return new DataSpaceQueryCreatorState(
-      this.applicationStore,
-      this.graphManagerState,
-      Boolean(this.classPath),
-    );
-  }
-
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.groupId,
@@ -131,7 +123,12 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     };
   }
 
-  async setUpBuilderState(): Promise<void> {
+  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    const queryBuilderState = new DataSpaceQueryCreatorState(
+      this.applicationStore,
+      this.graphManagerState,
+      Boolean(this.classPath),
+    );
     const dataSpace = getDataSpace(
       this.dataSpacePath,
       this.graphManagerState.graph,
@@ -142,10 +139,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
-    this.queryBuilderState.setupState.setMapping(
-      executionContext.mapping.value,
-    );
-    this.queryBuilderState.setupState.setRuntimeValue(
+    queryBuilderState.setupState.setMapping(executionContext.mapping.value);
+    queryBuilderState.setupState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.runtimePath
@@ -156,8 +151,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     );
 
     if (this.classPath) {
-      this.queryBuilderState.changeClass(
-        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
+      queryBuilderState.changeClass(
+        this.graphManagerState.graph.getClass(this.classPath),
       );
     } else {
       // try to find a class to set
@@ -166,25 +161,27 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       // if none found, default to a dummy blank query
       const defaultClass =
         getNullableFirstElement(
-          this.queryBuilderState.setupState.mapping
-            ? getAllClassMappings(
-                this.queryBuilderState.setupState.mapping,
-              ).map((classMapping) => classMapping.class.value)
+          queryBuilderState.setupState.mapping
+            ? getAllClassMappings(queryBuilderState.setupState.mapping).map(
+                (classMapping) => classMapping.class.value,
+              )
             : [],
         ) ??
         getNullableFirstElement(
-          this.queryBuilderState.graphManagerState.graph.classes.filter(
+          queryBuilderState.graphManagerState.graph.classes.filter(
             (el) => !isSystemElement(el),
           ),
         );
       if (defaultClass) {
-        this.queryBuilderState.changeClass(defaultClass);
+        queryBuilderState.changeClass(defaultClass);
       } else {
-        this.queryBuilderState.initialize(
-          this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+        queryBuilderState.initialize(
+          this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
         );
       }
     }
+
+    return queryBuilderState;
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {

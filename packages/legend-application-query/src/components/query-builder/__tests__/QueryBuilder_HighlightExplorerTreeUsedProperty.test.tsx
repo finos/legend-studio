@@ -143,7 +143,7 @@ describe(integrationTest('Build property mapping data'), () => {
       const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
         pluginManager,
       });
-      const renderResult = await TEST__setUpQueryEditor(
+      const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
         MOCK__editorStore,
         entities,
         stub_RawLambda(),
@@ -151,12 +151,11 @@ describe(integrationTest('Build property mapping data'), () => {
         runtimePath,
         rawMappingModelCoverageAnalysisResult,
       );
-      const queryBuilderState = MOCK__editorStore.queryBuilderState;
-      const _firmClass =
-        MOCK__editorStore.graphManagerState.graph.getClass(classPath);
 
       await act(async () => {
-        queryBuilderState.changeClass(_firmClass);
+        queryBuilderState.changeClass(
+          MOCK__editorStore.graphManagerState.graph.getClass(classPath),
+        );
       });
       const setupPanel = await waitFor(() =>
         renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
