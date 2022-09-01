@@ -39,13 +39,13 @@ import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
 import { QueryBuilderResultPanel } from './QueryBuilderResultPanel.js';
 import { QueryBuilderTextEditor } from './QueryBuilderTextEditor.js';
 import type { QueryBuilderState } from '../../stores/query-builder/QueryBuilderState.js';
-import { QueryTextEditorMode } from '../../stores/query-builder/QueryTextEditorState.js';
+import { QueryBuilderTextEditorMode } from '../../stores/query-builder/QueryBuilderTextEditorState.js';
 import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderFetchStructurePanel.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
-import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
+import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderProjectionState } from '../../stores/query-builder/fetch-structure/projection/QueryBuilderProjectionState.js';
@@ -62,7 +62,7 @@ const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const openLambdaEditor = (mode: QueryTextEditorMode): void =>
+    const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
     const compile = applicationStore.guardUnhandledError(() =>
       flowResult(queryBuilderState.compileQuery()),
@@ -91,7 +91,9 @@ const QueryBuilderStatusBar = observer(
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',
             )}
-            onClick={(): void => openLambdaEditor(QueryTextEditorMode.JSON)}
+            onClick={(): void =>
+              openLambdaEditor(QueryBuilderTextEditorMode.JSON)
+            }
             tabIndex={-1}
             title="View Query JSON"
           >{`{ }`}</button>
@@ -99,7 +101,9 @@ const QueryBuilderStatusBar = observer(
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',
             )}
-            onClick={(): void => openLambdaEditor(QueryTextEditorMode.TEXT)}
+            onClick={(): void =>
+              openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
+            }
             tabIndex={-1}
             title="View Pure Query"
           >
@@ -321,7 +325,7 @@ export const QueryBuilder = observer(
                           ) : null}
                           {queryBuilderState.showParameterPanel && (
                             <ResizablePanel minSize={40} direction={-1}>
-                              <QueryBuilderParameterPanel
+                              <QueryBuilderParametersPanel
                                 queryBuilderState={queryBuilderState}
                               />
                             </ResizablePanel>

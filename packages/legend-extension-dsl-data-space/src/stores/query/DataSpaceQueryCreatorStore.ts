@@ -22,12 +22,15 @@ import {
   PackageableElementExplicitReference,
   getAllClassMappings,
   isSystemElement,
+  type GraphManagerState,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
+  BasicQueryBuilderState,
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
+  type QueryBuilderState,
 } from '@finos/legend-application-query';
 import type {
   DepotServerClient,
@@ -43,6 +46,7 @@ import {
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSLDataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -54,7 +58,32 @@ const createQueryDataSpaceTaggedValue = (
   return taggedValue;
 };
 
-export class DataSpaceQueryEditorStore extends QueryEditorStore {
+class DataSpaceQueryCreatorState extends BasicQueryBuilderState {
+  _isClassReadOnly: boolean;
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    _isClassReadOnly: boolean,
+  ) {
+    super(applicationStore, graphManagerState);
+    this._isClassReadOnly = _isClassReadOnly;
+  }
+
+  override get isClassReadOnly(): boolean {
+    return this._isClassReadOnly;
+  }
+
+  override get isMappingReadOnly(): boolean {
+    return true;
+  }
+
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+}
+
+export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -86,6 +115,14 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
     this.classPath = executionKey;
   }
 
+  protected createQueryBuilderState(): QueryBuilderState {
+    return new DataSpaceQueryCreatorState(
+      this.applicationStore,
+      this.graphManagerState,
+      Boolean(this.classPath),
+    );
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.groupId,
@@ -95,9 +132,6 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
-
     const dataSpace = getDataSpace(
       this.dataSpacePath,
       this.graphManagerState.graph,
@@ -125,7 +159,6 @@ export class DataSpaceQueryEditorStore extends QueryEditorStore {
       this.queryBuilderState.changeClass(
         this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
       );
-      this.queryBuilderState.setupState.setClassIsReadOnly(true);
     } else {
       // try to find a class to set
       // first, find classes which is mapped by the mapping

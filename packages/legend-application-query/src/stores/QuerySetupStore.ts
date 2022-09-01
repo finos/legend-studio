@@ -58,7 +58,7 @@ export abstract class QuerySetupState {
   }
 }
 
-export class ExistingQuerySetupState extends QuerySetupState {
+export class EditExistingQuerySetupState extends QuerySetupState {
   queries: LightQuery[] = [];
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
@@ -125,7 +125,7 @@ export class ExistingQuerySetupState extends QuerySetupState {
   }
 }
 
-export class CreateQuerySetupState extends QuerySetupState {
+export class CreateMappingQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
   surveyMappingRuntimeCompatibilityState = ActionState.create();
@@ -240,7 +240,7 @@ export interface ServiceExecutionOption {
   key?: string | undefined;
 }
 
-export class ServiceQuerySetupState extends QuerySetupState {
+export class LoadServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
   loadServiceExecutionsState = ActionState.create();

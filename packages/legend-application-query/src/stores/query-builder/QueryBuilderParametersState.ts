@@ -27,7 +27,7 @@ export interface QueryBuilderParameterDragSource {
   variable: LambdaParameterState;
 }
 
-export class QueryParametersState extends LambdaParametersState {
+export class QueryBuilderParametersState extends LambdaParametersState {
   selectedParameter: LambdaParameterState | undefined;
   queryBuilderState: QueryBuilderState;
 

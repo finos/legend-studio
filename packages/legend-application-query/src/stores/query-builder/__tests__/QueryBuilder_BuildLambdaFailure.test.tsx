@@ -36,8 +36,8 @@ import {
 import { LegendQueryPluginManager } from '../../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestApplicationStore } from '@finos/legend-application';
-import { BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../../QueryEditorStoreTestUtils.js';
+import { BasicQueryBuilderState } from '../workflows/BasicQueryBuilderState.js';
 
 type TestCase = [
   string,

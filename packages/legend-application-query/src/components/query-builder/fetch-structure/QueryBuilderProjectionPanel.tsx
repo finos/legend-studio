@@ -59,7 +59,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../../stores/query-builder/QueryParametersState.js';
+} from '../../../stores/query-builder/QueryBuilderParametersState.js';
 import {
   type ConcreteFunctionDefinition,
   generateFunctionCallString,

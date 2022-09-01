@@ -28,16 +28,14 @@ import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structu
 import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Sample.js';
 import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Sum.js';
 import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
-import {
-  BasicQueryBuilderState,
-  type QueryBuilderState,
-} from './QueryBuilderState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
 } from './fetch-structure/projection/QueryResultSetModifierState.js';
 import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';

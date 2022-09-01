@@ -74,7 +74,6 @@ import {
   integrationTest,
   type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
-import { BasicQueryBuilderState } from '../QueryBuilderState.js';
 import { LegendQueryPluginManager } from '../../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../../QueryEditorStoreTestUtils.js';
@@ -84,6 +83,7 @@ import {
   TEST_DATA__lambda_derivationPostFilter,
   TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
+import { BasicQueryBuilderState } from '../workflows/BasicQueryBuilderState.js';
 
 type RoundtripTestCase = [
   string,

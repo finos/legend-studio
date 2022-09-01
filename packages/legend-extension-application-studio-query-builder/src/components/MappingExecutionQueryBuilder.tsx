@@ -25,14 +25,25 @@ import { useApplicationStore } from '@finos/legend-application';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';
-import { QueryBuilderState } from '@finos/legend-application-query';
+import {
+  BasicQueryBuilderState,
+  type QueryBuilderState,
+} from '@finos/legend-application-query';
 
-export class MappingExecutionQueryBuilderState extends QueryBuilderState {
-  get isParametersDisabled(): boolean {
+export class MappingExecutionQueryEditorState extends BasicQueryBuilderState {
+  override get isMappingReadOnly(): boolean {
     return true;
   }
 
-  get isResultPanelHidden(): boolean {
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+
+  override get isParametersDisabled(): boolean {
+    return true;
+  }
+
+  override get isResultPanelHidden(): boolean {
     return true;
   }
 }
@@ -50,7 +61,7 @@ export const MappingExecutionQueryBuilder = observer(
         await flowResult(
           queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
-              const queryBuilderState = new MappingExecutionQueryBuilderState(
+              const queryBuilderState = new MappingExecutionQueryEditorState(
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,
               );
@@ -58,8 +69,6 @@ export const MappingExecutionQueryBuilder = observer(
                 executionState.mappingEditorState.mapping,
               );
               queryBuilderState.setupState.setRuntimeValue(undefined);
-              queryBuilderState.setupState.setMappingIsReadOnly(true);
-              queryBuilderState.setupState.setRuntimeIsReadOnly(true);
               queryBuilderState.initialize(executionState.queryState.query);
               queryBuilderState.changeDetectionState.setQueryHashCode(
                 hashObject(executionState.queryState.query),

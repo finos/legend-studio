@@ -34,11 +34,9 @@ import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
-import {
-  BasicQueryBuilderState,
-  type QueryBuilderState,
-} from './QueryBuilderState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;

@@ -95,7 +95,7 @@ import type { QueryBuilderState } from '../../../stores/query-builder/QueryBuild
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../../stores/query-builder/QueryParametersState.js';
+} from '../../../stores/query-builder/QueryBuilderParametersState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isTypeCompatibleForAssignment } from '../../../stores/query-builder/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../stores/query-builder/QueryBuilderGroupOperationHelper.js';

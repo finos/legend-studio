@@ -31,7 +31,7 @@ import { observable, action, flow, makeObservable, flowResult } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { LambdaEditorState, TAB_SIZE } from '@finos/legend-application';
 
-export class QueryRawLambdaState {
+export class QueryBuilderRawLambdaState {
   lambda: RawLambda;
 
   constructor(lambda: RawLambda) {
@@ -48,16 +48,16 @@ export class QueryRawLambdaState {
   }
 }
 
-export enum QueryTextEditorMode {
+export enum QueryBuilderTextEditorMode {
   TEXT = 'TEXT',
   JSON = 'JSON',
 }
 
-export class QueryTextEditorState extends LambdaEditorState {
+export class QueryBuilderTextEditorState extends LambdaEditorState {
   queryBuilderState: QueryBuilderState;
-  rawLambdaState: QueryRawLambdaState;
+  rawLambdaState: QueryBuilderRawLambdaState;
   isConvertingLambdaToString = false;
-  mode: QueryTextEditorMode | undefined;
+  mode: QueryBuilderTextEditorMode | undefined;
   /**
    * This is used to store the JSON string when viewing the query in JSON mode
    * TODO: consider moving this to another state if we need to simplify the logic of text-mode
@@ -78,18 +78,18 @@ export class QueryTextEditorState extends LambdaEditorState {
     });
 
     this.queryBuilderState = queryBuilderState;
-    this.rawLambdaState = new QueryRawLambdaState(stub_RawLambda());
+    this.rawLambdaState = new QueryBuilderRawLambdaState(stub_RawLambda());
   }
 
   get lambdaId(): string {
     return buildSourceInformationSourceId(['query-builder']);
   }
 
-  setQueryRawLambdaState(rawLambdaState: QueryRawLambdaState): void {
+  setQueryRawLambdaState(rawLambdaState: QueryBuilderRawLambdaState): void {
     this.rawLambdaState = rawLambdaState;
   }
 
-  setMode(openModal: QueryTextEditorMode | undefined): void {
+  setMode(openModal: QueryBuilderTextEditorMode | undefined): void {
     this.mode = openModal;
   }
 
@@ -164,12 +164,12 @@ export class QueryTextEditorState extends LambdaEditorState {
     }
   }
 
-  openModal(mode: QueryTextEditorMode): void {
+  openModal(mode: QueryBuilderTextEditorMode): void {
     const rawLambda = this.queryBuilderState.getQuery();
-    if (mode === QueryTextEditorMode.TEXT) {
-      this.setQueryRawLambdaState(new QueryRawLambdaState(rawLambda));
+    if (mode === QueryBuilderTextEditorMode.TEXT) {
+      this.setQueryRawLambdaState(new QueryBuilderRawLambdaState(rawLambda));
     }
-    if (mode === QueryTextEditorMode.JSON) {
+    if (mode === QueryBuilderTextEditorMode.JSON) {
       this.setLambdaJson(
         JSON.stringify(
           pruneSourceInformation(
@@ -186,7 +186,7 @@ export class QueryTextEditorState extends LambdaEditorState {
   }
 
   *closeModal(): GeneratorFn<void> {
-    if (this.mode === QueryTextEditorMode.TEXT) {
+    if (this.mode === QueryBuilderTextEditorMode.TEXT) {
       yield flowResult(this.convertLambdaGrammarStringToObject());
       if (this.parserError) {
         this.queryBuilderState.applicationStore.notifyError(

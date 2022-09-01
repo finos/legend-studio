@@ -33,11 +33,11 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
 import {
-  type CreateQueryPathParams,
+  type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
-  type ServiceQueryEditorPathParams,
-  type ServiceQueryEditorQueryParams,
-  type CreateQueryEditorQueryParams,
+  type ServiceQueryCreatorPathParams,
+  type ServiceQueryCreatorQueryParams,
+  type MappingQueryCreatorQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -45,17 +45,17 @@ import {
 } from '../stores/LegendQueryRouter.js';
 import {
   type QueryEditorStore,
-  CreateQueryEditorStore,
+  MappingQueryCreatorStore,
   ExistingQueryEditorStore,
   QueryExportState,
-  ServiceQueryEditorStore,
+  ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
 import { QueryBuilder } from './query-builder/QueryBuilder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  CreateQueryEditorStoreProvider,
+  MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
-  ServiceQueryEditorStoreProvider,
+  ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
 import {
@@ -159,13 +159,13 @@ const renderQueryEditorHeaderLabel = (
         {editorStore.query.name}
       </div>
     );
-  } else if (editorStore instanceof CreateQueryEditorStore) {
+  } else if (editorStore instanceof MappingQueryCreatorStore) {
     return (
       <div className="query-editor__header__label query-editor__header__label--create-query">
         New Query
       </div>
     );
-  } else if (editorStore instanceof ServiceQueryEditorStore) {
+  } else if (editorStore instanceof ServiceQueryCreatorStore) {
     return (
       <div className="query-editor__header__label query-editor__header__label--service-query">
         <RobotIcon className="query-editor__header__label__icon" />
@@ -339,46 +339,46 @@ export const ExistingQueryEditor = observer(() => {
   );
 });
 
-export const ServiceQueryEditor = observer(() => {
+export const ServiceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<ServiceQueryEditorPathParams>();
+  const params = useParams<ServiceQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
-  const executionKey = getQueryParameters<ServiceQueryEditorQueryParams>(
+  const executionKey = getQueryParameters<ServiceQueryCreatorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 
   return (
-    <ServiceQueryEditorStoreProvider
+    <ServiceQueryCreatorStoreProvider
       gav={gav}
       servicePath={servicePath}
       executionKey={executionKey}
     >
       <QueryEditor />
-    </ServiceQueryEditorStoreProvider>
+    </ServiceQueryCreatorStoreProvider>
   );
 });
 
-export const CreateQueryEditor = observer(() => {
+export const MappingQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<CreateQueryPathParams>();
+  const params = useParams<MappingQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
-  const classPath = getQueryParameters<CreateQueryEditorQueryParams>(
+  const classPath = getQueryParameters<MappingQueryCreatorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH];
 
   return (
-    <CreateQueryEditorStoreProvider
+    <MappingQueryCreatorStoreProvider
       gav={gav}
       mappingPath={mappingPath}
       runtimePath={runtimePath}
       classPath={classPath}
     >
       <QueryEditor />
-    </CreateQueryEditorStoreProvider>
+    </MappingQueryCreatorStoreProvider>
   );
 });
