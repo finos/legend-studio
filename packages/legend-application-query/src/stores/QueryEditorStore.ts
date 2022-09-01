@@ -55,7 +55,7 @@ import {
 import {
   BasicQueryBuilderState,
   type QueryBuilderState,
-} from './QueryBuilderState.js';
+} from './query-builder/QueryBuilderState.js';
 import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-storage';

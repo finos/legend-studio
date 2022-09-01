@@ -23,10 +23,6 @@ import {
   returnUndefOnError,
 } from '@finos/legend-shared';
 import {
-  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
-  TDS_ROW,
-} from '../../../../QueryBuilder_Const.js';
-import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
   type V1_ValueSpecification,
@@ -52,7 +48,9 @@ import {
   AbstractPropertyExpression,
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilderSupportedFunctions.js';
 
 const buildProjectionColumnLambda = (
   valueSpecification: V1_ValueSpecification,
@@ -429,7 +427,7 @@ export const V1_buildProjectFunctionExpression = (
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(compileContext.resolveType(TDS_ROW).value),
+    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
   return [expression, processedParams];
 };
@@ -567,7 +565,7 @@ export const V1_buildGroupByFunctionExpression = (
     compileContext,
   );
   expression.genericType = GenericTypeExplicitReference.create(
-    new GenericType(compileContext.resolveType(TDS_ROW).value),
+    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
   return [expression, processedParams];
 };
