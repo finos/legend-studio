@@ -70,7 +70,7 @@ export const baseJestConfig = {
     // See https://github.com/finos/legend-studio/issues/502
     '^uuid$': require.resolve('uuid'),
   },
-  modulePathIgnorePatterns: ['packages/.*/lib'],
+  modulePathIgnorePatterns: ['packages/.*/lib', 'packages/.*/build'],
   testPathIgnorePatterns: [
     ...baseConfig.testPathIgnorePatterns,
     '/packages/.*/lib',
