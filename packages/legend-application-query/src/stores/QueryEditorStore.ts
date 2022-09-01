@@ -61,11 +61,7 @@ import {
   type ProjectGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
-import {
-  TAB_SIZE,
-  APPLICATION_EVENT,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
+import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
@@ -393,21 +389,6 @@ export abstract class QueryEditorStore {
 }
 
 class MappingQueryCreatorState extends BasicQueryBuilderState {
-  _isClassReadOnly: boolean;
-
-  constructor(
-    applicationStore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    _isClassReadOnly: boolean,
-  ) {
-    super(applicationStore, graphManagerState);
-    this._isClassReadOnly = _isClassReadOnly;
-  }
-
-  override get isClassReadOnly(): boolean {
-    return this._isClassReadOnly;
-  }
-
   override get isMappingReadOnly(): boolean {
     return true;
   }
@@ -423,7 +404,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
   versionId: string;
   mappingPath: string;
   runtimePath: string;
-  classPath: string | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -434,7 +414,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     versionId: string,
     mappingPath: string,
     runtimePath: string,
-    classPath: string | undefined,
   ) {
     super(applicationStore, depotServerClient, pluginManager);
 
@@ -443,7 +422,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     this.versionId = versionId;
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
-    this.classPath = classPath;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
@@ -458,7 +436,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new MappingQueryCreatorState(
       this.applicationStore,
       this.graphManagerState,
-      Boolean(this.classPath),
     );
     queryBuilderState.setupState.setMapping(
       this.graphManagerState.graph.getMapping(this.mappingPath),
@@ -470,36 +447,31 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         ),
       ),
     );
-    if (this.classPath) {
-      queryBuilderState.changeClass(
-        this.graphManagerState.graph.getClass(this.classPath),
+    // try to find a class to set
+    // first, find classes which is mapped by the mapping
+    // then, find any classes except for class coming from system
+    // if none found, default to a dummy blank query
+    const defaultClass =
+      getNullableFirstElement(
+        queryBuilderState.setupState.mapping
+          ? getAllClassMappings(queryBuilderState.setupState.mapping).map(
+              (classMapping) => classMapping.class.value,
+            )
+          : [],
+      ) ??
+      getNullableFirstElement(
+        queryBuilderState.graphManagerState.graph.classes.filter(
+          (el) => !isSystemElement(el),
+        ),
       );
+    if (defaultClass) {
+      queryBuilderState.changeClass(defaultClass);
     } else {
-      // try to find a class to set
-      // first, find classes which is mapped by the mapping
-      // then, find any classes except for class coming from system
-      // if none found, default to a dummy blank query
-      const defaultClass =
-        getNullableFirstElement(
-          queryBuilderState.setupState.mapping
-            ? getAllClassMappings(queryBuilderState.setupState.mapping).map(
-                (classMapping) => classMapping.class.value,
-              )
-            : [],
-        ) ??
-        getNullableFirstElement(
-          queryBuilderState.graphManagerState.graph.classes.filter(
-            (el) => !isSystemElement(el),
-          ),
-        );
-      if (defaultClass) {
-        queryBuilderState.changeClass(defaultClass);
-      } else {
-        queryBuilderState.initialize(
-          this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
-        );
-      }
+      queryBuilderState.initialize(
+        this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+      );
     }
+
     return queryBuilderState;
   }
 

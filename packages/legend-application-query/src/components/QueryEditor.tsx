@@ -37,7 +37,6 @@ import {
   type ExistingQueryEditorPathParams,
   type ServiceQueryCreatorPathParams,
   type ServiceQueryCreatorQueryParams,
-  type MappingQueryCreatorQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -370,22 +369,16 @@ export const ServiceQueryCreator = observer(() => {
 });
 
 export const MappingQueryCreator = observer(() => {
-  const applicationStore = useApplicationStore();
   const params = useParams<MappingQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
-  const classPath = getQueryParameters<MappingQueryCreatorQueryParams>(
-    applicationStore.navigator.getCurrentLocation(),
-    true,
-  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH];
 
   return (
     <MappingQueryCreatorStoreProvider
       gav={gav}
       mappingPath={mappingPath}
       runtimePath={runtimePath}
-      classPath={classPath}
     >
       <QueryEditor />
     </MappingQueryCreatorStoreProvider>
