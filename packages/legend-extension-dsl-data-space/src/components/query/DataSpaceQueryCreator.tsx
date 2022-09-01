@@ -32,12 +32,12 @@ import {
 import { useParams } from 'react-router';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
-  type DataSpaceQueryEditorPathParams,
+  type DataSpaceQueryCreatorPathParams,
   type DataSpaceQueryEditorQueryParams,
-  DATA_SPACE_QUERY_EDITOR_PATH_PARAM_TOKEN,
+  DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN,
 } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
 
-const DataSpaceQueryEditorStoreProvider: React.FC<{
+const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   dataSpacePath: string;
@@ -78,14 +78,14 @@ const DataSpaceQueryEditorStoreProvider: React.FC<{
   );
 };
 
-export const DataSpaceQueryEditor = observer(() => {
+export const DataSpaceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<DataSpaceQueryEditorPathParams>();
+  const params = useParams<DataSpaceQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const dataSpacePath =
-    params[DATA_SPACE_QUERY_EDITOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH];
+    params[DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH];
   const executionContext =
-    params[DATA_SPACE_QUERY_EDITOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT];
+    params[DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
   const classPath = getQueryParameters<DataSpaceQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
@@ -93,7 +93,7 @@ export const DataSpaceQueryEditor = observer(() => {
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH];
 
   return (
-    <DataSpaceQueryEditorStoreProvider
+    <DataSpaceQueryCreatorStoreProvider
       gav={gav}
       dataSpacePath={dataSpacePath}
       executionContext={executionContext}
@@ -101,6 +101,6 @@ export const DataSpaceQueryEditor = observer(() => {
       classPath={classPath}
     >
       <QueryEditor />
-    </DataSpaceQueryEditorStoreProvider>
+    </DataSpaceQueryCreatorStoreProvider>
   );
 });

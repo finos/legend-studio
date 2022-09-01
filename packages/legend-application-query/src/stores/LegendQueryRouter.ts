@@ -32,8 +32,8 @@ export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
-  CREATE_MAPPING_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
-  SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  CREATE_FROM_MAPPING_QUERY: `/create/manual/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
+  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
   EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
@@ -44,7 +44,7 @@ export const generateMappingQueryCreatorRoute = (
   mappingPath: string,
   runtimePath: string,
 ): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
       groupId,
       artifactId,
@@ -71,7 +71,7 @@ export const generateServiceQueryCreatorRoute = (
   servicePath: string,
   key?: string,
 ): string =>
-  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY, {
+  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
       groupId,
       artifactId,

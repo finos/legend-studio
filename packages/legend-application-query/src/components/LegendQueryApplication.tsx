@@ -56,12 +56,12 @@ const LegendQueryApplicationRoot = observer(() => {
         />
         <Route
           exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY}
+          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}
           component={ServiceQueryCreator}
         />
         <Route
           exact={true}
-          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY}
+          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY}
           component={MappingQueryCreator}
         />
         {extraApplicationPageEntries.map((entry) => (

@@ -28,8 +28,8 @@ import { SquareIcon } from '@finos/legend-art';
 import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
 import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
 import type { ApplicationPageEntry } from '@finos/legend-application';
-import { DATA_SPACE_QUERY_EDITOR_ROUTE_PATTERN } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
-import { DataSpaceQueryEditor } from './DataSpaceQueryEditor.js';
+import { CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
+import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 
@@ -43,8 +43,8 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
       // data space query editor
       {
         key: 'data-space-query-editor-application-page',
-        urlPatterns: [DATA_SPACE_QUERY_EDITOR_ROUTE_PATTERN],
-        renderer: DataSpaceQueryEditor,
+        urlPatterns: [CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN],
+        renderer: DataSpaceQueryCreator,
       },
     ];
   }
