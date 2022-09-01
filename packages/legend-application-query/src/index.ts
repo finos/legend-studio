@@ -18,11 +18,10 @@ export * from './application/LegendQuery.js';
 export * from './components/LegendQueryBaseStoreProvider.js';
 export * from './stores/LegendQueryBaseStore.js';
 
-export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
-
 export { QueryBuilder_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
 
-export { QueryBuilder } from './components/QueryBuilder.js';
+export { QUERY_BUILDER_TEST_ID } from './components/query-builder/QueryBuilder_TestID.js';
+export { QueryBuilder } from './components/query-builder/QueryBuilder.js';
 export {
   QueryEditorStoreContext,
   useQueryEditorStore,
@@ -47,4 +46,4 @@ export {
 export {
   QueryBuilderState,
   BasicQueryBuilderState,
-} from './stores/QueryBuilderState.js';
+} from './stores/query-builder/QueryBuilderState.js';

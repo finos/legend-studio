@@ -50,7 +50,7 @@ import {
   QueryExportState,
   ServiceQueryEditorStore,
 } from '../stores/QueryEditorStore.js';
-import { QueryBuilder } from './QueryBuilder.js';
+import { QueryBuilder } from './query-builder/QueryBuilder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   CreateQueryEditorStoreProvider,
