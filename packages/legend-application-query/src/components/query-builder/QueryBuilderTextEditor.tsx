@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { clsx, Dialog } from '@finos/legend-art';
 import type { QueryBuilderState } from '../../stores/query-builder/QueryBuilderState.js';
-import { QueryTextEditorMode } from '../../stores/query-builder/QueryTextEditorState.js';
+import { QueryBuilderTextEditorMode } from '../../stores/query-builder/QueryBuilderTextEditorState.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderLambdaEditor } from './shared/QueryBuilderLambdaEditor.js';
 import {
@@ -81,7 +81,7 @@ export const QueryBuilderTextEditor = observer(
                 backdrop__element: Boolean(queryTextEditorState.parserError),
               })}
             >
-              {mode === QueryTextEditorMode.TEXT && (
+              {mode === QueryBuilderTextEditorMode.TEXT && (
                 <QueryBuilderLambdaEditor
                   className={'query-builder-text-mode__lambda-editor'}
                   disabled={queryTextEditorState.isConvertingLambdaToString}
@@ -94,7 +94,7 @@ export const QueryBuilderTextEditor = observer(
                   disablePopUp={true}
                 />
               )}
-              {mode === QueryTextEditorMode.JSON && (
+              {mode === QueryBuilderTextEditorMode.JSON && (
                 <TextInputEditor
                   language={EDITOR_LANGUAGE.JSON}
                   inputValue={queryTextEditorState.readOnlylambdaJson}
@@ -104,7 +104,7 @@ export const QueryBuilderTextEditor = observer(
             </div>
           </div>
           <div className="modal__footer">
-            {mode === QueryTextEditorMode.TEXT && (
+            {mode === QueryBuilderTextEditorMode.TEXT && (
               <button
                 className="btn btn--dark btn--caution"
                 onClick={discardChanges}

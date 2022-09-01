@@ -41,11 +41,10 @@ export class QueryBuilderFetchStructureState {
 
     this.queryBuilderState = queryBuilderState;
     /**
-     * TODO?: perhaps it would eventually make sense to default to
+     * TODO?: if needed, we could make this configurable as part of QueryBuilderState
+     * Also, perhaps, some day it would even make sense to default to
      * graph-fetch since `getAll()` naturally works for graph-fetch case
      * and graph-fetch allows somewhat an empty tree
-     *
-     * TODO?: we could consider making this configurable
      */
     this.implementation = new QueryBuilderProjectionState(
       this.queryBuilderState,

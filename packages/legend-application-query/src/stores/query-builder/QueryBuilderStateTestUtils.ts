@@ -26,11 +26,9 @@ import { jest } from '@jest/globals';
 import { flowResult } from 'mobx';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import {
-  BasicQueryBuilderState,
-  type QueryBuilderState,
-} from './QueryBuilderState.js';
+import type { QueryBuilderState } from './QueryBuilderState.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../QueryEditorStoreTestUtils.js';
+import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 
 export const TEST__setUpQueryBuilderState = async (
   entities: Entity[],

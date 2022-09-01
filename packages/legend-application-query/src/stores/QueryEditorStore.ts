@@ -52,10 +52,7 @@ import {
   extractElementNameFromPath,
   isSystemElement,
 } from '@finos/legend-graph';
-import {
-  BasicQueryBuilderState,
-  type QueryBuilderState,
-} from './query-builder/QueryBuilderState.js';
+import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-storage';
@@ -64,10 +61,15 @@ import {
   type ProjectGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
-import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
+import {
+  TAB_SIZE,
+  APPLICATION_EVENT,
+  type GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import { BasicQueryBuilderState } from './query-builder/workflows/BasicQueryBuilderState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -225,15 +227,14 @@ export abstract class QueryEditorStore {
       this.pluginManager,
       this.applicationStore.log,
     );
-    this.queryBuilderState = BasicQueryBuilderState.create(
-      this.applicationStore,
-      this.graphManagerState,
-    );
+    this.queryBuilderState = this.createQueryBuilderState();
   }
 
   setExportState(val: QueryExportState | undefined): void {
     this.exportState = val;
   }
+
+  protected abstract createQueryBuilderState(): QueryBuilderState;
 
   abstract getProjectInfo(): ProjectGAVCoordinates;
   /**
@@ -392,7 +393,32 @@ export abstract class QueryEditorStore {
   }
 }
 
-export class CreateQueryEditorStore extends QueryEditorStore {
+class MappingQueryCreatorState extends BasicQueryBuilderState {
+  _isClassReadOnly: boolean;
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    _isClassReadOnly: boolean,
+  ) {
+    super(applicationStore, graphManagerState);
+    this._isClassReadOnly = _isClassReadOnly;
+  }
+
+  override get isClassReadOnly(): boolean {
+    return this._isClassReadOnly;
+  }
+
+  override get isMappingReadOnly(): boolean {
+    return true;
+  }
+
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+}
+
+export class MappingQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -421,6 +447,14 @@ export class CreateQueryEditorStore extends QueryEditorStore {
     this.classPath = classPath;
   }
 
+  protected createQueryBuilderState(): QueryBuilderState {
+    return new MappingQueryCreatorState(
+      this.applicationStore,
+      this.graphManagerState,
+      Boolean(this.classPath),
+    );
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.groupId,
@@ -430,8 +464,6 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
     this.queryBuilderState.setupState.setMapping(
       this.graphManagerState.graph.getMapping(this.mappingPath),
     );
@@ -446,7 +478,6 @@ export class CreateQueryEditorStore extends QueryEditorStore {
       this.queryBuilderState.changeClass(
         this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
       );
-      this.queryBuilderState.setupState.setClassIsReadOnly(true);
     } else {
       // try to find a class to set
       // first, find classes which is mapped by the mapping
@@ -487,7 +518,17 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   }
 }
 
-export class ServiceQueryEditorStore extends QueryEditorStore {
+class ServiceQueryCreatorState extends BasicQueryBuilderState {
+  override get isMappingReadOnly(): boolean {
+    return true;
+  }
+
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+}
+
+export class ServiceQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -513,6 +554,13 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
     this.executionKey = executionKey;
   }
 
+  protected createQueryBuilderState(): QueryBuilderState {
+    return new ServiceQueryCreatorState(
+      this.applicationStore,
+      this.graphManagerState,
+    );
+  }
+
   getProjectInfo(): ProjectGAVCoordinates {
     return {
       groupId: this.groupId,
@@ -522,9 +570,6 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
-
     const service = this.graphManagerState.graph.getService(this.servicePath);
     assertType(
       service.execution,
@@ -581,6 +626,16 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
   }
 }
 
+class ExistingQueryEditorState extends BasicQueryBuilderState {
+  override get isMappingReadOnly(): boolean {
+    return true;
+  }
+
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+}
+
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _query?: LightQuery | undefined;
@@ -600,6 +655,13 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     });
 
     this.queryId = queryId;
+  }
+
+  protected createQueryBuilderState(): QueryBuilderState {
+    return new ExistingQueryEditorState(
+      this.applicationStore,
+      this.graphManagerState,
+    );
   }
 
   get query(): LightQuery {
@@ -625,9 +687,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   }
 
   async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.setupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.setupState.setRuntimeIsReadOnly(true);
-
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,

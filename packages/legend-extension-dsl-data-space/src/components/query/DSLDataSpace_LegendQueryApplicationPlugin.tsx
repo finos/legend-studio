@@ -30,7 +30,7 @@ import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
 import type { ApplicationPageEntry } from '@finos/legend-application';
 import { DATA_SPACE_QUERY_EDITOR_ROUTE_PATTERN } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
 import { DataSpaceQueryEditor } from './DataSpaceQueryEditor.js';
-import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
+import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 
 export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
@@ -90,7 +90,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
   override getExtraQueryEditorHeaderLabelers(): QueryEditorHeaderLabeler[] {
     return [
       (editorStore: QueryEditorStore): React.ReactNode | undefined => {
-        if (editorStore instanceof DataSpaceQueryEditorStore) {
+        if (editorStore instanceof DataSpaceQueryCreatorStore) {
           return (
             <div className="query-editor__header__label">
               <SquareIcon className="query-editor__header__label__icon icon--data-space" />

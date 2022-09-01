@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import { getNullableFirstElement, uniq } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -27,25 +27,40 @@ import {
   getAllIncludedMappings,
 } from '@finos/legend-graph';
 
-export class QueryBuilderSetupState {
+export abstract class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
-  classIsReadOnly = false;
-  mappingIsReadOnly = false;
-  runtimeIsReadOnly = false;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      setQueryBuilderState: action,
+    makeObservable(this, {
+      _class: observable,
+      mapping: observable,
+      runtimeValue: observable,
+    });
+
+    this.queryBuilderState = queryBuilderState;
+  }
+
+  // TODO-BEFORE-PR: we should look to see if we can get rid of `undefined` here
+  abstract setClass(val: Class | undefined, isRebuildingState?: boolean): void;
+  abstract setMapping(val: Mapping | undefined): void;
+  abstract setRuntimeValue(val: Runtime | undefined): void;
+}
+
+export class BasicQueryBuilderSetupState extends QueryBuilderSetupState {
+  constructor(queryBuilderState: QueryBuilderState) {
+    super(queryBuilderState);
+
+    makeObservable(this, {
+      classes: computed,
+      mappings: computed,
+      compatibleMappings: computed,
+      compatibleRuntimes: computed,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
-      setClassIsReadOnly: action,
-      setMappingIsReadOnly: action,
-      setRuntimeIsReadOnly: action,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -68,7 +83,7 @@ export class QueryBuilderSetupState {
     return this.queryBuilderState.graphManagerState.graph.mappings;
   }
 
-  private get compatibleMappings(): Mapping[] {
+  get compatibleMappings(): Mapping[] {
     const mappingsWithClassMapped = this.mappings.filter((mapping) =>
       mapping.classMappings.some((cm) => cm.class.value === this._class),
     );
@@ -100,25 +115,10 @@ export class QueryBuilderSetupState {
       : [];
   }
 
-  setQueryBuilderState(queryBuilderState: QueryBuilderState): void {
-    this.queryBuilderState = queryBuilderState;
-  }
-  setRuntimeValue(val: Runtime | undefined): void {
-    this.runtimeValue = val;
-  }
-  setClassIsReadOnly(val: boolean): void {
-    this.classIsReadOnly = val;
-  }
-  setMappingIsReadOnly(val: boolean): void {
-    this.mappingIsReadOnly = val;
-  }
-  setRuntimeIsReadOnly(val: boolean): void {
-    this.runtimeIsReadOnly = val;
-  }
-
   setClass(val: Class | undefined, isRebuildingState?: boolean): void {
     this._class = val;
-    const isMappingEditable = !isRebuildingState && !this.mappingIsReadOnly;
+    const isMappingEditable =
+      !isRebuildingState && !this.queryBuilderState.isMappingReadOnly;
     const isCurrentMappingCompatible =
       this.mapping && this.compatibleMappings.includes(this.mapping);
     if (isMappingEditable && !isCurrentMappingCompatible) {
@@ -132,7 +132,7 @@ export class QueryBuilderSetupState {
 
   setMapping(val: Mapping | undefined): void {
     this.mapping = val;
-    if (this.runtimeIsReadOnly) {
+    if (this.queryBuilderState.isRuntimeReadOnly) {
       return;
     }
     const runtimeToPick = getNullableFirstElement(this.compatibleRuntimes);
@@ -146,5 +146,9 @@ export class QueryBuilderSetupState {
       // TODO?: we should consider if we allow users to use custom runtime here
       this.setRuntimeValue(undefined);
     }
+  }
+
+  setRuntimeValue(val: Runtime | undefined): void {
+    this.runtimeValue = val;
   }
 }

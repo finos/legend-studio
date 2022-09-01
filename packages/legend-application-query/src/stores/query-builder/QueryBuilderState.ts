@@ -26,10 +26,13 @@ import {
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import {
-  QueryTextEditorMode,
-  QueryTextEditorState,
-} from './QueryTextEditorState.js';
-import { QueryBuilderSetupState } from './QueryBuilderSetupState.js';
+  QueryBuilderTextEditorMode,
+  QueryBuilderTextEditorState,
+} from './QueryBuilderTextEditorState.js';
+import {
+  BasicQueryBuilderSetupState,
+  type QueryBuilderSetupState,
+} from './QueryBuilderSetupState.js';
 import { QueryBuilderExplorerState } from './explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderResultState } from './QueryBuilderResultState.js';
 import {
@@ -63,7 +66,7 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
-import { QueryParametersState } from './QueryParametersState.js';
+import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
@@ -76,12 +79,12 @@ export abstract class QueryBuilderState {
   setupState: QueryBuilderSetupState;
   milestoningState: QueryBuilderMilestoningState;
   explorerState: QueryBuilderExplorerState;
-  parametersState: QueryParametersState;
+  parametersState: QueryBuilderParametersState;
   functionsExplorerState: QueryFunctionsExplorerState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
   resultState: QueryBuilderResultState;
-  textEditorState: QueryTextEditorState;
+  textEditorState: QueryBuilderTextEditorState;
   queryUnsupportedState: QueryBuilderUnsupportedState;
   observableContext: ObserverContext;
   changeDetectionState: QueryBuilderChangeDetectionState;
@@ -126,15 +129,15 @@ export abstract class QueryBuilderState {
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
 
-    this.setupState = new QueryBuilderSetupState(this);
+    this.setupState = new BasicQueryBuilderSetupState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
-    this.parametersState = new QueryParametersState(this);
+    this.parametersState = new QueryBuilderParametersState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     this.resultState = new QueryBuilderResultState(this);
-    this.textEditorState = new QueryTextEditorState(this);
+    this.textEditorState = new QueryBuilderTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.observableContext = new ObserverContext(
       this.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
@@ -144,6 +147,9 @@ export abstract class QueryBuilderState {
 
   abstract get isParametersDisabled(): boolean;
   abstract get isResultPanelHidden(): boolean;
+  abstract get isClassReadOnly(): boolean;
+  abstract get isMappingReadOnly(): boolean;
+  abstract get isRuntimeReadOnly(): boolean;
   /**
    * This flag is for turning on/off dnd from projection panel to filter panel,
    * and will be leveraged when the concepts of workflows are introduced into query builder.
@@ -188,7 +194,7 @@ export abstract class QueryBuilderState {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
     this.resultState = resultState;
-    this.textEditorState = new QueryTextEditorState(this);
+    this.textEditorState = new QueryBuilderTextEditorState(this);
     this.queryUnsupportedState = new QueryBuilderUnsupportedState(this);
     this.setShowParameterPanel(false);
   }
@@ -197,7 +203,7 @@ export abstract class QueryBuilderState {
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
-    this.parametersState = new QueryParametersState(this);
+    this.parametersState = new QueryBuilderParametersState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
     const currentFetchStructureImplementationType =
@@ -358,7 +364,7 @@ export abstract class QueryBuilderState {
           this.applicationStore.notifyWarning(
             'Compilation failed and error cannot be located in form mode. Redirected to text mode for debugging.',
           );
-          this.textEditorState.openModal(QueryTextEditorMode.TEXT);
+          this.textEditorState.openModal(QueryBuilderTextEditorMode.TEXT);
           // TODO: trigger another compilation to pin-point the issue
           // since we're using the lambda editor right now, we are a little bit limitted
           // in terms of the timing to do compilation (since we're using an `useEffect` to
@@ -373,7 +379,7 @@ export abstract class QueryBuilderState {
       } finally {
         this.isCompiling = false;
       }
-    } else if (this.textEditorState.mode === QueryTextEditorMode.TEXT) {
+    } else if (this.textEditorState.mode === QueryBuilderTextEditorMode.TEXT) {
       this.isCompiling = true;
       try {
         this.textEditorState.setCompilationError(undefined);
@@ -417,30 +423,5 @@ export abstract class QueryBuilderState {
 
   get validationIssues(): string[] | undefined {
     return this.fetchStructureState.implementation.validationIssues;
-  }
-}
-
-// TODO-BEFORE-PR: consider if we should put this in a different file and documentation of this class
-export class BasicQueryBuilderState extends QueryBuilderState {
-  private constructor(
-    applicationStore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-  ) {
-    super(applicationStore, graphManagerState);
-  }
-
-  static create(
-    applicationStore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-  ): BasicQueryBuilderState {
-    return new BasicQueryBuilderState(applicationStore, graphManagerState);
-  }
-
-  get isParametersDisabled(): boolean {
-    return false;
-  }
-
-  get isResultPanelHidden(): boolean {
-    return false;
   }
 }

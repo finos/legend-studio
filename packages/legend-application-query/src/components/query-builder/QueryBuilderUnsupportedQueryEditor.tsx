@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../stores/query-builder/QueryBuilderState.js';
-import { QueryTextEditorMode } from '../../stores/query-builder/QueryTextEditorState.js';
+import { QueryBuilderTextEditorMode } from '../../stores/query-builder/QueryBuilderTextEditorState.js';
 import {
   BlankPanelContent,
   ResizablePanelGroup,
@@ -24,7 +24,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
-import { QueryBuilderParameterPanel } from './QueryBuilderParameterPanel.js';
+import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 
 const QueryBuilderUnsupportedQueryExplorer = observer(() => (
   <div className="panel query-builder__explorer">
@@ -52,7 +52,9 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
       ? ` due to: ${lambdaError.message}`
       : '';
     const openLambdaModal = (): void =>
-      queryBuilderState.textEditorState.openModal(QueryTextEditorMode.TEXT);
+      queryBuilderState.textEditorState.openModal(
+        QueryBuilderTextEditorMode.TEXT,
+      );
     return (
       <div className="panel">
         <div className="panel__header">
@@ -92,7 +94,7 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
             </ResizablePanel>
             <ResizablePanelSplitter />
             <ResizablePanel minSize={40} direction={-1}>
-              <QueryBuilderParameterPanel
+              <QueryBuilderParametersPanel
                 queryBuilderState={queryBuilderState}
               />
             </ResizablePanel>

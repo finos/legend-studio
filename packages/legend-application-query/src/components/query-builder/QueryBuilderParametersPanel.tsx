@@ -32,7 +32,7 @@ import {
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../stores/query-builder/QueryParametersState.js';
+} from '../../stores/query-builder/QueryBuilderParametersState.js';
 import {
   type Type,
   MULTIPLICITY_INFINITE,
@@ -318,7 +318,7 @@ export const VariableExpressionViewer = observer(
   },
 );
 
-export const QueryBuilderParameterPanel = observer(
+export const QueryBuilderParametersPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const queryParameterState = queryBuilderState.parametersState;

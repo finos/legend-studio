@@ -38,16 +38,16 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  generateCreateQueryEditorRoute,
+  generateMappingQueryCreatorRoute,
   generateExistingQueryEditorRoute,
-  generateServiceQueryEditorRoute,
+  generateServiceQueryCreatorRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QuerySetupState,
   type ServiceExecutionOption,
-  CreateQuerySetupState,
-  ExistingQuerySetupState,
-  ServiceQuerySetupState,
+  CreateMappingQuerySetupState,
+  EditExistingQuerySetupState,
+  LoadServiceQuerySetupState,
 } from '../stores/QuerySetupStore.js';
 import {
   useQuerySetupStore,
@@ -76,8 +76,8 @@ const buildQueryOption = (query: LightQuery): QueryOption => ({
   value: query,
 });
 
-const ExistingQuerySetup = observer(
-  (props: { querySetupState: ExistingQuerySetupState }) => {
+const EditExistingQuerySetup = observer(
+  (props: { querySetupState: EditExistingQuerySetupState }) => {
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
@@ -273,8 +273,8 @@ const buildVersionOption = (version: string): VersionOption => ({
   value: version,
 });
 
-const ServiceQuerySetup = observer(
-  (props: { querySetupState: ServiceQuerySetupState }) => {
+const LoadServiceQuerySetup = observer(
+  (props: { querySetupState: LoadServiceQuerySetupState }) => {
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
@@ -290,7 +290,7 @@ const ServiceQuerySetup = observer(
         querySetupState.currentServiceExecutionOption
       ) {
         applicationStore.navigator.goTo(
-          generateServiceQueryEditorRoute(
+          generateServiceQueryCreatorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
@@ -510,8 +510,8 @@ const ServiceQuerySetup = observer(
   },
 );
 
-const CreateQuerySetup = observer(
-  (props: { querySetupState: CreateQuerySetupState }) => {
+const CreateMappingQuerySetup = observer(
+  (props: { querySetupState: CreateMappingQuerySetupState }) => {
     const { querySetupState } = props;
     const applicationStore = useApplicationStore();
     const setupStore = useQuerySetupStore();
@@ -528,7 +528,7 @@ const CreateQuerySetup = observer(
         querySetupState.currentRuntime
       ) {
         applicationStore.navigator.goTo(
-          generateCreateQueryEditorRoute(
+          generateMappingQueryCreatorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
             querySetupState.currentVersionId,
@@ -805,11 +805,11 @@ const QuerySetupLandingPage = observer(() => {
       <Fragment key={config.key}>{config.renderer(setupStore)}</Fragment>
     ));
   const editQuery = (): void =>
-    setupStore.setSetupState(new ExistingQuerySetupState(setupStore));
+    setupStore.setSetupState(new EditExistingQuerySetupState(setupStore));
   const loadServiceQuery = (): void =>
-    setupStore.setSetupState(new ServiceQuerySetupState(setupStore));
-  const createQuery = (): void =>
-    setupStore.setSetupState(new CreateQuerySetupState(setupStore));
+    setupStore.setSetupState(new LoadServiceQuerySetupState(setupStore));
+  const createMappingQuery = (): void =>
+    setupStore.setSetupState(new CreateMappingQuerySetupState(setupStore));
 
   useEffect(() => {
     setupStore.initialize();
@@ -854,13 +854,13 @@ const QuerySetupLandingPage = observer(() => {
               </button>
               <button
                 className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
-                onClick={createQuery}
+                onClick={createMappingQuery}
               >
                 <div className="query-setup__landing-page__option__icon">
                   <PlusIcon />
                 </div>
                 <div className="query-setup__landing-page__option__label">
-                  Create a new query
+                  Create new query on a mapping
                 </div>
               </button>
             </div>
@@ -878,12 +878,12 @@ export const QuerySetup = withQuerySetupStore(
     const renderQuerySetupScreen = (
       setupState: QuerySetupState,
     ): React.ReactNode => {
-      if (setupState instanceof ExistingQuerySetupState) {
-        return <ExistingQuerySetup querySetupState={setupState} />;
-      } else if (setupState instanceof ServiceQuerySetupState) {
-        return <ServiceQuerySetup querySetupState={setupState} />;
-      } else if (setupState instanceof CreateQuerySetupState) {
-        return <CreateQuerySetup querySetupState={setupState} />;
+      if (setupState instanceof EditExistingQuerySetupState) {
+        return <EditExistingQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof LoadServiceQuerySetupState) {
+        return <LoadServiceQuerySetup querySetupState={setupState} />;
+      } else if (setupState instanceof CreateMappingQuerySetupState) {
+        return <CreateMappingQuerySetup querySetupState={setupState} />;
       }
       const extraQuerySetupRenderers = setupStore.pluginManager
         .getApplicationPlugins()

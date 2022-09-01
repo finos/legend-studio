@@ -33,6 +33,16 @@ import {
   type QueryBuilderState,
 } from '@finos/legend-application-query';
 
+class ServiceQueryEditorState extends BasicQueryBuilderState {
+  override get isMappingReadOnly(): boolean {
+    return true;
+  }
+
+  override get isRuntimeReadOnly(): boolean {
+    return true;
+  }
+}
+
 export const ServiceQueryBuilder = observer(
   (props: {
     executionState: ServicePureExecutionState;
@@ -55,7 +65,7 @@ export const ServiceQueryBuilder = observer(
             await flowResult(
               queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                 setupQueryBuilderState: (): QueryBuilderState => {
-                  const queryBuilderState = BasicQueryBuilderState.create(
+                  const queryBuilderState = new ServiceQueryEditorState(
                     queryBuilderExtension.editorStore.applicationStore,
                     queryBuilderExtension.editorStore.graphManagerState,
                   );
@@ -63,8 +73,6 @@ export const ServiceQueryBuilder = observer(
                   queryBuilderState.setupState.setRuntimeValue(
                     selectedExecutionState.executionContext.runtime,
                   );
-                  queryBuilderState.setupState.setMappingIsReadOnly(true);
-                  queryBuilderState.setupState.setRuntimeIsReadOnly(true);
                   queryBuilderState.initialize(executionState.execution.func);
                   queryBuilderState.changeDetectionState.setQueryHashCode(
                     hashObject(executionState.execution.func),

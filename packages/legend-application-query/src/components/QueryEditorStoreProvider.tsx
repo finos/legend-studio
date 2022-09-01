@@ -19,9 +19,9 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type QueryEditorStore,
-  CreateQueryEditorStore,
+  MappingQueryCreatorStore,
   ExistingQueryEditorStore,
-  ServiceQueryEditorStore,
+  ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
 import {
   parseGAVCoordinates,
@@ -59,7 +59,7 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
   );
 };
 
-export const CreateQueryEditorStoreProvider: React.FC<{
+export const MappingQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   mappingPath: string;
@@ -72,7 +72,7 @@ export const CreateQueryEditorStoreProvider: React.FC<{
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
-      new CreateQueryEditorStore(
+      new MappingQueryCreatorStore(
         applicationStore,
         depotServerClient,
         baseStore.pluginManager,
@@ -91,7 +91,7 @@ export const CreateQueryEditorStoreProvider: React.FC<{
   );
 };
 
-export const ServiceQueryEditorStoreProvider: React.FC<{
+export const ServiceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;
   gav: string;
   servicePath: string;
@@ -103,7 +103,7 @@ export const ServiceQueryEditorStoreProvider: React.FC<{
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
-      new ServiceQueryEditorStore(
+      new ServiceQueryCreatorStore(
         applicationStore,
         depotServerClient,
         baseStore.pluginManager,

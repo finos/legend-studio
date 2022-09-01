@@ -23,6 +23,7 @@ import {
   PURE_RuntimeIcon,
   ClockIcon,
   clsx,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../../stores/query-builder/QueryBuilderState.js';
@@ -51,6 +52,7 @@ import {
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
+import { BasicQueryBuilderSetupState } from '../../stores/query-builder/QueryBuilderSetupState.js';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -148,11 +150,11 @@ const generateClassLabel = (
   );
 };
 
-export const QueryBuilderSetupPanel = observer(
-  (props: { queryBuilderState: QueryBuilderState }) => {
-    const { queryBuilderState } = props;
+const BasicQueryBuilderSetupPanel = observer(
+  (props: { setupState: BasicQueryBuilderSetupState }) => {
+    const { setupState } = props;
+    const queryBuilderState = setupState.queryBuilderState;
     const applicationStore = useApplicationStore();
-    const querySetupState = queryBuilderState.setupState;
     const [isMilestoneEditorOpened, setIsMilestoneEditorOpened] =
       useState<boolean>(false);
     const elementFilterOption = createFilter({
@@ -163,33 +165,33 @@ export const QueryBuilderSetupPanel = observer(
     });
     const isQuerySupported = queryBuilderState.isQuerySupported();
     // class
-    const classOptions = queryBuilderState.setupState.classes.map((_class) => ({
+    const classOptions = setupState.classes.map((_class) => ({
       value: _class,
       label: generateClassLabel(_class, queryBuilderState),
     }));
-    const selectedClassOption = querySetupState._class
+    const selectedClassOption = setupState._class
       ? {
-          value: querySetupState._class,
-          label: generateClassLabel(querySetupState._class, queryBuilderState),
+          value: setupState._class,
+          label: generateClassLabel(setupState._class, queryBuilderState),
         }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
       queryBuilderState.changeClass(val.value);
     };
     // mapping
-    const mappingOptions = querySetupState.mappings.map(buildElementOption);
-    const selectedMappingOption = querySetupState.mapping
-      ? buildElementOption(querySetupState.mapping)
+    const mappingOptions = setupState.mappings.map(buildElementOption);
+    const selectedMappingOption = setupState.mapping
+      ? buildElementOption(setupState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
-      if (querySetupState._class && !querySetupState.mappingIsReadOnly) {
-        querySetupState.setMapping(val.value);
+      if (setupState._class && !queryBuilderState.isMappingReadOnly) {
+        setupState.setMapping(val.value);
         queryBuilderState.resetQueryBuilder();
         queryBuilderState.resetQueryContent();
       }
     };
     // runtime
-    const runtime = querySetupState.runtimeValue;
+    const runtime = setupState.runtimeValue;
     const isRuntimePointer = runtime instanceof RuntimePointer;
     const customRuntimeLabel = (
       <div className="service-execution-editor__configuration__runtime-option--custom">
@@ -207,7 +209,7 @@ export const QueryBuilderSetupPanel = observer(
           value?: Runtime;
         }[]);
     runtimeOptions = runtimeOptions.concat(
-      querySetupState.compatibleRuntimes.map((rt) => ({
+      setupState.compatibleRuntimes.map((rt) => ({
         value: new RuntimePointer(
           PackageableElementExplicitReference.create(rt),
         ),
@@ -226,7 +228,7 @@ export const QueryBuilderSetupPanel = observer(
       value?: Runtime;
     }): void => {
       if (val.value !== runtime) {
-        querySetupState.setRuntimeValue(val.value);
+        setupState.setRuntimeValue(val.value);
       }
     };
     const runtimeFilterOption = createFilter({
@@ -267,7 +269,7 @@ export const QueryBuilderSetupPanel = observer(
               onChange={changeClass}
               value={selectedClassOption}
               darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-              disabled={!isQuerySupported || querySetupState.classIsReadOnly}
+              disabled={!isQuerySupported || queryBuilderState.isClassReadOnly}
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({
                 darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
@@ -295,8 +297,8 @@ export const QueryBuilderSetupPanel = observer(
                   : 'No mapping found for class'
               }
               disabled={
-                querySetupState.mappingIsReadOnly ||
-                !querySetupState._class ||
+                queryBuilderState.isMappingReadOnly ||
+                !setupState._class ||
                 !mappingOptions.length
               }
               options={mappingOptions}
@@ -323,9 +325,9 @@ export const QueryBuilderSetupPanel = observer(
               className="panel__content__form__section__dropdown query-builder__setup__config__item__selector"
               placeholder="Choose or create a runtime..."
               disabled={
-                querySetupState.runtimeIsReadOnly ||
-                !querySetupState._class ||
-                !querySetupState.mapping
+                queryBuilderState.isRuntimeReadOnly ||
+                !setupState._class ||
+                !setupState.mapping
               }
               options={runtimeOptions}
               onChange={changeRuntime}
@@ -337,5 +339,17 @@ export const QueryBuilderSetupPanel = observer(
         </div>
       </div>
     );
+  },
+);
+
+export const QueryBuilderSetupPanel = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const setupState = queryBuilderState.setupState;
+
+    if (setupState instanceof BasicQueryBuilderSetupState) {
+      return <BasicQueryBuilderSetupPanel setupState={setupState} />;
+    }
+    return <BlankPanelContent>Unsupported query setup</BlankPanelContent>;
   },
 );

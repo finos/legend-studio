@@ -19,7 +19,7 @@ import type { QueryBuilderState } from '../../../stores/query-builder/QueryBuild
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../../stores/query-builder/QueryParametersState.js';
+} from '../../../stores/query-builder/QueryBuilderParametersState.js';
 import { useCallback } from 'react';
 import {
   type ValueSpecification,
@@ -33,7 +33,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
-import { VariableExpressionViewer } from '../QueryBuilderParameterPanel.js';
+import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
 import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../../stores/query-builder/QueryBuilderValueSpecificationHelper.js';
 import { BasicValueSpecificationEditor } from '@finos/legend-application';

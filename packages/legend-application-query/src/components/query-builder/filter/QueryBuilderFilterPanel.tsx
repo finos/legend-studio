@@ -75,7 +75,7 @@ import {
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
-} from '../../../stores/query-builder/QueryParametersState.js';
+} from '../../../stores/query-builder/QueryBuilderParametersState.js';
 import type { ValueSpecification } from '@finos/legend-graph';
 import {
   type QueryBuilderProjectionColumnDragSource,

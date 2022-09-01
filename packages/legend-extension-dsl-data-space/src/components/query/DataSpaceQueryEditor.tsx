@@ -30,7 +30,7 @@ import {
   useLegendQueryBaseStore,
 } from '@finos/legend-application-query';
 import { useParams } from 'react-router';
-import { DataSpaceQueryEditorStore } from '../../stores/query/DataSpaceQueryEditorStore.js';
+import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
   type DataSpaceQueryEditorPathParams,
   type DataSpaceQueryEditorQueryParams,
@@ -58,7 +58,7 @@ const DataSpaceQueryEditorStoreProvider: React.FC<{
   const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
-      new DataSpaceQueryEditorStore(
+      new DataSpaceQueryCreatorStore(
         applicationStore,
         depotServerClient,
         baseStore.pluginManager,

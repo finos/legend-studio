@@ -43,7 +43,5 @@ export {
   LegendQueryBaseStore,
   type LegendQueryApplicationStore,
 } from './stores/LegendQueryBaseStore.js';
-export {
-  QueryBuilderState,
-  BasicQueryBuilderState,
-} from './stores/query-builder/QueryBuilderState.js';
+export { QueryBuilderState } from './stores/query-builder/QueryBuilderState.js';
+export { BasicQueryBuilderState } from './stores/query-builder/workflows/BasicQueryBuilderState.js';
