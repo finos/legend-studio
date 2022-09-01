@@ -32,6 +32,7 @@ import {
   Class,
   getAllClassDerivedProperties,
   getAllClassProperties,
+  TEST__getTestGraphManagerState,
   type AbstractProperty,
   type GraphManagerState,
   type Mapping,
@@ -45,7 +46,6 @@ import {
 } from '../explorer/QueryBuilderExplorerState.js';
 import { LegendQueryPluginManager } from '../../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../../graphManager/QueryBuilder_GraphManagerPreset.js';
-import { TEST__provideMockedQueryEditorStore } from '../../../components/QueryEditorComponentTestUtils.js';
 import {
   TEST_DATA__MappingData__ComplexM2MModel,
   TEST_DATA__MappingData__AssociationMapping,
@@ -269,11 +269,7 @@ describe(integrationTest('Build property mapping data'), () => {
       pluginManager
         .usePresets([new QueryBuilder_GraphManagerPreset()])
         .install();
-      const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
-        pluginManager,
-      });
-      const graphManagerState =
-        MOCK__editorStore.queryBuilderState.graphManagerState;
+      const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
       await graphManagerState.initializeSystem();
       await graphManagerState.graphManager.buildGraph(
         graphManagerState.graph,

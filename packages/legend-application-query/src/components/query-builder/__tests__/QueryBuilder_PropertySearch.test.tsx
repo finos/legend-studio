@@ -45,7 +45,7 @@ test(
     const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
       pluginManager,
     });
-    const renderResult = await TEST__setUpQueryEditor(
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
       MOCK__editorStore,
       TEST_DATA__QueryBuilder_Model_PropertySearch,
       stub_RawLambda(),
@@ -53,12 +53,11 @@ test(
       'my::runtime',
       TEST_DATA__ModelCoverageAnalysisResult_SimpleRelational,
     );
-    const queryBuilderState = MOCK__editorStore.queryBuilderState;
-    const _firmClass =
-      MOCK__editorStore.graphManagerState.graph.getClass('my::Firm');
 
     await act(async () => {
-      queryBuilderState.changeClass(_firmClass);
+      queryBuilderState.changeClass(
+        queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
+      );
     });
     const queryBuilderSetup = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),

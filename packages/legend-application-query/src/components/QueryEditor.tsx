@@ -64,6 +64,7 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import type { QueryBuilderState } from '../stores/query-builder/QueryBuilderState.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -190,82 +191,86 @@ const renderQueryEditorHeaderLabel = (
   return null;
 };
 
-const QueryEditorHeaderContent = observer(() => {
-  const editorStore = useQueryEditorStore();
-  const applicationStore = useLegendQueryApplicationStore();
-  const viewQueryProject = (): void => {
-    const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
-    applicationStore.navigator.openNewWindow(
-      generateStudioProjectViewUrl(
-        applicationStore.config.studioUrl,
-        groupId,
-        artifactId,
-        versionId,
-        undefined,
-      ),
-    );
-  };
-  const toggleLightDarkTheme = (): void =>
-    applicationStore.TEMPORARY__setIsLightThemeEnabled(
-      !applicationStore.TEMPORARY__isLightThemeEnabled,
-    );
-  const saveQuery = (): void => {
-    editorStore.queryBuilderState
-      .saveQuery(async (lambda: RawLambda) => {
-        editorStore.setExportState(
-          new QueryExportState(
-            editorStore,
-            lambda,
-            await editorStore.getExportConfiguration(lambda),
-          ),
-        );
-      })
-      .catch(applicationStore.alertUnhandledError);
-  };
+const QueryEditorHeaderContent = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const editorStore = useQueryEditorStore();
+    const applicationStore = useLegendQueryApplicationStore();
+    const viewQueryProject = (): void => {
+      const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
+      applicationStore.navigator.openNewWindow(
+        generateStudioProjectViewUrl(
+          applicationStore.config.studioUrl,
+          groupId,
+          artifactId,
+          versionId,
+          undefined,
+        ),
+      );
+    };
+    const toggleLightDarkTheme = (): void =>
+      applicationStore.TEMPORARY__setIsLightThemeEnabled(
+        !applicationStore.TEMPORARY__isLightThemeEnabled,
+      );
+    const saveQuery = (): void => {
+      queryBuilderState
+        .saveQuery(async (lambda: RawLambda) => {
+          editorStore.setExportState(
+            new QueryExportState(
+              editorStore,
+              queryBuilderState,
+              lambda,
+              await editorStore.getExportConfiguration(lambda),
+            ),
+          );
+        })
+        .catch(applicationStore.alertUnhandledError);
+    };
 
-  return (
-    <div className="query-editor__header__content">
-      <div className="query-editor__header__content__main">
-        {renderQueryEditorHeaderLabel(editorStore)}
-      </div>
-      <div className="query-editor__header__actions">
-        <button
-          className="query-editor__header__action query-editor__header__action--simple btn--dark"
-          tabIndex={-1}
-          title="View project"
-          onClick={viewQueryProject}
-        >
-          <ExternalLinkSquareIcon />
-        </button>
-        {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+    return (
+      <div className="query-editor__header__content">
+        <div className="query-editor__header__content__main">
+          {renderQueryEditorHeaderLabel(editorStore)}
+        </div>
+        <div className="query-editor__header__actions">
           <button
             className="query-editor__header__action query-editor__header__action--simple btn--dark"
             tabIndex={-1}
-            title="Toggle Light/Dark Theme"
-            onClick={toggleLightDarkTheme}
+            title="View project"
+            onClick={viewQueryProject}
           >
-            {applicationStore.TEMPORARY__isLightThemeEnabled ? (
-              <EmptyLightBulbIcon />
-            ) : (
-              <LightBulbIcon />
-            )}
+            <ExternalLinkSquareIcon />
           </button>
-        )}
-        <button
-          className="query-editor__header__action btn--dark"
-          tabIndex={-1}
-          onClick={saveQuery}
-        >
-          <div className="query-editor__header__action__icon">
-            <SaveIcon />
-            <QueryExport />
-          </div>
-          <div className="query-editor__header__action__label">Save</div>
-        </button>
+          {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+            <button
+              className="query-editor__header__action query-editor__header__action--simple btn--dark"
+              tabIndex={-1}
+              title="Toggle Light/Dark Theme"
+              onClick={toggleLightDarkTheme}
+            >
+              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+                <EmptyLightBulbIcon />
+              ) : (
+                <LightBulbIcon />
+              )}
+            </button>
+          )}
+          <button
+            className="query-editor__header__action btn--dark"
+            tabIndex={-1}
+            onClick={saveQuery}
+          >
+            <div className="query-editor__header__action__icon">
+              <SaveIcon />
+              <QueryExport />
+            </div>
+            <div className="query-editor__header__action__label">Save</div>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const QueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
@@ -306,14 +311,18 @@ export const QueryEditor = observer(() => {
           >
             <ArrowLeftIcon />
           </button>
-          {!isLoadingEditor && <QueryEditorHeaderContent />}
+          {!isLoadingEditor && editorStore.queryBuilderState && (
+            <QueryEditorHeaderContent
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+          )}
         </div>
         <div className="query-editor__content">
           <PanelLoadingIndicator isLoading={isLoadingEditor} />
-          {!isLoadingEditor && (
+          {!isLoadingEditor && editorStore.queryBuilderState && (
             <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
           )}
-          {isLoadingEditor && (
+          {(isLoadingEditor || !editorStore.queryBuilderState) && (
             <BlankPanelContent>
               {editorStore.initState.message ??
                 editorStore.graphManagerState.systemBuildState.message ??

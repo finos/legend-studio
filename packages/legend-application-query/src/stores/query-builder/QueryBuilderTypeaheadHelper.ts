@@ -41,7 +41,7 @@ import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
 
-const createAndSetupQueryBuilderStateForTypeahead = (
+const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
   const builderState = BasicQueryBuilderState.create(
@@ -97,8 +97,7 @@ export const buildPropertyTypeaheadQuery = (
   propertyExpression: AbstractPropertyExpression,
   value: ValueSpecification | undefined,
 ): RawLambda => {
-  const builderState =
-    createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
+  const builderState = initializeQueryBuilderState(queryBuilderState);
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,
@@ -118,8 +117,7 @@ export const buildProjectionColumnTypeaheadQuery = (
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
 ): RawLambda => {
-  const builderState =
-    createAndSetupQueryBuilderStateForTypeahead(queryBuilderState);
+  const builderState = initializeQueryBuilderState(queryBuilderState);
   return buildColumnTypeaheadQuery(builderState, columnState, value);
 };
 
