@@ -40,7 +40,7 @@ import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytic
 import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
-import { generateDataSpaceQueryEditorRoute } from './DSLDataSpace_LegendQueryRouter.js';
+import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 
 export interface DataSpaceContext {
   groupId: string;
@@ -204,7 +204,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
       this.setupStore.applicationStore.navigator.goTo(
-        generateDataSpaceQueryEditorRoute(
+        generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
           this.dataSpaceViewerState.versionId,
