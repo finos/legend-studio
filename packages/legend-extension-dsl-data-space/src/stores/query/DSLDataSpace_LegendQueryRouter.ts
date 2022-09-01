@@ -15,16 +15,17 @@
  */
 
 import { generateExtensionUrlPattern } from '@finos/legend-application';
-import {
-  LEGEND_QUERY_PATH_PARAM_TOKEN,
-  LEGEND_QUERY_QUERY_PARAM_TOKEN,
-} from '@finos/legend-application-query';
+import { LEGEND_QUERY_PATH_PARAM_TOKEN } from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-server-depot';
 import { generatePath } from 'react-router';
 
 export enum DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN {
   DATA_SPACE_PATH = 'dataSpacePath',
   EXECUTION_CONTEXT = 'executionContext',
+}
+
+export enum DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN {
+  CLASS_PATH = 'class',
 }
 
 export interface DataSpaceQueryCreatorPathParams {
@@ -35,7 +36,7 @@ export interface DataSpaceQueryCreatorPathParams {
 }
 
 export interface DataSpaceQueryEditorQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
+  [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
 }
 
 export const CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN = `/create-from-dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`;
@@ -65,6 +66,6 @@ export const generateDataSpaceQueryCreatorRoute = (
     },
   )}${
     classPath
-      ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH}=${classPath}`
+      ? `?${DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH}=${classPath}`
       : ''
   }`;

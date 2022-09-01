@@ -64,8 +64,7 @@ export const MappingQueryCreatorStoreProvider: React.FC<{
   gav: string;
   mappingPath: string;
   runtimePath: string;
-  classPath: string | undefined;
-}> = ({ children, gav, mappingPath, runtimePath, classPath }) => {
+}> = ({ children, gav, mappingPath, runtimePath }) => {
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
@@ -81,7 +80,6 @@ export const MappingQueryCreatorStoreProvider: React.FC<{
         versionId,
         mappingPath,
         runtimePath,
-        classPath,
       ),
   );
   return (

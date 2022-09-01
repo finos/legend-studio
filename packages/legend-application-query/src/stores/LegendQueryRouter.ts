@@ -26,7 +26,6 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
 }
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  CLASS_PATH = 'class',
   SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
@@ -58,10 +57,6 @@ export interface MappingQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
-}
-
-export interface MappingQueryCreatorQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
 }
 
 export const generateServiceQueryCreatorRoute = (

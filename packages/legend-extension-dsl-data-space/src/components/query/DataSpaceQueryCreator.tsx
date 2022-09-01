@@ -23,7 +23,6 @@ import {
 } from '@finos/legend-server-depot';
 import {
   LEGEND_QUERY_PATH_PARAM_TOKEN,
-  LEGEND_QUERY_QUERY_PARAM_TOKEN,
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
@@ -35,6 +34,7 @@ import {
   type DataSpaceQueryCreatorPathParams,
   type DataSpaceQueryEditorQueryParams,
   DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN,
+  DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
 } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
@@ -90,7 +90,7 @@ export const DataSpaceQueryCreator = observer(() => {
   const classPath = getQueryParameters<DataSpaceQueryEditorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
-  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH];
+  )[DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH];
 
   return (
     <DataSpaceQueryCreatorStoreProvider
