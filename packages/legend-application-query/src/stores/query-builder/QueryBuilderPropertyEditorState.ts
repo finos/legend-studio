@@ -209,7 +209,7 @@ export const generateMilestonedPropertyParameterValue = (
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
       if (!milestoningState.businessDate) {
         milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
@@ -226,14 +226,14 @@ export const generateMilestonedPropertyParameterValue = (
     case MILESTONING_STEREOTYPE.BITEMPORAL: {
       if (!milestoningState.processingDate) {
         milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
       }
       if (!milestoningState.businessDate) {
         milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
@@ -286,7 +286,7 @@ export const generateMilestonedPropertyParameterValue = (
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
       if (!milestoningState.processingDate) {
         milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.buildMilestoningParameter(
+          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );

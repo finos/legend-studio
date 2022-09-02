@@ -112,17 +112,15 @@ export class QueryExportState {
   get allowPersist(): boolean {
     return (
       !this.persistQueryState.isInProgress &&
-      Boolean(this.queryBuilderState.setupState.mapping) &&
-      this.queryBuilderState.setupState.runtimeValue instanceof RuntimePointer
+      Boolean(this.queryBuilderState.mapping) &&
+      this.queryBuilderState.runtimeValue instanceof RuntimePointer
     );
   }
 
   async persistQuery(createNew: boolean): Promise<void> {
     if (
-      !this.queryBuilderState.setupState.mapping ||
-      !(
-        this.queryBuilderState.setupState.runtimeValue instanceof RuntimePointer
-      )
+      !this.queryBuilderState.mapping ||
+      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
     ) {
       return;
     }
@@ -130,10 +128,9 @@ export class QueryExportState {
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
-      this.queryBuilderState.setupState.mapping,
+      this.queryBuilderState.mapping,
     );
-    query.runtime =
-      this.queryBuilderState.setupState.runtimeValue.packageableRuntime;
+    query.runtime = this.queryBuilderState.runtimeValue.packageableRuntime;
     this.decorator?.(query);
     try {
       query.content =
@@ -437,10 +434,10 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
     );
-    queryBuilderState.setupState.setMapping(
+    queryBuilderState.setMapping(
       this.graphManagerState.graph.getMapping(this.mappingPath),
     );
-    queryBuilderState.setupState.setRuntimeValue(
+    queryBuilderState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.graphManagerState.graph.getRuntime(this.runtimePath),
@@ -453,8 +450,8 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     // if none found, default to a dummy blank query
     const defaultClass =
       getNullableFirstElement(
-        queryBuilderState.setupState.mapping
-          ? getAllClassMappings(queryBuilderState.setupState.mapping).map(
+        queryBuilderState.mapping
+          ? getAllClassMappings(queryBuilderState.mapping).map(
               (classMapping) => classMapping.class.value,
             )
           : [],
@@ -555,16 +552,16 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
         ),
         `Can't process service execution: execution with key '${this.executionKey}' is not found`,
       );
-      queryBuilderState.setupState.setMapping(serviceExecution.mapping.value);
-      queryBuilderState.setupState.setRuntimeValue(serviceExecution.runtime);
+      queryBuilderState.setMapping(serviceExecution.mapping.value);
+      queryBuilderState.setRuntimeValue(serviceExecution.runtime);
     } else {
       assertType(
         service.execution,
         PureSingleExecution,
         `Can't process service execution: no execution key is provided, expecting Pure single execution`,
       );
-      queryBuilderState.setupState.setMapping(service.execution.mapping.value);
-      queryBuilderState.setupState.setRuntimeValue(service.execution.runtime);
+      queryBuilderState.setMapping(service.execution.mapping.value);
+      queryBuilderState.setRuntimeValue(service.execution.runtime);
     }
     // leverage initialization of query builder state to ensure we handle unsupported queries
     queryBuilderState.initialize(service.execution.func);
@@ -651,8 +648,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.queryId,
       this.graphManagerState.graph,
     );
-    queryBuilderState.setupState.setMapping(query.mapping.value);
-    queryBuilderState.setupState.setRuntimeValue(
+    queryBuilderState.setMapping(query.mapping.value);
+    queryBuilderState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       ),

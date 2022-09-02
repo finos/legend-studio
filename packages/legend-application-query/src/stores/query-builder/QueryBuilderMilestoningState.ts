@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
+import { LambdaParameterState } from '@finos/legend-application';
 import {
   DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  GenericType,
+  GenericTypeExplicitReference,
   getMilestoneTemporalStereotype,
   MILESTONING_STEREOTYPE,
   observe_ValueSpecification,
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+  VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
@@ -48,7 +54,7 @@ export class QueryBuilderMilestoningState {
     switch (stereotype) {
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         this.setBusinessDate(
-          this.queryBuilderState.buildMilestoningParameter(
+          this.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
@@ -56,7 +62,7 @@ export class QueryBuilderMilestoningState {
       }
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         this.setProcessingDate(
-          this.queryBuilderState.buildMilestoningParameter(
+          this.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
@@ -64,12 +70,12 @@ export class QueryBuilderMilestoningState {
       }
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
         this.setProcessingDate(
-          this.queryBuilderState.buildMilestoningParameter(
+          this.buildMilestoningParameter(
             DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
         this.setBusinessDate(
-          this.queryBuilderState.buildMilestoningParameter(
+          this.buildMilestoningParameter(
             DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
           ),
         );
@@ -98,7 +104,7 @@ export class QueryBuilderMilestoningState {
   }
 
   updateMilestoningConfiguration(): void {
-    const currentclass = this.queryBuilderState.setupState._class;
+    const currentclass = this.queryBuilderState.class;
     if (currentclass !== undefined) {
       const stereotype = getMilestoneTemporalStereotype(
         currentclass,
@@ -109,8 +115,38 @@ export class QueryBuilderMilestoningState {
       if (stereotype) {
         this.initializeQueryMilestoningParameters(stereotype);
         // Show the parameter panel because we populate paramaters state with milestoning parameters
-        this.queryBuilderState.setShowParameterPanel(true);
+        this.queryBuilderState.setShowParametersPanel(true);
       }
     }
+  }
+
+  buildMilestoningParameter(parameterName: string): ValueSpecification {
+    const milestoningParameter = new VariableExpression(
+      parameterName,
+      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryBuilderState.parametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.DATE,
+          ),
+        ),
+      ),
+    );
+    if (
+      !this.queryBuilderState.parametersState.parameterStates.find(
+        (p) => p.variableName === parameterName,
+      )
+    ) {
+      const variableState = new LambdaParameterState(
+        milestoningParameter,
+        this.queryBuilderState.observableContext,
+        this.queryBuilderState.graphManagerState.graph,
+      );
+      variableState.mockParameterValue();
+      this.queryBuilderState.parametersState.addParameter(variableState);
+    }
+    return milestoningParameter;
   }
 }

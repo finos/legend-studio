@@ -77,10 +77,10 @@ const QueryBuilderStatusBar = observer(
               'query-builder__status-bar__action query-builder__status-bar__compile-btn',
               {
                 'query-builder__status-bar__compile-btn--wiggling':
-                  queryBuilderState.isCompiling,
+                  queryBuilderState.queryCompileState.isInProgress,
               },
             )}
-            disabled={queryBuilderState.isCompiling}
+            disabled={queryBuilderState.queryCompileState.isInProgress}
             onClick={compile}
             tabIndex={-1}
             title="Compile (F9)"
@@ -119,7 +119,7 @@ export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
-    const isQuerySupported = queryBuilderState.isQuerySupported();
+    const isQuerySupported = queryBuilderState.isQuerySupported;
 
     // Hotkeys
     const keyMap = {
@@ -136,12 +136,12 @@ export const QueryBuilder = observer(
       },
     };
     const toggleShowFunctionPanel = (): void => {
-      queryBuilderState.setShowFunctionPanel(
-        !queryBuilderState.showFunctionPanel,
+      queryBuilderState.setShowFunctionsExplorerPanel(
+        !queryBuilderState.showFunctionsExplorerPanel,
       );
     };
     const toggleShowParameterPanel = (): void => {
-      queryBuilderState.setShowParameterPanel(
+      queryBuilderState.setShowParametersPanel(
         !queryBuilderState.showParameterPanel,
       );
     };
@@ -180,7 +180,7 @@ export const QueryBuilder = observer(
                 <MenuContent>
                   <MenuContentItem onClick={toggleShowFunctionPanel}>
                     <MenuContentItemIcon>
-                      {queryBuilderState.showFunctionPanel ? (
+                      {queryBuilderState.showFunctionsExplorerPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
@@ -305,7 +305,7 @@ export const QueryBuilder = observer(
                             />
                           </ResizablePanel>
                           <ResizablePanelSplitter />
-                          {queryBuilderState.showFunctionPanel && (
+                          {queryBuilderState.showFunctionsExplorerPanel && (
                             <ResizablePanel
                               minSize={40}
                               direction={
@@ -319,7 +319,7 @@ export const QueryBuilder = observer(
                               />
                             </ResizablePanel>
                           )}
-                          {queryBuilderState.showFunctionPanel &&
+                          {queryBuilderState.showFunctionsExplorerPanel &&
                           queryBuilderState.showParameterPanel ? (
                             <ResizablePanelSplitter />
                           ) : null}

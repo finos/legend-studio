@@ -57,18 +57,14 @@ export const TEST__setUpQueryBuilderState = async (
     graphManagerState,
   );
   if (rawLambda) {
-    queryBuilderState.buildStateFromRawLambda(rawLambda);
+    queryBuilderState.rebuildWithQuery(rawLambda);
   }
   if (executionContext) {
     const graph = queryBuilderState.graphManagerState.graph;
-    queryBuilderState.setupState._class = graph.getClass(
-      executionContext._class,
-    );
-    queryBuilderState.setupState.mapping = graph.getMapping(
-      executionContext.mapping,
-    );
+    queryBuilderState.class = graph.getClass(executionContext._class);
+    queryBuilderState.mapping = graph.getMapping(executionContext.mapping);
     if (executionContext.runtime) {
-      queryBuilderState.setupState.runtimeValue = graph.getRuntime(
+      queryBuilderState.runtimeValue = graph.getRuntime(
         executionContext.runtime,
       );
     }

@@ -440,7 +440,7 @@ export const QueryBuilderResultPanel = observer(
     };
     const queryValidationIssues = queryBuilderState.validationIssues;
     const isQueryValid =
-      !queryBuilderState.isQuerySupported() || !queryValidationIssues;
+      !queryBuilderState.isQuerySupported || !queryValidationIssues;
     const runQuery = (): void => {
       if (queryParametersState.parameterStates.length) {
         queryParametersState.parameterValuesEditorState.open(
@@ -473,7 +473,7 @@ export const QueryBuilderResultPanel = observer(
         val === '' ? 0 : parseInt(val, 10),
       );
     };
-    const allowSettingPreviewLimit = queryBuilderState.isQuerySupported();
+    const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
     const resultSetSize = (result: ExecutionResult | undefined): string =>
       result && result instanceof TdsExecutionResult
         ? `${

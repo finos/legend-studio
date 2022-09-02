@@ -70,7 +70,7 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     });
 
     // try to initialize the graph-fetch tree data using the setup class
-    this.updateTreeData(this.queryBuilderState.setupState._class);
+    this.updateTreeData(this.queryBuilderState.class);
   }
 
   get type(): string {
