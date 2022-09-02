@@ -165,7 +165,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
   }
 
   openModal(mode: QueryBuilderTextEditorMode): void {
-    const rawLambda = this.queryBuilderState.getQuery();
+    const rawLambda = this.queryBuilderState.buildQuery();
     if (mode === QueryBuilderTextEditorMode.TEXT) {
       this.setQueryRawLambdaState(new QueryBuilderRawLambdaState(rawLambda));
     }

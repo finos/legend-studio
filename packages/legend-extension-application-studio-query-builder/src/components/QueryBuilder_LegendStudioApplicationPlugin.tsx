@@ -75,14 +75,14 @@ const promoteQueryToService = async (
   const applicationStore = editorStore.applicationStore;
   try {
     const mapping = guaranteeNonNullable(
-      queryBuilderState.setupState.mapping,
+      queryBuilderState.mapping,
       'Mapping is required to create service execution',
     );
     const runtime = guaranteeNonNullable(
-      queryBuilderState.setupState.runtimeValue,
+      queryBuilderState.runtimeValue,
       'Runtime is required to create service execution',
     );
-    const query = queryBuilderState.getQuery();
+    const query = queryBuilderState.buildQuery();
     const service = new Service(serviceName);
     service_initNewService(service);
     service_setExecution(
@@ -119,8 +119,7 @@ const PromoteToServiceQueryBuilderAction = observer(
     const showNewServiceModal = (): void => setOpenNewServiceModal(true);
     const closeNewServiceModal = (): void => setOpenNewServiceModal(false);
     const allowPromoteToService = Boolean(
-      queryBuilderState.setupState.mapping &&
-        queryBuilderState.setupState.runtimeValue,
+      queryBuilderState.mapping && queryBuilderState.runtimeValue,
     );
     const promoteToService = async (
       packagePath: string,
@@ -145,9 +144,9 @@ const PromoteToServiceQueryBuilderAction = observer(
         >
           Promote to Service
         </button>
-        {queryBuilderState.setupState.mapping && (
+        {queryBuilderState.mapping && (
           <NewServiceModal
-            mapping={queryBuilderState.setupState.mapping}
+            mapping={queryBuilderState.mapping}
             close={closeNewServiceModal}
             showModal={openNewServiceModal}
             promoteToService={promoteToService}

@@ -46,7 +46,7 @@ const QueryBuilderUnsupportedQueryExplorer = observer(() => (
 const QueryBuilderUnsupportedQueryEditPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const queryUnsupportedState = queryBuilderState.queryUnsupportedState;
+    const queryUnsupportedState = queryBuilderState.unsupportedQueryState;
     const lambdaError = queryUnsupportedState.lambdaError;
     const errorMessage = lambdaError?.message
       ? ` due to: ${lambdaError.message}`

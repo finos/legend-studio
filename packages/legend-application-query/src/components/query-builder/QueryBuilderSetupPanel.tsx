@@ -52,7 +52,7 @@ import {
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
-import { BasicQueryBuilderSetupState } from '../../stores/query-builder/QueryBuilderSetupState.js';
+import type { BasicQueryBuilderSetupState } from '../../stores/query-builder/QueryBuilderSetupState.js';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -163,7 +163,7 @@ const BasicQueryBuilderSetupPanel = observer(
       stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
-    const isQuerySupported = queryBuilderState.isQuerySupported();
+    const isQuerySupported = queryBuilderState.isQuerySupported;
     // class
     const classOptions = setupState.classes.map((_class) => ({
       value: _class,
@@ -345,11 +345,11 @@ const BasicQueryBuilderSetupPanel = observer(
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const setupState = queryBuilderState.setupState;
+    // const setupState = queryBuilderState.setupState;
 
-    if (setupState instanceof BasicQueryBuilderSetupState) {
-      return <BasicQueryBuilderSetupPanel setupState={setupState} />;
-    }
+    // if (setupState instanceof BasicQueryBuilderSetupState) {
+    //   return <BasicQueryBuilderSetupPanel setupState={setupState} />;
+    // }
     return <BlankPanelContent>Unsupported query setup</BlankPanelContent>;
   },
 );

@@ -48,7 +48,9 @@ const initializeQueryBuilderState = (
     queryBuilderState.applicationStore,
     queryBuilderState.graphManagerState,
   );
-  builderState.setupState = queryBuilderState.setupState;
+  builderState.class = queryBuilderState.class;
+  builderState.mapping = queryBuilderState.mapping;
+  builderState.runtimeValue = queryBuilderState.runtimeValue;
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,

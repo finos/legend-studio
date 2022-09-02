@@ -96,7 +96,9 @@ const initializeQueryBuilderState = (
     queryBuilderState.applicationStore,
     queryBuilderState.graphManagerState,
   );
-  builderState.setupState = queryBuilderState.setupState;
+  builderState.class = queryBuilderState.class;
+  builderState.mapping = queryBuilderState.mapping;
+  builderState.runtimeValue = queryBuilderState.runtimeValue;
   return builderState;
 };
 

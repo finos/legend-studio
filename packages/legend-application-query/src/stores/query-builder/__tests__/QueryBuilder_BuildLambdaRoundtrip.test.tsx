@@ -357,12 +357,12 @@ describe(
         );
         // do the check using input and output lambda
         const rawLambda = inputLambda ?? lambda;
-        queryBuilderState.buildStateFromRawLambda(
+        queryBuilderState.rebuildWithQuery(
           new RawLambda(rawLambda.parameters, rawLambda.body),
         );
         const jsonQuery =
           graphManagerState.graphManager.serializeRawValueSpecification(
-            queryBuilderState.getQuery(),
+            queryBuilderState.buildQuery(),
           );
         (expect([lambda]) as TEMPORARY__JestMatcher).toIncludeSameMembers([
           jsonQuery,

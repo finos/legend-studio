@@ -132,11 +132,9 @@ export class FilterConditionState {
               this.propertyExpressionState.propertyExpression,
               this.value,
             ),
+            guaranteeNonNullable(this.filterState.queryBuilderState.mapping),
             guaranteeNonNullable(
-              this.filterState.queryBuilderState.setupState.mapping,
-            ),
-            guaranteeNonNullable(
-              this.filterState.queryBuilderState.setupState.runtimeValue,
+              this.filterState.queryBuilderState.runtimeValue,
             ),
             this.filterState.queryBuilderState.graphManagerState.graph,
           )) as ExecutionResult;

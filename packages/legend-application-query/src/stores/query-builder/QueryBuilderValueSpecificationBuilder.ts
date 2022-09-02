@@ -71,7 +71,7 @@ export const buildLambdaFunction = (
   options?: LambdaFunctionBuilderOption,
 ): LambdaFunction => {
   const _class = guaranteeNonNullable(
-    queryBuilderState.setupState._class,
+    queryBuilderState.class,
     'Class is required to build query',
   );
   const multiplicityOne =

@@ -295,9 +295,7 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
       variable.name,
       multiplicityOne,
       PackageableElementExplicitReference.create(
-        guaranteeNonNullable(
-          this.projectionState.queryBuilderState.setupState._class,
-        ),
+        guaranteeNonNullable(this.projectionState.queryBuilderState.class),
       ),
     );
     const _rawVariableExpression =

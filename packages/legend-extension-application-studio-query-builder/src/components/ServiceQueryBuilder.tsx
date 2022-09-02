@@ -69,8 +69,8 @@ export const ServiceQueryBuilder = observer(
                     queryBuilderExtension.editorStore.applicationStore,
                     queryBuilderExtension.editorStore.graphManagerState,
                   );
-                  queryBuilderState.setupState.setMapping(mapping);
-                  queryBuilderState.setupState.setRuntimeValue(
+                  queryBuilderState.setMapping(mapping);
+                  queryBuilderState.setRuntimeValue(
                     selectedExecutionState.executionContext.runtime,
                   );
                   queryBuilderState.initialize(executionState.execution.func);
@@ -89,7 +89,7 @@ export const ServiceQueryBuilder = observer(
                       const save = applicationStore.guardUnhandledError(
                         async () => {
                           try {
-                            const rawLambda = queryBuilderState.getQuery();
+                            const rawLambda = queryBuilderState.buildQuery();
                             await flowResult(
                               executionState.queryState.updateLamba(rawLambda),
                             );

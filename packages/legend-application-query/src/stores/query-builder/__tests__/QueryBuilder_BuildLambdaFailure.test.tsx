@@ -130,7 +130,7 @@ describe(
           graphManagerState,
         );
         expect(() =>
-          queryBuilderState.buildStateFromRawLambda(
+          queryBuilderState.rebuildWithQuery(
             create_RawLambda(lambdaJson.parameters, lambdaJson.body),
           ),
         ).toThrowError(errorMessage);

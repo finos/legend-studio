@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-import { makeAutoObservable, action } from 'mobx';
+import { makeObservable, action, observable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { RawLambda } from '@finos/legend-graph';
 
-export class QueryBuilderUnsupportedState {
+export class QueryBuilderUnsupportedQueryState {
   queryBuilderState: QueryBuilderState;
   rawLambda?: RawLambda | undefined;
   lambdaError?: Error | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
+    makeObservable(this, {
+      rawLambda: observable,
+      lambdaError: observable,
       setRawLambda: action,
       setLambdaError: action,
     });
@@ -33,10 +34,11 @@ export class QueryBuilderUnsupportedState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  setRawLambda(rawLambda: RawLambda | undefined): void {
-    this.rawLambda = rawLambda;
+  setRawLambda(val: RawLambda | undefined): void {
+    this.rawLambda = val;
   }
-  setLambdaError(lambdaError: Error | undefined): void {
-    this.lambdaError = lambdaError;
+
+  setLambdaError(val: Error | undefined): void {
+    this.lambdaError = val;
   }
 }

@@ -139,8 +139,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
-    queryBuilderState.setupState.setMapping(executionContext.mapping.value);
-    queryBuilderState.setupState.setRuntimeValue(
+    queryBuilderState.setMapping(executionContext.mapping.value);
+    queryBuilderState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.runtimePath
@@ -161,8 +161,8 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       // if none found, default to a dummy blank query
       const defaultClass =
         getNullableFirstElement(
-          queryBuilderState.setupState.mapping
-            ? getAllClassMappings(queryBuilderState.setupState.mapping).map(
+          queryBuilderState.mapping
+            ? getAllClassMappings(queryBuilderState.mapping).map(
                 (classMapping) => classMapping.class.value,
               )
             : [],

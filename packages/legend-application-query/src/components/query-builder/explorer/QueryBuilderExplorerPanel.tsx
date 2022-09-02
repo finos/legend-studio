@@ -791,7 +791,7 @@ export const QueryBuilderExplorerPanel = observer(
       flowResult(explorerState.analyzeMappingModelCoverage()).catch(
         applicationStore.alertUnhandledError,
       );
-    }, [applicationStore, explorerState, queryBuilderState.setupState.mapping]);
+    }, [applicationStore, explorerState, queryBuilderState.mapping]);
 
     return (
       <div

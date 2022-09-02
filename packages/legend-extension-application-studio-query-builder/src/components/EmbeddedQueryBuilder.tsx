@@ -70,7 +70,7 @@ const QueryBuilderDialog = observer(
       if (
         queryBuilderState.changeDetectionState.isEnabled &&
         queryBuilderState.changeDetectionState.queryHashCode !==
-          hashObject(queryBuilderState.getQuery())
+          hashObject(queryBuilderState.buildQuery())
       ) {
         applicationStore.setActionAlertInfo({
           message:

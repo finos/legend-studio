@@ -328,11 +328,10 @@ export class PostFilterConditionState {
               this.value,
             ),
             guaranteeNonNullable(
-              this.postFilterState.projectionState.queryBuilderState.setupState
-                .mapping,
+              this.postFilterState.projectionState.queryBuilderState.mapping,
             ),
             guaranteeNonNullable(
-              this.postFilterState.projectionState.queryBuilderState.setupState
+              this.postFilterState.projectionState.queryBuilderState
                 .runtimeValue,
             ),
             this.postFilterState.projectionState.queryBuilderState

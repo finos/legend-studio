@@ -27,7 +27,7 @@ import {
   getAllIncludedMappings,
 } from '@finos/legend-graph';
 
-export abstract class QueryBuilderSetupState {
+abstract class QueryBuilderSetupState {
   queryBuilderState: QueryBuilderState;
   _class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -43,12 +43,12 @@ export abstract class QueryBuilderSetupState {
     this.queryBuilderState = queryBuilderState;
   }
 
-  // TODO-BEFORE-PR: we should look to see if we can get rid of `undefined` here
-  abstract setClass(val: Class | undefined, isRebuildingState?: boolean): void;
+  abstract setClass(val: Class | undefined): void;
   abstract setMapping(val: Mapping | undefined): void;
   abstract setRuntimeValue(val: Runtime | undefined): void;
 }
 
+// TODO-BEFORE-PR: we should remove this
 export class BasicQueryBuilderSetupState extends QueryBuilderSetupState {
   constructor(queryBuilderState: QueryBuilderState) {
     super(queryBuilderState);
@@ -115,10 +115,9 @@ export class BasicQueryBuilderSetupState extends QueryBuilderSetupState {
       : [];
   }
 
-  setClass(val: Class | undefined, isRebuildingState?: boolean): void {
+  setClass(val: Class | undefined): void {
     this._class = val;
-    const isMappingEditable =
-      !isRebuildingState && !this.queryBuilderState.isMappingReadOnly;
+    const isMappingEditable = !this.queryBuilderState.isMappingReadOnly;
     const isCurrentMappingCompatible =
       this.mapping && this.compatibleMappings.includes(this.mapping);
     if (isMappingEditable && !isCurrentMappingCompatible) {

@@ -65,10 +65,10 @@ export const MappingExecutionQueryBuilder = observer(
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,
               );
-              queryBuilderState.setupState.setMapping(
+              queryBuilderState.setMapping(
                 executionState.mappingEditorState.mapping,
               );
-              queryBuilderState.setupState.setRuntimeValue(undefined);
+              queryBuilderState.setRuntimeValue(undefined);
               queryBuilderState.initialize(executionState.queryState.query);
               queryBuilderState.changeDetectionState.setQueryHashCode(
                 hashObject(executionState.queryState.query),
@@ -85,7 +85,7 @@ export const MappingExecutionQueryBuilder = observer(
                   const save = applicationStore.guardUnhandledError(
                     async (): Promise<void> => {
                       try {
-                        const rawLambda = queryBuilderState.getQuery();
+                        const rawLambda = queryBuilderState.buildQuery();
                         await flowResult(
                           executionState.queryState.updateLamba(rawLambda),
                         );
