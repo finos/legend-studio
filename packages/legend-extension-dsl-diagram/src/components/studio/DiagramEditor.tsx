@@ -104,6 +104,7 @@ import {
   type PackageableElementOption,
   useApplicationStore,
   useApplicationNavigationContext,
+  buildElementOption,
 } from '@finos/legend-application';
 import {
   ClassFormEditor,
@@ -1061,7 +1062,10 @@ const DiagramEditorInlinePropertyEditorContent = observer(
 
     // Type
     const currentPropertyType = property.genericType.value.rawType;
-    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const propertyTypeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,

@@ -128,22 +128,15 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const options = (
-      editorStore.graphManagerState.graph.ownClasses as MappingElementSource[]
+      editorStore.graphManagerState.usableClasses as MappingElementSource[]
     )
-      .concat(
-        editorStore.graphManagerState.graph.dependencyManager
-          .classes as MappingElementSource[],
-      )
       .concat(
         editorStore.graphManagerState.graph.ownFlatDatas.flatMap(
           getAllRecordTypes,
         ),
       )
       .concat(
-        editorStore.graphManagerState.graph.ownDatabases
-          .concat(
-            editorStore.graphManagerState.graph.dependencyManager.databases,
-          )
+        editorStore.graphManagerState.usableDatabases
           .flatMap((e) =>
             e.schemas.flatMap((schema) =>
               (schema.tables as (Table | View)[]).concat(schema.views),

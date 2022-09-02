@@ -45,6 +45,7 @@ import {
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
 import {
+  buildElementOption,
   getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -77,9 +78,9 @@ export const NewMappingElementModal = observer(() => {
   // Target
   const targetSelectorRef = useRef<SelectComponent>(null);
   const options: PackageableElementOption<PackageableElement>[] = [
-    ...editorStore.enumerationOptions,
-    ...editorStore.associationOptions,
-    ...editorStore.classOptions,
+    ...editorStore.graphManagerState.usableEnumerations.map(buildElementOption),
+    ...editorStore.graphManagerState.usableAssociations.map(buildElementOption),
+    ...editorStore.graphManagerState.usableClasses.map(buildElementOption),
   ].sort(compareLabelFn);
   const filterOption = createFilter({
     ignoreCase: true,

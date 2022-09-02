@@ -68,7 +68,10 @@ import {
   validate_PureExecutionMapping,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 
 const PureExecutionContextConfigurationEditor = observer(
   (props: {
@@ -87,7 +90,8 @@ const PureExecutionContextConfigurationEditor = observer(
       executionContext.mapping.value,
     );
     const mapping = executionContext.mapping.value;
-    const mappingOptions = editorStore.mappingOptions;
+    const mappingOptions =
+      editorStore.graphManagerState.usableMappings.map(buildElementOption);
     const noMappingLabel = (
       <div
         className="service-execution-editor__configuration__mapping-option--empty"

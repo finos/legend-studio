@@ -92,7 +92,10 @@ import {
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
 import { dataElement_setEmbeddedData } from '../graphModifier/DSLData_GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelUtil.js';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { EmbeddedDataType } from '../editor-state/ExternalFormatState.js';
 import { createEmbeddedData } from '../editor-state/element-editor-state/data/EmbeddedDataState.js';
 
@@ -302,7 +305,7 @@ export class NewRelationalDatabaseConnectionDriver extends NewConnectionValueDri
     if (store instanceof Database) {
       selectedStore = store;
     } else {
-      const dbs = this.editorStore.graphManagerState.graph.databases;
+      const dbs = this.editorStore.graphManagerState.usableDatabases;
       selectedStore = dbs.length ? (dbs[0] as Database) : stub_Database();
     }
     return new RelationalDatabaseConnection(
@@ -431,7 +434,8 @@ export class NewServiceDriver extends NewElementDriver<Service> {
       isValid: computed,
       createElement: action,
     });
-    this.mappingOption = editorStore.mappingOptions[0];
+    this.mappingOption =
+      editorStore.graphManagerState.usableMappings.map(buildElementOption)[0];
   }
 
   setMappingOption(val: PackageableElementOption<Mapping> | undefined): void {
@@ -447,10 +451,7 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     const _mapping = mappingOption.value;
     const mapping = PackageableElementExplicitReference.create(_mapping);
     const service = new Service(name);
-    const runtimes =
-      this.editorStore.graphManagerState.graph.ownRuntimes.concat(
-        this.editorStore.graphManagerState.graph.dependencyManager.runtimes,
-      );
+    const runtimes = this.editorStore.graphManagerState.usableRuntimes;
     const compatibleRuntimes = runtimes.filter((runtime) =>
       runtime.runtimeValue.mappings.map((m) => m.value).includes(_mapping),
     );
