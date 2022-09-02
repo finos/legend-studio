@@ -79,6 +79,7 @@ import {
   type PackageableElementOption,
   useApplicationNavigationContext,
   useApplicationStore,
+  buildElementOption,
 } from '@finos/legend-application';
 import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor.js';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
@@ -143,7 +144,10 @@ const ParameterBasicEditor = observer(
       rawVariableExpression_setName(parameter, event.target.value);
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const typeOptions = editorStore.classPropertyGenericTypeOptions;
+    const typeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const paramType = parameter.type.value;
     const typeName = getFunctionParameterType(paramType);
     const filterOption = createFilter({
@@ -392,7 +396,10 @@ const ReturnTypeEditor = observer(
     const editorStore = useEditorStore();
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const typeOptions = editorStore.classPropertyGenericTypeOptions;
+    const typeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const typeName = getFunctionParameterType(returnType.value);
     const filterOption = createFilter({
       ignoreCase: true,

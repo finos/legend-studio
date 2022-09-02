@@ -33,7 +33,10 @@ import {
   modelConnection_setClass,
   modelConnection_setUrl,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  buildElementOption,
+  useApplicationNavigationContext,
+} from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ModelConnectionEditor = observer(
@@ -46,7 +49,8 @@ const ModelConnectionEditor = observer(
     const connection = connectionValueState.connection;
     const editorStore = useEditorStore();
     // classOptions
-    const classOptions = editorStore.classOptions;
+    const classOptions =
+      editorStore.graphManagerState.usableClasses.map(buildElementOption);
     const sourceClass = connection.class.value;
     const onSourceClassChange = (val: { label: string; value: Class }): void =>
       modelConnection_setClass(connection, val.value);

@@ -89,7 +89,11 @@ const EnumerationMappingSourceSelectorModal = observer(
       ),
     ]
       .map(buildElementOption)
-      .concat(editorStore.enumerationOptions);
+      .concat(
+        editorStore.graphManagerState.usableEnumerations.map(
+          buildElementOption,
+        ),
+      );
 
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const filterOption = createFilter({

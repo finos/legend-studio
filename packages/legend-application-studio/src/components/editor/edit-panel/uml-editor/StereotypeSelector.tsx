@@ -38,7 +38,10 @@ import {
   annotatedElement_swapStereotypes,
   stereotypeReference_setValue,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { useDrop, useDrag } from 'react-dnd';
 
 interface StereotypeOption {
@@ -81,9 +84,9 @@ export const StereotypeSelector = observer(
     const editorStore = useEditorStore();
 
     // Profile
-    const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.p_stereotypes.length,
-    );
+    const profileOptions = editorStore.graphManagerState.usableProfiles
+      .map(buildElementOption)
+      .filter((p) => p.value.p_stereotypes.length);
     const filterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,

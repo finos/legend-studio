@@ -89,6 +89,7 @@ import {
   getClassPropertyType,
 } from '../../../../stores/shared/ModelUtil.js';
 import {
+  buildElementOption,
   useApplicationNavigationContext,
   type PackageableElementOption,
 } from '@finos/legend-application';
@@ -119,7 +120,8 @@ const AssociationPropertyBasicEditor = observer(
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
     // TODO: make this so that association can only refer to classes from the same graph space
-    const propertyTypeOptions = editorStore.classOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClasses.map(buildElementOption);
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({

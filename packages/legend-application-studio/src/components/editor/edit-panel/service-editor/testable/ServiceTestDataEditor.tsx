@@ -46,13 +46,18 @@ import type { EmbeddedDataTypeOption } from '../../../../../stores/editor-state/
 import { EmbeddedDataEditor } from '../../data-editor/EmbeddedDataEditor.js';
 import { EmbeddedDataType } from '../../../../../stores/editor-state/ExternalFormatState.js';
 import { flowResult } from 'mobx';
-import { buildElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+import { useEditorStore } from '../../../EditorStoreProvider.js';
 
 export const ConnectionTestDataEditor = observer(
   (props: { connectionTestDataState: ConnectionTestDataState }) => {
     const { connectionTestDataState } = props;
+    const applicationStore = useApplicationStore();
     const isReadOnly =
       connectionTestDataState.testDataState.testSuiteState.testableState
         .serviceEditorState.isReadOnly;
@@ -66,10 +71,10 @@ export const ConnectionTestDataEditor = observer(
     };
     const generateTestData = (): void => {
       flowResult(connectionTestDataState.generateTestData()).catch(
-        connectionTestDataState.editorStore.applicationStore
-          .alertUnhandledError,
+        applicationStore.alertUnhandledError,
       );
     };
+
     return (
       <div className="service-test-data-editor">
         <div className="service-test-suite-editor__header">
@@ -209,7 +214,9 @@ const ConnectionTestDataItem = observer(
 export const NewConnectionDataModal = observer(
   (props: { testDataState: ServiceTestDataState }) => {
     const { testDataState } = props;
-    const dataElementOptions = testDataState.editorStore.dataOptions;
+    const editorStore = useEditorStore();
+    const dataElementOptions =
+      editorStore.graphManagerState.usableDataElements.map(buildElementOption);
     const newConnectionState = testDataState.newConnectionDataState;
     const dataElement = newConnectionState.dataElement;
     const selectedDataElement = dataElement
@@ -271,7 +278,7 @@ export const NewConnectionDataModal = observer(
           value: newConnectionState.embeddedDataType.value,
         }
       : undefined;
-    const extraOptionTypes = testDataState.editorStore.pluginManager
+    const extraOptionTypes = editorStore.pluginManager
       .getApplicationPlugins()
       .flatMap(
         (plugin) =>
