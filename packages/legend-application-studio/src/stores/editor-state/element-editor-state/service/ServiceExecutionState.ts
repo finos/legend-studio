@@ -904,7 +904,7 @@ export class MultiServicePureExecutionState extends ServicePureExecutionState {
 
   addExecutionParameter(value: string): void {
     const _mapping =
-      this.editorStore.graphManagerState.usableMappings?.[0] ?? stub_Mapping();
+      this.editorStore.graphManagerState.usableMappings[0] ?? stub_Mapping();
     const _key = new KeyedExecutionParameter(
       value,
       PackageableElementExplicitReference.create(_mapping),

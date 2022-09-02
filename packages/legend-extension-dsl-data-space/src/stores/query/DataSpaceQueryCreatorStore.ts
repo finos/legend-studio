@@ -22,7 +22,6 @@ import {
   PackageableElementExplicitReference,
   getAllClassMappings,
   isSystemElement,
-  type GraphManagerState,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
@@ -46,7 +45,6 @@ import {
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSLDataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
 const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -59,21 +57,6 @@ const createQueryDataSpaceTaggedValue = (
 };
 
 class DataSpaceQueryCreatorState extends BasicQueryBuilderState {
-  _isClassReadOnly: boolean;
-
-  constructor(
-    applicationStore: GenericLegendApplicationStore,
-    graphManagerState: GraphManagerState,
-    _isClassReadOnly: boolean,
-  ) {
-    super(applicationStore, graphManagerState);
-    this._isClassReadOnly = _isClassReadOnly;
-  }
-
-  override get isClassReadOnly(): boolean {
-    return this._isClassReadOnly;
-  }
-
   override get isMappingReadOnly(): boolean {
     return true;
   }
@@ -127,7 +110,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new DataSpaceQueryCreatorState(
       this.applicationStore,
       this.graphManagerState,
-      Boolean(this.classPath),
     );
     const dataSpace = getDataSpace(
       this.dataSpacePath,

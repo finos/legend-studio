@@ -43,6 +43,7 @@ import {
   RuntimePointer,
   VARIABLE_REFERENCE_TOKEN,
   isElementDeprecated,
+  getMappingCompatibleRuntimes,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -52,7 +53,7 @@ import {
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoneEditor.js';
 import { useState } from 'react';
-import type { BasicQueryBuilderSetupState } from '../../stores/query-builder/QueryBuilderSetupState.js';
+import { BasicQueryBuilderState } from '../../stores/query-builder/workflows/BasicQueryBuilderState.js';
 
 const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -151,9 +152,8 @@ const generateClassLabel = (
 };
 
 const BasicQueryBuilderSetupPanel = observer(
-  (props: { setupState: BasicQueryBuilderSetupState }) => {
-    const { setupState } = props;
-    const queryBuilderState = setupState.queryBuilderState;
+  (props: { queryBuilderState: BasicQueryBuilderState }) => {
+    const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const [isMilestoneEditorOpened, setIsMilestoneEditorOpened] =
       useState<boolean>(false);
@@ -163,35 +163,42 @@ const BasicQueryBuilderSetupPanel = observer(
       stringify: (option: PackageableElementOption<Class>): string =>
         option.value.path,
     });
-    const isQuerySupported = queryBuilderState.isQuerySupported;
+
     // class
-    const classOptions = setupState.classes.map((_class) => ({
-      value: _class,
-      label: generateClassLabel(_class, queryBuilderState),
-    }));
-    const selectedClassOption = setupState._class
+    const classOptions = queryBuilderState.graphManagerState.usableClasses.map(
+      (_class) => ({
+        value: _class,
+        label: generateClassLabel(_class, queryBuilderState),
+      }),
+    );
+    const selectedClassOption = queryBuilderState.class
       ? {
-          value: setupState._class,
-          label: generateClassLabel(setupState._class, queryBuilderState),
+          value: queryBuilderState.class,
+          label: generateClassLabel(queryBuilderState.class, queryBuilderState),
         }
       : null;
     const changeClass = (val: PackageableElementOption<Class>): void => {
       queryBuilderState.changeClass(val.value);
+      queryBuilderState.propagateClassChange(val.value);
     };
+
     // mapping
-    const mappingOptions = setupState.mappings.map(buildElementOption);
-    const selectedMappingOption = setupState.mapping
-      ? buildElementOption(setupState.mapping)
+    const mappingOptions =
+      queryBuilderState.graphManagerState.usableMappings.map(
+        buildElementOption,
+      );
+    const selectedMappingOption = queryBuilderState.mapping
+      ? buildElementOption(queryBuilderState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
-      if (setupState._class && !queryBuilderState.isMappingReadOnly) {
-        setupState.setMapping(val.value);
-        queryBuilderState.resetQueryBuilder();
-        queryBuilderState.resetQueryContent();
+      if (queryBuilderState.class && !queryBuilderState.isMappingReadOnly) {
+        queryBuilderState.changeMapping(val.value);
+        queryBuilderState.propagateMappingChange(val.value);
       }
     };
+
     // runtime
-    const runtime = setupState.runtimeValue;
+    const runtime = queryBuilderState.runtimeValue;
     const isRuntimePointer = runtime instanceof RuntimePointer;
     const customRuntimeLabel = (
       <div className="service-execution-editor__configuration__runtime-option--custom">
@@ -201,6 +208,7 @@ const BasicQueryBuilderSetupPanel = observer(
         </div>
       </div>
     );
+
     // only show custom runtime option when a runtime pointer is currently selected
     let runtimeOptions = !isRuntimePointer
       ? []
@@ -209,7 +217,13 @@ const BasicQueryBuilderSetupPanel = observer(
           value?: Runtime;
         }[]);
     runtimeOptions = runtimeOptions.concat(
-      setupState.compatibleRuntimes.map((rt) => ({
+      (queryBuilderState.mapping
+        ? getMappingCompatibleRuntimes(
+            queryBuilderState.mapping,
+            queryBuilderState.graphManagerState.usableRuntimes,
+          )
+        : []
+      ).map((rt) => ({
         value: new RuntimePointer(
           PackageableElementExplicitReference.create(rt),
         ),
@@ -228,7 +242,7 @@ const BasicQueryBuilderSetupPanel = observer(
       value?: Runtime;
     }): void => {
       if (val.value !== runtime) {
-        setupState.setRuntimeValue(val.value);
+        queryBuilderState.setRuntimeValue(val.value);
       }
     };
     const runtimeFilterOption = createFilter({
@@ -239,9 +253,7 @@ const BasicQueryBuilderSetupPanel = observer(
           ? option.value.packageableRuntime.value.path
           : '(custom)',
     });
-    const close = (): void => {
-      setIsMilestoneEditorOpened(false);
-    };
+
     const isMilestonedQuery = Boolean(
       queryBuilderState.milestoningState.businessDate ??
         queryBuilderState.milestoningState.processingDate,
@@ -269,7 +281,7 @@ const BasicQueryBuilderSetupPanel = observer(
               onChange={changeClass}
               value={selectedClassOption}
               darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-              disabled={!isQuerySupported || queryBuilderState.isClassReadOnly}
+              disabled={!queryBuilderState.isQuerySupported}
               filterOption={elementFilterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({
                 darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
@@ -294,11 +306,11 @@ const BasicQueryBuilderSetupPanel = observer(
               placeholder={
                 mappingOptions.length
                   ? 'Choose a mapping...'
-                  : 'No mapping found for class'
+                  : 'No compatible mapping found for class'
               }
               disabled={
                 queryBuilderState.isMappingReadOnly ||
-                !setupState._class ||
+                !queryBuilderState.class ||
                 !mappingOptions.length
               }
               options={mappingOptions}
@@ -314,7 +326,9 @@ const BasicQueryBuilderSetupPanel = observer(
           {isMilestoneEditorOpened && isMilestonedQuery && (
             <MilestoningParametersEditor
               queryBuilderState={queryBuilderState}
-              close={close}
+              close={(): void => {
+                setIsMilestoneEditorOpened(false);
+              }}
             />
           )}
           <div className="query-builder__setup__config__item">
@@ -326,8 +340,8 @@ const BasicQueryBuilderSetupPanel = observer(
               placeholder="Choose or create a runtime..."
               disabled={
                 queryBuilderState.isRuntimeReadOnly ||
-                !setupState._class ||
-                !setupState.mapping
+                !queryBuilderState.class ||
+                !queryBuilderState.mapping
               }
               options={runtimeOptions}
               onChange={changeRuntime}
@@ -345,11 +359,13 @@ const BasicQueryBuilderSetupPanel = observer(
 export const QueryBuilderSetupPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    // const setupState = queryBuilderState.setupState;
 
-    // if (setupState instanceof BasicQueryBuilderSetupState) {
-    //   return <BasicQueryBuilderSetupPanel setupState={setupState} />;
-    // }
+    if (queryBuilderState instanceof BasicQueryBuilderState) {
+      return (
+        <BasicQueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
+      );
+    }
+    // TODO-BEFORE-PR we probably can fall back here to just let people edit class/mapping/runtime
     return <BlankPanelContent>Unsupported query setup</BlankPanelContent>;
   },
 );
