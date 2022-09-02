@@ -59,12 +59,12 @@ test(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
-    const queryBuilderSetup = await waitFor(() =>
+    const queryBuilderSetupPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
-    await waitFor(() => getByText(queryBuilderSetup, 'Firm'));
-    await waitFor(() => getByText(queryBuilderSetup, 'map'));
-    await waitFor(() => getByText(queryBuilderSetup, 'runtime'));
+    await waitFor(() => getByText(queryBuilderSetupPanel, 'Firm'));
+    await waitFor(() => getByText(queryBuilderSetupPanel, 'map'));
+    await waitFor(() => getByText(queryBuilderSetupPanel, 'runtime'));
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );

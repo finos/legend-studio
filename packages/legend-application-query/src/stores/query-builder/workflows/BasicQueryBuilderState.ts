@@ -15,7 +15,16 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import type { GraphManagerState } from '@finos/legend-graph';
+import {
+  type Class,
+  type Mapping,
+  type GraphManagerState,
+  getClassCompatibleMappings,
+  getMappingCompatibleRuntimes,
+  RuntimePointer,
+  PackageableElementExplicitReference,
+} from '@finos/legend-graph';
+import { getNullableFirstElement } from '@finos/legend-shared';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
 export class BasicQueryBuilderState extends QueryBuilderState {
@@ -34,15 +43,52 @@ export class BasicQueryBuilderState extends QueryBuilderState {
     return false;
   }
 
-  get isClassReadOnly(): boolean {
-    return false;
-  }
-
   get isMappingReadOnly(): boolean {
     return false;
   }
 
   get isRuntimeReadOnly(): boolean {
     return false;
+  }
+
+  propagateClassChange(_class: Class): void {
+    const compatibleMappings = getClassCompatibleMappings(
+      _class,
+      this.graphManagerState.usableMappings,
+    );
+    // cascading
+    const isCurrentMappingCompatible =
+      this.mapping && compatibleMappings.includes(this.mapping);
+    if (this.isMappingReadOnly || isCurrentMappingCompatible) {
+      return;
+    }
+    // try to select the first compatible mapping
+    const possibleNewMapping = getNullableFirstElement(compatibleMappings);
+    if (possibleNewMapping) {
+      this.changeMapping(possibleNewMapping);
+      this.propagateMappingChange(possibleNewMapping);
+    }
+  }
+
+  propagateMappingChange(mapping: Mapping): void {
+    if (this.isRuntimeReadOnly) {
+      return;
+    }
+    // try to select the first compatible runtime,
+    // if none found, just unset the current runtime value
+    const compatibleRuntimes = getMappingCompatibleRuntimes(
+      mapping,
+      this.graphManagerState.usableRuntimes,
+    );
+    const possibleNewRuntime = getNullableFirstElement(compatibleRuntimes);
+    if (possibleNewRuntime) {
+      this.setRuntimeValue(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(possibleNewRuntime),
+        ),
+      );
+    } else {
+      this.setRuntimeValue(undefined);
+    }
   }
 }

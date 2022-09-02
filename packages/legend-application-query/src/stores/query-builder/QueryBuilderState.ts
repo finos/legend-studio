@@ -107,6 +107,10 @@ export abstract class QueryBuilderState {
       showFunctionsExplorerPanel: observable,
       showParameterPanel: observable,
       changeDetectionState: observable,
+      class: observable,
+      mapping: observable,
+      runtimeValue: observable,
+
       isQuerySupported: computed,
       validationIssues: computed,
 
@@ -120,6 +124,7 @@ export abstract class QueryBuilderState {
       resetQueryBuilder: action,
       resetQueryContent: action,
       changeClass: action,
+      changeMapping: action,
 
       rebuildWithQuery: action,
       compileQuery: flow,
@@ -146,7 +151,6 @@ export abstract class QueryBuilderState {
 
   abstract get isParametersDisabled(): boolean;
   abstract get isResultPanelHidden(): boolean;
-  abstract get isClassReadOnly(): boolean;
   abstract get isMappingReadOnly(): boolean;
   abstract get isRuntimeReadOnly(): boolean;
   /**
@@ -221,6 +225,12 @@ export abstract class QueryBuilderState {
     this.explorerState.refreshTreeData();
     this.milestoningState.updateMilestoningConfiguration();
     this.fetchStructureState.implementation.onClassChange(val);
+  }
+
+  changeMapping(val: Mapping): void {
+    this.resetQueryBuilder();
+    this.resetQueryContent();
+    this.setMapping(val);
   }
 
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
