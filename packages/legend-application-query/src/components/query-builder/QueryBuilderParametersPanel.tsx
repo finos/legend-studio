@@ -80,12 +80,14 @@ const VariableExpressionEditor = observer(
           ).length > 1)
       ? 'Parameter name already exists'
       : undefined;
+
     // variable
     const changeVariableName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
       variableExpression_setName(varState, event.target.value);
     };
+
     // type
     const stringType =
       queryBuilderState.graphManagerState.graph.getPrimitiveType(
@@ -106,6 +108,7 @@ const VariableExpressionEditor = observer(
         lambdaParameterState.changeVariableType(val.value);
       }
     };
+
     // multiplicity
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
       event,
@@ -249,9 +252,16 @@ const VariableExpressionEditor = observer(
 export const VariableExpressionViewer = observer(
   (props: {
     queryBuilderState: QueryBuilderState;
+    isReadOnly: boolean;
+    hideActions?: boolean;
     variableExpressionState: LambdaParameterState;
   }) => {
-    const { queryBuilderState, variableExpressionState } = props;
+    const {
+      queryBuilderState,
+      isReadOnly,
+      hideActions,
+      variableExpressionState,
+    } = props;
     const queryParameterState = queryBuilderState.parametersState;
     const variable = variableExpressionState.parameter;
     const name = variable.name;
@@ -296,23 +306,28 @@ export const VariableExpressionViewer = observer(
             </div>
           </div>
         </div>
-        <div className="query-builder__parameters__parameter__actions">
-          <button
-            className="query-builder__parameters__parameter__action"
-            tabIndex={-1}
-            onClick={editVariable}
-            title="Edit Parameter"
-          >
-            <PencilIcon />
-          </button>
-          <button
-            className="query-builder__parameters__parameter__action"
-            onClick={deleteVariable}
-            title="Remove"
-          >
-            <TimesIcon />
-          </button>
-        </div>
+        {!hideActions && (
+          <div className="query-builder__parameters__parameter__actions">
+            <button
+              className="query-builder__parameters__parameter__action"
+              tabIndex={-1}
+              disabled={isReadOnly}
+              onClick={editVariable}
+              title="Edit"
+            >
+              <PencilIcon />
+            </button>
+            <button
+              className="query-builder__parameters__parameter__action"
+              tabIndex={-1}
+              onClick={deleteVariable}
+              disabled={isReadOnly}
+              title="Remove"
+            >
+              <TimesIcon />
+            </button>
+          </div>
+        )}
       </div>
     );
   },
@@ -321,13 +336,13 @@ export const VariableExpressionViewer = observer(
 export const QueryBuilderParametersPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const isReadOnly = !queryBuilderState.isQuerySupported;
     const queryParameterState = queryBuilderState.parametersState;
-    const parametersDisabled = Boolean(queryBuilderState.isParametersDisabled);
     const varNames = queryBuilderState.parametersState.parameterStates.map(
       (e) => e.variableName,
     );
     const addParameter = (): void => {
-      if (!parametersDisabled) {
+      if (!isReadOnly && !queryBuilderState.isParameterSupportDisabled) {
         const parmaterState = new LambdaParameterState(
           new VariableExpression(
             generateEnumerableNameFromToken(varNames, DEFAULT_VARIABLE_NAME),
@@ -354,31 +369,34 @@ export const QueryBuilderParametersPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">parameters</div>
           </div>
-          <div className="panel__header__actions">
-            <button
-              className="panel__header__action"
-              tabIndex={-1}
-              onClick={addParameter}
-              disabled={parametersDisabled}
-              title="Add Parameter"
-            >
-              <PlusIcon />
-            </button>
-          </div>
+          {!isReadOnly && queryBuilderState.isParameterSupportDisabled && (
+            <div className="panel__header__actions">
+              <button
+                className="panel__header__action"
+                tabIndex={-1}
+                onClick={addParameter}
+                disabled={
+                  isReadOnly || !queryBuilderState.isParameterSupportDisabled
+                }
+                title="Add Parameter"
+              >
+                <PlusIcon />
+              </button>
+            </div>
+          )}
         </div>
         <div className="panel__content query-builder__parameters__content">
-          {!parametersDisabled &&
+          {!queryBuilderState.isParameterSupportDisabled &&
             queryParameterState.parameterStates.map((parameter) => (
               <VariableExpressionViewer
                 key={parameter.uuid}
                 queryBuilderState={queryBuilderState}
+                isReadOnly={isReadOnly}
                 variableExpressionState={parameter}
               />
             ))}
-          {parametersDisabled && (
-            <BlankPanelContent>
-              Parameters not supported in this mode
-            </BlankPanelContent>
+          {queryBuilderState.isParameterSupportDisabled && (
+            <BlankPanelContent>Parameters are not supported</BlankPanelContent>
           )}
         </div>
         {queryParameterState.selectedParameter && (

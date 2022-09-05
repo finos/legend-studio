@@ -121,7 +121,7 @@ export abstract class QueryBuilderState {
       setMapping: action,
       setRuntimeValue: action,
 
-      resetQueryBuilder: action,
+      resetQueryResult: action,
       resetQueryContent: action,
       changeClass: action,
       changeMapping: action,
@@ -149,15 +149,15 @@ export abstract class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  abstract get isParametersDisabled(): boolean;
+  abstract get isParameterSupportDisabled(): boolean;
   abstract get isResultPanelHidden(): boolean;
   abstract get isMappingReadOnly(): boolean;
   abstract get isRuntimeReadOnly(): boolean;
   /**
-   * This flag is for turning on/off dnd from projection panel to filter panel,
+   * This flag is for turning on/off DnD support from projection panel to filter panel,
    * and will be leveraged when the concepts of workflows are introduced into query builder.
    */
-  get isDnDFetchStructureToFilterSupported(): boolean {
+  get TEMPORARY__isDnDFetchStructureToFilterSupported(): boolean {
     return true;
   }
 
@@ -189,16 +189,15 @@ export abstract class QueryBuilderState {
     return !this.unsupportedQueryState.rawLambda;
   }
 
-  resetQueryBuilder(): void {
+  resetQueryResult(): void {
     const resultState = new QueryBuilderResultState(this);
     resultState.setPreviewLimit(this.resultState.previewLimit);
     this.resultState = resultState;
-    this.textEditorState = new QueryBuilderTextEditorState(this);
-    this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
-    this.setShowParametersPanel(false);
   }
 
   resetQueryContent(): void {
+    this.textEditorState = new QueryBuilderTextEditorState(this);
+    this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
     this.milestoningState = new QueryBuilderMilestoningState(this);
     this.explorerState = new QueryBuilderExplorerState(this);
     this.explorerState.refreshTreeData();
@@ -219,7 +218,7 @@ export abstract class QueryBuilderState {
   }
 
   changeClass(val: Class): void {
-    this.resetQueryBuilder();
+    this.resetQueryResult();
     this.resetQueryContent();
     this.setClass(val);
     this.explorerState.refreshTreeData();
@@ -228,9 +227,14 @@ export abstract class QueryBuilderState {
   }
 
   changeMapping(val: Mapping): void {
-    this.resetQueryBuilder();
+    this.resetQueryResult();
     this.resetQueryContent();
     this.setMapping(val);
+  }
+
+  changeRuntime(val: Runtime): void {
+    this.resetQueryResult();
+    this.setRuntimeValue(val);
   }
 
   initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
@@ -241,6 +245,10 @@ export abstract class QueryBuilderState {
       }
     } catch (error) {
       assertErrorThrown(error);
+      this.resetQueryContent();
+      this.resetQueryResult();
+      this.unsupportedQueryState.setLambdaError(error);
+      this.unsupportedQueryState.setRawLambda(rawLambda);
       this.setClass(undefined);
       const parameters = buildLambdaVariableExpressions(
         rawLambda,
@@ -256,8 +264,6 @@ export abstract class QueryBuilderState {
           `Can't initialize query builder: ${error.message}`,
         );
       }
-      this.unsupportedQueryState.setLambdaError(error);
-      this.unsupportedQueryState.setRawLambda(rawLambda);
     }
   }
 
@@ -288,7 +294,7 @@ export abstract class QueryBuilderState {
    * consumers of function should handle the errors.
    */
   rebuildWithQuery(val: RawLambda): void {
-    this.resetQueryBuilder();
+    this.resetQueryResult();
     this.resetQueryContent();
     if (!isStubbed_RawLambda(val)) {
       const valueSpec = observe_ValueSpecification(

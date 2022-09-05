@@ -317,7 +317,7 @@ test(
 
     // filter with group condition
     act(() => {
-      queryBuilderState.resetQueryBuilder();
+      queryBuilderState.resetQueryResult();
       queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
@@ -351,7 +351,7 @@ test(
 
     // projection column with derived property
     act(() => {
-      queryBuilderState.resetQueryBuilder();
+      queryBuilderState.resetQueryResult();
       queryBuilderState.resetQueryContent();
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));

@@ -108,7 +108,7 @@ export class QueryBuilderResultState {
         'Lambda is required to execute query',
       );
       if (
-        !this.queryBuilderState.isParametersDisabled &&
+        !this.queryBuilderState.isParameterSupportDisabled &&
         this.queryBuilderState.parametersState.parameterStates.length
       ) {
         const letlambdaFunction = buildParametersLetLambdaFunc(

@@ -763,16 +763,17 @@ export const QueryBuilderFilterPanel = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: queryBuilderState.isDnDFetchStructureToFilterSupported
-          ? [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-              QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
-            ]
-          : [
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
-              QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
-            ],
+        accept:
+          queryBuilderState.TEMPORARY__isDnDFetchStructureToFilterSupported
+            ? [
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+                QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+              ]
+            : [
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY,
+                QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.PRIMITIVE_PROPERTY,
+              ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item, monitor.getItemType() as string);

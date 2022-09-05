@@ -213,7 +213,7 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                 await flowResult(
                   queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                     setupQueryBuilderState: () => {
-                      const queryBuilderState = BasicQueryBuilderState.create(
+                      const queryBuilderState = new BasicQueryBuilderState(
                         queryBuilderExtension.editorStore.applicationStore,
                         queryBuilderExtension.editorStore.graphManagerState,
                       );
@@ -330,7 +330,7 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                   await flowResult(
                     queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                       setupQueryBuilderState: () => {
-                        const queryBuilderState = BasicQueryBuilderState.create(
+                        const queryBuilderState = new BasicQueryBuilderState(
                           queryBuilderExtension.editorStore.applicationStore,
                           queryBuilderExtension.editorStore.graphManagerState,
                         );
