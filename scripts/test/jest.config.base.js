@@ -16,10 +16,8 @@
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 import { getBaseConfig } from '@finos/legend-dev-utils/JestConfigUtils';
 
-const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
@@ -65,10 +63,6 @@ export const baseJestConfig = {
     // See https://github.com/lodash/lodash/issues/5107
     // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
-    // TODO: problem with ESM - due to a conflict between `uuid` and `jest-resolve@28` we need this workaround
-    // See https://github.com/uuidjs/uuid/pull/616
-    // See https://github.com/finos/legend-studio/issues/502
-    '^uuid$': require.resolve('uuid'),
   },
   modulePathIgnorePatterns: ['packages/.*/lib', 'packages/.*/build'],
   testPathIgnorePatterns: [
