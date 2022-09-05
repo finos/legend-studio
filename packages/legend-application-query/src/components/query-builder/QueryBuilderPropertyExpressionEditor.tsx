@@ -242,6 +242,8 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                         propertyExpressionState.queryBuilderState
                       }
                       variableExpressionState={parameter}
+                      isReadOnly={true}
+                      hideActions={true}
                     />
                   ),
                 )}

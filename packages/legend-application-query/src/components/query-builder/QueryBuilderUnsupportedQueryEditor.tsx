@@ -23,25 +23,8 @@ import {
   ResizablePanel,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
-import { QueryBuilderSetupPanel } from './QueryBuilderSetupPanel.js';
+import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
-
-const QueryBuilderUnsupportedQueryExplorer = observer(() => (
-  <div className="panel query-builder__explorer">
-    <div className="panel__header">
-      <div className="panel__header__title">
-        <div className="panel__header__title__label">unsupported</div>
-      </div>
-    </div>
-    <div className="panel__content">
-      <BlankPanelContent>
-        <div className="query-builder__unsupported-view__main">
-          <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode`}</div>
-        </div>
-      </BlankPanelContent>
-    </div>
-  </div>
-));
 
 const QueryBuilderUnsupportedQueryEditPanel = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -59,7 +42,7 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
       <div className="panel">
         <div className="panel__header">
           <div className="panel__header__title">
-            <div className="panel__header__title__label">unsupported</div>
+            <div className="panel__header__title__label">content</div>
           </div>
         </div>
         <div className="panel__content">
@@ -87,18 +70,11 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
     return (
       <ResizablePanelGroup orientation="vertical">
         <ResizablePanel size={450}>
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel>
-              <QueryBuilderSetupPanel queryBuilderState={queryBuilderState} />
-              <QueryBuilderUnsupportedQueryExplorer />
-            </ResizablePanel>
-            <ResizablePanelSplitter />
-            <ResizablePanel minSize={40} direction={-1}>
-              <QueryBuilderParametersPanel
-                queryBuilderState={queryBuilderState}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          <QueryBuilderSidebar queryBuilderState={queryBuilderState}>
+            <QueryBuilderParametersPanel
+              queryBuilderState={queryBuilderState}
+            />
+          </QueryBuilderSidebar>
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>

@@ -44,7 +44,7 @@ const START_LENGTH = 3;
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = BasicQueryBuilderState.create(
+  const builderState = new BasicQueryBuilderState(
     queryBuilderState.applicationStore,
     queryBuilderState.graphManagerState,
   );

@@ -235,13 +235,16 @@ const TemporalMilestoneEditor: React.FC<{
 };
 
 export const MilestoningParametersEditor = observer(
-  (props: { queryBuilderState: QueryBuilderState; close: () => void }) => {
-    const { queryBuilderState, close } = props;
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const milestoningState = queryBuilderState.milestoningState;
+    const closeMilestoningEditor = (): void =>
+      milestoningState.setShowMilestoningEditor(false);
 
     return (
       <Dialog
-        open={true}
-        onClose={close}
+        open={milestoningState.showMilestoningEditor}
+        onClose={closeMilestoningEditor}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
@@ -275,6 +278,8 @@ export const MilestoningParametersEditor = observer(
                     key={parameter.uuid}
                     queryBuilderState={queryBuilderState}
                     variableExpressionState={parameter}
+                    isReadOnly={true}
+                    hideActions={true}
                   />
                 ))}
             </div>

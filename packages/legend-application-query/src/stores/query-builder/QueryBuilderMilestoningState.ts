@@ -28,12 +28,13 @@ import {
   VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export class QueryBuilderMilestoningState {
   queryBuilderState: QueryBuilderState;
 
+  showMilestoningEditor = false;
   // TODO: Change this when we modify how we deal with milestoning.
   // See https://github.com/finos/legend-studio/issues/1149
   businessDate?: ValueSpecification | undefined;
@@ -43,11 +44,22 @@ export class QueryBuilderMilestoningState {
     makeObservable(this, {
       processingDate: observable,
       businessDate: observable,
+      showMilestoningEditor: observable,
+      isMilestonedQuery: computed,
       setProcessingDate: action,
       setBusinessDate: action,
+      setShowMilestoningEditor: action,
     });
 
     this.queryBuilderState = queryBuilderState;
+  }
+
+  get isMilestonedQuery(): boolean {
+    return Boolean(this.businessDate ?? this.processingDate);
+  }
+
+  setShowMilestoningEditor(val: boolean): void {
+    this.showMilestoningEditor = val;
   }
 
   private initializeQueryMilestoningParameters(stereotype: string): void {

@@ -351,7 +351,7 @@ describe(
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
-        const queryBuilderState = BasicQueryBuilderState.create(
+        const queryBuilderState = new BasicQueryBuilderState(
           applicationStore,
           graphManagerState,
         );

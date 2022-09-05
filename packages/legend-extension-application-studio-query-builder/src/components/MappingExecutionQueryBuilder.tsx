@@ -39,7 +39,7 @@ export class MappingExecutionQueryEditorState extends BasicQueryBuilderState {
     return true;
   }
 
-  override get isParametersDisabled(): boolean {
+  override get isParameterSupportDisabled(): boolean {
     return true;
   }
 
