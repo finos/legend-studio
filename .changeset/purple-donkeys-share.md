@@ -4,4 +4,4 @@
 '@finos/legend-shared': minor
 ---
 
-Add form editor for basic post-processor ([#945](https://github.com/finos/legend-studio/issues/945)).
+Add form editor for post-processor ([#945](https://github.com/finos/legend-studio/issues/945)).
