@@ -28,6 +28,7 @@ import {
   InputWithInlineValidation,
   DragPreviewLayer,
   useDragPreviewLayer,
+  BlankPanelPlaceholder,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
@@ -339,7 +340,7 @@ export const QueryBuilderParametersPanel = observer(
     const isReadOnly = !queryBuilderState.isQuerySupported;
     const queryParameterState = queryBuilderState.parametersState;
     const varNames = queryBuilderState.parametersState.parameterStates.map(
-      (e) => e.variableName,
+      (parameter) => parameter.variableName,
     );
     const addParameter = (): void => {
       if (!isReadOnly && !queryBuilderState.isParameterSupportDisabled) {
@@ -375,9 +376,6 @@ export const QueryBuilderParametersPanel = observer(
                 className="panel__header__action"
                 tabIndex={-1}
                 onClick={addParameter}
-                disabled={
-                  isReadOnly || !queryBuilderState.isParameterSupportDisabled
-                }
                 title="Add Parameter"
               >
                 <PlusIcon />
@@ -386,15 +384,29 @@ export const QueryBuilderParametersPanel = observer(
           )}
         </div>
         <div className="panel__content query-builder__parameters__content">
-          {!queryBuilderState.isParameterSupportDisabled &&
-            queryParameterState.parameterStates.map((parameter) => (
-              <VariableExpressionViewer
-                key={parameter.uuid}
-                queryBuilderState={queryBuilderState}
-                isReadOnly={isReadOnly}
-                variableExpressionState={parameter}
-              />
-            ))}
+          {!queryBuilderState.isParameterSupportDisabled && (
+            <>
+              {Boolean(queryParameterState.parameterStates.length) &&
+                queryParameterState.parameterStates.map((parameter) => (
+                  <VariableExpressionViewer
+                    key={parameter.uuid}
+                    queryBuilderState={queryBuilderState}
+                    isReadOnly={isReadOnly}
+                    variableExpressionState={parameter}
+                  />
+                ))}
+              {!queryParameterState.parameterStates.length && (
+                <BlankPanelPlaceholder
+                  text="Add a parameter"
+                  disabled={isReadOnly}
+                  onClick={addParameter}
+                  clickActionType="add"
+                  previewText="No parameter"
+                  tooltipText="Click to add a new parameter"
+                />
+              )}
+            </>
+          )}
           {queryBuilderState.isParameterSupportDisabled && (
             <BlankPanelContent>Parameters are not supported</BlankPanelContent>
           )}

@@ -84,7 +84,7 @@ export abstract class QueryBuilderState {
   queryCompileState = ActionState.create();
   backdrop = false;
   showFunctionsExplorerPanel = false;
-  showParameterPanel = false;
+  showParametersPanel = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -105,7 +105,7 @@ export abstract class QueryBuilderState {
       unsupportedQueryState: observable,
       backdrop: observable,
       showFunctionsExplorerPanel: observable,
-      showParameterPanel: observable,
+      showParametersPanel: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -149,6 +149,14 @@ export abstract class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
+  get sideBarClassName(): string | undefined {
+    return undefined;
+  }
+  get getSetupPanelContentRenderer():
+    | ((queryBuilderState: QueryBuilderState) => React.ReactNode)
+    | undefined {
+    return undefined;
+  }
   abstract get isParameterSupportDisabled(): boolean;
   abstract get isResultPanelHidden(): boolean;
   abstract get isMappingReadOnly(): boolean;
@@ -170,7 +178,7 @@ export abstract class QueryBuilderState {
   }
 
   setShowParametersPanel(val: boolean): void {
-    this.showParameterPanel = val;
+    this.showParametersPanel = val;
   }
 
   setClass(val: Class | undefined): void {

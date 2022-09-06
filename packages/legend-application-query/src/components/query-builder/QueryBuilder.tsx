@@ -142,7 +142,7 @@ export const QueryBuilder = observer(
     };
     const toggleShowParameterPanel = (): void => {
       queryBuilderState.setShowParametersPanel(
-        !queryBuilderState.showParameterPanel,
+        !queryBuilderState.showParametersPanel,
       );
     };
     const toggleShowPostFilterPanel = (): void => {
@@ -201,7 +201,7 @@ export const QueryBuilder = observer(
                     }
                   >
                     <MenuContentItemIcon>
-                      {queryBuilderState.showParameterPanel ? (
+                      {queryBuilderState.showParametersPanel ? (
                         <CheckIcon />
                       ) : null}
                     </MenuContentItemIcon>
@@ -301,37 +301,40 @@ export const QueryBuilder = observer(
                           queryBuilderState={queryBuilderState}
                         >
                           <ResizablePanelGroup orientation="horizontal">
-                            <ResizablePanel minSize={40} direction={[1, -1]}>
+                            {/* explorer panel */}
+                            <ResizablePanel minSize={40} direction={1}>
                               <QueryBuilderExplorerPanel
                                 queryBuilderState={queryBuilderState}
                               />
                             </ResizablePanel>
+                            {/* functions panel */}
                             {queryBuilderState.showFunctionsExplorerPanel && (
-                              <>
-                                <ResizablePanelSplitter />
-                                <ResizablePanel
-                                  minSize={40}
-                                  direction={
-                                    queryBuilderState.showParameterPanel
-                                      ? [1, -1]
-                                      : -1
-                                  }
-                                >
-                                  <QueryBuilderFunctionsExplorerPanel
-                                    queryBuilderState={queryBuilderState}
-                                  />
-                                </ResizablePanel>
-                              </>
+                              <ResizablePanelSplitter />
                             )}
-                            {queryBuilderState.showParameterPanel && (
-                              <>
-                                <ResizablePanelSplitter />
-                                <ResizablePanel minSize={40} direction={-1}>
-                                  <QueryBuilderParametersPanel
-                                    queryBuilderState={queryBuilderState}
-                                  />
-                                </ResizablePanel>
-                              </>
+                            {queryBuilderState.showFunctionsExplorerPanel && (
+                              <ResizablePanel
+                                minSize={40}
+                                direction={
+                                  queryBuilderState.showParametersPanel
+                                    ? [1, -1]
+                                    : -1
+                                }
+                              >
+                                <QueryBuilderFunctionsExplorerPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            )}
+                            {/* parameters panel */}
+                            {queryBuilderState.showParametersPanel && (
+                              <ResizablePanelSplitter />
+                            )}
+                            {queryBuilderState.showParametersPanel && (
+                              <ResizablePanel minSize={40} direction={-1}>
+                                <QueryBuilderParametersPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
                             )}
                           </ResizablePanelGroup>
                         </QueryBuilderSidebar>
