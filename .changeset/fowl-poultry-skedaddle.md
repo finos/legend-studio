@@ -2,4 +2,4 @@
 '@finos/legend-art': minor
 ---
 
-Added panel components
+Add basic `Panel` component.
