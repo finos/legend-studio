@@ -316,6 +316,14 @@
     }
   }
 
+  &__section__selector {
+    width: 90%;
+  }
+
+  &__section__remove-btn {
+    width: 10%;
+  }
+
   &__section__textarea {
     width: 100%;
     min-width: 5rem;
