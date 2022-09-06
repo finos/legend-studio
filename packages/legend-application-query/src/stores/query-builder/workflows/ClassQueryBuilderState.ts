@@ -23,9 +23,15 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import { getNullableFirstElement } from '@finos/legend-shared';
+import type React from 'react';
+import { renderClassQueryBuilderSetupContent } from '../../../components/query-builder/workflows/ClassQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
 export class ClassQueryBuilderState extends QueryBuilderState {
+  override sideBarClassName = '';
+  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
+    renderClassQueryBuilderSetupContent(this);
+
   get isParameterSupportDisabled(): boolean {
     return false;
   }

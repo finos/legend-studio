@@ -56,8 +56,8 @@ import {
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import {
   type QueryBuilderState,
-  BasicQueryBuilderState,
   setupLegendQueryUILibrary,
+  ClassQueryBuilderState,
 } from '@finos/legend-application-query';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
@@ -213,16 +213,12 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                 await flowResult(
                   queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                     setupQueryBuilderState: () => {
-                      const queryBuilderState = new BasicQueryBuilderState(
+                      const queryBuilderState = new ClassQueryBuilderState(
                         queryBuilderExtension.editorStore.applicationStore,
                         queryBuilderExtension.editorStore.graphManagerState,
                       );
-                      queryBuilderState.initialize(
-                        editorStore.graphManagerState.graphManager.createGetAllRawLambda(
-                          element,
-                        ),
-                      );
                       queryBuilderState.changeClass(element);
+                      queryBuilderState.propagateClassChange(element);
                       return queryBuilderState;
                     },
                     actionConfigs: [
@@ -330,16 +326,14 @@ export class QueryBuilder_LegendStudioApplicationPlugin
                   await flowResult(
                     queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                       setupQueryBuilderState: () => {
-                        const queryBuilderState = new BasicQueryBuilderState(
+                        const queryBuilderState = new ClassQueryBuilderState(
                           queryBuilderExtension.editorStore.applicationStore,
                           queryBuilderExtension.editorStore.graphManagerState,
                         );
-                        queryBuilderState.initialize(
-                          diagramEditorState.editorStore.graphManagerState.graphManager.createGetAllRawLambda(
-                            classView.class.value,
-                          ),
-                        );
                         queryBuilderState.changeClass(classView.class.value);
+                        queryBuilderState.propagateClassChange(
+                          classView.class.value,
+                        );
                         return queryBuilderState;
                       },
                       actionConfigs: [

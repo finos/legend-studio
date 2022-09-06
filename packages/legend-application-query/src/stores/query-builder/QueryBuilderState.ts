@@ -90,6 +90,9 @@ export abstract class QueryBuilderState {
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
 
+  sideBarClassName?: string | undefined;
+  TEMPORARY__setupPanelContentRenderer?: (() => React.ReactNode) | undefined;
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
@@ -149,14 +152,6 @@ export abstract class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  get sideBarClassName(): string | undefined {
-    return undefined;
-  }
-  get getSetupPanelContentRenderer():
-    | ((queryBuilderState: QueryBuilderState) => React.ReactNode)
-    | undefined {
-    return undefined;
-  }
   abstract get isParameterSupportDisabled(): boolean;
   abstract get isResultPanelHidden(): boolean;
   abstract get isMappingReadOnly(): boolean;

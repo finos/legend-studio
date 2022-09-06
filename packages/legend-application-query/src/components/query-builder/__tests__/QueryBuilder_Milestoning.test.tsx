@@ -41,11 +41,11 @@ import {
   TEST__provideMockedQueryEditorStore,
   TEST__setUpQueryEditor,
 } from '../../QueryEditorComponentTestUtils.js';
-import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../../stores/query-builder/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import { LegendQueryPluginManager } from '../../../application/LegendQueryPluginManager.js';
 import { QueryBuilder_GraphManagerPreset } from '../../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { QueryBuilderProjectionState } from '../../../stores/query-builder/fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { Entity } from '@finos/legend-storage';
 
 type TestCase = [
   string,
@@ -240,14 +240,13 @@ describe(integrationTest('Query builder milestoning'), () => {
       const MOCK__editorStore = TEST__provideMockedQueryEditorStore({
         pluginManager,
       });
-      await TEST__setUpQueryEditor(
+      const { queryBuilderState } = await TEST__setUpQueryEditor(
         MOCK__editorStore,
         entities,
         stub_RawLambda(),
         mappingPath,
         runtimePath,
       );
-      const queryBuilderState = MOCK__editorStore.queryBuilderState;
 
       const _personClass =
         MOCK__editorStore.graphManagerState.graph.getClass(classPath);

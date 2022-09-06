@@ -46,7 +46,6 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { getElementTypeIcon } from '../../../components/shared/ElementIconUtils.js';
 import type { EditorSDLCState } from '../../EditorSDLCState.js';
 import type { EditorStore } from '../../EditorStore.js';
 import type {
@@ -56,10 +55,9 @@ import type {
 
 // Testable Metadata
 export interface TestableMetadata {
-  testable: Testable;
   id: string;
   name: string;
-  icon: React.ReactNode;
+  testable: Testable;
 }
 
 export const getTestableMetadata = (
@@ -69,7 +67,7 @@ export const getTestableMetadata = (
 ): TestableMetadata => {
   if (testable instanceof PackageableElement) {
     return {
-      testable: testable,
+      testable,
       id:
         getNullableIDFromTestable(
           testable,
@@ -77,10 +75,6 @@ export const getTestableMetadata = (
           editorStore.graphManagerState.pluginManager.getPureGraphManagerPlugins(),
         ) ?? uuid(),
       name: testable.name,
-      icon: getElementTypeIcon(
-        editorStore,
-        editorStore.graphState.getPackageableElementType(testable),
-      ),
     };
   }
   const extraTestables = extraTestableMetadataGetters
@@ -91,7 +85,6 @@ export const getTestableMetadata = (
       testable,
       id: uuid(),
       name: '(unknown)',
-      icon: null,
     }
   );
 };

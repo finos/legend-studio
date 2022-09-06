@@ -17,7 +17,6 @@
 import {
   CustomSelectorInput,
   createFilter,
-  CogIcon,
   PURE_MappingIcon,
   PURE_RuntimeIcon,
 } from '@finos/legend-art';
@@ -37,10 +36,29 @@ import {
   buildElementOption,
   useApplicationStore,
 } from '@finos/legend-application';
-import { QueryBuilderClassSelector } from '../QueryBuilderSideBar.js';
+import {
+  buildRuntimeValueOption,
+  QueryBuilderClassSelector,
+} from '../QueryBuilderSideBar.js';
 import type { ClassQueryBuilderState } from '../../../stores/query-builder/workflows/ClassQueryBuilderState.js';
 
-export const ClassQueryBuilderSetup = observer(
+/**
+ * This setup panel supports cascading in order: Class -> Mapping -> Runtime
+ *
+ * In other words, we will only show:
+ * - For mapping selector: the list of compatible mappings with the selected class
+ * - For runtime value selector: the list of compatible runtimes with the selected mapping
+ *
+ * After changing the class:
+ * - If no mapping is selected, we will try to select a compatible mapping
+ * - If the choosen mapping is not compatible with the new selected class, we will try to select a compatible mapping
+ * - This change will propagate to runtime: we will attempt to select a compatible runtime with the newly selected mapping
+ *
+ * After chaning the mapping:
+ * - If not runtime is selected, we will try to select a compatible runtime
+ * - If the choosen runtime is not compatible with the new selected mapping, we will try to select a compatible runtime
+ */
+const ClassQueryBuilderSetup = observer(
   (props: { queryBuilderState: ClassQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
@@ -88,25 +106,14 @@ export const ClassQueryBuilderSetup = observer(
             queryBuilderState.graphManagerState.usableRuntimes,
           )
         : []
-    ).map((rt) => ({
-      value: new RuntimePointer(PackageableElementExplicitReference.create(rt)),
-      label: rt.name,
-    }));
+    )
+      .map(
+        (rt) =>
+          new RuntimePointer(PackageableElementExplicitReference.create(rt)),
+      )
+      .map(buildRuntimeValueOption);
     const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? {
-          value: queryBuilderState.runtimeValue,
-          label:
-            queryBuilderState.runtimeValue instanceof RuntimePointer ? (
-              queryBuilderState.runtimeValue.packageableRuntime.value.name
-            ) : (
-              <div className="query-builder__setup__runtime-option--custom">
-                <CogIcon />
-                <div className="query-builder__setup__runtime-option--custom__label">
-                  custom
-                </div>
-              </div>
-            ),
-        }
+      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
       : null;
     const changeRuntime = (val: { value: Runtime }): void => {
       if (
@@ -152,10 +159,10 @@ export const ClassQueryBuilderSetup = observer(
                     ? 'Choose a mapping...'
                     : 'No compatible mapping found for class'
                 }
+                noMatchMessage="No compatible mapping found for specified class"
                 disabled={
                   queryBuilderState.isMappingReadOnly ||
-                  !queryBuilderState.class ||
-                  !mappingOptions.length
+                  !queryBuilderState.class
                 }
                 options={mappingOptions}
                 onChange={changeMapping}
@@ -177,6 +184,7 @@ export const ClassQueryBuilderSetup = observer(
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose or create a runtime..."
+                noMatchMessage="No compatible runtime found for specified mapping"
                 disabled={
                   queryBuilderState.isRuntimeReadOnly ||
                   !queryBuilderState.class ||
@@ -194,4 +202,10 @@ export const ClassQueryBuilderSetup = observer(
       </>
     );
   },
+);
+
+export const renderClassQueryBuilderSetupContent = (
+  queryBuilderState: ClassQueryBuilderState,
+): React.ReactNode => (
+  <ClassQueryBuilderSetup queryBuilderState={queryBuilderState} />
 );

@@ -66,6 +66,7 @@ import type { LegendQueryPluginManager } from '../application/LegendQueryPluginM
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { BasicQueryBuilderState } from './query-builder/workflows/BasicQueryBuilderState.js';
+import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -584,16 +585,6 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
   }
 }
 
-class ExistingQueryEditorState extends BasicQueryBuilderState {
-  override get isMappingReadOnly(): boolean {
-    return true;
-  }
-
-  override get isRuntimeReadOnly(): boolean {
-    return true;
-  }
-}
-
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
   private _query?: LightQuery | undefined;
@@ -639,7 +630,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     // TODO: decide this state after we pick out the query type, probably we need an extension mechanism here?
-    const queryBuilderState = new ExistingQueryEditorState(
+    const queryBuilderState = new ClassQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
     );

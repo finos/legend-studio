@@ -214,6 +214,23 @@ export const QueryBuilderClassSelector = observer(
   },
 );
 
+export const buildRuntimeValueOption = (
+  runtimeValue: Runtime,
+): { label: string | React.ReactNode; value: Runtime } => ({
+  value: runtimeValue,
+  label:
+    runtimeValue instanceof RuntimePointer ? (
+      runtimeValue.packageableRuntime.value.name
+    ) : (
+      <div className="query-builder__setup__runtime-option--custom">
+        <CogIcon />
+        <div className="query-builder__setup__runtime-option--custom__label">
+          custom
+        </div>
+      </div>
+    ),
+});
+
 const BasicQueryBuilderSetup = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
@@ -248,28 +265,14 @@ const BasicQueryBuilderSetup = observer(
     });
 
     // runtime
-    const runtimeOptions =
-      queryBuilderState.graphManagerState.usableRuntimes.map((rt) => ({
-        value: new RuntimePointer(
-          PackageableElementExplicitReference.create(rt),
-        ),
-        label: rt.name,
-      }));
+    const runtimeOptions = queryBuilderState.graphManagerState.usableRuntimes
+      .map(
+        (rt) =>
+          new RuntimePointer(PackageableElementExplicitReference.create(rt)),
+      )
+      .map(buildRuntimeValueOption);
     const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? {
-          value: queryBuilderState.runtimeValue,
-          label:
-            queryBuilderState.runtimeValue instanceof RuntimePointer ? (
-              queryBuilderState.runtimeValue.packageableRuntime.value.name
-            ) : (
-              <div className="query-builder__setup__runtime-option--custom">
-                <CogIcon />
-                <div className="query-builder__setup__runtime-option--custom__label">
-                  custom
-                </div>
-              </div>
-            ),
-        }
+      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
       : null;
     const changeRuntime = (val: { value: Runtime }): void => {
       if (
@@ -312,12 +315,11 @@ const BasicQueryBuilderSetup = observer(
                 placeholder={
                   mappingOptions.length
                     ? 'Choose a mapping...'
-                    : 'No compatible mapping found for class'
+                    : 'No mapping found'
                 }
                 disabled={
                   queryBuilderState.isMappingReadOnly ||
-                  !queryBuilderState.class ||
-                  !mappingOptions.length
+                  !queryBuilderState.class
                 }
                 options={mappingOptions}
                 onChange={changeMapping}
@@ -338,7 +340,11 @@ const BasicQueryBuilderSetup = observer(
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose or create a runtime..."
+                placeholder={
+                  runtimeOptions.length
+                    ? 'Choose a runtime...'
+                    : 'No runtime found'
+                }
                 disabled={
                   queryBuilderState.isRuntimeReadOnly ||
                   !queryBuilderState.class ||
@@ -377,9 +383,7 @@ export const QueryBuilderSidebar = observer(
           className="panel query-builder__setup"
         >
           <div className="panel__content query-builder__setup__content">
-            {queryBuilderState.getSetupPanelContentRenderer?.(
-              queryBuilderState,
-            ) ?? (
+            {queryBuilderState.TEMPORARY__setupPanelContentRenderer?.() ?? (
               <BasicQueryBuilderSetup queryBuilderState={queryBuilderState} />
             )}
           </div>
