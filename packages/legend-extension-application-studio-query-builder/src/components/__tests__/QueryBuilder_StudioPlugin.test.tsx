@@ -30,6 +30,7 @@ import {
   TEST__getLegendStudioApplicationConfig,
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
+  FormModeCompilationOutcome,
 } from '@finos/legend-application-studio';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-application-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
@@ -227,8 +228,12 @@ test(integrationTest('Open query builder by querying a class'), async () => {
   );
 
   MOBX__enableSpyOrMock();
+  const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
   MOCK__editorStore.graphState.globalCompileInFormMode =
-    jest.fn<TEMPORARY__JestMock>();
+    MockedGlobalCompileInFormModeFn;
+  MockedGlobalCompileInFormModeFn.mockResolvedValue(
+    FormModeCompilationOutcome.SUCCEEDED,
+  );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     jest.fn<TEMPORARY__JestMock>();
   MockedMonacoEditorInstance.getValue.mockReturnValue('');
@@ -262,8 +267,12 @@ test(
     );
 
     MOBX__enableSpyOrMock();
+    const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      jest.fn<TEMPORARY__JestMock>();
+      MockedGlobalCompileInFormModeFn;
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
+    );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
@@ -299,8 +308,12 @@ test(
     );
 
     MOBX__enableSpyOrMock();
+    const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      jest.fn<TEMPORARY__JestMock>();
+      MockedGlobalCompileInFormModeFn;
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
+    );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
@@ -329,8 +342,12 @@ test(
     );
 
     MOBX__enableSpyOrMock();
+    const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
-      jest.fn<TEMPORARY__JestMock>();
+      MockedGlobalCompileInFormModeFn;
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
+    );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
