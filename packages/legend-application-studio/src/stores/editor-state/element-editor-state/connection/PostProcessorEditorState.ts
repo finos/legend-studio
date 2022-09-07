@@ -14,31 +14,57 @@
  * limitations under the License.
  */
 
-import type { PostProcessor } from '@finos/legend-graph';
+import {
+  type Mapper,
+  type PostProcessor,
+  type SchemaNameMapper,
+  TableNameMapper,
+} from '@finos/legend-graph';
 import { makeObservable, observable, action } from 'mobx';
 import type { RelationalDatabaseConnectionValueState } from './ConnectionEditorState.js';
 
-export class PostProcessorPostProcessorEditorState {
-  selectedPostProcessor: PostProcessor;
+export class PostProcessorEditorState {
+  postProcessor: PostProcessor | undefined;
   connectionValueState: RelationalDatabaseConnectionValueState;
-  selectedPostP: PostProcessor;
+  selectedMapper: Mapper | undefined;
+  selectedSchema: SchemaNameMapper | undefined;
+
   constructor(
-    selectedPostProcessor: PostProcessor,
+    postProcessor: PostProcessor,
     connectionValueState: RelationalDatabaseConnectionValueState,
-    selectedPostP: PostProcessor,
   ) {
     makeObservable(this, {
-      selectedPostProcessor: observable,
+      postProcessor: observable,
       setselectedPostProcessor: action,
       connectionValueState: observable,
-      selectedPostP: observable,
+      selectedMapper: observable,
+      selectedSchema: observable,
+      setSelectedMapper: action,
+      setSelectedSchema: action,
+      setSelectedPostProcessor: action,
     });
 
-    this.selectedPostProcessor = selectedPostProcessor;
+    this.postProcessor = postProcessor;
     this.connectionValueState = connectionValueState;
-    this.selectedPostP = selectedPostP;
   }
   setselectedPostProcessor(val: PostProcessor): void {
-    this.selectedPostProcessor = val;
+    this.postProcessor = val;
   }
+
+  setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
+    this.postProcessor = val;
+    this.setSelectedMapper(undefined);
+    this.setSelectedSchema(undefined);
+  };
+
+  setSelectedSchema = (val: SchemaNameMapper | undefined): void => {
+    this.selectedSchema = val;
+  };
+
+  setSelectedMapper = (val: Mapper | undefined): void => {
+    this.selectedMapper = val;
+    if (!(this.selectedMapper instanceof TableNameMapper)) {
+      this.setSelectedSchema(undefined);
+    }
+  };
 }

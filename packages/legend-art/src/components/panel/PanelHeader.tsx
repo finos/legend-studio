@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { capitalize } from '@finos/legend-shared';
+import {
+  capitalize,
+  prettyCONSTName,
+  prettyTitleName,
+} from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
 
@@ -50,6 +54,43 @@ export const PanelHeader: React.FC<{
         <div className="panel__header__title__label">{title.toLowerCase()}</div>
       </div>
       {children && <div className="panel__header__actions">{children}</div>}
+    </div>
+  );
+};
+
+export const PanelTabs: React.FC<{
+  tabTitles: string[];
+  changeTheTab: <T>(
+    tab: T,
+  ) => (event: React.MouseEvent<HTMLDivElement>) => void;
+  selectedTab: string;
+  prettifyTitleName?: boolean;
+  className?: string;
+  tabClassName: string;
+}> = (props) => {
+  const {
+    tabTitles,
+    prettifyTitleName,
+    changeTheTab,
+    selectedTab,
+    tabClassName,
+  } = props;
+
+  return (
+    <div className="panel__header">
+      <div className="uml-element-editor__tabs">
+        {tabTitles.map((tab) => (
+          <div
+            key={tab}
+            onClick={changeTheTab(tab)}
+            className={clsx(tabClassName, {
+              [`${tabClassName}--active`]: tab === selectedTab,
+            })}
+          >
+            {prettifyTitleName ? prettyTitleName(tab) : prettyCONSTName(tab)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

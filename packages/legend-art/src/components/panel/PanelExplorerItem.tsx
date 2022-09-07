@@ -15,14 +15,14 @@
  */
 import { clsx } from 'clsx';
 
-export const PanelExplorer: React.FC<{
+export const PanelExplorerItem: React.FC<{
   key: string;
   title: string;
-  selectOnClick: (event: React.MouseEvent) => void;
+  onSelect: (event: React.MouseEvent) => void;
   isSelected: boolean;
   validationErrorMessage?: string | undefined;
 }> = (props) => {
-  const { title, selectOnClick, isSelected, validationErrorMessage } = props;
+  const { title, onSelect, isSelected, validationErrorMessage } = props;
   return (
     <div
       className={clsx(
@@ -43,7 +43,7 @@ export const PanelExplorer: React.FC<{
             Boolean(validationErrorMessage) && isSelected,
         },
       )}
-      onClick={selectOnClick}
+      onClick={onSelect}
     >
       <div
         className="panel__explorer__item__label"

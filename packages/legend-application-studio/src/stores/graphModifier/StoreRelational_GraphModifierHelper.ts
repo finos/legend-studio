@@ -432,9 +432,9 @@ export const rootRelationalSetImp_setPropertyMappings = action(
   },
 );
 
-// --------------------------------------------- Post Processor -------------------------------------
+// --------------------------------------------- Post-Processor -------------------------------------
 
-export const postprocessor_addMapperPostProcessor = action(
+export const relationalDatabaseConnection_addNewMapperPostProcessor = action(
   (
     connectionValueState: RelationalDatabaseConnectionValueState,
     observeContext: ObserverContext,
@@ -446,22 +446,15 @@ export const postprocessor_addMapperPostProcessor = action(
   },
 );
 
-export const mapper_addSchemaMapper = action(
-  (postprocessor: PostProcessor): void => {
+export const postProcessor_addMapper = action(
+  (postProcessor: PostProcessor, addSchemaMapper: boolean): void => {
     addUniqueEntry(
-      (postprocessor as MapperPostProcessor).mappers,
-      observe_SchemaNameMapper(new SchemaNameMapper('', '')),
-    );
-  },
-);
-
-export const mapper_addTableMapper = action(
-  (postprocessor: PostProcessor): void => {
-    addUniqueEntry(
-      (postprocessor as MapperPostProcessor).mappers,
-      observe_TableNameMapper(
-        new TableNameMapper('', '', new SchemaNameMapper('', '')),
-      ),
+      (postProcessor as MapperPostProcessor).mappers,
+      addSchemaMapper
+        ? observe_SchemaNameMapper(new SchemaNameMapper('', ''))
+        : observe_TableNameMapper(
+            new TableNameMapper('', '', new SchemaNameMapper('', '')),
+          ),
     );
   },
 );
@@ -496,14 +489,16 @@ export const postProcessor_deleteMapper = action(
     val: Mapper,
   ): void => {
     deleteEntry(
-      (connectionValueState.selectedPostProcessor as MapperPostProcessor)
-        .mappers,
+      (
+        connectionValueState.selectedPostProcessor
+          ?.postProcessor as MapperPostProcessor
+      ).mappers,
       val,
     );
   },
 );
 
-export const postProcessor_deletePostProcessor = action(
+export const relationalDatabaseConnection_deletePostProcessor = action(
   (
     connectionValueState: RelationalDatabaseConnectionValueState,
     val: PostProcessor,

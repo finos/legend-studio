@@ -53,15 +53,13 @@ import {
   createValidationError,
   isStubbed_PackageableElement,
   type PostProcessor,
-  type Mapper,
-  type SchemaNameMapper,
-  TableNameMapper,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import { PostProcessorEditorState } from './PostProcessorEditorState.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -78,7 +76,7 @@ export abstract class ConnectionValueState {
 export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
-  POST_PROCESSORS = 'POST PROCESSORS',
+  POST_PROCESSORS = 'POST-PROCESSORS',
 }
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
@@ -111,9 +109,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
-  selectedPostProcessor: PostProcessor | undefined;
-  selectedMapper: Mapper | undefined;
-  selectedSchema: SchemaNameMapper | undefined;
+  selectedPostProcessor: PostProcessorEditorState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -124,43 +120,33 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
+      selectPostProcessor: action,
       selectedPostProcessor: observable,
-      selectedMapper: observable,
-      selectedSchema: observable,
-      setSelectedPostProcessor: action,
-      setSelectedMapper: action,
-      setSelectedSchema: action,
     });
 
     this.connection = connection;
+
     this.databaseBuilderState = new DatabaseBuilderState(
       editorStore,
       connection,
     );
   }
 
+  selectPostProcessor = (postProcessor: PostProcessor): void => {
+    if (!this.selectedPostProcessor) {
+      this.selectedPostProcessor = new PostProcessorEditorState(
+        postProcessor,
+        this,
+      );
+    }
+    this.selectedPostProcessor.setSelectedPostProcessor(postProcessor);
+  };
+
   get storeValidationResult(): ValidationIssue | undefined {
     return isStubbed_PackageableElement(this.connection.store.value)
       ? createValidationError(['Connection database cannot be empty'])
       : undefined;
   }
-
-  setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
-    this.selectedPostProcessor = val;
-    this.setSelectedMapper(undefined);
-    this.setSelectedSchema(undefined);
-  };
-
-  setSelectedSchema = (val: SchemaNameMapper | undefined): void => {
-    this.selectedSchema = val;
-  };
-
-  setSelectedMapper = (val: Mapper | undefined): void => {
-    this.selectedMapper = val;
-    if (!(this.selectedMapper instanceof TableNameMapper)) {
-      this.setSelectedSchema(undefined);
-    }
-  };
 
   setSelectedTab(val: RELATIONAL_DATABASE_TAB_TYPE): void {
     this.selectedTab = val;

@@ -18,5 +18,6 @@ import { type Hashable, uuid } from '@finos/legend-shared';
 
 export abstract class PostProcessor implements Hashable {
   readonly _UUID = uuid();
+
   abstract get hashCode(): string;
 }

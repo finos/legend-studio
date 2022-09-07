@@ -24,6 +24,7 @@ export abstract class Mapper
   implements Hashable
 {
   readonly _UUID = uuid();
+
   from: string;
   to: string;
 

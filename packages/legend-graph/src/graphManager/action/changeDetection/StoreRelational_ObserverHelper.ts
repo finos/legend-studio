@@ -1007,6 +1007,7 @@ const observe_Abstract_Mapper = (metamodel: Mapper): void => {
   makeObservable(metamodel, {
     from: observable,
     to: observable,
+    hashCode: computed,
   });
 };
 
@@ -1039,14 +1040,20 @@ export const observe_Mapper = (metamodel: Mapper): Mapper => {
   return metamodel;
 };
 
+const observe_Abstract_PostProcessor = (metamodel: PostProcessor): void => {
+  makeObservable(metamodel, {
+    hashCode: computed,
+  });
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
+  observe_Abstract_PostProcessor(metamodel);
   if (metamodel instanceof MapperPostProcessor) {
     makeObservable(metamodel, {
       mappers: observable,
-      hashCode: computed,
     });
     metamodel.mappers.forEach((mapper) => {
       observe_Mapper(mapper);

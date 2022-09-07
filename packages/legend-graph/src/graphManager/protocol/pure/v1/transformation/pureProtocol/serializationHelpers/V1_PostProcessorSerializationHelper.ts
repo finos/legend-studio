@@ -113,9 +113,9 @@ export const V1_serializePostProcessor = (
       ).V1_getExtraConnectionPostProcessorProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraPostprocessorProtocolSerializers) {
-    const postprocessorProtocolJson = serializer(value);
-    if (postprocessorProtocolJson) {
-      return postprocessorProtocolJson;
+    const postProcessorProtocolJson = serializer(value);
+    if (postProcessorProtocolJson) {
+      return postProcessorProtocolJson;
     }
   }
   throw new UnsupportedOperationError(
@@ -139,9 +139,9 @@ export const V1_deserializePostProcessor = (
           ).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraPostprocessorProtocolDeserializers) {
-        const postprocessorProtocol = deserializer(value);
-        if (postprocessorProtocol) {
-          return postprocessorProtocol;
+        const postProcessorProtocol = deserializer(value);
+        if (postProcessorProtocol) {
+          return postProcessorProtocol;
         }
       }
       throw new UnsupportedOperationError(

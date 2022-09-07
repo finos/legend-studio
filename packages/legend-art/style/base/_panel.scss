@@ -193,12 +193,6 @@
 }
 
 .panel__explorer {
-  &__panel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
   &__item {
     display: flex;
     align-items: center;

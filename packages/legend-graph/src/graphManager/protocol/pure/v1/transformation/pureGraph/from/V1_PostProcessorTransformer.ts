@@ -86,9 +86,9 @@ export const V1_transformPostProcessor = (
       ).V1_getExtraConnectionPostProcessorTransformers?.() ?? [],
   );
   for (const transformer of extraConnectionPostProcessorTransformers) {
-    const postprocessorProtocol = transformer(postProcessor, context);
-    if (postprocessorProtocol) {
-      return postprocessorProtocol;
+    const postProcessorProtocol = transformer(postProcessor, context);
+    if (postProcessorProtocol) {
+      return postProcessorProtocol;
     }
   }
   throw new UnsupportedOperationError(
