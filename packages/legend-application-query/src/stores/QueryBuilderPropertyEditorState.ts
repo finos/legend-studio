@@ -381,16 +381,8 @@ export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
 ): ValueSpecification => {
-  const genericType = parameter.genericType;
-  if (genericType) {
-    const type = genericType.value.rawType;
-    // Clone the generic type reference and avoid directly using the
-    // reference of the parameter so when we edit the value specification
-    // we don't accidentally modify the type of the parameter which is constant
-    // See https://github.com/finos/legend-studio/issues/1099
-    const genericTypeExplicitReference = GenericTypeExplicitReference.create(
-      new GenericType(type),
-    );
+  if (parameter.genericType) {
+    const type = parameter.genericType.value.rawType;
     if (
       (
         [
@@ -408,7 +400,16 @@ export const generateValueSpecificationForParameter = (
       ).includes(type.name)
     ) {
       const primitiveInstanceValue = new PrimitiveInstanceValue(
-        genericTypeExplicitReference,
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            // NOTE: since the default generated value for type Date is a StrictDate
+            // we need to adjust the generic type accordingly
+            // See https://github.com/finos/legend-studio/issues/1391
+            type.name === PRIMITIVE_TYPE.DATE
+              ? graph.getType(PRIMITIVE_TYPE.STRICTDATE)
+              : type,
+          ),
+        ),
         parameter.multiplicity,
       );
       if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
@@ -419,7 +420,7 @@ export const generateValueSpecificationForParameter = (
       return primitiveInstanceValue;
     } else if (type instanceof Enumeration) {
       const enumValueInstanceValue = new EnumValueInstanceValue(
-        genericTypeExplicitReference,
+        GenericTypeExplicitReference.create(new GenericType(type)),
         parameter.multiplicity,
       );
       if (type.values.length) {
