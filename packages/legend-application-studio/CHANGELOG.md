@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 15.1.0
+
+### Minor Changes
+
+- [#1464](https://github.com/finos/legend-studio/pull/1464) [`c8208ca6`](https://github.com/finos/legend-studio/commit/c8208ca63e3c4fefb5fc744e58d42c1715a51245) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add use `TEMPORARY__storeModel` option to `FULL_INTERACTIVE` service execution mode.
+
+- [#1454](https://github.com/finos/legend-studio/pull/1454) [`579ab722`](https://github.com/finos/legend-studio/commit/579ab722b80baf8f59725bd42eb97302fd2663cf) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `FULL_INTERACTIVE_LIGHT` as a service registration mode.
+
 ## 15.0.1
 
 ## 15.0.0
