@@ -110,6 +110,14 @@ export enum GraphBuilderStatus {
   REDIRECTED_TO_TEXT_MODE = 'REDIRECTED_TO_TEXT_MODE',
 }
 
+export enum FormModeCompilationOutcome {
+  SKIPPED = 'SKIPPED',
+  SUCCEEDED = 'SUCCEEDED',
+  FAILED = 'FAILED',
+  FAILED_WITH_ERROR_REVEALED = 'FAILED_WITH_ERROR_REVEALED',
+  FAILED_AND_FALLBACK_TO_TEXT_MODE = 'FAILED_AND_FALLBACK_TO_TEXTMODE',
+}
+
 export interface GraphBuilderResult {
   status: GraphBuilderStatus;
   error?: Error;
@@ -460,19 +468,14 @@ export class EditorGraphState {
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
-    /**
-     * Do not try to reveal the compilation error in form mode nor falling back to text mode to
-     * reveal the code where the error was found
-     */
-    disableErrorRevelation?: boolean;
     openConsole?: boolean;
-  }): GeneratorFn<void> {
+  }): GeneratorFn<FormModeCompilationOutcome> {
     assertTrue(
       this.editorStore.isInFormMode,
       'Editor must be in form mode to call this method',
     );
     if (this.checkIfApplicationUpdateOperationIsRunning()) {
-      return;
+      return FormModeCompilationOutcome.SKIPPED;
     }
     this.isRunningGlobalCompile = true;
     try {
@@ -495,14 +498,12 @@ export class EditorGraphState {
           'Compiled successfully',
         );
       }
+      return FormModeCompilationOutcome.SUCCEEDED;
     } catch (error) {
       assertErrorThrown(error);
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
-      if (options?.disableErrorRevelation) {
-        throw error;
-      }
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
@@ -556,19 +557,22 @@ export class EditorGraphState {
           this.editorStore.applicationStore.notifyWarning(
             `Can't enter text mode. Transformation to grammar text failed: ${error2.message}`,
           );
-          return;
+          return FormModeCompilationOutcome.FAILED;
         }
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
         yield flowResult(
           this.globalCompileInTextMode({
             ignoreBlocking: true,
             suppressCompilationFailureMessage: true,
+            disableNotificationOnSuccess: options?.disableNotificationOnSuccess,
           }),
         );
+        return FormModeCompilationOutcome.FAILED_AND_FALLBACK_TO_TEXT_MODE;
       } else {
         this.editorStore.applicationStore.notifyWarning(
           `Compilation failed: ${error.message}`,
         );
+        return FormModeCompilationOutcome.FAILED_WITH_ERROR_REVEALED;
       }
     } finally {
       this.isRunningGlobalCompile = false;
@@ -578,8 +582,9 @@ export class EditorGraphState {
   // TODO: when we support showing multiple notifications, we can take this `suppressCompilationFailureMessage` out as
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
   *globalCompileInTextMode(options?: {
-    ignoreBlocking?: boolean;
-    suppressCompilationFailureMessage?: boolean;
+    ignoreBlocking?: boolean | undefined;
+    suppressCompilationFailureMessage?: boolean | undefined;
+    disableNotificationOnSuccess?: boolean | undefined;
     openConsole?: boolean;
   }): GeneratorFn<void> {
     assertTrue(
@@ -603,7 +608,13 @@ export class EditorGraphState {
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
         )) as Entity[];
-      this.editorStore.applicationStore.notifySuccess('Compiled successfully');
+
+      if (!options?.disableNotificationOnSuccess) {
+        this.editorStore.applicationStore.notifySuccess(
+          'Compiled successfully',
+        );
+      }
+
       yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error) {
       assertErrorThrown(error);

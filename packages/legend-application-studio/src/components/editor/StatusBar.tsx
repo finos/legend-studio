@@ -123,10 +123,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
-  const compile = applicationStore.guardUnhandledError(() =>
+  const compile = applicationStore.guardUnhandledError(
     editorStore.isInGrammarTextMode
-      ? flowResult(editorStore.graphState.globalCompileInTextMode())
-      : flowResult(editorStore.graphState.globalCompileInFormMode()),
+      ? () => flowResult(editorStore.graphState.globalCompileInTextMode())
+      : async () => {
+          await flowResult(editorStore.graphState.globalCompileInFormMode());
+        },
   );
   const generate = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.graphState.graphGenerationState.globalGenerate()),

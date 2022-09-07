@@ -23,6 +23,7 @@ export * from './application/LegendStudioPluginManager.js';
 export * from './stores/LegendStudioAppEvent.js';
 
 // stores
+export { FormModeCompilationOutcome } from './stores/EditorGraphState.js';
 export * from './stores/LegendStudioApplicationPlugin.js';
 export * from './stores/EditorStore.js';
 export * from './stores/EditorConfig.js';

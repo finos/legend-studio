@@ -23,6 +23,7 @@ import type { GeneratorFn } from '@finos/legend-shared';
 import {
   type EditorStore,
   EditorExtensionState,
+  FormModeCompilationOutcome,
 } from '@finos/legend-application-studio';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 
@@ -82,21 +83,33 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
           message: 'Compiling graph before building query...',
           showLoading: true,
         });
-        try {
-          yield flowResult(
-            this.editorStore.graphState.globalCompileInFormMode({
-              disableNotificationOnSuccess: true,
-              disableErrorRevelation: true,
-            }),
-          );
-        } catch {
-          this.editorStore.applicationStore.notifyWarning(
-            `Can't open query builder: Compilation failed! Please fix the compilation issue and try again.`,
-          );
-          this.editorStore.setBlockingAlert(undefined);
-          return;
+        const compilationOutcome = (yield flowResult(
+          this.editorStore.graphState.globalCompileInFormMode({
+            // we don't want to notify about compilation success since this is just a simple check
+            // in order to be able to open query builder
+            disableNotificationOnSuccess: true,
+          }),
+        )) as FormModeCompilationOutcome;
+        switch (compilationOutcome) {
+          case FormModeCompilationOutcome.SKIPPED: {
+            this.editorStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.notifyWarning(
+              `Can't open query builder: Can't compile at this time, please try again later`,
+            );
+            return;
+          }
+          case FormModeCompilationOutcome.SUCCEEDED: {
+            this.editorStore.setBlockingAlert(undefined);
+            break;
+          }
+          default: {
+            this.editorStore.applicationStore.notifyWarning(
+              `Can't open query builder: Compilation failed! Please fix the compilation issue and try again`,
+            );
+            this.editorStore.setBlockingAlert(undefined);
+            return;
+          }
         }
-        this.editorStore.setBlockingAlert(undefined);
       }
       if (!this.editorStore.graphState.hasCompilationError) {
         this.mode = mode;
