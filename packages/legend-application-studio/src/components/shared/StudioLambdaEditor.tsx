@@ -93,8 +93,11 @@ export const StudioLambdaEditor = observer(
               editorStore.graphState.checkLambdaParsingError(
                 lambdaEditorState,
                 !disabled,
-                () =>
-                  flowResult(editorStore.graphState.globalCompileInFormMode()),
+                async () => {
+                  await flowResult(
+                    editorStore.graphState.globalCompileInFormMode(),
+                  );
+                },
               ),
             ).catch(applicationStore.alertUnhandledError);
           },
