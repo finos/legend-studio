@@ -72,21 +72,30 @@ export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
   *setEmbeddedQueryBuilderMode(
     mode: EmbeddedQueryBuilderMode | undefined,
   ): GeneratorFn<void> {
-    if (!this.editorStore.isInFormMode) {
-      return;
-    }
     if (mode) {
+      if (!this.editorStore.isInFormMode) {
+        return;
+      }
       this.queryBuilderState.setMode(mode.queryBuilderMode);
       if (!mode.disableCompile) {
         this.editorStore.setBlockingAlert({
           message: 'Compiling graph before building query...',
           showLoading: true,
         });
-        yield flowResult(
-          this.editorStore.graphState.globalCompileInFormMode({
-            disableNotificationOnSuccess: true,
-          }),
-        );
+        try {
+          yield flowResult(
+            this.editorStore.graphState.globalCompileInFormMode({
+              disableNotificationOnSuccess: true,
+              disableErrorRevelation: true,
+            }),
+          );
+        } catch {
+          this.editorStore.applicationStore.notifyWarning(
+            `Can't open query builder: Compilation failed! Please fix the compilation issue and try again.`,
+          );
+          this.editorStore.setBlockingAlert(undefined);
+          return;
+        }
         this.editorStore.setBlockingAlert(undefined);
       }
       if (!this.editorStore.graphState.hasCompilationError) {

@@ -460,6 +460,11 @@ export class EditorGraphState {
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
+    /**
+     * Do not try to reveal the compilation error in form mode nor falling back to text mode to
+     * reveal the code where the error was found
+     */
+    disableErrorRevelation?: boolean;
     openConsole?: boolean;
   }): GeneratorFn<void> {
     assertTrue(
@@ -495,6 +500,9 @@ export class EditorGraphState {
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
+      if (options?.disableErrorRevelation) {
+        throw error;
+      }
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
