@@ -48,8 +48,6 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   switch (mode) {
     case ServiceExecutionMode.FULL_INTERACTIVE:
       return ServiceExecutionMode.FULL_INTERACTIVE;
-    case ServiceExecutionMode.FULL_INTERACTIVE_LIGHT:
-      return ServiceExecutionMode.FULL_INTERACTIVE_LIGHT;
     case ServiceExecutionMode.SEMI_INTERACTIVE:
       return ServiceExecutionMode.SEMI_INTERACTIVE;
     case ServiceExecutionMode.PROD:
@@ -73,18 +71,6 @@ export enum SERVICE_REGISTRATION_PHASE {
   ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
 }
 
-const isFullInteractiveMode = (
-  mode: ServiceExecutionMode | string | undefined,
-): boolean => {
-  if (
-    mode === ServiceExecutionMode.FULL_INTERACTIVE ||
-    mode === ServiceExecutionMode.FULL_INTERACTIVE_LIGHT
-  ) {
-    return true;
-  }
-  return false;
-};
-
 export class ServiceRegistrationState {
   readonly editorStore: EditorStore;
   readonly service: Service;
@@ -95,6 +81,7 @@ export class ServiceRegistrationState {
   projectVersion?: Version | string | undefined;
   activatePostRegistration = true;
   enableModesWithVersioning: boolean;
+  TEMPORARY__useStoreModel = false;
 
   constructor(
     editorStore: EditorStore,
@@ -107,6 +94,7 @@ export class ServiceRegistrationState {
       executionModes: computed,
       updateVersion: action,
       setProjectVersion: action,
+      setUseStoreModelWithFullInteractive: action,
       initialize: action,
       updateType: action,
       updateEnv: action,
@@ -130,9 +118,11 @@ export class ServiceRegistrationState {
   setProjectVersion(val: Version | string | undefined): void {
     this.projectVersion = val;
   }
-
   setActivatePostRegistration(val: boolean): void {
     this.activatePostRegistration = val;
+  }
+  setUseStoreModelWithFullInteractive(val: boolean): void {
+    this.TEMPORARY__useStoreModel = val;
   }
 
   initialize(): void {
@@ -172,8 +162,8 @@ export class ServiceRegistrationState {
         envConfig.executionUrl = _envConfig.executionUrl;
         envConfig.managementUrl = _envConfig.managementUrl;
         // NOTE: For projects that we cannot create a version for, only fully-interactive mode is supported
-        envConfig.modes = _envConfig.modes.filter((mode) =>
-          isFullInteractiveMode(mode),
+        envConfig.modes = _envConfig.modes.filter(
+          (mode) => mode === ServiceExecutionMode.FULL_INTERACTIVE,
         );
         return envConfig;
       })
@@ -189,7 +179,7 @@ export class ServiceRegistrationState {
   get versionOptions(): ServiceVersionOption[] | undefined {
     if (
       this.enableModesWithVersioning &&
-      !isFullInteractiveMode(this.serviceExecutionMode)
+      !(this.serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE)
     ) {
       const options: ServiceVersionOption[] =
         this.editorStore.sdlcState.projectVersions.map((version) => ({
@@ -237,6 +227,7 @@ export class ServiceRegistrationState {
           versionInput,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
+          this.TEMPORARY__useStoreModel,
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
         this.registrationState.setMessage(

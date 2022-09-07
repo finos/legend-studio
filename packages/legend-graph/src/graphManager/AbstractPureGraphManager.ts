@@ -381,6 +381,7 @@ export abstract class AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
   ): Promise<ServiceRegistrationResult>;
   abstract activateService(
     serviceUrl: string,

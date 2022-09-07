@@ -529,7 +529,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
     const REGISTER_ENDPOINT_PREFIX = 'register';
     switch (serviceExecutionMode) {
       case ServiceExecutionMode.FULL_INTERACTIVE:
-      case ServiceExecutionMode.FULL_INTERACTIVE_LIGHT:
         return `${REGISTER_ENDPOINT_PREFIX}_fullInteractive`;
       case ServiceExecutionMode.SEMI_INTERACTIVE:
         return `${REGISTER_ENDPOINT_PREFIX}_semiInteractive`;
@@ -541,6 +540,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     graphModelData: PlainObject<V1_PureModelContext>,
     serviceServerUrl: string,
     serviceExecutionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
@@ -550,8 +550,8 @@ export class V1_EngineServerClient extends AbstractServerClient {
       graphModelData,
       {},
       undefined,
-      serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE_LIGHT
-        ? { storeModel: true }
+      serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE
+        ? { storeModel: TEMPORARY__useStoreModel }
         : undefined,
       { enableCompression: true },
     );

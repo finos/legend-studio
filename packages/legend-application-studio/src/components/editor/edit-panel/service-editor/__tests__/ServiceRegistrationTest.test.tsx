@@ -72,7 +72,6 @@ const setup = async (
                 managementUrl: 'int.services.com',
                 modes: [
                   ServiceExecutionMode.FULL_INTERACTIVE,
-                  ServiceExecutionMode.FULL_INTERACTIVE_LIGHT,
                   ServiceExecutionMode.SEMI_INTERACTIVE,
                   ServiceExecutionMode.PROD,
                 ],
@@ -83,7 +82,6 @@ const setup = async (
                 managementUrl: 'dev.services.com',
                 modes: [
                   ServiceExecutionMode.FULL_INTERACTIVE,
-                  ServiceExecutionMode.FULL_INTERACTIVE_LIGHT,
                   ServiceExecutionMode.SEMI_INTERACTIVE,
                   ServiceExecutionMode.PROD,
                 ],
@@ -202,7 +200,7 @@ test(
     await waitFor(() => getByText(registrationEditor, 'Service Type'));
     await waitFor(() => getByText(registrationEditor, 'Project Version'));
     const registrationState = serviceEditorState.registrationState;
-    expect(registrationState.executionModes).toHaveLength(4);
+    expect(registrationState.executionModes).toHaveLength(3);
     const versions = MOCK__editorStore.sdlcState.projectVersions;
     expect(versions).toHaveLength(2);
     // TODO: rewrite how we test 'dropdown', once the issue of the dropdown options not showing is resolved

@@ -607,12 +607,14 @@ export class V1_Engine {
     input: V1_PureModelContext,
     server: string,
     executionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
   ): Promise<V1_ServiceRegistrationResult> {
     return V1_ServiceRegistrationResult.serialization.fromJson(
       await this.engineServerClient.registerService(
         V1_serializePureModelContext(input),
         server,
         executionMode,
+        TEMPORARY__useStoreModel,
       ),
     );
   }
