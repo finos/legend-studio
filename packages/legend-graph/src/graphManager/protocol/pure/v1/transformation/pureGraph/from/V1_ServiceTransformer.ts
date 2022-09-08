@@ -22,6 +22,7 @@ import {
   type ServiceExecution,
   PureSingleExecution,
   PureMultiExecution,
+  PureInlineExecution,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
@@ -30,6 +31,7 @@ import {
   V1_PureSingleExecution,
   V1_PureMultiExecution,
   V1_KeyedExecutionParameter,
+  V1_PureInlineExecution,
 } from '../../../model/packageableElements/service/V1_ServiceExecution.js';
 import { V1_ServiceTest } from '../../../model/packageableElements/service/V1_ServiceTest.js';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
@@ -167,6 +169,17 @@ const transformMultiExecution = (
   return execution;
 };
 
+const transformInlineExecution = (
+  element: PureInlineExecution,
+  context: V1_GraphTransformerContext,
+): V1_PureInlineExecution => {
+  const execution = new V1_PureInlineExecution();
+  execution.func = element.func.accept_RawValueSpecificationVisitor(
+    new V1_RawValueSpecificationTransformer(context),
+  ) as V1_RawLambda;
+  return execution;
+};
+
 const transformServiceExecution = (
   metamodel: ServiceExecution,
   context: V1_GraphTransformerContext,
@@ -175,6 +188,8 @@ const transformServiceExecution = (
     return transformSingleExecution(metamodel, context);
   } else if (metamodel instanceof PureMultiExecution) {
     return transformMultiExecution(metamodel, context);
+  } else if (metamodel instanceof PureInlineExecution) {
+    return transformInlineExecution(metamodel, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform service execution`,

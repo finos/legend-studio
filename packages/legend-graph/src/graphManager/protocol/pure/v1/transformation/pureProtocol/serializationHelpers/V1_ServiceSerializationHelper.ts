@@ -39,6 +39,7 @@ import {
   V1_KeyedExecutionParameter,
   V1_PureMultiExecution,
   V1_PureSingleExecution,
+  V1_PureInlineExecution,
 } from '../../../model/packageableElements/service/V1_ServiceExecution.js';
 import { V1_Service } from '../../../model/packageableElements/service/V1_Service.js';
 import { V1_rawLambdaModelSchema } from './V1_RawValueSpecificationSerializationHelper.js';
@@ -95,6 +96,7 @@ enum V1_ServiceTestType {
 enum V1_ServiceExecutionType {
   PURE_SINGLE_EXECUTION = 'pureSingleExecution',
   PURE_MULTI_EXECUTION = 'pureMultiExecution',
+  PURE_INLINE_EXECUTION = 'pureInlineExecution',
 }
 
 export const V1_connectionTestDataModelSchema = (
@@ -240,6 +242,16 @@ const pureMultiExecutionModelSchema = createModelSchema(V1_PureMultiExecution, {
   func: usingModelSchema(V1_rawLambdaModelSchema),
 });
 
+const pureInlineExecutionModelSchema = createModelSchema(
+  V1_PureInlineExecution,
+  {
+    _type: usingConstantValueSchema(
+      V1_ServiceExecutionType.PURE_INLINE_EXECUTION,
+    ),
+    func: usingModelSchema(V1_rawLambdaModelSchema),
+  },
+);
+
 const V1_serializeServiceExecution = (
   protocol: V1_ServiceExecution,
 ): PlainObject<V1_ServiceExecution> => {
@@ -247,6 +259,8 @@ const V1_serializeServiceExecution = (
     return serialize(pureSingleExecutionModelSchema, protocol);
   } else if (protocol instanceof V1_PureMultiExecution) {
     return serialize(pureMultiExecutionModelSchema, protocol);
+  } else if (protocol instanceof V1_PureInlineExecution) {
+    return serialize(pureInlineExecutionModelSchema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize service excution`,
@@ -262,6 +276,8 @@ const V1_deserializeServiceExecution = (
       return deserialize(pureSingleExecutionModelSchema, json);
     case V1_ServiceExecutionType.PURE_MULTI_EXECUTION:
       return deserialize(pureMultiExecutionModelSchema, json);
+    case V1_ServiceExecutionType.PURE_INLINE_EXECUTION:
+      return deserialize(pureInlineExecutionModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize service excution of type '${json._type}'`,

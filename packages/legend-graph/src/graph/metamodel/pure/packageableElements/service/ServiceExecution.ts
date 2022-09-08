@@ -117,3 +117,12 @@ export class PureMultiExecution extends PureExecution implements Hashable {
     ]);
   }
 }
+
+export class PureInlineExecution extends PureExecution implements Hashable {
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SERVICE_PURE_INLINE_EXECUTION,
+      super.hashCode,
+    ]);
+  }
+}

@@ -22,6 +22,7 @@ import {
   type ServiceExecution,
   PureMultiExecution,
   PureSingleExecution,
+  PureInlineExecution,
 } from '../../../graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 import type { ServiceTest } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTest.js';
 import {
@@ -259,6 +260,13 @@ export const observe_PureMultiExecution = skipObservedWithContext(
   },
 );
 
+export const observe_PureInlineExecution = skipObservedWithContext(
+  (metamodel: PureInlineExecution, context): PureInlineExecution => {
+    observe_Abstract_PureExecution(metamodel);
+    return metamodel;
+  },
+);
+
 export const observe_ServiceExecution = (
   metamodel: ServiceExecution,
   context: ObserverContext,
@@ -267,6 +275,8 @@ export const observe_ServiceExecution = (
     return observe_PureSingleExecution(metamodel, context);
   } else if (metamodel instanceof PureMultiExecution) {
     return observe_PureMultiExecution(metamodel, context);
+  } else if (metamodel instanceof PureInlineExecution) {
+    return observe_PureInlineExecution(metamodel, context);
   }
   return metamodel;
 };

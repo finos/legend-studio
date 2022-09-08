@@ -87,3 +87,15 @@ export class V1_PureMultiExecution
     ]);
   }
 }
+
+export class V1_PureInlineExecution
+  extends V1_PureExecution
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SERVICE_PURE_INLINE_EXECUTION,
+      super.hashCode,
+    ]);
+  }
+}

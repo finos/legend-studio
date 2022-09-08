@@ -34,6 +34,7 @@ import {
   PureSingleExecution,
   PureMultiExecution,
   KeyedExecutionParameter,
+  PureInlineExecution,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceExecution.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import { V1_ServiceTest } from '../../../../model/packageableElements/service/V1_ServiceTest.js';
@@ -41,6 +42,7 @@ import {
   type V1_ServiceExecution,
   V1_PureSingleExecution,
   V1_PureMultiExecution,
+  V1_PureInlineExecution,
 } from '../../../../model/packageableElements/service/V1_ServiceExecution.js';
 import {
   type V1_Runtime,
@@ -390,6 +392,19 @@ export const V1_buildServiceExecution = (
       },
     );
     return execution;
+  } else if (serviceExecution instanceof V1_PureInlineExecution) {
+    assertNonNullable(
+      serviceExecution.func,
+      `Service Pure execution 'func' field is missing`,
+    );
+    return new PureInlineExecution(
+      V1_buildRawLambdaWithResolvedPaths(
+        serviceExecution.func.parameters,
+        serviceExecution.func.body,
+        context,
+      ),
+      parentService,
+    );
   }
   throw new UnsupportedOperationError();
 };

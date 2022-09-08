@@ -31,4 +31,5 @@ export { V1_Service } from './graphManager/protocol/pure/v1/model/packageableEle
 export {
   V1_PureMultiExecution,
   V1_PureSingleExecution,
+  V1_PureInlineExecution,
 } from './graphManager/protocol/pure/v1/model/packageableElements/service/V1_ServiceExecution.js';
