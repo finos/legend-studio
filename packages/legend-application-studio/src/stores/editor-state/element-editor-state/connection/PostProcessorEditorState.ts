@@ -35,7 +35,6 @@ export class PostProcessorEditorState {
   ) {
     makeObservable(this, {
       postProcessor: observable,
-      setselectedPostProcessor: action,
       connectionValueState: observable,
       selectedMapper: observable,
       selectedSchema: observable,
@@ -46,9 +45,6 @@ export class PostProcessorEditorState {
 
     this.postProcessor = postProcessor;
     this.connectionValueState = connectionValueState;
-  }
-  setselectedPostProcessor(val: PostProcessor): void {
-    this.postProcessor = val;
   }
 
   setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
