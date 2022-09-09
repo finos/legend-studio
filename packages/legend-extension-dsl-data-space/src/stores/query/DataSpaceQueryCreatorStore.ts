@@ -20,12 +20,9 @@ import {
   QueryTaggedValue,
   RuntimePointer,
   PackageableElementExplicitReference,
-  getAllClassMappings,
-  isSystemElement,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
-  BasicQueryBuilderState,
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
@@ -35,16 +32,15 @@ import type {
   DepotServerClient,
   ProjectGAVCoordinates,
 } from '@finos/legend-server-depot';
-import {
-  getNullableFirstElement,
-  guaranteeNonNullable,
-  uuid,
-} from '@finos/legend-shared';
+import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSLDataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from './DataSpaceInfo.js';
+import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 
 const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -55,16 +51,6 @@ const createQueryDataSpaceTaggedValue = (
   taggedValue.value = dataSpacePath;
   return taggedValue;
 };
-
-class DataSpaceQueryCreatorState extends BasicQueryBuilderState {
-  override get isMappingReadOnly(): boolean {
-    return true;
-  }
-
-  override get isRuntimeReadOnly(): boolean {
-    return true;
-  }
-}
 
 export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   groupId: string;
@@ -107,10 +93,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    const queryBuilderState = new DataSpaceQueryCreatorState(
-      this.applicationStore,
-      this.graphManagerState,
-    );
     const dataSpace = getDataSpace(
       this.dataSpacePath,
       this.graphManagerState.graph,
@@ -121,46 +103,54 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       ),
       `Can't find execution context '${this.executionContext}'`,
     );
-    queryBuilderState.setMapping(executionContext.mapping.value);
-    queryBuilderState.setRuntimeValue(
-      new RuntimePointer(
-        PackageableElementExplicitReference.create(
-          this.runtimePath
-            ? this.graphManagerState.graph.getRuntime(this.runtimePath)
-            : executionContext.defaultRuntime.value,
-        ),
-      ),
+    const queryBuilderState = new DataSpaceQueryBuilderState(
+      dataSpace,
+      executionContext,
+      this.groupId,
+      this.artifactId,
+      this.versionId,
+      (dataSpaceInfo: DataSpaceInfo) => {
+        if (dataSpaceInfo.defaultExecutionContext) {
+          this.applicationStore.navigator.jumpTo(
+            generateDataSpaceQueryCreatorRoute(
+              dataSpaceInfo.groupId,
+              dataSpaceInfo.artifactId,
+              dataSpaceInfo.versionId,
+              dataSpaceInfo.path,
+              dataSpaceInfo.defaultExecutionContext,
+              undefined,
+              undefined,
+            ),
+          );
+        } else {
+          this.applicationStore.notifyWarning(
+            `Can't switch data space: default execution context not specified`,
+          );
+        }
+      },
+      this.depotServerClient,
+      this.applicationStore,
+      this.graphManagerState,
     );
+    queryBuilderState.setExecutionContext(executionContext);
+    queryBuilderState.propagateExecutionContextChange(executionContext);
 
+    // set runtime if already chosen
+    if (this.runtimePath) {
+      queryBuilderState.changeRuntime(
+        new RuntimePointer(
+          PackageableElementExplicitReference.create(
+            this.graphManagerState.graph.getRuntime(this.runtimePath),
+          ),
+        ),
+      );
+    }
+
+    // set class if already chosen
     if (this.classPath) {
       queryBuilderState.changeClass(
         this.graphManagerState.graph.getClass(this.classPath),
       );
-    } else {
-      // try to find a class to set
-      // first, find classes which is mapped by the mapping
-      // then, find any classes except for class coming from system
-      // if none found, default to a dummy blank query
-      const defaultClass =
-        getNullableFirstElement(
-          queryBuilderState.mapping
-            ? getAllClassMappings(queryBuilderState.mapping).map(
-                (classMapping) => classMapping.class.value,
-              )
-            : [],
-        ) ??
-        getNullableFirstElement(
-          queryBuilderState.graphManagerState.graph.classes.filter(
-            (el) => !isSystemElement(el),
-          ),
-        );
-      if (defaultClass) {
-        queryBuilderState.changeClass(defaultClass);
-      } else {
-        queryBuilderState.initialize(
-          this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
-        );
-      }
     }
 
     return queryBuilderState;

@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import { QueryBuilderState } from '../QueryBuilderState.js';
+import { SquareIcon } from '@finos/legend-art';
 
-export class BasicQueryBuilderState extends QueryBuilderState {
-  get isMappingReadOnly(): boolean {
-    return false;
-  }
-
-  get isRuntimeReadOnly(): boolean {
-    return false;
-  }
-}
+export const DataSpaceIcon: React.FC = () => (
+  <div className="icon icon--data-space">
+    <SquareIcon />
+  </div>
+);

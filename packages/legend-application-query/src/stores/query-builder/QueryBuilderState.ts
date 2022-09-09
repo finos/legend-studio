@@ -90,7 +90,8 @@ export abstract class QueryBuilderState {
   mapping?: Mapping | undefined;
   runtimeValue?: Runtime | undefined;
 
-  sideBarClassName?: string | undefined;
+  // NOTE: this makes it so that we need to import components in stores code,
+  // we probably want to refactor to an extension mechanism
   TEMPORARY__setupPanelContentRenderer?: (() => React.ReactNode) | undefined;
 
   constructor(
@@ -114,6 +115,7 @@ export abstract class QueryBuilderState {
       mapping: observable,
       runtimeValue: observable,
 
+      sideBarClassName: computed,
       isQuerySupported: computed,
       validationIssues: computed,
 
@@ -152,10 +154,21 @@ export abstract class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  abstract get isParameterSupportDisabled(): boolean;
-  abstract get isResultPanelHidden(): boolean;
   abstract get isMappingReadOnly(): boolean;
   abstract get isRuntimeReadOnly(): boolean;
+
+  get sideBarClassName(): string | undefined {
+    return undefined;
+  }
+
+  get isParameterSupportDisabled(): boolean {
+    return false;
+  }
+
+  get isResultPanelHidden(): boolean {
+    return false;
+  }
+
   /**
    * This flag is for turning on/off DnD support from projection panel to filter panel,
    * and will be leveraged when the concepts of workflows are introduced into query builder.

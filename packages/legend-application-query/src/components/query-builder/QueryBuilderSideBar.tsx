@@ -300,7 +300,9 @@ const BasicQueryBuilderSetup = observer(
         />
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
-            execution context
+            <div className="query-builder__setup__config-group__header__title">
+              execution context
+            </div>
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">

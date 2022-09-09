@@ -24,21 +24,12 @@ import {
 } from '@finos/legend-graph';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type React from 'react';
-import { renderClassQueryBuilderSetupContent } from '../../../components/query-builder/workflows/ClassQueryBuilder.js';
+import { renderClassQueryBuilderSetupPanelContent } from '../../../components/query-builder/workflows/ClassQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
 export class ClassQueryBuilderState extends QueryBuilderState {
-  override sideBarClassName = '';
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
-    renderClassQueryBuilderSetupContent(this);
-
-  get isParameterSupportDisabled(): boolean {
-    return false;
-  }
-
-  get isResultPanelHidden(): boolean {
-    return false;
-  }
+    renderClassQueryBuilderSetupPanelContent(this);
 
   get isMappingReadOnly(): boolean {
     return false;
@@ -48,6 +39,12 @@ export class ClassQueryBuilderState extends QueryBuilderState {
     return false;
   }
 
+  /**
+   * Propagation after changing the class:
+   * - If no mapping is selected, try to select a compatible mapping
+   * - If the chosen mapping is compatible with the new selected class, do nothing, otherwise, try to select a compatible mapping
+   * - This change will propagate to runtime: we will attempt to select a compatible runtime with the newly selected mapping
+   */
   propagateClassChange(_class: Class): void {
     const compatibleMappings = getClassCompatibleMappings(
       _class,
@@ -67,6 +64,11 @@ export class ClassQueryBuilderState extends QueryBuilderState {
     }
   }
 
+  /**
+   * Propagation after changing the mapping:
+   * - If no runtime is selected, try to select a compatible runtime
+   * - If the chosen runtime is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible runtime
+   */
   propagateMappingChange(mapping: Mapping): void {
     if (this.isRuntimeReadOnly) {
       return;
@@ -79,13 +81,11 @@ export class ClassQueryBuilderState extends QueryBuilderState {
     );
     const possibleNewRuntime = getNullableFirstElement(compatibleRuntimes);
     if (possibleNewRuntime) {
-      this.setRuntimeValue(
+      this.changeRuntime(
         new RuntimePointer(
           PackageableElementExplicitReference.create(possibleNewRuntime),
         ),
       );
-    } else {
-      this.setRuntimeValue(undefined);
     }
   }
 }

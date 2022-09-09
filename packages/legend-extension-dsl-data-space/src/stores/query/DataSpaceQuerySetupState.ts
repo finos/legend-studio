@@ -16,7 +16,7 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class } from '@finos/legend-graph';
-import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
+import type { Entity } from '@finos/legend-storage';
 import {
   type QuerySetupStore,
   QuerySetupState,
@@ -26,14 +26,12 @@ import {
   type StoredEntity,
   DepotScope,
   ProjectData,
-  SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
   type PlainObject,
   ActionState,
   assertErrorThrown,
-  isString,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
@@ -41,21 +39,17 @@ import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protoco
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
-
-export interface DataSpaceContext {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-  title: string | undefined;
-  name: string;
-  path: string;
-}
+import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
+import {
+  DEFAULT_DATA_SPACE_LOADER_LIMIT,
+  MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH,
+} from '../../DSLDataSpace_Const.js';
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
-  dataSpaces: DataSpaceContext[] = [];
+  dataSpaces: DataSpaceInfo[] = [];
   loadDataSpacesState = ActionState.create();
   loadDataSpaceState = ActionState.create();
-  currentDataSpace?: DataSpaceContext | undefined;
+  currentDataSpace?: DataSpaceInfo | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   toGetSnapShot = false;
 
@@ -76,7 +70,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     });
   }
 
-  setCurrentDataSpace(val: DataSpaceContext | undefined): void {
+  setCurrentDataSpace(val: DataSpaceInfo | undefined): void {
     this.currentDataSpace = val;
   }
 
@@ -89,7 +83,8 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
-    const isValidSearchString = searchText.length >= 3;
+    const isValidSearchString =
+      searchText.length >= MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH;
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
@@ -100,21 +95,12 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             scope: this.toGetSnapShot
               ? DepotScope.SNAPSHOT
               : DepotScope.RELEASES,
-            limit: 10,
+            limit: DEFAULT_DATA_SPACE_LOADER_LIMIT,
           },
         )) as StoredEntity[]
-      ).map((storedEntity) => ({
-        groupId: storedEntity.groupId,
-        artifactId: storedEntity.artifactId,
-        versionId: this.toGetSnapShot
-          ? SNAPSHOT_VERSION_ALIAS
-          : storedEntity.versionId,
-        path: storedEntity.entity.path,
-        name: extractEntityNameFromPath(storedEntity.entity.path),
-        title: isString(storedEntity.entity.content.title)
-          ? storedEntity.entity.content.title
-          : undefined,
-      }));
+      ).map((storedEntity) =>
+        extractDataSpaceInfo(storedEntity, this.toGetSnapShot),
+      );
       this.loadDataSpacesState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -123,7 +109,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     }
   }
 
-  *loadDataSpace(dataSpace: DataSpaceContext): GeneratorFn<void> {
+  *loadDataSpace(dataSpace: DataSpaceInfo): GeneratorFn<void> {
     this.loadDataSpaceState.inProgress();
     this.loadDataSpaceState.setMessage(`Initializing...`);
 

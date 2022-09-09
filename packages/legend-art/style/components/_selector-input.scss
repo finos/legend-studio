@@ -16,6 +16,12 @@
 
 @use 'mixins' as *;
 
+.selector-input {
+  &__indicator {
+    cursor: pointer;
+  }
+}
+
 .selector-input .selector-input {
   &__control {
     cursor: text;

@@ -107,3 +107,39 @@
     }
   }
 }
+
+.query-builder__setup__data-space {
+  &--with-runtime {
+    .query-builder__setup.panel {
+      height: 16.4rem;
+    }
+
+    .query-builder__side-bar__content {
+      height: calc(100% - 16.4rem);
+    }
+  }
+
+  &__option {
+    @include ellipsisTextOverflow;
+
+    display: inline-flex;
+  }
+
+  &__option__path {
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-400);
+    margin-left: 0.5rem;
+    line-height: 1.4rem;
+  }
+
+  &__option__gav {
+    font-size: 1.2rem;
+    color: var(--color-blue-50);
+    margin-left: 0.5rem;
+    line-height: 1.4rem;
+  }
+
+  &__icon__execution-context {
+    color: var(--color-lime-75);
+  }
+}

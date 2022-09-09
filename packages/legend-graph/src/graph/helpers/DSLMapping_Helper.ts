@@ -273,6 +273,17 @@ export const getObjectInputType = (type: string): ObjectInputType => {
   }
 };
 
+export const getMappingCompatibleClasses = (
+  mapping: Mapping,
+  classes: Class[],
+): Class[] => {
+  const mappedClasses = new Set<Class>();
+  getAllClassMappings(mapping).forEach((cm) =>
+    mappedClasses.add(cm.class.value),
+  );
+  return classes.filter((c) => mappedClasses.has(c));
+};
+
 export const getClassCompatibleMappings = (
   _class: Class,
   mappings: Mapping[],

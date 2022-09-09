@@ -49,16 +49,9 @@ import type { ClassQueryBuilderState } from '../../../stores/query-builder/workf
  * - For mapping selector: the list of compatible mappings with the selected class
  * - For runtime value selector: the list of compatible runtimes with the selected mapping
  *
- * After changing the class:
- * - If no mapping is selected, we will try to select a compatible mapping
- * - If the choosen mapping is not compatible with the new selected class, we will try to select a compatible mapping
- * - This change will propagate to runtime: we will attempt to select a compatible runtime with the newly selected mapping
- *
- * After chaning the mapping:
- * - If not runtime is selected, we will try to select a compatible runtime
- * - If the choosen runtime is not compatible with the new selected mapping, we will try to select a compatible runtime
+ * See details on propagation/cascading in {@link ClassQueryBuilderState}
  */
-const ClassQueryBuilderSetup = observer(
+const ClassQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: ClassQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
@@ -142,7 +135,9 @@ const ClassQueryBuilderSetup = observer(
         />
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
-            execution context
+            <div className="query-builder__setup__config-group__header__title">
+              execution context
+            </div>
           </div>
           <div className="query-builder__setup__config-group__content">
             <div className="query-builder__setup__config-group__item">
@@ -183,7 +178,7 @@ const ClassQueryBuilderSetup = observer(
               </div>
               <CustomSelectorInput
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose or create a runtime..."
+                placeholder="Choose a runtime..."
                 noMatchMessage="No compatible runtime found for specified mapping"
                 disabled={
                   queryBuilderState.isRuntimeReadOnly ||
@@ -204,8 +199,8 @@ const ClassQueryBuilderSetup = observer(
   },
 );
 
-export const renderClassQueryBuilderSetupContent = (
+export const renderClassQueryBuilderSetupPanelContent = (
   queryBuilderState: ClassQueryBuilderState,
 ): React.ReactNode => (
-  <ClassQueryBuilderSetup queryBuilderState={queryBuilderState} />
+  <ClassQueryBuilderSetupPanelContent queryBuilderState={queryBuilderState} />
 );

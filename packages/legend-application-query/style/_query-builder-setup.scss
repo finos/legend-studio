@@ -34,13 +34,28 @@
     &__header {
       @include flexVCenter;
 
+      justify-content: space-between;
       height: 1.6rem;
       padding-left: 1rem;
-      font-size: 1rem;
       background: var(--color-blue-300);
-      color: var(--color-light-grey-300);
-      font-weight: 500;
       border-radius: 0.2rem 0.2rem 0.2rem 0;
+
+      &__title {
+        color: var(--color-light-grey-300);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      &__dropdown-trigger {
+        @include flexCenter;
+
+        height: 100%;
+        width: 3rem;
+
+        svg {
+          color: var(--color-light-grey-300);
+        }
+      }
     }
 
     &__content {
