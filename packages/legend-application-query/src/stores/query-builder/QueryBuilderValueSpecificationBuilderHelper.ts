@@ -77,11 +77,7 @@ const isDefaultDatePropagationSupported = (
   currentPropertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
   prevPropertyExpression?: AbstractPropertyExpression | undefined,
-  isDatePropagationNotSupported?: boolean,
 ): boolean => {
-  if (isDatePropagationNotSupported) {
-    return false;
-  }
   const property = currentPropertyExpression.func;
   const graph = queryBuilderState.graphManagerState.graph;
   // Default date propagation is not supported for current expression when the previous property expression is a derived property.
@@ -142,7 +138,13 @@ const isDefaultDatePropagationSupported = (
 export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
-  isDatePropagationNotSupported?: boolean,
+  /**
+   * As of now, we don't support date propagation for aggregation-class functions
+   * so we have this temporary flag to disable date propagation, there could be other
+   * functions that we need to handle, then we will revise this approach
+   * See https://github.com/finos/legend-studio/issues/1471
+   */
+  TEMPORARY__disableDatePropagation?: boolean,
 ): ValueSpecification => {
   const graph = queryBuilderState.graphManagerState.graph;
   const newPropertyExpression = new AbstractPropertyExpression(
@@ -174,13 +176,13 @@ export const buildPropertyExpressionChain = (
         if (parameterValue instanceof INTERNAL__PropagatedValue) {
           // Replace with argumentless derived property expression only when default date propagation is supported
           if (
+            !TEMPORARY__disableDatePropagation &&
             isDefaultDatePropagationSupported(
               guaranteeType(currentExpression, AbstractPropertyExpression),
               queryBuilderState,
               nextExpression instanceof AbstractPropertyExpression
                 ? nextExpression
                 : undefined,
-              isDatePropagationNotSupported,
             )
           ) {
             // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
