@@ -226,11 +226,6 @@
   }
 }
 
-.panel__content__sub-form {
-  padding: 0.5rem 0 0 2rem;
-  border-left: 0.3rem solid var(--color-dark-grey-80);
-}
-
 .panel__content__form {
   padding: 2rem;
 
@@ -316,6 +311,7 @@
 
   &__section__remove-btn {
     width: 10%;
+    display: flex;
   }
 
   &__section__textarea {

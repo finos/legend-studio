@@ -45,7 +45,6 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
-  PanelTabs,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -1569,9 +1568,9 @@ export const ClassFormEditor = observer(
       UML_EDITOR_TAB.STEREOTYPES,
     ];
     const changeTab =
-      <T,>(tab: T) =>
+      (tab: UML_EDITOR_TAB): (() => void) =>
       (): void => {
-        editorState.setSelectedTab(tab as unknown as UML_EDITOR_TAB);
+        editorState.setSelectedTab(tab);
         editorState.setSelectedProperty(undefined);
       };
 
@@ -1746,14 +1745,6 @@ export const ClassFormEditor = observer(
                     </div>
                   ))}
                 </div>
-
-                <PanelTabs
-                  tabTitles={Object.values(tabs)}
-                  changeTheTab={changeTab}
-                  selectedTab={selectedTab}
-                  tabClassName="uml-element-editor__tab"
-                />
-
                 <div className="panel__header__actions">
                   <button
                     className="panel__header__action"
