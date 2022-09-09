@@ -49,6 +49,7 @@ import type { V1_RawRelationalOperationElement } from '../model/packageableEleme
 import type { V1_RenderStyle } from './grammar/V1_RenderStyle.js';
 import type { V1_ParserError } from './grammar/V1_ParserError.js';
 import type { V1_MappingModelCoverageAnalysisResult } from './analytics/V1_MappingModelCoverageAnalysis.js';
+import { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
 
 enum CORE_ENGINE_ACTIVITY_TRACE {
   GRAMMAR_TO_JSON = 'transform Pure code to protocol',
@@ -522,20 +523,36 @@ export class V1_EngineServerClient extends AbstractServerClient {
   getServerServiceInfo = (): Promise<
     PlainObject<V1_ServiceConfigurationInfo>
   > => this.get(`${this._server()}/info/services`);
+  getRegisterServiceUrlFromExecMode = (
+    serviceExecutionMode: ServiceExecutionMode,
+  ): string => {
+    const REGISTER_ENDPOINT_PREFIX = 'register';
+    switch (serviceExecutionMode) {
+      case ServiceExecutionMode.FULL_INTERACTIVE:
+        return `${REGISTER_ENDPOINT_PREFIX}_fullInteractive`;
+      case ServiceExecutionMode.SEMI_INTERACTIVE:
+        return `${REGISTER_ENDPOINT_PREFIX}_semiInteractive`;
+      default:
+        return REGISTER_ENDPOINT_PREFIX;
+    }
+  };
   registerService = (
     graphModelData: PlainObject<V1_PureModelContext>,
     serviceServerUrl: string,
-    serviceExecutionMode: string | undefined,
+    serviceExecutionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
   ): Promise<PlainObject<V1_ServiceRegistrationResult>> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.REGISTER_SERVICE),
-      `${this._service(serviceServerUrl)}/register${
-        serviceExecutionMode ? `_${serviceExecutionMode}` : ''
-      }`,
+      `${this._service(
+        serviceServerUrl,
+      )}/${this.getRegisterServiceUrlFromExecMode(serviceExecutionMode)}`,
       graphModelData,
       {},
       undefined,
-      undefined,
+      serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE
+        ? { storeModel: TEMPORARY__useStoreModel }
+        : undefined,
       { enableCompression: true },
     );
   getServiceVersionInfo = (

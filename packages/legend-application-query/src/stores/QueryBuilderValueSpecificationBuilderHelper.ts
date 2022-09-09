@@ -77,7 +77,11 @@ const isDefaultDatePropagationSupported = (
   currentPropertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
   prevPropertyExpression?: AbstractPropertyExpression | undefined,
+  isDatePropagationNotSupported?: boolean,
 ): boolean => {
+  if (isDatePropagationNotSupported) {
+    return false;
+  }
   const property = currentPropertyExpression.func;
   const graph = queryBuilderState.graphManagerState.graph;
   // Default date propagation is not supported for current expression when the previous property expression is a derived property.
@@ -138,6 +142,7 @@ const isDefaultDatePropagationSupported = (
 export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
+  isDatePropagationNotSupported?: boolean,
 ): ValueSpecification => {
   const graph = queryBuilderState.graphManagerState.graph;
   const newPropertyExpression = new AbstractPropertyExpression(
@@ -175,6 +180,7 @@ export const buildPropertyExpressionChain = (
               nextExpression instanceof AbstractPropertyExpression
                 ? nextExpression
                 : undefined,
+              isDatePropagationNotSupported,
             )
           ) {
             // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of

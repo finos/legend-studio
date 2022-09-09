@@ -52,6 +52,9 @@
       "path": "packages/legend-extension-dsl-persistence"
     },
     {
+      "path": "packages/legend-extension-dsl-mastery"
+    },
+    {
       "path": "packages/legend-extension-dsl-persistence-cloud"
     },
     {

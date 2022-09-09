@@ -1,0 +1,43 @@
+###Pure
+Class org::legend::Person
+{
+  name: String[0..1];
+}
+
+
+###Mapping
+Mapping org::legend::PersonMapping
+(
+)
+
+
+###Service
+Service org::legend::PersonService
+{
+  pattern: 'person';
+  documentation: 'Person test service';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: org::legend::Person[1]|$src.name;
+    mapping: org::legend::PersonMapping;
+    runtime:
+    #{
+      mappings:
+      [
+        org::legend::PersonMapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+  test: Single
+  {
+    data: 'test';
+    asserts:
+    [
+    ];
+  }
+}

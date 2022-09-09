@@ -1,5 +1,13 @@
 # @finos/legend-extension-application-studio-query-builder
 
+## 3.0.12
+
+## 3.0.11
+
+### Patch Changes
+
+- [#1463](https://github.com/finos/legend-studio/pull/1463) [`85abf3d7`](https://github.com/finos/legend-studio/commit/85abf3d717738960314a055adf1ea5132df3705b) ([@akphi](https://github.com/akphi)) - Fix a problem with embedded query builder can't be closed in an edge case where there is a compilation error that could be auto-corrected when compiling in text-mode ([#1460](https://github.com/finos/legend-studio/issues/1460)).
+
 ## 3.0.10
 
 ## 3.0.9

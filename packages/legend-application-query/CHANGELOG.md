@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 5.2.8
+
+### Patch Changes
+
+- [#1468](https://github.com/finos/legend-studio/pull/1468) [`d837cb7a`](https://github.com/finos/legend-studio/commit/d837cb7ae67e4de1deae98b46a4d22a298f887b9) ([@gayathrir11](https://github.com/gayathrir11)) - Propagate default milestoning dates for aggregate operations in projection
+
+## 5.2.7
+
 ## 5.2.6
 
 ### Patch Changes

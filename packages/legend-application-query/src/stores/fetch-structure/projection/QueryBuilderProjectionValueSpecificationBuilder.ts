@@ -259,6 +259,7 @@ export const appendProjection = (
             buildPropertyExpressionChain(
               projectionColumnState.propertyExpressionState.propertyExpression,
               projectionColumnState.propertyExpressionState.queryBuilderState,
+              true,
             ),
           ],
           queryBuilderState.graphManagerState.graph,

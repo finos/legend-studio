@@ -2105,6 +2105,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
+    TEMPORARY__useStoreModel: boolean,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2176,7 +2177,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       }
     }
     return V1_buildServiceRegistrationResult(
-      await this.engine.registerService(input, server, executionMode),
+      await this.engine.registerService(
+        input,
+        server,
+        executionMode,
+        TEMPORARY__useStoreModel,
+      ),
     );
   }
 
