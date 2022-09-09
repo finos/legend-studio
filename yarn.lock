@@ -3792,9 +3792,9 @@ __metadata:
   linkType: hard
 
 "@sinclair/typebox@npm:^0.24.1":
-  version: 0.24.38
-  resolution: "@sinclair/typebox@npm:0.24.38"
-  checksum: 4eb4435992452c739146cfffdfd044ae396304e5135d1600a3432b1821fef73d3916f2f8c6d78db97d25ac423b6d72346eb1a165ecf206d4a30adc3c36ad212b
+  version: 0.24.39
+  resolution: "@sinclair/typebox@npm:0.24.39"
+  checksum: 4e4ec3e7df9be6f1c8661ae73f7be6bf777b0bdf37415240c3f177a776bc51d7e87663435b0c351de6aa77ace5b581a4c983104e54f6aa3d7d0c462513143f70
   languageName: node
   linkType: hard
 
@@ -5807,9 +5807,9 @@ __metadata:
   linkType: hard
 
 "ci-info@npm:^3.1.0, ci-info@npm:^3.2.0":
-  version: 3.3.2
-  resolution: "ci-info@npm:3.3.2"
-  checksum: fd81f1edd2d3b0f6cb077b2e84365136d87b9db8c055928c1ad69da8a76c2c2f19cba8ea51b90238302157ca927f91f92b653e933f2398dde4867500f08d6e62
+  version: 3.4.0
+  resolution: "ci-info@npm:3.4.0"
+  checksum: 7f660730170a6ce248e173b670587a0c583e31526d21afcd21f77c811c1aaeb8926999081542d1f30e12cce1df582d4c88709fa45f44c00498b46bdf21d4d21a
   languageName: node
   linkType: hard
 
@@ -6901,9 +6901,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.202":
-  version: 1.4.244
-  resolution: "electron-to-chromium@npm:1.4.244"
-  checksum: f9d6f9a389c34d5b9479e77b72f611049241bb1fa1f1b5a38ef3cfe6e78b5108d1a1c6452f6c62bddba1263c35d3ae6b0cd495bb9a94355e911470a0d473d7c4
+  version: 1.4.247
+  resolution: "electron-to-chromium@npm:1.4.247"
+  checksum: cbe17a6164f5baceb91b09d7d0f09b3d2ce1f0fc3a3c2494622694cb518aa5192cf490aac597ee6dc4cbfb004109d0a214b465c9047e53130a89282aa14b752e
   languageName: node
   linkType: hard
 
@@ -7563,15 +7563,15 @@ __metadata:
   linkType: hard
 
 "fast-glob@npm:^3.0.3, fast-glob@npm:^3.2.11, fast-glob@npm:^3.2.9":
-  version: 3.2.11
-  resolution: "fast-glob@npm:3.2.11"
+  version: 3.2.12
+  resolution: "fast-glob@npm:3.2.12"
   dependencies:
     "@nodelib/fs.stat": ^2.0.2
     "@nodelib/fs.walk": ^1.2.3
     glob-parent: ^5.1.2
     merge2: ^1.3.0
     micromatch: ^4.0.4
-  checksum: f473105324a7780a20c06de842e15ddbb41d3cb7e71d1e4fe6e8373204f22245d54f5ab9e2061e6a1c613047345954d29b022e0e76f5c28b1df9858179a0e6d7
+  checksum: 0b1990f6ce831c7e28c4d505edcdaad8e27e88ab9fa65eedadb730438cfc7cde4910d6c975d6b7b8dc8a73da4773702ebcfcd6e3518e73938bb1383badfe01c2
   languageName: node
   linkType: hard
 
@@ -7583,8 +7583,8 @@ __metadata:
   linkType: hard
 
 "fast-json-stringify@npm:^5.0.0":
-  version: 5.2.0
-  resolution: "fast-json-stringify@npm:5.2.0"
+  version: 5.3.0
+  resolution: "fast-json-stringify@npm:5.3.0"
   dependencies:
     "@fastify/deepmerge": ^1.0.0
     ajv: ^8.10.0
@@ -7592,7 +7592,7 @@ __metadata:
     fast-deep-equal: ^3.1.3
     fast-uri: ^2.1.0
     rfdc: ^1.2.0
-  checksum: 26c68db73e2c4f2dc66530c4602a2bd778a588922ba4a075b0c5545bcb34226360ddf08c1dfc1831dd5030c6302e8557b6deb48d96942f39ac4a63418a523bed
+  checksum: ed6e1395c863d65950a574e9374c6099510de1f45c9ad6225482dbcb87d57451c2995b841931b8759c75a596a5e4d0931f1773c969ab1423cb5638938a92d2e2
   languageName: node
   linkType: hard
 
@@ -7742,12 +7742,12 @@ __metadata:
   linkType: hard
 
 "find-my-way@npm:^7.0.0":
-  version: 7.0.1
-  resolution: "find-my-way@npm:7.0.1"
+  version: 7.1.0
+  resolution: "find-my-way@npm:7.1.0"
   dependencies:
     fast-deep-equal: ^3.1.3
     safe-regex2: ^2.0.0
-  checksum: ffadbab35c75cb6dc7d9f81a94c4c305713d01b676d684069d751b2d8525d5c84e4fe4f439345b0aed80b7da18ca4fc13579d3c497488ab06976ee30ed78eb33
+  checksum: a3a5897ce4aae2136f26381ab0b6874d44aa3c1fead1a891d6e69323cb42793ef37bfbb7c849a0f63e5b84a2bd9f8ee3e13626192f7f16515b92f2a318a439e8
   languageName: node
   linkType: hard
 
@@ -10056,13 +10056,13 @@ __metadata:
   linkType: hard
 
 "light-my-request@npm:^5.5.1":
-  version: 5.5.1
-  resolution: "light-my-request@npm:5.5.1"
+  version: 5.6.0
+  resolution: "light-my-request@npm:5.6.0"
   dependencies:
     cookie: ^0.5.0
     process-warning: ^2.0.0
     set-cookie-parser: ^2.4.1
-  checksum: 100f11fe91470dcbf1cd610100055ea658afa3099a99ae134cb3aa7e299cb22a75d37ed1f9f2a1eb0dbd7460f71b75c458497e66af2bc98d245f848b0235f6d5
+  checksum: 300e24a73b8dc1291138df2edde2e1134147a3d25643541aa172c8db6b09a5c27b7047dcfafe53a8528edb49dca065762a38737cd6d344860399257c2912f7e9
   languageName: node
   linkType: hard
 
