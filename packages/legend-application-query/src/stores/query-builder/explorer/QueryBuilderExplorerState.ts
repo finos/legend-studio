@@ -383,10 +383,15 @@ export const generateSubtypeNodeMappingData = (
 export const getRootMappingData = (
   _class: Class,
   modelCoverageAnalysisResult: MappingModelCoverageAnalysisResult,
-): QueryBuilderExplorerTreeNodeMappingData => ({
-  mapped: true,
-  mappedEntity: modelCoverageAnalysisResult.__ENTITIES_INDEX.get(_class.path),
-});
+): QueryBuilderExplorerTreeNodeMappingData => {
+  const mappedEntity = modelCoverageAnalysisResult.__ENTITIES_INDEX.get(
+    _class.path,
+  );
+  return {
+    mapped: Boolean(mappedEntity),
+    mappedEntity,
+  };
+};
 
 const generateExplorerTreeClassNodeChildrenIDs = (
   node: QueryBuilderExplorerTreeNodeData,

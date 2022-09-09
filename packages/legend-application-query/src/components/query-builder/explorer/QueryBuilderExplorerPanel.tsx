@@ -425,7 +425,12 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       }
     };
 
-    if (!node.mappingData.mapped && !explorerState.showUnmappedProperties) {
+    if (
+      !node.mappingData.mapped &&
+      // NOTE: we always want to show at least the root node
+      !(node instanceof QueryBuilderExplorerTreeRootNodeData) &&
+      !explorerState.showUnmappedProperties
+    ) {
       return null;
     }
     return (
@@ -459,7 +464,11 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
             },
           )}
           title={
-            !node.mappingData.mapped ? 'Property is not mapped' : undefined
+            !node.mappingData.mapped
+              ? node instanceof QueryBuilderExplorerTreeRootNodeData
+                ? 'Root class is not mapped'
+                : 'Property is not mapped'
+              : undefined
           }
           onClick={selectNode}
           ref={
@@ -611,6 +620,8 @@ const QueryBuilderExplorerTreeNodeView = observer(
 
     if (
       !node.mappingData.mapped &&
+      // NOTE: we always want to show at least the root node
+      !(node instanceof QueryBuilderExplorerTreeRootNodeData) &&
       !queryBuilderState.explorerState.showUnmappedProperties
     ) {
       return null;
