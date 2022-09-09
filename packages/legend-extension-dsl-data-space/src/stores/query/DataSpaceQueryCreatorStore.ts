@@ -42,7 +42,7 @@ import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 
-const createQueryDataSpaceTaggedValue = (
+export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
 ): QueryTaggedValue => {
   const taggedValue = new QueryTaggedValue();
@@ -128,9 +128,9 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           );
         }
       },
-      this.depotServerClient,
       this.applicationStore,
       this.graphManagerState,
+      this.depotServerClient,
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);

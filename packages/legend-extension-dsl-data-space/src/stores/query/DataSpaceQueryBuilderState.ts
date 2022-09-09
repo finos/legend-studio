@@ -70,9 +70,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     artifactId: string,
     versionId: string,
     onChangeDataSpace: (val: DataSpaceInfo) => void,
-    depotServerClient: DepotServerClient,
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
+    depotServerClient: DepotServerClient,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -90,8 +90,8 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.artifactId = artifactId;
     this.versionId = versionId;
     this.onChangeDataSpace = onChangeDataSpace;
-    this.depotServerClient = depotServerClient;
     this.executionContext = executionContext;
+    this.depotServerClient = depotServerClient;
   }
 
   override get sideBarClassName(): string | undefined {

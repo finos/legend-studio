@@ -37,6 +37,7 @@ export type QueryEditorHeaderLabeler = (
 
 export type ExistingQueryEditorStateBuilder = (
   query: Query,
+  editorStore: QueryEditorStore,
 ) => QueryBuilderState | undefined;
 
 export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlugin {
@@ -65,5 +66,8 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
    */
   getExtraQueryEditorHeaderLabelers?(): QueryEditorHeaderLabeler[];
 
+  /**
+   * Get the list of existing query editor state builders.
+   */
   getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
 }

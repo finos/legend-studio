@@ -41,6 +41,8 @@ export {
   LegendQueryBaseStore,
   type LegendQueryApplicationStore,
 } from './stores/LegendQueryBaseStore.js';
+export { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+export { LegendQueryEventService } from './stores/LegendQueryEventService.js';
 
 // query builder core
 export { QUERY_BUILDER_TEST_ID } from './components/query-builder/QueryBuilder_TestID.js';

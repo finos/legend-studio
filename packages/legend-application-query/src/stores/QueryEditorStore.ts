@@ -629,22 +629,35 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    // TODO: decide this state after we pick out the query type, probably we need an extension mechanism here?
-    const queryBuilderState = new ClassQueryBuilderState(
-      this.applicationStore,
-      this.graphManagerState,
-    );
-
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
     );
+    let queryBuilderState: QueryBuilderState | undefined;
+    const existingQueryEditorStateBuilders = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraExistingQueryEditorStateBuilders?.() ?? [],
+      );
+    for (const builder of existingQueryEditorStateBuilders) {
+      queryBuilderState = builder(query, this);
+      if (queryBuilderState) {
+        break;
+      }
+    }
+
+    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
+    queryBuilderState =
+      queryBuilderState ??
+      new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
+
     queryBuilderState.setMapping(query.mapping.value);
     queryBuilderState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       ),
     );
+
     // leverage initialization of query builder state to ensure we handle unsupported queries
     queryBuilderState.initialize(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
