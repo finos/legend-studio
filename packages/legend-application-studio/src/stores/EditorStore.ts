@@ -283,6 +283,7 @@ export class EditorStore implements CommandRegistrar {
     this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
+    this.tabHistoryBack = new Stack<EditorState>();
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
@@ -1004,7 +1005,7 @@ export class EditorStore implements CommandRegistrar {
     );
     const diffEditorState = existingEditorState ?? entityDiffEditorState;
     if (!existingEditorState) {
-      this.openedEditorStates.push(diffEditorState);
+      this.openEditorState(diffEditorState);
     }
     this.setCurrentEditorState(diffEditorState);
   }
@@ -1020,7 +1021,7 @@ export class EditorStore implements CommandRegistrar {
     const conflictEditorState =
       existingEditorState ?? entityChangeConflictEditorState;
     if (!existingEditorState) {
-      this.openedEditorStates.push(conflictEditorState);
+      this.openEditorState(conflictEditorState);
     }
     this.setCurrentEditorState(conflictEditorState);
   }
@@ -1036,7 +1037,7 @@ export class EditorStore implements CommandRegistrar {
     );
     const editorState = existingEditorState ?? singularEditorState;
     if (!existingEditorState) {
-      this.openedEditorStates.push(editorState);
+      this.openEditorState(editorState);
     }
     this.setCurrentEditorState(editorState);
   }
@@ -1123,6 +1124,25 @@ export class EditorStore implements CommandRegistrar {
     );
   }
 
+  swapTabs = (
+    sourceEditorState: EditorState,
+    targetEditorState: EditorState,
+  ): void => {
+    swapEntry(this.openedEditorStates, sourceEditorState, targetEditorState);
+  };
+
+  openEditorState(editorState: EditorState): void {
+    if (this.currentEditorState) {
+      const currIndex = this.openedEditorStates.findIndex(
+        (e) => e === this.currentEditorState,
+      );
+      this.openedEditorStates.splice(currIndex + 1, 0, editorState);
+    } else {
+      this.openedEditorStates.push(editorState);
+    }
+    this.tabHistoryBack.push(editorState);
+  }
+
   openElement(element: PackageableElement): void {
     if (this.isInGrammarTextMode) {
       // in text mode, we want to select the block of code that corresponds to the element if possible
@@ -1137,7 +1157,7 @@ export class EditorStore implements CommandRegistrar {
         const elementState =
           existingElementState ?? this.createElementState(element);
         if (elementState && !existingElementState) {
-          this.openedEditorStates.push(elementState);
+          this.openEditorState(elementState);
         }
         this.setCurrentEditorState(elementState);
       }
@@ -1316,7 +1336,7 @@ export class EditorStore implements CommandRegistrar {
     const generatedFileState =
       existingGeneratedFileState ?? new FileGenerationViewerState(this, file);
     if (!existingGeneratedFileState) {
-      this.openedEditorStates.push(generatedFileState);
+      this.openEditorState(generatedFileState);
     }
     this.setCurrentEditorState(generatedFileState);
   }
