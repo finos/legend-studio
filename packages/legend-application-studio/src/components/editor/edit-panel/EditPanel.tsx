@@ -194,6 +194,7 @@ const EditPanelHeaderTabContextMenu = observer(
     const closeOthers = (): void =>
       editorStore.closeAllOtherStates(editorState);
     const closeAll = (): void => editorStore.closeAllStates();
+    const openLastClosedTab = (): void => editorStore.openLastClosedTab();
 
     return (
       <div ref={ref} className="edit-panel__header__tab__context-menu">
@@ -215,6 +216,13 @@ const EditPanelHeaderTabContextMenu = observer(
           onClick={closeAll}
         >
           Close All
+        </button>
+        <button
+          className="edit-panel__header__tab__context-menu__item"
+          disabled={editorStore.tabHistory.size() < 1}
+          onClick={openLastClosedTab}
+        >
+          Open Last Closed Tab
         </button>
       </div>
     );

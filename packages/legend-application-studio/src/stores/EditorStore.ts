@@ -258,6 +258,7 @@ export class EditorStore implements CommandRegistrar {
       closeAllOtherStates: action,
       closeAllStates: action,
       openState: action,
+      openLastClosedTab: action,
       openEntityDiff: action,
       openEntityChangeConflict: action,
       openSingletonEditorState: action,
@@ -283,7 +284,7 @@ export class EditorStore implements CommandRegistrar {
     this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
-    this.tabHistoryBack = new Stack<EditorState>();
+    this.tabHistory = new Stack<EditorState>();
 
     this.sdlcState = new EditorSDLCState(this);
     this.graphState = new EditorGraphState(this);
@@ -934,11 +935,14 @@ export class EditorStore implements CommandRegistrar {
     const elementIndex = this.openedEditorStates.findIndex(
       (e) => e === editorState,
     );
+
+    this.tabHistory.push(editorState);
     assertTrue(elementIndex !== -1, `Can't close a tab which is not opened`);
     this.openedEditorStates.splice(elementIndex, 1);
     if (this.currentEditorState === editorState) {
       if (this.openedEditorStates.length) {
         const openIndex = elementIndex - 1;
+
         this.setCurrentEditorState(
           openIndex >= 0
             ? this.openedEditorStates[openIndex]
@@ -962,8 +966,39 @@ export class EditorStore implements CommandRegistrar {
   }
 
   closeAllStates(): void {
+    this.openedEditorStates.forEach((otherState) => {
+      this.tabHistory.push(otherState);
+    });
     this.closeAllEditorTabs();
     this.explorerTreeState.reprocess();
+  }
+
+  openLastClosedTab(): void {
+    while (this.tabHistory.peek()) {
+      const editorState = this.tabHistory.pop();
+      if (!editorState) {
+        return;
+      }
+      if (
+        this.openedEditorStates.find(
+          (e) =>
+            e.editorStore === editorState.editorStore &&
+            e.headerName === editorState.headerName,
+        )
+      ) {
+        continue;
+      }
+      if (this.currentEditorState) {
+        const editorStateIndex = this.openedEditorStates.findIndex(
+          (e) => e === this.currentEditorState,
+        );
+        this.openedEditorStates.splice(editorStateIndex + 1, 0, editorState);
+      } else {
+        this.openedEditorStates.push(editorState);
+      }
+      this.setCurrentEditorState(editorState);
+      return;
+    }
   }
 
   openState(editorState: EditorState): void {
@@ -1140,7 +1175,6 @@ export class EditorStore implements CommandRegistrar {
     } else {
       this.openedEditorStates.push(editorState);
     }
-    this.tabHistoryBack.push(editorState);
   }
 
   openElement(element: PackageableElement): void {
