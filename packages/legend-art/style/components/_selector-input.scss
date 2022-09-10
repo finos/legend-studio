@@ -133,10 +133,15 @@
 .selector-menu--no-match {
   @include flexVCenter;
 
-  height: 2.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 2.8rem;
+  white-space: nowrap;
   color: var(--color-dark-grey-500);
   padding: 0.5rem;
   cursor: default;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .selector-input--dark,
@@ -210,6 +215,10 @@
       animation: spin 1s infinite ease;
       color: var(--color-blue-200);
     }
+  }
+
+  .selector-menu--no-match {
+    color: var(--color-dark-grey-350);
   }
 
   .selector-input__dropdown-indicator {

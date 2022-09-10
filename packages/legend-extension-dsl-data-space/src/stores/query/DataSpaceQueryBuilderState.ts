@@ -19,8 +19,9 @@ import { QueryBuilderState } from '@finos/legend-application-query';
 import {
   type GraphManagerState,
   getMappingCompatibleClasses,
-  getMappingCompatibleRuntimes,
   RuntimePointer,
+  type Runtime,
+  type Class,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -55,6 +56,11 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;
   readonly loadDataSpacesState = ActionState.create();
   readonly onChangeDataSpace: (val: DataSpaceInfo) => void;
+  readonly onChangeExecutionContext?:
+    | ((val: DataSpaceExecutionContext) => void)
+    | undefined;
+  readonly onChangeRuntime?: ((val: Runtime) => void) | undefined;
+  readonly onChangeClass?: ((val: Class) => void) | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -64,15 +70,20 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   showRuntimeSelector = false;
 
   constructor(
-    dataSpace: DataSpace,
-    executionContext: DataSpaceExecutionContext,
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-    onChangeDataSpace: (val: DataSpaceInfo) => void,
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     depotServerClient: DepotServerClient,
+    dataSpace: DataSpace,
+    executionContext: DataSpaceExecutionContext,
+    groupId: string,
+    versionId: string,
+    artifactId: string,
+    onChangeDataSpace: (val: DataSpaceInfo) => void,
+    onChangeExecutionContext?:
+      | ((val: DataSpaceExecutionContext) => void)
+      | undefined,
+    onChangeRuntime?: ((val: Runtime) => void) | undefined,
+    onChangeClass?: ((val: Class) => void) | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -85,27 +96,22 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       loadDataSpaces: flow,
     });
 
+    this.depotServerClient = depotServerClient;
     this.dataSpace = dataSpace;
+    this.executionContext = executionContext;
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
     this.onChangeDataSpace = onChangeDataSpace;
-    this.executionContext = executionContext;
-    this.depotServerClient = depotServerClient;
+    this.onChangeExecutionContext = onChangeExecutionContext;
+    this.onChangeRuntime = onChangeRuntime;
+    this.onChangeClass = onChangeClass;
   }
 
   override get sideBarClassName(): string | undefined {
     return this.showRuntimeSelector
       ? 'query-builder__setup__data-space--with-runtime'
       : 'query-builder__setup__data-space';
-  }
-
-  get isMappingReadOnly(): boolean {
-    return false;
-  }
-
-  get isRuntimeReadOnly(): boolean {
-    return false;
   }
 
   setExecutionContext(val: DataSpaceExecutionContext): void {
@@ -145,8 +151,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   /**
    * Propagation after changing the execution context:
    * - The mapping will be updated to the mapping of the execution context
-   * - If no runtime is selected, select the execution context's default runtime
-   * - If the chosen runtime is compatible with the new selected execution context mapping, do nothing, otherwise, select the default runtime
+   * - The runtime will be updated to the default runtime of the execution context
    * - If no class is selected, try to select a compatible class
    * - If the chosen class is compatible with the new selected execution context mapping, do nothing, otherwise, try to select a compatible class
    */
@@ -155,24 +160,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   ): void {
     const mapping = executionContext.mapping.value;
     this.changeMapping(mapping);
-    const defaultRuntime = new RuntimePointer(executionContext.defaultRuntime);
-
-    if (!this.runtimeValue) {
-      this.changeRuntime(defaultRuntime);
-    } else {
-      // check if the chosen runtime is compatible with the mapping or not,
-      // if not, pick the default runtime
-      const compatibleRuntimes = getMappingCompatibleRuntimes(
-        mapping,
-        this.graphManagerState.usableRuntimes,
-      );
-      if (
-        !(this.runtimeValue instanceof RuntimePointer) ||
-        !compatibleRuntimes.includes(this.runtimeValue.packageableRuntime.value)
-      ) {
-        this.changeRuntime(defaultRuntime);
-      }
-    }
+    this.changeRuntime(new RuntimePointer(executionContext.defaultRuntime));
 
     const compatibleClasses = getMappingCompatibleClasses(
       mapping,

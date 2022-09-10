@@ -16,12 +16,4 @@
 
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
-export class BasicQueryBuilderState extends QueryBuilderState {
-  get isMappingReadOnly(): boolean {
-    return false;
-  }
-
-  get isRuntimeReadOnly(): boolean {
-    return false;
-  }
-}
+export class BasicQueryBuilderState extends QueryBuilderState {}

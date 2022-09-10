@@ -134,8 +134,9 @@ export const QueryBuilderClassSelector = observer(
     queryBuilderState: QueryBuilderState;
     classes: Class[];
     onClassChange?: ((val: Class) => void) | undefined;
+    noMatchMessage?: string | undefined;
   }) => {
-    const { queryBuilderState, classes, onClassChange } = props;
+    const { queryBuilderState, classes, onClassChange, noMatchMessage } = props;
     const milestoningState = queryBuilderState.milestoningState;
     const applicationStore = useApplicationStore();
 
@@ -181,7 +182,12 @@ export const QueryBuilderClassSelector = observer(
             </div>
             <CustomSelectorInput
               className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector query-builder__setup__config-group__item__selector__milestoned"
-              placeholder="Choose a class..."
+              placeholder={
+                classOptions.length
+                  ? 'Choose a class...'
+                  : noMatchMessage ?? 'No class found'
+              }
+              noMatchMessage={noMatchMessage}
               options={classOptions}
               onChange={changeClass}
               value={selectedClassOption}

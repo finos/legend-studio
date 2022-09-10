@@ -20,6 +20,8 @@ import {
   QueryTaggedValue,
   RuntimePointer,
   PackageableElementExplicitReference,
+  type Runtime,
+  type Class,
 } from '@finos/legend-graph';
 import {
   QueryEditorStore,
@@ -32,7 +34,11 @@ import type {
   DepotServerClient,
   ProjectGAVCoordinates,
 } from '@finos/legend-server-depot';
-import { guaranteeNonNullable, uuid } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  uuid,
+} from '@finos/legend-shared';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
@@ -41,6 +47,7 @@ import { getDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper
 import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
+import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -104,6 +111,9 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       `Can't find execution context '${this.executionContext}'`,
     );
     const queryBuilderState = new DataSpaceQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.depotServerClient,
       dataSpace,
       executionContext,
       this.groupId,
@@ -128,9 +138,65 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           );
         }
       },
-      this.applicationStore,
-      this.graphManagerState,
-      this.depotServerClient,
+      (ec: DataSpaceExecutionContext) => {
+        // runtime should already be set
+        const runtimePointer = guaranteeType(
+          queryBuilderState.runtimeValue,
+          RuntimePointer,
+        );
+        this.applicationStore.navigator.goTo(
+          generateDataSpaceQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            dataSpace.path,
+            ec.name,
+            runtimePointer.packageableRuntime.value ===
+              queryBuilderState.executionContext.defaultRuntime.value
+              ? undefined
+              : runtimePointer.packageableRuntime.value.path,
+            queryBuilderState.class?.path,
+          ),
+        );
+      },
+      (runtimeValue: Runtime) => {
+        const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
+        queryBuilderState.applicationStore.navigator.goTo(
+          generateDataSpaceQueryCreatorRoute(
+            queryBuilderState.groupId,
+            queryBuilderState.artifactId,
+            queryBuilderState.versionId,
+            queryBuilderState.dataSpace.path,
+            queryBuilderState.executionContext.name,
+            runtimePointer.packageableRuntime.value ===
+              queryBuilderState.executionContext.defaultRuntime.value
+              ? undefined
+              : runtimePointer.packageableRuntime.value.path,
+            queryBuilderState.class?.path,
+          ),
+        );
+      },
+      (_class: Class) => {
+        // runtime should already be set
+        const runtimePointer = guaranteeType(
+          queryBuilderState.runtimeValue,
+          RuntimePointer,
+        );
+        queryBuilderState.applicationStore.navigator.goTo(
+          generateDataSpaceQueryCreatorRoute(
+            queryBuilderState.groupId,
+            queryBuilderState.artifactId,
+            queryBuilderState.versionId,
+            queryBuilderState.dataSpace.path,
+            queryBuilderState.executionContext.name,
+            runtimePointer.packageableRuntime.value ===
+              queryBuilderState.executionContext.defaultRuntime.value
+              ? undefined
+              : runtimePointer.packageableRuntime.value.path,
+            _class.path,
+          ),
+        );
+      },
     );
     queryBuilderState.setExecutionContext(executionContext);
     queryBuilderState.propagateExecutionContextChange(executionContext);

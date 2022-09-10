@@ -154,8 +154,13 @@ export abstract class QueryBuilderState {
     this.changeDetectionState = new QueryBuilderChangeDetectionState(this);
   }
 
-  abstract get isMappingReadOnly(): boolean;
-  abstract get isRuntimeReadOnly(): boolean;
+  get isMappingReadOnly(): boolean {
+    return false;
+  }
+
+  get isRuntimeReadOnly(): boolean {
+    return false;
+  }
 
   get sideBarClassName(): string | undefined {
     return undefined;

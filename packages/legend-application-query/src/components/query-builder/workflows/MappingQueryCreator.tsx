@@ -22,13 +22,12 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
-  type Class,
   type Mapping,
   type Runtime,
   PackageableElementExplicitReference,
   RuntimePointer,
   getMappingCompatibleRuntimes,
-  getClassCompatibleMappings,
+  getMappingCompatibleClasses,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -40,45 +39,38 @@ import {
   buildRuntimeValueOption,
   QueryBuilderClassSelector,
 } from '../QueryBuilderSideBar.js';
-import type { ClassQueryBuilderState } from '../../../stores/query-builder/workflows/ClassQueryBuilderState.js';
+import { guaranteeType } from '@finos/legend-shared';
+import type { MappingQueryCreatorState } from '../../../stores/query-builder/workflows/MappingQueryCreatorState.js';
 
 /**
- * This setup panel supports cascading in order: Class -> Mapping -> Runtime
+ * This setup panel supports cascading in order: Mapping -> Runtime + Class
  *
  * In other words, we will only show:
- * - For mapping selector: the list of compatible mappings with the selected class
+ * - For class selector: the list of compatible classes with the selected mapping
  * - For runtime value selector: the list of compatible runtimes with the selected mapping
  *
- * See details on propagation/cascading in {@link ClassQueryBuilderState}
+ * See details on propagation/cascading in {@link MappingQueryCreatorState}
  */
-const ClassQueryBuilderSetupPanelContent = observer(
-  (props: { queryBuilderState: ClassQueryBuilderState }) => {
+const MappingQueryCreatorSetupPanelContent = observer(
+  (props: { queryBuilderState: MappingQueryCreatorState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
 
-    // class
-    const classes = queryBuilderState.graphManagerState.usableClasses;
-    const onClassChange = (val: Class): void =>
-      queryBuilderState.propagateClassChange(val);
-
     // mapping
-    const mappingOptions = (
-      queryBuilderState.class
-        ? getClassCompatibleMappings(
-            queryBuilderState.class,
-            queryBuilderState.graphManagerState.usableMappings,
-          )
-        : []
-    ).map(buildElementOption);
+    const mappingOptions =
+      queryBuilderState.graphManagerState.usableMappings.map(
+        buildElementOption,
+      );
     const selectedMappingOption = queryBuilderState.mapping
       ? buildElementOption(queryBuilderState.mapping)
       : null;
     const changeMapping = (val: PackageableElementOption<Mapping>): void => {
-      if (!queryBuilderState.class || val.value === queryBuilderState.mapping) {
+      if (val.value === queryBuilderState.mapping) {
         return;
       }
       queryBuilderState.changeMapping(val.value);
       queryBuilderState.propagateMappingChange(val.value);
+      queryBuilderState.onChangeMapping?.(val.value);
     };
     const mappingFilterOption = createFilter({
       ignoreCase: true,
@@ -109,23 +101,26 @@ const ClassQueryBuilderSetupPanelContent = observer(
         return;
       }
       queryBuilderState.changeRuntime(val.value);
+      queryBuilderState.onChangeRuntime?.(val.value);
     };
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
       stringify: (option: { value: Runtime }): string =>
-        option.value instanceof RuntimePointer
-          ? option.value.packageableRuntime.value.path
-          : 'custom',
+        guaranteeType(option.value, RuntimePointer).packageableRuntime.value
+          .path,
     });
+
+    // class
+    const classes = queryBuilderState.mapping
+      ? getMappingCompatibleClasses(
+          queryBuilderState.mapping,
+          queryBuilderState.graphManagerState.usableClasses,
+        )
+      : [];
 
     return (
       <>
-        <QueryBuilderClassSelector
-          queryBuilderState={queryBuilderState}
-          classes={classes}
-          onClassChange={onClassChange}
-        />
         <div className="query-builder__setup__config-group">
           <div className="query-builder__setup__config-group__header">
             <div className="query-builder__setup__config-group__header__title">
@@ -145,10 +140,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 placeholder={
                   mappingOptions.length
                     ? 'Choose a mapping...'
-                    : 'No compatible mapping found for class'
+                    : 'No mapping found'
                 }
-                noMatchMessage="No compatible mapping found for specified class"
-                disabled={!queryBuilderState.class}
+                noMatchMessage="No mapping found"
                 options={mappingOptions}
                 onChange={changeMapping}
                 value={selectedMappingOption}
@@ -170,9 +164,7 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose a runtime..."
                 noMatchMessage="No compatible runtime found for specified mapping"
-                disabled={
-                  !queryBuilderState.class || !queryBuilderState.mapping
-                }
+                disabled={!queryBuilderState.mapping}
                 options={runtimeOptions}
                 onChange={changeRuntime}
                 value={selectedRuntimeOption}
@@ -182,13 +174,18 @@ const ClassQueryBuilderSetupPanelContent = observer(
             </div>
           </div>
         </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={classes}
+          noMatchMessage="No compatible class found for specified mapping"
+        />
       </>
     );
   },
 );
 
-export const renderClassQueryBuilderSetupPanelContent = (
-  queryBuilderState: ClassQueryBuilderState,
+export const renderMappingQueryCreatorSetupPanelContent = (
+  queryBuilderState: MappingQueryCreatorState,
 ): React.ReactNode => (
-  <ClassQueryBuilderSetupPanelContent queryBuilderState={queryBuilderState} />
+  <MappingQueryCreatorSetupPanelContent queryBuilderState={queryBuilderState} />
 );

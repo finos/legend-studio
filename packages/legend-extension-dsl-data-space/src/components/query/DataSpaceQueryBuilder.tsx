@@ -36,7 +36,6 @@ import {
 } from '@finos/legend-application-query';
 import {
   type Runtime,
-  type Class,
   getMappingCompatibleClasses,
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
@@ -49,7 +48,6 @@ import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import { DataSpaceIcon } from '../DSLDataSpace_Icon.js';
-import { generateDataSpaceQueryCreatorRoute } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
 
 type DataSpaceOption = {
   label: string;
@@ -78,7 +76,6 @@ const buildExecutionContextOption = (
  * - For runtime selector: the list of compatible runtimes with the selected execution context mapping
  * - For class selector: the list of compatible class with the selected execution context mapping
  *
- * Since changing the data-space implies reloading the graph, we would need some sort of hook for this event.
  * See details on propagation/cascading in {@link DataSpaceQueryBuilderState}
  */
 const DataSpaceQueryBuilderSetupPanelContent = observer(
@@ -176,20 +173,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       }
       queryBuilderState.setExecutionContext(option.value);
       queryBuilderState.propagateExecutionContextChange(option.value);
-
-      // update the URL
-      queryBuilderState.applicationStore.navigator.goTo(
-        generateDataSpaceQueryCreatorRoute(
-          queryBuilderState.groupId,
-          queryBuilderState.artifactId,
-          queryBuilderState.versionId,
-          queryBuilderState.dataSpace.path,
-          queryBuilderState.executionContext.name,
-          guaranteeType(queryBuilderState.runtimeValue, RuntimePointer)
-            .packageableRuntime.value.path,
-          queryBuilderState.class?.path,
-        ),
-      );
+      queryBuilderState.onChangeExecutionContext?.(option.value);
     };
 
     // runtime
@@ -205,28 +189,12 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const selectedRuntimeOption = queryBuilderState.runtimeValue
       ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
       : null;
-    const changeRuntime = (val: { value: Runtime }): void => {
-      if (val.value === queryBuilderState.runtimeValue) {
+    const changeRuntime = (option: { value: Runtime }): void => {
+      if (option.value === queryBuilderState.runtimeValue) {
         return;
       }
-      queryBuilderState.changeRuntime(val.value);
-      const runtimePointer = guaranteeType(val.value, RuntimePointer);
-
-      // update the URL
-      queryBuilderState.applicationStore.navigator.goTo(
-        generateDataSpaceQueryCreatorRoute(
-          queryBuilderState.groupId,
-          queryBuilderState.artifactId,
-          queryBuilderState.versionId,
-          queryBuilderState.dataSpace.path,
-          queryBuilderState.executionContext.name,
-          runtimePointer.packageableRuntime.value ===
-            queryBuilderState.executionContext.defaultRuntime.value
-            ? undefined
-            : runtimePointer.packageableRuntime.value.path,
-          queryBuilderState.class?.path,
-        ),
-      );
+      queryBuilderState.changeRuntime(option.value);
+      queryBuilderState.onChangeRuntime?.(option.value);
     };
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
@@ -241,21 +209,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState.executionContext.mapping.value,
       queryBuilderState.graphManagerState.usableClasses,
     );
-    const onClassChange = (val: Class): void => {
-      // update the URL
-      queryBuilderState.applicationStore.navigator.goTo(
-        generateDataSpaceQueryCreatorRoute(
-          queryBuilderState.groupId,
-          queryBuilderState.artifactId,
-          queryBuilderState.versionId,
-          queryBuilderState.dataSpace.path,
-          queryBuilderState.executionContext.name,
-          guaranteeType(queryBuilderState.runtimeValue, RuntimePointer)
-            .packageableRuntime.value.path,
-          val.path,
-        ),
-      );
-    };
 
     useEffect(() => {
       flowResult(queryBuilderState.loadDataSpaces('')).catch(
@@ -369,7 +322,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <QueryBuilderClassSelector
           queryBuilderState={queryBuilderState}
           classes={classes}
-          onClassChange={onClassChange}
+          onClassChange={queryBuilderState.onChangeClass}
+          noMatchMessage="No compatible class found for specified execution context"
         />
       </>
     );

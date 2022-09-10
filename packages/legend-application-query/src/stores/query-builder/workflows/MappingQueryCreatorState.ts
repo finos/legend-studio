@@ -14,52 +14,45 @@
  * limitations under the License.
  */
 
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
-  type Class,
   type Mapping,
-  getClassCompatibleMappings,
+  type Runtime,
+  type GraphManagerState,
   getMappingCompatibleRuntimes,
   RuntimePointer,
   PackageableElementExplicitReference,
+  getMappingCompatibleClasses,
 } from '@finos/legend-graph';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type React from 'react';
-import { renderClassQueryBuilderSetupPanelContent } from '../../../components/query-builder/workflows/ClassQueryBuilder.js';
+import { renderMappingQueryCreatorSetupPanelContent } from '../../../components/query-builder/workflows/MappingQueryCreator.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
-export class ClassQueryBuilderState extends QueryBuilderState {
-  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
-    renderClassQueryBuilderSetupPanelContent(this);
+export class MappingQueryCreatorState extends QueryBuilderState {
+  readonly onChangeMapping?: ((val: Mapping) => void) | undefined;
+  readonly onChangeRuntime?: ((val: Runtime) => void) | undefined;
 
-  /**
-   * Propagation after changing the class:
-   * - If no mapping is selected, try to select a compatible mapping
-   * - If the chosen mapping is compatible with the new selected class, do nothing, otherwise, try to select a compatible mapping
-   * - This change will propagate to runtime: we will attempt to select a compatible runtime with the newly selected mapping
-   */
-  propagateClassChange(_class: Class): void {
-    const compatibleMappings = getClassCompatibleMappings(
-      _class,
-      this.graphManagerState.usableMappings,
-    );
-    // cascading
-    const isCurrentMappingCompatible =
-      this.mapping && compatibleMappings.includes(this.mapping);
-    if (this.isMappingReadOnly || isCurrentMappingCompatible) {
-      return;
-    }
-    // try to select the first compatible mapping
-    const possibleNewMapping = getNullableFirstElement(compatibleMappings);
-    if (possibleNewMapping) {
-      this.changeMapping(possibleNewMapping);
-      this.propagateMappingChange(possibleNewMapping);
-    }
+  override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
+    renderMappingQueryCreatorSetupPanelContent(this);
+
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    onChangeMapping?: ((val: Mapping) => void) | undefined,
+    onChangeRuntime?: ((val: Runtime) => void) | undefined,
+  ) {
+    super(applicationStore, graphManagerState);
+
+    this.onChangeMapping = onChangeMapping;
+    this.onChangeRuntime = onChangeRuntime;
   }
 
   /**
    * Propagation after changing the mapping:
    * - If no runtime is selected, try to select a compatible runtime
    * - If the chosen runtime is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible runtime
+   * - If no class is selected, try to select a compatible class
+   * - If the chosen class is compatible with the new selected mapping, do nothing, otherwise, try to select a compatible class
    */
   propagateMappingChange(mapping: Mapping): void {
     // try to select the first compatible runtime,
@@ -75,6 +68,19 @@ export class ClassQueryBuilderState extends QueryBuilderState {
           PackageableElementExplicitReference.create(possibleNewRuntime),
         ),
       );
+    }
+
+    const compatibleClasses = getMappingCompatibleClasses(
+      mapping,
+      this.graphManagerState.usableClasses,
+    );
+    // if there is no chosen class or the chosen one is not compatible
+    // with the mapping then pick a compatible class if possible
+    if (!this.class || !compatibleClasses.includes(this.class)) {
+      const possibleNewClass = getNullableFirstElement(compatibleClasses);
+      if (possibleNewClass) {
+        this.changeClass(possibleNewClass);
+      }
     }
   }
 }

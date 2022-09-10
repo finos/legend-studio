@@ -159,6 +159,9 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
             return undefined;
           }
           return new DataSpaceQueryBuilderState(
+            editorStore.applicationStore,
+            editorStore.graphManagerState,
+            editorStore.depotServerClient,
             dataSpace,
             matchingExecutionContext,
             query.groupId,
@@ -239,8 +242,10 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
                         ? 'Update query'
                         : 'Create new query',
                       type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                      handler: (): void => {
-                        persistQuery();
+                      handler: () => {
+                        persistQuery().catch(
+                          editorStore.applicationStore.alertUnhandledError,
+                        );
                       },
                     },
                     {
@@ -256,9 +261,6 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
                 );
               }
             },
-            editorStore.applicationStore,
-            editorStore.graphManagerState,
-            editorStore.depotServerClient,
           );
         }
         return undefined;

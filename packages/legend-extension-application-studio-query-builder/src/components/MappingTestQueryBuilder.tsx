@@ -25,8 +25,8 @@ import { useApplicationStore } from '@finos/legend-application';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';
-import { MappingExecutionQueryEditorState } from './MappingExecutionQueryBuilder.js';
 import type { QueryBuilderState } from '@finos/legend-application-query';
+import { MappingExecutionQueryEditorState } from '../stores/MappingExecutionQueryEditorState.js';
 
 export const MappingTestQueryBuilder = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -42,13 +42,10 @@ export const MappingTestQueryBuilder = observer(
           queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
               const queryBuilderState = new MappingExecutionQueryEditorState(
+                testState.mappingEditorState.mapping,
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,
               );
-              queryBuilderState.setMapping(
-                testState.mappingEditorState.mapping,
-              );
-              queryBuilderState.setRuntimeValue(undefined);
               queryBuilderState.initialize(testState.queryState.query);
               queryBuilderState.changeDetectionState.setQueryHashCode(
                 hashObject(testState.queryState.query),

@@ -192,23 +192,25 @@ export const QueryBuilder = observer(
                     </MenuContentItemLabel>
                   </MenuContentItem>
                   {/* TODO?: consider hiding this menu option when the fetch-structure is not projection */}
-                  <MenuContentItem
-                    onClick={toggleShowParameterPanel}
-                    disabled={
-                      !queryBuilderState.isQuerySupported ||
-                      queryBuilderState.parametersState.parameterStates.length >
-                        0
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      {queryBuilderState.showParametersPanel ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Parameter(s)
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
+                  {!queryBuilderState.isParameterSupportDisabled && (
+                    <MenuContentItem
+                      onClick={toggleShowParameterPanel}
+                      disabled={
+                        !queryBuilderState.isQuerySupported ||
+                        queryBuilderState.parametersState.parameterStates
+                          .length > 0
+                      }
+                    >
+                      <MenuContentItemIcon>
+                        {queryBuilderState.showParametersPanel ? (
+                          <CheckIcon />
+                        ) : null}
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                        Show Parameter(s)
+                      </MenuContentItemLabel>
+                    </MenuContentItem>
+                  )}
                   <MenuContentItem
                     onClick={toggleShowPostFilterPanel}
                     disabled={

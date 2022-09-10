@@ -33,6 +33,7 @@ import {
   ActionState,
   StopWatch,
   getNullableFirstElement,
+  guaranteeType,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -51,9 +52,14 @@ import {
   GraphManagerTelemetry,
   extractElementNameFromPath,
   isSystemElement,
+  Mapping,
+  type Runtime,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
-import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
+import {
+  generateExistingQueryEditorRoute,
+  generateMappingQueryCreatorRoute,
+} from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -67,6 +73,7 @@ import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { BasicQueryBuilderState } from './query-builder/workflows/BasicQueryBuilderState.js';
 import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
+import { MappingQueryCreatorState } from './query-builder/workflows/MappingQueryCreatorState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -386,16 +393,6 @@ export abstract class QueryEditorStore {
   }
 }
 
-class MappingQueryCreatorState extends BasicQueryBuilderState {
-  override get isMappingReadOnly(): boolean {
-    return true;
-  }
-
-  override get isRuntimeReadOnly(): boolean {
-    return true;
-  }
-}
-
 export class MappingQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
@@ -434,17 +431,42 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     const queryBuilderState = new MappingQueryCreatorState(
       this.applicationStore,
       this.graphManagerState,
+      (val: Mapping) => {
+        this.applicationStore.navigator.goTo(
+          generateMappingQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            val.path,
+            guaranteeType(queryBuilderState.runtimeValue, RuntimePointer)
+              .packageableRuntime.value.path,
+          ),
+        );
+      },
+      (val: Runtime) => {
+        this.applicationStore.navigator.goTo(
+          generateMappingQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            guaranteeType(queryBuilderState.mapping, Mapping).path,
+            guaranteeType(val, RuntimePointer).packageableRuntime.value.path,
+          ),
+        );
+      },
     );
-    queryBuilderState.setMapping(
-      this.graphManagerState.graph.getMapping(this.mappingPath),
-    );
-    queryBuilderState.setRuntimeValue(
+
+    const mapping = this.graphManagerState.graph.getMapping(this.mappingPath);
+    queryBuilderState.changeMapping(mapping);
+    queryBuilderState.propagateMappingChange(mapping);
+    queryBuilderState.changeRuntime(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.graphManagerState.graph.getRuntime(this.runtimePath),
         ),
       ),
     );
+
     // try to find a class to set
     // first, find classes which is mapped by the mapping
     // then, find any classes except for class coming from system
