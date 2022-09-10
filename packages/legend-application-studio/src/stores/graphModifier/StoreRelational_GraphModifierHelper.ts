@@ -51,12 +51,10 @@ import {
   observe_PropertyMapping,
   observe_EnumerationMappingReference,
   observe_TableAlias,
-  SchemaNameMapper,
-  MapperPostProcessor,
-  TableNameMapper,
-  observe_TableNameMapper,
-  observe_SchemaNameMapper,
+  type SchemaNameMapper,
+  type MapperPostProcessor,
   observe_PostProcessor,
+  observe_Mapper,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -434,27 +432,33 @@ export const rootRelationalSetImp_setPropertyMappings = action(
 
 // --------------------------------------------- Post-Processor -------------------------------------
 
-export const relationalDatabaseConnection_addNewMapperPostProcessor = action(
+export const relationalDatabaseConnection_addPostProcessor = action(
   (
     connectionValueState: RelationalDatabaseConnectionValueState,
     observeContext: ObserverContext,
+    postProcessor: PostProcessor,
   ): void => {
     addUniqueEntry(
       connectionValueState.connection.postProcessors,
-      observe_PostProcessor(new MapperPostProcessor(), observeContext),
+      observe_PostProcessor(postProcessor, observeContext),
     );
   },
 );
 
-export const postProcessor_addMapper = action(
-  (postProcessor: PostProcessor, addSchemaMapper: boolean): void => {
+export const relationalDatabaseConnection_deletePostProcessor = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    postProcessor: PostProcessor,
+  ): void => {
+    deleteEntry(connectionValueState.connection.postProcessors, postProcessor);
+  },
+);
+
+export const mapperPostProcessor_addMapper = action(
+  (postProcessor: PostProcessor, mapper: Mapper): void => {
     addUniqueEntry(
       (postProcessor as MapperPostProcessor).mappers,
-      addSchemaMapper
-        ? observe_SchemaNameMapper(new SchemaNameMapper('', ''))
-        : observe_TableNameMapper(
-            new TableNameMapper('', '', new SchemaNameMapper('', '')),
-          ),
+      observe_Mapper(mapper),
     );
   },
 );
@@ -486,14 +490,5 @@ export const mapperPostProcessor_setMapperSchemaFrom = action(
 export const mapperPostProcessor_deleteMapper = action(
   (mapperPostProcessor: MapperPostProcessor, val: Mapper): void => {
     deleteEntry(mapperPostProcessor.mappers, val);
-  },
-);
-
-export const relationalDatabaseConnection_deletePostProcessor = action(
-  (
-    connectionValueState: RelationalDatabaseConnectionValueState,
-    val: PostProcessor,
-  ): void => {
-    deleteEntry(connectionValueState.connection.postProcessors, val);
   },
 );

@@ -67,7 +67,7 @@ export const PanelTabs: React.FC<{
 
   return (
     <div className="panel__header">
-      <div className="uml-element-editor__tabs">
+      <div className="panel__header__tabs">
         {tabTitles.map((tab) => (
           <div
             key={tab}

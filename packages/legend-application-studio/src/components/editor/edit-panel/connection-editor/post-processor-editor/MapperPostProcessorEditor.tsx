@@ -40,7 +40,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import type { MapperPostProcessorEditorState } from '../../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import {
-  postProcessor_addMapper,
+  mapperPostProcessor_addMapper,
   mapperPostProcessor_deleteMapper,
   mapperPostProcessor_setMapperFrom,
   mapperPostProcessor_setMapperSchemaFrom,
@@ -67,14 +67,20 @@ export const MapperPostProcessorEditor = observer(
     };
 
     const addSchemaMapper = (): void => {
-      postProcessor_addMapper(postProcessor, true);
+      mapperPostProcessor_addMapper(
+        postProcessor,
+        new SchemaNameMapper('', ''),
+      );
       postProcessorState.setSelectedMapper(
         (postProcessor as MapperPostProcessor).mappers.at(-1),
       );
     };
 
     const addTableMapper = (): void => {
-      postProcessor_addMapper(postProcessor, false);
+      mapperPostProcessor_addMapper(
+        postProcessor,
+        new TableNameMapper('', '', new SchemaNameMapper('', '')),
+      );
       postProcessorState.setSelectedMapper(
         (postProcessor as MapperPostProcessor).mappers.at(-1),
       );
@@ -171,7 +177,6 @@ export const MapperPostProcessorEditor = observer(
                       menuProps={{ elevation: 7 }}
                     >
                       <PanelExplorerItem
-                        key={mapper._UUID}
                         title={
                           mapper instanceof TableNameMapper
                             ? 'Table Mapper'

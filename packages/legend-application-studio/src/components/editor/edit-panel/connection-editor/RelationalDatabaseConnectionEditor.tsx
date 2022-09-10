@@ -131,7 +131,7 @@ import {
   gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail,
   gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes,
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
-  relationalDatabaseConnection_addNewMapperPostProcessor,
+  relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
@@ -1222,9 +1222,10 @@ const PostProcessorRelationalConnectionEditor = observer(
       (): void => {
         switch (postProcessorType) {
           case POST_PROCESSOR_TYPE.MAPPER: {
-            relationalDatabaseConnection_addNewMapperPostProcessor(
+            relationalDatabaseConnection_addPostProcessor(
               connectionValueState,
               observerContext,
+              new MapperPostProcessor(),
             );
             break;
           }
@@ -1308,7 +1309,6 @@ const PostProcessorRelationalConnectionEditor = observer(
                           menuProps={{ elevation: 7 }}
                         >
                           <PanelExplorerItem
-                            key={postProcessor._UUID}
                             title={`Post-Processor ${idx + 1}`}
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={

@@ -15,10 +15,10 @@
  */
 import { clsx } from 'clsx';
 
+//TODO: change name
 export const PanelExplorerItem: React.FC<{
-  key: string;
   title: string;
-  onSelect: (event: React.MouseEvent) => void;
+  onSelect: () => void;
   isSelected: boolean;
   validationErrorMessage?: string | undefined;
 }> = (props) => {
