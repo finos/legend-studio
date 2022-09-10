@@ -34,7 +34,6 @@ import {
   TimesIcon,
   ErrorIcon,
   PencilIcon,
-  BlankPanelPlaceholder,
   PanelHeader,
   PanelHeaderActionItem,
   PlusIcon,
@@ -45,6 +44,7 @@ import {
   PanelExplorerItem,
   DropdownMenu,
   PanelTabs,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -136,6 +136,7 @@ import {
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
+import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -1142,7 +1143,9 @@ const renderEditorPostProcessor = (
   if (postProcessor instanceof MapperPostProcessor) {
     return (
       <MapperPostProcessorEditor
-        connectionValueState={connectionValueState}
+        postProcessorState={
+          connectionValueState.postProcessorState as MapperPostProcessorEditorState
+        }
         postProcessor={postProcessor}
       />
     );
@@ -1180,7 +1183,7 @@ const PostProcessorRelationalConnectionEditor = observer(
     const observerContext = editorStore.changeDetectionState.observerContext;
     const plugins = editorStore.pluginManager.getApplicationPlugins();
 
-    const selectedPostProcessor = connectionValueState.selectedPostProcessor;
+    const postProcessorState = connectionValueState.postProcessorState;
 
     const deletePostProcessor =
       (postProcessor: PostProcessor): (() => void) =>
@@ -1189,12 +1192,11 @@ const PostProcessorRelationalConnectionEditor = observer(
           connectionValueState,
           postProcessor,
         );
-        //svp may change
         if (
           postProcessor ===
-          connectionValueState.selectedPostProcessor?.postProcessor
+          connectionValueState.postProcessorState?.postProcessor
         ) {
-          connectionValueState.selectedPostProcessor.setSelectedPostProcessor(
+          connectionValueState.postProcessorState.setPostProcessorState(
             undefined,
           );
         }
@@ -1242,16 +1244,10 @@ const PostProcessorRelationalConnectionEditor = observer(
           }
         }
 
-        connectionValueState.selectedPostProcessor?.setSelectedPostProcessor(
+        connectionValueState.postProcessorState?.setPostProcessorState(
           connectionValueState.connection.postProcessors[
             connectionValueState.connection.postProcessors.length - 1
           ],
-        );
-        connectionValueState.selectedPostProcessor?.setSelectedMapper(
-          undefined,
-        );
-        connectionValueState.selectedPostProcessor?.setSelectedSchema(
-          undefined,
         );
       };
 
@@ -1317,7 +1313,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={
                               postProcessor ===
-                              selectedPostProcessor?.postProcessor
+                              postProcessorState?.postProcessor
                             }
                           />
                         </ContextMenu>
@@ -1328,27 +1324,18 @@ const PostProcessorRelationalConnectionEditor = observer(
                 <ResizablePanelSplitter />
 
                 <ResizablePanel>
-                  {selectedPostProcessor?.postProcessor &&
+                  {postProcessorState?.postProcessor &&
                     renderEditorPostProcessor(
                       connectionValueState,
-                      selectedPostProcessor.postProcessor,
+                      postProcessorState.postProcessor,
                       plugins,
                     )}
-                  {!selectedPostProcessor && !postProcessors.length && (
-                    <BlankPanelPlaceholder
-                      text=""
-                      tooltipText=""
-                      disabled={true}
-                      previewText="Add a post-processor to view properties"
-                    />
-                  )}
-                  {!selectedPostProcessor && postProcessors.length && (
-                    <BlankPanelPlaceholder
-                      text=""
-                      tooltipText=""
-                      disabled={true}
-                      previewText="Select a post-processor to view properties"
-                    />
+                  {!postProcessorState && (
+                    <BlankPanelContent>
+                      {!postProcessors.length
+                        ? 'Add a post-processor to view properties'
+                        : 'Select a post-processor to view properties'}
+                    </BlankPanelContent>
                   )}
                 </ResizablePanel>
               </ResizablePanelGroup>
@@ -1706,7 +1693,6 @@ export const RelationalDatabaseConnectionEditor = observer(
           tabTitles={Object.values(RELATIONAL_DATABASE_TAB_TYPE)}
           changeTheTab={changeTab}
           selectedTab={selectedTab}
-          prettifyTitleName={true}
           tabClassName="relational-connection-editor__tab"
         />
         <div className="panel__content">

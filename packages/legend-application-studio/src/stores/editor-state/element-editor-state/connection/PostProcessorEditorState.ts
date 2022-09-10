@@ -14,53 +14,59 @@
  * limitations under the License.
  */
 
-import {
-  type Mapper,
-  type PostProcessor,
-  type SchemaNameMapper,
-  TableNameMapper,
+import type {
+  PostProcessor,
+  Mapper,
+  MapperPostProcessor,
 } from '@finos/legend-graph';
 import { makeObservable, observable, action } from 'mobx';
 import type { RelationalDatabaseConnectionValueState } from './ConnectionEditorState.js';
 
-export class PostProcessorEditorState {
+export abstract class PostProcessorEditorState {
   postProcessor: PostProcessor | undefined;
   connectionValueState: RelationalDatabaseConnectionValueState;
-  selectedMapper: Mapper | undefined;
-  selectedSchema: SchemaNameMapper | undefined;
 
   constructor(
-    postProcessor: PostProcessor,
+    postProcessor: PostProcessor | undefined,
     connectionValueState: RelationalDatabaseConnectionValueState,
   ) {
     makeObservable(this, {
       postProcessor: observable,
       connectionValueState: observable,
-      selectedMapper: observable,
-      selectedSchema: observable,
-      setSelectedMapper: action,
-      setSelectedSchema: action,
-      setSelectedPostProcessor: action,
     });
 
     this.postProcessor = postProcessor;
     this.connectionValueState = connectionValueState;
   }
 
-  setSelectedPostProcessor = (val: PostProcessor | undefined): void => {
-    this.postProcessor = val;
-    this.setSelectedMapper(undefined);
-    this.setSelectedSchema(undefined);
-  };
+  abstract setPostProcessorState(val: PostProcessor | undefined): void;
+}
 
-  setSelectedSchema = (val: SchemaNameMapper | undefined): void => {
-    this.selectedSchema = val;
+export class MapperPostProcessorEditorState extends PostProcessorEditorState {
+  selectedMapper: Mapper | undefined;
+
+  constructor(
+    postProcessor: MapperPostProcessor | undefined,
+    connectionValueState: RelationalDatabaseConnectionValueState,
+  ) {
+    super(postProcessor, connectionValueState);
+    makeObservable(this, {
+      selectedMapper: observable,
+      setSelectedMapper: action,
+      setPostProcessorState: action,
+    });
+
+    this.postProcessor = postProcessor;
+    this.connectionValueState = connectionValueState;
+  }
+
+  setPostProcessorState = (val: PostProcessor | undefined): void => {
+    this.postProcessor = val;
+
+    this.setSelectedMapper(undefined);
   };
 
   setSelectedMapper = (val: Mapper | undefined): void => {
     this.selectedMapper = val;
-    if (!(this.selectedMapper instanceof TableNameMapper)) {
-      this.setSelectedSchema(undefined);
-    }
   };
 }

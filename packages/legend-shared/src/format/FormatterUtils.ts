@@ -66,9 +66,6 @@ export const toTitleCase = (value: string | undefined): string =>
     .replace(/^(?:\w+)\b/u, (val) => capitalize(val))
     .replace(/\b(?:\w+)$/u, (val) => capitalize(val));
 
-export const prettyTitleName = (value: string | undefined): string =>
-  (value ?? '').toLowerCase().replace(/\b\w/g, (val) => val.toUpperCase());
-
 export const prettyCONSTName = (value: string | undefined): string =>
   toSentenceCase((value ?? '').toLowerCase())
     .replace(/_(?:\w)/gu, (val) => val.toUpperCase())

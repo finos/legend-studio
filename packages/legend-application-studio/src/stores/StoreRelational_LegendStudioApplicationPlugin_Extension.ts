@@ -22,6 +22,7 @@ import type {
   ObserverContext,
 } from '@finos/legend-graph';
 import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { PostProcessorEditorState } from './editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
 // connection datasource specification
 
@@ -66,6 +67,11 @@ export type PostProcessorEditorRenderer = (
   connectionValueState: RelationalDatabaseConnectionValueState,
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
+
+export type PostProcessorState = (
+  metamodel: PostProcessor | undefined,
+  connectionValueState: RelationalDatabaseConnectionValueState,
+) => PostProcessorEditorState | undefined;
 
 export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
@@ -135,6 +141,11 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
     connectionValueState: RelationalDatabaseConnectionValueState,
     observerContext: ObserverContext,
   ): PostProcessorCreator[];
+
+  /**
+   * Get the list of states for a post-processor specification.
+   */
+  getextraPostProcessorStates?(): PostProcessorState[];
 
   /**
    * Get the list of renderers for the editor for a post-processor specification.

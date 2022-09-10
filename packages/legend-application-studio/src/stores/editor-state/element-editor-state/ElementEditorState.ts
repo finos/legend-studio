@@ -109,6 +109,8 @@ export abstract class ElementEditorState extends EditorState {
     }
   }
 
+  // svp
+
   *generateElementGrammar(): GeneratorFn<void> {
     try {
       const grammar =

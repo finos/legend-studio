@@ -459,42 +459,33 @@ export const postProcessor_addMapper = action(
   },
 );
 
-export const postProcessor_setMapperFrom = action(
+export const mapperPostProcessor_setMapperFrom = action(
   (mapper: Mapper, val: string): void => {
     mapper.from = val;
   },
 );
 
-export const postProcessor_setMapperTo = action(
+export const mapperPostProcessor_setMapperTo = action(
   (mapper: Mapper, val: string): void => {
     mapper.to = val;
   },
 );
 
-export const postProcessor_setMapperSchemaTo = action(
+export const mapperPostProcessor_setMapperSchemaTo = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.to = val;
   },
 );
 
-export const postProcessor_setMapperSchemaFrom = action(
+export const mapperPostProcessor_setMapperSchemaFrom = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.from = val;
   },
 );
 
-export const postProcessor_deleteMapper = action(
-  (
-    connectionValueState: RelationalDatabaseConnectionValueState,
-    val: Mapper,
-  ): void => {
-    deleteEntry(
-      (
-        connectionValueState.selectedPostProcessor
-          ?.postProcessor as MapperPostProcessor
-      ).mappers,
-      val,
-    );
+export const mapperPostProcessor_deleteMapper = action(
+  (mapperPostProcessor: MapperPostProcessor, val: Mapper): void => {
+    deleteEntry(mapperPostProcessor.mappers, val);
   },
 );
 

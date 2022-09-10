@@ -1046,19 +1046,26 @@ const observe_Abstract_PostProcessor = (metamodel: PostProcessor): void => {
   });
 };
 
+const observe_MapperPostProcessor = (
+  metamodel: MapperPostProcessor,
+): MapperPostProcessor => {
+  makeObservable(metamodel, {
+    mappers: observable,
+  });
+  metamodel.mappers.forEach((mapper) => {
+    observe_Mapper(mapper);
+  });
+  return metamodel;
+};
+
 export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
   observe_Abstract_PostProcessor(metamodel);
+
   if (metamodel instanceof MapperPostProcessor) {
-    makeObservable(metamodel, {
-      mappers: observable,
-    });
-    metamodel.mappers.forEach((mapper) => {
-      observe_Mapper(mapper);
-    });
-    return metamodel;
+    return observe_MapperPostProcessor(metamodel);
   }
   const extraObservers = context.plugins.flatMap(
     (plugin) =>

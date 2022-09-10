@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  capitalize,
-  prettyCONSTName,
-  prettyTitleName,
-} from '@finos/legend-shared';
+import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
 
@@ -64,17 +60,10 @@ export const PanelTabs: React.FC<{
     tab: T,
   ) => (event: React.MouseEvent<HTMLDivElement>) => void;
   selectedTab: string;
-  prettifyTitleName?: boolean;
   className?: string;
   tabClassName: string;
 }> = (props) => {
-  const {
-    tabTitles,
-    prettifyTitleName,
-    changeTheTab,
-    selectedTab,
-    tabClassName,
-  } = props;
+  const { tabTitles, changeTheTab, selectedTab, tabClassName } = props;
 
   return (
     <div className="panel__header">
@@ -87,7 +76,7 @@ export const PanelTabs: React.FC<{
               [`${tabClassName}--active`]: tab === selectedTab,
             })}
           >
-            {prettifyTitleName ? prettyTitleName(tab) : prettyCONSTName(tab)}
+            {toTitleCase(prettyCONSTName(tab))}
           </div>
         ))}
       </div>

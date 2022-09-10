@@ -21,7 +21,6 @@ import {
   PanelHeaderActionItem,
   PlusIcon,
   ResizablePanelSplitter,
-  BlankPanelPlaceholder,
   PanelTextEditor,
   PanelForm,
   ContextMenu,
@@ -29,34 +28,34 @@ import {
   MenuContentItem,
   DropdownMenu,
   PanelExplorerItem,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import {
   type Mapper,
   type PostProcessor,
-  type MapperPostProcessor,
+  MapperPostProcessor,
   TableNameMapper,
   SchemaNameMapper,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import type { RelationalDatabaseConnectionValueState } from '../../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+import type { MapperPostProcessorEditorState } from '../../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 import {
   postProcessor_addMapper,
-  postProcessor_deleteMapper,
-  postProcessor_setMapperFrom,
-  postProcessor_setMapperSchemaFrom,
-  postProcessor_setMapperSchemaTo,
-  postProcessor_setMapperTo,
+  mapperPostProcessor_deleteMapper,
+  mapperPostProcessor_setMapperFrom,
+  mapperPostProcessor_setMapperSchemaFrom,
+  mapperPostProcessor_setMapperSchemaTo,
+  mapperPostProcessor_setMapperTo,
 } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export const MapperPostProcessorEditor = observer(
   (props: {
     postProcessor: PostProcessor;
-    connectionValueState: RelationalDatabaseConnectionValueState;
+    postProcessorState: MapperPostProcessorEditorState;
   }) => {
-    const { connectionValueState, postProcessor } = props;
+    const { postProcessorState, postProcessor } = props;
 
-    const selectedMapper =
-      connectionValueState.selectedPostProcessor?.selectedMapper;
+    const selectedMapper = postProcessorState.selectedMapper;
 
     const selectedSchemaNameMapper =
       selectedMapper instanceof TableNameMapper
@@ -64,75 +63,64 @@ export const MapperPostProcessorEditor = observer(
         : undefined;
 
     const selectMapper = (val: Mapper): void => {
-      connectionValueState.selectedPostProcessor?.setSelectedMapper(val);
-      if (val instanceof TableNameMapper) {
-        connectionValueState.selectedPostProcessor?.setSelectedSchema(
-          val.schema,
-        );
-      }
+      postProcessorState.setSelectedMapper(val);
     };
 
     const addSchemaMapper = (): void => {
       postProcessor_addMapper(postProcessor, true);
-      connectionValueState.selectedPostProcessor?.setSelectedMapper(
+      postProcessorState.setSelectedMapper(
         (postProcessor as MapperPostProcessor).mappers.at(-1),
       );
-      connectionValueState.selectedPostProcessor?.setSelectedSchema(undefined);
     };
 
     const addTableMapper = (): void => {
       postProcessor_addMapper(postProcessor, false);
-      connectionValueState.selectedPostProcessor?.setSelectedMapper(
+      postProcessorState.setSelectedMapper(
         (postProcessor as MapperPostProcessor).mappers.at(-1),
-      );
-      connectionValueState.selectedPostProcessor?.setSelectedSchema(
-        (
-          (postProcessor as MapperPostProcessor).mappers.at(
-            -1,
-          ) as TableNameMapper
-        ).schema,
       );
     };
 
     const deleteMapper =
       (mapper: Mapper): (() => void) =>
       (): void => {
-        postProcessor_deleteMapper(connectionValueState, mapper);
-        if (
-          mapper === connectionValueState.selectedPostProcessor?.selectedMapper
-        ) {
-          connectionValueState.selectedPostProcessor.setSelectedMapper(
-            undefined,
+        if (postProcessorState.postProcessor instanceof MapperPostProcessor) {
+          mapperPostProcessor_deleteMapper(
+            postProcessorState.postProcessor,
+            mapper,
           );
-          connectionValueState.selectedPostProcessor.setSelectedSchema(
-            undefined,
-          );
+        }
+
+        if (mapper === postProcessorState.selectedMapper) {
+          postProcessorState.setSelectedMapper(undefined);
         }
       };
 
     const mappers = (postProcessor as MapperPostProcessor).mappers;
+
     const isSchemaMapperDuplicated = (val: Mapper): boolean =>
       mappers.filter(
-        (p) =>
-          p.from === val.from &&
-          p.to === val.to &&
+        (mapper) =>
+          mapper.from === val.from &&
+          mapper.to === val.to &&
           val instanceof SchemaNameMapper &&
-          p instanceof SchemaNameMapper,
+          mapper instanceof SchemaNameMapper,
       ).length >= 2;
 
     const isTableMapperDuplicated = (val: Mapper): boolean =>
       mappers
         .filter(
-          (p) => val instanceof TableNameMapper && p instanceof TableNameMapper,
+          (mapper) =>
+            val instanceof TableNameMapper && mapper instanceof TableNameMapper,
         )
         .filter(
-          (p) =>
-            (p as TableNameMapper).schema.from ===
+          (mapper) =>
+            (mapper as TableNameMapper).schema.from ===
               (val as TableNameMapper).schema.from &&
-            (p as TableNameMapper).schema.from ===
+            (mapper as TableNameMapper).schema.from ===
               (val as TableNameMapper).schema.from &&
-            (p as TableNameMapper).from === (val as TableNameMapper).from &&
-            (p as TableNameMapper).from === (val as TableNameMapper).from,
+            (mapper as TableNameMapper).from ===
+              (val as TableNameMapper).from &&
+            (mapper as TableNameMapper).from === (val as TableNameMapper).from,
         ).length >= 2;
 
     const isMapperDuplicated = (val: Mapper): boolean =>
@@ -195,9 +183,7 @@ export const MapperPostProcessorEditor = observer(
                             : undefined
                         }
                         isSelected={
-                          mapper ===
-                          connectionValueState.selectedPostProcessor
-                            ?.selectedMapper
+                          mapper === postProcessorState.selectedMapper
                         }
                         onSelect={() => selectMapper(mapper)}
                       />
@@ -214,8 +200,8 @@ export const MapperPostProcessorEditor = observer(
                 {selectedMapper && (
                   <PanelHeader
                     title={
-                      connectionValueState.selectedPostProcessor
-                        ?.selectedMapper instanceof TableNameMapper
+                      postProcessorState.selectedMapper instanceof
+                      TableNameMapper
                         ? 'Table Mapper'
                         : 'Schema Mapper'
                     }
@@ -223,16 +209,11 @@ export const MapperPostProcessorEditor = observer(
                 )}
                 <div className="panel__content">
                   {!selectedMapper && (
-                    <BlankPanelPlaceholder
-                      text=""
-                      tooltipText=""
-                      disabled={true}
-                      previewText={
-                        !mappers.length
-                          ? 'Add a mapper to view properties'
-                          : 'Select a mapper to view properties'
-                      }
-                    />
+                    <BlankPanelContent>
+                      {!mappers.length
+                        ? 'Add a mapper to view properties'
+                        : 'Select a mapper to view properties'}
+                    </BlankPanelContent>
                   )}
                   {selectedMapper && (
                     <PanelForm>
@@ -241,7 +222,7 @@ export const MapperPostProcessorEditor = observer(
                         value={selectedMapper.from}
                         propertyName={'From'}
                         update={(value: string | undefined): void =>
-                          postProcessor_setMapperFrom(
+                          mapperPostProcessor_setMapperFrom(
                             selectedMapper,
                             value ?? '',
                           )
@@ -252,7 +233,10 @@ export const MapperPostProcessorEditor = observer(
                         value={selectedMapper.to}
                         propertyName={'To'}
                         update={(value: string | undefined): void =>
-                          postProcessor_setMapperTo(selectedMapper, value ?? '')
+                          mapperPostProcessor_setMapperTo(
+                            selectedMapper,
+                            value ?? '',
+                          )
                         }
                       />
                       {selectedSchemaNameMapper && (
@@ -262,7 +246,7 @@ export const MapperPostProcessorEditor = observer(
                             value={selectedSchemaNameMapper.from}
                             propertyName={'Schema - From'}
                             update={(value: string | undefined): void => {
-                              postProcessor_setMapperSchemaFrom(
+                              mapperPostProcessor_setMapperSchemaFrom(
                                 selectedSchemaNameMapper,
                                 value ?? '',
                               );
@@ -273,7 +257,7 @@ export const MapperPostProcessorEditor = observer(
                             value={selectedSchemaNameMapper.to}
                             propertyName={'Schema - To'}
                             update={(value: string | undefined): void =>
-                              postProcessor_setMapperSchemaTo(
+                              mapperPostProcessor_setMapperSchemaTo(
                                 selectedSchemaNameMapper,
                                 value ?? '',
                               )

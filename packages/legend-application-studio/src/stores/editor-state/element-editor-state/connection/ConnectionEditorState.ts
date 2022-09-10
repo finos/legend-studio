@@ -53,13 +53,17 @@ import {
   createValidationError,
   isStubbed_PackageableElement,
   type PostProcessor,
+  MapperPostProcessor,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
-import { PostProcessorEditorState } from './PostProcessorEditorState.js';
+import {
+  MapperPostProcessorEditorState,
+  type PostProcessorEditorState,
+} from './PostProcessorEditorState.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -109,7 +113,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
-  selectedPostProcessor: PostProcessorEditorState | undefined;
+  postProcessorState:
+    | PostProcessorEditorState
+    | MapperPostProcessorEditorState
+    | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -121,7 +128,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       databaseBuilderState: observable,
       selectedTab: observable,
       selectPostProcessor: action,
-      selectedPostProcessor: observable,
+      postProcessorState: observable,
     });
 
     this.connection = connection;
@@ -132,14 +139,33 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     );
   }
 
-  selectPostProcessor = (postProcessor: PostProcessor): void => {
-    if (!this.selectedPostProcessor) {
-      this.selectedPostProcessor = new PostProcessorEditorState(
-        postProcessor,
-        this,
-      );
+  selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
+    if (!this.postProcessorState) {
+      if (postProcessor instanceof MapperPostProcessor) {
+        this.postProcessorState = new MapperPostProcessorEditorState(
+          postProcessor,
+          this,
+        );
+      } else {
+        const extraPostProcessorStates = this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              ).getextraPostProcessorStates?.() ?? [],
+          );
+        for (const postProcessorStates of extraPostProcessorStates) {
+          const postProcessorState = postProcessorStates(postProcessor, this);
+          if (postProcessorState) {
+            this.postProcessorState = postProcessorState;
+          }
+        }
+      }
     }
-    this.selectedPostProcessor.setSelectedPostProcessor(postProcessor);
+    if (this.postProcessorState) {
+      this.postProcessorState.setPostProcessorState(postProcessor);
+    }
   };
 
   get storeValidationResult(): ValidationIssue | undefined {
