@@ -32,6 +32,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
+  getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
 } from '@finos/legend-application-query';
 import {
@@ -314,6 +315,9 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   value={selectedRuntimeOption}
                   darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                   filterOption={runtimeFilterOption}
+                  formatOptionLabel={getRuntimeOptionFormatter({
+                    darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                  })}
                 />
               </div>
             )}

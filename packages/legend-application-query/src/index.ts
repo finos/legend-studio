@@ -52,6 +52,7 @@ export { QueryBuilderState } from './stores/query-builder/QueryBuilderState.js';
 export {
   QueryBuilderClassSelector,
   buildRuntimeValueOption,
+  getRuntimeOptionFormatter,
 } from './components/query-builder/QueryBuilderSideBar.js';
 export { BasicQueryBuilderState } from './stores/query-builder/workflows/BasicQueryBuilderState.js';
 export { ClassQueryBuilderState } from './stores/query-builder/workflows/ClassQueryBuilderState.js';

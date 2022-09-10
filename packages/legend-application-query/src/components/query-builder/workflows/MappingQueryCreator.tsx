@@ -37,6 +37,7 @@ import {
 } from '@finos/legend-application';
 import {
   buildRuntimeValueOption,
+  getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
 } from '../QueryBuilderSideBar.js';
 import { guaranteeType } from '@finos/legend-shared';
@@ -170,6 +171,9 @@ const MappingQueryCreatorSetupPanelContent = observer(
                 value={selectedRuntimeOption}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 filterOption={runtimeFilterOption}
+                formatOptionLabel={getRuntimeOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                })}
               />
             </div>
           </div>

@@ -38,6 +38,7 @@ import {
 } from '@finos/legend-application';
 import {
   buildRuntimeValueOption,
+  getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
 } from '../QueryBuilderSideBar.js';
 import type { ClassQueryBuilderState } from '../../../stores/query-builder/workflows/ClassQueryBuilderState.js';
@@ -178,6 +179,9 @@ const ClassQueryBuilderSetupPanelContent = observer(
                 value={selectedRuntimeOption}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 filterOption={runtimeFilterOption}
+                formatOptionLabel={getRuntimeOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                })}
               />
             </div>
           </div>

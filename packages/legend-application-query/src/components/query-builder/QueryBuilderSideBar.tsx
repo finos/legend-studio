@@ -222,11 +222,26 @@ export const QueryBuilderClassSelector = observer(
 
 export const buildRuntimeValueOption = (
   runtimeValue: Runtime,
-): { label: string | React.ReactNode; value: Runtime } => ({
+): { label: string; value: Runtime } => ({
   value: runtimeValue,
   label:
-    runtimeValue instanceof RuntimePointer ? (
-      runtimeValue.packageableRuntime.value.name
+    runtimeValue instanceof RuntimePointer
+      ? runtimeValue.packageableRuntime.value.name
+      : 'custom',
+});
+
+export const getRuntimeOptionFormatter = (props: {
+  darkMode?: boolean;
+}): ((option: { value: Runtime }) => React.ReactNode) =>
+  function RuntimeOptionLabel(option: { value: Runtime }): React.ReactNode {
+    if (option.value instanceof RuntimePointer) {
+      const runtimePointer = option.value;
+      return getPackageableElementOptionFormatter(props)(
+        buildElementOption(runtimePointer.packageableRuntime.value),
+      );
+    }
+    return option.value instanceof RuntimePointer ? (
+      option.value.packageableRuntime.value.name
     ) : (
       <div className="query-builder__setup__runtime-option--custom">
         <CogIcon />
@@ -234,8 +249,8 @@ export const buildRuntimeValueOption = (
           custom
         </div>
       </div>
-    ),
-});
+    );
+  };
 
 const BasicQueryBuilderSetup = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -363,6 +378,9 @@ const BasicQueryBuilderSetup = observer(
                 value={selectedRuntimeOption}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 filterOption={runtimeFilterOption}
+                formatOptionLabel={getRuntimeOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                })}
               />
             </div>
           </div>
