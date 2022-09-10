@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type WheelEvent,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -26,6 +33,8 @@ import {
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
+  useDragPreviewLayer,
+  PanelEntryDropZonePlaceholderWithoutBorder,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -70,6 +79,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
+import { useDrag, useDrop } from 'react-dnd';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -210,6 +220,137 @@ const EditPanelHeaderTabContextMenu = observer(
     );
   }),
 );
+
+const EDITOR_DND_TYPE = 'EDITOR_STATE';
+
+export const EditorMainTabEditor = observer(
+  (props: {
+    editorState: EditorState;
+    currentEditorState: EditorState;
+    renderHeaderLabel: (editorState: EditorState) => React.ReactNode;
+  }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const { editorState, currentEditorState, renderHeaderLabel } = props;
+
+    const editorStore = useEditorStore();
+
+    // actions
+    const closeTab =
+      (newEditorState: EditorState): React.MouseEventHandler =>
+      (event): void => {
+        editorStore.closeState(newEditorState);
+      };
+
+    const closeTabOnMiddleClick =
+      (newEditorState: EditorState): React.MouseEventHandler =>
+      (event): void => {
+        if (event.nativeEvent.button === 1) {
+          editorStore.closeState(newEditorState);
+        }
+      };
+    const openTab =
+      (newEditorState: EditorState): (() => void) =>
+      (): void => {
+        editorStore.openState(newEditorState);
+      };
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: EditorPanelDragSource): void => {
+        const draggingProperty = item.panel;
+        const hoveredProperty = editorState;
+
+        editorStore.swapTabs(draggingProperty, hoveredProperty);
+      },
+      [editorStore, editorState],
+    );
+
+    const [{ isBeingDraggedProperty }, dropConnector] = useDrop<
+      EditorPanelDragSource,
+      void,
+      { isBeingDraggedProperty: EditorState | undefined }
+    >(
+      () => ({
+        accept: [EDITOR_DND_TYPE],
+        hover: (item) => handleHover(item),
+        collect: (
+          monitor,
+        ): {
+          isBeingDraggedProperty: EditorState | undefined;
+        } => ({
+          isBeingDraggedProperty:
+            monitor.getItem<EditorPanelDragSource | null>()?.panel,
+        }),
+      }),
+      [handleHover],
+    );
+    const isBeingDragged = editorState === isBeingDraggedProperty;
+
+    const [, dragConnector, dragPreviewConnector] =
+      useDrag<EditorPanelDragSource>(
+        () => ({
+          type: EDITOR_DND_TYPE,
+          item: () => ({
+            panel: editorState,
+          }),
+        }),
+        [editorState],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(dragPreviewConnector);
+
+    return (
+      <div
+        ref={ref}
+        key={editorState.uuid}
+        className={clsx('edit-panel__header__tab', {
+          'edit-panel__header__tab--active': editorState === currentEditorState,
+        })}
+        onMouseUp={closeTabOnMiddleClick(editorState)}
+      >
+        <PanelEntryDropZonePlaceholderWithoutBorder
+          showPlaceholder={isBeingDragged}
+          label={editorState.headerName}
+          className="edit-panel__header__dnd__placeholder"
+        >
+          <ContextMenu
+            content={
+              <EditPanelHeaderTabContextMenu editorState={editorState} />
+            }
+            className="edit-panel__header__tab__content"
+          >
+            <button
+              className="edit-panel__header__tab__label"
+              tabIndex={-1}
+              onClick={openTab(editorState)}
+              title={
+                editorState instanceof ElementEditorState
+                  ? editorState.element.path
+                  : editorState instanceof EntityDiffViewState
+                  ? editorState.headerTooltip
+                  : editorState.headerName
+              }
+            >
+              {renderHeaderLabel(editorState)}
+            </button>
+            <button
+              className="edit-panel__header__tab__close-btn"
+              onClick={closeTab(editorState)}
+              tabIndex={-1}
+              title={'Close'}
+            >
+              <TimesIcon />
+            </button>
+          </ContextMenu>
+        </PanelEntryDropZonePlaceholderWithoutBorder>
+      </div>
+    );
+  },
+);
+
+type EditorPanelDragSource = {
+  panel: EditorState;
+};
 
 export const EditPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -362,22 +503,12 @@ export const EditPanel = observer(() => {
     return editorState.headerName;
   };
 
-  // actions
-  const closeTab =
-    (editorState: EditorState): React.MouseEventHandler =>
-    (event): void =>
-      editorStore.closeState(editorState);
-  const closeTabOnMiddleClick =
-    (editorState: EditorState): React.MouseEventHandler =>
-    (event): void => {
-      if (event.nativeEvent.button === 1) {
-        editorStore.closeState(editorState);
-      }
-    };
-  const openTab =
-    (editorState: EditorState): (() => void) =>
-    (): void =>
-      editorStore.openState(editorState);
+  function horizontalScroll(event: WheelEvent): void {
+    if (event.deltaY === 0) {
+      return;
+    }
+    event.currentTarget.scrollBy(event.deltaY, 0);
+  }
 
   if (!currentEditorState) {
     return editorStore.isInViewerMode ? (
@@ -395,48 +526,18 @@ export const EditPanel = observer(() => {
         <div
           data-testid={LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS}
           className="edit-panel__header__tabs"
+          onWheel={horizontalScroll}
         >
           {openedEditorStates.map((editorState) => (
-            <div
+            <EditorMainTabEditor
               key={editorState.uuid}
-              className={clsx('edit-panel__header__tab', {
-                'edit-panel__header__tab--active':
-                  editorState === currentEditorState,
-              })}
-              onMouseUp={closeTabOnMiddleClick(editorState)}
-            >
-              <ContextMenu
-                content={
-                  <EditPanelHeaderTabContextMenu editorState={editorState} />
-                }
-                className="edit-panel__header__tab__content"
-              >
-                <button
-                  className="edit-panel__header__tab__label"
-                  tabIndex={-1}
-                  onClick={openTab(editorState)}
-                  title={
-                    editorState instanceof ElementEditorState
-                      ? editorState.element.path
-                      : editorState instanceof EntityDiffViewState
-                      ? editorState.headerTooltip
-                      : editorState.headerName
-                  }
-                >
-                  {renderHeaderLabel(editorState)}
-                </button>
-                <button
-                  className="edit-panel__header__tab__close-btn"
-                  onClick={closeTab(editorState)}
-                  tabIndex={-1}
-                  title="Close"
-                >
-                  <TimesIcon />
-                </button>
-              </ContextMenu>
-            </div>
+              editorState={editorState}
+              renderHeaderLabel={renderHeaderLabel}
+              currentEditorState={currentEditorState}
+            />
           ))}
         </div>
+
         <div className="edit-panel__header__actions">
           {currentEditorState instanceof ElementEditorState && (
             <DropdownMenu

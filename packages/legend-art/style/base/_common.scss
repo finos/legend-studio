@@ -105,6 +105,17 @@
     width: 100%;
     margin: 0;
     font-weight: 700;
+
+    &--borderless {
+      @include flexVCenter;
+
+      border: none;
+      height: 100%;
+      padding: 0 0.5rem;
+      width: 100%;
+      margin: 0;
+      font-weight: 700;
+    }
   }
 }
 

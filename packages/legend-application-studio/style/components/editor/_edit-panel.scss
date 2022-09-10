@@ -25,6 +25,17 @@
     padding: 0;
   }
 
+  &__header__dnd__placeholder {
+    width: 20rem;
+    text-align: left;
+    margin: 0;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis !important;
+    background-color: var(--color-dark-grey-200);
+  }
+
   &__content {
     overflow-y: hidden;
     position: relative;
@@ -41,11 +52,11 @@
   &__header__tab {
     @include flexVCenter;
 
-    padding: 0 1rem;
     cursor: pointer;
     color: var(--color-light-grey-400);
     background: var(--color-dark-grey-80);
-    border-right: 0.1rem solid var(--color-dark-grey-80);
+    border-right: 0.1rem solid var(--color-dark-grey-50);
+    max-width: 20rem;
   }
 
   &__header__tab--active {
@@ -107,8 +118,10 @@
 
   &__header__tab__label {
     color: inherit;
-    padding: 0 0.5rem;
+    padding: 0 0.5rem 0 1rem;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__header__tab__label__diff {
@@ -142,6 +155,7 @@
     svg {
       color: var(--color-light-grey-200);
       font-size: 1.2rem;
+      margin-right: 1rem;
     }
   }
 
