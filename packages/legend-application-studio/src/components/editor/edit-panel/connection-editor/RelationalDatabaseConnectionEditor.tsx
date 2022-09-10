@@ -109,9 +109,9 @@ import {
   snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference,
   snowflakePublicAuthenticationStrategy_setPublicUserName,
   spannerDatasourceSpecification_setDatabaseId,
-  spannerDatasourceSpecification_setHost,
+  spannerDatasourceSpecification_setProxyHost,
   spannerDatasourceSpecification_setInstanceId,
-  spannerDatasourceSpecification_setPort,
+  spannerDatasourceSpecification_setProxyPort,
   spannerDatasourceSpecification_setProjectId,
   staticDatasourceSpecification_setDatabaseName,
   staticDatasourceSpecification_setHost,
@@ -902,19 +902,19 @@ const SpannerDatasourceSpecificationEditor = observer(
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
-          propertyName="host"
+          propertyName="proxyHost"
           description="Specifies the connection host. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
-            spannerDatasourceSpecification_setHost(sourceSpec, value ?? '')
+            spannerDatasourceSpecification_setProxyHost(sourceSpec, value ?? '')
           }
         />
         <ConnectionEditor_StringEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
-          propertyName="port"
+          propertyName="proxyPort"
           description="Specifies the connection port. Leave blank to use GCP defaults"
           update={(value: string | undefined): void =>
-            spannerDatasourceSpecification_setPort(sourceSpec, value ?? '')
+            spannerDatasourceSpecification_setProxyPort(sourceSpec, value ?? '')
           }
         />
       </>

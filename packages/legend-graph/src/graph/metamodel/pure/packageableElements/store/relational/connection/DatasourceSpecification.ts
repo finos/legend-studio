@@ -254,15 +254,15 @@ export class SpannerDatasourceSpecification
     projectId: string,
     instanceId: string,
     databaseId: string,
-    host: string | undefined,
-    port: string | undefined,
+    proxyHost: string | undefined,
+    proxyPort: string | undefined,
   ) {
     super();
     this.projectId = projectId;
     this.instanceId = instanceId;
     this.databaseId = databaseId;
-    this.proxyHost = host;
-    this.proxyPort = port;
+    this.proxyHost = proxyHost;
+    this.proxyPort = proxyPort;
   }
 
   get hashCode(): string {

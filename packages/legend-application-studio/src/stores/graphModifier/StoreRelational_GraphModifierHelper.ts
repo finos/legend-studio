@@ -385,12 +385,12 @@ export const spannerDatasourceSpecification_setDatabaseId = action(
     spec.databaseId = val;
   },
 );
-export const spannerDatasourceSpecification_setHost = action(
+export const spannerDatasourceSpecification_setProxyHost = action(
   (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
     spec.proxyHost = val;
   },
 );
-export const spannerDatasourceSpecification_setPort = action(
+export const spannerDatasourceSpecification_setProxyPort = action(
   (spec: SpannerDatasourceSpecification, val: string | undefined): void => {
     spec.proxyPort = val;
   },
