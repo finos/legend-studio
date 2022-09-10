@@ -249,7 +249,7 @@ export const MapperPostProcessorEditor = observer(
                           <PanelTextEditor
                             isReadOnly={false}
                             value={selectedSchemaNameMapper.from}
-                            propertyName={'Schema - From'}
+                            propertyName="Schema - From"
                             update={(value: string | undefined): void => {
                               mapperPostProcessor_setMapperSchemaFrom(
                                 selectedSchemaNameMapper,
