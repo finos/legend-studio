@@ -499,16 +499,20 @@ export class ModelImporterState extends EditorState {
   setModelImporterExtension(
     extension: ModelImporterExtensionConfiguration,
   ): ExtensionModelImporterEditorState {
-    const externalEditorState =
-      this.modelImportEditorState instanceof ExtensionModelImporterEditorState
-        ? this.modelImportEditorState
-        : new ExtensionModelImporterEditorState(
-            extension,
-            extension.getExtensionModelImportRendererStateCreator(this),
-            this,
-          );
-    externalEditorState.setExtension(extension);
-    this.setImportEditorState(externalEditorState);
-    return externalEditorState;
+    if (
+      this.modelImportEditorState instanceof
+        ExtensionModelImporterEditorState &&
+      this.modelImportEditorState.config === extension
+    ) {
+      return this.modelImportEditorState;
+    } else {
+      const modelImporterEditorState = new ExtensionModelImporterEditorState(
+        extension,
+        extension.getExtensionModelImportRendererStateCreator(this),
+        this,
+      );
+      this.setImportEditorState(modelImporterEditorState);
+      return modelImporterEditorState;
+    }
   }
 }
