@@ -435,12 +435,12 @@ export const rootRelationalSetImp_setPropertyMappings = action(
 export const relationalDatabaseConnection_addPostProcessor = action(
   (
     connectionValueState: RelationalDatabaseConnectionValueState,
-    observeContext: ObserverContext,
     postProcessor: PostProcessor,
+    observerContext: ObserverContext,
   ): void => {
     addUniqueEntry(
       connectionValueState.connection.postProcessors,
-      observe_PostProcessor(postProcessor, observeContext),
+      observe_PostProcessor(postProcessor, observerContext),
     );
   },
 );
@@ -463,25 +463,25 @@ export const mapperPostProcessor_addMapper = action(
   },
 );
 
-export const mapperPostProcessor_setMapperFrom = action(
+export const mapperPostProcessor_mapper_setFrom = action(
   (mapper: Mapper, val: string): void => {
     mapper.from = val;
   },
 );
 
-export const mapperPostProcessor_setMapperTo = action(
+export const mapperPostProcessor_mapper_setTo = action(
   (mapper: Mapper, val: string): void => {
     mapper.to = val;
   },
 );
 
-export const mapperPostProcessor_setMapperSchemaTo = action(
+export const mapperPostProcessor_schemaNameMapper_setTo = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.to = val;
   },
 );
 
-export const mapperPostProcessor_setMapperSchemaFrom = action(
+export const mapperPostProcessor_schemaNameMapper_setFrom = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.from = val;
   },

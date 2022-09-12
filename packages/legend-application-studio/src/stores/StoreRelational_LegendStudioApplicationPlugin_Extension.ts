@@ -143,9 +143,12 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   ): PostProcessorCreator[];
 
   /**
-   * Get the list of states for a post-processor specification.
+   * Get the list of state creators for a post-processor specification.
    */
-  getextraPostProcessorStates?(): PostProcessorState[];
+  getextraPostProcessorStates?(
+    metamodel: PostProcessor | undefined,
+    connectionValueState: RelationalDatabaseConnectionValueState,
+  ): PostProcessorState[];
 
   /**
    * Get the list of renderers for the editor for a post-processor specification.

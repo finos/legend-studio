@@ -100,17 +100,37 @@ export const PanelFormRow: React.FC<{
   return <div className="panel__content__form__row">{children}</div>;
 };
 
+const PanelContent: React.FC<{
+  children?: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  return <div className="panel__content">{children}</div>;
+};
+
+export const Panel: React.FC<{
+  children?: React.ReactNode;
+  headerTitle: string;
+  headerContent?: React.ReactNode | undefined;
+}> = (props) => {
+  const { children, headerTitle, headerContent } = props;
+  return (
+    <div className="panel__content__resizable">
+      <PanelHeader title={headerTitle}>{headerContent}</PanelHeader>
+      <PanelContent>{children}</PanelContent>;
+    </div>
+  );
+};
+
 export const PanelTextEditor = observer(
   (props: {
-    propertyName: string;
+    name: string;
     description?: string;
     padding?: boolean;
     value: string | undefined;
     isReadOnly: boolean;
     update: (value: string | undefined) => void;
   }) => {
-    const { value, propertyName, description, padding, isReadOnly, update } =
-      props;
+    const { value, name, description, padding, isReadOnly, update } = props;
     const displayValue = value ?? '';
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const stringValue = event.target.value;
@@ -125,7 +145,7 @@ export const PanelTextEditor = observer(
         })}
       >
         <div className="panel__content__form__section__header__label">
-          {capitalize(propertyName)}
+          {capitalize(name)}
         </div>
         <div className="panel__content__form__section__header__prompt">
           {description}

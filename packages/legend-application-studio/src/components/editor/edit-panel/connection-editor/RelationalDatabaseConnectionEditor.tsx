@@ -41,10 +41,11 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-  PanelExplorerItem,
+  PanelListSelectorItem,
   DropdownMenu,
   PanelTabs,
   BlankPanelContent,
+  ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -146,13 +147,13 @@ import type { MapperPostProcessorEditorState } from '../../../../stores/editor-s
 // TODO: consider to move this to shared
 export const ConnectionEditor_BooleanEditor = observer(
   (props: {
-    propertyName: string;
+    name: string;
     description?: string;
     value: boolean | undefined;
     isReadOnly: boolean;
     update: (value: boolean | undefined) => void;
   }) => {
-    const { value, propertyName, description, isReadOnly, update } = props;
+    const { value, name, description, isReadOnly, update } = props;
     const toggle = (): void => {
       if (!isReadOnly) {
         update(!value);
@@ -162,7 +163,7 @@ export const ConnectionEditor_BooleanEditor = observer(
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
-          {capitalize(propertyName)}
+          {capitalize(name)}
         </div>
         <div
           className={clsx('panel__content__form__section__toggler', {
@@ -191,20 +192,19 @@ export const ConnectionEditor_BooleanEditor = observer(
 // TODO: consider to move this to shared
 export const ConnectionEditor_TextEditor = observer(
   (props: {
-    propertyName: string;
+    name: string;
     description?: string;
     value: string | undefined;
     isReadOnly: boolean;
     language: EDITOR_LANGUAGE;
     update: (value: string | undefined) => void;
   }) => {
-    const { value, propertyName, description, isReadOnly, language, update } =
-      props;
+    const { value, name, description, isReadOnly, language, update } = props;
 
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
-          {capitalize(propertyName)}
+          {capitalize(name)}
         </div>
         <div className="panel__content__form__section__header__prompt">
           {description}
@@ -225,13 +225,13 @@ export const ConnectionEditor_TextEditor = observer(
 // TODO: consider to move this to shared
 export const ConnectionEditor_ArrayEditor = observer(
   (props: {
-    propertyName: string;
+    name: string;
     description?: string;
     values: string[];
     isReadOnly: boolean;
     update: (updatedValues: string[]) => void;
   }) => {
-    const { propertyName, description, values, isReadOnly, update } = props;
+    const { name, description, values, isReadOnly, update } = props;
     const arrayValues = values;
     // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
     const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
@@ -283,7 +283,7 @@ export const ConnectionEditor_ArrayEditor = observer(
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
-          {capitalize(propertyName)}
+          {capitalize(name)}
         </div>
         <div className="panel__content__form__section__header__prompt">
           {description}
@@ -417,7 +417,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
         <ConnectionEditor_TextEditor
           isReadOnly={isReadOnly}
           value={SQLValue}
-          propertyName={'test data setup SQL'}
+          name={'test data setup SQL'}
           language={EDITOR_LANGUAGE.SQL}
           update={(value: string | undefined): void =>
             localH2DatasourceSpecification_setTestDataSetupSqls(
@@ -448,7 +448,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          propertyName={'host'}
+          name={'host'}
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
@@ -469,7 +469,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName={'database'}
+          name={'database'}
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -493,7 +493,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName={'database'}
+          name={'database'}
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -504,7 +504,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.directory}
-          propertyName={'directory'}
+          name={'directory'}
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDirectory(
               sourceSpec,
@@ -515,7 +515,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.autoServerMode}
-          propertyName={'auto server mode'}
+          name={'auto server mode'}
           update={(value?: boolean): void =>
             embeddedH2DatasourceSpecification_setAutoServerMode(
               sourceSpec,
@@ -539,7 +539,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.hostname}
-          propertyName="hostname"
+          name="hostname"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setHostName(
               sourceSpec,
@@ -550,7 +550,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.port}
-          propertyName="port"
+          name="port"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setPort(sourceSpec, value ?? '')
           }
@@ -558,7 +558,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.protocol}
-          propertyName="protocol"
+          name="protocol"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setProtocol(
               sourceSpec,
@@ -569,7 +569,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.httpPath}
-          propertyName="httpPath"
+          name="httpPath"
           update={(value: string | undefined): void =>
             databricksDatasourceSpecification_setHttpPath(
               sourceSpec,
@@ -593,7 +593,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountName}
-          propertyName="account"
+          name="account"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setAccountName(sourceSpec, value ?? '')
           }
@@ -601,7 +601,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          propertyName="region"
+          name="region"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setRegion(sourceSpec, value ?? '')
           }
@@ -609,7 +609,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.warehouseName}
-          propertyName="warehouse"
+          name="warehouse"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setWarehouseName(sourceSpec, value ?? '')
           }
@@ -617,7 +617,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName="database"
+          name="database"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setDatabaseName(sourceSpec, value ?? '')
           }
@@ -625,7 +625,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.cloudType}
-          propertyName="cloud type"
+          name="cloud type"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setCloudType(sourceSpec, value)
           }
@@ -633,7 +633,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
-          propertyName="proxy host"
+          name="proxy host"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setProxyHost(sourceSpec, value)
           }
@@ -641,7 +641,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
-          propertyName="proxy port"
+          name="proxy port"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setProxyPort(sourceSpec, value)
           }
@@ -649,7 +649,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.nonProxyHosts}
-          propertyName="non proxy hosts"
+          name="non proxy hosts"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setNonProxyHosts(sourceSpec, value)
           }
@@ -657,7 +657,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.organization}
-          propertyName="organization"
+          name="organization"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setOrganization(sourceSpec, value)
           }
@@ -665,7 +665,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountType}
-          propertyName="account type"
+          name="account type"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setAccountType(sourceSpec, value)
           }
@@ -673,7 +673,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.role}
-          propertyName="role"
+          name="role"
           update={(value: string | undefined): void =>
             snowflakeDatasourceSpec_setRole(sourceSpec, value)
           }
@@ -682,7 +682,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
         <ConnectionEditor_BooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
-          propertyName="quoted identifiers ignore case"
+          name="quoted identifiers ignore case"
           description="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
             snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase(
@@ -711,7 +711,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          propertyName="host"
+          name="host"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
@@ -732,7 +732,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          propertyName="database"
+          name="database"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -744,7 +744,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
-          propertyName="region"
+          name="region"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setRegion(sourceSpec, value ?? '')
           }
@@ -752,7 +752,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.clusterID}
-          propertyName="cluster"
+          name="cluster"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setClusterID(
               sourceSpec,
@@ -763,7 +763,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.endpointURL}
-          propertyName="endpointURL"
+          name="endpointURL"
           update={(value: string | undefined): void =>
             redshiftDatasourceSpecification_setEndpointURL(
               sourceSpec,
@@ -787,7 +787,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          propertyName={'project id'}
+          name={'project id'}
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProjectId(
               sourceSpec,
@@ -798,7 +798,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.defaultDataset}
-          propertyName={'default dataset'}
+          name={'default dataset'}
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setDefaultDataset(
               sourceSpec,
@@ -809,7 +809,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
-          propertyName="proxy host"
+          name="proxy host"
           description="Specifies proxy host for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyHost(
@@ -821,7 +821,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
-          propertyName="proxy port"
+          name="proxy port"
           description="Specifies proxy port for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyPort(
@@ -848,7 +848,7 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serverPrincipal}
-          propertyName={'server principal'}
+          name={'server principal'}
           update={(value: string | undefined): void =>
             delegatedKerberosAuthenticationStrategy_setServerPrincipal(
               authSpec,
@@ -872,7 +872,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.apiToken}
-          propertyName={'apiTokenRef'}
+          name={'apiTokenRef'}
           update={(value: string | undefined): void =>
             apiTokenAuthenticationStrategy_setApiToken(authSpec, value ?? '')
           }
@@ -893,7 +893,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.privateKeyVaultReference}
-          propertyName={'private key vault reference'}
+          name={'private key vault reference'}
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference(
               authSpec,
@@ -904,7 +904,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passPhraseVaultReference}
-          propertyName={'pass phrase vault reference'}
+          name={'pass phrase vault reference'}
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference(
               authSpec,
@@ -915,7 +915,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.publicUserName}
-          propertyName={'public user name'}
+          name={'public user name'}
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPublicUserName(
               authSpec,
@@ -936,7 +936,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.oauthKey}
-          propertyName={'oauth key'}
+          name={'oauth key'}
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setOauthKey(authSpec, value ?? '')
           }
@@ -944,7 +944,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.scopeName}
-          propertyName={'scope name'}
+          name={'scope name'}
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setScopeName(authSpec, value ?? '')
           }
@@ -965,7 +965,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.baseVaultReference}
-          propertyName={'base vault reference'}
+          name={'base vault reference'}
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setBaseVaultReference(
               authSpec,
@@ -976,7 +976,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.userNameVaultReference}
-          propertyName={'user name vault reference'}
+          name={'user name vault reference'}
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setUserNameVaultReference(
               authSpec,
@@ -987,7 +987,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
-          propertyName={'password vault reference'}
+          name={'password vault reference'}
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setPasswordVaultReference(
               authSpec,
@@ -1011,7 +1011,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
-          propertyName={'vault reference'}
+          name={'vault reference'}
           description="Specifies the cred vault reference containing connection credentials"
           update={(value: string | undefined): void =>
             middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
@@ -1037,7 +1037,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serviceAccountEmail}
-          propertyName={'Service Account Email'}
+          name={'Service Account Email'}
           update={(value: string | undefined): void =>
             gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
               authSpec,
@@ -1048,7 +1048,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
         <PanelTextEditor
           isReadOnly={isReadOnly}
           value={GCPScopes}
-          propertyName={'Additional GCP Scopes'}
+          name={'Additional GCP Scopes'}
           update={(value: string | undefined): void =>
             gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes(
               authSpec,
@@ -1165,7 +1165,7 @@ const renderEditorPostProcessor = (
     return (
       <UnsupportedEditorPanel
         isReadOnly={true}
-        text={`Can't display post processor in form mode`}
+        text={`Can't display post-processor in form mode`}
       ></UnsupportedEditorPanel>
     );
   }
@@ -1224,8 +1224,8 @@ const PostProcessorRelationalConnectionEditor = observer(
           case POST_PROCESSOR_TYPE.MAPPER: {
             relationalDatabaseConnection_addPostProcessor(
               connectionValueState,
-              observerContext,
               new MapperPostProcessor(),
+              observerContext,
             );
             break;
           }
@@ -1257,21 +1257,23 @@ const PostProcessorRelationalConnectionEditor = observer(
     };
 
     return (
-      <div className="panel__container ">
+      <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanelSplitter />
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
           <ResizablePanel>
-            <div className="panel__container panel__container--border-top">
+            <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel size={150} minSize={70}>
-                  <div className="panel__container panel__container--border-right">
+                  <PanelHeader title="post-processor">
                     <DropdownMenu
                       content={postProcessorOptions.map((postProcessorType) => (
                         <MenuContentItem
                           key={postProcessorType.value}
                           onClick={addPostProcessor(postProcessorType.value)}
                         >
-                          New {postProcessorType.label} Post Processor
+                          New {postProcessorType.label} Post-Processor
                         </MenuContentItem>
                       ))}
                       menuProps={{
@@ -1286,42 +1288,42 @@ const PostProcessorRelationalConnectionEditor = observer(
                         elevation: 7,
                       }}
                     >
-                      <PanelHeader title="post-processor">
-                        <PanelHeaderActionItem tip="Create Post-Processor">
-                          <PlusIcon />
-                        </PanelHeaderActionItem>
-                      </PanelHeader>
+                      <PanelHeaderActionItem tip="Create Post-Processor">
+                        <PlusIcon />
+                      </PanelHeaderActionItem>
                     </DropdownMenu>
-                    <div className="panel__content">
-                      {postProcessors.map((postProcessor, idx) => (
-                        <ContextMenu
-                          key={postProcessor._UUID}
-                          disabled={false}
-                          content={
-                            <MenuContent>
-                              <MenuContentItem
-                                onClick={deletePostProcessor(postProcessor)}
-                              >
-                                Delete
-                              </MenuContentItem>
-                            </MenuContent>
+                  </PanelHeader>
+
+                  <div className="panel__content">
+                    {postProcessors.map((postProcessor, idx) => (
+                      <ContextMenu
+                        key={postProcessor._UUID}
+                        disabled={false}
+                        content={
+                          <MenuContent>
+                            <MenuContentItem
+                              onClick={deletePostProcessor(postProcessor)}
+                            >
+                              Delete
+                            </MenuContentItem>
+                          </MenuContent>
+                        }
+                        menuProps={{ elevation: 7 }}
+                      >
+                        <PanelListSelectorItem
+                          title={`Post-Processor ${idx + 1}`}
+                          onSelect={() => selectPostProcessor(postProcessor)}
+                          isSelected={
+                            postProcessor === postProcessorState?.postProcessor
                           }
-                          menuProps={{ elevation: 7 }}
-                        >
-                          <PanelExplorerItem
-                            title={`Post-Processor ${idx + 1}`}
-                            onSelect={() => selectPostProcessor(postProcessor)}
-                            isSelected={
-                              postProcessor ===
-                              postProcessorState?.postProcessor
-                            }
-                          />
-                        </ContextMenu>
-                      ))}
-                    </div>
+                        />
+                      </ContextMenu>
+                    ))}
                   </div>
                 </ResizablePanel>
-                <ResizablePanelSplitter />
+                <ResizablePanelSplitter>
+                  <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+                </ResizablePanelSplitter>
 
                 <ResizablePanel>
                   {postProcessorState?.postProcessor &&
@@ -1600,7 +1602,7 @@ const RelationalConnectionGeneralEditor = observer(
                 <ConnectionEditor_BooleanEditor
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
-                  propertyName="Quote identifiers"
+                  name="Quote identifiers"
                   description="Specifies whether to use double-quotes for SQL identifiers"
                   update={(value?: boolean): void =>
                     dBConnection_setQuoteIdentifiers(connection, Boolean(value))

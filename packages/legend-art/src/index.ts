@@ -40,7 +40,7 @@ export * from './components/popover/BasePopper.js';
 export * from './components/radio-group/BaseRadioGroup.js';
 
 export * from './components/panel/PanelHeader.js';
-export * from './components/panel/PanelExplorerItem.js';
+export * from './components/panel/PanelListSelectorItem.js';
 export * from './components/panel/BlankPanelContent.js';
 export * from './components/panel/BlankPanelPlaceholder.js';
 export * from './components/panel/PanelLoadingIndicator.js';

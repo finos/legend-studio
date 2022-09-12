@@ -50,6 +50,7 @@ export class MapperPostProcessorEditorState extends PostProcessorEditorState {
     connectionValueState: RelationalDatabaseConnectionValueState,
   ) {
     super(postProcessor, connectionValueState);
+
     makeObservable(this, {
       selectedMapper: observable,
       setSelectedMapper: action,

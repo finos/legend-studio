@@ -15,8 +15,7 @@
  */
 import { clsx } from 'clsx';
 
-//TODO: change name
-export const PanelExplorerItem: React.FC<{
+export const PanelListSelectorItem: React.FC<{
   title: string;
   onSelect: () => void;
   isSelected: boolean;

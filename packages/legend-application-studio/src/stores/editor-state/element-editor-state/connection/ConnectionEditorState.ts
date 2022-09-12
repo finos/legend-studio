@@ -113,10 +113,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
-  postProcessorState:
-    | PostProcessorEditorState
-    | MapperPostProcessorEditorState
-    | undefined;
+  postProcessorState: PostProcessorEditorState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -153,7 +150,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             (plugin) =>
               (
                 plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-              ).getextraPostProcessorStates?.() ?? [],
+              ).getextraPostProcessorStates?.(postProcessor, this) ?? [],
           );
         for (const postProcessorStates of extraPostProcessorStates) {
           const postProcessorState = postProcessorStates(postProcessor, this);
@@ -462,6 +459,7 @@ export class ConnectionEditorState {
     this.connection = connection;
     this.connectionValueState = this.buildConnectionValueEditorState();
   }
+
   buildConnectionValueEditorState(): ConnectionValueState {
     const connection = this.connection;
     if (connection instanceof JsonModelConnection) {

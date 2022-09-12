@@ -17,7 +17,6 @@
 import {
   ResizablePanelGroup,
   ResizablePanel,
-  PanelHeader,
   PanelHeaderActionItem,
   PlusIcon,
   ResizablePanelSplitter,
@@ -27,8 +26,10 @@ import {
   MenuContent,
   MenuContentItem,
   DropdownMenu,
-  PanelExplorerItem,
+  PanelListSelectorItem,
   BlankPanelContent,
+  ResizablePanelSplitterLine,
+  Panel,
 } from '@finos/legend-art';
 import {
   type Mapper,
@@ -42,10 +43,10 @@ import type { MapperPostProcessorEditorState } from '../../../../../stores/edito
 import {
   mapperPostProcessor_addMapper,
   mapperPostProcessor_deleteMapper,
-  mapperPostProcessor_setMapperFrom,
-  mapperPostProcessor_setMapperSchemaFrom,
-  mapperPostProcessor_setMapperSchemaTo,
-  mapperPostProcessor_setMapperTo,
+  mapperPostProcessor_mapper_setFrom,
+  mapperPostProcessor_mapper_setTo,
+  mapperPostProcessor_schemaNameMapper_setFrom,
+  mapperPostProcessor_schemaNameMapper_setTo,
 } from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export const MapperPostProcessorEditor = observer(
@@ -137,143 +138,134 @@ export const MapperPostProcessorEditor = observer(
         <ResizablePanel>
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={170} minSize={70}>
-              <div className="panel__container panel__container--border-right">
-                <DropdownMenu
-                  content={
-                    <MenuContent>
-                      <MenuContentItem onClick={addSchemaMapper}>
-                        New Schema Mapper
-                      </MenuContentItem>
-                      <MenuContentItem onClick={addTableMapper}>
-                        New Table Mapper
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                    elevation: 7,
-                  }}
-                >
-                  <PanelHeader title="mapper">
+              <Panel
+                headerTitle="mapper"
+                headerContent={
+                  <DropdownMenu
+                    content={
+                      <MenuContent>
+                        <MenuContentItem onClick={addSchemaMapper}>
+                          New Schema Mapper
+                        </MenuContentItem>
+                        <MenuContentItem onClick={addTableMapper}>
+                          New Table Mapper
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                      elevation: 7,
+                    }}
+                  >
                     <PanelHeaderActionItem tip="Create Mapper">
                       <PlusIcon />
                     </PanelHeaderActionItem>
-                  </PanelHeader>
-                </DropdownMenu>
-
-                <div className="panel__content">
-                  {mappers.map((mapper) => (
-                    <ContextMenu
-                      key={mapper._UUID}
-                      disabled={false}
-                      content={
-                        <MenuContent>
-                          <MenuContentItem onClick={deleteMapper(mapper)}>
-                            Delete
-                          </MenuContentItem>
-                        </MenuContent>
-                      }
-                      menuProps={{ elevation: 7 }}
-                    >
-                      <PanelExplorerItem
-                        title={
-                          mapper instanceof TableNameMapper
-                            ? 'Table Mapper'
-                            : 'Schema Mapper'
-                        }
-                        validationErrorMessage={
-                          isMapperDuplicated(mapper)
-                            ? 'Mappers have the same values'
-                            : undefined
-                        }
-                        isSelected={
-                          mapper === postProcessorState.selectedMapper
-                        }
-                        onSelect={() => selectMapper(mapper)}
-                      />
-                    </ContextMenu>
-                  ))}
-                </div>
-              </div>
-            </ResizablePanel>
-
-            <ResizablePanelSplitter />
-
-            <ResizablePanel>
-              <div className="panel__container">
-                {selectedMapper && (
-                  <PanelHeader
-                    title={
-                      postProcessorState.selectedMapper instanceof
-                      TableNameMapper
-                        ? 'Table Mapper'
-                        : 'Schema Mapper'
+                  </DropdownMenu>
+                }
+              >
+                {mappers.map((mapper) => (
+                  <ContextMenu
+                    key={mapper._UUID}
+                    disabled={false}
+                    content={
+                      <MenuContent>
+                        <MenuContentItem onClick={deleteMapper(mapper)}>
+                          Delete
+                        </MenuContentItem>
+                      </MenuContent>
                     }
-                  ></PanelHeader>
+                    menuProps={{ elevation: 7 }}
+                  >
+                    <PanelListSelectorItem
+                      title={
+                        mapper instanceof TableNameMapper
+                          ? 'Table Mapper'
+                          : 'Schema Mapper'
+                      }
+                      validationErrorMessage={
+                        isMapperDuplicated(mapper)
+                          ? 'Mappers have the same values'
+                          : undefined
+                      }
+                      isSelected={mapper === postProcessorState.selectedMapper}
+                      onSelect={() => selectMapper(mapper)}
+                    />
+                  </ContextMenu>
+                ))}
+              </Panel>
+            </ResizablePanel>
+            <ResizablePanelSplitter>
+              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+            </ResizablePanelSplitter>
+            <ResizablePanel>
+              <Panel
+                headerTitle={
+                  postProcessorState.selectedMapper instanceof TableNameMapper
+                    ? 'Table Mapper'
+                    : 'Schema Mapper'
+                }
+              >
+                {!selectedMapper && (
+                  <BlankPanelContent>
+                    {!mappers.length
+                      ? 'Add a mapper to view properties'
+                      : 'Select a mapper to view properties'}
+                  </BlankPanelContent>
                 )}
-                <div className="panel__content">
-                  {!selectedMapper && (
-                    <BlankPanelContent>
-                      {!mappers.length
-                        ? 'Add a mapper to view properties'
-                        : 'Select a mapper to view properties'}
-                    </BlankPanelContent>
-                  )}
-                  {selectedMapper && (
-                    <PanelForm>
-                      <PanelTextEditor
-                        isReadOnly={false}
-                        value={selectedMapper.from}
-                        propertyName={'From'}
-                        update={(value: string | undefined): void =>
-                          mapperPostProcessor_setMapperFrom(
-                            selectedMapper,
-                            value ?? '',
-                          )
-                        }
-                      />
-                      <PanelTextEditor
-                        isReadOnly={false}
-                        value={selectedMapper.to}
-                        propertyName={'To'}
-                        update={(value: string | undefined): void =>
-                          mapperPostProcessor_setMapperTo(
-                            selectedMapper,
-                            value ?? '',
-                          )
-                        }
-                      />
-                      {selectedSchemaNameMapper && (
-                        <>
-                          <PanelTextEditor
-                            isReadOnly={false}
-                            value={selectedSchemaNameMapper.from}
-                            propertyName="Schema - From"
-                            update={(value: string | undefined): void => {
-                              mapperPostProcessor_setMapperSchemaFrom(
-                                selectedSchemaNameMapper,
-                                value ?? '',
-                              );
-                            }}
-                          />
-                          <PanelTextEditor
-                            isReadOnly={false}
-                            value={selectedSchemaNameMapper.to}
-                            propertyName={'Schema - To'}
-                            update={(value: string | undefined): void =>
-                              mapperPostProcessor_setMapperSchemaTo(
-                                selectedSchemaNameMapper,
-                                value ?? '',
-                              )
-                            }
-                          />
-                        </>
-                      )}
-                    </PanelForm>
-                  )}
-                </div>
-              </div>
+                {selectedMapper && (
+                  <PanelForm>
+                    <PanelTextEditor
+                      isReadOnly={false}
+                      value={selectedMapper.from}
+                      name="From"
+                      update={(value: string | undefined): void =>
+                        mapperPostProcessor_mapper_setFrom(
+                          selectedMapper,
+                          value ?? '',
+                        )
+                      }
+                    />
+                    <PanelTextEditor
+                      isReadOnly={false}
+                      value={selectedMapper.to}
+                      name="To"
+                      update={(value: string | undefined): void =>
+                        mapperPostProcessor_mapper_setTo(
+                          selectedMapper,
+                          value ?? '',
+                        )
+                      }
+                    />
+                    {selectedSchemaNameMapper && (
+                      <>
+                        <PanelTextEditor
+                          isReadOnly={false}
+                          value={selectedSchemaNameMapper.from}
+                          name="Schema - From"
+                          update={(value: string | undefined): void => {
+                            mapperPostProcessor_schemaNameMapper_setFrom(
+                              selectedSchemaNameMapper,
+                              value ?? '',
+                            );
+                          }}
+                        />
+                        <PanelTextEditor
+                          isReadOnly={false}
+                          value={selectedSchemaNameMapper.to}
+                          name="Schema - To"
+                          update={(value: string | undefined): void =>
+                            mapperPostProcessor_schemaNameMapper_setTo(
+                              selectedSchemaNameMapper,
+                              value ?? '',
+                            )
+                          }
+                        />
+                      </>
+                    )}
+                  </PanelForm>
+                )}
+              </Panel>
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
