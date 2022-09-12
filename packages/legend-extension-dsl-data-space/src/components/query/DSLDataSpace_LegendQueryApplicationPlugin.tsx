@@ -155,7 +155,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
           );
           if (!matchingExecutionContext) {
             // if a matching execution context is not found, it means this query is not
-            // properly created from a data space
+            // properly created from a data space, therefore, we cannot support this case
             return undefined;
           }
           return new DataSpaceQueryBuilderState(

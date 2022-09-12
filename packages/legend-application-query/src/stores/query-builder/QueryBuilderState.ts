@@ -63,7 +63,7 @@ import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterO
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 
-export class QueryBuilderState {
+export abstract class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
@@ -439,9 +439,32 @@ export class QueryBuilderState {
     return this.fetchStructureState.implementation.validationIssues;
   }
 
-  INTERNAL__createBasicQueryBuilderState(): QueryBuilderState {
-    return new QueryBuilderState(this.applicationStore, this.graphManagerState);
+  /**
+   * This method can be used to simplify the current query builder state
+   * to a basic one that can be used for testing or some special operations,
+   * see {@link INTERNAL__BasicQueryBuilderState} for more details
+   */
+  INTERNAL__toBasicQueryBuilderState(): QueryBuilderState {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const basicState = new INTERNAL__BasicQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+    );
+    basicState.class = this.class;
+    basicState.mapping = this.mapping;
+    basicState.runtimeValue = this.runtimeValue;
+    return basicState;
   }
 }
 
-// export class INTERNAL__BasicQueryBuilderState extends QueryBuilderState {}
+/**
+ * This type is used for testing and analytics operation in query builder.
+ * For example, we use this to build the preview data lambda, or to build the auto-complete lambda
+ * in filters.
+ *
+ * NOTE: The latter is quite clever since query-builder itself is used to build the lambda (i.e. dogfooding),
+ * unfortunately, it creates a circular dependency between QueryBuilderState and PreviewData/AutoComplete
+ *
+ * @internal
+ */
+export class INTERNAL__BasicQueryBuilderState extends QueryBuilderState {}

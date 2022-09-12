@@ -88,17 +88,6 @@ const createSimpleProjectionColumn = (
   return col;
 };
 
-const initializeQueryBuilderState = (
-  queryBuilderState: QueryBuilderState,
-): QueryBuilderState => {
-  const builderState =
-    queryBuilderState.INTERNAL__createBasicQueryBuilderState();
-  builderState.class = queryBuilderState.class;
-  builderState.mapping = queryBuilderState.mapping;
-  builderState.runtimeValue = queryBuilderState.runtimeValue;
-  return builderState;
-};
-
 export type QueryBuilderPreviewData = {
   columns: string[];
   rows: { values: (string | number)[] }[];
@@ -133,7 +122,7 @@ export const buildNumericPreviewDataQuery = (
   //     'Std Dev (Sample)'
   //   ]
   // )
-  const builderState = initializeQueryBuilderState(queryBuilderState);
+  const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,
@@ -173,7 +162,7 @@ export const buildNonNumericPreviewDataQuery = (
   //     'Count'
   //   ]
   // )->sort([desc('Count'), asc('Value')])->take(10)
-  const builderState = initializeQueryBuilderState(queryBuilderState);
+  const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,

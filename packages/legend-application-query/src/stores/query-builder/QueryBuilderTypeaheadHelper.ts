@@ -43,11 +43,7 @@ const START_LENGTH = 3;
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState =
-    queryBuilderState.INTERNAL__createBasicQueryBuilderState();
-  builderState.class = queryBuilderState.class;
-  builderState.mapping = queryBuilderState.mapping;
-  builderState.runtimeValue = queryBuilderState.runtimeValue;
+  const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
   const projectionState = guaranteeType(
     builderState.fetchStructureState.implementation,
     QueryBuilderProjectionState,
