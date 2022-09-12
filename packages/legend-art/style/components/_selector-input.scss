@@ -105,6 +105,10 @@
     margin-right: 0;
   }
 
+  &__placeholder {
+    white-space: nowrap;
+  }
+
   &__single-value + div {
     @include flexVCenter;
   }
@@ -185,6 +189,7 @@
     }
 
     .selector-input--dark__placeholder {
+      white-space: nowrap;
       color: var(--color-dark-grey-400) !important;
     }
   }
@@ -270,6 +275,7 @@
   }
 
   &__placeholder {
+    white-space: nowrap;
     color: var(--color-dark-grey-500) !important;
   }
 
