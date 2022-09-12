@@ -50,6 +50,7 @@ import {
   GraphManagerTelemetry,
   extractElementNameFromPath,
   isSystemElement,
+  QuerySearchSpecification,
   Mapping,
   type Runtime,
 } from '@finos/legend-graph';
@@ -76,6 +77,9 @@ import {
   type ServiceExecutionContext,
   ServiceQueryBuilderState,
 } from './query-builder/workflows/ServiceQueryBuilderState.js';
+
+const QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH = 3;
+const QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT = 10;
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -202,6 +206,55 @@ export class QueryExportState {
   }
 }
 
+export class QueryLoaderState {
+  editorStore: QueryEditorStore;
+  isQueryLoaderOpen = false;
+  loadQueriesState = ActionState.create();
+  queries: LightQuery[] = [];
+
+  constructor(editorStore: QueryEditorStore) {
+    makeObservable(this, {
+      isQueryLoaderOpen: observable,
+      queries: observable,
+      loadQueriesState: observable,
+      setIsQueryLoaderOpen: action,
+      setQueries: action,
+      loadQueries: flow,
+    });
+    this.editorStore = editorStore;
+  }
+
+  setIsQueryLoaderOpen(val: boolean): void {
+    this.isQueryLoaderOpen = val;
+  }
+
+  setQueries(val: LightQuery[]): void {
+    this.queries = val;
+  }
+
+  *loadQueries(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH;
+    this.loadQueriesState.inProgress();
+    try {
+      const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT;
+      this.queries =
+        (yield this.editorStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
+      this.loadQueriesState.pass();
+    } catch (error) {
+      this.loadQueriesState.fail();
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.notifyError(error);
+    }
+  }
+}
+
 export abstract class QueryEditorStore {
   applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
@@ -211,6 +264,7 @@ export abstract class QueryEditorStore {
   initState = ActionState.create();
   queryBuilderState?: QueryBuilderState | undefined;
   exportState?: QueryExportState | undefined;
+  queryLoaderState: QueryLoaderState;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -219,6 +273,7 @@ export abstract class QueryEditorStore {
   ) {
     makeObservable(this, {
       exportState: observable,
+      queryLoaderState: observable,
       setExportState: action,
       initialize: flow,
       buildGraph: flow,
@@ -231,6 +286,7 @@ export abstract class QueryEditorStore {
       this.pluginManager,
       this.applicationStore.log,
     );
+    this.queryLoaderState = new QueryLoaderState(this);
   }
 
   setExportState(val: QueryExportState | undefined): void {
