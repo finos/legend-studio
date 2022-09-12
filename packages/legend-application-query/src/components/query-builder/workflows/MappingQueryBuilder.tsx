@@ -41,7 +41,7 @@ import {
   QueryBuilderClassSelector,
 } from '../QueryBuilderSideBar.js';
 import { guaranteeType } from '@finos/legend-shared';
-import type { MappingQueryCreatorState } from '../../../stores/query-builder/workflows/MappingQueryCreatorState.js';
+import type { MappingQueryBuilderState } from '../../../stores/query-builder/workflows/MappingQueryBuilderState.js';
 
 /**
  * This setup panel supports cascading in order: Mapping -> Runtime + Class
@@ -50,10 +50,10 @@ import type { MappingQueryCreatorState } from '../../../stores/query-builder/wor
  * - For class selector: the list of compatible classes with the selected mapping
  * - For runtime value selector: the list of compatible runtimes with the selected mapping
  *
- * See details on propagation/cascading in {@link MappingQueryCreatorState}
+ * See details on propagation/cascading in {@link MappingQueryBuilderState}
  */
-const MappingQueryCreatorSetupPanelContent = observer(
-  (props: { queryBuilderState: MappingQueryCreatorState }) => {
+const MappingQueryBuilderSetupPanelContent = observer(
+  (props: { queryBuilderState: MappingQueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
 
@@ -71,7 +71,7 @@ const MappingQueryCreatorSetupPanelContent = observer(
       }
       queryBuilderState.changeMapping(val.value);
       queryBuilderState.propagateMappingChange(val.value);
-      queryBuilderState.onChangeMapping?.(val.value);
+      queryBuilderState.onMappingChange?.(val.value);
     };
     const mappingFilterOption = createFilter({
       ignoreCase: true,
@@ -102,7 +102,7 @@ const MappingQueryCreatorSetupPanelContent = observer(
         return;
       }
       queryBuilderState.changeRuntime(val.value);
-      queryBuilderState.onChangeRuntime?.(val.value);
+      queryBuilderState.onRuntimeChange?.(val.value);
     };
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
@@ -188,8 +188,8 @@ const MappingQueryCreatorSetupPanelContent = observer(
   },
 );
 
-export const renderMappingQueryCreatorSetupPanelContent = (
-  queryBuilderState: MappingQueryCreatorState,
+export const renderMappingQueryBuilderSetupPanelContent = (
+  queryBuilderState: MappingQueryBuilderState,
 ): React.ReactNode => (
-  <MappingQueryCreatorSetupPanelContent queryBuilderState={queryBuilderState} />
+  <MappingQueryBuilderSetupPanelContent queryBuilderState={queryBuilderState} />
 );

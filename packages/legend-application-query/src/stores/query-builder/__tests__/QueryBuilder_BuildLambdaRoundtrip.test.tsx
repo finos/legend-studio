@@ -83,7 +83,7 @@ import {
   TEST_DATA__lambda_derivationPostFilter,
   TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { BasicQueryBuilderState } from '../workflows/BasicQueryBuilderState.js';
+import { QueryBuilderState } from '../QueryBuilderState.js';
 
 type RoundtripTestCase = [
   string,
@@ -351,7 +351,7 @@ describe(
         );
         const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
         await TEST__buildGraphWithEntities(graphManagerState, entities);
-        const queryBuilderState = new BasicQueryBuilderState(
+        const queryBuilderState = new QueryBuilderState(
           applicationStore,
           graphManagerState,
         );

@@ -25,26 +25,26 @@ import {
   getMappingCompatibleClasses,
 } from '@finos/legend-graph';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import { renderMappingQueryCreatorSetupPanelContent } from '../../../components/query-builder/workflows/MappingQueryCreator.js';
+import { renderMappingQueryBuilderSetupPanelContent } from '../../../components/query-builder/workflows/MappingQueryBuilder.js';
 import { QueryBuilderState } from '../QueryBuilderState.js';
 
-export class MappingQueryCreatorState extends QueryBuilderState {
-  readonly onChangeMapping?: ((val: Mapping) => void) | undefined;
-  readonly onChangeRuntime?: ((val: Runtime) => void) | undefined;
+export class MappingQueryBuilderState extends QueryBuilderState {
+  readonly onMappingChange?: ((val: Mapping) => void) | undefined;
+  readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
-    renderMappingQueryCreatorSetupPanelContent(this);
+    renderMappingQueryBuilderSetupPanelContent(this);
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
-    onChangeMapping?: ((val: Mapping) => void) | undefined,
-    onChangeRuntime?: ((val: Runtime) => void) | undefined,
+    onMappingChange?: ((val: Mapping) => void) | undefined,
+    onRuntimeChange?: ((val: Runtime) => void) | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
-    this.onChangeMapping = onChangeMapping;
-    this.onChangeRuntime = onChangeRuntime;
+    this.onMappingChange = onMappingChange;
+    this.onRuntimeChange = onRuntimeChange;
   }
 
   /**

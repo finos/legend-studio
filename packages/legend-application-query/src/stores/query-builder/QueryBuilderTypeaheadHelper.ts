@@ -36,7 +36,6 @@ import {
 } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
-import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
 const START_LENGTH = 3;
@@ -44,10 +43,8 @@ const START_LENGTH = 3;
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = new BasicQueryBuilderState(
-    queryBuilderState.applicationStore,
-    queryBuilderState.graphManagerState,
-  );
+  const builderState =
+    queryBuilderState.INTERNAL__createBasicQueryBuilderState();
   builderState.class = queryBuilderState.class;
   builderState.mapping = queryBuilderState.mapping;
   builderState.runtimeValue = queryBuilderState.runtimeValue;

@@ -17,13 +17,13 @@
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import { QueryBuilderState } from '@finos/legend-application-query';
 import type { GraphManagerState, Mapping } from '@finos/legend-graph';
-import { renderMappingExecutionQueryEditorSetupPanelContent } from '../components/MappingExecutionQueryEditorState.js';
+import { renderMappingExecutionQueryBuilderSetupPanelContent } from '../components/MappingExecutionQueryBuilder.js';
 
-export class MappingExecutionQueryEditorState extends QueryBuilderState {
+export class MappingExecutionQueryBuilderState extends QueryBuilderState {
   readonly executionMapping: Mapping;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
-    renderMappingExecutionQueryEditorSetupPanelContent(this);
+    renderMappingExecutionQueryBuilderSetupPanelContent(this);
 
   constructor(
     mapping: Mapping,

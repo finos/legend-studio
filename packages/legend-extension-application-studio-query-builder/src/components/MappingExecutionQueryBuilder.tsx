@@ -21,12 +21,93 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
-import { PencilIcon } from '@finos/legend-art';
-import { isStubbed_RawLambda } from '@finos/legend-graph';
-import type { QueryBuilderState } from '@finos/legend-application-query';
-import { MappingExecutionQueryEditorState } from '../stores/MappingExecutionQueryEditorState.js';
+import {
+  CustomSelectorInput,
+  PencilIcon,
+  PURE_MappingIcon,
+} from '@finos/legend-art';
+import {
+  getMappingCompatibleClasses,
+  isStubbed_RawLambda,
+} from '@finos/legend-graph';
+import {
+  QueryBuilderClassSelector,
+  type QueryBuilderState,
+} from '@finos/legend-application-query';
+import { MappingExecutionQueryBuilderState } from '../stores/MappingExecutionQueryBuilderState.js';
+
+/**
+ * This setup panel supports limited cascading, we will only show:
+ * - For class selector: the list of compatible class with the specified mapping
+ */
+const MappingExecutionQueryBuilderSetupPanelContent = observer(
+  (props: { queryBuilderState: MappingExecutionQueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
+
+    // mapping
+    const selectedMappingOption = buildElementOption(
+      queryBuilderState.executionMapping,
+    );
+
+    // class
+    const classes = getMappingCompatibleClasses(
+      queryBuilderState.executionMapping,
+      queryBuilderState.graphManagerState.usableClasses,
+    );
+
+    return (
+      <>
+        <div className="query-builder__setup__config-group">
+          <div className="query-builder__setup__config-group__header">
+            <div className="query-builder__setup__config-group__header__title">
+              execution context
+            </div>
+          </div>
+          <div className="query-builder__setup__config-group__content">
+            <div className="query-builder__setup__config-group__item">
+              <div
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="mapping"
+              >
+                <PURE_MappingIcon />
+              </div>
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                disabled={true}
+                options={[]}
+                value={selectedMappingOption}
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                formatOptionLabel={getPackageableElementOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                })}
+              />
+            </div>
+          </div>
+        </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={classes}
+          noMatchMessage="No compatible class found for specified mapping"
+        />
+      </>
+    );
+  },
+);
+
+export const renderMappingExecutionQueryBuilderSetupPanelContent = (
+  queryBuilderState: MappingExecutionQueryBuilderState,
+): React.ReactNode => (
+  <MappingExecutionQueryBuilderSetupPanelContent
+    queryBuilderState={queryBuilderState}
+  />
+);
 
 export const MappingExecutionQueryBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
@@ -41,7 +122,7 @@ export const MappingExecutionQueryBuilder = observer(
         await flowResult(
           queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
             setupQueryBuilderState: (): QueryBuilderState => {
-              const queryBuilderState = new MappingExecutionQueryEditorState(
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
                 executionState.mappingEditorState.mapping,
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,

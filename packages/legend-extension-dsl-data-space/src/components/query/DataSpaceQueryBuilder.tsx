@@ -103,7 +103,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       },
     };
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
-      queryBuilderState.onChangeDataSpace(option.value);
+      queryBuilderState.onDataSpaceChange(option.value);
     };
     const dataSpaceFilterOption = createFilter({
       ignoreCase: true,
@@ -174,7 +174,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       }
       queryBuilderState.setExecutionContext(option.value);
       queryBuilderState.propagateExecutionContextChange(option.value);
-      queryBuilderState.onChangeExecutionContext?.(option.value);
+      queryBuilderState.onExecutionContextChange?.(option.value);
     };
 
     // runtime
@@ -195,7 +195,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         return;
       }
       queryBuilderState.changeRuntime(option.value);
-      queryBuilderState.onChangeRuntime?.(option.value);
+      queryBuilderState.onRuntimeChange?.(option.value);
     };
     const runtimeFilterOption = createFilter({
       ignoreCase: true,
@@ -293,6 +293,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose an execution context..."
                 options={executionContextOptions}
+                disabled={executionContextOptions.length <= 1}
                 onChange={onExecutionContextOptionChange}
                 value={selectedExecutionContextOption}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
@@ -326,7 +327,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         <QueryBuilderClassSelector
           queryBuilderState={queryBuilderState}
           classes={classes}
-          onClassChange={queryBuilderState.onChangeClass}
+          onClassChange={queryBuilderState.onClassChange}
           noMatchMessage="No compatible class found for specified execution context"
         />
       </>

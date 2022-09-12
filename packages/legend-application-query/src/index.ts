@@ -54,5 +54,5 @@ export {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
 } from './components/query-builder/QueryBuilderSideBar.js';
-export { BasicQueryBuilderState } from './stores/query-builder/workflows/BasicQueryBuilderState.js';
 export { ClassQueryBuilderState } from './stores/query-builder/workflows/ClassQueryBuilderState.js';
+export { ServiceQueryBuilderState } from './stores/query-builder/workflows/ServiceQueryBuilderState.js';

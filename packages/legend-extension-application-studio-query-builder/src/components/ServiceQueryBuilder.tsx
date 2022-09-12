@@ -27,21 +27,12 @@ import { PencilIcon } from '@finos/legend-art';
 import {
   isStubbed_RawLambda,
   isStubbed_PackageableElement,
+  KeyedExecutionParameter,
 } from '@finos/legend-graph';
 import {
-  BasicQueryBuilderState,
   type QueryBuilderState,
+  ServiceQueryBuilderState,
 } from '@finos/legend-application-query';
-
-class ServiceQueryEditorState extends BasicQueryBuilderState {
-  override get isMappingReadOnly(): boolean {
-    return true;
-  }
-
-  override get isRuntimeReadOnly(): boolean {
-    return true;
-  }
-}
 
 export const ServiceQueryBuilder = observer(
   (props: {
@@ -57,6 +48,7 @@ export const ServiceQueryBuilder = observer(
     const editWithQueryBuilder = applicationStore.guardUnhandledError(
       async () => {
         executionState.setOpeningQueryEditor(true);
+        const service = executionState.serviceEditorState.service;
         const selectedExecutionState =
           executionState.selectedExecutionContextState;
         if (selectedExecutionState) {
@@ -65,13 +57,14 @@ export const ServiceQueryBuilder = observer(
             await flowResult(
               queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
                 setupQueryBuilderState: (): QueryBuilderState => {
-                  const queryBuilderState = new ServiceQueryEditorState(
+                  const queryBuilderState = new ServiceQueryBuilderState(
                     queryBuilderExtension.editorStore.applicationStore,
                     queryBuilderExtension.editorStore.graphManagerState,
-                  );
-                  queryBuilderState.setMapping(mapping);
-                  queryBuilderState.setRuntimeValue(
-                    selectedExecutionState.executionContext.runtime,
+                    service,
+                    selectedExecutionState.executionContext instanceof
+                    KeyedExecutionParameter
+                      ? selectedExecutionState.executionContext.key
+                      : undefined,
                   );
                   queryBuilderState.initialize(executionState.execution.func);
                   queryBuilderState.changeDetectionState.setQueryHashCode(

@@ -35,7 +35,6 @@ import {
 } from './fetch-structure/projection/QueryResultSetModifierState.js';
 import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
-import { BasicQueryBuilderState } from './workflows/BasicQueryBuilderState.js';
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';
@@ -92,10 +91,8 @@ const createSimpleProjectionColumn = (
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
-  const builderState = new BasicQueryBuilderState(
-    queryBuilderState.applicationStore,
-    queryBuilderState.graphManagerState,
-  );
+  const builderState =
+    queryBuilderState.INTERNAL__createBasicQueryBuilderState();
   builderState.class = queryBuilderState.class;
   builderState.mapping = queryBuilderState.mapping;
   builderState.runtimeValue = queryBuilderState.runtimeValue;

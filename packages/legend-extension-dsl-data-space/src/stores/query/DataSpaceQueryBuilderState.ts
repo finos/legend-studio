@@ -55,12 +55,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly versionId: string;
   readonly depotServerClient: DepotServerClient;
   readonly loadDataSpacesState = ActionState.create();
-  readonly onChangeDataSpace: (val: DataSpaceInfo) => void;
-  readonly onChangeExecutionContext?:
+  readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
+  readonly onExecutionContextChange?:
     | ((val: DataSpaceExecutionContext) => void)
     | undefined;
-  readonly onChangeRuntime?: ((val: Runtime) => void) | undefined;
-  readonly onChangeClass?: ((val: Class) => void) | undefined;
+  readonly onRuntimeChange?: ((val: Runtime) => void) | undefined;
+  readonly onClassChange?: ((val: Class) => void) | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQueryBuilderSetupPanelContent(this);
@@ -78,12 +78,12 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     groupId: string,
     versionId: string,
     artifactId: string,
-    onChangeDataSpace: (val: DataSpaceInfo) => void,
-    onChangeExecutionContext?:
+    onDataSpaceChange: (val: DataSpaceInfo) => void,
+    onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
       | undefined,
-    onChangeRuntime?: ((val: Runtime) => void) | undefined,
-    onChangeClass?: ((val: Class) => void) | undefined,
+    onRuntimeChange?: ((val: Runtime) => void) | undefined,
+    onClassChange?: ((val: Class) => void) | undefined,
   ) {
     super(applicationStore, graphManagerState);
 
@@ -102,10 +102,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
-    this.onChangeDataSpace = onChangeDataSpace;
-    this.onChangeExecutionContext = onChangeExecutionContext;
-    this.onChangeRuntime = onChangeRuntime;
-    this.onChangeClass = onChangeClass;
+    this.onDataSpaceChange = onDataSpaceChange;
+    this.onExecutionContextChange = onExecutionContextChange;
+    this.onRuntimeChange = onRuntimeChange;
+    this.onClassChange = onClassChange;
   }
 
   override get sideBarClassName(): string | undefined {

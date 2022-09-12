@@ -43,8 +43,6 @@ import {
   toLightQuery,
   Query,
   PureExecution,
-  PureMultiExecution,
-  PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
@@ -59,6 +57,7 @@ import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
+  generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-storage';
@@ -71,9 +70,12 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { BasicQueryBuilderState } from './query-builder/workflows/BasicQueryBuilderState.js';
 import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
-import { MappingQueryCreatorState } from './query-builder/workflows/MappingQueryCreatorState.js';
+import { MappingQueryBuilderState } from './query-builder/workflows/MappingQueryBuilderState.js';
+import {
+  type ServiceExecutionContext,
+  ServiceQueryBuilderState,
+} from './query-builder/workflows/ServiceQueryBuilderState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -428,7 +430,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    const queryBuilderState = new MappingQueryCreatorState(
+    const queryBuilderState = new MappingQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
@@ -507,16 +509,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
   }
 }
 
-class ServiceQueryCreatorState extends BasicQueryBuilderState {
-  override get isMappingReadOnly(): boolean {
-    return true;
-  }
-
-  override get isRuntimeReadOnly(): boolean {
-    return true;
-  }
-}
-
 export class ServiceQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
@@ -552,40 +544,31 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    const queryBuilderState = new ServiceQueryCreatorState(
-      this.applicationStore,
-      this.graphManagerState,
-    );
-
     const service = this.graphManagerState.graph.getService(this.servicePath);
     assertType(
       service.execution,
       PureExecution,
       `Can't process service execution: only Pure execution is supported`,
     );
-    if (this.executionKey) {
-      assertType(
-        service.execution,
-        PureMultiExecution,
-        `Can't process service execution: an execution key is provided, expecting Pure multi execution`,
-      );
-      const serviceExecution = guaranteeNonNullable(
-        service.execution.executionParameters.find(
-          (parameter) => parameter.key === this.executionKey,
-        ),
-        `Can't process service execution: execution with key '${this.executionKey}' is not found`,
-      );
-      queryBuilderState.setMapping(serviceExecution.mapping.value);
-      queryBuilderState.setRuntimeValue(serviceExecution.runtime);
-    } else {
-      assertType(
-        service.execution,
-        PureSingleExecution,
-        `Can't process service execution: no execution key is provided, expecting Pure single execution`,
-      );
-      queryBuilderState.setMapping(service.execution.mapping.value);
-      queryBuilderState.setRuntimeValue(service.execution.runtime);
-    }
+
+    const queryBuilderState = new ServiceQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      service,
+      this.executionKey,
+      (val: ServiceExecutionContext): void => {
+        this.applicationStore.navigator.goTo(
+          generateServiceQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            service.path,
+            val.key,
+          ),
+        );
+      },
+    );
+
     // leverage initialization of query builder state to ensure we handle unsupported queries
     queryBuilderState.initialize(service.execution.func);
 

@@ -63,7 +63,7 @@ import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterO
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 
-export abstract class QueryBuilderState {
+export class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
@@ -438,4 +438,10 @@ export abstract class QueryBuilderState {
   get validationIssues(): string[] | undefined {
     return this.fetchStructureState.implementation.validationIssues;
   }
+
+  INTERNAL__createBasicQueryBuilderState(): QueryBuilderState {
+    return new QueryBuilderState(this.applicationStore, this.graphManagerState);
+  }
 }
+
+// export class INTERNAL__BasicQueryBuilderState extends QueryBuilderState {}
