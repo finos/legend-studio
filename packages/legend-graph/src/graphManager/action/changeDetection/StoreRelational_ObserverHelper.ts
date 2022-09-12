@@ -1049,6 +1049,8 @@ const observe_Abstract_PostProcessor = (metamodel: PostProcessor): void => {
 const observe_MapperPostProcessor = (
   metamodel: MapperPostProcessor,
 ): MapperPostProcessor => {
+  observe_Abstract_PostProcessor(metamodel);
+
   makeObservable(metamodel, {
     mappers: observable,
   });
@@ -1062,8 +1064,6 @@ export const observe_PostProcessor = (
   metamodel: PostProcessor,
   context: ObserverContext,
 ): PostProcessor => {
-  observe_Abstract_PostProcessor(metamodel);
-
   if (metamodel instanceof MapperPostProcessor) {
     return observe_MapperPostProcessor(metamodel);
   }
