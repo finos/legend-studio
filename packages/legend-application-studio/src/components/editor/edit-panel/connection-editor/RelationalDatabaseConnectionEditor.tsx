@@ -46,6 +46,8 @@ import {
   PanelTabs,
   BlankPanelContent,
   ResizablePanelSplitterLine,
+  PanelContent,
+  Panel,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -1271,69 +1273,74 @@ const PostProcessorRelationalConnectionEditor = observer(
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel size={150} minSize={70}>
-                  <PanelHeader title="post-processor">
-                    <DropdownMenu
-                      disabled={isReadOnly}
-                      content={postProcessorOptions.map((postProcessorType) => (
-                        <MenuContentItem
-                          key={postProcessorType.value}
-                          onClick={addPostProcessor(postProcessorType.value)}
-                        >
-                          New {postProcessorType.label} Post-Processor
-                        </MenuContentItem>
-                      ))}
-                      menuProps={{
-                        anchorOrigin: {
-                          vertical: 'bottom',
-                          horizontal: 'right',
-                        },
-                        transformOrigin: {
-                          vertical: 'top',
-                          horizontal: 'right',
-                        },
-                        elevation: 7,
-                      }}
-                    >
-                      <PanelHeaderActionItem
+                  <Panel>
+                    <PanelHeader title="post-processor">
+                      <DropdownMenu
                         disabled={isReadOnly}
-                        tip="Create Post-Processor"
-                      >
-                        <PlusIcon />
-                      </PanelHeaderActionItem>
-                    </DropdownMenu>
-                  </PanelHeader>
-
-                  <div className="panel__content">
-                    {postProcessors.map((postProcessor, idx) => (
-                      <ContextMenu
-                        key={postProcessor._UUID}
-                        disabled={isReadOnly}
-                        content={
-                          <MenuContent>
+                        content={postProcessorOptions.map(
+                          (postProcessorType) => (
                             <MenuContentItem
-                              onClick={deletePostProcessor(postProcessor)}
+                              key={postProcessorType.value}
+                              onClick={addPostProcessor(
+                                postProcessorType.value,
+                              )}
                             >
-                              Delete
+                              New {postProcessorType.label} Post-Processor
                             </MenuContentItem>
-                          </MenuContent>
-                        }
-                        menuProps={{ elevation: 7 }}
+                          ),
+                        )}
+                        menuProps={{
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'right',
+                          },
+                          elevation: 7,
+                        }}
                       >
-                        <PanelListSelectorItem
-                          title={`Post-Processor ${idx + 1}`}
-                          onSelect={() => selectPostProcessor(postProcessor)}
-                          isSelected={
-                            postProcessor === postProcessorState?.postProcessor
+                        <PanelHeaderActionItem
+                          disabled={isReadOnly}
+                          tip="Create Post-Processor"
+                        >
+                          <PlusIcon />
+                        </PanelHeaderActionItem>
+                      </DropdownMenu>
+                    </PanelHeader>
+                    <PanelContent>
+                      {postProcessors.map((postProcessor, idx) => (
+                        <ContextMenu
+                          key={postProcessor._UUID}
+                          disabled={isReadOnly}
+                          content={
+                            <MenuContent>
+                              <MenuContentItem
+                                onClick={deletePostProcessor(postProcessor)}
+                              >
+                                Delete
+                              </MenuContentItem>
+                            </MenuContent>
                           }
-                        />
-                      </ContextMenu>
-                    ))}
-                  </div>
+                          menuProps={{ elevation: 7 }}
+                        >
+                          <PanelListSelectorItem
+                            title={`Post-Processor ${idx + 1}`}
+                            onSelect={() => selectPostProcessor(postProcessor)}
+                            isSelected={
+                              postProcessor ===
+                              postProcessorState?.postProcessor
+                            }
+                          />
+                        </ContextMenu>
+                      ))}
+                    </PanelContent>
+                  </Panel>
                 </ResizablePanel>
                 <ResizablePanelSplitter>
                   <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
                 </ResizablePanelSplitter>
-
                 <ResizablePanel>
                   {postProcessorState?.postProcessor &&
                     renderEditorPostProcessor(
