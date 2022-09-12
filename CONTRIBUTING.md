@@ -113,6 +113,8 @@ After setting up, visit http://localhost:8080/studio and the application should 
 
 > If you get `Unauthorized` error, visit SDLC server at http://localhost:7070/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
 
+> 🧑‍💻 If you work on an external project, which relies on _unmerged/released_ changes in this project, you will need to do more setup, please follow [this guide](./docs/workflow/local-development-assemblage.md).
+
 #### :pencil2: Writing code
 
 Before writing any code, you need to [setup your branch properly](./docs/workflow/working-with-github.md#standard-contribution-workflow), this is a fairly common workflow in any OSS project. But if you are working on bug fixes for a recent release, the workflow will be slightly different, find out more about that [here](./docs/workflow/working-with-github.md#working-on-bug-fixes-for-a-release).

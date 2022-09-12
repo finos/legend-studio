@@ -16,6 +16,7 @@
 
 @forward 'deps';
 @forward 'query-builder';
+@forward 'query-builder-setup';
 @forward 'query-builder-explorer';
 @forward 'query-builder-filter';
 @forward 'query-builder-post-filter';
@@ -25,3 +26,4 @@
 @forward 'query-editor';
 @forward 'query-builder-functions-explorer';
 @forward 'query-builder-property-search-panel';
+@forward 'service-query-plugin';

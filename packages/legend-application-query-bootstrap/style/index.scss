@@ -447,9 +447,36 @@
     }
   }
 
-  .query-builder__setup__config__item__label {
+  .query-builder__setup__config-group__item__label {
     background: var(--color-legacy-light-grey-100);
     border: 0.1rem solid var(--color-legacy-light-grey-300);
+  }
+
+  .query-builder__setup__runtime-option--custom__label {
+    background: var(--color-light-grey-50);
+    border: 0.1rem solid var(--color-light-grey-180);
+  }
+
+  .query-builder__setup__config-group__header {
+    background: var(--color-legacy-light-blue-350);
+  }
+
+  .query-builder__setup__config-group__header__title {
+    color: var(--color-light-grey-150);
+  }
+
+  .query-builder__setup__config-group__content {
+    border-color: var(--color-legacy-light-blue-350);
+  }
+
+  .query-builder__setup__config-group--class {
+    .query-builder__setup__config-group__content {
+      border-color: var(--color-purple-100);
+    }
+
+    .query-builder__setup__config-group__item__label {
+      border-color: var(--color-purple-0);
+    }
   }
 
   // ------------------------------------ Explorer Panel ---------------------------------------
@@ -535,7 +562,7 @@
   }
 
   .query-builder__fetch__structure__mode--selected {
-    background: var(--color-legacy-light-blue-100);
+    background: var(--color-legacy-light-blue-200);
     color: var(--color-light-grey-100);
   }
 

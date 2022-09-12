@@ -33,6 +33,7 @@ import {
   ActionState,
   StopWatch,
   getNullableFirstElement,
+  guaranteeType,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -42,8 +43,6 @@ import {
   toLightQuery,
   Query,
   PureExecution,
-  PureMultiExecution,
-  PureSingleExecution,
   PackageableElementExplicitReference,
   RuntimePointer,
   GRAPH_MANAGER_EVENT,
@@ -51,12 +50,15 @@ import {
   GraphManagerTelemetry,
   extractElementNameFromPath,
   isSystemElement,
+  Mapping,
+  type Runtime,
 } from '@finos/legend-graph';
+import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import {
-  QueryBuilderState,
-  StandardQueryBuilderMode,
-} from './QueryBuilderState.js';
-import { generateExistingQueryEditorRoute } from './LegendQueryRouter.js';
+  generateExistingQueryEditorRoute,
+  generateMappingQueryCreatorRoute,
+  generateServiceQueryCreatorRoute,
+} from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -68,6 +70,12 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
+import { MappingQueryBuilderState } from './query-builder/workflows/MappingQueryBuilderState.js';
+import {
+  type ServiceExecutionContext,
+  ServiceQueryBuilderState,
+} from './query-builder/workflows/ServiceQueryBuilderState.js';
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -83,10 +91,12 @@ export class QueryExportState {
   allowUpdate = false;
   onQueryUpdate?: ((query: Query) => void) | undefined;
   decorator?: ((query: Query) => void) | undefined;
+  queryBuilderState: QueryBuilderState;
   persistQueryState = ActionState.create();
 
   constructor(
     editorStore: QueryEditorStore,
+    queryBuilderState: QueryBuilderState,
     lambda: RawLambda,
     config: QueryExportConfiguration,
   ) {
@@ -97,6 +107,7 @@ export class QueryExportState {
     });
 
     this.editorStore = editorStore;
+    this.queryBuilderState = queryBuilderState;
     this.lambda = lambda;
     this.allowUpdate = config.allowUpdate ?? false;
     this.queryName = config.defaultName ?? 'New Query';
@@ -111,19 +122,15 @@ export class QueryExportState {
   get allowPersist(): boolean {
     return (
       !this.persistQueryState.isInProgress &&
-      Boolean(this.editorStore.queryBuilderState.querySetupState.mapping) &&
-      this.editorStore.queryBuilderState.querySetupState.runtimeValue instanceof
-        RuntimePointer
+      Boolean(this.queryBuilderState.mapping) &&
+      this.queryBuilderState.runtimeValue instanceof RuntimePointer
     );
   }
 
   async persistQuery(createNew: boolean): Promise<void> {
     if (
-      !this.editorStore.queryBuilderState.querySetupState.mapping ||
-      !(
-        this.editorStore.queryBuilderState.querySetupState
-          .runtimeValue instanceof RuntimePointer
-      )
+      !this.queryBuilderState.mapping ||
+      !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
     ) {
       return;
     }
@@ -131,10 +138,9 @@ export class QueryExportState {
     const query = new Query();
     query.name = this.queryName;
     query.mapping = PackageableElementExplicitReference.create(
-      this.editorStore.queryBuilderState.querySetupState.mapping,
+      this.queryBuilderState.mapping,
     );
-    query.runtime =
-      this.editorStore.queryBuilderState.querySetupState.runtimeValue.packageableRuntime;
+    query.runtime = this.queryBuilderState.runtimeValue.packageableRuntime;
     this.decorator?.(query);
     try {
       query.content =
@@ -203,7 +209,7 @@ export abstract class QueryEditorStore {
   graphManagerState: GraphManagerState;
 
   initState = ActionState.create();
-  queryBuilderState: QueryBuilderState;
+  queryBuilderState?: QueryBuilderState | undefined;
   exportState?: QueryExportState | undefined;
 
   constructor(
@@ -225,11 +231,6 @@ export abstract class QueryEditorStore {
       this.pluginManager,
       this.applicationStore.log,
     );
-    this.queryBuilderState = new QueryBuilderState(
-      this.applicationStore,
-      this.graphManagerState,
-      new StandardQueryBuilderMode(),
-    );
   }
 
   setExportState(val: QueryExportState | undefined): void {
@@ -246,7 +247,7 @@ export abstract class QueryEditorStore {
   /**
    * Set up the query builder state after building the graph
    */
-  protected abstract setUpBuilderState(): Promise<void>;
+  protected abstract initializeQueryBuilderState(): Promise<QueryBuilderState>;
   abstract getExportConfiguration(
     lambda: RawLambda,
   ): Promise<QueryExportConfiguration>;
@@ -289,7 +290,8 @@ export abstract class QueryEditorStore {
       yield this.setUpEditorState();
       const { groupId, artifactId, versionId } = this.getProjectInfo();
       yield flowResult(this.buildGraph(groupId, artifactId, versionId));
-      yield this.setUpBuilderState();
+      this.queryBuilderState =
+        (yield this.initializeQueryBuilderState()) as QueryBuilderState;
 
       this.initState.pass();
     } catch (error) {
@@ -393,13 +395,12 @@ export abstract class QueryEditorStore {
   }
 }
 
-export class CreateQueryEditorStore extends QueryEditorStore {
+export class MappingQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
   versionId: string;
   mappingPath: string;
   runtimePath: string;
-  classPath: string | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -410,7 +411,6 @@ export class CreateQueryEditorStore extends QueryEditorStore {
     versionId: string,
     mappingPath: string,
     runtimePath: string,
-    classPath: string | undefined,
   ) {
     super(applicationStore, depotServerClient, pluginManager);
 
@@ -419,7 +419,6 @@ export class CreateQueryEditorStore extends QueryEditorStore {
     this.versionId = versionId;
     this.mappingPath = mappingPath;
     this.runtimePath = runtimePath;
-    this.classPath = classPath;
   }
 
   getProjectInfo(): ProjectGAVCoordinates {
@@ -430,50 +429,72 @@ export class CreateQueryEditorStore extends QueryEditorStore {
     };
   }
 
-  async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setMapping(
-      this.graphManagerState.graph.getMapping(this.mappingPath),
+  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    const queryBuilderState = new MappingQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      (val: Mapping) => {
+        this.applicationStore.navigator.goTo(
+          generateMappingQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            val.path,
+            guaranteeType(queryBuilderState.runtimeValue, RuntimePointer)
+              .packageableRuntime.value.path,
+          ),
+        );
+      },
+      (val: Runtime) => {
+        this.applicationStore.navigator.goTo(
+          generateMappingQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            guaranteeType(queryBuilderState.mapping, Mapping).path,
+            guaranteeType(val, RuntimePointer).packageableRuntime.value.path,
+          ),
+        );
+      },
     );
-    this.queryBuilderState.querySetupState.setRuntimeValue(
+
+    const mapping = this.graphManagerState.graph.getMapping(this.mappingPath);
+    queryBuilderState.changeMapping(mapping);
+    queryBuilderState.propagateMappingChange(mapping);
+    queryBuilderState.changeRuntime(
       new RuntimePointer(
         PackageableElementExplicitReference.create(
           this.graphManagerState.graph.getRuntime(this.runtimePath),
         ),
       ),
     );
-    if (this.classPath) {
-      this.queryBuilderState.changeClass(
-        this.queryBuilderState.graphManagerState.graph.getClass(this.classPath),
+
+    // try to find a class to set
+    // first, find classes which is mapped by the mapping
+    // then, find any classes except for class coming from system
+    // if none found, default to a dummy blank query
+    const defaultClass =
+      getNullableFirstElement(
+        queryBuilderState.mapping
+          ? getAllClassMappings(queryBuilderState.mapping).map(
+              (classMapping) => classMapping.class.value,
+            )
+          : [],
+      ) ??
+      getNullableFirstElement(
+        queryBuilderState.graphManagerState.graph.classes.filter(
+          (el) => !isSystemElement(el),
+        ),
       );
-      this.queryBuilderState.querySetupState.setClassIsReadOnly(true);
+    if (defaultClass) {
+      queryBuilderState.changeClass(defaultClass);
     } else {
-      // try to find a class to set
-      // first, find classes which is mapped by the mapping
-      // then, find any classes except for class coming from system
-      // if none found, default to a dummy blank query
-      const defaultClass =
-        getNullableFirstElement(
-          this.queryBuilderState.querySetupState.mapping
-            ? getAllClassMappings(
-                this.queryBuilderState.querySetupState.mapping,
-              ).map((classMapping) => classMapping.class.value)
-            : [],
-        ) ??
-        getNullableFirstElement(
-          this.queryBuilderState.graphManagerState.graph.classes.filter(
-            (el) => !isSystemElement(el),
-          ),
-        );
-      if (defaultClass) {
-        this.queryBuilderState.changeClass(defaultClass);
-      } else {
-        this.queryBuilderState.initialize(
-          this.queryBuilderState.graphManagerState.graphManager.createDefaultBasicRawLambda(),
-        );
-      }
+      queryBuilderState.initialize(
+        this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+      );
     }
+
+    return queryBuilderState;
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {
@@ -488,7 +509,7 @@ export class CreateQueryEditorStore extends QueryEditorStore {
   }
 }
 
-export class ServiceQueryEditorStore extends QueryEditorStore {
+export class ServiceQueryCreatorStore extends QueryEditorStore {
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -522,49 +543,36 @@ export class ServiceQueryEditorStore extends QueryEditorStore {
     };
   }
 
-  async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-
+  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const service = this.graphManagerState.graph.getService(this.servicePath);
     assertType(
       service.execution,
       PureExecution,
       `Can't process service execution: only Pure execution is supported`,
     );
-    if (this.executionKey) {
-      assertType(
-        service.execution,
-        PureMultiExecution,
-        `Can't process service execution: an execution key is provided, expecting Pure multi execution`,
-      );
-      const serviceExecution = guaranteeNonNullable(
-        service.execution.executionParameters.find(
-          (parameter) => parameter.key === this.executionKey,
-        ),
-        `Can't process service execution: execution with key '${this.executionKey}' is not found`,
-      );
-      this.queryBuilderState.querySetupState.setMapping(
-        serviceExecution.mapping.value,
-      );
-      this.queryBuilderState.querySetupState.setRuntimeValue(
-        serviceExecution.runtime,
-      );
-    } else {
-      assertType(
-        service.execution,
-        PureSingleExecution,
-        `Can't process service execution: no execution key is provided, expecting Pure single execution`,
-      );
-      this.queryBuilderState.querySetupState.setMapping(
-        service.execution.mapping.value,
-      );
-      this.queryBuilderState.querySetupState.setRuntimeValue(
-        service.execution.runtime,
-      );
-    }
+
+    const queryBuilderState = new ServiceQueryBuilderState(
+      this.applicationStore,
+      this.graphManagerState,
+      service,
+      this.executionKey,
+      (val: ServiceExecutionContext): void => {
+        this.applicationStore.navigator.goTo(
+          generateServiceQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            service.path,
+            val.key,
+          ),
+        );
+      },
+    );
+
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    this.queryBuilderState.initialize(service.execution.func);
+    queryBuilderState.initialize(service.execution.func);
+
+    return queryBuilderState;
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {
@@ -625,24 +633,42 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
-  async setUpBuilderState(): Promise<void> {
-    this.queryBuilderState.querySetupState.setMappingIsReadOnly(true);
-    this.queryBuilderState.querySetupState.setRuntimeIsReadOnly(true);
-
+  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
     );
-    this.queryBuilderState.querySetupState.setMapping(query.mapping.value);
-    this.queryBuilderState.querySetupState.setRuntimeValue(
+    let queryBuilderState: QueryBuilderState | undefined;
+    const existingQueryEditorStateBuilders = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraExistingQueryEditorStateBuilders?.() ?? [],
+      );
+    for (const builder of existingQueryEditorStateBuilders) {
+      queryBuilderState = builder(query, this);
+      if (queryBuilderState) {
+        break;
+      }
+    }
+
+    // if no extension found, fall back to basic `class -> mapping -> runtime` mode
+    queryBuilderState =
+      queryBuilderState ??
+      new ClassQueryBuilderState(this.applicationStore, this.graphManagerState);
+
+    queryBuilderState.setMapping(query.mapping.value);
+    queryBuilderState.setRuntimeValue(
       new RuntimePointer(
         PackageableElementExplicitReference.create(query.runtime.value),
       ),
     );
+
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    this.queryBuilderState.initialize(
+    queryBuilderState.initialize(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
     );
+
+    return queryBuilderState;
   }
 
   async getExportConfiguration(): Promise<QueryExportConfiguration> {

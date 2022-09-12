@@ -26,25 +26,24 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
 }
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
-  CLASS_PATH = 'class',
   SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
-  CREATE_QUERY: `/create/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
-  SERVICE_QUERY: `/service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
+  CREATE_FROM_MAPPING_QUERY: `/create/manual/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
+  CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export const generateCreateQueryEditorRoute = (
+export const generateMappingQueryCreatorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
   mappingPath: string,
   runtimePath: string,
 ): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_MAPPING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
       groupId,
       artifactId,
@@ -54,24 +53,20 @@ export const generateCreateQueryEditorRoute = (
     [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
   });
 
-export interface CreateQueryPathParams {
+export interface MappingQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: string;
 }
 
-export interface CreateQueryEditorQueryParams {
-  [LEGEND_QUERY_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
-}
-
-export const generateServiceQueryEditorRoute = (
+export const generateServiceQueryCreatorRoute = (
   groupId: string,
   artifactId: string,
   versionId: string,
   servicePath: string,
   key?: string,
 ): string =>
-  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.SERVICE_QUERY, {
+  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
       groupId,
       artifactId,
@@ -82,17 +77,17 @@ export const generateServiceQueryEditorRoute = (
     key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY}=${key}` : ''
   }`;
 
-export interface ServiceQueryEditorPathParams {
+export interface ServiceQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface ServiceQueryEditorQueryParams {
+export interface ServiceQueryCreatorQueryParams {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string;
 }
 
 export const generateExistingQueryEditorRoute = (queryId: string): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EXISTING_QUERY, {
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
     [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
   });
 

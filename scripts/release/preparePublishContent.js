@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { existsSync, readdirSync, copyFileSync, writeFileSync } from 'fs';
+import * as yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import {
+  existsSync,
+  readdirSync,
+  copyFileSync,
+  writeFileSync,
+  renameSync,
+} from 'fs';
 import chalk from 'chalk';
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
@@ -24,6 +32,9 @@ import { fileURLToPath } from 'url';
 import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const argv = yargs.default(hideBin(process.argv)).argv;
+const packagingEnabled = argv.pack;
 
 const ROOT_DIR = resolve(__dirname, '../../');
 const workspaceDir = process.cwd();
@@ -161,6 +172,30 @@ const preparePublishContent = async () => {
         `\u2713 Fully resolved dependencies versions in 'package.json'`,
       ),
     );
+
+    if (packagingEnabled) {
+      const artifactInfo = execSync(
+        `npm pack ${resolve(
+          workspaceDir,
+          publishContentDir,
+        )} --pack-destination ${resolve(workspaceDir, 'build')} --json`,
+        {
+          encoding: 'utf-8',
+          cwd: ROOT_DIR,
+        },
+      );
+      // NOTE: npm pack command by default will normalize the scope so we would have to account for that
+      // for example, package: @scope/package-name 1.2.0 will generate artifact scope-package-name-1.2.0.tgz
+      const artifactName = JSON.parse(artifactInfo)[0]
+        .filename.replaceAll(/\//g, '-')
+        .replaceAll(/@/g, '');
+      renameSync(
+        resolve(workspaceDir, 'build', artifactName),
+        resolve(workspaceDir, 'build/local-snapshot.tgz'),
+      );
+      console.log(chalk.green(`\u2713 Packaged content`));
+    }
+
     console.log(
       chalk.green(
         `Successfully prepared publish content for workspace ${workspaceName}\n`,

@@ -33,10 +33,10 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
 import {
-  type CreateQueryPathParams,
+  type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
-  type ServiceQueryEditorPathParams,
-  type ServiceQueryEditorQueryParams,
+  type ServiceQueryCreatorPathParams,
+  type ServiceQueryCreatorQueryParams,
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -44,17 +44,17 @@ import {
 } from '../stores/LegendQueryRouter.js';
 import {
   type QueryEditorStore,
-  CreateQueryEditorStore,
+  MappingQueryCreatorStore,
   ExistingQueryEditorStore,
   QueryExportState,
-  ServiceQueryEditorStore,
+  ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import { QueryBuilder } from './QueryBuilder.js';
+import { QueryBuilder } from './query-builder/QueryBuilder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  CreateQueryEditorStoreProvider,
+  MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
-  ServiceQueryEditorStoreProvider,
+  ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
 import {
@@ -63,6 +63,7 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import type { QueryBuilderState } from '../stores/query-builder/QueryBuilderState.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -158,13 +159,13 @@ const renderQueryEditorHeaderLabel = (
         {editorStore.query.name}
       </div>
     );
-  } else if (editorStore instanceof CreateQueryEditorStore) {
+  } else if (editorStore instanceof MappingQueryCreatorStore) {
     return (
       <div className="query-editor__header__label query-editor__header__label--create-query">
         New Query
       </div>
     );
-  } else if (editorStore instanceof ServiceQueryEditorStore) {
+  } else if (editorStore instanceof ServiceQueryCreatorStore) {
     return (
       <div className="query-editor__header__label query-editor__header__label--service-query">
         <RobotIcon className="query-editor__header__label__icon" />
@@ -189,82 +190,86 @@ const renderQueryEditorHeaderLabel = (
   return null;
 };
 
-const QueryEditorHeaderContent = observer(() => {
-  const editorStore = useQueryEditorStore();
-  const applicationStore = useLegendQueryApplicationStore();
-  const viewQueryProject = (): void => {
-    const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
-    applicationStore.navigator.openNewWindow(
-      generateStudioProjectViewUrl(
-        applicationStore.config.studioUrl,
-        groupId,
-        artifactId,
-        versionId,
-        undefined,
-      ),
-    );
-  };
-  const toggleLightDarkTheme = (): void =>
-    applicationStore.TEMPORARY__setIsLightThemeEnabled(
-      !applicationStore.TEMPORARY__isLightThemeEnabled,
-    );
-  const saveQuery = (): void => {
-    editorStore.queryBuilderState
-      .saveQuery(async (lambda: RawLambda) => {
-        editorStore.setExportState(
-          new QueryExportState(
-            editorStore,
-            lambda,
-            await editorStore.getExportConfiguration(lambda),
-          ),
-        );
-      })
-      .catch(applicationStore.alertUnhandledError);
-  };
+const QueryEditorHeaderContent = observer(
+  (props: { queryBuilderState: QueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const editorStore = useQueryEditorStore();
+    const applicationStore = useLegendQueryApplicationStore();
+    const viewQueryProject = (): void => {
+      const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
+      applicationStore.navigator.openNewWindow(
+        generateStudioProjectViewUrl(
+          applicationStore.config.studioUrl,
+          groupId,
+          artifactId,
+          versionId,
+          undefined,
+        ),
+      );
+    };
+    const toggleLightDarkTheme = (): void =>
+      applicationStore.TEMPORARY__setIsLightThemeEnabled(
+        !applicationStore.TEMPORARY__isLightThemeEnabled,
+      );
+    const saveQuery = (): void => {
+      queryBuilderState
+        .saveQuery(async (lambda: RawLambda) => {
+          editorStore.setExportState(
+            new QueryExportState(
+              editorStore,
+              queryBuilderState,
+              lambda,
+              await editorStore.getExportConfiguration(lambda),
+            ),
+          );
+        })
+        .catch(applicationStore.alertUnhandledError);
+    };
 
-  return (
-    <div className="query-editor__header__content">
-      <div className="query-editor__header__content__main">
-        {renderQueryEditorHeaderLabel(editorStore)}
-      </div>
-      <div className="query-editor__header__actions">
-        <button
-          className="query-editor__header__action query-editor__header__action--simple btn--dark"
-          tabIndex={-1}
-          title="View project"
-          onClick={viewQueryProject}
-        >
-          <ExternalLinkSquareIcon />
-        </button>
-        {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+    return (
+      <div className="query-editor__header__content">
+        <div className="query-editor__header__content__main">
+          {renderQueryEditorHeaderLabel(editorStore)}
+        </div>
+        <div className="query-editor__header__actions">
           <button
             className="query-editor__header__action query-editor__header__action--simple btn--dark"
             tabIndex={-1}
-            title="Toggle Light/Dark Theme"
-            onClick={toggleLightDarkTheme}
+            title="View project"
+            onClick={viewQueryProject}
           >
-            {applicationStore.TEMPORARY__isLightThemeEnabled ? (
-              <EmptyLightBulbIcon />
-            ) : (
-              <LightBulbIcon />
-            )}
+            <ExternalLinkSquareIcon />
           </button>
-        )}
-        <button
-          className="query-editor__header__action btn--dark"
-          tabIndex={-1}
-          onClick={saveQuery}
-        >
-          <div className="query-editor__header__action__icon">
-            <SaveIcon />
-            <QueryExport />
-          </div>
-          <div className="query-editor__header__action__label">Save</div>
-        </button>
+          {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
+            <button
+              className="query-editor__header__action query-editor__header__action--simple btn--dark"
+              tabIndex={-1}
+              title="Toggle Light/Dark Theme"
+              onClick={toggleLightDarkTheme}
+            >
+              {applicationStore.TEMPORARY__isLightThemeEnabled ? (
+                <EmptyLightBulbIcon />
+              ) : (
+                <LightBulbIcon />
+              )}
+            </button>
+          )}
+          <button
+            className="query-editor__header__action btn--dark"
+            tabIndex={-1}
+            onClick={saveQuery}
+          >
+            <div className="query-editor__header__action__icon">
+              <SaveIcon />
+              <QueryExport />
+            </div>
+            <div className="query-editor__header__action__label">Save</div>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const QueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
@@ -305,14 +310,18 @@ export const QueryEditor = observer(() => {
           >
             <ArrowLeftIcon />
           </button>
-          {!isLoadingEditor && <QueryEditorHeaderContent />}
+          {!isLoadingEditor && editorStore.queryBuilderState && (
+            <QueryEditorHeaderContent
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+          )}
         </div>
         <div className="query-editor__content">
           <PanelLoadingIndicator isLoading={isLoadingEditor} />
-          {!isLoadingEditor && (
+          {!isLoadingEditor && editorStore.queryBuilderState && (
             <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
           )}
-          {isLoadingEditor && (
+          {(isLoadingEditor || !editorStore.queryBuilderState) && (
             <BlankPanelContent>
               {editorStore.initState.message ??
                 editorStore.graphManagerState.systemBuildState.message ??
@@ -338,46 +347,40 @@ export const ExistingQueryEditor = observer(() => {
   );
 });
 
-export const ServiceQueryEditor = observer(() => {
+export const ServiceQueryCreator = observer(() => {
   const applicationStore = useApplicationStore();
-  const params = useParams<ServiceQueryEditorPathParams>();
+  const params = useParams<ServiceQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
-  const executionKey = getQueryParameters<ServiceQueryEditorQueryParams>(
+  const executionKey = getQueryParameters<ServiceQueryCreatorQueryParams>(
     applicationStore.navigator.getCurrentLocation(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 
   return (
-    <ServiceQueryEditorStoreProvider
+    <ServiceQueryCreatorStoreProvider
       gav={gav}
       servicePath={servicePath}
       executionKey={executionKey}
     >
       <QueryEditor />
-    </ServiceQueryEditorStoreProvider>
+    </ServiceQueryCreatorStoreProvider>
   );
 });
 
-export const CreateQueryEditor = observer(() => {
-  const applicationStore = useApplicationStore();
-  const params = useParams<CreateQueryPathParams>();
+export const MappingQueryCreator = observer(() => {
+  const params = useParams<MappingQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const mappingPath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
-  const classPath = getQueryParameters<ServiceQueryEditorQueryParams>(
-    applicationStore.navigator.getCurrentLocation(),
-    true,
-  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 
   return (
-    <CreateQueryEditorStoreProvider
+    <MappingQueryCreatorStoreProvider
       gav={gav}
       mappingPath={mappingPath}
       runtimePath={runtimePath}
-      classPath={classPath}
     >
       <QueryEditor />
-    </CreateQueryEditorStoreProvider>
+    </MappingQueryCreatorStoreProvider>
   );
 });

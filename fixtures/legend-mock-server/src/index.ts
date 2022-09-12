@@ -23,6 +23,7 @@
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
+ * See https://github.com/microsoft/TypeScript/issues/50690
  */
 import { default as Fastify } from 'fastify';
 import { default as FastifyCORS } from '@fastify/cors';
@@ -33,12 +34,12 @@ const PORT = 60001;
 const API_BASE_URL = '/api';
 const STUDIO_BASE_URL = '/studio';
 
-const fastify = Fastify({
+const fastify = Fastify.default({
   logger: true,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-fastify.register(FastifyCORS, {
+fastify.register(FastifyCORS.default, {
   methods: ['OPTIONS'],
   origin: [/localhost/],
   credentials: true,

@@ -41,6 +41,7 @@ import {
 import type { FileGenerationTypeOption } from '../../../stores/editor-state/GraphGenerationState.js';
 import { flowResult } from 'mobx';
 import {
+  buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationStore,
   type PackageableElementOption,
@@ -164,7 +165,8 @@ const NewRuntimeDriverEditor = observer(() => {
   );
   // mapping
   const mapping = newRuntimeDriver.mapping;
-  const mappingOptions = editorStore.mappingOptions;
+  const mappingOptions =
+    editorStore.graphManagerState.usableMappings.map(buildElementOption);
   const selectedMappingOption = { label: mapping?.path ?? '', value: mapping };
   const onMappingSelectionChange = (
     val: PackageableElementOption<Mapping>,
@@ -216,7 +218,10 @@ const NewPureModelConnectionDriverEditor = observer(
     }): void => newConnectionDriver.setStore(val.value);
     // class
     const _class = newConnectionValueDriver.class;
-    const classOptions = editorStore.classOptions.slice().sort(compareLabelFn);
+    const classOptions = editorStore.graphManagerState.usableClasses
+      .map(buildElementOption)
+      .slice()
+      .sort(compareLabelFn);
     const selectedClassOption = _class
       ? { label: _class.path, value: _class }
       : null;
@@ -321,7 +326,8 @@ const NewServiceDriverEditor = observer(() => {
     editorStore.newElementState.getNewElementDriver(NewServiceDriver);
   // mapping
   const currentMappingOption = newServiceDriver.mappingOption;
-  const mappingOptions = editorStore.mappingOptions;
+  const mappingOptions =
+    editorStore.graphManagerState.usableMappings.map(buildElementOption);
   const onMappingChange = (
     val: PackageableElementOption<Mapping> | null,
   ): void => {

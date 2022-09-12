@@ -38,6 +38,7 @@ import type {
 } from '../metamodel/pure/packageableElements/runtime/Runtime.js';
 import { OperationSetImplementation } from '../metamodel/pure/packageableElements/mapping/OperationSetImplementation.js';
 import { ObjectInputType } from '../metamodel/pure/packageableElements/store/modelToModel/mapping/ObjectInputData.js';
+import type { PackageableRuntime } from '../../DSLMapping_Exports.js';
 
 // ----------------------------------------- Mapping -----------------------------------------
 
@@ -272,6 +273,32 @@ export const getObjectInputType = (type: string): ObjectInputType => {
   }
 };
 
+export const getMappingCompatibleClasses = (
+  mapping: Mapping,
+  classes: Class[],
+): Class[] => {
+  const mappedClasses = new Set<Class>();
+  getAllClassMappings(mapping).forEach((cm) =>
+    mappedClasses.add(cm.class.value),
+  );
+  return classes.filter((c) => mappedClasses.has(c));
+};
+
+export const getClassCompatibleMappings = (
+  _class: Class,
+  mappings: Mapping[],
+): Mapping[] => {
+  const mappingsWithClassMapped = mappings.filter((mapping) =>
+    mapping.classMappings.some((cm) => cm.class.value === _class),
+  );
+  const resolvedMappingIncludes = mappings.filter((mapping) =>
+    getAllIncludedMappings(mapping).some((e) =>
+      mappingsWithClassMapped.includes(e),
+    ),
+  );
+  return uniq([...mappingsWithClassMapped, ...resolvedMappingIncludes]);
+};
+
 // ----------------------------------------- Runtime -----------------------------------------
 
 export const getAllIdentifiedConnections = (
@@ -298,3 +325,18 @@ export const generateIdentifiedConnectionId = (
   );
   return generatedId;
 };
+
+export const getMappingCompatibleRuntimes = (
+  mapping: Mapping,
+  runtimes: PackageableRuntime[],
+): PackageableRuntime[] =>
+  // If the runtime claims to cover some mappings which include the specified mapping,
+  // then we deem the runtime to be compatible with the such mapping
+  runtimes.filter((runtime) =>
+    runtime.runtimeValue.mappings
+      .flatMap((mappingReference) => [
+        mappingReference.value,
+        ...getAllIncludedMappings(mappingReference.value),
+      ])
+      .includes(mapping),
+  );

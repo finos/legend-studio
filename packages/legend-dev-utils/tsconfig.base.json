@@ -27,8 +27,6 @@
     // the properties are not present.
     // See https://github.com/microsoft/TypeScript/pull/43947
     "exactOptionalPropertyTypes": true,
-    // Until we upgrade to 4.8.3, we would need to keep this up
-    // See https://github.com/microsoft/TypeScript/issues/50544
-    "forceConsistentCasingInFileNames": false
+    "forceConsistentCasingInFileNames": true
   }
 }

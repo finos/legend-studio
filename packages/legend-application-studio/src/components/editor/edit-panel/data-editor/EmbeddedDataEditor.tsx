@@ -157,7 +157,8 @@ export const DataElementReferenceDataEditor = observer(
     const dataElement =
       dataElementReferenceState.embeddedData.dataElement.value;
     const editorStore = dataElementReferenceState.editorStore;
-    const options = editorStore.dataOptions;
+    const options =
+      editorStore.graphManagerState.usableDataElements.map(buildElementOption);
     const selectedOption = buildElementOption(dataElement);
     const onDataElementChange = (val: {
       label: string;

@@ -18,3 +18,6 @@
 // so that it records the dataSpace it is created from
 export const QUERY_PROFILE_PATH = 'meta::pure::profiles::query';
 export const QUERY_PROFILE_TAG_DATA_SPACE = 'dataSpace';
+
+export const DEFAULT_DATA_SPACE_LOADER_LIMIT = 10;
+export const MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH = 3;

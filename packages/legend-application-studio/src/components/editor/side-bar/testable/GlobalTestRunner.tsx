@@ -38,6 +38,7 @@ import {
 import {
   AssertFail,
   EqualToJsonAssertFail,
+  PackageableElement,
   TestError,
 } from '@finos/legend-graph';
 import { type GeneratorFn, isNonNullable } from '@finos/legend-shared';
@@ -58,6 +59,7 @@ import {
 } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
+import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
@@ -249,6 +251,7 @@ const TestableTreeNodeContainer: React.FC<
 > = (props) => {
   const { node, level, stepPaddingInRem, onNodeSelect } = props;
   const { treeData, testableState, globalTestRunnerState } = props.innerProps;
+  const editorStore = useEditorStore();
   const results = testableState.results;
   const expandIcon =
     node instanceof AssertionTestTreeNodeData ? (
@@ -259,7 +262,16 @@ const TestableTreeNodeContainer: React.FC<
       <ChevronRightIcon />
     );
   const nodeIcon =
-    node instanceof TestableTreeNodeData ? node.testableMetadata.icon : null;
+    node instanceof TestableTreeNodeData
+      ? node.testableMetadata.testable instanceof PackageableElement
+        ? getElementTypeIcon(
+            editorStore,
+            editorStore.graphState.getPackageableElementType(
+              node.testableMetadata.testable,
+            ),
+          )
+        : null
+      : null;
   const resultIcon = getTestableResultIcon(
     getNodeTestableResult(
       node,

@@ -15,8 +15,10 @@
  */
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
+import type { Query } from '@finos/legend-graph';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
+import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import type { QueryEditorStore } from './QueryEditorStore.js';
 import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
 
@@ -32,6 +34,11 @@ export type QuerySetupRenderer = (
 export type QueryEditorHeaderLabeler = (
   editorStore: QueryEditorStore,
 ) => React.ReactNode | undefined;
+
+export type ExistingQueryEditorStateBuilder = (
+  query: Query,
+  editorStore: QueryEditorStore,
+) => QueryBuilderState | undefined;
 
 export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -58,4 +65,9 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
    * Get the list of query editor header labelers.
    */
   getExtraQueryEditorHeaderLabelers?(): QueryEditorHeaderLabeler[];
+
+  /**
+   * Get the list of existing query editor state builders.
+   */
+  getExtraExistingQueryEditorStateBuilders?(): ExistingQueryEditorStateBuilder[];
 }

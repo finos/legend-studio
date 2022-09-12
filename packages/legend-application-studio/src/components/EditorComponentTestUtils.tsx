@@ -298,11 +298,11 @@ export const TEST__setUpEditor = async (
     .mockResolvedValue(projectDependency);
 
   // TODO: we need to think of how we will mock these calls when we modularize
-  MOCK__editorStore.graphManagerState.graphManager.initialize =
-    jest.fn<TEMPORARY__JestMock>();
+  const graphManagerState = MOCK__editorStore.graphManagerState;
+  graphManagerState.graphManager.initialize = jest.fn<TEMPORARY__JestMock>();
   jest
     .spyOn(
-      MOCK__editorStore.graphManagerState.graphManager,
+      graphManagerState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
     .mockResolvedValue(availableGenerationDescriptions);
@@ -362,20 +362,14 @@ export const TEST__setUpEditor = async (
   );
   // assert immutable models have been model
   await waitFor(() =>
-    expect(
-      MOCK__editorStore.graphManagerState.systemBuildState.hasSucceeded,
-    ).toBe(true),
+    expect(graphManagerState.systemBuildState.hasSucceeded).toBe(true),
   );
   await waitFor(() =>
-    expect(
-      MOCK__editorStore.graphManagerState.dependenciesBuildState.hasSucceeded,
-    ).toBe(true),
+    expect(graphManagerState.dependenciesBuildState.hasSucceeded).toBe(true),
   );
   // assert main model has been build
   await waitFor(() =>
-    expect(
-      MOCK__editorStore.graphManagerState.graphBuildState.hasSucceeded,
-    ).toBe(true),
+    expect(graphManagerState.graphBuildState.hasSucceeded).toBe(true),
   );
   // assert explorer trees have been built and rendered
   await waitFor(() =>

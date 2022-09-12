@@ -42,7 +42,10 @@ import {
   taggedValue_setTag,
   annotatedElement_swapTaggedValues,
 } from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
-import type { PackageableElementOption } from '@finos/legend-application';
+import {
+  buildElementOption,
+  type PackageableElementOption,
+} from '@finos/legend-application';
 import { useDrop, useDrag } from 'react-dnd';
 
 interface TagOption {
@@ -88,9 +91,9 @@ export const TaggedValueEditor = observer(
       HTMLTextAreaElement | HTMLInputElement
     > = (event) => taggedValue_setValue(taggedValue, event.target.value);
     // Profile
-    const profileOptions = editorStore.profileOptions.filter(
-      (p) => p.value.p_tags.length,
-    );
+    const profileOptions = editorStore.graphManagerState.usableProfiles
+      .map(buildElementOption)
+      .filter((p) => p.value.p_tags.length);
     const profileFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,

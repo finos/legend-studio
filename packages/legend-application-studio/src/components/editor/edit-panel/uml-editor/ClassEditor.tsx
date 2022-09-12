@@ -96,6 +96,7 @@ import {
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import {
   ApplicationNavigationContextData,
+  buildElementOption,
   getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
   useApplicationStore,
@@ -167,7 +168,10 @@ const PropertyBasicEditor = observer(
     };
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const propertyType = property.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -492,7 +496,10 @@ const DerivedPropertyBasicEditor = observer(
       property_setName(derivedProperty, event.target.value);
     // Generic Type
     const [isEditingType, setIsEditingType] = useState(false);
-    const propertyTypeOptions = editorStore.classPropertyGenericTypeOptions;
+    const propertyTypeOptions =
+      editorStore.graphManagerState.usableClassPropertyTypes.map(
+        buildElementOption,
+      );
     const propertyType = derivedProperty.genericType.value.rawType;
     const propertyTypeName = getClassPropertyType(propertyType);
     const filterOption = createFilter({
@@ -998,16 +1005,18 @@ const SuperTypeEditor = observer(
     const { superType, _class, deleteSuperType, isReadOnly } = props;
     const editorStore = useEditorStore();
     // Type
-    const superTypeOptions = editorStore.classOptions.filter(
-      (classOption) =>
-        classOption.value instanceof Class &&
-        // Exclude current class
-        classOption.value !== _class &&
-        // Exclude super types of the class
-        !getAllSuperclasses(_class).includes(classOption.value) &&
-        // Ensure there is no loop (might be expensive)
-        !getAllSuperclasses(classOption.value).includes(_class),
-    );
+    const superTypeOptions = editorStore.graphManagerState.usableClasses
+      .filter(
+        (c) =>
+          c instanceof Class &&
+          // Exclude current class
+          c !== _class &&
+          // Exclude super types of the class
+          !getAllSuperclasses(_class).includes(c) &&
+          // Ensure there is no loop (might be expensive)
+          !getAllSuperclasses(c).includes(_class),
+      )
+      .map(buildElementOption);
 
     // Drag and Drop
     const handleHover = useCallback(

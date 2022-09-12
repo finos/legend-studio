@@ -33,7 +33,6 @@ import {
   UnsupportedElementEditorState,
   LegendStudioApplicationPlugin,
 } from '@finos/legend-application-studio';
-import { SquareIcon } from '@finos/legend-art';
 import {
   PackageableElementExplicitReference,
   stub_Mapping,
@@ -51,6 +50,7 @@ import {
 } from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
 import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
 import type { DocumentationEntry } from '@finos/legend-application';
+import { DataSpaceIcon } from '../DSLDataSpace_Icon.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
@@ -90,11 +90,7 @@ export class DSLDataSpace_LegendStudioApplicationPlugin
     return [
       (type: string): React.ReactNode | undefined => {
         if (type === DATA_SPACE_ELEMENT_TYPE) {
-          return (
-            <div className="icon icon--data-space">
-              <SquareIcon />
-            </div>
-          );
+          return <DataSpaceIcon />;
         }
         return undefined;
       },

@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-@forward './workspace-setup/create-project-modal';
+@forward 'workspace-setup/create-project-modal';
 
 .workspace-setup {
   height: 100%;

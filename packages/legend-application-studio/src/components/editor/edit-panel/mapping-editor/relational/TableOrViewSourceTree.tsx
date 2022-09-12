@@ -35,7 +35,7 @@ import {
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
-} from '../../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper.js';
+} from '../../connection-editor/DatabaseEditorHelper.js';
 import {
   type Type,
   type Table,

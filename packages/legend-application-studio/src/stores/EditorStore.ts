@@ -95,7 +95,6 @@ import {
 } from '@finos/legend-server-sdlc';
 import {
   type PackageableElement,
-  type Type,
   type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
@@ -114,7 +113,6 @@ import {
   PackageableConnection,
   FileGenerationSpecification,
   GenerationSpecification,
-  PRIMITIVE_TYPE,
   Package,
   DataElement,
   isElementReadOnly,
@@ -1344,89 +1342,12 @@ export class EditorStore {
     }
   }
 
-  get enumerationOptions(): PackageableElementOption<Enumeration>[] {
-    return this.graphManagerState.graph.ownEnumerations
-      .concat(this.graphManagerState.graph.dependencyManager.enumerations)
-      .map(buildElementOption);
-  }
-
-  get classOptions(): PackageableElementOption<Class>[] {
-    return this.graphManagerState.graph.ownClasses
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownClasses,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.classes)
-      .map(buildElementOption);
-  }
-
-  get associationOptions(): PackageableElementOption<Association>[] {
-    return this.graphManagerState.graph.ownAssociations
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownAssociations,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.associations)
-      .map(buildElementOption);
-  }
-
-  get profileOptions(): PackageableElementOption<Profile>[] {
-    return this.graphManagerState.graph.ownProfiles
-      .concat(
-        this.graphManagerState.collectExposedSystemElements(
-          this.graphManagerState.graph.systemModel.ownProfiles,
-        ),
-      )
-      .concat(this.graphManagerState.graph.dependencyManager.profiles)
-      .map(buildElementOption);
-  }
-
-  get classPropertyGenericTypeOptions(): PackageableElementOption<Type>[] {
-    return this.graphManagerState.graph.primitiveTypes
-      .filter((p) => p.path !== PRIMITIVE_TYPE.LATESTDATE)
-      .map(buildElementOption)
-      .concat(
-        this.graphManagerState.graph.ownTypes
-          .concat(
-            this.graphManagerState.collectExposedSystemElements(
-              this.graphManagerState.graph.systemModel.ownTypes,
-            ),
-          )
-          .concat(this.graphManagerState.graph.dependencyManager.types)
-          .map(buildElementOption),
-      );
-  }
-
-  get mappingOptions(): PackageableElementOption<Mapping>[] {
-    return this.graphManagerState.graph.ownMappings
-      .concat(this.graphManagerState.graph.dependencyManager.mappings)
-      .map(buildElementOption);
-  }
-
-  get runtimeOptions(): PackageableElementOption<PackageableRuntime>[] {
-    return this.graphManagerState.graph.ownRuntimes
-      .concat(this.graphManagerState.graph.dependencyManager.runtimes)
-      .map(buildElementOption);
-  }
-
-  get serviceOptions(): PackageableElementOption<Service>[] {
-    return this.graphManagerState.graph.ownServices
-      .concat(this.graphManagerState.graph.dependencyManager.services)
-      .map(buildElementOption);
-  }
-
   get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphManagerState.graph.ownStores
-      .concat(this.graphManagerState.graph.dependencyManager.stores)
-      .map(buildElementOption);
+    return this.graphManagerState.usableStores.map(buildElementOption);
   }
 
   get dataOptions(): PackageableElementOption<DataElement>[] {
-    return this.graphManagerState.graph.ownDataElements
-      .concat(this.graphManagerState.graph.dependencyManager.dataElements)
-      .map(buildElementOption);
+    return this.graphManagerState.usableDataElements.map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {

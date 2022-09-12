@@ -98,7 +98,7 @@ const CustomMenuList: React.FC<{
         selectProps.darkMode ? 'selector-menu--dark' : ''
       }`}
     >
-      No match found
+      {selectProps.noMatchMessage ?? 'No match found'}
     </div>
   );
 };
@@ -150,6 +150,7 @@ export interface SelectOption {
 interface CustomSelectorInputProps extends Props<SelectOption, true> {
   className?: string;
   allowCreating?: boolean;
+  noMatchMessage?: string;
   disabled?: boolean;
   darkMode?: boolean;
   hasError?: boolean;
@@ -165,6 +166,7 @@ export const CustomSelectorInput = forwardRef<
   const {
     option,
     allowCreating,
+    noMatchMessage,
     disabled,
     components,
     className,
@@ -212,7 +214,7 @@ export const CustomSelectorInput = forwardRef<
         MenuList: CustomMenuList,
         ...components,
       }}
-      {...{ ...innerProps, darkMode }}
+      {...{ ...innerProps, darkMode, noMatchMessage }}
     />
   );
 });

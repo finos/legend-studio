@@ -21,21 +21,93 @@ import {
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
-import { useApplicationStore } from '@finos/legend-application';
-import { QueryBuilderMode } from '@finos/legend-application-query';
+import {
+  buildElementOption,
+  getPackageableElementOptionFormatter,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
-import { PencilIcon } from '@finos/legend-art';
-import { isStubbed_RawLambda } from '@finos/legend-graph';
+import {
+  CustomSelectorInput,
+  PencilIcon,
+  PURE_MappingIcon,
+} from '@finos/legend-art';
+import {
+  getMappingCompatibleClasses,
+  isStubbed_RawLambda,
+} from '@finos/legend-graph';
+import {
+  QueryBuilderClassSelector,
+  type QueryBuilderState,
+} from '@finos/legend-application-query';
+import { MappingExecutionQueryBuilderState } from '../stores/MappingExecutionQueryBuilderState.js';
 
-export class MappingExecutionQueryBuilderMode extends QueryBuilderMode {
-  get isParametersDisabled(): boolean {
-    return true;
-  }
+/**
+ * This setup panel supports limited cascading, we will only show:
+ * - For class selector: the list of compatible class with the specified mapping
+ */
+const MappingExecutionQueryBuilderSetupPanelContent = observer(
+  (props: { queryBuilderState: MappingExecutionQueryBuilderState }) => {
+    const { queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
 
-  get isResultPanelHidden(): boolean {
-    return true;
-  }
-}
+    // mapping
+    const selectedMappingOption = buildElementOption(
+      queryBuilderState.executionMapping,
+    );
+
+    // class
+    const classes = getMappingCompatibleClasses(
+      queryBuilderState.executionMapping,
+      queryBuilderState.graphManagerState.usableClasses,
+    );
+
+    return (
+      <>
+        <div className="query-builder__setup__config-group">
+          <div className="query-builder__setup__config-group__header">
+            <div className="query-builder__setup__config-group__header__title">
+              execution context
+            </div>
+          </div>
+          <div className="query-builder__setup__config-group__content">
+            <div className="query-builder__setup__config-group__item">
+              <div
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="mapping"
+              >
+                <PURE_MappingIcon />
+              </div>
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                disabled={true}
+                options={[]}
+                value={selectedMappingOption}
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                formatOptionLabel={getPackageableElementOptionFormatter({
+                  darkMode: !applicationStore.TEMPORARY__isLightThemeEnabled,
+                })}
+              />
+            </div>
+          </div>
+        </div>
+        <QueryBuilderClassSelector
+          queryBuilderState={queryBuilderState}
+          classes={classes}
+          noMatchMessage="No compatible class found for specified mapping"
+        />
+      </>
+    );
+  },
+);
+
+export const renderMappingExecutionQueryBuilderSetupPanelContent = (
+  queryBuilderState: MappingExecutionQueryBuilderState,
+): React.ReactNode => (
+  <MappingExecutionQueryBuilderSetupPanelContent
+    queryBuilderState={queryBuilderState}
+  />
+);
 
 export const MappingExecutionQueryBuilder = observer(
   (props: { executionState: MappingExecutionState }) => {
@@ -47,50 +119,41 @@ export const MappingExecutionQueryBuilder = observer(
     );
     const editWithQueryBuilder = applicationStore.guardUnhandledError(
       async () => {
-        const mapping = executionState.mappingEditorState.mapping;
-        queryBuilderExtension.reset();
-        queryBuilderExtension.queryBuilderState.querySetupState.setMapping(
-          mapping,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeValue(
-          undefined,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setMappingIsReadOnly(
-          true,
-        );
-        queryBuilderExtension.queryBuilderState.querySetupState.setRuntimeIsReadOnly(
-          true,
-        );
-        queryBuilderExtension.queryBuilderState.initialize(
-          executionState.queryState.query,
-        );
-        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
-          hashObject(executionState.queryState.query),
-        );
-        queryBuilderExtension.queryBuilderState.changeDetectionState.setIsEnabled(
-          true,
-        );
         await flowResult(
-          queryBuilderExtension.setEmbeddedQueryBuilderMode({
+          queryBuilderExtension.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
+                executionState.mappingEditorState.mapping,
+                queryBuilderExtension.editorStore.applicationStore,
+                queryBuilderExtension.editorStore.graphManagerState,
+              );
+              queryBuilderState.initialize(executionState.queryState.query);
+              queryBuilderState.changeDetectionState.setQueryHashCode(
+                hashObject(executionState.queryState.query),
+              );
+              queryBuilderState.changeDetectionState.setIsEnabled(true);
+              return queryBuilderState;
+            },
             actionConfigs: [
               {
                 key: 'save-query-btn',
-                renderer: (): React.ReactNode => {
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
                   const save = applicationStore.guardUnhandledError(
                     async (): Promise<void> => {
                       try {
-                        const rawLambda =
-                          queryBuilderExtension.queryBuilderState.getQuery();
+                        const rawLambda = queryBuilderState.buildQuery();
                         await flowResult(
                           executionState.queryState.updateLamba(rawLambda),
                         );
                         applicationStore.notifySuccess(
                           `Mapping execution query is updated`,
                         );
-                        queryBuilderExtension.queryBuilderState.changeDetectionState.setQueryHashCode(
+                        queryBuilderState.changeDetectionState.setQueryHashCode(
                           hashObject(rawLambda),
                         );
-                        queryBuilderExtension.setEmbeddedQueryBuilderMode(
+                        queryBuilderExtension.setEmbeddedQueryBuilderConfiguration(
                           undefined,
                         );
                       } catch (error) {
@@ -116,7 +179,6 @@ export const MappingExecutionQueryBuilder = observer(
             disableCompile: isStubbed_RawLambda(
               executionState.queryState.query,
             ),
-            queryBuilderMode: new MappingExecutionQueryBuilderMode(),
           }),
         );
       },

@@ -125,6 +125,9 @@ export enum CORE_PURE_PATH {
   GENERATION_SPECIFICATION = 'meta::pure::generation::metamodel::GenerationSpecification',
   SECTION_INDEX = 'meta::pure::metamodel::section::SectionIndex',
   DATA_ELEMENT = 'meta::pure::data::DataElement',
+
+  // TDS
+  TDS_ROW = 'meta::pure::tds::TDSRow',
 }
 
 export const PURE_DEPRECATED_STEREOTYPE = 'deprecated';

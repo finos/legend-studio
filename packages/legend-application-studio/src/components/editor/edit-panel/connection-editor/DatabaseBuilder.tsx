@@ -51,7 +51,7 @@ import {
 import {
   generateColumnTypeLabel,
   renderColumnTypeIcon,
-} from '../../../../stores/editor-state/element-editor-state/mapping/relational/DatabaseEditorHelper.js';
+} from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 

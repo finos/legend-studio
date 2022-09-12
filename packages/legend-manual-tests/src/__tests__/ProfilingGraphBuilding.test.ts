@@ -26,6 +26,7 @@ import fs from 'fs';
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
+ * See https://github.com/microsoft/TypeScript/issues/50690
  */
 import { default as axios, type AxiosResponse } from 'axios';
 import {
@@ -183,7 +184,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
-  const transformGrammarToJsonResult = await axios.post<
+  const transformGrammarToJsonResult = await axios.default.post<
     unknown,
     AxiosResponse<PlainObject<V1_PureModelContextData>>
   >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
@@ -258,7 +259,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  await axios.post<unknown, AxiosResponse<string>>(
+  await axios.default.post<unknown, AxiosResponse<string>>(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
     modelDataContext,
     {
@@ -283,7 +284,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // Test successful compilation with graph from serialization
   startTime = Date.now();
-  const compileResult = await axios.post<
+  const compileResult = await axios.default.post<
     unknown,
     AxiosResponse<{ message: string }>
   >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);
