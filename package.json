@@ -35,6 +35,7 @@
     "dev:ts": "tsc --build --watch",
     "dev:website": "npx http-server ./build/docs -p 3000 -a localhost -g --cors -o",
     "fix": "yarn fix:copyright && yarn fix:style && yarn fix:js && yarn fix:format",
+    "fix:pkg": "rimraf \"yarn.lock\" && yarn install",
     "fix:copyright": "node ./scripts/copyright/checkCopyrightHeaders.js --update",
     "fix:format": "prettier --write --loglevel=warn \"(scripts|docs)/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" \"packages/*/**/*.{md,json,mjs,cjs,js,ts,tsx,html,scss,css}\" && yarn sort-package-json \"package.json\" \"packages/*/package.json\"",
     "fix:js": "cross-env NODE_ENV=production FORCE_COLOR=1 eslint --cache --cache-location ./build/.eslintcache \"scripts/**/*.{mjs,cjs,js,ts,tsx}\" --report-unused-disable-directives --fix && cross-env FORCE_COLOR=1 yarn workspaces foreach --all --parallel --exclude legend-studio --verbose run lint:js --fix",

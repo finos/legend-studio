@@ -3743,9 +3743,9 @@ __metadata:
   linkType: hard
 
 "@sinclair/typebox@npm:^0.24.1":
-  version: 0.24.39
-  resolution: "@sinclair/typebox@npm:0.24.39"
-  checksum: 4e4ec3e7df9be6f1c8661ae73f7be6bf777b0bdf37415240c3f177a776bc51d7e87663435b0c351de6aa77ace5b581a4c983104e54f6aa3d7d0c462513143f70
+  version: 0.24.40
+  resolution: "@sinclair/typebox@npm:0.24.40"
+  checksum: 682722bb2bf6ec75ea1a1461efc103e4075fc9e32e9862a138371b62b732d12faea4ce693fcc059484eb81f3186dae64fcd5243a35d507fa96fec3fe5203b87c
   languageName: node
   linkType: hard
 
@@ -4090,9 +4090,9 @@ __metadata:
   linkType: hard
 
 "@types/lodash@npm:*":
-  version: 4.14.184
-  resolution: "@types/lodash@npm:4.14.184"
-  checksum: 6d9a4d67f7f9d0ec3fd21174f3dd3d00629dc1227eb469450eace53adbc1f7e2330699c28d0fe093e5f0fef0f0e763098be1f779268857213224af082b62be21
+  version: 4.14.185
+  resolution: "@types/lodash@npm:4.14.185"
+  checksum: f81d13da5ecab110ca9c5c7cc2bedc3c9802a6acf668576aecd1b8f4b134ed81d06c15f1e600fb08f05975098280a0d97d30cddfc2cb39ec1c6b56e971ca53b3
   languageName: node
   linkType: hard
 
@@ -4295,18 +4295,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*":
-  version: 18.0.18
-  resolution: "@types/react@npm:18.0.18"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": "*"
-    csstype: ^3.0.2
-  checksum: 6d72d35ab3eecf382a5e0f225923f5a2c753045fce02e4e29713f36c99a24f0f770666a49dde96167f37c86271f93339d1b7e2b8969d011b137a9ebd24ee6806
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:18.0.19":
+"@types/react@npm:*, @types/react@npm:18.0.19":
   version: 18.0.19
   resolution: "@types/react@npm:18.0.19"
   dependencies:
@@ -5011,9 +5000,9 @@ __metadata:
   linkType: hard
 
 "ansi-styles@npm:^6.0.0, ansi-styles@npm:^6.1.0":
-  version: 6.1.0
-  resolution: "ansi-styles@npm:6.1.0"
-  checksum: 7a7f8528c07a9d20c3a92bccd2b6bc3bb4d26e5cb775c02826921477377bd495d615d61f710d56216344b6238d1d11ef2b0348e146c5b128715578bfb3217229
+  version: 6.1.1
+  resolution: "ansi-styles@npm:6.1.1"
+  checksum: f2b1ed658ead23caf77effe7b875960cacd70d1ebe47c830e191358b242d688cf52a28d55ef9b19d102f792e8c1dec34bd865db264f1c7f4f63dd3a5fa84677e
   languageName: node
   linkType: hard
 
@@ -5665,14 +5654,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001370":
-  version: 1.0.30001393
-  resolution: "caniuse-lite@npm:1.0.30001393"
-  checksum: 72b7cd81c51f41965f2fbdbb20729d71f2bd5e376d9b4effa22616dd2707640b8676862e8db3db83b76c3bcf2aaefc9ebd5991a10eeb483b460322de5548b98e
-  languageName: node
-  linkType: hard
-
-"caniuse-lite@npm:^1.0.30001394":
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001370, caniuse-lite@npm:^1.0.30001394":
   version: 1.0.30001396
   resolution: "caniuse-lite@npm:1.0.30001396"
   checksum: 089a254629d07fc5fc32a7d5c3f06eac967940bf99cca3e22f374eee4aac6e0b07b1f9292374c0213ab44784e2ede4c40cfed6039f7b4bdb358cefc425730983
@@ -9293,19 +9275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-diff@npm:^29.0.0":
-  version: 29.0.2
-  resolution: "jest-diff@npm:29.0.2"
-  dependencies:
-    chalk: ^4.0.0
-    diff-sequences: ^29.0.0
-    jest-get-type: ^29.0.0
-    pretty-format: ^29.0.2
-  checksum: fbf4f4a2502b4a5b46233fbcd77cc664de452d1612ebad670c3a4d1920985b16abdef3ebe7ce692efc3c7da8312f1b7253a4bb9027e98db1fb3c92cd53324aa9
-  languageName: node
-  linkType: hard
-
-"jest-diff@npm:^29.0.3":
+"jest-diff@npm:^29.0.0, jest-diff@npm:^29.0.3":
   version: 29.0.3
   resolution: "jest-diff@npm:29.0.3"
   dependencies:
@@ -12662,17 +12632,6 @@ __metadata:
     ansi-styles: ^5.0.0
     react-is: ^17.0.1
   checksum: cf610cffcb793885d16f184a62162f2dd0df31642d9a18edf4ca298e909a8fe80bdbf556d5c9573992c102ce8bf948691da91bf9739bee0ffb6e79c8a8a6e088
-  languageName: node
-  linkType: hard
-
-"pretty-format@npm:^29.0.2":
-  version: 29.0.2
-  resolution: "pretty-format@npm:29.0.2"
-  dependencies:
-    "@jest/schemas": ^29.0.0
-    ansi-styles: ^5.0.0
-    react-is: ^18.0.0
-  checksum: 02aa8f0e9a91d52d0ca67911b72dc44ae23f41dd50de961f9c86947046f2ced0818c4baccc806f89e78b13e8ee690f5d55a6a8cbdae03f5990c1f5e79ac81048
   languageName: node
   linkType: hard
 
