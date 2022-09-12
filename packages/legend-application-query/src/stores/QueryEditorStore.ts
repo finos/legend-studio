@@ -32,14 +32,12 @@ import {
   guaranteeNonNullable,
   ActionState,
   StopWatch,
-  getNullableFirstElement,
   guaranteeType,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
   type RawLambda,
   GraphManagerState,
-  getAllClassMappings,
   toLightQuery,
   Query,
   PureExecution,
@@ -525,31 +523,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       ),
     );
 
-    // try to find a class to set
-    // first, find classes which is mapped by the mapping
-    // then, find any classes except for class coming from system
-    // if none found, default to a dummy blank query
-    const defaultClass =
-      getNullableFirstElement(
-        queryBuilderState.mapping
-          ? getAllClassMappings(queryBuilderState.mapping).map(
-              (classMapping) => classMapping.class.value,
-            )
-          : [],
-      ) ??
-      getNullableFirstElement(
-        queryBuilderState.graphManagerState.graph.classes.filter(
-          (el) => !isSystemElement(el),
-        ),
-      );
-    if (defaultClass) {
-      queryBuilderState.changeClass(defaultClass);
-    } else {
-      queryBuilderState.initialize(
-        this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
-      );
-    }
-
     return queryBuilderState;
   }
 
@@ -626,7 +599,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initialize(service.execution.func);
+    queryBuilderState.initializeWithQuery(service.execution.func);
 
     return queryBuilderState;
   }
@@ -720,7 +693,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initialize(
+    queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
     );
 

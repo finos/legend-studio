@@ -132,8 +132,8 @@ export abstract class QueryBuilderState {
       changeMapping: action,
 
       rebuildWithQuery: action,
-      compileQuery: flow,
       saveQuery: action,
+      compileQuery: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -258,7 +258,27 @@ export abstract class QueryBuilderState {
     this.setRuntimeValue(val);
   }
 
-  initialize(rawLambda: RawLambda, options?: { notifyError: boolean }): void {
+  buildQuery(options?: { keepSourceInformation: boolean }): RawLambda {
+    if (!this.isQuerySupported) {
+      const parameters = this.parametersState.parameterStates.map((e) =>
+        this.graphManagerState.graphManager.serializeValueSpecification(
+          e.parameter,
+        ),
+      );
+      this.unsupportedQueryState.setRawLambda(
+        new RawLambda(parameters, this.unsupportedQueryState.rawLambda?.body),
+      );
+      return guaranteeNonNullable(this.unsupportedQueryState.rawLambda);
+    }
+    return buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        keepSourceInformation: Boolean(options?.keepSourceInformation),
+      }),
+      this.graphManagerState,
+    );
+  }
+
+  initializeWithQuery(rawLambda: RawLambda): void {
     try {
       this.rebuildWithQuery(rawLambda);
       if (this.parametersState.parameterStates.length > 0) {
@@ -280,32 +300,7 @@ export abstract class QueryBuilderState {
         )
         .filter(filterByType(VariableExpression));
       processParameters(parameters, this);
-      if (options?.notifyError) {
-        this.applicationStore.notifyError(
-          `Can't initialize query builder: ${error.message}`,
-        );
-      }
     }
-  }
-
-  buildQuery(options?: { keepSourceInformation: boolean }): RawLambda {
-    if (!this.isQuerySupported) {
-      const parameters = this.parametersState.parameterStates.map((e) =>
-        this.graphManagerState.graphManager.serializeValueSpecification(
-          e.parameter,
-        ),
-      );
-      this.unsupportedQueryState.setRawLambda(
-        new RawLambda(parameters, this.unsupportedQueryState.rawLambda?.body),
-      );
-      return guaranteeNonNullable(this.unsupportedQueryState.rawLambda);
-    }
-    return buildRawLambdaFromLambdaFunction(
-      buildLambdaFunction(this, {
-        keepSourceInformation: Boolean(options?.keepSourceInformation),
-      }),
-      this.graphManagerState,
-    );
   }
 
   /**

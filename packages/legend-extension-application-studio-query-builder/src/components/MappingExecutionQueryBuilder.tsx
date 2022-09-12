@@ -127,7 +127,9 @@ export const MappingExecutionQueryBuilder = observer(
                 queryBuilderExtension.editorStore.applicationStore,
                 queryBuilderExtension.editorStore.graphManagerState,
               );
-              queryBuilderState.initialize(executionState.queryState.query);
+              queryBuilderState.initializeWithQuery(
+                executionState.queryState.query,
+              );
               queryBuilderState.changeDetectionState.setQueryHashCode(
                 hashObject(executionState.queryState.query),
               );

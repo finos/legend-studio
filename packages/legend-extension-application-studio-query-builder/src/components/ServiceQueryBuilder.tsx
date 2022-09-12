@@ -66,7 +66,9 @@ export const ServiceQueryBuilder = observer(
                       ? selectedExecutionState.executionContext.key
                       : undefined,
                   );
-                  queryBuilderState.initialize(executionState.execution.func);
+                  queryBuilderState.initializeWithQuery(
+                    executionState.execution.func,
+                  );
                   queryBuilderState.changeDetectionState.setQueryHashCode(
                     hashObject(executionState.execution.func),
                   );

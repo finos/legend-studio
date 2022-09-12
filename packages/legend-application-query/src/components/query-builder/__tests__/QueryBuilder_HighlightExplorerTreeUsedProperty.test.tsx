@@ -170,7 +170,7 @@ describe(integrationTest('Build property mapping data'), () => {
         getByText(setupPanel, extractElementNameFromPath(runtimePath)),
       );
       await act(async () => {
-        queryBuilderState.initialize(
+        queryBuilderState.initializeWithQuery(
           create_RawLambda(rawLambda.parameters, rawLambda.body),
         );
       });

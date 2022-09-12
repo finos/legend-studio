@@ -117,7 +117,7 @@ test(
 
     // simpleProjection
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__simpleProjection.parameters,
           TEST_DATA__simpleProjection.body,
@@ -167,7 +167,7 @@ test(
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__projectionWithChainedProperty.parameters,
           TEST_DATA__projectionWithChainedProperty.body,
@@ -214,7 +214,7 @@ test(
     // result set modifiers
     const RESULT_LIMIT = 500;
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__projectionWithResultSetModifiers.parameters,
           TEST_DATA__projectionWithResultSetModifiers.body,
@@ -292,7 +292,7 @@ test(
     // filter with simple condition
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__getAllWithOneConditionFilter.parameters,
           TEST_DATA__getAllWithOneConditionFilter.body,
@@ -322,7 +322,7 @@ test(
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__getAllWithGroupedFilter.parameters,
           TEST_DATA__getAllWithGroupedFilter.body,
@@ -356,7 +356,7 @@ test(
     });
     await waitFor(() => renderResult.getByText('Add a filter condition'));
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__projectWithDerivedProperty.parameters,
           TEST_DATA__projectWithDerivedProperty.body,
@@ -440,7 +440,7 @@ test(
 
     // simpleProjection with subType
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel.parameters,
           TEST_DATA__simpleProjectionWithSubtypeFromSubtypeModel.body,
@@ -493,7 +493,7 @@ test(
 
     // simple graph fetch
     act(() => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__simpleGraphFetch.parameters,
           TEST_DATA__simpleGraphFetch.body,
@@ -503,7 +503,7 @@ test(
 
     // switch to complex graph fetch
     await act(async () => {
-      queryBuilderState.initialize(
+      queryBuilderState.initializeWithQuery(
         create_RawLambda(
           TEST_DATA__complexGraphFetch.parameters,
           TEST_DATA__complexGraphFetch.body,

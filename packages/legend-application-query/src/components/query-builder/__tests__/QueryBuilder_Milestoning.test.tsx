@@ -255,7 +255,7 @@ describe(integrationTest('Query builder milestoning'), () => {
       });
 
       await act(async () => {
-        queryBuilderState.initialize(
+        queryBuilderState.initializeWithQuery(
           create_RawLambda(rawLambda.parameters, rawLambda.body),
         );
       });
