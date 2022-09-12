@@ -27,14 +27,16 @@ export const PanelHeaderActionItem: React.FC<{
 }> = (props) => {
   const { className, onClick, children, disabled, tip } = props;
   return (
-    <button
-      className={clsx('panel__header__action', className)}
-      disabled={Boolean(disabled)}
-      onClick={onClick}
-      title={tip}
-    >
-      {children}
-    </button>
+    <div className="panel__header__actions">
+      <button
+        className={clsx('panel__header__action', className)}
+        disabled={Boolean(disabled)}
+        onClick={onClick}
+        title={tip}
+      >
+        {children}
+      </button>
+    </div>
   );
 };
 
@@ -49,7 +51,7 @@ export const PanelHeader: React.FC<{
       <div className="panel__header__title">
         <div className="panel__header__title__label">{title.toLowerCase()}</div>
       </div>
-      {children && <div className="panel__header__actions">{children}</div>}
+      {children}
     </div>
   );
 };
@@ -92,15 +94,7 @@ export const PanelForm: React.FC<{
   return <div className="panel__content__form">{children}</div>;
 };
 
-export const PanelFormRow: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children } = props;
-  return <div className="panel__content__form__row">{children}</div>;
-};
-
-const PanelContent: React.FC<{
+export const PanelContent: React.FC<{
   children?: React.ReactNode;
 }> = (props) => {
   const { children } = props;
@@ -109,16 +103,9 @@ const PanelContent: React.FC<{
 
 export const Panel: React.FC<{
   children?: React.ReactNode;
-  headerTitle: string;
-  headerContent?: React.ReactNode | undefined;
 }> = (props) => {
-  const { children, headerTitle, headerContent } = props;
-  return (
-    <div className="panel__content__resizable">
-      <PanelHeader title={headerTitle}>{headerContent}</PanelHeader>
-      <PanelContent>{children}</PanelContent>;
-    </div>
-  );
+  const { children } = props;
+  return <div className="panel__content__resizable">{children}</div>;
 };
 
 export const PanelTextEditor = observer(

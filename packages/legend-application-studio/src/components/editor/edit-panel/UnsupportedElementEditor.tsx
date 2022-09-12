@@ -73,7 +73,7 @@ export const UnsupportedElementEditor = observer(() => {
         </div>
         <div className="panel__content unsupported-element-editor__content">
           <UnsupportedEditorPanel
-            text={`Can't display this element in form-mode`}
+            text="Can't display this element in form-mode"
             isReadOnly={isReadOnly}
           />
         </div>

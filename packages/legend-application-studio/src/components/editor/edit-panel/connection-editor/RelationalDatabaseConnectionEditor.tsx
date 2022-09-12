@@ -1138,6 +1138,7 @@ const RelationalConnectionStoreEditor = observer(
 const renderEditorPostProcessor = (
   connectionValueState: RelationalDatabaseConnectionValueState,
   postProcessor: PostProcessor,
+  isReadOnly: boolean,
   plugins: LegendStudioApplicationPlugin[],
 ): React.ReactNode => {
   if (postProcessor instanceof MapperPostProcessor) {
@@ -1146,6 +1147,7 @@ const renderEditorPostProcessor = (
         postProcessorState={
           connectionValueState.postProcessorState as MapperPostProcessorEditorState
         }
+        isReadOnly={isReadOnly}
         postProcessor={postProcessor}
       />
     );
@@ -1165,15 +1167,18 @@ const renderEditorPostProcessor = (
     return (
       <UnsupportedEditorPanel
         isReadOnly={true}
-        text={`Can't display post-processor in form mode`}
+        text="Can't display post-processor in form mode"
       ></UnsupportedEditorPanel>
     );
   }
 };
 
 const PostProcessorRelationalConnectionEditor = observer(
-  (props: { connectionValueState: RelationalDatabaseConnectionValueState }) => {
-    const { connectionValueState } = props;
+  (props: {
+    connectionValueState: RelationalDatabaseConnectionValueState;
+    isReadOnly: boolean;
+  }) => {
+    const { connectionValueState, isReadOnly } = props;
 
     const connection = connectionValueState.connection;
 
@@ -1268,6 +1273,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                 <ResizablePanel size={150} minSize={70}>
                   <PanelHeader title="post-processor">
                     <DropdownMenu
+                      disabled={isReadOnly}
                       content={postProcessorOptions.map((postProcessorType) => (
                         <MenuContentItem
                           key={postProcessorType.value}
@@ -1288,7 +1294,10 @@ const PostProcessorRelationalConnectionEditor = observer(
                         elevation: 7,
                       }}
                     >
-                      <PanelHeaderActionItem tip="Create Post-Processor">
+                      <PanelHeaderActionItem
+                        disabled={isReadOnly}
+                        tip="Create Post-Processor"
+                      >
                         <PlusIcon />
                       </PanelHeaderActionItem>
                     </DropdownMenu>
@@ -1298,7 +1307,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                     {postProcessors.map((postProcessor, idx) => (
                       <ContextMenu
                         key={postProcessor._UUID}
-                        disabled={false}
+                        disabled={isReadOnly}
                         content={
                           <MenuContent>
                             <MenuContentItem
@@ -1330,13 +1339,14 @@ const PostProcessorRelationalConnectionEditor = observer(
                     renderEditorPostProcessor(
                       connectionValueState,
                       postProcessorState.postProcessor,
+                      true,
                       plugins,
                     )}
                   {!postProcessorState && (
                     <BlankPanelContent>
                       {!postProcessors.length
-                        ? 'Add a post-processor to view properties'
-                        : 'Select a post-processor to view properties'}
+                        ? 'Addddd a post-processor'
+                        : 'Select a post-processor to view'}
                     </BlankPanelContent>
                   )}
                 </ResizablePanel>
@@ -1713,6 +1723,7 @@ export const RelationalDatabaseConnectionEditor = observer(
           {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.POST_PROCESSORS && (
             <PostProcessorRelationalConnectionEditor
               connectionValueState={connectionValueState}
+              isReadOnly={isReadOnly}
             />
           )}
         </div>

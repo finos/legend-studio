@@ -150,7 +150,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             (plugin) =>
               (
                 plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-              ).getextraPostProcessorStates?.(postProcessor, this) ?? [],
+              ).getExtraPostProcessorStateCreators?.(postProcessor, this) ?? [],
           );
         for (const postProcessorStates of extraPostProcessorStates) {
           const postProcessorState = postProcessorStates(postProcessor, this);

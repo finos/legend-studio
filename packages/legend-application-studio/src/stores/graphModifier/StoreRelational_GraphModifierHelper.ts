@@ -463,25 +463,21 @@ export const mapperPostProcessor_addMapper = action(
   },
 );
 
-export const mapperPostProcessor_mapper_setFrom = action(
-  (mapper: Mapper, val: string): void => {
-    mapper.from = val;
-  },
-);
+export const mapper_setFrom = action((mapper: Mapper, val: string): void => {
+  mapper.from = val;
+});
 
-export const mapperPostProcessor_mapper_setTo = action(
-  (mapper: Mapper, val: string): void => {
-    mapper.to = val;
-  },
-);
+export const mapper_setTo = action((mapper: Mapper, val: string): void => {
+  mapper.to = val;
+});
 
-export const mapperPostProcessor_schemaNameMapper_setTo = action(
+export const schemaNameMapper_setTo = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.to = val;
   },
 );
 
-export const mapperPostProcessor_schemaNameMapper_setFrom = action(
+export const schemaNameMapper_setFrom = action(
   (schemaNameMapper: SchemaNameMapper, val: string): void => {
     schemaNameMapper.from = val;
   },

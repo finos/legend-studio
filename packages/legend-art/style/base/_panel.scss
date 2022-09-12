@@ -38,7 +38,6 @@
   &__header__actions {
     display: flex;
     height: 100%;
-    align-items: center;
   }
 
   &__header__action {
@@ -185,7 +184,7 @@
   }
 }
 
-.panel__list {
+.panel__list-selector {
   &__item {
     display: flex;
     align-items: center;
@@ -224,14 +223,6 @@
 
   & > div:last-child {
     margin-bottom: 0;
-  }
-
-  &__row {
-    width: 100%;
-    margin: 2rem 0;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-around;
   }
 
   &__actions {
