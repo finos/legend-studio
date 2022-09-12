@@ -25,29 +25,26 @@ export const PanelListSelectorItem: React.FC<{
   return (
     <div
       className={clsx(
-        'panel__explorer__item',
+        'panel__list__item',
         {
           '': !isSelected,
         },
         {
-          'panel__explorer__item--selected': isSelected,
+          'panel__list__item--selected': isSelected,
         },
         {
-          'panel__explorer__item--with-validation--error': Boolean(
+          'panel__list__item--with-validation--error': Boolean(
             validationErrorMessage,
           ),
         },
         {
-          'panel__explorer__item--selected--with-validation--error':
+          'panel__list__item--selected--with-validation--error':
             Boolean(validationErrorMessage) && isSelected,
         },
       )}
       onClick={onSelect}
     >
-      <div
-        className="panel__explorer__item__label"
-        title={validationErrorMessage}
-      >
+      <div className="panel__list__item__label" title={validationErrorMessage}>
         {title}
       </div>
     </div>
