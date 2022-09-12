@@ -455,11 +455,8 @@ export const relationalDatabaseConnection_deletePostProcessor = action(
 );
 
 export const mapperPostProcessor_addMapper = action(
-  (postProcessor: PostProcessor, mapper: Mapper): void => {
-    addUniqueEntry(
-      (postProcessor as MapperPostProcessor).mappers,
-      observe_Mapper(mapper),
-    );
+  (mapperPostProcessor: MapperPostProcessor, mapper: Mapper): void => {
+    addUniqueEntry(mapperPostProcessor.mappers, observe_Mapper(mapper));
   },
 );
 

@@ -105,7 +105,7 @@ export const Panel: React.FC<{
   children?: React.ReactNode;
 }> = (props) => {
   const { children } = props;
-  return <div className="panel__content__resizable">{children}</div>;
+  return <div className="panel">{children}</div>;
 };
 
 export const PanelTextEditor = observer(

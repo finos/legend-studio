@@ -144,7 +144,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
           this,
         );
       } else {
-        const extraPostProcessorStates = this.editorStore.pluginManager
+        const extraPostProcessorStateCreators = this.editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
             (plugin) =>
@@ -152,8 +152,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
                 plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
               ).getExtraPostProcessorStateCreators?.(postProcessor, this) ?? [],
           );
-        for (const postProcessorStates of extraPostProcessorStates) {
-          const postProcessorState = postProcessorStates(postProcessor, this);
+        for (const creator of extraPostProcessorStateCreators) {
+          const postProcessorState = creator(postProcessor, this);
           if (postProcessorState) {
             this.postProcessorState = postProcessorState;
           }

@@ -121,11 +121,6 @@
     overflow-y: auto;
   }
 
-  &__content__resizable {
-    height: 100%;
-    width: 100%;
-  }
-
   &__content__blank {
     @include flexCenter;
 

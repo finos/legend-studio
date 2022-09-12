@@ -54,7 +54,7 @@ export type AuthenticationStrategyEditorRenderer = (
   isReadOnly: boolean,
 ) => React.ReactNode | undefined;
 
-// connection post-processor specification
+// connection post-processor
 
 export type PostProcessorTypeGetter = (
   metamodel: PostProcessor,
@@ -124,18 +124,18 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   // --------------------- relational database connection post-processor ------------------
 
   /**
-   * Get the list of the supported type specifiers for post-processors
+   * Get the list of the supported type for post-processors.
    *
    */
   getExtraPostProcessorClassifiers?(): string[];
 
   /**
-   * Get the list of classifiers for a post-processor specification.
+   * Get the list of classifiers for a post-processor.
    */
   getExtraPostProcessorClassifierGetters?(): PostProcessorTypeGetter[];
 
   /**
-   * Get the list of creators for post-processor specification given the type specifier.
+   * Get the list of creators for post-processor given the type specifier.
    */
   getExtraPostProcessorCreators?(
     connectionValueState: RelationalDatabaseConnectionValueState,
@@ -143,7 +143,7 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   ): PostProcessorCreator[];
 
   /**
-   * Get the list of state creators for a post-processor specification.
+   * Get the list of state creators for a post-processor.
    */
   getExtraPostProcessorStateCreators?(
     metamodel: PostProcessor | undefined,
@@ -151,7 +151,7 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   ): PostProcessorStateCreator[];
 
   /**
-   * Get the list of renderers for the editor for a post-processor specification.
+   * Get the list of renderers for the editor for a post-processor.
    */
   getExtraPostProcessorEditorRenderers?(): PostProcessorEditorRenderer[];
 }

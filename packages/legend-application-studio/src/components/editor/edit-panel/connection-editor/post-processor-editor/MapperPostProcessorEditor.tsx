@@ -35,7 +35,6 @@ import {
 } from '@finos/legend-art';
 import {
   type Mapper,
-  type PostProcessor,
   MapperPostProcessor,
   TableNameMapper,
   SchemaNameMapper,
@@ -53,7 +52,7 @@ import {
 
 export const MapperPostProcessorEditor = observer(
   (props: {
-    postProcessor: PostProcessor;
+    postProcessor: MapperPostProcessor;
     isReadOnly: boolean;
     postProcessorState: MapperPostProcessorEditorState;
   }) => {
@@ -74,9 +73,7 @@ export const MapperPostProcessorEditor = observer(
         postProcessor,
         new SchemaNameMapper('', ''),
       );
-      postProcessorState.setSelectedMapper(
-        (postProcessor as MapperPostProcessor).mappers.at(-1),
-      );
+      postProcessorState.setSelectedMapper(postProcessor.mappers.at(-1));
     };
 
     const addTableMapper = (): void => {
@@ -84,9 +81,7 @@ export const MapperPostProcessorEditor = observer(
         postProcessor,
         new TableNameMapper('', '', new SchemaNameMapper('', '')),
       );
-      postProcessorState.setSelectedMapper(
-        (postProcessor as MapperPostProcessor).mappers.at(-1),
-      );
+      postProcessorState.setSelectedMapper(postProcessor.mappers.at(-1));
     };
 
     const deleteMapper =
@@ -104,7 +99,7 @@ export const MapperPostProcessorEditor = observer(
         }
       };
 
-    const mappers = (postProcessor as MapperPostProcessor).mappers;
+    const mappers = postProcessor.mappers;
 
     const isSchemaMapperDuplicated = (val: Mapper): boolean =>
       mappers.filter(
