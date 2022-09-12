@@ -26,7 +26,7 @@ import type { PostProcessorEditorState } from './editor-state/element-editor-sta
 
 // connection datasource specification
 
-export type DatasourceSpecificationTypeGetter = (
+export type DatasourceSpecificationClassifier = (
   metamodel: DatasourceSpecification,
 ) => string | undefined;
 
@@ -41,7 +41,7 @@ export type DatasourceSpecificationEditorRenderer = (
 
 // connection authentication strategy
 
-export type AuthenticationStrategyTypeGetter = (
+export type AuthenticationStrategyClassifier = (
   metamodel: AuthenticationStrategy,
 ) => string | undefined;
 
@@ -90,7 +90,7 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   /**
    * Get the list of classifiers for a relational database datasource specification.
    */
-  getExtraDatasourceSpecificationTypeGetters?(): DatasourceSpecificationTypeGetter[];
+  getExtraDatasourceSpecificationClassifiers?(): DatasourceSpecificationClassifier[];
 
   /**
    * Get the list of creators for relational database datasource specification given the type specifier.
@@ -113,7 +113,7 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   /**
    * Get the list of classifiers for a relational database authentication strategy.
    */
-  getExtraAuthenticationStrategyTypeGetters?(): AuthenticationStrategyTypeGetter[];
+  getExtraAuthenticationStrategyClassifiers?(): AuthenticationStrategyClassifier[];
 
   /**
    * Get the list of creators for relational database authentication strategy given the type specifier.

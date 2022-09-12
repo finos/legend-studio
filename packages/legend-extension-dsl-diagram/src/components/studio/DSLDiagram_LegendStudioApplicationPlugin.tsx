@@ -21,8 +21,8 @@ import {
   type EditorStore,
   type ElementEditorState,
   type ElementEditorStateCreator,
-  type ElementTypeGetter,
-  type ElementProjectExplorerDnDTypeGetter,
+  type ElementClassifier,
+  type DragElementClassifier,
   type ElementIconGetter,
   type ElementEditorRenderer,
   type DSL_LegendStudioApplicationPlugin_Extension,
@@ -92,7 +92,7 @@ export class DSLDiagram_LegendStudioApplicationPlugin
     return [DIAGRAM_ELEMENT_TYPE];
   }
 
-  getExtraElementTypeGetters(): ElementTypeGetter[] {
+  getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Diagram) {
@@ -158,7 +158,7 @@ export class DSLDiagram_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Diagram) {
@@ -169,7 +169,7 @@ export class DSLDiagram_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 

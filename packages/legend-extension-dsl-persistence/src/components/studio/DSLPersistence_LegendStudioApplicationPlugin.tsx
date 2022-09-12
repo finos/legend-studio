@@ -26,8 +26,8 @@ import {
   type ElementEditorState,
   type ElementEditorStateCreator,
   type ElementIconGetter,
-  type ElementProjectExplorerDnDTypeGetter,
-  type ElementTypeGetter,
+  type DragElementClassifier,
+  type ElementClassifier,
   type NewElementFromStateCreator,
   type NewElementState,
   type PureGrammarParserElementSnippetSuggestionsGetter,
@@ -78,7 +78,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
     return [PERSISTENCE_ELEMENT_TYPE, PERSISTENCE_CONTEXT_ELEMENT_TYPE];
   }
 
-  getExtraElementTypeGetters(): ElementTypeGetter[] {
+  getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {
@@ -145,7 +145,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Persistence) {

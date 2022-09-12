@@ -21,8 +21,8 @@ import {
   type EditorStore,
   type ElementEditorState,
   type ElementEditorStateCreator,
-  type ElementTypeGetter,
-  type ElementProjectExplorerDnDTypeGetter,
+  type ElementClassifier,
+  type DragElementClassifier,
   type ElementIconGetter,
   type ElementEditorRenderer,
   type DSL_LegendStudioApplicationPlugin_Extension,
@@ -79,7 +79,7 @@ export class DSLText_LegendStudioApplicationPlugin
     return [TEXT_ELEMENT_TYPE];
   }
 
-  getExtraElementTypeGetters(): ElementTypeGetter[] {
+  getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Text) {
@@ -145,7 +145,7 @@ export class DSLText_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof Text) {
@@ -156,7 +156,7 @@ export class DSLText_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraPureGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 
