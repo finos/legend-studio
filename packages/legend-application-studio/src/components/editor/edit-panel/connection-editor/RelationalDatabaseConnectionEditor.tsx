@@ -1343,13 +1343,13 @@ const PostProcessorRelationalConnectionEditor = observer(
                     renderEditorPostProcessor(
                       connectionValueState,
                       postProcessorState.postProcessor,
-                      true,
+                      isReadOnly,
                       plugins,
                     )}
                   {!postProcessorState && (
                     <BlankPanelContent>
                       {!postProcessors.length
-                        ? 'Addddd a post-processor'
+                        ? 'Add a post-processor'
                         : 'Select a post-processor to view'}
                     </BlankPanelContent>
                   )}
