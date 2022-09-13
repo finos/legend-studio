@@ -547,7 +547,7 @@ const getParserElementSnippetSuggestions = (
         },
         {
           text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
-          description: 'post processor with relational database connection',
+          description: 'relational database connection with post-processor',
           insertText: POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
         },
         // TODO: extension mehcanism for connection and relational database connection
