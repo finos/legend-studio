@@ -1,5 +1,5 @@
 ---
-@finos/legend-application-studio
+'@finos/legend-application-studio': minor
 ---
 
 Add text snippet for mapper post-processor.
