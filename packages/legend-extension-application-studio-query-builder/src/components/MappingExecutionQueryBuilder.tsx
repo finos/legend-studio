@@ -39,7 +39,7 @@ import {
 import {
   QueryBuilderClassSelector,
   type QueryBuilderState,
-} from '@finos/legend-application-query';
+} from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../stores/MappingExecutionQueryBuilderState.js';
 
 /**

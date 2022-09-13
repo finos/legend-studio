@@ -15,7 +15,7 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
-import { QueryBuilderState } from '@finos/legend-application-query';
+import { QueryBuilderState } from '@finos/legend-query-builder';
 import type { GraphManagerState, Mapping } from '@finos/legend-graph';
 import { renderMappingExecutionQueryBuilderSetupPanelContent } from '../components/MappingExecutionQueryBuilder.js';
 

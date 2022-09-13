@@ -47,12 +47,14 @@ import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditor
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { ExistingQueryEditor } from './QueryEditor.js';
 import { generateExistingQueryEditorRoute } from '../stores/LegendQueryRouter.js';
-import { QUERY_BUILDER_TEST_ID } from './query-builder/QueryBuilder_TestID.js';
 import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
-import type { QueryBuilderState } from '../stores/query-builder/QueryBuilderState.js';
+import {
+  type QueryBuilderState,
+  QUERY_BUILDER_TEST_ID,
+} from '@finos/legend-query-builder';
 
 export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;

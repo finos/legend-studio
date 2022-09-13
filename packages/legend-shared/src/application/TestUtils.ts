@@ -54,6 +54,7 @@ export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
  *
  * See https://mobx.js.org/configuration.html#safedescriptors-boolean
  * See https://github.com/mobxjs/mobx/issues/2752
+ * See https://github.com/mobxjs/mobx/issues/2926
  */
 export const MOBX__enableSpyOrMock = (): void => {
   configureMobx({ safeDescriptors: false });

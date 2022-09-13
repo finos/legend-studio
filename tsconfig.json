@@ -20,6 +20,7 @@
     { "path": "packages/legend-server-sdlc" },
     { "path": "packages/legend-server-depot" },
     { "path": "packages/legend-graph" },
+    { "path": "packages/legend-query-builder" },
     { "path": "packages/legend-art" },
     { "path": "packages/legend-application" },
     // studio

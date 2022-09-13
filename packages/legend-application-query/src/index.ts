@@ -18,8 +18,6 @@ export * from './application/LegendQuery.js';
 export * from './components/LegendQueryBaseStoreProvider.js';
 export * from './stores/LegendQueryBaseStore.js';
 
-export { QueryBuilder_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
-
 export {
   QueryEditorStoreContext,
   useQueryEditorStore,
@@ -43,16 +41,3 @@ export {
 } from './stores/LegendQueryBaseStore.js';
 export { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 export { LegendQueryEventService } from './stores/LegendQueryEventService.js';
-
-// query builder core
-export { QUERY_BUILDER_TEST_ID } from './components/query-builder/QueryBuilder_TestID.js';
-export { QueryBuilder } from './components/query-builder/QueryBuilder.js';
-export { QueryBuilderState } from './stores/query-builder/QueryBuilderState.js';
-
-export {
-  QueryBuilderClassSelector,
-  buildRuntimeValueOption,
-  getRuntimeOptionFormatter,
-} from './components/query-builder/QueryBuilderSideBar.js';
-export { ClassQueryBuilderState } from './stores/query-builder/workflows/ClassQueryBuilderState.js';
-export { ServiceQueryBuilderState } from './stores/query-builder/workflows/ServiceQueryBuilderState.js';

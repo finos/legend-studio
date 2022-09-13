@@ -32,7 +32,7 @@ import {
 import {
   type QueryBuilderState,
   ServiceQueryBuilderState,
-} from '@finos/legend-application-query';
+} from '@finos/legend-query-builder';
 
 export const ServiceQueryBuilder = observer(
   (props: {

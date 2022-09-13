@@ -47,12 +47,10 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
-  isSystemElement,
   QuerySearchSpecification,
   Mapping,
   type Runtime,
 } from '@finos/legend-graph';
-import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
@@ -69,12 +67,13 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
-import { MappingQueryBuilderState } from './query-builder/workflows/MappingQueryBuilderState.js';
 import {
+  type QueryBuilderState,
   type ServiceExecutionContext,
+  ClassQueryBuilderState,
+  MappingQueryBuilderState,
   ServiceQueryBuilderState,
-} from './query-builder/workflows/ServiceQueryBuilderState.js';
+} from '@finos/legend-query-builder';
 
 const QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH = 3;
 const QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT = 10;

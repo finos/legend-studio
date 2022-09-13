@@ -54,16 +54,16 @@ import {
   Service,
 } from '@finos/legend-graph';
 import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
-import {
-  type QueryBuilderState,
-  setupLegendQueryUILibrary,
-  ClassQueryBuilderState,
-} from '@finos/legend-application-query';
+import { setupLegendQueryUILibrary } from '@finos/legend-application-query';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LegendApplicationSetup } from '@finos/legend-application';
 import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
+import {
+  ClassQueryBuilderState,
+  QueryBuilderState,
+} from '@finos/legend-query-builder';
 
 const promoteQueryToService = async (
   packagePath: string,

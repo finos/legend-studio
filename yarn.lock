@@ -2053,13 +2053,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-application-query@workspace:packages/legend-application-query"
   dependencies:
-    "@ag-grid-community/client-side-row-model": 28.1.1
-    "@ag-grid-community/core": 28.1.1
-    "@ag-grid-community/react": 28.1.1
     "@finos/legend-application": "workspace:*"
     "@finos/legend-art": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
@@ -2822,6 +2820,49 @@ __metadata:
     npm-run-all: 4.1.5
     rimraf: 3.0.2
     typescript: 4.8.3
+  languageName: unknown
+  linkType: soft
+
+"@finos/legend-query-builder@workspace:*, @finos/legend-query-builder@workspace:packages/legend-query-builder":
+  version: 0.0.0-use.local
+  resolution: "@finos/legend-query-builder@workspace:packages/legend-query-builder"
+  dependencies:
+    "@ag-grid-community/client-side-row-model": 28.1.1
+    "@ag-grid-community/core": 28.1.1
+    "@ag-grid-community/react": 28.1.1
+    "@finos/legend-application": "workspace:*"
+    "@finos/legend-art": "workspace:*"
+    "@finos/legend-dev-utils": "workspace:*"
+    "@finos/legend-graph": "workspace:*"
+    "@finos/legend-shared": "workspace:*"
+    "@finos/legend-storage": "workspace:*"
+    "@jest/globals": 29.0.3
+    "@testing-library/react": 13.4.0
+    "@types/react": 18.0.19
+    "@types/react-dom": 18.0.6
+    "@types/react-router-dom": 5.3.3
+    cross-env: 7.0.3
+    date-fns: 2.29.2
+    eslint: 8.23.1
+    history: 5.3.0
+    jest: 29.0.3
+    mobx: 6.6.2
+    mobx-react-lite: 3.4.0
+    monaco-editor: 0.34.0
+    npm-run-all: 4.1.5
+    react: 18.2.0
+    react-dnd: 16.0.1
+    react-dnd-html5-backend: 16.0.1
+    react-dom: 18.2.0
+    react-hotkeys: 2.0.0
+    react-router: 5.3.3
+    react-router-dom: 5.3.3
+    rimraf: 3.0.2
+    sass: 1.54.9
+    serializr: 2.0.5
+    typescript: 4.8.3
+  peerDependencies:
+    react: ^18.0.0
   languageName: unknown
   linkType: soft
 

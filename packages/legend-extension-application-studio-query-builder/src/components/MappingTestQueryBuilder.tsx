@@ -25,7 +25,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { assertErrorThrown, hashObject } from '@finos/legend-shared';
 import { PencilIcon } from '@finos/legend-art';
 import { isStubbed_RawLambda } from '@finos/legend-graph';
-import type { QueryBuilderState } from '@finos/legend-application-query';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../stores/MappingExecutionQueryBuilderState.js';
 
 export const MappingTestQueryBuilder = observer(

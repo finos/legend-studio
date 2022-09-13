@@ -29,13 +29,13 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
-import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { getRootElement } from '@finos/legend-art';
 import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
   LegendQueryApplicationConfig,
 } from './LegendQueryApplicationConfig.js';
+import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   // Register module extensions for `ag-grid`

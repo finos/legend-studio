@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderState } from '@finos/legend-application-query';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   type EditorStore,

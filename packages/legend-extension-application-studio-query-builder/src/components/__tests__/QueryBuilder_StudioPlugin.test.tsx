@@ -32,11 +32,11 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
   FormModeCompilationOutcome,
 } from '@finos/legend-application-studio';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-application-query';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
 import { QueryBuilder_LegendStudioApplicationPreset } from '../../QueryBuilder_LegendStudioApplicationPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
+import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
 
 const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = LegendStudioPluginManager.create();

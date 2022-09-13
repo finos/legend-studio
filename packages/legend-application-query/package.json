@@ -43,12 +43,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "28.1.1",
-    "@ag-grid-community/core": "28.1.1",
-    "@ag-grid-community/react": "28.1.1",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-query-builder": "workspace:*",
     "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",

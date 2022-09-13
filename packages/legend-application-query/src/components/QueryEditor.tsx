@@ -55,7 +55,6 @@ import {
   QueryExportState,
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import { QueryBuilder } from './query-builder/QueryBuilder.js';
 import {
   type ApplicationStore,
   useApplicationStore,
@@ -72,9 +71,12 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
-import type { QueryBuilderState } from '../stores/query-builder/QueryBuilderState.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationPlugin } from '../stores/LegendQueryApplicationPlugin.js';
+import {
+  QueryBuilder,
+  type QueryBuilderState,
+} from '@finos/legend-query-builder';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {

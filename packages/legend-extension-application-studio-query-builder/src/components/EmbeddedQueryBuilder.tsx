@@ -36,7 +36,7 @@ import {
 import {
   QueryBuilder,
   type QueryBuilderState,
-} from '@finos/legend-application-query';
+} from '@finos/legend-query-builder';
 import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
 
 /**

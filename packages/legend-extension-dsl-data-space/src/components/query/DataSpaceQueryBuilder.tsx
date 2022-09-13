@@ -34,7 +34,7 @@ import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
-} from '@finos/legend-application-query';
+} from '@finos/legend-query-builder';
 import {
   type Runtime,
   getMappingCompatibleClasses,
