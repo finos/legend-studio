@@ -157,7 +157,7 @@ export const MapperPostProcessorEditor = observer(
                   >
                     <PanelHeaderActionItem
                       disabled={isReadOnly}
-                      tip="Create Mapper"
+                      title="Create Mapper"
                     >
                       <PlusIcon />
                     </PanelHeaderActionItem>

@@ -19,20 +19,20 @@ import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
 
 export const PanelHeaderActionItem: React.FC<{
-  tip: string;
+  title: string;
   className?: string;
   disabled?: boolean;
   children: React.ReactNode;
   onClick?: () => void;
 }> = (props) => {
-  const { className, onClick, children, disabled, tip } = props;
+  const { className, onClick, children, disabled, title } = props;
   return (
     <div className="panel__header__actions">
       <button
         className={clsx('panel__header__action', className)}
         disabled={Boolean(disabled)}
         onClick={onClick}
-        title={tip}
+        title={title}
       >
         {children}
       </button>
@@ -112,6 +112,7 @@ export const PanelTextEditor = observer(
   (props: {
     name: string;
     description?: string;
+    //TODO: address padding
     padding?: boolean;
     value: string | undefined;
     isReadOnly: boolean;

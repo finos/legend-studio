@@ -1241,13 +1241,10 @@ const PostProcessorRelationalConnectionEditor = observer(
               (plugin) =>
                 (
                   plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-                ).getExtraPostProcessorCreators?.(
-                  connectionValueState,
-                  observerContext,
-                ) ?? [],
+                ).getExtraPostProcessorCreators?.() ?? [],
             );
             for (const creator of extraPostProcessorCreators) {
-              creator(postProcessorType);
+              creator(postProcessorType, connectionValueState, observerContext);
             }
           }
         }
@@ -1303,7 +1300,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                       >
                         <PanelHeaderActionItem
                           disabled={isReadOnly}
-                          tip="Create Post-Processor"
+                          title="Create Post-Processor"
                         >
                           <PlusIcon />
                         </PanelHeaderActionItem>
@@ -1699,9 +1696,10 @@ export const RelationalDatabaseConnectionEditor = observer(
   }) => {
     const { connectionValueState, isReadOnly } = props;
     const selectedTab = connectionValueState.selectedTab;
-    //eslint-disable-next-line
     const changeTab =
-      <T,>(tab: T) =>
+      <T,>( // eslint-disable-line
+        tab: T,
+      ) =>
       (): void => {
         connectionValueState.setSelectedTab(
           tab as unknown as RELATIONAL_DATABASE_TAB_TYPE,

@@ -60,7 +60,11 @@ export type PostProcessorTypeGetter = (
   metamodel: PostProcessor,
 ) => string | undefined;
 
-export type PostProcessorCreator = (type: string) => PostProcessor | undefined;
+export type PostProcessorCreator = (
+  type: string,
+  connectionValueState: RelationalDatabaseConnectionValueState,
+  observerContext: ObserverContext,
+) => PostProcessor | undefined;
 
 export type PostProcessorEditorRenderer = (
   metamodel: PostProcessor,
@@ -69,7 +73,7 @@ export type PostProcessorEditorRenderer = (
 ) => React.ReactNode | undefined;
 
 export type PostProcessorStateCreator = (
-  metamodel: PostProcessor | undefined,
+  metamodel: PostProcessor,
   connectionValueState: RelationalDatabaseConnectionValueState,
 ) => PostProcessorEditorState | undefined;
 
@@ -137,18 +141,12 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
   /**
    * Get the list of creators for post-processor given the type specifier.
    */
-  getExtraPostProcessorCreators?(
-    connectionValueState: RelationalDatabaseConnectionValueState,
-    observerContext: ObserverContext,
-  ): PostProcessorCreator[];
+  getExtraPostProcessorCreators?(): PostProcessorCreator[];
 
   /**
    * Get the list of state creators for a post-processor.
    */
-  getExtraPostProcessorStateCreators?(
-    metamodel: PostProcessor | undefined,
-    connectionValueState: RelationalDatabaseConnectionValueState,
-  ): PostProcessorStateCreator[];
+  getExtraPostProcessorStateCreators?(): PostProcessorStateCreator[];
 
   /**
    * Get the list of renderers for the editor for a post-processor.

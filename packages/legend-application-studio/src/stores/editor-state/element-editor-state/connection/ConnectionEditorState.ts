@@ -121,11 +121,11 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
-      setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
-      selectPostProcessor: action,
       postProcessorState: observable,
+      setSelectedTab: action,
+      selectPostProcessor: action,
     });
 
     this.connection = connection;
@@ -137,7 +137,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
-    if (!this.postProcessorState) {
+    if (!this.postProcessorState && postProcessor) {
       if (postProcessor instanceof MapperPostProcessor) {
         this.postProcessorState = new MapperPostProcessorEditorState(
           postProcessor,
@@ -150,7 +150,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             (plugin) =>
               (
                 plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-              ).getExtraPostProcessorStateCreators?.(postProcessor, this) ?? [],
+              ).getExtraPostProcessorStateCreators?.() ?? [],
           );
         for (const creator of extraPostProcessorStateCreators) {
           const postProcessorState = creator(postProcessor, this);
