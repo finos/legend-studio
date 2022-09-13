@@ -157,6 +157,27 @@ export const RELATIONAL_DATABASE_CONNECTION_SNIPPET = `RelationalDatabaseConnect
   auth: \${5:DefaultH2 {\\}};
 }`;
 
+// ------------------------------------- Post-Processor -------------------------------------
+
+export const POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET = `RelationalDatabaseConnection \${1:model::NewConnection}
+{
+  store: \${2:model::SomeStore};
+  // example of a simple H2 connection with a mapper post processor
+  type: \${3:H2};
+  specification: \${4:LocalH2 {\\}};
+  auth: \${5:DefaultH2 {\\}};
+  // example of mapper post processor
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+      ];
+    }
+  ];
+}`;
+
 // ------------------------------------- Mapping -------------------------------------
 
 export const BLANK_MAPPING_SNIPPET = `Mapping \${1:model::NewMapping}
