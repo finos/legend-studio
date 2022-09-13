@@ -52,12 +52,18 @@ import {
   RedshiftDatasourceSpecification,
   createValidationError,
   isStubbed_PackageableElement,
+  type PostProcessor,
+  MapperPostProcessor,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
 } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import {
+  MapperPostProcessorEditorState,
+  type PostProcessorEditorState,
+} from './PostProcessorEditorState.js';
 
 export abstract class ConnectionValueState {
   editorStore: EditorStore;
@@ -74,6 +80,7 @@ export abstract class ConnectionValueState {
 export enum RELATIONAL_DATABASE_TAB_TYPE {
   GENERAL = 'GENERAL',
   STORE = 'STORE',
+  POST_PROCESSORS = 'POST-PROCESSORS',
 }
 
 export enum CORE_DATASOURCE_SPEC_TYPE {
@@ -84,6 +91,10 @@ export enum CORE_DATASOURCE_SPEC_TYPE {
   SNOWFLAKE = 'SNOWFLAKE',
   REDSHIFT = 'REDSHIFT',
   BIGQUERY = 'BIGQUERY',
+}
+
+export enum POST_PROCESSOR_TYPE {
+  MAPPER = 'MAPPER',
 }
 
 export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
@@ -102,6 +113,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   override connection: RelationalDatabaseConnection;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   databaseBuilderState: DatabaseBuilderState;
+  postProcessorState: PostProcessorEditorState | undefined;
 
   constructor(
     editorStore: EditorStore,
@@ -109,16 +121,49 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
-      setSelectedTab: action,
       databaseBuilderState: observable,
       selectedTab: observable,
+      postProcessorState: observable,
+      setSelectedTab: action,
+      selectPostProcessor: action,
     });
+
     this.connection = connection;
+
     this.databaseBuilderState = new DatabaseBuilderState(
       editorStore,
       connection,
     );
   }
+
+  selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
+    if (!this.postProcessorState && postProcessor) {
+      if (postProcessor instanceof MapperPostProcessor) {
+        this.postProcessorState = new MapperPostProcessorEditorState(
+          postProcessor,
+          this,
+        );
+      } else {
+        const extraPostProcessorStateCreators = this.editorStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              ).getExtraPostProcessorStateCreators?.() ?? [],
+          );
+        for (const creator of extraPostProcessorStateCreators) {
+          const postProcessorState = creator(postProcessor, this);
+          if (postProcessorState) {
+            this.postProcessorState = postProcessorState;
+          }
+        }
+      }
+    }
+    if (this.postProcessorState) {
+      this.postProcessorState.setPostProcessorState(postProcessor);
+    }
+  };
 
   get storeValidationResult(): ValidationIssue | undefined {
     return isStubbed_PackageableElement(this.connection.store.value)
@@ -480,6 +525,7 @@ export class PackageableConnectionEditorState extends ElementEditorState {
       editorStore,
       newElement,
     );
+
     return editorState;
   }
 }

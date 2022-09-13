@@ -42,6 +42,8 @@ import {
   type ObserverContext,
   type EnumerationMappingReference,
   type TableAlias,
+  type Mapper,
+  type PostProcessor,
   getRelationalInputType,
   observe_DatasourceSpecification,
   observe_AuthenticationStrategy,
@@ -49,8 +51,14 @@ import {
   observe_PropertyMapping,
   observe_EnumerationMappingReference,
   observe_TableAlias,
+  type SchemaNameMapper,
+  type MapperPostProcessor,
+  observe_PostProcessor,
+  observe_Mapper,
 } from '@finos/legend-graph';
+import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
+import type { RelationalDatabaseConnectionValueState } from '../editor-state/element-editor-state/connection/ConnectionEditorState.js';
 
 // --------------------------------------------- DB Connection -------------------------------------
 
@@ -419,5 +427,61 @@ export const rootRelationalSetImp_setPropertyMappings = action(
     v.propertyMappings = value.map((pm) =>
       observe_PropertyMapping(pm, observeContext),
     );
+  },
+);
+
+// --------------------------------------------- Post-Processor -------------------------------------
+
+export const relationalDatabaseConnection_addPostProcessor = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    postProcessor: PostProcessor,
+    observerContext: ObserverContext,
+  ): void => {
+    addUniqueEntry(
+      connectionValueState.connection.postProcessors,
+      observe_PostProcessor(postProcessor, observerContext),
+    );
+  },
+);
+
+export const relationalDatabaseConnection_deletePostProcessor = action(
+  (
+    connectionValueState: RelationalDatabaseConnectionValueState,
+    postProcessor: PostProcessor,
+  ): void => {
+    deleteEntry(connectionValueState.connection.postProcessors, postProcessor);
+  },
+);
+
+export const mapperPostProcessor_addMapper = action(
+  (mapperPostProcessor: MapperPostProcessor, mapper: Mapper): void => {
+    addUniqueEntry(mapperPostProcessor.mappers, observe_Mapper(mapper));
+  },
+);
+
+export const mapper_setFrom = action((mapper: Mapper, val: string): void => {
+  mapper.from = val;
+});
+
+export const mapper_setTo = action((mapper: Mapper, val: string): void => {
+  mapper.to = val;
+});
+
+export const schemaNameMapper_setTo = action(
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.to = val;
+  },
+);
+
+export const schemaNameMapper_setFrom = action(
+  (schemaNameMapper: SchemaNameMapper, val: string): void => {
+    schemaNameMapper.from = val;
+  },
+);
+
+export const mapperPostProcessor_deleteMapper = action(
+  (mapperPostProcessor: MapperPostProcessor, val: Mapper): void => {
+    deleteEntry(mapperPostProcessor.mappers, val);
   },
 );

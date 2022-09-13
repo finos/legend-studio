@@ -68,9 +68,13 @@ export {
 export * from './components/LegendStudioTestID.js';
 export * from './stores/EditorStoreTestUtils.js';
 
+export { PostProcessorEditorState } from './stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 export { MappingExecutionState } from './stores/editor-state/element-editor-state/mapping/MappingExecutionState.js';
 export { MappingTestState } from './stores/editor-state/element-editor-state/mapping/MappingTestState.js';
-export { ConnectionValueState } from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
+export {
+  ConnectionValueState,
+  RelationalDatabaseConnectionValueState,
+} from './stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 export * from './stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 export { MappingElementState } from './stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
@@ -89,7 +93,7 @@ export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStor
  */
 
 export {
-  ConnectionEditor_StringEditor,
+  ConnectionEditor_TextEditor,
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';

@@ -33,8 +33,15 @@ export {
   ColumnReference,
   ColumnExplicitReference,
 } from './graph/metamodel/pure/packageableElements/store/relational/model/ColumnReference.js';
-export { type Mapper } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
+export {
+  TableNameMapper,
+  Mapper,
+  SchemaNameMapper,
+} from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/Mapper.js';
+
 export { PostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/PostProcessor.js';
+export { MapperPostProcessor } from './graph/metamodel/pure/packageableElements/store/relational/connection/postprocessor/MapperPostProcessor.js';
+
 export { Milestoning } from './graph/metamodel/pure/packageableElements/store/relational/model/milestoning/Milestoning.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RelationalDataType.js';
 export * from './graph/metamodel/pure/packageableElements/store/relational/model/RelationalOperationElement.js';

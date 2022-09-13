@@ -363,7 +363,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             {isUnsupported && (
               <UnsupportedEditorPanel
                 isReadOnly={isReadOnly}
-                text={`Can't display class mapping source in form mode`}
+                text="Can't display class mapping source in form mode"
               ></UnsupportedEditorPanel>
             )}
             {sourceElementForSourceSelectorModal !== undefined && (
@@ -573,7 +573,7 @@ export const InstanceSetImplementationEditor = observer(
                     {isUnsupported && (
                       <UnsupportedEditorPanel
                         isReadOnly={isReadOnly}
-                        text={`Can't display class mapping in form mode`}
+                        text="Can't display class mapping in form mode"
                       ></UnsupportedEditorPanel>
                     )}
                   </div>

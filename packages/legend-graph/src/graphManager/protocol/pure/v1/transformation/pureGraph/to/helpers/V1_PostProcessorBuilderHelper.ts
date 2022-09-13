@@ -61,9 +61,9 @@ export const V1_buildPostProcessor = (
       ).V1_getExtraConnectionPostProcessorBuilders?.() ?? [],
   );
   for (const builder of extraPostProcessorBuilders) {
-    const postprocessor = builder(protocol, context);
-    if (postprocessor) {
-      return postprocessor;
+    const postProcessor = builder(protocol, context);
+    if (postProcessor) {
+      return postProcessor;
     }
   }
   throw new UnsupportedOperationError(
