@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 15.2.0
+
+### Minor Changes
+
+- [#1434](https://github.com/finos/legend-studio/pull/1434) [`138d9989`](https://github.com/finos/legend-studio/commit/138d9989b59ae3e816e19a149f842f24754ec9d9) ([@xannem](https://github.com/xannem)) - Add form editor for post-processor ([#945](https://github.com/finos/legend-studio/issues/945)).
+
 ## 15.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 3.1.0
+
+### Minor Changes
+
+- [#1434](https://github.com/finos/legend-studio/pull/1434) [`138d9989`](https://github.com/finos/legend-studio/commit/138d9989b59ae3e816e19a149f842f24754ec9d9) ([@xannem](https://github.com/xannem)) - Add basic `Panel` component.
+
 ## 3.0.4
 
 ## 3.0.3
