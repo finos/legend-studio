@@ -247,6 +247,47 @@
     }
   }
 
+  // ---------------------------- Query Loader -------------------------------
+
+  .query-editor {
+    &__query-loader {
+      &__filter-section {
+        &__section__toggler__btn {
+          svg {
+            color: var(--color-legacy-light-blue-100);
+          }
+        }
+
+        &__section__toggler__prompt {
+          color: var(--color-legacy-dark-grey-200);
+        }
+      }
+
+      &__search-section {
+        border-bottom: 0.1rem solid var(--color-legacy-light-grey-200);
+
+        &__input {
+          border: 0.1rem solid var(--color-legacy-light-grey-200);
+        }
+      }
+
+      &__body {
+        .table {
+          color: var(--color-legacy-dark-grey-200);
+        }
+
+        &__table__row:hover {
+          color: var(--color-legacy-light-blue-100);
+          background-color: var(--color-legacy-light-grey-200);
+        }
+
+        &__table__row--selected {
+          background-color: var(--color-legacy-light-grey-200);
+        }
+      }
+    }
+  }
+
   // ---------------------------- Property Search -------------------------------
 
   .query-builder-property-search-panel {
