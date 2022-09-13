@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 6.0.0
+
+### Major Changes
+
+- [#1457](https://github.com/finos/legend-studio/pull/1457) [`ddc2a034`](https://github.com/finos/legend-studio/commit/ddc2a034d8fe25d1eaf52058353d644f29c3da23) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update route patterns for query editor modes: `/query/create/...` -> `/query/create/manual/...`, `/query/service/...` -> `/query/create/create-from-service`.
+
 ## 5.2.8
 
 ### Patch Changes

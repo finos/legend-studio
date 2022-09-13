@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 6.1.12
+
+### Patch Changes
+
+- [#1457](https://github.com/finos/legend-studio/pull/1457) [`ddc2a034`](https://github.com/finos/legend-studio/commit/ddc2a034d8fe25d1eaf52058353d644f29c3da23) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Update route patterns for query editor: `/query/dataspace/...` -> `/query/create-from-dataspace/...`
+
 ## 6.1.11
 
 ## 6.1.10
