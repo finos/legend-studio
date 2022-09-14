@@ -166,7 +166,7 @@ export const POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET = `Relational
   type: \${3:H2};
   specification: \${4:LocalH2 {\\}};
   auth: \${5:DefaultH2 {\\}};
-  // example of mapper post processor
+  // example of mappeer post processor
   postProcessors:
   [
     mapper

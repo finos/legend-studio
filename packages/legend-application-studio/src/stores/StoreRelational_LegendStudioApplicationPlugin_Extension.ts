@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
+import type {
+  DSL_LegendStudioApplicationPlugin_Extension,
+  ElementEmbeddedContentSnippetSuggestion,
+} from './LegendStudioApplicationPlugin.js';
 import type {
   DatasourceSpecification,
   AuthenticationStrategy,
@@ -23,6 +26,9 @@ import type {
 } from '@finos/legend-graph';
 import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { PostProcessorEditorState } from './editor-state/element-editor-state/connection/PostProcessorEditorState.js';
+
+export type EmbeddedPostProcessorSnippetSuggestion =
+  ElementEmbeddedContentSnippetSuggestion;
 
 // connection datasource specification
 
@@ -147,6 +153,11 @@ export interface StoreRelational_LegendStudioApplicationPlugin_Extension
    * Get the list of state creators for a post-processor.
    */
   getExtraPostProcessorStateCreators?(): PostProcessorStateCreator[];
+
+  /**
+   * Get the list of Pure grammar suggestion snippet getters for post-processors.
+   */
+  getExtraPostProcessorSnippetSuggestions?(): EmbeddedPostProcessorSnippetSuggestion[];
 
   /**
    * Get the list of renderers for the editor for a post-processor.
