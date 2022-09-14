@@ -16,9 +16,6 @@
     {
       "path": "packages/legend-application-studio-bootstrap/tsconfig.build.json"
     },
-    {
-      "path": "packages/legend-extension-application-studio-management-toolkit/tsconfig.build.json"
-    },
     // query
     { "path": "packages/legend-application-query/tsconfig.build.json" },
     {

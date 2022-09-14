@@ -13,7 +13,6 @@
 '@finos/legend-application-taxonomy-deployment': patch
 '@finos/legend-art': patch
 '@finos/legend-dev-utils': patch
-'@finos/legend-extension-application-studio-management-toolkit': patch
 '@finos/legend-extension-dsl-data-space': patch
 '@finos/legend-extension-dsl-diagram': patch
 '@finos/legend-extension-dsl-mastery': patch

@@ -27,9 +27,6 @@
     { "path": "packages/legend-application-studio" },
     { "path": "packages/legend-application-studio-bootstrap" },
     { "path": "packages/legend-application-studio-deployment" },
-    {
-      "path": "packages/legend-extension-application-studio-management-toolkit"
-    },
     // query
     { "path": "packages/legend-application-query" },
     { "path": "packages/legend-application-query-bootstrap" },
