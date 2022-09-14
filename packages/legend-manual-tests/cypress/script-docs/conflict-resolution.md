@@ -69,7 +69,13 @@ Class model::Person
 ```
 Class model::Person
 {
+<<<<<<< Your Change
+  firstName: String[1];
+||||||| BASE
+  name: String[1];
+=======
   fullName: String[1];
+>>>>>>> Their Change
 }
 ```
 
