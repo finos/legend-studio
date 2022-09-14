@@ -43,8 +43,8 @@ import {
   type ElementEditorRenderer,
   type ElementEditorStateCreator,
   type ElementIconGetter,
-  type ElementProjectExplorerDnDTypeGetter,
-  type ElementTypeGetter,
+  type DragElementClassifier,
+  type ElementClassifier,
   type NewElementDriverCreator,
   type NewElementDriverEditorRenderer,
   type NewElementFromStateCreator,
@@ -120,7 +120,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
     return [SCHEMA_SET_ELEMENT_TYPE, BINDING_ELEMENT_TYPE];
   }
 
-  getExtraElementTypeGetters(): ElementTypeGetter[] {
+  getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof SchemaSet) {
@@ -239,7 +239,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof SchemaSet) {
@@ -251,7 +251,7 @@ export class DSLExternalFormat_LegendStudioApplicationPlugin
       },
     ];
   }
-  getExtraPureGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [
       SCHEMA_SET_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       BINDING_ELEMENT_PROJECT_EXPLORER_DND_TYPE,

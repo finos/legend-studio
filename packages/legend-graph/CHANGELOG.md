@@ -2,10 +2,6 @@
 
 ## 14.1.0
 
-### Minor Changes
-
-- [#1434](https://github.com/finos/legend-studio/pull/1434) [`138d9989`](https://github.com/finos/legend-studio/commit/138d9989b59ae3e816e19a149f842f24754ec9d9) ([@xannem](https://github.com/xannem)) - Add form editor for post-processor ([#945](https://github.com/finos/legend-studio/issues/945)).
-
 ## 14.0.6
 
 ## 14.0.5
@@ -402,10 +398,6 @@
 ### Major Changes
 
 - [#755](https://github.com/finos/legend-studio/pull/755) [`61821cd6`](https://github.com/finos/legend-studio/commit/61821cd62c3b8b1a16124a092038ab963311de17) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `CORE_ELEMENT_PATH` to `CORE_PURE_PATH`.
-
-### Minor Changes
-
-- [#740](https://github.com/finos/legend-studio/pull/740) [`947e10e4`](https://github.com/finos/legend-studio/commit/947e10e4fabb0a18c31222aa76166c04763f085d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve QueryBuilder_PureProtocolProcessorPlugin to handle PropertyExpression type inference
 
 ### Patch Changes
 

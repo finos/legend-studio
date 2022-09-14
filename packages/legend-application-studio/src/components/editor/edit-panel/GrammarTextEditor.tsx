@@ -822,7 +822,7 @@ export const GrammarTextEditor = observer(() => {
       (plugin) =>
         (
           plugin as DSL_LegendStudioApplicationPlugin_Extension
-        ).getExtraPureGrammarTextEditorDnDTypes?.() ?? [],
+        ).getExtraPureGrammarTextEditorDragElementTypes?.() ?? [],
     );
   const handleDrop = useCallback(
     (item: ElementDragSource): void => {

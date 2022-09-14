@@ -205,21 +205,22 @@ const testDependencyElements = async (
   editorStore.projectConfigurationEditorState.setProjectConfiguration(
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
-  // mock depot responses
+
   jest
     .spyOn(
       guaranteeNonNullable(editorStore.depotServerClient),
       'collectDependencyEntities',
     )
-    .mockResolvedValue(dependencyEntities);
+    .mockReturnValue(Promise.resolve(dependencyEntities));
   if (projectsData) {
     jest
       .spyOn(
         guaranteeNonNullable(editorStore.depotServerClient),
         'getProjectById',
       )
-      .mockResolvedValue(projectsData);
+      .mockReturnValue(Promise.resolve(projectsData));
   }
+
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
   const dependencyEntitiesIndex = await flowResult(

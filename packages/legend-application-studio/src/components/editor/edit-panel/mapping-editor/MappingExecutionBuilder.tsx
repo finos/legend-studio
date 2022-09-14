@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { flowResult } from 'mobx';
 import {
   Dialog,
@@ -38,6 +38,7 @@ import {
   RefreshIcon,
   RobotIcon,
   PanelDropZone,
+  PencilIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -52,7 +53,12 @@ import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtil.js';
-import { guaranteeType, uniq } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeType,
+  hashObject,
+  uniq,
+} from '@finos/legend-shared';
 import {
   type MappingExecutionState,
   MappingExecutionEmptyInputDataState,
@@ -78,13 +84,14 @@ import {
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { objectInputData_setData } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
 import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -179,17 +186,76 @@ const MappingExecutionQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditorActions = editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
-          ).getExtraMappingExecutionQueryEditorActionConfigurations?.() ?? [],
-      )
-      .map((config) => (
-        <Fragment key={config.key}>{config.renderer(executionState)}</Fragment>
-      ));
+    // actions
+    const editWithQueryBuilder = applicationStore.guardUnhandledError(
+      async () => {
+        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
+                executionState.mappingEditorState.mapping,
+                embeddedQueryBuilderState.editorStore.applicationStore,
+                embeddedQueryBuilderState.editorStore.graphManagerState,
+              );
+              queryBuilderState.initializeWithQuery(
+                executionState.queryState.query,
+              );
+              queryBuilderState.changeDetectionState.setQueryHashCode(
+                hashObject(executionState.queryState.query),
+              );
+              queryBuilderState.changeDetectionState.setIsEnabled(true);
+              return queryBuilderState;
+            },
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async (): Promise<void> => {
+                      try {
+                        const rawLambda = queryBuilderState.buildQuery();
+                        await flowResult(
+                          executionState.queryState.updateLamba(rawLambda),
+                        );
+                        applicationStore.notifySuccess(
+                          `Mapping execution query is updated`,
+                        );
+                        queryBuilderState.changeDetectionState.setQueryHashCode(
+                          hashObject(rawLambda),
+                        );
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notifyError(
+                          `Can't save query: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              },
+            ],
+            disableCompile: isStubbed_RawLambda(
+              executionState.queryState.query,
+            ),
+          }),
+        );
+      },
+    );
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -309,7 +375,14 @@ const MappingExecutionQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            {extraQueryEditorActions}
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={editWithQueryBuilder}
+              title="Edit query..."
+            >
+              <PencilIcon />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}

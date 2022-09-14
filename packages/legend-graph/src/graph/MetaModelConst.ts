@@ -82,7 +82,7 @@ export const AUTO_IMPORTS = [
   // 'meta::pure::metamodel::function::property',
   // 'meta::pure::metamodel::extension',
   // 'meta::pure::metamodel::import',
-  // 'meta::pure::functions::date',
+  'meta::pure::functions::date',
   // 'meta::pure::functions::string',
   // 'meta::pure::functions::collection',
   // 'meta::pure::functions::meta',

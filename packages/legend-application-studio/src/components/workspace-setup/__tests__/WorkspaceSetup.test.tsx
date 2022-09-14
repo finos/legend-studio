@@ -17,11 +17,7 @@
 import { test, jest, expect, beforeEach } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
-import {
-  integrationTest,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
-} from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
 import { MemoryRouter } from 'react-router';
 import {
@@ -47,12 +43,13 @@ test(
     'Shows project selector properly when there are at least 1 project',
   ),
   async () => {
-    MOBX__enableSpyOrMock();
     jest
       .spyOn(sdlcServerClient, 'getProjects')
-      .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
-      .mockResolvedValueOnce([]);
-    MOBX__disableSpyOrMock();
+      .mockReturnValueOnce(
+        Promise.resolve([TEST_DATA__DefaultSDLCInfo.project]),
+      )
+      .mockReturnValueOnce(Promise.resolve([]));
+
     TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(
@@ -79,9 +76,10 @@ test(
 test(
   integrationTest('Disable project selector when there is no projects'),
   async () => {
-    MOBX__enableSpyOrMock();
-    jest.spyOn(sdlcServerClient, 'getProjects').mockResolvedValue([]);
-    MOBX__disableSpyOrMock();
+    jest
+      .spyOn(sdlcServerClient, 'getProjects')
+      .mockReturnValue(Promise.resolve([]));
+
     TEST__provideMockedWebApplicationNavigator();
 
     const { queryByText } = render(

@@ -196,17 +196,17 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     } else if (spec instanceof RedshiftDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.REDSHIFT;
     }
-    const extraDatasourceSpecificationTypeGetters =
+    const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
               plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-            ).getExtraDatasourceSpecificationTypeGetters?.() ?? [],
+            ).getExtraDatasourceSpecificationClassifiers?.() ?? [],
         );
-    for (const typeGetter of extraDatasourceSpecificationTypeGetters) {
-      const type = typeGetter(spec);
+    for (const classifier of extraDatasourceSpecificationClassifiers) {
+      const type = classifier(spec);
       if (type) {
         return type;
       }
@@ -315,17 +315,17 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
     }
 
-    const extraAuthenticationStrategyTypeGetters =
+    const extraAuthenticationStrategyClassifiers =
       this.editorStore.pluginManager
         .getApplicationPlugins()
         .flatMap(
           (plugin) =>
             (
               plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
-            ).getExtraAuthenticationStrategyTypeGetters?.() ?? [],
+            ).getExtraAuthenticationStrategyClassifiers?.() ?? [],
         );
-    for (const typeGetter of extraAuthenticationStrategyTypeGetters) {
-      const type = typeGetter(auth);
+    for (const classifier of extraAuthenticationStrategyClassifiers) {
+      const type = classifier(auth);
       if (type) {
         return type;
       }

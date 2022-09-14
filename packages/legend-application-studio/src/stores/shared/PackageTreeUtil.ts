@@ -79,18 +79,18 @@ const getElementProjectExplorerDnDType = (
   } else if (element instanceof DataElement) {
     return CORE_DND_TYPE.PROJECT_EXPLORER_DATA;
   }
-  const extraElementProjectExplorerDnDTypeGetters = editorStore.pluginManager
+  const extraDragElementClassifiers = editorStore.pluginManager
     .getApplicationPlugins()
     .flatMap(
       (plugin) =>
         (
           plugin as DSL_LegendStudioApplicationPlugin_Extension
-        ).getExtraElementProjectExplorerDnDTypeGetters?.() ?? [],
+        ).getExtraDragElementClassifiers?.() ?? [],
     );
-  for (const dndTypeGetter of extraElementProjectExplorerDnDTypeGetters) {
-    const dndType = dndTypeGetter(element);
-    if (dndType) {
-      return dndType;
+  for (const classifier of extraDragElementClassifiers) {
+    const dragType = classifier(element);
+    if (dragType) {
+      return dragType;
     }
   }
   return CORE_DND_TYPE.NONE;

@@ -15,6 +15,8 @@
  */
 
 import { LegendStyleProvider } from '@finos/legend-art';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ActionAlert } from './ActionAlert.js';
 import { BlockingAlert } from './BlockingAlert.js';
 import { NotificationManager } from './NotificationManager.js';
@@ -29,7 +31,7 @@ export const LegendApplicationComponentFrameworkProvider: React.FC<{
       <BlockingAlert />
       <ActionAlert />
       <NotificationManager />
-      {children}
+      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
     </LegendStyleProvider>
   );
 };

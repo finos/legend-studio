@@ -8,18 +8,13 @@
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
     { "path": "packages/legend-graph/tsconfig.build.json" },
+    { "path": "packages/legend-query-builder/tsconfig.build.json" },
     { "path": "packages/legend-art/tsconfig.build.json" },
     { "path": "packages/legend-application/tsconfig.build.json" },
     // studio
     { "path": "packages/legend-application-studio/tsconfig.build.json" },
     {
       "path": "packages/legend-application-studio-bootstrap/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-application-studio-management-toolkit/tsconfig.build.json"
-    },
-    {
-      "path": "packages/legend-extension-application-studio-query-builder/tsconfig.build.json"
     },
     // query
     { "path": "packages/legend-application-query/tsconfig.build.json" },

@@ -28,7 +28,6 @@ import {
   type QueryExportConfiguration,
   type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
-  type QueryBuilderState,
 } from '@finos/legend-application-query';
 import type {
   DepotServerClient,
@@ -48,6 +47,7 @@ import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
 import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,

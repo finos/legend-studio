@@ -23,7 +23,6 @@ import {
   type QuerySetupState,
   type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
-  type QueryBuilderState,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
   LegendQueryEventService,
@@ -56,6 +55,7 @@ import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBui
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 
 export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {

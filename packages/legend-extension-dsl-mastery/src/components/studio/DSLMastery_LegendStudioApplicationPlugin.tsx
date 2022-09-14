@@ -23,8 +23,8 @@ import {
   type ElementEditorState,
   type ElementEditorStateCreator,
   type ElementIconGetter,
-  type ElementProjectExplorerDnDTypeGetter,
-  type ElementTypeGetter,
+  type DragElementClassifier,
+  type ElementClassifier,
   type NewElementFromStateCreator,
   type NewElementState,
   type PureGrammarParserElementSnippetSuggestionsGetter,
@@ -56,7 +56,7 @@ export class DSLMastery_LegendStudioApplicationPlugin
     return [MASTERY_ELEMENT_TYPE];
   }
 
-  getExtraElementTypeGetters(): ElementTypeGetter[] {
+  getExtraElementClassifiers(): ElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof MasterRecordDefinition) {
@@ -111,7 +111,7 @@ export class DSLMastery_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraElementProjectExplorerDnDTypeGetters(): ElementProjectExplorerDnDTypeGetter[] {
+  getExtraDragElementClassifiers(): DragElementClassifier[] {
     return [
       (element: PackageableElement): string | undefined => {
         if (element instanceof MasterRecordDefinition) {

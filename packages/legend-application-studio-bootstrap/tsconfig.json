@@ -21,7 +21,6 @@
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-external-format-json-schema" },
     { "path": "../legend-extension-external-language-morphir" },
-    { "path": "../legend-extension-external-store-service" },
-    { "path": "../legend-extension-application-studio-query-builder" }
+    { "path": "../legend-extension-external-store-service" }
   ]
 }

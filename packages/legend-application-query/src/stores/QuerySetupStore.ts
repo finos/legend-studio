@@ -42,13 +42,15 @@ import {
   ProjectData,
 } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
-import { getQueryBuilderGraphManagerExtension } from '../graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import type { ServiceExecutionAnalysisResult } from '../graphManager/action/analytics/ServiceExecutionAnalysis.js';
-import type { MappingRuntimeCompatibilityAnalysisResult } from '../graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
 import { APPLICATION_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
+import {
+  type MappingRuntimeCompatibilityAnalysisResult,
+  type ServiceExecutionAnalysisResult,
+  getQueryBuilderGraphManagerExtension,
+} from '@finos/legend-query-builder';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;

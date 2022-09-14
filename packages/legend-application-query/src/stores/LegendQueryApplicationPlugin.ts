@@ -16,9 +16,9 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type { Query } from '@finos/legend-graph';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import type { QueryEditorStore } from './QueryEditorStore.js';
 import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
 

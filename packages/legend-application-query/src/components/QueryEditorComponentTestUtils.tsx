@@ -20,8 +20,6 @@ import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 import {
   type TEMPORARY__JestMock,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import {
@@ -47,12 +45,14 @@ import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditor
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { ExistingQueryEditor } from './QueryEditor.js';
 import { generateExistingQueryEditorRoute } from '../stores/LegendQueryRouter.js';
-import { QUERY_BUILDER_TEST_ID } from './query-builder/QueryBuilder_TestID.js';
 import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
 import { LegendQueryBaseStoreProvider } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationStore } from '../stores/LegendQueryBaseStore.js';
-import type { QueryBuilderState } from '../stores/query-builder/QueryBuilderState.js';
+import {
+  type QueryBuilderState,
+  QUERY_BUILDER_TEST_ID,
+} from '@finos/legend-query-builder';
 
 export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
@@ -146,31 +146,33 @@ export const TEST__setUpQueryEditor = async (
   );
   query.content = 'some content';
 
-  MOBX__enableSpyOrMock();
   jest
     .spyOn(MOCK__editorStore.depotServerClient, 'getProject')
-    .mockResolvedValue(projectData);
+    .mockReturnValue(Promise.resolve(projectData));
   jest
     .spyOn(graphManagerState.graphManager, 'getLightQuery')
-    .mockResolvedValue(lightQuery);
+    .mockReturnValue(Promise.resolve(lightQuery));
   jest
     .spyOn(graphManagerState.graphManager, 'pureCodeToLambda')
-    .mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+    .mockReturnValue(
+      Promise.resolve(new RawLambda(lambda.parameters, lambda.body)),
+    );
   jest
     .spyOn(graphManagerState.graphManager, 'getQuery')
-    .mockResolvedValue(query);
+    .mockReturnValue(Promise.resolve(query));
   if (rawMappingModelCoverageAnalysisResult) {
     jest
       .spyOn(graphManagerState.graphManager, 'analyzeMappingModelCoverage')
-      .mockResolvedValue(
-        graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-          rawMappingModelCoverageAnalysisResult,
+      .mockReturnValue(
+        Promise.resolve(
+          graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+            rawMappingModelCoverageAnalysisResult,
+          ),
         ),
       );
   }
   MOCK__editorStore.buildGraph = jest.fn<TEMPORARY__JestMock>();
   graphManagerState.graphManager.initialize = jest.fn<TEMPORARY__JestMock>();
-  MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory({
     initialEntries: [generateExistingQueryEditorRoute(lightQuery.id)],

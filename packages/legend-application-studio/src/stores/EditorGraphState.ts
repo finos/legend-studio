@@ -1208,7 +1208,7 @@ export class EditorGraphState {
         (plugin) =>
           (
             plugin as DSL_LegendStudioApplicationPlugin_Extension
-          ).getExtraElementTypeGetters?.() ?? [],
+          ).getExtraElementClassifiers?.() ?? [],
       );
     for (const labelGetter of extraElementTypeLabelGetters) {
       const label = labelGetter(element);

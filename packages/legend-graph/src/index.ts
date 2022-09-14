@@ -197,7 +197,7 @@ export * from './graph/PureGraphPlugin.js';
 // --------------------------------------------- GRAPH MANAGER --------------------------------------------------
 
 export { type GraphManagerPluginManager } from './graphManager/GraphManagerPluginManager.js';
-export { CorePureGraphManagerPlugin } from './graphManager/CorePureGraphManagerPlugin.js';
+export { Core_PureGraphManagerPlugin } from './graphManager/Core_PureGraphManagerPlugin.js';
 export {
   BasicGraphManagerState,
   GraphManagerState,

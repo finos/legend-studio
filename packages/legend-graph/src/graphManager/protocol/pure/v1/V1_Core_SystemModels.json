@@ -48,6 +48,103 @@
       ]
     },
     {
+      "_type": "Enumeration",
+      "name": "Month",
+      "package": "meta::pure::functions::date",
+      "values": [
+        {
+          "value": "January"
+        },
+        {
+          "value": "February"
+        },
+        {
+          "value": "March"
+        },
+        {
+          "value": "April"
+        },
+        {
+          "value": "May"
+        },
+        {
+          "value": "June"
+        },
+        {
+          "value": "July"
+        },
+        {
+          "value": "August"
+        },
+        {
+          "value": "September"
+        },
+        {
+          "value": "October"
+        },
+        {
+          "value": "November"
+        },
+        {
+          "value": "December"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Duration",
+      "package": "meta::pure::functions::date",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "number",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "unit",
+          "type": "meta::pure::functions::date::DurationUnit"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Time",
+      "package": "meta::pure::functions::date",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "hours",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "minutes",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "seconds",
+          "type": "Integer"
+        }
+      ]
+    },
+    {
       "stereotypes": ["public", "protected", "private", "externalizable"],
       "package": "meta::pure::profiles",
       "_type": "profile",

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type MappingTestState,
@@ -45,6 +45,7 @@ import {
   WrenchIcon,
   PauseCircleIcon,
   PanelDropZone,
+  PencilIcon,
 } from '@finos/legend-art';
 import { useDrop } from 'react-dnd';
 import {
@@ -55,6 +56,8 @@ import {
   IllegalStateError,
   guaranteeType,
   tryToFormatLosslessJSONString,
+  hashObject,
+  assertErrorThrown,
 } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,
@@ -84,12 +87,13 @@ import {
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { flatData_setData } from '../../../../stores/graphModifier/StoreFlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
 } from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
 const MappingTestQueryEditor = observer(
   (props: { testState: MappingTestState; isReadOnly: boolean }) => {
@@ -98,19 +102,73 @@ const MappingTestQueryEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
-    const extraQueryEditorActions = editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
-          ).getExtraMappingTestQueryEditorActionConfigurations?.() ?? [],
-      )
-      .map((config) => (
-        <Fragment key={config.key}>
-          {config.renderer(testState, isReadOnly)}
-        </Fragment>
-      ));
+    // actions
+    const editWithQueryBuilder = applicationStore.guardUnhandledError(
+      async () => {
+        const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
+        await flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
+            setupQueryBuilderState: (): QueryBuilderState => {
+              const queryBuilderState = new MappingExecutionQueryBuilderState(
+                testState.mappingEditorState.mapping,
+                embeddedQueryBuilderState.editorStore.applicationStore,
+                embeddedQueryBuilderState.editorStore.graphManagerState,
+              );
+              queryBuilderState.initializeWithQuery(testState.queryState.query);
+              queryBuilderState.changeDetectionState.setQueryHashCode(
+                hashObject(testState.queryState.query),
+              );
+              queryBuilderState.changeDetectionState.setIsEnabled(true);
+              return queryBuilderState;
+            },
+            actionConfigs: [
+              {
+                key: 'save-query-btn',
+                renderer: (
+                  queryBuilderState: QueryBuilderState,
+                ): React.ReactNode => {
+                  const save = applicationStore.guardUnhandledError(
+                    async (): Promise<void> => {
+                      try {
+                        const rawLambda = queryBuilderState.buildQuery();
+                        await flowResult(
+                          testState.queryState.updateLamba(rawLambda),
+                        );
+                        applicationStore.notifySuccess(
+                          `Mapping test query is updated`,
+                        );
+                        queryBuilderState.changeDetectionState.setQueryHashCode(
+                          hashObject(rawLambda),
+                        );
+                        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+                          undefined,
+                        );
+                      } catch (error) {
+                        assertErrorThrown(error);
+                        applicationStore.notifyError(
+                          `Can't save query: ${error.message}`,
+                        );
+                      }
+                    },
+                  );
+                  return (
+                    <button
+                      className="query-builder__dialog__header__custom-action"
+                      tabIndex={-1}
+                      disabled={isReadOnly}
+                      onClick={save}
+                    >
+                      Save Query
+                    </button>
+                  );
+                },
+              },
+            ],
+            disableCompile: isStubbed_RawLambda(testState.queryState.query),
+          }),
+        );
+      },
+    );
 
     // Class mapping selector
     const [openClassMappingSelectorModal, setOpenClassMappingSelectorModal] =
@@ -203,7 +261,14 @@ const MappingTestQueryEditor = observer(
             <div className="panel__header__title__label">query</div>
           </div>
           <div className="panel__header__actions">
-            {extraQueryEditorActions}
+            <button
+              className="panel__header__action"
+              tabIndex={-1}
+              onClick={editWithQueryBuilder}
+              title="Edit query..."
+            >
+              <PencilIcon />
+            </button>
             <button
               className="panel__header__action"
               tabIndex={-1}

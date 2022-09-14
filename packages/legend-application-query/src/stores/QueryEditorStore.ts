@@ -32,14 +32,12 @@ import {
   guaranteeNonNullable,
   ActionState,
   StopWatch,
-  getNullableFirstElement,
   guaranteeType,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
   type RawLambda,
   GraphManagerState,
-  getAllClassMappings,
   toLightQuery,
   Query,
   PureExecution,
@@ -49,12 +47,10 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   extractElementNameFromPath,
-  isSystemElement,
   QuerySearchSpecification,
   Mapping,
   type Runtime,
 } from '@finos/legend-graph';
-import type { QueryBuilderState } from './query-builder/QueryBuilderState.js';
 import {
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
@@ -71,12 +67,13 @@ import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
-import { ClassQueryBuilderState } from './query-builder/workflows/ClassQueryBuilderState.js';
-import { MappingQueryBuilderState } from './query-builder/workflows/MappingQueryBuilderState.js';
 import {
+  type QueryBuilderState,
   type ServiceExecutionContext,
+  ClassQueryBuilderState,
+  MappingQueryBuilderState,
   ServiceQueryBuilderState,
-} from './query-builder/workflows/ServiceQueryBuilderState.js';
+} from '@finos/legend-query-builder';
 
 const QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH = 3;
 const QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT = 10;
@@ -525,31 +522,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       ),
     );
 
-    // try to find a class to set
-    // first, find classes which is mapped by the mapping
-    // then, find any classes except for class coming from system
-    // if none found, default to a dummy blank query
-    const defaultClass =
-      getNullableFirstElement(
-        queryBuilderState.mapping
-          ? getAllClassMappings(queryBuilderState.mapping).map(
-              (classMapping) => classMapping.class.value,
-            )
-          : [],
-      ) ??
-      getNullableFirstElement(
-        queryBuilderState.graphManagerState.graph.classes.filter(
-          (el) => !isSystemElement(el),
-        ),
-      );
-    if (defaultClass) {
-      queryBuilderState.changeClass(defaultClass);
-    } else {
-      queryBuilderState.initialize(
-        this.graphManagerState.graphManager.createDefaultBasicRawLambda(),
-      );
-    }
-
     return queryBuilderState;
   }
 
@@ -626,7 +598,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initialize(service.execution.func);
+    queryBuilderState.initializeWithQuery(service.execution.func);
 
     return queryBuilderState;
   }
@@ -720,7 +692,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    queryBuilderState.initialize(
+    queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
     );
 

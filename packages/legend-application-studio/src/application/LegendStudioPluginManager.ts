@@ -16,7 +16,7 @@
 
 import { LegendApplicationPluginManager } from '@finos/legend-application';
 import {
-  CorePureGraphManagerPlugin,
+  Core_PureGraphManagerPlugin,
   type GraphManagerPluginManager,
   type PureGraphManagerPlugin,
   type PureGraphPlugin,
@@ -70,7 +70,7 @@ export class LegendStudioPluginManager
   override getHiddenPluginNames(): string[] {
     return [
       Core_LegendStudioApplicationPlugin.NAME,
-      CorePureGraphManagerPlugin.NAME,
+      Core_PureGraphManagerPlugin.NAME,
     ];
   }
 }

@@ -75,10 +75,12 @@ import {
   isSystemElement,
   isDependencyElement,
   isElementReadOnly,
+  Class,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
 
 const ElementRenamer = observer(() => {
   const editorStore = useEditorStore();
@@ -198,6 +200,23 @@ const ExplorerContextMenu = observer(
         ? node.packageableElement
         : undefined
       : editorStore.graphManagerState.graph.root;
+    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
+      .concat(editorStore.getSupportedElementTypes())
+      .filter(
+        // NOTE: we can only create package in root
+        (type) =>
+          _package !== editorStore.graphManagerState.graph.root ||
+          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
+      );
+
+    // actions
+    const buildQuery = editorStore.applicationStore.guardUnhandledError(
+      async () => {
+        if (node?.packageableElement instanceof Class) {
+          await queryClass(node.packageableElement, editorStore);
+        }
+      },
+    );
     const removeElement = (): void => {
       if (node) {
         flowResult(editorStore.deleteElement(node.packageableElement)).catch(
@@ -237,20 +256,10 @@ const ExplorerContextMenu = observer(
           .catch(applicationStore.alertUnhandledError);
       }
     };
-
     const createNewElement =
       (type: string): (() => void) =>
       (): void =>
         editorStore.newElementState.openModal(type, _package);
-
-    const elementTypes = ([PACKAGEABLE_ELEMENT_TYPE.PACKAGE] as string[])
-      .concat(editorStore.getSupportedElementTypes())
-      .filter(
-        // NOTE: we can only create package in root
-        (type) =>
-          _package !== editorStore.graphManagerState.graph.root ||
-          type === PACKAGEABLE_ELEMENT_TYPE.PACKAGE,
-      );
 
     if (_package && !isReadOnly) {
       return (
@@ -281,6 +290,7 @@ const ExplorerContextMenu = observer(
 
     return (
       <MenuContent data-testid={LEGEND_STUDIO_TEST_ID.EXPLORER_CONTEXT_MENU}>
+        <MenuContentItem onClick={buildQuery}>Query...</MenuContentItem>
         {extraExplorerContextMenuItems}
         {!isReadOnly && node && (
           <>

@@ -142,6 +142,7 @@ import {
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
+import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -194,6 +195,7 @@ export class EditorStore {
   localChangesState: LocalChangesState;
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   devToolState: DevToolState;
+  embeddedQueryBuilderState: EmbeddedQueryBuilderState;
 
   private _isDisposed = false;
   initState = ActionState.create();
@@ -289,6 +291,7 @@ export class EditorStore {
     this.graphManagerState = graphManagerState;
     this.changeDetectionState = new ChangeDetectionState(this, this.graphState);
     this.devToolState = new DevToolState(this);
+    this.embeddedQueryBuilderState = new EmbeddedQueryBuilderState(this);
     // side bar panels
     this.explorerTreeState = new ExplorerTreeState(this);
     this.projectOverviewState = new ProjectOverviewState(this, this.sdlcState);

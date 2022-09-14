@@ -15,7 +15,6 @@
  */
 
 import { noop } from '../CommonUtils.js';
-import { configure as configureMobx } from 'mobx';
 
 /**
  * This is a pass through worker, it will post message, but do not ever reply so `onmessage` and `onerror` are never called
@@ -41,26 +40,6 @@ export class PassThruWorker {
 export const integrationTest = (testName: string): string =>
   `[INTEGRATION] ${testName}`;
 export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
-
-/**
- * MobX makes some fields non-configurable or non-writable which would prevent spying/mocking/stubbing in your tests.
- * NOTE: Use with caution and only when needed - do not turn this off globally for all tests, otherwise you risk
- * false positives (passing tests with broken code).
- *
- * A small caveat is with the usage of `flow` with `makeObservable`, if we use the `flow(function* (args) { })` form,
- * the latter will treat these non-observable (stateless) fields (action, flow) as non-writable. So we have to call this
- * function at test environment setup (due to the fact that `flow` decorates the class property outside of `makeObservable`)
- * or change the function to use flow decorater form in `makeObservable`.
- *
- * See https://mobx.js.org/configuration.html#safedescriptors-boolean
- * See https://github.com/mobxjs/mobx/issues/2752
- */
-export const MOBX__enableSpyOrMock = (): void => {
-  configureMobx({ safeDescriptors: false });
-};
-export const MOBX__disableSpyOrMock = (): void => {
-  configureMobx({ safeDescriptors: false });
-};
 
 /**
  * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)
