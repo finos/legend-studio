@@ -101,6 +101,30 @@ export const PanelContent: React.FC<{
   return <div className="panel__content">{children}</div>;
 };
 
+export const PanelList: React.FC<{
+  className?: string;
+  children: React.ReactNode;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__content__form__list', className)}>
+      {children}
+    </div>
+  );
+};
+
+export const PanelListItem: React.FC<{
+  className?: string;
+  children: React.ReactNode;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__content__form__list__item', className)}>
+      {children}
+    </div>
+  );
+};
+
 export const Panel: React.FC<{
   children?: React.ReactNode;
 }> = (props) => {

@@ -220,10 +220,13 @@
     margin-bottom: 0;
   }
 
-  &__actions {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
+  &__list {
+    margin: 1rem 0;
+
+    &__item {
+      width: 100%;
+      display: flex;
+    }
   }
 
   &__section {

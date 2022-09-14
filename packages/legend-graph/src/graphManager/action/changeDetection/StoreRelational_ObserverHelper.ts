@@ -1040,13 +1040,15 @@ export const observe_Mapper = (metamodel: Mapper): Mapper => {
   return metamodel;
 };
 
-const observe_Abstract_PostProcessor = (metamodel: PostProcessor): void => {
+export const observe_Abstract_PostProcessor = (
+  metamodel: PostProcessor,
+): void => {
   makeObservable(metamodel, {
     hashCode: computed,
   });
 };
 
-const observe_MapperPostProcessor = (
+export const observe_MapperPostProcessor = (
   metamodel: MapperPostProcessor,
 ): MapperPostProcessor => {
   observe_Abstract_PostProcessor(metamodel);

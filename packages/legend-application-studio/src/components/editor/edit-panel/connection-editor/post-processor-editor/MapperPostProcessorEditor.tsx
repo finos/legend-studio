@@ -239,6 +239,7 @@ export const MapperPostProcessorEditor = observer(
                           mapper_setTo(selectedMapper, value ?? '')
                         }
                       />
+
                       {selectedSchemaNameMapper && (
                         <>
                           <PanelTextEditor

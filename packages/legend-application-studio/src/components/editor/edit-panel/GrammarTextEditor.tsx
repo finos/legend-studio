@@ -98,9 +98,12 @@ import {
   MAPPING_WITH_M2M_CLASS_MAPPING_SNIPPET,
   MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
+  POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+  createConnectionSnippetWithPostProcessorSuggestionSnippet,
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -523,6 +526,14 @@ const getParserElementSnippetSuggestions = (
       ];
     }
     case PURE_PARSER.CONNECTION: {
+      const embeddedPostProcessorSnippetSuggestions = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+            ).getExtraPostProcessorSnippetSuggestions?.() ?? [],
+        );
       return [
         {
           text: PURE_CONNECTION_NAME.JSON_MODEL_CONNECTION,
@@ -544,7 +555,18 @@ const getParserElementSnippetSuggestions = (
           description: 'relational database connection',
           insertText: RELATIONAL_DATABASE_CONNECTION_SNIPPET,
         },
-        // TODO: extension mehcanism for connection and relational database connection
+        {
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: 'relational database connection with post-processor',
+          insertText: POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+        },
+        ...embeddedPostProcessorSnippetSuggestions.map((suggestion) => ({
+          text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
+          description: suggestion.description,
+          insertText: createConnectionSnippetWithPostProcessorSuggestionSnippet(
+            suggestion.text,
+          ),
+        })),
       ];
     }
     case PURE_PARSER.RUNTIME: {
