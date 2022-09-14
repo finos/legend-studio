@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 15.0.0
+
+### Major Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `CorePureGraphManagerPlugin` to `Core_PureGraphManagerPlugin`.
+
+### Minor Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - Added enum `meta::pure::functions::date::Month`, class `meta::pure::functions::date::Time`, and class `meta::pure::functions::date::Duration` to core system.
+
 ## 14.1.0
 
 ## 14.0.6

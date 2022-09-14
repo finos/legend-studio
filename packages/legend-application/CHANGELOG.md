@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 7.2.0
+
+### Minor Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - Add `<DndProvider backend={html5Backend}>` to `<LegendApplicationComponentFrameworkProvider>`.
+
 ## 7.1.7
 
 ## 7.1.6

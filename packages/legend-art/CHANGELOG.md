@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 3.2.0
+
+### Minor Changes
+
+- [#1481](https://github.com/finos/legend-studio/pull/1481) [`4fd88c58`](https://github.com/finos/legend-studio/commit/4fd88c58b66dd3033db1f2f45e4cbedd0420b57e) ([@xannem](https://github.com/xannem)) - Add PanelList and PanelListItem components
+
 ## 3.1.0
 
 ### Minor Changes
