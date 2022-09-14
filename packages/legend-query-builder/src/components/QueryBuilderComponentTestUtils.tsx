@@ -20,11 +20,7 @@ import { Router } from 'react-router';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createMemoryHistory } from 'history';
-import {
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
-  Log,
-} from '@finos/legend-shared';
+import { Log } from '@finos/legend-shared';
 import {
   type RawMappingModelCoverageAnalysisResult,
   GraphManagerState,
@@ -87,7 +83,6 @@ export const TEST__setUpQueryBuilder = async (
     ),
   );
 
-  MOBX__enableSpyOrMock();
   if (rawMappingModelCoverageAnalysisResult) {
     jest
       .spyOn(graphManagerState.graphManager, 'analyzeMappingModelCoverage')
@@ -99,7 +94,6 @@ export const TEST__setUpQueryBuilder = async (
         ),
       );
   }
-  MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory();
   const navigator = new WebApplicationNavigator(history);

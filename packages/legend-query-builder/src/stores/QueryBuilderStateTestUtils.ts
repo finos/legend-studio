@@ -73,21 +73,27 @@ export const TEST__setUpQueryBuilderState = async (
       );
     }
   }
+
   if (rawMappingModelCoverageAnalysisResult) {
     jest
       .spyOn(
         queryBuilderState.graphManagerState.graphManager,
         'analyzeMappingModelCoverage',
       )
-      .mockResolvedValue(
-        queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-          rawMappingModelCoverageAnalysisResult,
+      .mockReturnValue(
+        Promise.resolve(
+          queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+            rawMappingModelCoverageAnalysisResult,
+          ),
         ),
       );
+  }
 
+  if (rawMappingModelCoverageAnalysisResult) {
     await flowResult(
       queryBuilderState.explorerState.analyzeMappingModelCoverage(),
     );
   }
+
   return queryBuilderState;
 };

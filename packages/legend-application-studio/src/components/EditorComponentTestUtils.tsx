@@ -28,12 +28,7 @@ import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
 import { EditorStore } from '../stores/EditorStore.js';
 import { Editor } from './editor/Editor.js';
 import { generateEditorRoute } from '../stores/LegendStudioRouter.js';
-import {
-  type PlainObject,
-  type TEMPORARY__JestMock,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
-} from '@finos/legend-shared';
+import type { PlainObject, TEMPORARY__JestMock } from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -241,44 +236,41 @@ export const TEST__setUpEditor = async (
     projects,
     projectDependency,
   } = data;
-  // mock editor initialization data
-
-  MOBX__enableSpyOrMock();
 
   // SDLC
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getProject')
-    .mockResolvedValue(project);
+    .mockReturnValue(Promise.resolve(project));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getWorkspace')
-    .mockResolvedValue(workspace);
+    .mockReturnValue(Promise.resolve(workspace));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getVersions')
-    .mockResolvedValue(projectVersions);
+    .mockReturnValue(Promise.resolve(projectVersions));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getRevision')
-    .mockResolvedValue(curentRevision);
+    .mockReturnValue(Promise.resolve(curentRevision));
   jest
     .spyOn(
       MOCK__editorStore.sdlcServerClient,
       'checkIfWorkspaceIsInConflictResolutionMode',
     )
-    .mockResolvedValue(false);
+    .mockReturnValue(Promise.resolve(false));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'isWorkspaceOutdated')
-    .mockResolvedValue(false);
+    .mockReturnValue(Promise.resolve(false));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getEntities')
-    .mockResolvedValue(entities);
+    .mockReturnValue(Promise.resolve(entities));
   jest
     .spyOn(MOCK__editorStore.sdlcServerClient, 'getConfiguration')
-    .mockResolvedValue(projectConfiguration);
+    .mockReturnValue(Promise.resolve(projectConfiguration));
   jest
     .spyOn(
       MOCK__editorStore.sdlcServerClient,
       'getLatestProjectStructureVersion',
     )
-    .mockResolvedValue(latestProjectStructureVersion);
+    .mockReturnValue(Promise.resolve(latestProjectStructureVersion));
   MOCK__editorStore.sdlcServerClient._setFeatures(
     SDLCServerFeaturesConfiguration.serialization.fromJson({
       canCreateProject: true,
@@ -289,13 +281,13 @@ export const TEST__setUpEditor = async (
   // depot
   jest
     .spyOn(MOCK__editorStore.depotServerClient, 'getProjects')
-    .mockResolvedValue(projects);
+    .mockReturnValue(Promise.resolve(projects));
   jest
     .spyOn(MOCK__editorStore.depotServerClient, 'getProjectById')
-    .mockResolvedValue(projectData);
+    .mockReturnValue(Promise.resolve(projectData));
   jest
     .spyOn(MOCK__editorStore.depotServerClient, 'collectDependencyEntities')
-    .mockResolvedValue(projectDependency);
+    .mockReturnValue(Promise.resolve(projectDependency));
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
@@ -305,7 +297,7 @@ export const TEST__setUpEditor = async (
       graphManagerState.graphManager,
       'getAvailableGenerationConfigurationDescriptions',
     )
-    .mockResolvedValue(availableGenerationDescriptions);
+    .mockReturnValue(Promise.resolve(availableGenerationDescriptions));
 
   // mock change detections (since we do not test them now)
   MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
@@ -318,7 +310,6 @@ export const TEST__setUpEditor = async (
     jest.fn<TEMPORARY__JestMock>();
   MOCK__editorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
     jest.fn<TEMPORARY__JestMock>();
-  MOBX__disableSpyOrMock();
 
   const history = createMemoryHistory({
     initialEntries: [

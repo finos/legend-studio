@@ -28,8 +28,6 @@ import TEST_DATA__serviceEntities from '../../../../editor/edit-panel/service-ed
 import {
   type PlainObject,
   integrationTest,
-  MOBX__disableSpyOrMock,
-  MOBX__enableSpyOrMock,
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
@@ -160,20 +158,20 @@ test(
       '/myservice',
       'id1',
     );
-    MOBX__enableSpyOrMock();
+
     jest
       .spyOn(
         MOCK__editorStore.graphManagerState.graphManager,
         'registerService',
       )
-      .mockResolvedValue(result);
+      .mockReturnValue(Promise.resolve(result));
     jest
       .spyOn(
         MOCK__editorStore.graphManagerState.graphManager,
         'activateService',
       )
-      .mockResolvedValue();
-    MOBX__disableSpyOrMock();
+      .mockReturnValue(Promise.resolve());
+
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),
@@ -263,20 +261,20 @@ test(
       '/myservice',
       'id1',
     );
-    MOBX__enableSpyOrMock();
+
     jest
       .spyOn(
         MOCK__editorStore.graphManagerState.graphManager,
         'registerService',
       )
-      .mockResolvedValue(result);
+      .mockReturnValue(Promise.resolve(result));
     jest
       .spyOn(
         MOCK__editorStore.graphManagerState.graphManager,
         'activateService',
       )
-      .mockResolvedValue();
-    MOBX__disableSpyOrMock();
+      .mockReturnValue(Promise.resolve());
+
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
       renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDIT_PANEL__HEADER_TABS),

@@ -19,8 +19,6 @@ import { fireEvent, getByText, waitFor } from '@testing-library/react';
 import {
   type TEMPORARY__JestMock,
   integrationTest,
-  MOBX__enableSpyOrMock,
-  MOBX__disableSpyOrMock,
 } from '@finos/legend-shared';
 import {
   type EditorStore,
@@ -227,17 +225,15 @@ test(integrationTest('Open query builder by querying a class'), async () => {
     { entities },
   );
 
-  MOBX__enableSpyOrMock();
   const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
   MOCK__editorStore.graphState.globalCompileInFormMode =
     MockedGlobalCompileInFormModeFn;
-  MockedGlobalCompileInFormModeFn.mockResolvedValue(
-    FormModeCompilationOutcome.SUCCEEDED,
+  MockedGlobalCompileInFormModeFn.mockReturnValue(
+    Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     jest.fn<TEMPORARY__JestMock>();
   MockedMonacoEditorInstance.getValue.mockReturnValue('');
-  MOBX__disableSpyOrMock();
 
   await TEST__openElementFromExplorerTree('model::Person', renderResult);
 
@@ -266,19 +262,17 @@ test(
       { entities },
     );
 
-    MOBX__enableSpyOrMock();
     const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
-      FormModeCompilationOutcome.SUCCEEDED,
+    MockedGlobalCompileInFormModeFn.mockReturnValue(
+      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
-    MOBX__disableSpyOrMock();
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
 
@@ -307,19 +301,17 @@ test(
       { entities },
     );
 
-    MOBX__enableSpyOrMock();
     const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
-      FormModeCompilationOutcome.SUCCEEDED,
+    MockedGlobalCompileInFormModeFn.mockReturnValue(
+      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
-    MOBX__disableSpyOrMock();
 
     await TEST__openElementFromExplorerTree('model::MyMapping', renderResult);
     fireEvent.click(renderResult.getByText('test_1'));
@@ -341,19 +333,17 @@ test(
       { entities },
     );
 
-    MOBX__enableSpyOrMock();
     const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockResolvedValue(
-      FormModeCompilationOutcome.SUCCEEDED,
+    MockedGlobalCompileInFormModeFn.mockReturnValue(
+      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       jest.fn<TEMPORARY__JestMock>();
     MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
       jest.fn<TEMPORARY__JestMock>();
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
-    MOBX__disableSpyOrMock();
 
     await TEST__openElementFromExplorerTree('model::MyService', renderResult);
     fireEvent.click(renderResult.getByText('Execution'));
