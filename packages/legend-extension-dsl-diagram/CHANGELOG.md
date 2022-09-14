@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram
 
+## 6.0.0
+
+### Major Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `DSLDiagram_LegendStudioApplicationPlugin_Extension`.
+
 ## 5.0.11
 
 ## 5.0.10

@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 7.0.0
+
+### Major Changes
+
+- [#1476](https://github.com/finos/legend-studio/pull/1476) [`293f2345`](https://github.com/finos/legend-studio/commit/293f2345cd7dcc7e97fc4b6b21c7d274a1407176) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move core `query-builder` logic out to `@finos/legend-query-builder`.
+
+### Minor Changes
+
+- [#1436](https://github.com/finos/legend-studio/pull/1436) [`df810467`](https://github.com/finos/legend-studio/commit/df810467d81f7317b78f12aa69c52df8f72fe5ea) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Allow loading existing queries from within of query editor ([#1435](https://github.com/finos/legend-studio/issues/1435)).
+
 ## 6.0.0
 
 ### Major Changes
