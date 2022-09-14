@@ -101,6 +101,57 @@ export const PanelContent: React.FC<{
   return <div className="panel__content">{children}</div>;
 };
 
+export const PanelRow: React.FC<{
+  className?: string;
+  children: React.ReactNode;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__content__form__row', className)}>
+      {children}
+    </div>
+  );
+};
+
+export const PanelRowMain: React.FC<{
+  className?: string;
+  children: React.ReactNode;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__content__form__row__item', className)}>
+      {children}
+    </div>
+  );
+};
+
+export const PanelRowActions: React.FC<{
+  children: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  return <div className="panel__content__form__row__actions">{children}</div>;
+};
+
+export const PanelRowActionItem: React.FC<{
+  title: string;
+  className?: string;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}> = (props) => {
+  const { className, onClick, children, disabled, title } = props;
+  return (
+    <button
+      className={clsx('panel__content__form__row-btn', className)}
+      disabled={Boolean(disabled)}
+      onClick={onClick}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+};
+
 export const Panel: React.FC<{
   children?: React.ReactNode;
 }> = (props) => {

@@ -226,6 +226,35 @@
     justify-content: flex-end;
   }
 
+  &__row {
+    width: 100%;
+    display: flex;
+
+    &__item {
+      min-width: 60%;
+      max-width: 80%;
+      justify-content: right;
+    }
+
+    &__actions {
+      width: 20%;
+      display: flex;
+    }
+
+    &-btn {
+      @include flexCenter;
+
+      flex: 2.8rem 0 0;
+      // padding: 0 1rem;
+      height: 2.8rem;
+      color: var(--color-light-grey-0);
+      background: var(--color-dark-grey-300);
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+  }
+
   &__section {
     cursor: default;
     margin: 0.5rem 0 3rem;
