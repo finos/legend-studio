@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': minor
 ---
 
-Add text snippet for post-processor.
+Add suggestion code snippet for relational database connection post-processor.
