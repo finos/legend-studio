@@ -27,6 +27,9 @@ import type {
 import type { RelationalDatabaseConnectionValueState } from './editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { PostProcessorEditorState } from './editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
+/**
+ * NOTE: The tab-stop index of the snippet must start from 6
+ */
 export type EmbeddedPostProcessorSnippetSuggestion =
   ElementEmbeddedContentSnippetSuggestion;
 
