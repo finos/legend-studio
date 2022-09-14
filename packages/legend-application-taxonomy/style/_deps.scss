@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-@forward 'deps';
-@forward 'query-builder';
-@forward 'query-builder-setup';
-@forward 'query-builder-explorer';
-@forward 'query-builder-filter';
-@forward 'query-builder-post-filter';
-@forward 'query-builder-projection';
-@forward 'query-builder-graph-fetch-tree';
-@forward 'query-builder-functions-explorer';
-@forward 'query-builder-property-search-panel';
-@forward 'query-builder-service-plugin';
+@import '@finos/legend-extension-dsl-data-space/lib/index.css';
