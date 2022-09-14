@@ -562,9 +562,7 @@ const getParserElementSnippetSuggestions = (
         ...embeddedPostProcessorSnippetSuggestions.map((suggestion) => ({
           text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
           description: suggestion.description,
-          insertText: createDataElementSnippetWithEmbeddedDataSuggestionSnippet(
-            suggestion.text,
-          ),
+          insertText: suggestion.text,
         })),
       ];
     }

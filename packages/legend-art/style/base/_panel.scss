@@ -220,38 +220,12 @@
     margin-bottom: 0;
   }
 
-  &__actions {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  &__row {
-    width: 100%;
-    display: flex;
+  &__list {
+    margin: 1rem 0;
 
     &__item {
-      min-width: 60%;
-      max-width: 80%;
-      justify-content: right;
-    }
-
-    &__actions {
-      width: 20%;
+      width: 100%;
       display: flex;
-    }
-
-    &-btn {
-      @include flexCenter;
-
-      flex: 2.8rem 0 0;
-      // padding: 0 1rem;
-      height: 2.8rem;
-      color: var(--color-light-grey-0);
-      background: var(--color-dark-grey-300);
-      border-radius: 0.2rem;
-      margin-left: 0.5rem;
-      cursor: pointer;
     }
   }
 
