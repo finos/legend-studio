@@ -99,6 +99,7 @@ import {
   MAPPING_WITH_ENUMERATION_MAPPING_SNIPPET,
   MAPPING_WITH_RELATIONAL_CLASS_MAPPING_SNIPPET,
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
+  createConnectionSnippetWithPostProcessorSuggestionSnippet,
 } from '../../../stores/LegendStudioCodeSnippets.js';
 import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
@@ -562,7 +563,9 @@ const getParserElementSnippetSuggestions = (
         ...embeddedPostProcessorSnippetSuggestions.map((suggestion) => ({
           text: PURE_CONNECTION_NAME.RELATIONAL_DATABASE_CONNECTION,
           description: suggestion.description,
-          insertText: suggestion.text,
+          insertText: createConnectionSnippetWithPostProcessorSuggestionSnippet(
+            suggestion.text,
+          ),
         })),
       ];
     }

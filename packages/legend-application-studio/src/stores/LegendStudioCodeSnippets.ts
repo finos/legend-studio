@@ -178,6 +178,18 @@ export const POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET = `Relational
   ];
 }`;
 
+export const createConnectionSnippetWithPostProcessorSuggestionSnippet = (
+  snippetText: string,
+): string =>
+  `RelationalDatabaseConnection \${1:model::NewConnection}
+  {
+    store: \${2:model::SomeStore};
+    // example of a simple H2 connection with a mapper post processor
+    type: \${3:H2};
+    specification: \${4:LocalH2 {\\}};
+    auth: \${5:DefaultH2 {\\}};
+    \n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n}`;
+
 // ------------------------------------- Mapping -------------------------------------
 
 export const BLANK_MAPPING_SNIPPET = `Mapping \${1:model::NewMapping}
