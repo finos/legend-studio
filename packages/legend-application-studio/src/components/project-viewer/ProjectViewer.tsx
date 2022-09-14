@@ -16,8 +16,6 @@
 
 import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useResizeDetector } from 'react-resize-detector';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
@@ -314,46 +312,44 @@ export const ProjectViewer = withEditorStore(
       }, [applicationStore, viewerStore, params]);
 
       return (
-        <DndProvider backend={HTML5Backend}>
-          <div className="app__page">
-            <div className="editor viewer">
-              <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-                <div className="editor__body">
-                  <ProjectViewerActivityBar />
-                  <div ref={ref} className="editor__content-container">
-                    <div className="editor__content">
-                      <ResizablePanelGroup orientation="vertical">
-                        <ResizablePanel
-                          {...getControlledResizablePanelProps(
-                            editorStore.sideBarDisplayState.size === 0,
-                            {
-                              onStopResize: resizeSideBar,
-                              size: editorStore.sideBarDisplayState.size,
-                            },
-                          )}
-                          direction={1}
-                        >
-                          <ProjectViewerSideBar />
-                        </ResizablePanel>
-                        <ResizablePanelSplitter />
-                        <ResizablePanel minSize={300}>
-                          {editorStore.isInFormMode && <EditPanel />}
-                          {editorStore.isInGrammarTextMode && (
-                            <GrammarTextEditor />
-                          )}
-                        </ResizablePanel>
-                      </ResizablePanelGroup>
-                    </div>
+        <div className="app__page">
+          <div className="editor viewer">
+            <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
+              <div className="editor__body">
+                <ProjectViewerActivityBar />
+                <div ref={ref} className="editor__content-container">
+                  <div className="editor__content">
+                    <ResizablePanelGroup orientation="vertical">
+                      <ResizablePanel
+                        {...getControlledResizablePanelProps(
+                          editorStore.sideBarDisplayState.size === 0,
+                          {
+                            onStopResize: resizeSideBar,
+                            size: editorStore.sideBarDisplayState.size,
+                          },
+                        )}
+                        direction={1}
+                      >
+                        <ProjectViewerSideBar />
+                      </ResizablePanel>
+                      <ResizablePanelSplitter />
+                      <ResizablePanel minSize={300}>
+                        {editorStore.isInFormMode && <EditPanel />}
+                        {editorStore.isInGrammarTextMode && (
+                          <GrammarTextEditor />
+                        )}
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
                   </div>
                 </div>
-                {allowOpeningElement && <ProjectSearchCommand />}
-                <ProjectViewerStatusBar />
-                <EmbeddedQueryBuilder />
-                {extraEditorExtensionComponents}
-              </GlobalHotKeys>
-            </div>
+              </div>
+              {allowOpeningElement && <ProjectSearchCommand />}
+              <ProjectViewerStatusBar />
+              <EmbeddedQueryBuilder />
+              {extraEditorExtensionComponents}
+            </GlobalHotKeys>
           </div>
-        </DndProvider>
+        </div>
       );
     }),
   ),

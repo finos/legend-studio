@@ -17,8 +17,6 @@
 import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
 import { Router } from 'react-router';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createMemoryHistory } from 'history';
 import { Log } from '@finos/legend-shared';
 import {
@@ -107,9 +105,7 @@ export const TEST__setUpQueryBuilder = async (
         pluginManager={pluginManager}
       >
         <LegendApplicationComponentFrameworkProvider>
-          <DndProvider backend={HTML5Backend}>
-            <QueryBuilder queryBuilderState={queryBuilderState} />
-          </DndProvider>
+          <QueryBuilder queryBuilderState={queryBuilderState} />
         </LegendApplicationComponentFrameworkProvider>
       </TEST__ApplicationStoreProvider>
     </Router>,

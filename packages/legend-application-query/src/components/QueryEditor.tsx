@@ -34,8 +34,6 @@ import {
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useParams } from 'react-router';
 import {
   type MappingQueryCreatorPathParams,
@@ -530,47 +528,45 @@ export const QueryEditor = observer(() => {
   }, [applicationStore.TEMPORARY__isLightThemeEnabled]);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div
-        className={clsx([
-          'query-editor ',
-          {
-            'query-editor--light':
-              applicationStore.TEMPORARY__isLightThemeEnabled,
-          },
-        ])}
-      >
-        <div className="query-editor__header">
-          <button
-            className="query-editor__header__back-btn btn--dark"
-            onClick={backToMainMenu}
-            title="Back to Main Menu"
-          >
-            <ArrowLeftIcon />
-          </button>
-          {!isLoadingEditor && editorStore.queryBuilderState && (
-            <QueryEditorHeaderContent
-              queryBuilderState={editorStore.queryBuilderState}
-            />
-          )}
-        </div>
-        <div className="query-editor__content">
-          <PanelLoadingIndicator isLoading={isLoadingEditor} />
-          {!isLoadingEditor && editorStore.queryBuilderState && (
-            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
-          )}
-          {(isLoadingEditor || !editorStore.queryBuilderState) && (
-            <BlankPanelContent>
-              {editorStore.initState.message ??
-                editorStore.graphManagerState.systemBuildState.message ??
-                editorStore.graphManagerState.dependenciesBuildState.message ??
-                editorStore.graphManagerState.generationsBuildState.message ??
-                editorStore.graphManagerState.graphBuildState.message}
-            </BlankPanelContent>
-          )}
-        </div>
+    <div
+      className={clsx([
+        'query-editor ',
+        {
+          'query-editor--light':
+            applicationStore.TEMPORARY__isLightThemeEnabled,
+        },
+      ])}
+    >
+      <div className="query-editor__header">
+        <button
+          className="query-editor__header__back-btn btn--dark"
+          onClick={backToMainMenu}
+          title="Back to Main Menu"
+        >
+          <ArrowLeftIcon />
+        </button>
+        {!isLoadingEditor && editorStore.queryBuilderState && (
+          <QueryEditorHeaderContent
+            queryBuilderState={editorStore.queryBuilderState}
+          />
+        )}
       </div>
-    </DndProvider>
+      <div className="query-editor__content">
+        <PanelLoadingIndicator isLoading={isLoadingEditor} />
+        {!isLoadingEditor && editorStore.queryBuilderState && (
+          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+        )}
+        {(isLoadingEditor || !editorStore.queryBuilderState) && (
+          <BlankPanelContent>
+            {editorStore.initState.message ??
+              editorStore.graphManagerState.systemBuildState.message ??
+              editorStore.graphManagerState.dependenciesBuildState.message ??
+              editorStore.graphManagerState.generationsBuildState.message ??
+              editorStore.graphManagerState.graphBuildState.message}
+          </BlankPanelContent>
+        )}
+      </div>
+    </div>
   );
 });
 
