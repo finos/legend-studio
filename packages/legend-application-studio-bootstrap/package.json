@@ -47,7 +47,6 @@
     "@finos/legend-application": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
-    "@finos/legend-extension-application-studio-query-builder": "workspace:*",
     "@finos/legend-extension-dsl-data-space": "workspace:*",
     "@finos/legend-extension-dsl-diagram": "workspace:*",
     "@finos/legend-extension-dsl-mastery": "workspace:*",

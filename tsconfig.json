@@ -30,7 +30,6 @@
     {
       "path": "packages/legend-extension-application-studio-management-toolkit"
     },
-    { "path": "packages/legend-extension-application-studio-query-builder" },
     // query
     { "path": "packages/legend-application-query" },
     { "path": "packages/legend-application-query-bootstrap" },

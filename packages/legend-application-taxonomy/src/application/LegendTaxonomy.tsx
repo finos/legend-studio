@@ -28,13 +28,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendTaxonomyApplicationConfigurationData,
   LegendTaxonomyApplicationConfig,
 } from './LegendTaxonomyApplicationConfig.js';
 
-export const setupLegendQueryUILibrary = async (): Promise<void> => {
+const setupLegendTaxonomyUILibrary = async (): Promise<void> => {
   configureReactHotkeys({
     // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
     // We want to listen to hotkey from every where in the app so we disable that
@@ -51,7 +51,7 @@ export class LegendTaxonomy extends LegendApplication {
     const application = new LegendTaxonomy(
       LegendTaxonomyPluginManager.create(),
     );
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePlugins([new Core_PureGraphManagerPlugin()]);
     return application;
   }
 
@@ -64,7 +64,7 @@ export class LegendTaxonomy extends LegendApplication {
   async loadApplication(): Promise<void> {
     // Setup React application libraries
     await setupLegendApplicationUILibrary(this.pluginManager, this.logger);
-    await setupLegendQueryUILibrary();
+    await setupLegendTaxonomyUILibrary();
 
     // Render React application
     const rootElement = createRoot(getRootElement());

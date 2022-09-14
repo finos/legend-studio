@@ -399,10 +399,6 @@
 
 - [#755](https://github.com/finos/legend-studio/pull/755) [`61821cd6`](https://github.com/finos/legend-studio/commit/61821cd62c3b8b1a16124a092038ab963311de17) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Rename `CORE_ELEMENT_PATH` to `CORE_PURE_PATH`.
 
-### Minor Changes
-
-- [#740](https://github.com/finos/legend-studio/pull/740) [`947e10e4`](https://github.com/finos/legend-studio/commit/947e10e4fabb0a18c31222aa76166c04763f085d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve QueryBuilder_PureProtocolProcessorPlugin to handle PropertyExpression type inference
-
 ### Patch Changes
 
 - [#775](https://github.com/finos/legend-studio/pull/775) [`4c81f3a6`](https://github.com/finos/legend-studio/commit/4c81f3a6b12cdfc098763b307284d7ea4a9c85b8) ([@akphi](https://github.com/akphi)) - Fix a typo in class relation, `subClass` and `superClass` become `subclass` and `superclass` respectively.

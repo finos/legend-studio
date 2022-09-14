@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-export { QueryBuilder_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/QueryBuilder_PureProtocolProcessorPlugin.js';
+export * from './stores/QueryBuilderBootstraper.js';
+export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
 export { QUERY_BUILDER_TEST_ID } from './components//QueryBuilder_TestID.js';
 export { QueryBuilder } from './components//QueryBuilder.js';
@@ -32,7 +33,6 @@ export {
   ServiceQueryBuilderState,
 } from './stores//workflows/ServiceQueryBuilderState.js';
 
-export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 export { getQueryBuilderGraphManagerExtension } from './graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graphManager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';

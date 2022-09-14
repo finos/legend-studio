@@ -20,27 +20,27 @@ import {
   type TEMPORARY__JestMock,
   integrationTest,
 } from '@finos/legend-shared';
-import {
-  type EditorStore,
-  LegendStudioPluginManager,
-  LEGEND_STUDIO_TEST_ID,
-  TEST__openElementFromExplorerTree,
-  TEST__getLegendStudioApplicationConfig,
-  TEST__provideMockedEditorStore,
-  TEST__setUpEditorWithDefaultSDLCData,
-  FormModeCompilationOutcome,
-} from '@finos/legend-application-studio';
 import { TEST__provideMockedGraphManagerState } from '@finos/legend-graph';
-import { QueryBuilder_LegendStudioApplicationPreset } from '../../QueryBuilder_LegendStudioApplicationPreset.js';
 import { TEST__provideMockedApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
-import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
+import {
+  QueryBuilder_GraphManagerPreset,
+  QUERY_BUILDER_TEST_ID,
+} from '@finos/legend-query-builder';
+import { LegendStudioPluginManager } from '../../application/LegendStudioPluginManager.js';
+import {
+  TEST__openElementFromExplorerTree,
+  TEST__provideMockedEditorStore,
+  TEST__setUpEditorWithDefaultSDLCData,
+} from '../EditorComponentTestUtils.js';
+import { FormModeCompilationOutcome } from '../../stores/EditorGraphState.js';
+import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
+import { TEST__getLegendStudioApplicationConfig } from '../../stores/EditorStoreTestUtils.js';
+import type { EditorStore } from '../../stores/EditorStore.js';
 
 const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = LegendStudioPluginManager.create();
-  pluginManager
-    .usePresets([new QueryBuilder_LegendStudioApplicationPreset()])
-    .install();
+  pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
 
   return TEST__provideMockedEditorStore({
     applicationStore: TEST__provideMockedApplicationStore(

@@ -38,10 +38,8 @@ import {
 } from '@finos/legend-shared';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
 import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
-import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
 import type { Entity } from '@finos/legend-storage';
-import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 
 type TestCase = [

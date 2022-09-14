@@ -16,12 +16,9 @@
 
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
-import {
-  type EditorStore,
-  EditorExtensionState,
-  FormModeCompilationOutcome,
-} from '@finos/legend-application-studio';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
+import { FormModeCompilationOutcome } from './EditorGraphState.js';
+import type { EditorStore } from './EditorStore.js';
 
 type EmbeddedQueryBuilderActionConfiguration = {
   key: string;
@@ -34,14 +31,12 @@ type EmbeddedQueryBuilderConfiguration = {
   actionConfigs: EmbeddedQueryBuilderActionConfiguration[];
 };
 
-export class QueryBuilder_EditorExtensionState extends EditorExtensionState {
+export class EmbeddedQueryBuilderState {
   editorStore: EditorStore;
   queryBuilderState?: QueryBuilderState | undefined;
   actionConfigs: EmbeddedQueryBuilderActionConfiguration[] = [];
 
   constructor(editorStore: EditorStore) {
-    super();
-
     makeObservable(this, {
       queryBuilderState: observable,
       actionConfigs: observable,

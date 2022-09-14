@@ -14,4 +14,18 @@
  * limitations under the License.
  */
 
-export * from './QueryBuilder_LegendStudioApplicationPreset.js';
+import packageJson from '../../package.json';
+import { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
+import { CORE_PURE_PATH } from '../graph/MetaModelConst.js';
+
+export class Core_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+  static NAME = packageJson.extensions.pureGraphManagerPlugin;
+
+  constructor() {
+    super(Core_PureGraphManagerPlugin.NAME, packageJson.version);
+  }
+
+  override getExtraExposedSystemElementPath(): string[] {
+    return [CORE_PURE_PATH.PROFILE_DOC, CORE_PURE_PATH.PROFILE_TEMPORAL];
+  }
+}

@@ -56,6 +56,7 @@ import {
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
+import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 export const Editor = withEditorStore(
   observer(() => {
@@ -301,13 +302,14 @@ export const Editor = withEditorStore(
                   </div>
                 </div>
               </div>
-              {extraEditorExtensionComponents}
               <StatusBar actionsDisabled={!editable} />
               {editable && <ProjectSearchCommand />}
               {editorStore.localChangesState.workspaceSyncState
                 .workspaceSyncConflictResolutionState.showModal && (
                 <WorkspaceSyncConflictResolver />
               )}
+              <EmbeddedQueryBuilder />
+              {extraEditorExtensionComponents}
             </GlobalHotKeys>
           </div>
         </div>

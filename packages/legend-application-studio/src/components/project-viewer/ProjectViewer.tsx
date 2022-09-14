@@ -68,6 +68,7 @@ import { Explorer } from '../editor/side-bar/Explorer.js';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {
   const params = useParams<ViewerPathParams>();
@@ -345,9 +346,10 @@ export const ProjectViewer = withEditorStore(
                     </div>
                   </div>
                 </div>
-                <ProjectViewerStatusBar />
-                {extraEditorExtensionComponents}
                 {allowOpeningElement && <ProjectSearchCommand />}
+                <ProjectViewerStatusBar />
+                <EmbeddedQueryBuilder />
+                {extraEditorExtensionComponents}
               </GlobalHotKeys>
             </div>
           </div>

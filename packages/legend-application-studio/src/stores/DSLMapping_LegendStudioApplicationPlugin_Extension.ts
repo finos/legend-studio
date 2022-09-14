@@ -23,8 +23,6 @@ import type {
   SetImplementation,
   InstanceSetImplementation,
 } from '@finos/legend-graph';
-import type { MappingTestState } from './editor-state/element-editor-state/mapping/MappingTestState.js';
-import type { MappingExecutionState } from './editor-state/element-editor-state/mapping/MappingExecutionState.js';
 import type { NewConnectionValueDriver } from './editor/NewElementState.js';
 import type {
   MappingElement,
@@ -94,21 +92,6 @@ export type NewConnectionDriverCreator = (
   editorStore: EditorStore,
   store: Store,
 ) => NewConnectionValueDriver<Connection> | undefined;
-
-export type MappingExecutionQueryEditorActionConfiguration = {
-  key: string;
-  renderer: (
-    executionState: MappingExecutionState,
-  ) => React.ReactNode | undefined;
-};
-
-export type MappingTestQueryEditorActionConfiguration = {
-  key: string;
-  renderer: (
-    testState: MappingTestState,
-    isReadOnly: boolean,
-  ) => React.ReactNode | undefined;
-};
 
 /**
  * @returns a boolean indicating whether the update has ocurred or not
@@ -191,16 +174,6 @@ export interface DSLMapping_LegendStudioApplicationPlugin_Extension
    * Get the list of creators for connection creation state driver given the store.
    */
   getExtraNewConnectionDriverCreators?(): NewConnectionDriverCreator[];
-
-  /**
-   * Get the list of actions for mapping execution query editor.
-   */
-  getExtraMappingExecutionQueryEditorActionConfigurations?(): MappingExecutionQueryEditorActionConfiguration[];
-
-  /**
-   * Get the list of actions for mapping test query editor.
-   */
-  getExtraMappingTestQueryEditorActionConfigurations?(): MappingTestQueryEditorActionConfiguration[];
 
   /**
    * Get the list of instance set implementation source updaters.

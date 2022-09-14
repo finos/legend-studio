@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
+import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+
+export const setupQueryBuilderUILibrary = async (): Promise<void> => {
+  // Register module extensions for `ag-grid`
+  agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
+};

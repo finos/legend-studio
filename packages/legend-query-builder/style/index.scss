@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-@forward 'deps';
+// dependencies
+@import '@ag-grid-community/core/dist/styles/ag-grid.css';
+@import '@ag-grid-community/core/dist/styles/ag-theme-balham-dark.css';
+
 @forward 'query-builder';
 @forward 'query-builder-setup';
 @forward 'query-builder-explorer';

@@ -28,19 +28,24 @@ import {
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';
 import {
   type LegendStudioApplicationConfigurationData,
   LegendStudioApplicationConfig,
 } from './LegendStudioApplicationConfig.js';
 import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
+import {
+  QueryBuilder_GraphManagerPreset,
+  setupQueryBuilderUILibrary,
+} from '@finos/legend-query-builder';
 
 const setupLegendStudioUILibrary = async (
   pluginManager: LegendStudioPluginManager,
   logger: LegendApplicationLogger,
 ): Promise<void> => {
   await setupLegendApplicationUILibrary(pluginManager, logger);
+  await setupQueryBuilderUILibrary();
 
   configureReactHotkeys({
     // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
@@ -56,8 +61,9 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
+    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     application.withBasePlugins([
-      new CorePureGraphManagerPlugin(),
+      new Core_PureGraphManagerPlugin(),
       new Core_LegendStudioApplicationPlugin(),
     ]);
     return application;

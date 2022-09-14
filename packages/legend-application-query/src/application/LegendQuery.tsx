@@ -24,23 +24,22 @@ import {
   type LegendApplicationConfigurationInput,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
-import { ModuleRegistry as agGrid_ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { BrowserRouter } from 'react-router-dom';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
-import { CorePureGraphManagerPlugin } from '@finos/legend-graph';
+import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import {
   type LegendQueryApplicationConfigurationData,
   LegendQueryApplicationConfig,
 } from './LegendQueryApplicationConfig.js';
-import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
+import {
+  QueryBuilder_GraphManagerPreset,
+  setupQueryBuilderUILibrary,
+} from '@finos/legend-query-builder';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
-  // Register module extensions for `ag-grid`
-  agGrid_ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
+  await setupQueryBuilderUILibrary();
   configureReactHotkeys({
     // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
     // We want to listen to hotkey from every where in the app so we disable that
@@ -55,7 +54,7 @@ export class LegendQuery extends LegendApplication {
 
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
-    application.withBasePlugins([new CorePureGraphManagerPlugin()]);
+    application.withBasePlugins([new Core_PureGraphManagerPlugin()]);
     application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     return application;
   }

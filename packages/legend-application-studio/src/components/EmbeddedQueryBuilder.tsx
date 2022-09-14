@@ -23,10 +23,8 @@ import {
   WindowMaximizeIcon,
   EmptyWindowRestoreIcon,
 } from '@finos/legend-art';
-import { useEditorStore } from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
 import { hashObject, noop } from '@finos/legend-shared';
-import { QueryBuilder_EditorExtensionState } from '../stores/QueryBuilder_EditorExtensionState.js';
 import {
   useApplicationNavigationContext,
   ActionAlertActionType,
@@ -37,7 +35,9 @@ import {
   QueryBuilder,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/QueryBuilder_LegendStudioApplicationNavigationContext.js';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../stores/LegendStudioApplicationNavigationContext.js';
+import { useEditorStore } from './editor/EditorStoreProvider.js';
+import type { EmbeddedQueryBuilderState } from '../stores/EmbeddedQueryBuilderState.js';
 
 /**
  * NOTE: Query builder is by right a mini-app so we have it hosted in a full-screen modal dialog
@@ -45,23 +45,23 @@ import { QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '
  */
 const QueryBuilderDialog = observer(
   (props: {
-    queryBuilderExtensionState: QueryBuilder_EditorExtensionState;
+    embeddedQueryBuilderState: EmbeddedQueryBuilderState;
     queryBuilderState: QueryBuilderState;
   }) => {
-    const { queryBuilderExtensionState, queryBuilderState } = props;
+    const { embeddedQueryBuilderState, queryBuilderState } = props;
     const applicationStore = useApplicationStore();
     const [isMaximized, setIsMaximized] = useState(false);
     const toggleMaximize = (): void => setIsMaximized(!isMaximized);
     const closeQueryBuilder = (): void => {
       flowResult(
-        queryBuilderExtensionState.setEmbeddedQueryBuilderConfiguration(
+        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
           undefined,
         ),
       ).catch(applicationStore.alertUnhandledError);
     };
 
     useApplicationNavigationContext(
-      QUERY_BUILDER_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
+      LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
     );
 
     const confirmCloseQueryBuilder = (): void => {
@@ -98,7 +98,7 @@ const QueryBuilderDialog = observer(
 
     return (
       <Dialog
-        open={Boolean(queryBuilderExtensionState.queryBuilderState)}
+        open={Boolean(embeddedQueryBuilderState.queryBuilderState)}
         onClose={noop} // disallow closing dialog by using Esc key or clicking on the backdrop
         classes={{
           root: 'editor-modal__root-container',
@@ -115,7 +115,7 @@ const QueryBuilderDialog = observer(
         >
           <div className="query-builder__dialog__header">
             <div className="query-builder__dialog__header__actions">
-              {queryBuilderExtensionState.actionConfigs.map((config) => (
+              {embeddedQueryBuilderState.actionConfigs.map((config) => (
                 <Fragment key={config.key}>
                   {config.renderer(queryBuilderState)}
                 </Fragment>
@@ -151,16 +151,14 @@ const QueryBuilderDialog = observer(
 
 export const EmbeddedQueryBuilder = observer(() => {
   const editorStore = useEditorStore();
-  const queryBuilderExtensionState = editorStore.getEditorExtensionState(
-    QueryBuilder_EditorExtensionState,
-  );
+  const queryBuilderExtensionState = editorStore.embeddedQueryBuilderState;
 
   if (!queryBuilderExtensionState.queryBuilderState) {
     return null;
   }
   return (
     <QueryBuilderDialog
-      queryBuilderExtensionState={queryBuilderExtensionState}
+      embeddedQueryBuilderState={queryBuilderExtensionState}
       queryBuilderState={queryBuilderExtensionState.queryBuilderState}
     />
   );

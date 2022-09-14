@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-@forward 'deps';
+// dependencies
+@import '@finos/legend-extension-dsl-data-space/lib/index.css';
+
 @forward 'standalone-data-space-viewer';
 @forward 'taxonomy-node-viewer';
 @forward 'taxonomy-explorer';

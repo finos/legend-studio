@@ -23,8 +23,8 @@ import { createMemoryHistory } from 'history';
 import { Log } from '@finos/legend-shared';
 import {
   type RawMappingModelCoverageAnalysisResult,
+  type RawLambda,
   GraphManagerState,
-  RawLambda,
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
@@ -40,8 +40,8 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import { QueryBuilder } from './QueryBuilder.js';
 import {
+  type QueryBuilderState,
   INTERNAL__BasicQueryBuilderState,
-  QueryBuilderState,
 } from '../stores/QueryBuilderState.js';
 import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
