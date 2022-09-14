@@ -184,11 +184,12 @@ export const createConnectionSnippetWithPostProcessorSuggestionSnippet = (
   `RelationalDatabaseConnection \${1:model::NewConnection}
   {
     store: \${2:model::SomeStore};
-    // example of a simple H2 connection with a mapper post processor
     type: \${3:H2};
     specification: \${4:LocalH2 {\\}};
     auth: \${5:DefaultH2 {\\}};
-    \n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n}`;
+    postProcessors:
+    [
+    \n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n]; }`;
 
 // ------------------------------------- Mapping -------------------------------------
 
