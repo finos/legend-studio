@@ -2,4 +2,4 @@
 '@finos/legend-art': minor
 ---
 
-Panel row component.
+Add PanelList and PanelListItem components
