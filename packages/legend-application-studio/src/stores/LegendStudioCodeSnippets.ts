@@ -189,7 +189,7 @@ export const createConnectionSnippetWithPostProcessorSuggestionSnippet = (
     auth: \${5:DefaultH2 {\\}};
     postProcessors:
     [
-    \n${indent(snippetText, ' '.repeat(TAB_SIZE))}\n]; }`;
+    ${indent(snippetText, ' '.repeat(TAB_SIZE))}\n`;
 
 // ------------------------------------- Mapping -------------------------------------
 
