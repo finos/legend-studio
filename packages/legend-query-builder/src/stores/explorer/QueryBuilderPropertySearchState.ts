@@ -23,6 +23,7 @@ import {
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import {
+  ActionState,
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
@@ -32,6 +33,7 @@ import {
   QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH,
   QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
+  QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
 } from '../QueryBuilderConfig.js';
 import {
   getQueryBuilderPropertyNodeData,
@@ -41,6 +43,7 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { Fuse } from './CJS_Fuse.cjs';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -50,7 +53,11 @@ export class QueryBuilderPropertySearchState {
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   isSearchPanelOpen = false;
   isSearchPanelHidden = false;
+  isOverSearchLimit = false;
   searchText = '';
+  searchState = ActionState.create().pass();
+  searchEngine: Fuse<QueryBuilderExplorerTreeNodeData>;
+
   filterByMultiple: boolean;
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
 
@@ -59,8 +66,10 @@ export class QueryBuilderPropertySearchState {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
+      isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
+      searchEngine: observable,
       filteredPropertyNodes: computed,
       setSearchText: action,
       setSearchedMappedPropertyNodes: action,
@@ -80,6 +89,8 @@ export class QueryBuilderPropertySearchState {
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
     ];
+
+    this.searchEngine = new Fuse(this.allMappedPropertyNodes);
   }
 
   toggleTypeFilter(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -294,19 +305,58 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
-  fetchMappedPropertyNodes(propName: string): void {
-    const propertyName = propName.toLowerCase();
-    for (const node of this.allMappedPropertyNodes) {
-      if (node.label.toLowerCase().includes(propertyName)) {
-        this.searchedMappedPropertyNodes.push(node);
-        if (
-          this.searchedMappedPropertyNodes.length >
-          QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
-        ) {
-          break;
-        }
-      }
+  fetchMappedPropertyNodes(propSearchText: string, fetchAll?: boolean): void {
+    const propertySearchText = propSearchText.toLowerCase();
+
+    this.searchState.inProgress();
+    this.searchEngine = new Fuse(this.allMappedPropertyNodes, {
+      includeScore: true,
+      shouldSort: true,
+      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+      ignoreLocation: true,
+      threshold: 0.3,
+      keys: [
+        {
+          name: 'id',
+          weight: 4,
+        },
+        {
+          name: 'label',
+          weight: 1,
+        },
+      ],
+    });
+
+    const allSearchedMappedPropertyNodes = Array.from(
+      this.searchEngine.search(propertySearchText).values(),
+    ).map((result) => {
+      const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
+      return new QueryBuilderExplorerTreePropertyNodeData(
+        node.id,
+        node.label,
+        node.dndText,
+        node.property,
+        node.parentId,
+        node.isPartOfDerivedPropertyBranch,
+        node.mappingData,
+      );
+    });
+
+    if (
+      allSearchedMappedPropertyNodes.length >
+      QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
+    ) {
+      this.isOverSearchLimit = true;
+      this.searchedMappedPropertyNodes = allSearchedMappedPropertyNodes.slice(
+        0,
+        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
+      );
+    } else {
+      this.isOverSearchLimit = false;
+      this.searchedMappedPropertyNodes = allSearchedMappedPropertyNodes;
     }
+
+    this.searchState.complete();
   }
 
   setIsSearchPanelOpen(val: boolean): void {

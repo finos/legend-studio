@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_SOURCE_ID_LABEL {
-  QUERY_BUILDER = 'query-builder',
-  PROJECTION = 'projection',
-}
-
-export const DEFAULT_LAMBDA_VARIABLE_NAME = 'x';
-export const DEFAULT_VARIABLE_NAME = 'var';
-export const DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME = 'row';
-
-export const QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH = 5;
-export const QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT = 100;
-export const QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH = 3;
-export enum QUERY_BUILDER_PROPERTY_SEARCH_TYPE {
-  CLASS = 'CLASS',
-  STRING = 'STRING',
-  BOOLEAN = 'BOOLEAN',
-  NUMBER = 'NUMBER',
-  DATE = 'DATE',
-}
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+ export { default as Fuse } from 'fuse.js';

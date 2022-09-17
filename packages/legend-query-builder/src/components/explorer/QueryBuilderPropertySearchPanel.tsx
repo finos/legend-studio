@@ -30,6 +30,9 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   useDragPreviewLayer,
+  PlusIcon,
+  PanelLoadingIndicator,
+  BlankPanelContent,
 } from '@finos/legend-art';
 import {
   Class,
@@ -282,22 +285,33 @@ export const QueryBuilderPropertySearchPanel = observer(
     const { queryBuilderState, triggerElement } = props;
     const explorerState = queryBuilderState.explorerState;
     const propertySearchPanelState = explorerState.propertySearchState;
+    const hasHiddenResults =
+      propertySearchPanelState.isOverSearchLimit &&
+      propertySearchPanelState.filteredPropertyNodes.length !== 0;
     const searchInputRef = useRef<HTMLInputElement>(null);
     const changePropertyName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
       propertySearchPanelState.setSearchText(event.target.value);
       propertySearchPanelState.refreshPropertyState();
-      if (propertySearchPanelState.searchText.length >= 3) {
-        propertySearchPanelState.fetchMappedPropertyNodes(
-          propertySearchPanelState.searchText,
-        );
-      }
+      propertySearchPanelState.fetchMappedPropertyNodes(
+        propertySearchPanelState.searchText,
+      );
     };
     const clearPropertyName = (): void => {
       propertySearchPanelState.setSearchText('');
       propertySearchPanelState.refreshPropertyState();
     };
+
+    const seeAllResults = (): void => {
+      propertySearchPanelState.refreshPropertyState();
+
+      propertySearchPanelState.fetchMappedPropertyNodes(
+        propertySearchPanelState.searchText,
+        true,
+      );
+    };
+
     const handleClose = (): void => {
       clearPropertyName();
       propertySearchPanelState.setIsSearchPanelOpen(false);
@@ -356,7 +370,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                 )}
                 onChange={changePropertyName}
                 value={propertySearchPanelState.searchText}
-                placeholder="Search for a property"
+                placeholder="Search for a property (min 3 chars)"
               />
               {!propertySearchPanelState.searchText ? (
                 <div className="query-builder-property-search-panel__input__search__icon">
@@ -364,9 +378,12 @@ export const QueryBuilderPropertySearchPanel = observer(
                 </div>
               ) : (
                 <>
-                  <div className="query-builder-property-search-panel__input__search__count">
-                    {propertySearchPanelState.filteredPropertyNodes.length}
-                  </div>
+                  {propertySearchPanelState.searchText.length >= 3 && (
+                    <div className="query-builder-property-search-panel__input__search__count">
+                      {propertySearchPanelState.filteredPropertyNodes.length +
+                        (hasHiddenResults ? '+' : '')}
+                    </div>
+                  )}
                   <button
                     className="query-builder-property-search-panel__input__clear-btn"
                     tabIndex={-1}
@@ -594,17 +611,40 @@ export const QueryBuilderPropertySearchPanel = observer(
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <div className="query-builder-property-search-panel__results">
-                  {propertySearchPanelState.filteredPropertyNodes.map(
-                    (node) => (
-                      <QueryBuilderTreeNodeViewer
-                        key={node.id}
-                        node={node}
-                        queryBuilderState={queryBuilderState}
-                        level={1}
-                        stepPaddingInRem={0}
-                        explorerState={queryBuilderState.explorerState}
-                      />
-                    ),
+                  <PanelLoadingIndicator
+                    isLoading={
+                      propertySearchPanelState.searchState.isInProgress
+                    }
+                  />
+                  {!propertySearchPanelState.searchState.isInProgress && (
+                    <>
+                      {propertySearchPanelState.filteredPropertyNodes.map(
+                        (node) => (
+                          <QueryBuilderTreeNodeViewer
+                            key={node.id}
+                            node={node}
+                            queryBuilderState={queryBuilderState}
+                            level={1}
+                            stepPaddingInRem={0}
+                            explorerState={queryBuilderState.explorerState}
+                          />
+                        ),
+                      )}
+                      {hasHiddenResults && (
+                        <button
+                          className="query-builder-property-search-panel__input__see_all-btn"
+                          tabIndex={-1}
+                          onClick={seeAllResults}
+                        >
+                          <PlusIcon /> See All Results
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {propertySearchPanelState.searchState.isInProgress && (
+                    <BlankPanelContent>
+                      Loading property searches...
+                    </BlankPanelContent>
                   )}
                 </div>
               </ResizablePanel>

@@ -245,8 +245,8 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               No contextual documentation found!
             </div>
             <div className="virtual-assistant__panel__placeholder__instruction">
-              Keep using the app, when contextual doc available, we will let you
-              know!
+              Keep using the app; when a contextual doc is available, we will
+              let you know!
             </div>
           </div>
         </BlankPanelContent>
