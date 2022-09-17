@@ -25,6 +25,7 @@ import {
   debounce,
   throttle,
   mergeWith,
+  toNumber,
   type DebouncedFunc,
 } from 'lodash-es';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
@@ -197,6 +198,14 @@ export const sortObjectKeys = (
     return obj;
   };
   return _sort(value) as Record<PropertyKey, unknown>;
+};
+
+export const parseNumber = (val: string): number => {
+  const num = toNumber(val);
+  if (isNaN(num)) {
+    throw new Error(`Can't parse number '${val}'`);
+  }
+  return num;
 };
 
 /**

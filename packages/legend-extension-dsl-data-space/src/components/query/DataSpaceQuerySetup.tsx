@@ -29,7 +29,7 @@ import {
   createFilter,
 } from '@finos/legend-art';
 import { useQuerySetupStore } from '@finos/legend-application-query';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -70,7 +70,6 @@ export const DataspaceQuerySetup = observer(
 
     const back = (): void => {
       setupStore.setSetupState(undefined);
-      querySetupState.setCurrentDataSpace(undefined);
     };
 
     // data space
@@ -173,7 +172,7 @@ export const DataspaceQuerySetup = observer(
             })}
             onClick={next}
             disabled={!canProceed}
-            title="Proceed"
+            title="Create a new query"
           >
             <ArrowRightIcon />
           </button>

@@ -22,6 +22,7 @@ import {
   SerializationFactory,
 } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
+import { GAV_DELIMITER } from '@finos/legend-storage';
 
 const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
 
@@ -59,21 +60,21 @@ export class ProjectDependency implements Hashable {
   }
 
   get isLegacyDependency(): boolean {
-    return !this.projectId.includes(':');
+    return !this.projectId.includes(GAV_DELIMITER);
   }
 
   get groupId(): string | undefined {
     if (this.isLegacyDependency) {
       return undefined;
     }
-    return this.projectId.split(':')[0];
+    return this.projectId.split(GAV_DELIMITER)[0];
   }
 
   get artifactId(): string | undefined {
     if (this.isLegacyDependency) {
       return undefined;
     }
-    return this.projectId.split(':')[1];
+    return this.projectId.split(GAV_DELIMITER)[1];
   }
 
   get hashCode(): string {

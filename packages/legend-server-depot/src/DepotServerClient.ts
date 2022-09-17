@@ -16,7 +16,10 @@
 
 import type { Entity } from '@finos/legend-storage';
 import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
-import { LATEST_VERSION_ALIAS, SNAPSHOT_VERSION_ALIAS } from './DepotUtils.js';
+import {
+  LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from './DepotVersionAliases.js';
 import type { DepotScope } from './models/DepotScope.js';
 import type { ProjectData } from './models/ProjectData.js';
 import {

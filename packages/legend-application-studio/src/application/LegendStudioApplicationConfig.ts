@@ -111,6 +111,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   ) {
     super(input);
 
+    // engine
     assertNonNullable(
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -119,8 +120,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       input.configData.engine.url,
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
-
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
+
+    // depot
     assertNonNullable(
       input.configData.depot,
       `Can't configure application: 'depot' field is missing`,
@@ -130,6 +132,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
 
+    // sdlc
     assertNonNullable(
       input.configData.sdlc,
       `Can't configure application: 'sdlc' field is missing`,
@@ -140,6 +143,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     );
     this.SDLCServerBaseHeaders = input.configData.sdlc.baseHeaders;
 
+    // options
     this.options = LegendStudioApplicationCoreOptions.create(
       (input.configData.extensions?.core ??
         {}) as PlainObject<LegendStudioApplicationCoreOptions>,

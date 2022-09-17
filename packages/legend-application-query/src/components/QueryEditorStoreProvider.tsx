@@ -23,14 +23,12 @@ import {
   ExistingQueryEditorStore,
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import {
-  parseGAVCoordinates,
-  useDepotServerClient,
-} from '@finos/legend-server-depot';
+import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   useLegendQueryApplicationStore,
   useLegendQueryBaseStore,
 } from './LegendQueryBaseStoreProvider.js';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 
 export const QueryEditorStoreContext = createContext<
   QueryEditorStore | undefined

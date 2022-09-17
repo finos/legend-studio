@@ -250,7 +250,7 @@ export const enumValueMapping_updateSourceValue = action(
       sourceValue_setValue(
         sourceValue,
         sourceType instanceof Type && sourceType.name === PRIMITIVE_TYPE.INTEGER
-          ? parseInt(val as string)
+          ? parseInt(val as string, 10)
           : val,
       );
     }

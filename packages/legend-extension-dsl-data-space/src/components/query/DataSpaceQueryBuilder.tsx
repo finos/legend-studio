@@ -43,7 +43,7 @@ import {
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect, useMemo, useState } from 'react';
 import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';

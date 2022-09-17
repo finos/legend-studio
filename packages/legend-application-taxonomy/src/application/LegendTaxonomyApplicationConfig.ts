@@ -87,6 +87,7 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       setCurrentTaxonomyTreeOption: action,
     });
 
+    // taxonomy
     assertNonNullable(
       input.configData.taxonomy,
       `Can't configure application: 'taxonomy' field is missing`,
@@ -127,11 +128,7 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
     }
     this.currentTaxonomyTreeOption = this.defaultTaxonomyTreeOption;
 
-    assertNonNullable(
-      input.configData.engine,
-      `Can't configure application: 'engine' field is missing`,
-    );
-
+    // engine
     assertNonNullable(
       input.configData.engine,
       `Can't configure application: 'engine' field is missing`,
@@ -141,20 +138,38 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       `Can't configure application: 'engine.url' field is missing or empty`,
     );
     this.engineQueryServerUrl = input.configData.engine.queryUrl;
+
+    // depot
+    assertNonNullable(
+      input.configData.depot,
+      `Can't configure application: 'depot' field is missing`,
+    );
     this.depotServerUrl = guaranteeNonEmptyString(
       input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
+    );
+    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
+      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
+
+    // query
+    assertNonNullable(
+      input.configData.query,
+      `Can't configure application: 'query' field is missing`,
     );
     this.queryUrl = guaranteeNonEmptyString(
       input.configData.query.url,
       `Can't configure application: 'query.url' field is missing or empty`,
     );
+
+    // studio
+    assertNonNullable(
+      input.configData.studio,
+      `Can't configure application: 'studio' field is missing`,
+    );
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
     );
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
-      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
   }
 
   get defaultTaxonomyTreeOption(): TaxonomyTreeOption {

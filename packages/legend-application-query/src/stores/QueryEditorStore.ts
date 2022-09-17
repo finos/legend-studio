@@ -57,10 +57,9 @@ import {
   generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  type ProjectGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
 import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';

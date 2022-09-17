@@ -15,19 +15,15 @@
  */
 
 import {
+  AssertionError,
   assertTrue,
   guaranteeNonEmptyString,
   isNonNullable,
+  parseNumber,
+  returnUndefOnError,
 } from '@finos/legend-shared';
 
 export const GAV_DELIMITER = ':';
-/**
- * NOTE: `HEAD` alias does not exist in depot server
- * instead, it uses `master-SNAPSHOT` which to us is not generic enough.
- */
-export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
-export const LATEST_VERSION_ALIAS = 'latest';
-export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
 
 export interface ProjectGAVCoordinates {
   groupId: string;
@@ -65,13 +61,7 @@ export const parseGACoordinates = (
   };
 };
 
-export const parseGAVCoordinates = (
-  gav: string,
-): {
-  groupId: string;
-  artifactId: string;
-  versionId: string;
-} => {
+export const parseGAVCoordinates = (gav: string): ProjectGAVCoordinates => {
   const parts = gav.split(GAV_DELIMITER);
   assertTrue(
     parts.length === 3,
@@ -107,3 +97,53 @@ export const parseGAVCoordinates = (
 export const compareSemVerVersions = (val1: string, val2: string): number =>
   // TODO: verify if the version match certain patterns
   val1.localeCompare(val2, undefined, { numeric: true });
+
+export interface ProjectIdentifier {
+  prefix?: string | undefined;
+  id: number;
+}
+
+const PROJECT_IDENTIFIER_DELIMITER = '-';
+
+export const parseProjectIdentifier = (
+  projectId: string,
+): ProjectIdentifier => {
+  const parts = projectId.split(PROJECT_IDENTIFIER_DELIMITER);
+  if (parts.length === 1) {
+    const id = returnUndefOnError(() =>
+      parseNumber(
+        guaranteeNonEmptyString(
+          parts[0]?.trim(),
+          `Project identifier ID number is missing or empty`,
+        ),
+      ),
+    );
+    if (id === undefined) {
+      throw new AssertionError(`Project identifier ID number is not a number`);
+    }
+    return {
+      id,
+    };
+  } else if (parts.length === 2) {
+    const prefix = parts[0]?.trim();
+    const id = returnUndefOnError(() =>
+      parseNumber(
+        guaranteeNonEmptyString(
+          parts[1]?.trim(),
+          `Project identifier ID number is missing or empty`,
+        ),
+      ),
+    );
+    if (id === undefined) {
+      throw new AssertionError(`Project identifier ID number is not a number`);
+    }
+    return {
+      prefix,
+      id,
+    };
+  } else {
+    throw new AssertionError(
+      `Can't parse project identifier '${projectId}': expect the coordinates to follow format {prefix}${GAV_DELIMITER}{ID}, or {ID}`,
+    );
+  }
+};

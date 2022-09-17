@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { generatePath } from 'react-router';

@@ -32,7 +32,7 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import {
   generateStandaloneDataSpaceViewerRoute,
   generateExploreTaxonomyTreeNodeDataSpaceRoute,

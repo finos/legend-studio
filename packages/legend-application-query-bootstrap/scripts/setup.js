@@ -49,6 +49,12 @@ export const setup = (outputDir) => {
         },
         studio: {
           url: 'http://localhost:8080/studio',
+          instances: [
+            {
+              sdlcProjectIDPrefix: 'PROD',
+              url: 'http://localhost:8080/studio',
+            },
+          ],
         },
       },
       undefined,

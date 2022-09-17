@@ -36,12 +36,15 @@ import {
   type Service,
   QuerySearchSpecification,
   BasicGraphManagerState,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
+  type StoredEntity,
   ProjectData,
+  DepotScope,
 } from '@finos/legend-server-depot';
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import { APPLICATION_EVENT, TAB_SIZE } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
@@ -49,8 +52,14 @@ import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
   type MappingRuntimeCompatibilityAnalysisResult,
   type ServiceExecutionAnalysisResult,
+  type ServiceInfo,
   getQueryBuilderGraphManagerExtension,
+  extractServiceInfo,
 } from '@finos/legend-query-builder';
+import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl,
+} from './LegendQueryRouter.js';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -122,6 +131,77 @@ export class EditExistingQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadQueriesState.fail();
+      this.setupStore.applicationStore.notifyError(error);
+    }
+  }
+}
+
+const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 3;
+const DEFAULT_SERVICE_LOADER_LIMIT = 10;
+
+export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
+  services: ServiceInfo[] = [];
+  loadServicesState = ActionState.create();
+
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
+
+    makeObservable(this, {
+      services: observable,
+      loadServices: flow,
+    });
+  }
+
+  async loadServiceUpdater(serviceInfo: ServiceInfo): Promise<void> {
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await this.setupStore.depotServerClient.getProject(
+        serviceInfo.groupId,
+        serviceInfo.artifactId,
+      ),
+    );
+
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry =
+      this.setupStore.applicationStore.config.studioInstances.find(
+        (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+      );
+    if (matchingSDLCEntry) {
+      this.setupStore.applicationStore.navigator.jumpTo(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
+          matchingSDLCEntry.url,
+          serviceInfo.path,
+        ),
+      );
+    } else {
+      this.setupStore.applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to update the service`,
+      );
+    }
+  }
+
+  *loadServices(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= MINIMUM_SERVICE_LOADER_SEARCH_LENGTH;
+    this.loadServicesState.inProgress();
+    try {
+      this.services = (
+        (yield this.setupStore.depotServerClient.getEntitiesByClassifierPath(
+          CORE_PURE_PATH.SERVICE,
+          {
+            search: isValidSearchString ? searchText : undefined,
+            // NOTE: since this mode is meant for contribution, we want to load services
+            // on the snapshot version (i.e. merged to the default branch on the projects)
+            scope: DepotScope.SNAPSHOT,
+            limit: DEFAULT_SERVICE_LOADER_LIMIT,
+          },
+        )) as StoredEntity[]
+      ).map((storedEntity) => extractServiceInfo(storedEntity, true));
+      this.loadServicesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.loadServicesState.fail();
       this.setupStore.applicationStore.notifyError(error);
     }
   }
@@ -347,6 +427,30 @@ export class LoadServiceQuerySetupState extends QuerySetupState {
         error,
       );
       this.setupStore.applicationStore.notifyError(error);
+    }
+  }
+
+  async loadProjectServiceUpdater(): Promise<void> {
+    if (this.currentProject) {
+      const project = this.currentProject;
+      // find the matching SDLC instance
+      const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+      const matchingSDLCEntry =
+        this.setupStore.applicationStore.config.studioInstances.find(
+          (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+        );
+      if (matchingSDLCEntry) {
+        this.setupStore.applicationStore.navigator.jumpTo(
+          EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
+            matchingSDLCEntry.url,
+            project.projectId,
+          ),
+        );
+      } else {
+        this.setupStore.applicationStore.notifyWarning(
+          `Can't find the corresponding SDLC instance to load project '${project.projectId}'`,
+        );
+      }
     }
   }
 }

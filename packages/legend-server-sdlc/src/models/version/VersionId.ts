@@ -16,11 +16,9 @@
 
 import { createModelSchema, primitive } from 'serializr';
 import { action, computed, observable, makeObservable } from 'mobx';
-import {
-  assertTrue,
-  guaranteeNonEmptyString,
-  SerializationFactory,
-} from '@finos/legend-shared';
+import { SerializationFactory } from '@finos/legend-shared';
+
+const VERSION_DELIMETER = '.';
 
 export class VersionId {
   majorVersion: number;
@@ -40,8 +38,6 @@ export class VersionId {
       setMinorVersion: action,
       setPatchVersion: action,
       id: computed,
-      pathId: computed,
-      setId: action,
     });
 
     this.majorVersion = majorVersion ?? 0;
@@ -68,41 +64,6 @@ export class VersionId {
   }
 
   get id(): string {
-    return `${this.majorVersion}.${this.minorVersion}.${this.patchVersion}`;
-  }
-  get pathId(): string {
-    return `${this.majorVersion}_${this.minorVersion}_${this.patchVersion}`;
-  }
-
-  setId(id: string): void {
-    const versionArray = id.split('.');
-    assertTrue(
-      versionArray.length === 3,
-      'Versions must be in the format <majorVersion>.<minVersion>.<patchVersion>',
-    );
-    const majorVersion = parseInt(
-      guaranteeNonEmptyString(
-        versionArray[0],
-        `Version ID major version is missing or empty`,
-      ),
-      10,
-    );
-    const minorVersion = parseInt(
-      guaranteeNonEmptyString(
-        versionArray[1],
-        `Version ID minor version is missing or empty`,
-      ),
-      10,
-    );
-    const patchVersion = parseInt(
-      guaranteeNonEmptyString(
-        versionArray[2],
-        `Version ID patch version is missing or empty`,
-      ),
-      10,
-    );
-    this.setMajorVersion(majorVersion);
-    this.setMinorVersion(minorVersion);
-    this.setPatchVersion(patchVersion);
+    return `${this.majorVersion}${VERSION_DELIMETER}${this.minorVersion}${VERSION_DELIMETER}${this.patchVersion}`;
   }
 }

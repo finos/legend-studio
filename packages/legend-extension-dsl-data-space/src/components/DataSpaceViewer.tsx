@@ -50,7 +50,7 @@ import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
 } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;

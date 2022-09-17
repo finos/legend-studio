@@ -37,7 +37,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -49,7 +49,6 @@ import {
   ProjectVersionEntities,
   ProjectData,
   ProjectDependencyCoordinates,
-  generateGAVCoordinates,
   ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import {

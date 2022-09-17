@@ -229,6 +229,7 @@ export {
 export {
   RiShapeLine as ShapeLineIcon,
   RiTestTubeFill as TestTubeIcon,
+  RiRobotFill as DroidIcon,
 } from 'react-icons/ri';
 export {
   TbArrowsJoin2 as ArrowsJoinIcon,

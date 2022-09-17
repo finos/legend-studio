@@ -36,3 +36,4 @@ export {
 export { getQueryBuilderGraphManagerExtension } from './graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graphManager/action/analytics/ServiceExecutionAnalysis.js';
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
+export * from './stores/ServiceInfo.js';

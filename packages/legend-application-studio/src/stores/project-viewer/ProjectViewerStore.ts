@@ -32,7 +32,11 @@ import {
   generateViewRevisionRoute,
   generateViewProjectRoute,
 } from '../LegendStudioRouter.js';
-import type { Entity } from '@finos/legend-storage';
+import {
+  type Entity,
+  type ProjectGAVCoordinates,
+  parseGAVCoordinates,
+} from '@finos/legend-storage';
 import {
   ProjectConfiguration,
   Revision,
@@ -42,11 +46,7 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
-import {
-  type ProjectGAVCoordinates,
-  parseGAVCoordinates,
-  ProjectData,
-} from '@finos/legend-server-depot';
+import { ProjectData } from '@finos/legend-server-depot';
 import {
   type WorkflowManagerState,
   ProjectVersionWorkflowManagerState,

@@ -43,7 +43,7 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
-  generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   generateExistingQueryEditorRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
@@ -421,7 +421,7 @@ const QueryEditorHeaderContent = observer(
     const viewQueryProject = (): void => {
       const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
       applicationStore.navigator.openNewWindow(
-        generateStudioProjectViewUrl(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
           applicationStore.config.studioUrl,
           groupId,
           artifactId,

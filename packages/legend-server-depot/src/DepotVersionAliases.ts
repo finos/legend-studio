@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-export { ProjectData } from './models/ProjectData.js';
-export * from './models/ProjectVersionEntities.js';
-export { StoredEntity } from './models/StoredEntity.js';
-export { DepotScope } from './models/DepotScope.js';
-export * from './models/ProjectDependencyInfo.js';
-
-export { DepotServerClient } from './DepotServerClient.js';
-export * from './DepotServerClientProvider.js';
-
-export * from './DepotServerClientTestUtils.js';
-
-export * from './DepotVersionAliases.js';
+/**
+ * NOTE: `HEAD` alias does not exist in depot server
+ * instead, it uses `master-SNAPSHOT` which to us is not generic enough.
+ */
+export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
+export const LATEST_VERSION_ALIAS = 'latest';
+export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';

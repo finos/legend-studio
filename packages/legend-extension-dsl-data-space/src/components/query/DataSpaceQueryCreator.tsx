@@ -17,10 +17,7 @@
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { getQueryParameters } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import {
-  parseGAVCoordinates,
-  useDepotServerClient,
-} from '@finos/legend-server-depot';
+import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   LEGEND_QUERY_PATH_PARAM_TOKEN,
   QueryEditor,
@@ -36,6 +33,7 @@ import {
   DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN,
   DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
 } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{
   children: React.ReactNode;

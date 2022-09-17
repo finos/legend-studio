@@ -20,7 +20,8 @@ import {
   compareSemVerVersions,
   parseGACoordinates,
   parseGAVCoordinates,
-} from '../DepotUtils.js';
+  parseProjectIdentifier,
+} from '../DependencyUtils.js';
 
 test(unitTest('Compare Semver versions'), () => {
   expect(compareSemVerVersions('0.0.0', '0.0.0')).toEqual(0);
@@ -50,4 +51,20 @@ test(unitTest('Parse GA(V) coordinates'), () => {
   });
   expect(() => parseGAVCoordinates('test.group')).toThrow();
   expect(() => parseGAVCoordinates('test.group:test-artifactId')).toThrow();
+});
+
+test(unitTest('Parse project identifier'), () => {
+  expect(parseProjectIdentifier('PREFIX-0')).toEqual({
+    prefix: 'PREFIX',
+    id: 0,
+  });
+  expect(parseProjectIdentifier('PROD-12345')).toEqual({
+    prefix: 'PROD',
+    id: 12345,
+  });
+  expect(parseProjectIdentifier('12345')).toEqual({
+    id: 12345,
+  });
+  expect(() => parseProjectIdentifier('PROD-abasd')).toThrow();
+  expect(() => parseProjectIdentifier('abcd')).toThrow();
 });
