@@ -137,7 +137,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   }
 
   selectPostProcessor = (postProcessor: PostProcessor | undefined): void => {
-    if (!this.postProcessorState && postProcessor) {
+    if (postProcessor) {
       if (postProcessor instanceof MapperPostProcessor) {
         this.postProcessorState = new MapperPostProcessorEditorState(
           postProcessor,
