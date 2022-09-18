@@ -43,7 +43,7 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { Fuse } from './CJS_Fuse.cjs';
+import { Fuse } from './CJS__Fuse.cjs';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -59,6 +59,8 @@ export class QueryBuilderPropertySearchState {
   searchEngine: Fuse<QueryBuilderExplorerTreeNodeData>;
 
   filterByMultiple: boolean;
+  filterByTaggedValues: boolean;
+
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -77,11 +79,14 @@ export class QueryBuilderPropertySearchState {
       setIsSearchPanelHidden: action,
       refreshPropertyState: action,
       setFilterByMultiple: action,
+      setFilterByTaggedValues: action,
       toggleTypeFilter: action,
     });
 
     this.queryBuilderState = queryBuilderState;
     this.filterByMultiple = true;
+    this.filterByTaggedValues = false;
+
     this.typeFilters = [
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
@@ -103,6 +108,12 @@ export class QueryBuilderPropertySearchState {
 
   setFilterByMultiple(val: boolean): void {
     this.filterByMultiple = val;
+  }
+
+  setFilterByTaggedValues(val: boolean): void {
+    this.filterByTaggedValues = val;
+    this.refreshPropertyState();
+    this.fetchMappedPropertyNodes(this.searchText);
   }
 
   getMultiplePropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
@@ -308,6 +319,34 @@ export class QueryBuilderPropertySearchState {
   fetchMappedPropertyNodes(propSearchText: string, fetchAll?: boolean): void {
     const propertySearchText = propSearchText.toLowerCase();
 
+    let searchQualifications = [
+      {
+        name: 'id',
+        weight: 4,
+      },
+      {
+        name: 'label',
+        weight: 1,
+      },
+    ];
+    const taggedValueQualification = [
+      {
+        name: 'taggedValues',
+        getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+          (
+            node as QueryBuilderExplorerTreePropertyNodeData
+          ).property.taggedValues.map((taggedValue) => taggedValue.value),
+        weight: 4,
+      },
+    ];
+
+    if (this.filterByTaggedValues) {
+      searchQualifications = [
+        ...searchQualifications,
+        ...taggedValueQualification,
+      ];
+    }
+
     this.searchState.inProgress();
     this.searchEngine = new Fuse(this.allMappedPropertyNodes, {
       includeScore: true,
@@ -315,16 +354,8 @@ export class QueryBuilderPropertySearchState {
       minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
       ignoreLocation: true,
       threshold: 0.3,
-      keys: [
-        {
-          name: 'id',
-          weight: 4,
-        },
-        {
-          name: 'label',
-          weight: 1,
-        },
-      ],
+      keys: searchQualifications,
+      useExtendedSearch: true,
     });
 
     const allSearchedMappedPropertyNodes = Array.from(
@@ -344,7 +375,8 @@ export class QueryBuilderPropertySearchState {
 
     if (
       allSearchedMappedPropertyNodes.length >
-      QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
+        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT &&
+      !fetchAll
     ) {
       this.isOverSearchLimit = true;
       this.searchedMappedPropertyNodes = allSearchedMappedPropertyNodes.slice(

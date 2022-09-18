@@ -121,6 +121,8 @@ export class AssistantService {
       {
         includeScore: true,
         shouldSort: true,
+        // extended search allows for exact word match through single quote
+        // See https://fusejs.io/examples.html#extended-search
         // Ignore location when computing the search score
         // See https://fusejs.io/concepts/scoring-theory.html
         ignoreLocation: true,
@@ -143,6 +145,7 @@ export class AssistantService {
             weight: 1,
           },
         ],
+        useExtendedSearch: true,
       },
     );
   }

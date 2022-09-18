@@ -43,7 +43,10 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
-import { QUERY_BUILDER_PROPERTY_SEARCH_TYPE } from '../../stores/QueryBuilderConfig.js';
+import {
+  QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+  QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
+} from '../../stores/QueryBuilderConfig.js';
 import {
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
@@ -321,6 +324,11 @@ export const QueryBuilderPropertySearchPanel = observer(
         !propertySearchPanelState.filterByMultiple,
       );
     };
+    const toggleIsTaggedValues = (): void => {
+      propertySearchPanelState.setFilterByTaggedValues(
+        !propertySearchPanelState.filterByTaggedValues,
+      );
+    };
     const handleEnter = (): void => searchInputRef.current?.focus();
 
     return (
@@ -370,7 +378,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                 )}
                 onChange={changePropertyName}
                 value={propertySearchPanelState.searchText}
-                placeholder="Search for a property (min 3 chars)"
+                placeholder={`Search for a property (min ${QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH.toString()} chars)`}
               />
               {!propertySearchPanelState.searchText ? (
                 <div className="query-builder-property-search-panel__input__search__icon">
@@ -444,6 +452,49 @@ export const QueryBuilderPropertySearchPanel = observer(
                           <SquareIcon />
                         )}
                       </button>
+
+                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
+                        Included
+                      </div>
+                    </div>
+                  </div>
+                  <div className="query-builder-property-search-panel__form__section">
+                    <div className="query-builder-property-search-panel__form__section__header__label">
+                      Tagged Values
+                      <div
+                        className="query-builder-property-search-panel__info__label"
+                        title="Includes tagged value in search"
+                      >
+                        <InfoCircleIcon />
+                      </div>
+                    </div>
+                    <div
+                      className={clsx(
+                        'query-builder-property-search-panel__form__section__toggler',
+                        {
+                          'query-builder-property-search-panel__form__section__toggler--disabled':
+                            false,
+                        },
+                      )}
+                    >
+                      <button
+                        className={clsx(
+                          'query-builder-property-search-panel__form__section__toggler__btn',
+                          {
+                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
+                              propertySearchPanelState.filterByTaggedValues,
+                          },
+                        )}
+                        onClick={toggleIsTaggedValues}
+                        tabIndex={-1}
+                      >
+                        {propertySearchPanelState.filterByTaggedValues ? (
+                          <CheckSquareIcon />
+                        ) : (
+                          <SquareIcon />
+                        )}
+                      </button>
+
                       <div className="query-builder-property-search-panel__form__section__toggler__prompt">
                         Included
                       </div>
