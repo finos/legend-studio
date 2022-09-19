@@ -370,7 +370,7 @@ export const QueryBuilderParametersPanel = observer(
           <div className="panel__header__title">
             <div className="panel__header__title__label">parameters</div>
           </div>
-          {!isReadOnly && queryBuilderState.isParameterSupportDisabled && (
+          {!isReadOnly && !queryBuilderState.isParameterSupportDisabled && (
             <div className="panel__header__actions">
               <button
                 className="panel__header__action"
