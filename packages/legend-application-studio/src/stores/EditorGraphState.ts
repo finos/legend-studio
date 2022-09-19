@@ -50,6 +50,7 @@ import {
   ProjectData,
   ProjectDependencyCoordinates,
   generateGAVCoordinates,
+  ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import {
   type SetImplementation,
@@ -95,7 +96,10 @@ import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
-import { CONFIGURATION_EDITOR_TAB } from './editor-state/ProjectConfigurationEditorState.js';
+import {
+  CONFIGURATION_EDITOR_TAB,
+  getConflictsString,
+} from './editor-state/ProjectConfigurationEditorState.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from './DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
@@ -103,6 +107,7 @@ import {
   SET_IMPLEMENTATION_TYPE,
 } from './shared/ModelUtil.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
+import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -1056,7 +1061,7 @@ export class EditorGraphState {
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );
-        const dependencyProjects = new Set<string>();
+        const dependencyProjects = new Map<string, Set<string>>();
         dependencyEntities.forEach((dependencyInfo) => {
           const projectId = dependencyInfo.id;
           // There are a few validations that must be done:
@@ -1069,21 +1074,61 @@ export class EditorGraphState {
           //    e.g. model::someClass -> project1::v1_0_0::model::someClass
           //    But this is a rare and advanced use-case which we will not attempt to handle now.
           if (dependencyProjects.has(projectId)) {
-            const projectVersions = dependencyEntities
-              .filter((e) => e.id === projectId)
-              .map((e) => e.versionId);
-            throw new UnsupportedOperationError(
-              `Depending on multiple versions of a project is not supported. Found dependency on project '${projectId}' with versions: ${projectVersions.join(
-                ', ',
-              )}.`,
+            dependencyProjects.get(projectId)?.add(dependencyInfo.versionId);
+          } else {
+            dependencyProjects.set(
+              dependencyInfo.id,
+              new Set<string>([dependencyInfo.versionId]),
             );
           }
           dependencyEntitiesIndex.set(
             dependencyInfo.id,
             dependencyInfo.entities,
           );
-          dependencyProjects.add(dependencyInfo.id);
         });
+        const hasConflicts = Array.from(dependencyProjects.entries()).find(
+          ([k, v]) => v.size > 1,
+        );
+        if (hasConflicts) {
+          let dependencyInfo: ProjectDependencyInfo | undefined;
+          try {
+            const dependencyTree =
+              (yield this.editorStore.depotServerClient.analyzeDependencyTree(
+                dependencyCoordinates.map((e) =>
+                  ProjectDependencyCoordinates.serialization.toJson(e),
+                ),
+              )) as PlainObject<ProjectVersionEntities>;
+            dependencyInfo =
+              ProjectDependencyInfo.serialization.fromJson(dependencyTree);
+          } catch (error) {
+            assertErrorThrown(error);
+            this.editorStore.applicationStore.log.error(
+              LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+              error,
+            );
+          }
+          const startErrorMessage =
+            'Depending on multiple versions of a project is not supported. Found conflicts:\n';
+          if (dependencyInfo?.conflicts) {
+            throw new UnsupportedOperationError(
+              startErrorMessage + getConflictsString(dependencyInfo),
+            );
+          } else {
+            throw new UnsupportedOperationError(
+              startErrorMessage +
+                Array.from(dependencyProjects.entries())
+                  .map(([k, v]) => {
+                    if (v.size > 1) {
+                      `project: ${k}\n versions: \n${Array.from(
+                        v.values(),
+                      ).join('\n')}`;
+                    }
+                    return '';
+                  })
+                  .join('\n'),
+            );
+          }
+        }
       }
     } catch (error) {
       assertErrorThrown(error);

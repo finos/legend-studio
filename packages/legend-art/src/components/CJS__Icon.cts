@@ -139,6 +139,7 @@ export {
   FaDatabase as DatabaseIcon,
   FaServer as ServerIcon,
   FaTable as TableIcon,
+  FaArchive as ArchiveIcon,
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,

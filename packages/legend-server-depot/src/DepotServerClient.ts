@@ -24,6 +24,7 @@ import {
   ProjectVersionEntities,
 } from './models/ProjectVersionEntities.js';
 import type { StoredEntity } from './models/StoredEntity.js';
+import type { ProjectDependencyInfo } from './models/ProjectDependencyInfo.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
@@ -286,4 +287,12 @@ export class DepotServerClient extends AbstractServerClient {
         versioned: false, // we don't need to add version prefix to entity path
       },
     );
+
+  analyzeDependencyTree = (
+    /**
+     * List of (direct) dependencies.
+     */
+    dependencies: PlainObject<ProjectDependencyCoordinates>[],
+  ): Promise<PlainObject<ProjectDependencyInfo>> =>
+    this.post(`${this._projects()}/analyzeDependencyTree`, dependencies);
 }

@@ -48,7 +48,7 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6060/api',
         },
         depot: {
-          url: 'http://localhost:9090/depot/api',
+          url: 'http://localhost:8075/depot/api',
         },
         documentation: {
           url: 'https://legend.finos.org',

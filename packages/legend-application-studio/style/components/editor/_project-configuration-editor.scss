@@ -259,4 +259,31 @@
       height: 1.8rem;
     }
   }
+
+  &__info {
+    display: flex;
+    height: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  &__conflicts-btn {
+    @include flexCenter;
+
+    margin-left: 1rem;
+    background: var(--color-red-100);
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+  }
+
+  &__tree-btn {
+    @include flexCenter;
+
+    background: var(--color-blue-150);
+    padding: 0 1rem;
+    border-radius: 0.2rem;
+    font-weight: 500;
+    color: var(--color-light-grey-50);
+  }
 }

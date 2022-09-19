@@ -25,6 +25,9 @@ import { observer } from 'mobx-react-lite';
 import {
   ProjectConfigurationEditorState,
   CONFIGURATION_EDITOR_TAB,
+  DEPENDENCY_INFO_TYPE,
+  getDependencyTreeStringFromInfo,
+  getConflictsString,
 } from '../../../../stores/editor-state/ProjectConfigurationEditorState.js';
 import {
   type SelectComponent,
@@ -36,6 +39,8 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExternalLinkSquareIcon,
+  ArchiveIcon,
+  Dialog,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -46,6 +51,8 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  EDITOR_LANGUAGE,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../stores/LegendStudioAppEvent.js';
@@ -55,7 +62,9 @@ import {
   type ProjectData,
   compareSemVerVersions,
   generateGAVCoordinates,
+  type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
+import { generateViewProjectRoute } from '../../../../stores/LegendStudioRouter.js';
 
 interface VersionOption {
   label: string;
@@ -192,14 +201,73 @@ const formatOptionLabel = (option: ProjectOption): React.ReactNode => (
   </div>
 );
 
+const ProjectDependencyInfoModal = observer(
+  (props: {
+    configState: ProjectConfigurationEditorState;
+    info: ProjectDependencyInfo;
+    type: DEPENDENCY_INFO_TYPE;
+  }) => {
+    const { configState, info, type } = props;
+    const closeModal = (): void =>
+      configState.setDependencyInfoModal(undefined);
+    return (
+      <Dialog
+        open={Boolean(configState.dependencyInfoModalType)}
+        onClose={closeModal}
+        classes={{
+          root: 'editor-modal__root-container',
+          container: 'editor-modal__container',
+          paper: 'editor-modal__content',
+        }}
+      >
+        <div className="modal modal--dark editor-modal">
+          <div className="modal__header">
+            <div className="modal__title">{prettyCONSTName(type)}</div>
+          </div>
+          <div className="modal__body">
+            <div className="panel__content">
+              {type === DEPENDENCY_INFO_TYPE.TREE ? (
+                <TextInputEditor
+                  inputValue={getDependencyTreeStringFromInfo(info)}
+                  isReadOnly={true}
+                  language={EDITOR_LANGUAGE.TEXT}
+                  showMiniMap={true}
+                />
+              ) : (
+                <TextInputEditor
+                  inputValue={getConflictsString(info)}
+                  isReadOnly={true}
+                  language={EDITOR_LANGUAGE.TEXT}
+                  showMiniMap={true}
+                />
+              )}
+            </div>
+
+            <div className="modal__footer">
+              <button
+                className="btn modal__footer__close-btn"
+                onClick={closeModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    );
+  },
+);
+
 const ProjectDependencyEditor = observer(
   (props: {
     projectDependency: ProjectDependency;
     deleteValue: () => void;
     isReadOnly: boolean;
+    projects: Map<string, ProjectData>;
   }) => {
     // init
-    const { projectDependency, deleteValue, isReadOnly } = props;
+    const { projectDependency, deleteValue, isReadOnly, projects } = props;
+    const projectDependencyData = projects.get(projectDependency.projectId);
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const projectSelectorRef = useRef<SelectComponent>(null);
@@ -228,6 +296,9 @@ const ProjectDependencyEditor = observer(
         projectDependency.setProjectId(val?.value.coordinates ?? '');
         if (val) {
           projectDependency.setVersionId(val.value.latestVersion);
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         }
       }
     };
@@ -258,6 +329,9 @@ const ProjectDependencyEditor = observer(
       ) {
         try {
           projectDependency.setVersionId(val?.value ?? '');
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.log.error(
@@ -267,7 +341,7 @@ const ProjectDependencyEditor = observer(
         }
       }
     };
-    const openProject = (): void => {
+    const openProjectinArchive = (): void => {
       if (!projectDependency.isLegacyDependency) {
         const projectDependencyVersionId =
           projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
@@ -281,6 +355,17 @@ const ProjectDependencyEditor = observer(
             guaranteeNonNullable(projectDependency.artifactId),
             projectDependencyVersionId,
           )}`,
+        );
+      }
+    };
+    // NOTE: This assumes that the dependant project is in the same studio instance as the current project
+    // In the future, the studio instance may be part of the project data
+    const openProject = (): void => {
+      if (projectDependencyData) {
+        applicationStore.navigator.openNewWindow(
+          applicationStore.navigator.generateLocation(
+            generateViewProjectRoute(projectDependencyData.projectId),
+          ),
         );
       }
     };
@@ -326,13 +411,27 @@ const ProjectDependencyEditor = observer(
           disabled={
             projectDependency.isLegacyDependency ||
             !selectedProject ||
-            !selectedVersionOption
+            !selectedVersionOption ||
+            !projectDependencyData
           }
           onClick={openProject}
           tabIndex={-1}
           title={'Open Project'}
         >
           <ExternalLinkSquareIcon />
+        </button>
+        <button
+          className="project-dependency-editor__visit-btn btn--dark btn--sm"
+          disabled={
+            projectDependency.isLegacyDependency ||
+            !selectedProject ||
+            !selectedVersionOption
+          }
+          onClick={openProjectinArchive}
+          tabIndex={-1}
+          title={'Open Project in archive'}
+        >
+          <ArchiveIcon />
         </button>
         <button
           className="project-dependency-editor__remove-btn btn--dark btn--caution"
@@ -343,6 +442,52 @@ const ProjectDependencyEditor = observer(
         >
           <TimesIcon />
         </button>
+      </div>
+    );
+  },
+);
+
+const ProjectDependencyActions = observer(
+  (props: { config: ProjectConfigurationEditorState }) => {
+    const { config } = props;
+    const hasConflicts = config.dependencyInfo?.conflicts.length;
+    const viewTree = (): void => {
+      if (config.dependencyInfo) {
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.TREE);
+      }
+    };
+    const viewConflict = (): void => {
+      if (config.dependencyInfo) {
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.CONFLICTS);
+      }
+    };
+    return (
+      <div className="project-dependency-editor__info">
+        <button
+          className="project-dependency-editor__tree-btn"
+          tabIndex={-1}
+          onClick={viewTree}
+          disabled={
+            !config.dependencyInfo || !config.dependencyInfo.conflicts.length
+          }
+          title={`View dependency tree`}
+        >
+          View Dependency Tree
+        </button>
+
+        {Boolean(hasConflicts) && (
+          <button
+            className="project-dependency-editor__conflicts-btn"
+            tabIndex={-1}
+            onClick={viewConflict}
+            disabled={
+              !config.dependencyInfo || !config.dependencyInfo.conflicts.length
+            }
+            title={`View any conflcits in your dependencies`}
+          >
+            View Conflicts
+          </button>
+        )}
       </div>
     );
   },
@@ -376,8 +521,12 @@ export const ProjectConfigurationEditor = observer(() => {
   const currentProjectConfiguration = configState.currentProjectConfiguration;
   const deleteProjectDependency =
     (val: ProjectDependency): (() => void) =>
-    (): void =>
+    (): void => {
       currentProjectConfiguration.deleteProjectDependency(val);
+      flowResult(configState.fetchDependencyInfo()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
   const addValue = (): void => {
     if (!isReadOnly) {
       if (selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES) {
@@ -389,6 +538,9 @@ export const ProjectConfigurationEditor = observer(() => {
           );
           dependencyToAdd.setVersionId(projectToAdd.latestVersion);
           currentProjectConfiguration.addProjectDependency(dependencyToAdd);
+          flowResult(configState.fetchDependencyInfo()).catch(
+            applicationStore.alertUnhandledError,
+          );
         } else {
           currentProjectConfiguration.addProjectDependency(
             new ProjectDependency(''),
@@ -439,6 +591,9 @@ export const ProjectConfigurationEditor = observer(() => {
       !configState.associatedProjectsAndVersionsFetched
     ) {
       flowResult(configState.fectchAssociatedProjectsAndVersions()).catch(
+        applicationStore.alertUnhandledError,
+      );
+      flowResult(configState.fetchDependencyInfo()).catch(
         applicationStore.alertUnhandledError,
       );
     }
@@ -510,6 +665,7 @@ export const ProjectConfigurationEditor = observer(() => {
           )}
           {selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES && (
             <div className="panel__content__lists">
+              <ProjectDependencyActions config={configState} />
               {currentProjectConfiguration.projectDependencies.map(
                 (projectDependency) => (
                   <ProjectDependencyEditor
@@ -517,11 +673,21 @@ export const ProjectConfigurationEditor = observer(() => {
                     projectDependency={projectDependency}
                     deleteValue={deleteProjectDependency(projectDependency)}
                     isReadOnly={isReadOnly}
+                    projects={configState.projects}
                   />
                 ),
               )}
             </div>
           )}
+
+          {configState.dependencyInfo &&
+            configState.dependencyInfoModalType && (
+              <ProjectDependencyInfoModal
+                configState={configState}
+                info={configState.dependencyInfo}
+                type={configState.dependencyInfoModalType}
+              />
+            )}
         </div>
       </div>
     </div>

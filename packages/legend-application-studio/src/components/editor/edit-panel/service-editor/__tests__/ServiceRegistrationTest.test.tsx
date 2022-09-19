@@ -31,6 +31,7 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import {
+  TEST_DATA__DefaultDepotInfo,
   TEST_DATA__DefaultSDLCInfo,
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -114,6 +115,7 @@ const setup = async (
     projects: [],
     projectData: [],
     projectDependency: [],
+    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
   });
   return MOCK__editorStore;
 };

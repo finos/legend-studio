@@ -38,12 +38,76 @@ import {
   UpdateProjectConfigurationCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
-import { MASTER_SNAPSHOT_ALIAS, ProjectData } from '@finos/legend-server-depot';
+import {
+  type ProjectVersionDependencies,
+  generateGAVCoordinates,
+  MASTER_SNAPSHOT_ALIAS,
+  ProjectData,
+  ProjectDependencyInfo,
+  ProjectDependencyCoordinates,
+} from '@finos/legend-server-depot';
+import { TAB_SIZE } from '@finos/legend-application';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
   PROJECT_DEPENDENCIES = 'PROJECT_DEPENDENCIES',
 }
+
+export enum DEPENDENCY_INFO_TYPE {
+  TREE = 'tree',
+  CONFLICTS = 'conflicts',
+}
+
+const getDependencyTreeString = (
+  dependant: ProjectVersionDependencies,
+  tab: string,
+): string => {
+  const prefix = tab + (dependant.dependencies.length ? '+-' : '\\-');
+  const gav = generateGAVCoordinates(
+    dependant.groupId,
+    dependant.artifactId,
+    dependant.versionId,
+  );
+  return `${prefix + gav}\n${dependant.dependencies
+    .map((e) => getDependencyTreeString(e, tab + ' '.repeat(TAB_SIZE)))
+    .join('')}`;
+};
+
+export const getDependencyTreeStringFromInfo = (
+  info: ProjectDependencyInfo,
+): string => info.tree.map((e) => getDependencyTreeString(e, '')).join('\n');
+
+const getConflictPathString = (path: string): string => {
+  const seperator = '>';
+  const projects = path.split(seperator);
+  let result = '';
+  let currentTab = ' '.repeat(TAB_SIZE);
+  projects.forEach((p) => {
+    result += `${currentTab + p}\n`;
+    currentTab = currentTab + ' '.repeat(TAB_SIZE);
+  });
+  return result;
+};
+
+export const getConflictsString = (info: ProjectDependencyInfo): string =>
+  info.conflicts
+    .map((c) => {
+      const base = `project:\n${
+        ' '.repeat(TAB_SIZE) +
+        generateGAVCoordinates(c.groupId, c.artifactId, undefined)
+      }`;
+      const versions = `versions:\n${c.versions
+        .map((v) => ' '.repeat(TAB_SIZE) + v)
+        .join('\n')}`;
+      const paths = `paths:\n${c.conflictPaths
+        .map(
+          (p, idx) =>
+            `${' '.repeat(TAB_SIZE) + (idx + 1)}:\n${getConflictPathString(p)}`,
+        )
+        .join('')}`;
+      return `${base}\n${versions}\n${paths}`;
+    })
+    .join('\n\n');
 
 export class ProjectConfigurationEditorState extends EditorState {
   sdlcState: EditorSDLCState;
@@ -54,6 +118,8 @@ export class ProjectConfigurationEditorState extends EditorState {
   projects = new Map<string, ProjectData>();
   queryHistory = new Set<string>();
   latestProjectStructureVersion: ProjectStructureVersion | undefined;
+  dependencyInfo: ProjectDependencyInfo | undefined;
+  dependencyInfoModalType: DEPENDENCY_INFO_TYPE | undefined;
   isUpdatingConfiguration = false;
   isQueryingProjects = false;
   associatedProjectsAndVersionsFetched = false;
@@ -74,15 +140,19 @@ export class ProjectConfigurationEditorState extends EditorState {
       associatedProjectsAndVersionsFetched: observable,
       isFetchingAssociatedProjectsAndVersions: observable,
       latestProjectStructureVersion: observable,
+      dependencyInfo: observable,
+      dependencyInfoModalType: observable,
       originalConfig: computed,
       setOriginalProjectConfiguration: action,
       setProjectConfiguration: action,
+      setDependencyInfoModal: action,
       setSelectedTab: action,
       fectchAssociatedProjectsAndVersions: flow,
       updateProjectConfiguration: flow,
       updateToLatestStructure: flow,
       updateConfigs: flow,
       fetchLatestProjectStructureVersion: flow,
+      fetchDependencyInfo: flow,
     });
 
     this.selectedTab = CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE;
@@ -102,6 +172,10 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   setSelectedTab(tab: CONFIGURATION_EDITOR_TAB): void {
     this.selectedTab = tab;
+  }
+
+  setDependencyInfoModal(type: DEPENDENCY_INFO_TYPE | undefined): void {
+    this.dependencyInfoModalType = type;
   }
 
   get headerName(): string {
@@ -168,6 +242,35 @@ export class ProjectConfigurationEditorState extends EditorState {
       );
     } finally {
       this.isFetchingAssociatedProjectsAndVersions = false;
+    }
+  }
+
+  *fetchDependencyInfo(): GeneratorFn<void> {
+    try {
+      if (this.projectConfiguration?.projectDependencies) {
+        const dependencyCoordinates = (yield flowResult(
+          this.editorStore.graphState.buildProjectDependencyCoordinates(
+            this.projectConfiguration.projectDependencies,
+          ),
+        )) as ProjectDependencyCoordinates[];
+        const dependencyInfoRaw =
+          (yield this.editorStore.depotServerClient.analyzeDependencyTree(
+            dependencyCoordinates.map((e) =>
+              ProjectDependencyCoordinates.serialization.toJson(e),
+            ),
+          )) as PlainObject<ProjectDependencyInfo>;
+        this.dependencyInfo =
+          ProjectDependencyInfo.serialization.fromJson(dependencyInfoRaw);
+      } else {
+        this.dependencyInfo = new ProjectDependencyInfo();
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.dependencyInfo = undefined;
+      this.editorStore.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        error,
+      );
     }
   }
 

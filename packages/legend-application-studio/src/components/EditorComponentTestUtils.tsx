@@ -58,6 +58,7 @@ import {
   type ProjectVersionEntities,
   TEST__DepotServerClientProvider,
   TEST__getTestDepotServerClient,
+  type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import { LegendStudioBaseStoreProvider } from './LegendStudioBaseStoreProvider.js';
 import {
@@ -121,6 +122,13 @@ export const TEST_DATA__DefaultSDLCInfo = {
       generationMode: 'codeGeneration' as GenerationMode,
     },
   ],
+};
+
+export const TEST_DATA__DefaultDepotInfo = {
+  dependencyInfo: {
+    tree: [],
+    conflicts: [],
+  },
 };
 
 export const TEST__LegendStudioBaseStoreProvider: React.FC<{
@@ -221,6 +229,7 @@ export const TEST__setUpEditor = async (
     projects: PlainObject<ProjectData>[];
     projectData: PlainObject<ProjectData>[];
     projectDependency: PlainObject<ProjectVersionEntities>[];
+    projectDependencyInfo: PlainObject<ProjectDependencyInfo>;
   },
 ): Promise<RenderResult> => {
   const {
@@ -235,6 +244,7 @@ export const TEST__setUpEditor = async (
     projectData,
     projects,
     projectDependency,
+    projectDependencyInfo,
   } = data;
 
   // SDLC
@@ -288,6 +298,9 @@ export const TEST__setUpEditor = async (
   jest
     .spyOn(MOCK__editorStore.depotServerClient, 'collectDependencyEntities')
     .mockReturnValue(Promise.resolve(projectDependency));
+  jest
+    .spyOn(MOCK__editorStore.depotServerClient, 'analyzeDependencyTree')
+    .mockReturnValue(Promise.resolve(projectDependencyInfo));
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
@@ -388,6 +401,7 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects?: PlainObject<ProjectData>[];
     projectData?: PlainObject<ProjectData>[];
     projectDependency?: PlainObject<ProjectVersionEntities>[];
+    projectDependencyInfo?: PlainObject<ProjectDependencyInfo>;
   },
 ): Promise<RenderResult> =>
   TEST__setUpEditor(MOCK__editorStore, {
@@ -406,5 +420,6 @@ export const TEST__setUpEditorWithDefaultSDLCData = (
     projects: [],
     projectData: [],
     projectDependency: [],
+    projectDependencyInfo: TEST_DATA__DefaultDepotInfo.dependencyInfo,
     ...overrides,
   });
