@@ -125,6 +125,11 @@ export class LegendStudioBaseStore {
     ApplicationTelemetry.logEvent_ApplicationInitialized(
       this.applicationStore.telemetryService,
       {
+        application: {
+          name: this.applicationStore.config.appName,
+          version: this.applicationStore.config.appVersion,
+          env: this.applicationStore.config.env,
+        },
         browser: {
           userAgent: navigator.userAgent,
         },
