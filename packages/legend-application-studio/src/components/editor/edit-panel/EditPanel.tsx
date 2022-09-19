@@ -79,7 +79,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
-import { useDrag, useDrop } from 'react-dnd';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -264,35 +264,56 @@ export const EditorMainTabEditor = observer(
 
     // Drag and Drop
     const handleHover = useCallback(
-      (item: EditorPanelDragSource): void => {
-        const draggingProperty = item.panel;
-        const hoveredProperty = editorState;
+      (item: EditorPanelDragSource, monitor: DropTargetMonitor): void => {
+        const draggingTab = item.panel;
+        const hoveredTab = editorState;
 
-        editorStore.swapTabs(draggingProperty, hoveredProperty);
+        const dragIndex = editorStore.openedEditorStates.findIndex(
+          (e) => e === draggingTab,
+        );
+        const hoverIndex = editorStore.openedEditorStates.findIndex(
+          (e) => e === hoveredTab,
+        );
+
+        const hoverBoundingReact = ref.current?.getBoundingClientRect();
+        const distanceThreshold =
+          ((hoverBoundingReact?.left ?? 0) - (hoverBoundingReact?.right ?? 0)) /
+          2;
+        const dragDistance =
+          (monitor.getClientOffset()?.x ?? 0) -
+          (hoverBoundingReact?.right ?? 0);
+        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+          return;
+        }
+        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
+          return;
+        }
+
+        editorStore.swapTabs(draggingTab, hoveredTab);
       },
       [editorStore, editorState],
     );
 
-    const [{ isBeingDraggedProperty }, dropConnector] = useDrop<
+    const [{ isBeingDraggedEditorPanel }, dropConnector] = useDrop<
       EditorPanelDragSource,
       void,
-      { isBeingDraggedProperty: EditorState | undefined }
+      { isBeingDraggedEditorPanel: EditorState | undefined }
     >(
       () => ({
         accept: [EDITOR_DND_TYPE],
-        hover: (item) => handleHover(item),
+        hover: (item, monitor) => handleHover(item, monitor),
         collect: (
           monitor,
         ): {
-          isBeingDraggedProperty: EditorState | undefined;
+          isBeingDraggedEditorPanel: EditorState | undefined;
         } => ({
-          isBeingDraggedProperty:
+          isBeingDraggedEditorPanel:
             monitor.getItem<EditorPanelDragSource | null>()?.panel,
         }),
       }),
       [handleHover],
     );
-    const isBeingDragged = editorState === isBeingDraggedProperty;
+    const isBeingDragged = editorState === isBeingDraggedEditorPanel;
 
     const [, dragConnector, dragPreviewConnector] =
       useDrag<EditorPanelDragSource>(
