@@ -97,7 +97,7 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
-export * from './stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 
 export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 

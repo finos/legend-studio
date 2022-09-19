@@ -25,10 +25,10 @@ export type V1_ModelGenerator = (
   engine: V1_Engine,
 ) => Promise<V1_PureModelContextData | undefined>;
 
-export interface DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
+export interface DSLGeneration_PureProtocolProcessorPlugin_Extension
   extends PureProtocolProcessorPlugin {
   /**
-   * Get generators for model generation specification.
+   * Get the list of generators for model generation specification.
    */
   V1_getExtraModelGenerators?(): V1_ModelGenerator[];
 }

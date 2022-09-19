@@ -162,7 +162,7 @@ import {
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+import type { DSLGeneration_PureProtocolProcessorPlugin_Extension } from '../DSLGeneration_PureProtocolProcessorPlugin_Extension.js';
 import type { RawRelationalOperationElement } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
@@ -1581,7 +1581,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
+            plugin as DSLGeneration_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraModelGenerators?.() ?? [],
       );
     for (const generator of extraModelGenerators) {

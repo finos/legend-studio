@@ -54,14 +54,14 @@ import type { Entity } from '@finos/legend-storage';
 import {
   type GenerationConfigurationDescription,
   type GenerationOutput,
-  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  type DSLGeneration_PureGraphManagerPlugin_Extension,
   type GenerationTreeNode,
   Class,
   Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
@@ -135,14 +135,14 @@ export class GraphGenerationState {
   get supportedFileGenerationConfigurationsForCurrentElement(): GenerationConfigurationDescription[] {
     if (this.editorStore.currentEditorState instanceof ElementEditorState) {
       const currentElement = this.editorStore.currentEditorState.element;
-      // Note: For now we only allow classes and enumerations for all types of generations.
+      // NOTE: For now we only allow classes and enumerations for all types of generations.
       const extraFileGenerationScopeFilterConfigurations =
         this.editorStore.pluginManager
           .getApplicationPlugins()
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+                plugin as DSLGeneration_LegendStudioApplicationPlugin_Extension
               ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
           );
       return this.fileGenerationConfigurations.filter((generationType) => {
@@ -370,7 +370,7 @@ export class GraphGenerationState {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+              plugin as DSLGeneration_PureGraphManagerPlugin_Extension
             ).getExtraModelGenerationElementGetters?.() ?? [],
         )
         .flatMap((getter) => getter(this.editorStore.graphManagerState.graph));

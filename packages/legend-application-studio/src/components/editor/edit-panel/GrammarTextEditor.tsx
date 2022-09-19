@@ -838,7 +838,7 @@ export const GrammarTextEditor = observer(() => {
   }, [editorStore, applicationStore, editor, grammarTextEditorState]);
 
   // Drag and Drop
-  const extraDnDTypes = editorStore.pluginManager
+  const extraElementDragTypes = editorStore.pluginManager
     .getApplicationPlugins()
     .flatMap(
       (plugin) =>
@@ -859,7 +859,7 @@ export const GrammarTextEditor = observer(() => {
   const [, dropConnector] = useDrop<ElementDragSource>(
     () => ({
       accept: [
-        ...extraDnDTypes,
+        ...extraElementDragTypes,
         CORE_DND_TYPE.PROJECT_EXPLORER_PACKAGE,
         CORE_DND_TYPE.PROJECT_EXPLORER_CLASS,
         CORE_DND_TYPE.PROJECT_EXPLORER_ASSOCIATION,
@@ -880,7 +880,7 @@ export const GrammarTextEditor = observer(() => {
 
       drop: (item) => handleDrop(item),
     }),
-    [extraDnDTypes, handleDrop],
+    [extraElementDragTypes, handleDrop],
   );
   dropConnector(textEditorRef);
 

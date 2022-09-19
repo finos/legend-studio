@@ -52,7 +52,7 @@ import {
 import {
   observe_FileGenerationSpecification,
   observe_GenerationSpecification,
-} from './DSLGenerationSpecification_ObserverHelper.js';
+} from './DSLGeneration_ObserverHelper.js';
 import {
   observe_Mapping,
   observe_PackageableConnection,

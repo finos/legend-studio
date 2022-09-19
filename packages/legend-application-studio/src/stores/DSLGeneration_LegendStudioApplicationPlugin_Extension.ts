@@ -30,7 +30,7 @@ export type FileGenerationScopeFilterConfiguration = {
   filter: (element: PackageableElement) => boolean;
 };
 
-export interface DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+export interface DSLGeneration_LegendStudioApplicationPlugin_Extension
   extends DSL_LegendStudioApplicationPlugin_Extension {
   /**
    * Get drag-and-drop type specifier for model generation specification elements.
@@ -44,6 +44,9 @@ export interface DSLGenerationSpecification_LegendStudioApplicationPlugin_Extens
 
   /**
    * Get the list of filters that check if an element is in scope for certain file generation.
+   *
+   * TODO?: ideally, we should consider having the backend returns this information instead,
+   * maybe the classifier path
    */
   getExtraFileGenerationScopeFilterConfigurations?(): FileGenerationScopeFilterConfiguration[];
 }

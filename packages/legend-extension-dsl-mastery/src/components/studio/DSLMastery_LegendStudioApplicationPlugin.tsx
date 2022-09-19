@@ -122,7 +122,7 @@ export class DSLMastery_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [MASTERY_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
   }
 

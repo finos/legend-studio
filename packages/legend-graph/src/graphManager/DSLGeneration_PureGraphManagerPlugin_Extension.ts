@@ -22,10 +22,10 @@ export type ModelGenerationElementGetter = (
   graph: PureModel,
 ) => ModelGenerationSpecification[];
 
-export interface DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+export interface DSLGeneration_PureGraphManagerPlugin_Extension
   extends PureGraphManagerPlugin {
   /**
-   * Get getters which extract model-generationing elements from the graph.
+   * Get the list of getters for model-generating elements.
    */
   getExtraModelGenerationElementGetters?(): ModelGenerationElementGetter[];
 }

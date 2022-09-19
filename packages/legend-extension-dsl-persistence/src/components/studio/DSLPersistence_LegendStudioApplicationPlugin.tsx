@@ -158,7 +158,7 @@ export class DSLPersistence_LegendStudioApplicationPlugin
     ];
   }
 
-  getExtraGrammarTextEditorDnDTypes(): string[] {
+  getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [
       PERSISTENCE_ELEMENT_PROJECT_EXPLORER_DND_TYPE,
       PERSISTENCE_CONTEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE,

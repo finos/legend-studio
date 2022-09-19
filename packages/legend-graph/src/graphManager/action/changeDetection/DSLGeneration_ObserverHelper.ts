@@ -20,7 +20,7 @@ import type {
   FileGenerationSpecification,
   GenerationSpecification,
   GenerationTreeNode,
-} from '../../../DSLGenerationSpecification_Exports.js';
+} from '../../../DSLGeneration_Exports.js';
 import { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import {
   observe_Abstract_PackageableElement,

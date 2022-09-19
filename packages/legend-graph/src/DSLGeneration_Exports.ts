@@ -24,7 +24,7 @@ export { FileGenerationSpecification } from './graph/metamodel/pure/packageableE
 export { ConfigurationProperty } from './graph/metamodel/pure/packageableElements/fileGeneration/ConfigurationProperty.js';
 
 // protocols
-export * from './graphManager/protocol/pure/DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+export * from './graphManager/protocol/pure/DSLGeneration_PureProtocolProcessorPlugin_Extension.js';
 export { V1_ModelGenerationSpecification } from './graphManager/protocol/pure/v1/model/packageableElements/generationSpecification/V1_ModelGenerationSpecification.js';
 
 export { V1_GenerationInput } from './graphManager/protocol/pure/v1/engine/generation/V1_GenerationInput.js';
