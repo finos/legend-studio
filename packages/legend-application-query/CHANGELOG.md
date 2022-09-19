@@ -1,5 +1,7 @@
 # @finos/legend-application-query
 
+## 7.0.1
+
 ## 7.0.0
 
 ### Major Changes

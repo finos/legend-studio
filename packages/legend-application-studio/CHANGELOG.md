@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 16.0.1
+
+### Patch Changes
+
+- [#1485](https://github.com/finos/legend-studio/pull/1485) [`b2d2281c`](https://github.com/finos/legend-studio/commit/b2d2281c40ef04724951ebac78eae940eddc290c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add viewer for dependency tree and dependency conflict in configuration editor.
+
 ## 16.0.0
 
 ### Major Changes
