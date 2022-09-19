@@ -467,9 +467,7 @@ const ProjectDependencyActions = observer(
           className="project-dependency-editor__tree-btn"
           tabIndex={-1}
           onClick={viewTree}
-          disabled={
-            !config.dependencyInfo || !config.dependencyInfo.conflicts.length
-          }
+          disabled={!config.dependencyInfo}
           title={`View dependency tree`}
         >
           View Dependency Tree
