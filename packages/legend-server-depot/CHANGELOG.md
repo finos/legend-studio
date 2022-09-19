@@ -1,5 +1,7 @@
 # @finos/legend-server-depot
 
+## 3.0.12
+
 ## 3.0.11
 
 ## 3.0.10
