@@ -2,8 +2,8 @@
   // This is the `build` counterpart of `tsconfig.json`
   "files": [],
   "references": [
+    // core
     { "path": "packages/legend-shared/tsconfig.build.json" },
-    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     { "path": "packages/legend-storage/tsconfig.build.json" },
     { "path": "packages/legend-server-sdlc/tsconfig.build.json" },
     { "path": "packages/legend-server-depot/tsconfig.build.json" },
@@ -27,6 +27,7 @@
       "path": "packages/legend-application-taxonomy-bootstrap/tsconfig.build.json"
     },
     // extensions
+    { "path": "packages/legend-extension-tracer-zipkin/tsconfig.build.json" },
     {
       "path": "packages/legend-extension-dsl-text/tsconfig.build.json"
     },
@@ -37,19 +38,22 @@
       "path": "packages/legend-extension-dsl-data-space/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-service/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-persistence/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-dsl-persistence-cloud/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
