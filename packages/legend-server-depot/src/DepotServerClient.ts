@@ -31,19 +31,13 @@ import type { ProjectDependencyInfo } from './models/ProjectDependencyInfo.js';
 
 export interface DepotServerClientConfig {
   serverUrl: string;
-  TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 }
 
 export class DepotServerClient extends AbstractServerClient {
-  private TEMPORARY__useLegacyDepotServerAPIRoutes = false;
-
   constructor(config: DepotServerClientConfig) {
     super({
       baseUrl: config.serverUrl,
     });
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes = Boolean(
-      config.TEMPORARY__useLegacyDepotServerAPIRoutes,
-    );
   }
 
   // ------------------------------------------- Projects -------------------------------------------
@@ -164,27 +158,18 @@ export class DepotServerClient extends AbstractServerClient {
       limit?: number | undefined;
     },
   ): Promise<PlainObject<StoredEntity>[]> =>
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes
-      ? this.get(
-          `${this.baseUrl}/classifiers/${encodeURIComponent(classifierPath)}`,
-          undefined,
-          undefined,
-          {
-            scope: options?.scope,
-          },
-        )
-      : this.get(
-          `${this.baseUrl}/entitiesByClassifierPath/${encodeURIComponent(
-            classifierPath,
-          )}`,
-          undefined,
-          undefined,
-          {
-            search: options?.search,
-            scope: options?.scope,
-            limit: options?.limit,
-          },
-        );
+    this.get(
+      `${this.baseUrl}/entitiesByClassifierPath/${encodeURIComponent(
+        classifierPath,
+      )}`,
+      undefined,
+      undefined,
+      {
+        search: options?.search,
+        scope: options?.scope,
+        limit: options?.limit,
+      },
+    );
 
   // ------------------------------------------- Dependencies -------------------------------------------
 

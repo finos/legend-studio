@@ -89,8 +89,6 @@ export const LegendQueryApplication = observer(
       <DepotServerClientProvider
         config={{
           serverUrl: config.depotServerUrl,
-          TEMPORARY__useLegacyDepotServerAPIRoutes:
-            config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
         <LegendQueryBaseStoreProvider pluginManager={pluginManager}>

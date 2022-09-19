@@ -52,12 +52,6 @@ export interface LegendTaxonomyApplicationConfigurationData
   env: string;
   depot: {
     url: string;
-    /**
-     * This is needed since some of our legacy infrastructure does not yet support
-     * the new API calls, we need to update them to use the latest version of
-     * finos/legend-depot though
-     */
-    TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean;
   };
   engine: { url: string; queryUrl?: string };
   query: { url: string };
@@ -71,7 +65,6 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly queryUrl: string;
   readonly studioUrl: string;
-  readonly TEMPORARY__useLegacyDepotServerAPIRoutes?: boolean | undefined;
 
   currentTaxonomyTreeOption!: TaxonomyTreeOption;
   taxonomyTreeOptions: TaxonomyTreeOption[] = [];
@@ -148,8 +141,6 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
       input.configData.depot.url,
       `Can't configure application: 'depot.url' field is missing or empty`,
     );
-    this.TEMPORARY__useLegacyDepotServerAPIRoutes =
-      input.configData.depot.TEMPORARY__useLegacyDepotServerAPIRoutes;
 
     // query
     assertNonNullable(

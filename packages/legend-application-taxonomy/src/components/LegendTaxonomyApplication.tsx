@@ -72,8 +72,6 @@ export const LegendTaxonomyApplication = observer(
       <DepotServerClientProvider
         config={{
           serverUrl: config.depotServerUrl,
-          TEMPORARY__useLegacyDepotServerAPIRoutes:
-            config.TEMPORARY__useLegacyDepotServerAPIRoutes,
         }}
       >
         <LegendTaxonomyBaseStoreProvider pluginManager={pluginManager}>
