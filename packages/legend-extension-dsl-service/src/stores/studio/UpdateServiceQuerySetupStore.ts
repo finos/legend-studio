@@ -109,11 +109,12 @@ export class UpdateServiceQuerySetupStore {
   }
 
   *initialize(serviceCoordinates: string | undefined): GeneratorFn<void> {
+    if (!this.initState.isInInitialState) {
+      return;
+    }
     this.initState.inProgress();
 
     try {
-      yield flowResult(this.loadServices(''));
-
       if (serviceCoordinates) {
         const { groupId, artifactId, servicePath } =
           parseServiceCoordinates(serviceCoordinates);

@@ -24,7 +24,6 @@ import {
   PencilIcon,
   MarkdownTextViewer,
 } from '@finos/legend-art';
-import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { isNumber } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -35,6 +34,7 @@ import {
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { useWorkspaceSetupStore } from './WorkspaceSetup.js';
 
 enum CREATE_PROJECT_MODAL_TAB {
   CREATE = 'CREATE',

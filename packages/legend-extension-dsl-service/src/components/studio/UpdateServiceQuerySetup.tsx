@@ -158,7 +158,7 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
         }, 500),
       [applicationStore, setupStore],
     );
-    const onSearchTextChange = (value: string): void => {
+    const onServiceSearchTextChange = (value: string): void => {
       if (value !== serviceSearchText) {
         setServiceSearchText(value);
         debouncedLoadServices.cancel();
@@ -230,11 +230,11 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     className="service-query-setup__selector__input"
                     options={serviceOptions}
                     isLoading={setupStore.loadServicesState.isInProgress}
-                    onInputChange={onSearchTextChange}
+                    onInputChange={onServiceSearchTextChange}
                     inputValue={serviceSearchText}
                     value={selectedServiceOption}
                     onChange={onServiceOptionChange}
-                    placeholder="Search for service by name or pattern..."
+                    placeholder="Search for service..."
                     darkMode={true}
                     isClearable={true}
                     escapeClearsValue={true}

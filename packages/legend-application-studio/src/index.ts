@@ -83,12 +83,6 @@ export { MappingElementState } from './stores/editor-state/element-editor-state/
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
-export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
-
-// TO BE REMOVED: these setup are currently needed for project dependency dashboard, until we open source, we can remove them
-export * from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
-export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
-
 // --------------------------------------------- DSL --------------------------------------------------
 /**
  * @modularize

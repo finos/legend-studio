@@ -21,12 +21,12 @@ import { generateViewProjectRoute } from '../../stores/LegendStudioRouter.js';
 
 export interface ProjectOption {
   label: string;
-  value: string;
+  value: Project;
 }
 
 export const buildProjectOption = (project: Project): ProjectOption => ({
   label: project.name,
-  value: project.projectId,
+  value: project,
 });
 
 export const getProjectOptionLabelFormatter = (
@@ -36,7 +36,7 @@ export const getProjectOptionLabelFormatter = (
     const viewProject = (): void =>
       applicationStore.navigator.openNewWindow(
         applicationStore.navigator.generateLocation(
-          generateViewProjectRoute(option.value),
+          generateViewProjectRoute(option.value.projectId),
         ),
       );
 
