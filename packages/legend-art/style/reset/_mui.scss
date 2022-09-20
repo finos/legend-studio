@@ -61,6 +61,10 @@
       margin: 0;
       font-size: 1.1rem;
       line-height: 1.5;
+
+      &--wide {
+        min-width: 10rem;
+      }
     }
   }
 }

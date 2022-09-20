@@ -164,6 +164,9 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const assistantService = applicationStore.assistantService;
   const contextualEntry = assistantService.currentContextualDocumentationEntry;
+
+  console.log('contextual', contextualEntry);
+
   const copyContextIDToClipboard = applicationStore.guardUnhandledError(() =>
     applicationStore.copyTextToClipboard(contextualEntry?.context ?? ''),
   );
@@ -451,6 +454,29 @@ const VirtualAssistantSearchPanel = observer(() => {
 
         {Boolean(results.length) && (
           <div className="virtual-assistant__search__results">
+            {!assistantService.isSearchPanelTipsOpen && (
+              <>
+                <div className="query-builder-property-search-panel__form__section__header__label">
+                  Search Mode
+                  <button
+                    className="virtual-assistant__search__question__icon"
+                    tabIndex={-1}
+                    //TODO: ADD clickity click
+                    onClick={toggleSearchPanelTip}
+                  >
+                    <QuestionCircleIcon />
+                  </button>
+                </div>
+                <BaseRadioGroup
+                  className="query-builder-property-search-panel__search__mode--radio-group"
+                  value={assistantService.modeOfSearch}
+                  onChange={handleSearchMode}
+                  row={false}
+                  options={assistantService.modeOfSearchOptions}
+                  size={1}
+                />
+              </>
+            )}
             {results.map((result) => (
               <VirtualAssistantDocumentationEntryViewer
                 key={result.uuid}

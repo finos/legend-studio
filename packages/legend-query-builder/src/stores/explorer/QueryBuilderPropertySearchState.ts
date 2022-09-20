@@ -46,6 +46,7 @@ import {
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { Fuse } from './CJS__Fuse.cjs';
+import { breadcrumbsClasses } from '@mui/material';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -74,6 +75,7 @@ export class QueryBuilderPropertySearchState {
     makeAutoObservable(this, {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
+      filteredTestPropertyNodes: observable,
       isSearchPanelOpen: observable,
       isSearchPanelTipsOpen: observable,
       isOverSearchLimit: observable,
@@ -136,6 +138,40 @@ export class QueryBuilderPropertySearchState {
             (
               node as QueryBuilderExplorerTreePropertyNodeData
             ).property.taggedValues.map((taggedValue) => taggedValue.value),
+        },
+      ],
+      useExtendedSearch: true,
+    });
+  }
+
+  setFuse(): void {
+    console.log(
+      'get the all mapped property nodes',
+      this.allMappedPropertyNodes.length,
+    );
+    console.log('setting fuse time');
+    this.searchEngine = new Fuse(this.allMappedPropertyNodes, {
+      includeScore: true,
+      shouldSort: true,
+      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+      ignoreLocation: true,
+      threshold: 0.3,
+      keys: [
+        {
+          name: 'id',
+          weight: 4,
+        },
+        {
+          name: 'label',
+          weight: 1,
+        },
+        {
+          name: 'taggedValues',
+          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+            (
+              node as QueryBuilderExplorerTreePropertyNodeData
+            ).property.taggedValues.map((taggedValue) => taggedValue.value),
+          weight: 4,
         },
       ],
       useExtendedSearch: true,
@@ -348,7 +384,67 @@ export class QueryBuilderPropertySearchState {
     });
   }
 
-  fetchAllPropertyNodes(): void {
+  getFilteredPropertyNodes(): Promise<QueryBuilderExplorerTreeNodeData[]> {
+    console.log('filter filter time');
+    return new Promise((resolve) => {
+      const filteredProperties = this.searchedMappedPropertyNodes.filter(
+        (p) => {
+          if (
+            !this.filterByMultiple &&
+            this.getMultiplePropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+            ) &&
+            this.classPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+            ) &&
+            this.stringPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+            ) &&
+            this.numberPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+            ) &&
+            this.booleanPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+            ) &&
+            this.datePropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          return true;
+        },
+      );
+      resolve(filteredProperties);
+      console.log('finished filtering time');
+    });
+  }
+
+  stepOneFetchAllPropertyNodes(): void {
+    console.log('ostensibly first');
     const treeData = this.queryBuilderState.explorerState.nonNullableTreeData;
     let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
     let nextLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -466,6 +562,8 @@ export class QueryBuilderPropertySearchState {
           QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
         ),
       );
+
+      await this.setFilteredTestPropertyNodes();
     } else {
       this.setIsOverSearchLimit(false);
       this.setSearchedMappedPropertyNodes(allSearchedMappedPropertyNodes);

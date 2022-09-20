@@ -34,7 +34,6 @@ export enum QUERY_BUILDER_PROPERTY_SEARCH_TYPE {
   NUMBER = 'NUMBER',
   DATE = 'DATE',
 }
-
 export enum SEARCH_MODE {
   NORMAL = 'normal',
   INCLUDE = 'include match',
