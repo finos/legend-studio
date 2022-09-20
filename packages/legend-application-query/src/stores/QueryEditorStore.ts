@@ -208,14 +208,17 @@ export class QueryLoaderState {
   isQueryLoaderOpen = false;
   loadQueriesState = ActionState.create();
   queries: LightQuery[] = [];
+  showCurrentUserQueriesOnly = false;
 
   constructor(editorStore: QueryEditorStore) {
     makeObservable(this, {
       isQueryLoaderOpen: observable,
       queries: observable,
       loadQueriesState: observable,
+      showCurrentUserQueriesOnly: observable,
       setIsQueryLoaderOpen: action,
       setQueries: action,
+      setShowCurrentUserQueriesOnly: action,
       loadQueries: flow,
     });
     this.editorStore = editorStore;
@@ -229,6 +232,10 @@ export class QueryLoaderState {
     this.queries = val;
   }
 
+  setShowCurrentUserQueriesOnly(val: boolean): void {
+    this.showCurrentUserQueriesOnly = val;
+  }
+
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
       searchText.length >= QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH;
@@ -239,6 +246,8 @@ export class QueryLoaderState {
         ? searchText
         : undefined;
       searchSpecification.limit = QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT;
+      searchSpecification.showCurrentUserQueriesOnly =
+        this.showCurrentUserQueriesOnly;
       this.queries =
         (yield this.editorStore.graphManagerState.graphManager.searchQueries(
           searchSpecification,
