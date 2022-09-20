@@ -247,6 +247,7 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   *fetchDependencyInfo(): GeneratorFn<void> {
     try {
+      this.dependencyInfo = undefined;
       if (this.projectConfiguration?.projectDependencies) {
         const dependencyCoordinates = (yield flowResult(
           this.editorStore.graphState.buildProjectDependencyCoordinates(
