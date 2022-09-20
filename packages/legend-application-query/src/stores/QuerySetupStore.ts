@@ -168,6 +168,11 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
         (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
       );
     if (matchingSDLCEntry) {
+      this.setupStore.applicationStore.setBlockingAlert({
+        message: `Loading service...`,
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
       this.setupStore.applicationStore.navigator.jumpTo(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
           matchingSDLCEntry.url,
@@ -442,6 +447,11 @@ export class LoadServiceQuerySetupState extends QuerySetupState {
           (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
         );
       if (matchingSDLCEntry) {
+        this.setupStore.applicationStore.setBlockingAlert({
+          message: `Loading service project...`,
+          prompt: 'Please do not close the application',
+          showLoading: true,
+        });
         this.setupStore.applicationStore.navigator.jumpTo(
           EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
             matchingSDLCEntry.url,
