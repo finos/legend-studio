@@ -53,6 +53,12 @@
       "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-extension-store-relational/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
     },
     {

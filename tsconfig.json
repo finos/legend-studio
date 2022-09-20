@@ -62,6 +62,12 @@
       "path": "packages/legend-extension-external-store-service"
     },
     {
+      "path": "packages/legend-extension-store-flat-data"
+    },
+    {
+      "path": "packages/legend-extension-store-relational"
+    },
+    {
       "path": "packages/legend-extension-external-format-json-schema"
     },
     {

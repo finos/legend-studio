@@ -1,21 +1,21 @@
 {
-  "name": "@finos/legend-extension-dsl-service",
+  "name": "@finos/legend-extension-store-relational",
   "version": "0.0.0",
-  "description": "Legend extension for Service DSL",
+  "description": "Legend extension for Relational store",
   "keywords": [
     "legend",
     "legend-extension",
-    "dsl",
-    "dsl-service"
+    "store",
+    "relational"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-dsl-service",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-store-relational",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-dsl-service"
+    "directory": "packages/legend-extension-store-relational"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -44,20 +44,15 @@
   },
   "dependencies": {
     "@finos/legend-application": "workspace:*",
-    "@finos/legend-application-query": "workspace:*",
     "@finos/legend-application-studio": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-graph": "workspace:*",
-    "@finos/legend-query-builder": "workspace:*",
-    "@finos/legend-server-depot": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@finos/legend-storage": "workspace:*",
     "@types/react": "18.0.20",
     "mobx": "6.6.2",
     "mobx-react-lite": "3.4.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-router": "5.3.3",
     "serializr": "2.0.5"
   },
   "devDependencies": {
@@ -76,8 +71,5 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
-  },
-  "extensions": {
-    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-service"
   }
 }
