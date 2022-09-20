@@ -258,11 +258,9 @@ const QueryLoader = observer(
       editorStore.queryLoaderState.setShowCurrentUserQueriesOnly(
         !editorStore.queryLoaderState.showCurrentUserQueriesOnly,
       );
-      if (!isMineOnly && searchText === '') {
-        debouncedLoadQueries.cancel();
-        debouncedLoadQueries(searchText);
-      }
       setIsMineOnly(!isMineOnly);
+      debouncedLoadQueries.cancel();
+      debouncedLoadQueries(searchText);
     };
 
     useEffect(() => {
@@ -353,12 +351,7 @@ const QueryLoader = observer(
                         </tr>
                       </thead>
                       <tbody>
-                        {(isMineOnly
-                          ? editorStore.queryLoaderState.queries.filter(
-                              (q) => q.isCurrentUserQuery,
-                            )
-                          : editorStore.queryLoaderState.queries
-                        ).map((query) => (
+                        {editorStore.queryLoaderState.queries.map((query) => (
                           <tr
                             key={query.id}
                             className={clsx(
