@@ -107,16 +107,6 @@ const EditExistingQuerySetup = observer(
     };
     const canProceed = querySetupState.currentQuery;
 
-    // show current user queries only
-    const toggleShowCurrentUserQueriesOnly = (): void => {
-      querySetupState.setShowCurrentUserQueriesOnly(
-        !querySetupState.showCurrentUserQueriesOnly,
-      );
-      flowResult(querySetupState.loadQueries(searchText)).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
-
     // query
     const queryOptions = querySetupState.queries.map(buildQueryOption);
     const selectedQueryOption = querySetupState.currentQuery
@@ -193,6 +183,15 @@ const EditExistingQuerySetup = observer(
         debouncedLoadQueries.cancel();
         debouncedLoadQueries(value);
       }
+    };
+
+    // show current user queries only
+    const toggleShowCurrentUserQueriesOnly = (): void => {
+      querySetupState.setShowCurrentUserQueriesOnly(
+        !querySetupState.showCurrentUserQueriesOnly,
+      );
+      debouncedLoadQueries.cancel();
+      debouncedLoadQueries(searchText);
     };
 
     useEffect(() => {
