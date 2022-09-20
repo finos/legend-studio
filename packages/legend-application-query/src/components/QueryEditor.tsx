@@ -220,14 +220,13 @@ const QueryLoader = observer(
     };
     const handleEnterQueryImporter = (): void =>
       queryFinderRef.current?.focus();
-    const toggleIsMineOnly = (): void => {
-      setIsMineOnly(!isMineOnly);
-    };
     const loadSelectedQuery = (): void => {
       if (selectedQueryID) {
         editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
         applicationStore.navigator.jumpTo(
-          generateExistingQueryEditorRoute(selectedQueryID),
+          applicationStore.navigator.generateLocation(
+            generateExistingQueryEditorRoute(selectedQueryID),
+          ),
         );
       }
     };
@@ -254,6 +253,16 @@ const QueryLoader = observer(
       setSearchText('');
       debouncedLoadQueries.cancel();
       debouncedLoadQueries('');
+    };
+    const toggleShowCurrentUserQueriesOnly = (): void => {
+      editorStore.queryLoaderState.setShowCurrentUserQueriesOnly(
+        !editorStore.queryLoaderState.showCurrentUserQueriesOnly,
+      );
+      if (!isMineOnly && searchText === '') {
+        debouncedLoadQueries.cancel();
+        debouncedLoadQueries(searchText);
+      }
+      setIsMineOnly(!isMineOnly);
     };
 
     useEffect(() => {
@@ -284,14 +293,14 @@ const QueryLoader = observer(
                       isMineOnly,
                   },
                 )}
-                onClick={toggleIsMineOnly}
+                onClick={toggleShowCurrentUserQueriesOnly}
                 tabIndex={-1}
               >
                 {isMineOnly ? <CheckSquareIcon /> : <SquareIcon />}
               </button>
               <div
                 className="query-editor__query-loader__filter-section__section__toggler__prompt"
-                onClick={toggleIsMineOnly}
+                onClick={toggleShowCurrentUserQueriesOnly}
               >
                 Mine Only
               </div>
