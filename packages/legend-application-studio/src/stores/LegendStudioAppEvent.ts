@@ -32,5 +32,8 @@ export enum LEGEND_STUDIO_APP_EVENT {
 
   WORKSPACE_UPDATED = 'sdlc.workspace-update.success',
   WORKSPACE_LOCAL_CHANGES_PUSHED = 'sdlc.local-changes-push.success',
+
+  // Depot
+  // TODO: consider to split this generic errors into more specific events
   DEPOT_MANAGER_FAILURE = 'depot.manager.failure',
 }

@@ -52,11 +52,11 @@ export const parseGACoordinates = (
   return {
     groupId: guaranteeNonEmptyString(
       parts[0]?.trim(),
-      `GAV coordinate group ID is missing or empty`,
+      `GAV coordinates group ID is missing or empty`,
     ),
     artifactId: guaranteeNonEmptyString(
       parts[1]?.trim(),
-      `GAV coordinate artifact ID is missing or empty`,
+      `GAV coordinates artifact ID is missing or empty`,
     ),
   };
 };
@@ -70,15 +70,15 @@ export const parseGAVCoordinates = (gav: string): ProjectGAVCoordinates => {
   return {
     groupId: guaranteeNonEmptyString(
       parts[0]?.trim(),
-      `GAV coordinate group ID is missing or empty`,
+      `GAV coordinates group ID is missing or empty`,
     ),
     artifactId: guaranteeNonEmptyString(
       parts[1]?.trim(),
-      `GAV coordinate artifact ID is missing or empty`,
+      `GAV coordinates artifact ID is missing or empty`,
     ),
     versionId: guaranteeNonEmptyString(
       parts[2]?.trim(),
-      `GAV coordinate version ID is missing or empty`,
+      `GAV coordinates version ID is missing or empty`,
     ),
   };
 };

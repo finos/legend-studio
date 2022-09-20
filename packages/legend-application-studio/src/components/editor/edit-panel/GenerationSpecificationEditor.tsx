@@ -47,7 +47,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
 import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';

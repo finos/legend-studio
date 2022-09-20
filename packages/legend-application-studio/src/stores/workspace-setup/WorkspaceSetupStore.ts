@@ -41,27 +41,6 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
-export interface ProjectOption {
-  label: string;
-  value: string;
-}
-
-const buildProjectOption = (project: Project): ProjectOption => ({
-  label: project.name,
-  value: project.projectId,
-});
-
-export interface WorkspaceOption {
-  label: string;
-  value: Workspace;
-  __isNew__?: boolean | undefined;
-}
-
-const buildWorkspaceOption = (workspace: Workspace): WorkspaceOption => ({
-  label: workspace.workspaceId,
-  value: workspace,
-});
-
 export interface WorkspaceIdentifier {
   workspaceId: string;
   workspaceType: WorkspaceType;
@@ -263,20 +242,6 @@ export class WorkspaceSetupStore {
     } finally {
       this.createOrImportProjectState.reset();
     }
-  }
-
-  get projectOptions(): ProjectOption[] {
-    return this.projects
-      ? Array.from(this.projects.values()).map(buildProjectOption)
-      : [];
-  }
-
-  get currentProjectWorkspaceOptions(): WorkspaceOption[] {
-    return this.currentProjectWorkspaces
-      ? Array.from(this.currentProjectWorkspaces.values()).map(
-          buildWorkspaceOption,
-        )
-      : [];
   }
 
   *fetchWorkspaces(projectId: string): GeneratorFn<void> {

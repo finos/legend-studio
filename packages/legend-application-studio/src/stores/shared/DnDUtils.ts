@@ -19,7 +19,7 @@ import type {
   FlatDataRecordTypeTreeNodeData,
   TypeTreeNodeData,
   PackageTreeNodeData,
-} from '../shared/TreeUtil.js';
+} from './TreeUtils.js';
 
 export enum CORE_DND_TYPE {
   NONE = 'NONE',

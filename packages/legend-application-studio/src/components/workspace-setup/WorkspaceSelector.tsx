@@ -16,35 +16,21 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WorkspaceOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
-import { WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type SelectComponent,
   compareLabelFn,
   CustomSelectorInput,
   PlusIcon,
-  UserIcon,
-  UsersIcon,
   GitBranchIcon,
 } from '@finos/legend-art';
 import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
 import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
-
-const formatOptionLabel = (option: WorkspaceOption): React.ReactNode => (
-  <div className="workspace-setup__workspace__label">
-    <div className="workspace-setup__workspace__label-icon">
-      {option.value.workspaceType === WorkspaceType.GROUP ? (
-        <UsersIcon />
-      ) : (
-        <UserIcon />
-      )}
-    </div>
-    <div className="workspace-setup__workspace__label__name">
-      {option.label}
-    </div>
-  </div>
-);
+import {
+  type WorkspaceOption,
+  buildWorkspaceOption,
+  formatWorkspaceOptionLabel,
+} from '../shared/WorkspaceSelectorUtils.js';
 
 export const WorkspaceSelector = observer(
   forwardRef<
@@ -58,8 +44,13 @@ export const WorkspaceSelector = observer(
     const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const currentWorkspaceCompositeId = setupStore.currentWorkspaceCompositeId;
-    const options =
-      setupStore.currentProjectWorkspaceOptions.sort(compareLabelFn);
+    const options = (
+      setupStore.currentProjectWorkspaces
+        ? Array.from(setupStore.currentProjectWorkspaces.values()).map(
+            buildWorkspaceOption,
+          )
+        : []
+    ).sort(compareLabelFn);
     const selectedOption =
       options.find(
         (option) =>
@@ -93,36 +84,35 @@ export const WorkspaceSelector = observer(
       }
     }, [setupStore.currentProjectWorkspaces, setupStore.currentProjectId, currentWorkspaceCompositeId, onChange]);
 
-    const workspaceSelectorPlacerHold = isLoadingOptions
-      ? 'Loading workspaces'
-      : !setupStore.currentProjectId
-      ? 'In order to select a workspace, a project must be selected'
-      : options.length
-      ? 'Choose an existing workspace'
-      : 'You have no workspaces. Please create one';
-
     return (
-      <div className="workspace-setup-selector">
-        <div className="workspace-setup-selector__icon-box">
-          <GitBranchIcon className="workspace-setup-selector__icon" />
+      <div className="workspace-setup__selector">
+        <div className="workspace-setup__selector__icon" title="workspace">
+          <GitBranchIcon className="workspace-setup__selector__icon--workspace" />
         </div>
         <CustomSelectorInput
-          className="workspace-setup-selector__input"
-          allowCreating={false}
+          className="workspace-setup__selector__input"
           ref={ref}
           options={options}
           disabled={!setupStore.currentProjectId || isLoadingOptions}
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
-          formatOptionLabel={formatOptionLabel}
+          formatOptionLabel={formatWorkspaceOptionLabel}
           value={selectedOption}
-          placeholder={workspaceSelectorPlacerHold}
+          placeholder={
+            isLoadingOptions
+              ? 'Loading workspaces'
+              : !setupStore.currentProjectId
+              ? 'In order to select a workspace, a project must be selected'
+              : options.length
+              ? 'Choose an existing workspace'
+              : 'You have no workspaces. Please create one'
+          }
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}
         />
         <button
-          className="workspace-setup-selector__action btn--dark"
+          className="workspace-setup__selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
           title="Create a Workspace"

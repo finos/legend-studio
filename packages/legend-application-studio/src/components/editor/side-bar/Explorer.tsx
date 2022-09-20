@@ -51,15 +51,15 @@ import {
   CreateNewElementModal,
 } from './CreateNewElementModal.js';
 import { useDrag } from 'react-dnd';
-import { ElementDragSource } from '../../../stores/shared/DnDUtil.js';
+import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtil.js';
-import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtil.js';
+import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtils.js';
+import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import {
   type GenerationTreeNodeData,
   getFileGenerationChildNodes,
-} from '../../../stores/shared/FileGenerationTreeUtil.js';
+} from '../../../stores/shared/FileGenerationTreeUtils.js';
 import { FileGenerationTree } from '../../editor/edit-panel/element-generation-editor/FileGenerationEditor.js';
 import { generateViewEntityRoute } from '../../../stores/LegendStudioRouter.js';
 import { toTitleCase } from '@finos/legend-shared';
@@ -78,7 +78,7 @@ import {
   Class,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 import { queryClass } from '../edit-panel/uml-editor/ClassQueryBuilder.js';
 

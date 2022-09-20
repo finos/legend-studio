@@ -49,7 +49,7 @@ import {
   generateEnumerableNameFromToken,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type InputData,
   type Mapping,

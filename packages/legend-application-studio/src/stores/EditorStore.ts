@@ -74,7 +74,7 @@ import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
-import type { GenerationFile } from './shared/FileGenerationTreeUtil.js';
+import type { GenerationFile } from './shared/FileGenerationTreeUtils.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
@@ -139,7 +139,7 @@ import {
   graph_deleteOwnElement,
   graph_renameElement,
 } from './graphModifier/GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';

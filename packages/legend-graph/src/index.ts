@@ -332,14 +332,15 @@ export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js'
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
+
+export * from './DSLMapping_Exports.js';
+export * from './DSLGeneration_Exports.js';
+export * from './DSLData_Exports.js';
+
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-
-export * from './DSLMapping_Exports.js';
 export * from './DSLService_Exports.js';
-export * from './DSLGeneration_Exports.js';
 export * from './StoreFlatData_Exports.js';
 export * from './StoreRelational_Exports.js';
-export * from './DSLData_Exports.js';

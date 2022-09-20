@@ -47,7 +47,7 @@ import {
 } from '@finos/legend-shared';
 import { EmbeddedDataType } from '../../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../../EditorStore.js';
-import { createMockDataForMappingElementSource } from '../MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../MockDataUtils.js';
 
 export const createBareExternalFormat = (
   contentType?: string | undefined,

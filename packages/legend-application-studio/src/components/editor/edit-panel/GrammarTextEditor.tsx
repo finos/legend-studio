@@ -49,7 +49,7 @@ import { useResizeDetector } from 'react-resize-detector';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import type {
   DSL_LegendStudioApplicationPlugin_Extension,

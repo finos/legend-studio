@@ -63,10 +63,7 @@ import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
-import {
-  compareSemVerVersions,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+import { compareSemVerVersions } from '@finos/legend-storage';
 import type {
   LightQuery,
   Mapping,
@@ -77,7 +74,11 @@ import {
   useApplicationStore,
   buildElementOption,
 } from '@finos/legend-application';
-import type { ServiceInfo } from '@finos/legend-query-builder';
+import {
+  type ServiceOption,
+  buildServiceOption,
+  formatServiceOptionLabel,
+} from '@finos/legend-query-builder';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 
 type QueryOption = { label: string; value: LightQuery };
@@ -270,14 +271,6 @@ const EditExistingQuerySetup = observer(
   },
 );
 
-type ExistingServiceOption = { label: string; value: ServiceInfo };
-const buildExistingServiceOption = (
-  value: ServiceInfo,
-): ExistingServiceOption => ({
-  label: value.name,
-  value,
-});
-
 export const UpdateExistingServiceQuerySetup = observer(
   (props: { querySetupState: UpdateExistingServiceQuerySetupState }) => {
     const { querySetupState } = props;
@@ -290,10 +283,8 @@ export const UpdateExistingServiceQuerySetup = observer(
       setupStore.setSetupState(undefined);
     };
 
-    const serviceOptions = querySetupState.services.map(
-      buildExistingServiceOption,
-    );
-    const onServiceOptionChange = (option: ExistingServiceOption): void => {
+    const serviceOptions = querySetupState.services.map(buildServiceOption);
+    const onServiceOptionChange = (option: ServiceOption): void => {
       querySetupState
         .loadServiceUpdater(option.value)
         .catch(applicationStore.alertUnhandledError);
@@ -301,43 +292,12 @@ export const UpdateExistingServiceQuerySetup = observer(
     const serviceFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
-      stringify: (option: ExistingServiceOption): string =>
+      stringify: (option: ServiceOption): string =>
         // NOTE: account for label, path, and URL pattern
         `${option.label} - ${option.value.urlPattern ?? ''} - ${
           option.value.path
         }`,
     });
-    const formatServiceOptionLabel = (
-      option: ExistingServiceOption,
-    ): React.ReactNode => (
-      <div
-        className="query-setup__existing-service-query__option"
-        title={`${option.label} - ${option.value.urlPattern ?? ''} - ${
-          option.value.path
-        } - ${generateGAVCoordinates(
-          option.value.groupId,
-          option.value.artifactId,
-          option.value.versionId,
-        )}`}
-      >
-        <div className="query-setup__existing-service-query__option__label">
-          {option.label}
-        </div>
-        <div className="query-setup__existing-service-query__option__path">
-          {option.value.path}
-        </div>
-        <div className="query-setup__existing-service-query__option__pattern">
-          {option.value.urlPattern ?? 'no pattern'}
-        </div>
-        <div className="query-setup__existing-service-query__option__gav">
-          {generateGAVCoordinates(
-            option.value.groupId,
-            option.value.artifactId,
-            option.value.versionId,
-          )}
-        </div>
-      </div>
-    );
 
     // search text
     const debouncedLoadServices = useMemo(

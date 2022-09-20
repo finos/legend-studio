@@ -29,7 +29,7 @@ import {
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
   reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtil.js';
+} from '../shared/FileGenerationTreeUtils.js';
 import {
   type GeneratorFn,
   assertErrorThrown,

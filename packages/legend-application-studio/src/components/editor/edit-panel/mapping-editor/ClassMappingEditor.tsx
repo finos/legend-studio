@@ -43,7 +43,7 @@ import {
   operationMapping_setParameters,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
-import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const OperatorSelector = observer(

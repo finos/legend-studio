@@ -144,7 +144,6 @@ const ClearIndicator: React.FC<{
 export interface SelectOption {
   label: string;
   value?: string;
-  __isNew__?: boolean;
 }
 
 interface CustomSelectorInputProps extends Props<SelectOption, true> {

@@ -91,7 +91,7 @@ import {
 } from '../graphModifier/DSLService_GraphModifierHelper.js';
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
 import { dataElement_setEmbeddedData } from '../graphModifier/DSLData_GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   type PackageableElementOption,

@@ -16,22 +16,22 @@
 
 import { forwardRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { ProjectOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import {
   type SelectComponent,
   compareLabelFn,
   CustomSelectorInput,
   PlusIcon,
   RepoIcon,
-  ArrowCircleRightIcon,
 } from '@finos/legend-art';
-import {
-  generateSetupRoute,
-  generateViewProjectRoute,
-} from '../../stores/LegendStudioRouter.js';
+import { generateSetupRoute } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import { useWorkspaceSetupStore } from './WorkspaceSetupStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  buildProjectOption,
+  getProjectOptionLabelFormatter,
+  type ProjectOption,
+} from '../shared/ProjectSelectorUtils.js';
 
 export const ProjectSelector = observer(
   forwardRef<
@@ -45,41 +45,14 @@ export const ProjectSelector = observer(
     const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const currentProjectId = setupStore.currentProjectId;
-    const options = setupStore.projectOptions.sort(compareLabelFn);
+    const options = (
+      setupStore.projects
+        ? Array.from(setupStore.projects.values()).map(buildProjectOption)
+        : []
+    ).sort(compareLabelFn);
     const selectedOption =
       options.find((option) => option.value === currentProjectId) ?? null;
     const isLoadingOptions = setupStore.loadProjectsState.isInProgress;
-
-    const formatOptionLabel = (option: ProjectOption): React.ReactNode => {
-      const viewProject = (): void =>
-        applicationStore.navigator.openNewWindow(
-          applicationStore.navigator.generateLocation(
-            generateViewProjectRoute(option.value),
-          ),
-        );
-
-      return (
-        <div className="workspace-setup__project-option">
-          <div className="workspace-setup__project-option__label">
-            <div className="workspace-setup__project-option__label__name">
-              {option.label}
-            </div>
-          </div>
-          <button
-            className="workspace-setup__project-option__visit-btn"
-            tabIndex={-1}
-            onClick={viewProject}
-          >
-            <div className="workspace-setup__project-option__visit-btn__label">
-              view
-            </div>
-            <div className="workspace-setup__project-option__visit-btn__icon">
-              <ArrowCircleRightIcon />
-            </div>
-          </button>
-        </div>
-      );
-    };
 
     const onSelectionChange = (val: ProjectOption | null): void => {
       if (
@@ -107,38 +80,38 @@ export const ProjectSelector = observer(
       }
     }, [applicationStore, setupStore.projects, setupStore.currentProject, currentProjectId, onChange]);
 
-    const projectSelectorPlaceholder = isLoadingOptions
-      ? 'Loading projects'
-      : setupStore.loadProjectsState.hasFailed
-      ? 'Error fetching projects'
-      : options.length
-      ? 'Choose an existing project'
-      : 'You have no projects, please create or acquire access for at least one';
-
     return (
-      <div className="workspace-setup-selector">
-        <div className="workspace-setup-selector__icon-box">
-          <RepoIcon className="workspace-setup-selector__icon" />
+      <div className="workspace-setup__selector">
+        <div className="workspace-setup__selector__icon" title="project">
+          <RepoIcon className="workspace-setup__selector__icon--project" />
         </div>
         <CustomSelectorInput
-          className="workspace-setup-selector__input"
+          className="workspace-setup__selector__input"
           ref={ref}
           options={options}
           disabled={isLoadingOptions || !options.length}
           isLoading={isLoadingOptions}
           onChange={onSelectionChange}
           value={selectedOption}
-          placeholder={projectSelectorPlaceholder}
+          placeholder={
+            isLoadingOptions
+              ? 'Loading projects'
+              : setupStore.loadProjectsState.hasFailed
+              ? 'Error fetching projects'
+              : options.length
+              ? 'Choose an existing project'
+              : 'You have no projects, please create or acquire access for at least one'
+          }
           isClearable={true}
           escapeClearsValue={true}
           darkMode={true}
-          formatOptionLabel={formatOptionLabel}
+          formatOptionLabel={getProjectOptionLabelFormatter(applicationStore)}
         />
         <button
-          className="workspace-setup-selector__action btn--dark"
+          className="workspace-setup__selector__action btn--dark"
           onClick={create}
           tabIndex={-1}
-          title={'Create a Project'}
+          title="Create a Project"
         >
           <PlusIcon />
         </button>

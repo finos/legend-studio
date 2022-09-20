@@ -115,12 +115,21 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl =
-  (studioUrl: string, servicePath: string): string =>
-    `${studioUrl}/update-service-query/${servicePath}`;
+  (
+    studioUrl: string,
+    groupId: string,
+    artifactId: string,
+    servicePath: string,
+  ): string =>
+    `${studioUrl}/extensions/update-service-query/${servicePath}@${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      undefined,
+    )}`;
 
 /**
  * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl =
   (studioUrl: string, projectId: string): string =>
-    `${studioUrl}/update-project-service-query/${projectId}`;
+    `${studioUrl}/extensions/update-project-service-query/${projectId}`;

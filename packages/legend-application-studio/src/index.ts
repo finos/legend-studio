@@ -42,7 +42,7 @@ export {
   TypeDragSource,
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
-} from './stores/shared/DnDUtil.js';
+} from './stores/shared/DnDUtils.js';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
 export * from './stores/graphModifier/GraphModifierHelper.js';
 export * from './stores/graphModifier/DomainGraphModifierHelper.js';
@@ -54,6 +54,9 @@ export * from './stores/graphModifier/DSLService_GraphModifierHelper.js';
 
 // components
 export * from './components/editor/EditorStoreProvider.js';
+export { ActivityBarMenu } from './components/editor/ActivityBar.js';
+export * from './components/shared/ProjectSelectorUtils.js';
+export * from './components/shared/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
 export { TypeTree } from './components/shared/TypeTree.js';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor.js';
@@ -103,7 +106,7 @@ export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.
 
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
-export { GenerationFile } from './stores/shared/FileGenerationTreeUtil.js';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtils.js';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
 export { DSLExternalFormat_LegendStudioApplicationPlugin } from './components/DSLExternalFormat_LegendStudioApplicationPlugin.js';
 export {

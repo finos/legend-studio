@@ -30,7 +30,10 @@ import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
 } from '@finos/legend-graph';
-import { CLASS_PROPERTY_TYPE, getClassPropertyType } from './ModelUtil.js';
+import {
+  CLASS_PROPERTY_TYPE,
+  getClassPropertyType,
+} from './ModelClassifierUtils.js';
 import type { MappingElementSource } from '../editor-state/element-editor-state/mapping/MappingEditorState.js';
 
 export const createMockPrimitiveProperty = (

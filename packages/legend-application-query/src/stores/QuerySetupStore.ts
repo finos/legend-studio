@@ -130,8 +130,8 @@ export class EditExistingQuerySetupState extends QuerySetupState {
       this.loadQueriesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.loadQueriesState.fail();
       this.setupStore.applicationStore.notifyError(error);
+      this.loadQueriesState.fail();
     }
   }
 }
@@ -171,6 +171,8 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
       this.setupStore.applicationStore.navigator.jumpTo(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
           matchingSDLCEntry.url,
+          serviceInfo.groupId,
+          serviceInfo.artifactId,
           serviceInfo.path,
         ),
       );
@@ -197,12 +199,12 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
             limit: DEFAULT_SERVICE_LOADER_LIMIT,
           },
         )) as StoredEntity[]
-      ).map((storedEntity) => extractServiceInfo(storedEntity, true));
+      ).map((storedEntity) => extractServiceInfo(storedEntity));
       this.loadServicesState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.loadServicesState.fail();
       this.setupStore.applicationStore.notifyError(error);
+      this.loadServicesState.fail();
     }
   }
 }
@@ -275,8 +277,8 @@ export class CreateMappingQuerySetupState extends QuerySetupState {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.loadProjectsState.fail();
       this.setupStore.applicationStore.notifyError(error);
+      this.loadProjectsState.fail();
     }
   }
 
@@ -306,13 +308,13 @@ export class CreateMappingQuerySetupState extends QuerySetupState {
 
       this.surveyMappingRuntimeCompatibilityState.pass();
     } catch (error) {
-      this.surveyMappingRuntimeCompatibilityState.fail();
       assertErrorThrown(error);
       this.setupStore.applicationStore.log.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.setupStore.applicationStore.notifyError(error);
+      this.surveyMappingRuntimeCompatibilityState.fail();
     }
   }
 }
@@ -376,8 +378,8 @@ export class LoadServiceQuerySetupState extends QuerySetupState {
       this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.loadProjectsState.fail();
       this.setupStore.applicationStore.notifyError(error);
+      this.loadProjectsState.fail();
     }
   }
 
@@ -420,13 +422,13 @@ export class LoadServiceQuerySetupState extends QuerySetupState {
       );
       this.loadServiceExecutionsState.pass();
     } catch (error) {
-      this.loadServiceExecutionsState.fail();
       assertErrorThrown(error);
       this.setupStore.applicationStore.log.error(
         LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
         error,
       );
       this.setupStore.applicationStore.notifyError(error);
+      this.loadServiceExecutionsState.fail();
     }
   }
 

@@ -43,7 +43,7 @@ import {
   Enumeration,
   Association,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,

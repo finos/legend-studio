@@ -20,7 +20,7 @@ import {
   type FlatDataPropertyMappingTransformDropTarget,
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   type MappingElement,
   MappingEditorState,
@@ -50,7 +50,7 @@ import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graph
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

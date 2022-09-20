@@ -42,7 +42,7 @@ import {
   populateDirectoryTreeNodeChildren,
   buildGenerationDirectory,
   reprocessOpenNodes,
-} from '../shared/FileGenerationTreeUtil.js';
+} from '../shared/FileGenerationTreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
 import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';

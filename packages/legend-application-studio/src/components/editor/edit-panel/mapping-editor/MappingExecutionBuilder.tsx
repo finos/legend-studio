@@ -52,7 +52,7 @@ import { NewServiceModal } from '../service-editor/NewServiceModal.js';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   assertErrorThrown,
   guaranteeType,

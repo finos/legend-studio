@@ -31,3 +31,35 @@
     color: var(--color-lime-75);
   }
 }
+
+.query-setup__service-option {
+  @include ellipsisTextOverflow;
+
+  display: inline-flex;
+
+  &__path {
+    font-size: 1.2rem;
+    color: var(--color-dark-grey-400);
+    margin-left: 0.5rem;
+    line-height: 1.4rem;
+  }
+
+  &__pattern {
+    color: var(--color-dark-grey-200);
+    margin-left: 0.5rem;
+    line-height: 1.4rem;
+    background: var(--color-yellow-100);
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  &__gav {
+    font-size: 1.2rem;
+    color: var(--color-blue-50);
+    margin-left: 0.5rem;
+    line-height: 1.4rem;
+  }
+}

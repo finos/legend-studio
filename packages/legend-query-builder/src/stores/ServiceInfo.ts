@@ -15,6 +15,7 @@
  */
 
 import {
+  MASTER_SNAPSHOT_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
   type StoredEntity,
 } from '@finos/legend-server-depot';
@@ -32,11 +33,13 @@ export interface ServiceInfo {
 
 export const extractServiceInfo = (
   storedEntity: StoredEntity,
-  isSnapshot: boolean,
 ): ServiceInfo => ({
   groupId: storedEntity.groupId,
   artifactId: storedEntity.artifactId,
-  versionId: isSnapshot ? SNAPSHOT_VERSION_ALIAS : storedEntity.versionId,
+  versionId:
+    storedEntity.versionId === MASTER_SNAPSHOT_ALIAS
+      ? SNAPSHOT_VERSION_ALIAS
+      : storedEntity.versionId,
   path: storedEntity.entity.path,
   name: extractEntityNameFromPath(storedEntity.entity.path),
   // NOTE: we don't want to assert the existence of this field even when it

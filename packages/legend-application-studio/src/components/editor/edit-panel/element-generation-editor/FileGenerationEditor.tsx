@@ -61,7 +61,7 @@ import {
   type FileGenerationSourceDropTarget,
   type ElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import type { FileGenerationState } from '../../../../stores/editor-state/FileGenerationState.js';
 import type { ElementFileGenerationState } from '../../../../stores/editor-state/element-editor-state/ElementFileGenerationState.js';
 import {
@@ -69,7 +69,7 @@ import {
   GenerationDirectory,
   GenerationFile,
   getFileGenerationChildNodes,
-} from '../../../../stores/shared/FileGenerationTreeUtil.js';
+} from '../../../../stores/shared/FileGenerationTreeUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {

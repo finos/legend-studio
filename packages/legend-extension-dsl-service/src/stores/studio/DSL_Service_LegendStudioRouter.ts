@@ -15,58 +15,93 @@
  */
 
 import { generateExtensionUrlPattern } from '@finos/legend-application';
-import { generateGAVCoordinates } from '@finos/legend-storage';
+import { assertTrue, guaranteeNonEmptyString } from '@finos/legend-shared';
+import {
+  generateGAVCoordinates,
+  parseGACoordinates,
+} from '@finos/legend-storage';
 import { generatePath } from 'react-router';
 
+const SERVICE_COORDINATE_DELIMITER = '@';
+
+export const parseServiceCoordinates = (
+  val: string,
+): {
+  servicePath: string;
+  groupId: string;
+  artifactId: string;
+} => {
+  const parts = val.split(SERVICE_COORDINATE_DELIMITER);
+  assertTrue(
+    parts.length === 2,
+    `Can't parse service coordinates '${val}': expect the coordinates to follow format {servicePath}${SERVICE_COORDINATE_DELIMITER}{GACoordinates}`,
+  );
+  const { groupId, artifactId } = parseGACoordinates(
+    guaranteeNonEmptyString(
+      parts[1]?.trim(),
+      `Service coordinates GA coordinates are missing or empty`,
+    ),
+  );
+  return {
+    groupId,
+    artifactId,
+    servicePath: guaranteeNonEmptyString(
+      parts[0]?.trim(),
+      `Service coordinates service path is missing or empty`,
+    ),
+  };
+};
+
+export const generateServiceCoordinates = (
+  groupId: string,
+  artifactId: string,
+  servicePath: string,
+): string =>
+  `${servicePath}@${generateGAVCoordinates(groupId, artifactId, undefined)}`;
+
 export enum DSL_SERVICE_PATH_PARAM_TOKEN {
-  GAV = 'gav',
+  SERVICE_COORDINATES = 'serviceCoordinates',
   PROJECT_ID = 'projectId',
   GROUP_WORKSPACE_ID = 'groupWorkspaceId',
   SERVICE_PATH = 'servicePath',
 }
 
 export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
-  UPDATE_SERVICE_QUERY_SETUP: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.GAV}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
-  UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.GAV}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}`,
+  UPDATE_SERVICE_QUERY_SETUP: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}?`,
+  UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}`,
   UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}`,
   UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
 });
 
 export interface ServiceQueryUpdaterSetupPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.GAV]: string;
-  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
+  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]?: string;
 }
 
 export const generateServiceQueryUpdaterSetupRoute = (
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-  servicePath: string,
+  groupId?: string,
+  artifactId?: string,
+  servicePath?: string,
 ): string =>
   generatePath(
     generateExtensionUrlPattern(
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY_SETUP,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      ),
-      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]:
+        groupId && artifactId && servicePath
+          ? generateServiceCoordinates(groupId, artifactId, servicePath)
+          : undefined,
     },
   );
 
 export interface ServiceQueryUpdaterPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.GAV]: string;
-  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
+  [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]: string;
   [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
 }
 
 export const generateServiceQueryUpdaterRoute = (
   groupId: string,
   artifactId: string,
-  versionId: string,
   servicePath: string,
   groupWorkspaceId: string,
 ): string =>
@@ -75,12 +110,8 @@ export const generateServiceQueryUpdaterRoute = (
       DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_SERVICE_QUERY,
     ),
     {
-      [DSL_SERVICE_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      ),
-      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+      [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]:
+        generateGAVCoordinates(groupId, artifactId, servicePath),
       [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
     },
   );

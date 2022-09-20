@@ -16,9 +16,7 @@
 
 @use 'mixins' as *;
 
-@forward 'workspace-setup/create-project-modal';
-
-.workspace-setup {
+.service-query-setup {
   height: 100%;
   position: relative;
   background: var(--color-dark-grey-50);
@@ -62,16 +60,6 @@
     padding: 1rem;
   }
 
-  &__doc__setup-workspace {
-    font-size: 2rem;
-    color: var(--color-dark-grey-400);
-    margin-left: 1rem;
-  }
-
-  &__workspace__selector {
-    margin-top: 1rem;
-  }
-
   &__selector {
     display: flex;
     margin-bottom: 0.5rem;
@@ -89,19 +77,8 @@
       }
     }
 
-    &__icon--project,
     &__icon--workspace {
       font-size: 1.8rem;
-    }
-
-    &__label {
-      @include flexCenter;
-
-      width: 3.5rem;
-      background: var(--color-light-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
-      border-right: none;
-      color: var(--color-dark-grey-300);
     }
 
     &__input {

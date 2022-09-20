@@ -51,7 +51,7 @@ import { useDrop } from 'react-dnd';
 import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   IllegalStateError,
   guaranteeType,

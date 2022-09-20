@@ -30,7 +30,6 @@ import {
   MarkdownTextViewer,
   AssistantIcon,
 } from '@finos/legend-art';
-import type { ProjectOption } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import {
   useWorkspaceSetupStore,
   withWorkspaceSetupStore,
@@ -53,6 +52,10 @@ import { CreateProjectModal } from './ProjectCreateModal.js';
 import { ActivityBarMenu } from '../editor/ActivityBar.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/LegendStudioApplicationNavigationContext.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  buildProjectOption,
+  type ProjectOption,
+} from '../shared/ProjectSelectorUtils.js';
 
 const CreateWorkspaceModal = observer(() => {
   const setupStore = useWorkspaceSetupStore();
@@ -74,7 +77,11 @@ const CreateWorkspaceModal = observer(() => {
   const workspaceType = isGroupWorkspace
     ? WorkspaceType.GROUP
     : WorkspaceType.USER;
-  const projectOptions = setupStore.projectOptions.sort(compareLabelFn);
+  const projectOptions = (
+    setupStore.projects
+      ? Array.from(setupStore.projects.values()).map(buildProjectOption)
+      : []
+  ).sort(compareLabelFn);
   const selectedOption =
     projectOptions.find((option) => option.value === currentProjectId) ?? null;
   const dispatchingActions =
@@ -160,7 +167,7 @@ const CreateWorkspaceModal = observer(() => {
                 Project Name
               </div>
               <CustomSelectorInput
-                className="workspace-setup-selector__input workspace-setup__workspace__selector"
+                className="workspace-setup__selector__input workspace-setup__workspace__selector"
                 ref={projectSelectorRef}
                 options={projectOptions}
                 disabled={

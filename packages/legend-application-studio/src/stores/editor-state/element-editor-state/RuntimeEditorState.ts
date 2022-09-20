@@ -27,7 +27,7 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './ElementEditorState.js';
-import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtil.js';
+import type { RuntimeExplorerTreeNodeData } from '../../shared/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import { ConnectionEditorState } from './connection/ConnectionEditorState.js';
 import { getMappingElementSource } from './mapping/MappingEditorState.js';

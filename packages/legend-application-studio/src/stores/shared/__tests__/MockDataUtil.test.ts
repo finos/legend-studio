@@ -16,7 +16,7 @@
 
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
-import { classHasCycle, createMockClassInstance } from '../MockDataUtil.js';
+import { classHasCycle, createMockClassInstance } from '../MockDataUtils.js';
 import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';

@@ -56,13 +56,13 @@ import {
   PanelDropZone,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
-import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtil.js';
+import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import { ConnectionEditor } from './connection-editor/ConnectionEditor.js';
 import {
   type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
   ElementDragSource,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   assertErrorThrown,

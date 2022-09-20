@@ -30,7 +30,7 @@ import {
 } from '../../../EditorComponentTestUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 
 const addRootPackage = async (
   packagePath: string,

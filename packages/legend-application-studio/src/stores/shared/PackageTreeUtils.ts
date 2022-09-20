@@ -15,10 +15,10 @@
  */
 
 import { isNonNullable, addUniqueEntry } from '@finos/legend-shared';
-import type { PackageTreeNodeData } from './TreeUtil.js';
+import type { PackageTreeNodeData } from './TreeUtils.js';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import type { EditorStore } from '../EditorStore.js';
-import { CORE_DND_TYPE } from './DnDUtil.js';
+import { CORE_DND_TYPE } from './DnDUtils.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
 import {
   type PackageableElement,
