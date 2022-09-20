@@ -44,7 +44,6 @@ export const CreateWorkspaceModal = observer(
       setupStore.setShowCreateWorkspaceModal(false);
     };
 
-    // workspace
     const createWorkspace = (): void => {
       if (selectedProject && workspaceName) {
         flowResult(

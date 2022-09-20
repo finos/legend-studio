@@ -351,7 +351,7 @@ export class WorkspaceSetupStore {
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
-      const workspace = Workspace.serialization.fromJson(
+      const newWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
           projectId,
           workspaceId,
@@ -360,11 +360,20 @@ export class WorkspaceSetupStore {
       );
 
       this.applicationStore.notifySuccess(
-        `Workspace '${workspace.workspaceId}' is succesfully created`,
+        `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
       );
 
-      this.workspaces.push(workspace);
-      this.changeWorkspace(workspace);
+      const matchingWorkspace = this.workspaces.find(
+        (workspace) =>
+          workspace.workspaceId === newWorkspace.workspaceId &&
+          workspace.workspaceType === newWorkspace.workspaceType,
+      );
+      if (!matchingWorkspace) {
+        this.workspaces.push(newWorkspace);
+        this.changeWorkspace(newWorkspace);
+      } else {
+        this.changeWorkspace(matchingWorkspace);
+      }
 
       this.setShowCreateWorkspaceModal(false);
     } catch (error) {

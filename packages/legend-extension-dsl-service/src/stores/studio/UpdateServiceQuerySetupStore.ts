@@ -65,9 +65,11 @@ export class UpdateServiceQuerySetupStore {
   currentSnapshotService?: ServiceInfo | undefined;
 
   loadWorkspacesState = ActionState.create();
+  createWorkspaceState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
   currentGroupWorkspace?: Workspace | undefined;
   currentWorkspaceService?: Entity | undefined;
+  showCreateWorkspaceModal = false;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -81,17 +83,23 @@ export class UpdateServiceQuerySetupStore {
       groupWorkspaces: observable,
       currentGroupWorkspace: observable,
       currentWorkspaceService: observable,
+      setShowCreateWorkspaceModal: action,
       resetCurrentService: action,
       resetCurrentGroupWorkspace: action,
       initialize: flow,
       loadServices: flow,
       changeService: flow,
       changeWorkspace: flow,
+      createWorkspace: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
+  }
+
+  setShowCreateWorkspaceModal(val: boolean): void {
+    this.showCreateWorkspaceModal = val;
   }
 
   resetCurrentService(): void {
@@ -249,6 +257,48 @@ export class UpdateServiceQuerySetupStore {
       )) as Entity;
     } catch {
       this.currentWorkspaceService = undefined;
+    }
+  }
+
+  *createWorkspace(
+    projectId: string,
+    workspaceId: string,
+    workspaceType: WorkspaceType,
+  ): GeneratorFn<void> {
+    this.createWorkspaceState.inProgress();
+    try {
+      const newGroupWorkspace = Workspace.serialization.fromJson(
+        (yield this.sdlcServerClient.createWorkspace(
+          projectId,
+          workspaceId,
+          WorkspaceType.GROUP,
+        )) as PlainObject<Workspace>,
+      );
+
+      this.applicationStore.notifySuccess(
+        `Workspace '${newGroupWorkspace.workspaceId}' is succesfully created`,
+      );
+
+      const matchingGroupWorkspace = this.groupWorkspaces.find(
+        (workspace) => workspace.workspaceId === newGroupWorkspace.workspaceId,
+      );
+      if (!matchingGroupWorkspace) {
+        this.groupWorkspaces.push(newGroupWorkspace);
+        this.changeWorkspace(newGroupWorkspace);
+      } else {
+        this.changeWorkspace(matchingGroupWorkspace);
+      }
+
+      this.setShowCreateWorkspaceModal(false);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+    } finally {
+      this.createWorkspaceState.reset();
     }
   }
 }
