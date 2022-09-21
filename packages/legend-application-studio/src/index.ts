@@ -54,6 +54,7 @@ export * from './stores/graphModifier/DSLService_GraphModifierHelper.js';
 
 // components
 export * from './components/editor/EditorStoreProvider.js';
+export * from './stores/LegendStudioRouter.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/shared/ProjectSelectorUtils.js';
 export * from './components/shared/WorkspaceSelectorUtils.js';

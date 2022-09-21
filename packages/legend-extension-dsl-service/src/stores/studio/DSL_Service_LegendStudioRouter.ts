@@ -57,7 +57,11 @@ export const generateServiceCoordinates = (
   artifactId: string,
   servicePath: string,
 ): string =>
-  `${servicePath}@${generateGAVCoordinates(groupId, artifactId, undefined)}`;
+  `${servicePath}${SERVICE_COORDINATE_DELIMITER}${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    undefined,
+  )}`;
 
 export enum DSL_SERVICE_PATH_PARAM_TOKEN {
   SERVICE_COORDINATES = 'serviceCoordinates',
@@ -111,7 +115,7 @@ export const generateServiceQueryUpdaterRoute = (
     ),
     {
       [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES]:
-        generateGAVCoordinates(groupId, artifactId, servicePath),
+        generateServiceCoordinates(groupId, artifactId, servicePath),
       [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
     },
   );

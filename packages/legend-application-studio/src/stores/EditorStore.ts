@@ -875,6 +875,8 @@ export class EditorStore {
         return;
       }
 
+      this.initState.setMessage(`Starting change detection engine...`);
+
       // build explorer tree
       this.explorerTreeState.buildImmutableModelTrees();
       this.explorerTreeState.build();
@@ -912,6 +914,8 @@ export class EditorStore {
       );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
+    } finally {
+      this.initState.setMessage(undefined);
     }
   }
 
