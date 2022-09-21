@@ -140,6 +140,15 @@
     }
   }
 
+  &__search__mode {
+    padding: 1rem;
+  }
+
+  &__search__mode--radio-group {
+    margin: 0;
+    padding: 0 0 2rem;
+  }
+
   &__node__info {
     cursor: help;
   }
@@ -185,7 +194,7 @@
       @include flexCenter;
 
       position: absolute;
-      right: 2.8rem;
+      right: 5.3rem;
       border-radius: 0.8rem;
       height: 1.6rem;
       padding: 0 0.5rem;
@@ -210,26 +219,21 @@
       }
     }
 
-    &__see_all-btn {
+    &__cog__icon {
       @include flexCenter;
 
-      border-radius: 0.2rem;
-      height: 2.2rem;
-      padding: 0 0.5rem;
-      float: right;
-      font-size: 1.1rem;
-      font-weight: 4 00;
-      margin: 1rem 1rem 0;
-      background: var(--color-dark-grey-250);
-      color: var(--color-light-grey-300);
+      position: absolute;
+      right: 2.4rem;
+      height: 2.8rem;
+      width: 2.8rem;
 
       svg {
-        color: var(--color-dark-grey-400);
-        margin-right: 0.5rem;
+        color: var(--color-light-shade-100);
       }
 
       &:hover svg {
         color: var(--color-dark-grey-500);
+        cursor: pointer;
       }
     }
 

@@ -34,6 +34,8 @@ import {
   QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
   QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+  SEARCH_MODE,
+  QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES,
 } from '../QueryBuilderConfig.js';
 import {
   getQueryBuilderPropertyNodeData,
@@ -49,43 +51,59 @@ export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
   // TODO: Check if we could clean this up as this seems quite complicated and its purpose is not clear to me
   // See https://github.com/finos/legend-studio/pull/1212
-  allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+  mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+
   isSearchPanelOpen = false;
+  isSearchPanelTipsOpen = false;
   isSearchPanelHidden = false;
   isOverSearchLimit = false;
+
   searchText = '';
   searchState = ActionState.create().pass();
   searchEngine: Fuse<QueryBuilderExplorerTreeNodeData>;
 
   filterByMultiple: boolean;
-  filterByTaggedValues: boolean;
 
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
+
+  modeOfSearch: SEARCH_MODE;
+  modeOfSearchOptions: SEARCH_MODE[];
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
+      isSearchPanelTipsOpen: observable,
       isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
       searchEngine: observable,
       filteredPropertyNodes: computed,
       setSearchText: action,
+      setIsOverSearchLimit: action,
       setSearchedMappedPropertyNodes: action,
       setIsSearchPanelOpen: action,
+      setIsSearchPanelTipsOpen: action,
       setIsSearchPanelHidden: action,
-      refreshPropertyState: action,
+      resetPropertyState: action,
       setFilterByMultiple: action,
-      setFilterByTaggedValues: action,
       toggleTypeFilter: action,
+      changeModeOfSearch: action,
     });
 
     this.queryBuilderState = queryBuilderState;
     this.filterByMultiple = true;
-    this.filterByTaggedValues = false;
+
+    this.modeOfSearch = SEARCH_MODE.NORMAL;
+
+    this.modeOfSearchOptions = [
+      SEARCH_MODE.NORMAL,
+      SEARCH_MODE.INCLUDE,
+      SEARCH_MODE.EXACT,
+      SEARCH_MODE.INVERSE,
+    ];
 
     this.typeFilters = [
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
@@ -95,7 +113,33 @@ export class QueryBuilderPropertySearchState {
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
     ];
 
-    this.searchEngine = new Fuse(this.allMappedPropertyNodes);
+    this.searchEngine = new Fuse(this.mappedPropertyNodes);
+  }
+
+  setFuse(): void {
+    this.searchEngine = new Fuse(this.mappedPropertyNodes, {
+      includeScore: true,
+      shouldSort: true,
+      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+      ignoreLocation: true,
+      threshold: 0.3,
+      keys: [
+        {
+          name: 'id',
+        },
+        {
+          name: 'label',
+        },
+        {
+          name: 'taggedValues',
+          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+            (
+              node as QueryBuilderExplorerTreePropertyNodeData
+            ).property.taggedValues.map((taggedValue) => taggedValue.value),
+        },
+      ],
+      useExtendedSearch: true,
+    });
   }
 
   toggleTypeFilter(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -106,14 +150,12 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
-  setFilterByMultiple(val: boolean): void {
-    this.filterByMultiple = val;
+  changeModeOfSearch(val: SEARCH_MODE): void {
+    this.modeOfSearch = val;
   }
 
-  setFilterByTaggedValues(val: boolean): void {
-    this.filterByTaggedValues = val;
-    this.refreshPropertyState();
-    this.fetchMappedPropertyNodes(this.searchText);
+  setFilterByMultiple(val: boolean): void {
+    this.filterByMultiple = val;
   }
 
   getMultiplePropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
@@ -125,7 +167,7 @@ export class QueryBuilderPropertySearchState {
         ) {
           return true;
         }
-        const parentNode = this.allMappedPropertyNodes.find(
+        const parentNode = this.mappedPropertyNodes.find(
           (pn) => pn.id === node.parentId,
         );
         if (
@@ -205,7 +247,7 @@ export class QueryBuilderPropertySearchState {
   }
 
   get filteredPropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
-    return this.searchedMappedPropertyNodes.filter((p) => {
+    const filteredTest = this.searchedMappedPropertyNodes.filter((p) => {
       if (
         !this.filterByMultiple &&
         this.getMultiplePropertyNodes().includes(p)
@@ -246,6 +288,64 @@ export class QueryBuilderPropertySearchState {
       }
       return true;
     });
+    return filteredTest;
+  }
+
+  getFilteredPropertyNodes(): Promise<QueryBuilderExplorerTreeNodeData[]> {
+    return new Promise((resolve) => {
+      const filteredProperties = this.searchedMappedPropertyNodes.filter(
+        (p) => {
+          if (
+            !this.filterByMultiple &&
+            this.getMultiplePropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
+            ) &&
+            this.classPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
+            ) &&
+            this.stringPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
+            ) &&
+            this.numberPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
+            ) &&
+            this.booleanPropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          if (
+            !this.typeFilters.includes(
+              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
+            ) &&
+            this.datePropertyNodes().includes(p)
+          ) {
+            return false;
+          }
+          return true;
+        },
+      );
+      resolve(filteredProperties);
+    });
   }
 
   fetchAllPropertyNodes(): void {
@@ -257,7 +357,7 @@ export class QueryBuilderPropertySearchState {
       .forEach((node) => {
         if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
           currentLevelPropertyNodes.push(node);
-          this.allMappedPropertyNodes.push(node);
+          this.mappedPropertyNodes.push(node);
         }
       });
     let currentDepth = 1;
@@ -290,7 +390,7 @@ export class QueryBuilderPropertySearchState {
                 !propertyTreeNodeData.isPartOfDerivedPropertyBranch
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
-                this.allMappedPropertyNodes.push(propertyTreeNodeData);
+                this.mappedPropertyNodes.push(propertyTreeNodeData);
               }
             });
             node.type._subclasses.forEach((subclass) => {
@@ -303,91 +403,101 @@ export class QueryBuilderPropertySearchState {
                 ),
               );
               nextLevelPropertyNodes.push(subTypeTreeNodeData);
-              this.allMappedPropertyNodes.push(subTypeTreeNodeData);
+              this.mappedPropertyNodes.push(subTypeTreeNodeData);
             });
           }
         }
       }
-      if (!currentLevelPropertyNodes.length) {
+      if (
+        !currentLevelPropertyNodes.length &&
+        this.mappedPropertyNodes.length <
+          QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES
+      ) {
         currentLevelPropertyNodes = nextLevelPropertyNodes;
         nextLevelPropertyNodes = [];
         currentDepth++;
       }
     }
+
+    this.setFuse();
   }
 
-  fetchMappedPropertyNodes(propSearchText: string, fetchAll?: boolean): void {
-    const propertySearchText = propSearchText.toLowerCase();
+  //fuse time! takes some time
+  getPropertySearchNodes(
+    propertySearchText: string,
+  ): Promise<QueryBuilderExplorerTreeNodeData[]> {
+    return new Promise((resolve) => {
+      const results = Array.from(
+        this.searchEngine
+          .search(propertySearchText, {
+            limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
+          })
+          .values(),
+      ).map((result) => {
+        const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
+        return new QueryBuilderExplorerTreePropertyNodeData(
+          node.id,
+          node.label,
+          node.dndText,
+          node.property,
+          node.parentId,
+          node.isPartOfDerivedPropertyBranch,
+          node.mappingData,
+        );
+      });
+      resolve(results);
+    });
+  }
 
-    let searchQualifications = [
-      {
-        name: 'id',
-        weight: 4,
-      },
-      {
-        name: 'label',
-        weight: 1,
-      },
-    ];
-    const taggedValueQualification = [
-      {
-        name: 'taggedValues',
-        getFn: (node: QueryBuilderExplorerTreeNodeData) =>
-          (
-            node as QueryBuilderExplorerTreePropertyNodeData
-          ).property.taggedValues.map((taggedValue) => taggedValue.value),
-        weight: 4,
-      },
-    ];
-
-    if (this.filterByTaggedValues) {
-      searchQualifications = [
-        ...searchQualifications,
-        ...taggedValueQualification,
-      ];
+  async fetchMappedPropertyNodes(propSearchText: string): Promise<void> {
+    if (propSearchText.length < QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH) {
+      return;
     }
 
-    this.searchState.inProgress();
-    this.searchEngine = new Fuse(this.allMappedPropertyNodes, {
-      includeScore: true,
-      shouldSort: true,
-      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
-      ignoreLocation: true,
-      threshold: 0.3,
-      keys: searchQualifications,
-      useExtendedSearch: true,
-    });
+    const propertySearchText = this.getSearchText(propSearchText.toLowerCase());
 
-    const allSearchedMappedPropertyNodes = Array.from(
-      this.searchEngine.search(propertySearchText).values(),
-    ).map((result) => {
-      const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
-      return new QueryBuilderExplorerTreePropertyNodeData(
-        node.id,
-        node.label,
-        node.dndText,
-        node.property,
-        node.parentId,
-        node.isPartOfDerivedPropertyBranch,
-        node.mappingData,
-      );
-    });
+    const allSearchedMappedPropertyNodes = await this.getPropertySearchNodes(
+      propertySearchText,
+    );
 
     if (
       allSearchedMappedPropertyNodes.length >
-        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT &&
-      !fetchAll
+      QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
     ) {
-      this.isOverSearchLimit = true;
-      this.searchedMappedPropertyNodes = allSearchedMappedPropertyNodes.slice(
-        0,
-        QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
+      this.setIsOverSearchLimit(true);
+      await this.setSearchedMappedPropertyNodes(
+        allSearchedMappedPropertyNodes.slice(
+          0,
+          QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
+        ),
       );
     } else {
-      this.isOverSearchLimit = false;
-      this.searchedMappedPropertyNodes = allSearchedMappedPropertyNodes;
+      this.setIsOverSearchLimit(false);
+      await this.setSearchedMappedPropertyNodes(allSearchedMappedPropertyNodes);
     }
+  }
 
+  getSearchText(val: string): string {
+    switch (this.modeOfSearch) {
+      case SEARCH_MODE.INCLUDE: {
+        return `'${val}`;
+      }
+      case SEARCH_MODE.EXACT: {
+        return `="${val}"`;
+      }
+      case SEARCH_MODE.INVERSE: {
+        return `!${val}`;
+      }
+      default: {
+        return val;
+      }
+    }
+  }
+
+  search(): void {
+    this.searchState.inProgress();
+    this.resetPropertyState();
+    await this.fetchMappedPropertyNodes(this.searchText);
     this.searchState.complete();
   }
 
@@ -399,6 +509,14 @@ export class QueryBuilderPropertySearchState {
     this.isSearchPanelHidden = val;
   }
 
+  setIsSearchPanelTipsOpen(val: boolean): void {
+    this.isSearchPanelTipsOpen = val;
+  }
+
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
+  }
+
   setSearchText(val: string): void {
     this.searchText = val;
   }
@@ -406,10 +524,12 @@ export class QueryBuilderPropertySearchState {
   setSearchedMappedPropertyNodes(
     val: QueryBuilderExplorerTreeNodeData[],
   ): void {
+    this.searchState.inProgress();
     this.searchedMappedPropertyNodes = val;
+    this.searchState.complete();
   }
 
-  refreshPropertyState(): void {
+  resetPropertyState(): void {
     this.setSearchedMappedPropertyNodes([]);
   }
 }

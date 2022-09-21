@@ -21,6 +21,7 @@ import {
   FormControlLabel,
   Radio,
 } from '@mui/material';
+import { clsx } from 'clsx';
 
 const transformToMatrix = (arr: unknown[], stepSize: number): unknown[][] => {
   const matrix = [];
@@ -37,9 +38,10 @@ export const BaseRadioGroup: React.FC<
      * Display raidio buttons in a [n, size] matrix
      */
     size: number;
+    className?: string | undefined;
   } & MuiRadioGroupProps
 > = (props) => {
-  const { children, options, size, ...otherProps } = props;
+  const { children, options, size, className, ...otherProps } = props;
   // For displaying avaible options in a [n,size] matrix
   const targetOptionsValuesInMatrix = transformToMatrix(
     options,
@@ -47,7 +49,7 @@ export const BaseRadioGroup: React.FC<
   ) as never[][];
 
   return (
-    <div className="mui-radio-group">
+    <div className={clsx('mui-radio-group', className)}>
       {targetOptionsValuesInMatrix.map((row) => (
         <div key={uuid()}>
           <MuiRadioGroup className="mui-radio-group__group" {...otherProps}>

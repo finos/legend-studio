@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   clsx,
   CheckSquareIcon,
@@ -30,9 +30,12 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   useDragPreviewLayer,
-  PlusIcon,
   PanelLoadingIndicator,
   BlankPanelContent,
+  CogIcon,
+  Panel,
+  BaseRadioGroup,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import {
   Class,
@@ -40,12 +43,13 @@ import {
   getAllClassProperties,
   getAllOwnClassProperties,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { useDrag } from 'react-dnd';
 import {
   QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
+  type SEARCH_MODE,
 } from '../../stores/QueryBuilderConfig.js';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -189,7 +193,7 @@ const QueryBuilderTreeNodeViewer = observer(
       }
       return childNodes;
     };
-    const parentNode = propertySearchPanelState.allMappedPropertyNodes.find(
+    const parentNode = propertySearchPanelState.mappedPropertyNodes.find(
       (pn) =>
         node instanceof QueryBuilderExplorerTreePropertyNodeData &&
         node.parentId === pn.id,
@@ -292,44 +296,66 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchPanelState.isOverSearchLimit &&
       propertySearchPanelState.filteredPropertyNodes.length !== 0;
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const changePropertyName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
+
+    const handleEnter = (): void => searchInputRef.current?.focus();
+
+    const debouncedSearch = useMemo(
+      () => debounce(() => propertySearchPanelState.search(), 100),
+      [propertySearchPanelState],
+    );
+    const onSearchPropertyTextChange: React.ChangeEventHandler<
+      HTMLInputElement
+    > = (event) => {
       propertySearchPanelState.setSearchText(event.target.value);
-      propertySearchPanelState.refreshPropertyState();
-      propertySearchPanelState.fetchMappedPropertyNodes(
-        propertySearchPanelState.searchText,
-      );
+      debouncedSearch();
     };
-    const clearPropertyName = (): void => {
+
+    const clearSearchPropertyName = (): void => {
       propertySearchPanelState.setSearchText('');
-      propertySearchPanelState.refreshPropertyState();
+      propertySearchPanelState.resetPropertyState();
     };
 
-    const seeAllResults = (): void => {
-      propertySearchPanelState.refreshPropertyState();
-
-      propertySearchPanelState.fetchMappedPropertyNodes(
+    const handleSearchMode = async (
+      event: React.ChangeEvent<HTMLInputElement>,
+    ): Promise<void> => {
+      const searchMode = (event.target as HTMLInputElement)
+        .value as SEARCH_MODE;
+      propertySearchPanelState.changeModeOfSearch(searchMode);
+      propertySearchPanelState.resetPropertyState();
+      await propertySearchPanelState.fetchMappedPropertyNodes(
         propertySearchPanelState.searchText,
-        true,
       );
     };
 
     const handleClose = (): void => {
-      clearPropertyName();
+      clearSearchPropertyName();
       propertySearchPanelState.setIsSearchPanelOpen(false);
     };
+
+    const getDocumentationToImplementSvp = (): void => {
+      queryBuilderState.applicationStore.assistantService.setIsOpen(true);
+      queryBuilderState.applicationStore.assistantService.setIsSearchPanelTipsOpen(
+        false,
+      );
+      queryBuilderState.applicationStore.assistantService.setSearchText(
+        '="How do I use search?"',
+      );
+      queryBuilderState.applicationStore.assistantService.search();
+    };
+
     const toggleIsMultiple = (): void => {
       propertySearchPanelState.setFilterByMultiple(
         !propertySearchPanelState.filterByMultiple,
       );
     };
-    const toggleIsTaggedValues = (): void => {
-      propertySearchPanelState.setFilterByTaggedValues(
-        !propertySearchPanelState.filterByTaggedValues,
+
+    const toggleSearchPanelTip = (): void => {
+      propertySearchPanelState.setIsSearchPanelTipsOpen(
+        !propertySearchPanelState.isSearchPanelTipsOpen,
       );
     };
-    const handleEnter = (): void => searchInputRef.current?.focus();
+
+    const searchModeRef = useRef<HTMLInputElement>(null);
 
     return (
       <BasePopover
@@ -376,14 +402,24 @@ export const QueryBuilderPropertySearchPanel = observer(
                       propertySearchPanelState.searchText,
                   },
                 )}
-                onChange={changePropertyName}
+                onChange={onSearchPropertyTextChange}
                 value={propertySearchPanelState.searchText}
                 placeholder={`Search for a property (min ${QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH.toString()} chars)`}
               />
               {!propertySearchPanelState.searchText ? (
-                <div className="query-builder-property-search-panel__input__search__icon">
-                  <SearchIcon />
-                </div>
+                <>
+                  <button
+                    className="query-builder-property-search-panel__input__cog__icon"
+                    tabIndex={-1}
+                    onClick={toggleSearchPanelTip}
+                    title="View tips for searching"
+                  >
+                    <CogIcon />
+                  </button>
+                  <div className="query-builder-property-search-panel__input__search__icon">
+                    <SearchIcon />
+                  </div>
+                </>
               ) : (
                 <>
                   {propertySearchPanelState.searchText.length >= 3 && (
@@ -393,9 +429,17 @@ export const QueryBuilderPropertySearchPanel = observer(
                     </div>
                   )}
                   <button
+                    className="query-builder-property-search-panel__input__cog__icon"
+                    tabIndex={-1}
+                    onClick={toggleSearchPanelTip}
+                    title="View tips for searching"
+                  >
+                    <CogIcon />
+                  </button>
+                  <button
                     className="query-builder-property-search-panel__input__clear-btn"
                     tabIndex={-1}
-                    onClick={clearPropertyName}
+                    onClick={clearSearchPropertyName}
                     title="Clear"
                   >
                     <TimesIcon />
@@ -447,48 +491,6 @@ export const QueryBuilderPropertySearchPanel = observer(
                         tabIndex={-1}
                       >
                         {propertySearchPanelState.filterByMultiple ? (
-                          <CheckSquareIcon />
-                        ) : (
-                          <SquareIcon />
-                        )}
-                      </button>
-
-                      <div className="query-builder-property-search-panel__form__section__toggler__prompt">
-                        Included
-                      </div>
-                    </div>
-                  </div>
-                  <div className="query-builder-property-search-panel__form__section">
-                    <div className="query-builder-property-search-panel__form__section__header__label">
-                      Tagged Values
-                      <div
-                        className="query-builder-property-search-panel__info__label"
-                        title="Includes tagged value in search"
-                      >
-                        <InfoCircleIcon />
-                      </div>
-                    </div>
-                    <div
-                      className={clsx(
-                        'query-builder-property-search-panel__form__section__toggler',
-                        {
-                          'query-builder-property-search-panel__form__section__toggler--disabled':
-                            false,
-                        },
-                      )}
-                    >
-                      <button
-                        className={clsx(
-                          'query-builder-property-search-panel__form__section__toggler__btn',
-                          {
-                            'query-builder-property-search-panel__form__section__toggler__btn--toggled':
-                              propertySearchPanelState.filterByTaggedValues,
-                          },
-                        )}
-                        onClick={toggleIsTaggedValues}
-                        tabIndex={-1}
-                      >
-                        {propertySearchPanelState.filterByTaggedValues ? (
                           <CheckSquareIcon />
                         ) : (
                           <SquareIcon />
@@ -661,12 +663,49 @@ export const QueryBuilderPropertySearchPanel = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel>
+                <div ref={searchModeRef}></div>
+                <BasePopover
+                  open={Boolean(propertySearchPanelState.isSearchPanelTipsOpen)}
+                  anchorEl={searchModeRef.current}
+                  onClose={() =>
+                    propertySearchPanelState.setIsSearchPanelTipsOpen(false)
+                  }
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <Panel>
+                    <div className="query-builder-property-search-panel__search__mode">
+                      <div className="query-builder-property-search-panel__form__section__header__label">
+                        Search Mode
+                        <button
+                          className="virtual-assistant__search__question__icon"
+                          tabIndex={-1}
+                          onClick={getDocumentationToImplementSvp}
+                        >
+                          <QuestionCircleIcon />
+                        </button>
+                      </div>
+                      <BaseRadioGroup
+                        className="query-builder-property-search-panel__search__mode--radio-group"
+                        value={propertySearchPanelState.modeOfSearch}
+                        onChange={() => handleSearchMode}
+                        row={false}
+                        options={propertySearchPanelState.modeOfSearchOptions}
+                        size={1}
+                      />
+                    </div>
+                  </Panel>
+                </BasePopover>
+                {propertySearchPanelState.searchState.isInProgress && (
+                  <PanelLoadingIndicator isLoading={true} />
+                )}
                 <div className="query-builder-property-search-panel__results">
-                  <PanelLoadingIndicator
-                    isLoading={
-                      propertySearchPanelState.searchState.isInProgress
-                    }
-                  />
                   {!propertySearchPanelState.searchState.isInProgress && (
                     <>
                       {propertySearchPanelState.filteredPropertyNodes.map(
@@ -680,15 +719,6 @@ export const QueryBuilderPropertySearchPanel = observer(
                             explorerState={queryBuilderState.explorerState}
                           />
                         ),
-                      )}
-                      {hasHiddenResults && (
-                        <button
-                          className="query-builder-property-search-panel__input__see_all-btn"
-                          tabIndex={-1}
-                          onClick={seeAllResults}
-                        >
-                          <PlusIcon /> See All Results
-                        </button>
                       )}
                     </>
                   )}

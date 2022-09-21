@@ -153,7 +153,7 @@ const QueryBuilderFilterConditionEditor = observer(
           propertyNode,
           graph,
           node.condition.filterState.queryBuilderState.explorerState
-            .propertySearchState.allMappedPropertyNodes,
+            .propertySearchState.mappedPropertyNodes,
         ),
       );
     // Drag and Drop on filter condition value
@@ -406,7 +406,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
                 dropNode,
                 filterState.queryBuilderState.graphManagerState.graph,
                 filterState.queryBuilderState.explorerState.propertySearchState
-                  .allMappedPropertyNodes,
+                  .mappedPropertyNodes,
               ),
             );
           } catch (error) {
@@ -733,7 +733,7 @@ export const QueryBuilderFilterPanel = observer(
                 (item as QueryBuilderExplorerTreeDragSource).node,
                 filterState.queryBuilderState.graphManagerState.graph,
                 filterState.queryBuilderState.explorerState.propertySearchState
-                  .allMappedPropertyNodes,
+                  .mappedPropertyNodes,
               );
           }
           filterConditionState = new FilterConditionState(

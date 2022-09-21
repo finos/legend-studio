@@ -36,6 +36,9 @@ import {
   PanelLoadingIndicator,
   BasePopover,
   FaceSadTearIcon,
+  CogIcon,
+  BaseRadioGroup,
+  QuestionCircleIcon,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -51,6 +54,7 @@ import { TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
+  type SEARCH_MODE,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
@@ -264,21 +268,28 @@ const VirtualAssistantSearchPanel = observer(() => {
     () => debounce(() => assistantService.search(), 100),
     [assistantService],
   );
+
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
     assistantService.setSearchText(event.target.value);
     debouncedSearch();
   };
+
   const clearSearchText = (): void => {
     assistantService.resetSearch();
     searchInputRef.current?.focus();
   };
+
+  const toggleSearchPanelTip = (): void => {
+    assistantService.setIsSearchPanelTipsOpen(
+      !assistantService.isSearchPanelTipsOpen,
+    );
+  };
   const results = assistantService.searchResults;
   const resultCount =
-    assistantService.searchResults.length > 99
-      ? '99+'
-      : assistantService.searchResults.length;
+    assistantService.searchResults.length +
+    (assistantService.isOverSearchLimit ? '+' : '');
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
       `documentation-registry_${format(
@@ -308,12 +319,27 @@ const VirtualAssistantSearchPanel = observer(() => {
     );
   };
 
+  const searchModeRef = useRef<HTMLInputElement>(null);
+
+  const getDocumentationToImplementSvp = (): void => {
+    assistantService.setIsSearchPanelTipsOpen(false);
+    assistantService.setSearchText('="How do I use search?"');
+    assistantService.search();
+  };
+
+  const handleSearchMode = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const searchMode = (event.target as HTMLInputElement).value as SEARCH_MODE;
+    assistantService.changeModeOfSearch(searchMode);
+  };
+
   useEffect(() => {
     searchInputRef.current?.focus();
   }, []);
 
   return (
-    <div className="virtual-assistant__search">
+    <div className="virtual-assistant__search" ref={searchModeRef}>
       <div className="virtual-assistant__search__header">
         <input
           ref={searchInputRef}
@@ -356,14 +382,35 @@ const VirtualAssistantSearchPanel = observer(() => {
           placeholder="Ask me a question"
         />
         {!searchText ? (
-          <div className="virtual-assistant__search__input__search__icon">
-            <SearchIcon />
-          </div>
+          <>
+            <button
+              className={clsx('virtual-assistant__search__input__cog__icon', {
+                'virtual-assistant__search__input__cog__icon--active':
+                  assistantService.isSearchPanelTipsOpen,
+              })}
+              tabIndex={-1}
+              onClick={toggleSearchPanelTip}
+              title="View tips for searching"
+            >
+              <CogIcon />
+            </button>
+            <div className="virtual-assistant__search__input__search__icon">
+              <SearchIcon />
+            </div>
+          </>
         ) : (
           <>
             <div className="virtual-assistant__search__input__search__count">
               {resultCount}
             </div>
+            <button
+              className="virtual-assistant__search__input__cog__icon"
+              tabIndex={-1}
+              onClick={toggleSearchPanelTip}
+              title="View tips for searching"
+            >
+              <CogIcon />
+            </button>
             <button
               className="virtual-assistant__search__input__clear-btn"
               tabIndex={-1}
@@ -379,6 +426,29 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
+        {assistantService.isSearchPanelTipsOpen && (
+          <div className="virtual-assistant__search__guide">
+            <div className="virtual-assistant__search__guide__header__label">
+              Search Mode
+              <button
+                className="virtual-assistant__search__question__icon"
+                tabIndex={-1}
+                onClick={getDocumentationToImplementSvp}
+              >
+                <QuestionCircleIcon />
+              </button>
+            </div>
+            <BaseRadioGroup
+              className="query-builder-property-search-panel__search__mode--radio-group"
+              value={assistantService.modeOfSearch}
+              onChange={handleSearchMode}
+              row={false}
+              options={assistantService.modeOfSearchOptions}
+              size={1}
+            />
+          </div>
+        )}
+
         {Boolean(results.length) && (
           <div className="virtual-assistant__search__results">
             {results.map((result) => (

@@ -31,6 +31,8 @@ export enum VIRTUAL_ASSISTANT_TAB {
   CONTEXTUAL_SUPPORT = 'CONTEXTUAL_SUPPORT',
 }
 
+export const DOCUMENTATION_SEARCH_RESULTS_LIMIT = 10;
+
 export class VirtualAssistantDocumentationEntry {
   uuid = uuid();
   documentationKey: string;
@@ -77,6 +79,12 @@ export class VirtualAssistantContextualDocumentationEntry {
   }
 }
 
+export enum SEARCH_MODE {
+  NORMAL = 'normal',
+  INCLUDE = 'include match',
+  EXACT = 'exact match',
+  INVERSE = 'excludes exact match',
+}
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
   private readonly searchEngine: Fuse<DocumentationEntry>;
@@ -88,15 +96,25 @@ export class AssistantService {
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
 
+  isSearchPanelTipsOpen = false;
+
   searchResults: VirtualAssistantDocumentationEntry[] = [];
   searchState = ActionState.create().pass();
   searchText = '';
+
+  isOverSearchLimit: boolean;
+
+  modeOfSearch: SEARCH_MODE;
+  modeOfSearchOptions: SEARCH_MODE[];
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       panelRenderingKey: observable,
+      isSearchPanelTipsOpen: observable,
+      modeOfSearch: observable,
+      isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
       searchResults: observable,
@@ -104,13 +122,28 @@ export class AssistantService {
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
+      setIsSearchPanelTipsOpen: action,
       setSearchText: action,
       resetSearch: action,
       search: action,
       refreshPanelRendering: action,
+      changeModeOfSearch: action,
+      setIsOverSearchLimit: action,
     });
 
     this.applicationStore = applicationStore;
+
+    this.modeOfSearch = SEARCH_MODE.NORMAL;
+    this.isOverSearchLimit = false;
+    this.isSearchPanelTipsOpen = false;
+
+    this.modeOfSearchOptions = [
+      SEARCH_MODE.NORMAL,
+      SEARCH_MODE.INCLUDE,
+      SEARCH_MODE.EXACT,
+      SEARCH_MODE.INVERSE,
+    ];
+
     this.searchEngine = new Fuse(
       this.applicationStore.documentationService.getAllDocEntries().filter(
         (entry) =>
@@ -121,8 +154,6 @@ export class AssistantService {
       {
         includeScore: true,
         shouldSort: true,
-        // extended search allows for exact word match through single quote
-        // See https://fusejs.io/examples.html#extended-search
         // Ignore location when computing the search score
         // See https://fusejs.io/concepts/scoring-theory.html
         ignoreLocation: true,
@@ -145,6 +176,8 @@ export class AssistantService {
             weight: 1,
           },
         ],
+        // extended search allows for exact word match through single quote
+        // See https://fusejs.io/examples.html#extended-search
         useExtendedSearch: true,
       },
     );
@@ -188,6 +221,10 @@ export class AssistantService {
     this.isHidden = val;
   }
 
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
+  }
+
   hideAssistant(): void {
     this.setIsHidden(true);
     this.setIsOpen(false);
@@ -210,6 +247,15 @@ export class AssistantService {
     this.selectedTab = val;
   }
 
+  setIsSearchPanelTipsOpen(val: boolean): void {
+    this.isSearchPanelTipsOpen = val;
+  }
+
+  changeModeOfSearch(val: SEARCH_MODE): void {
+    this.modeOfSearch = val;
+    this.search();
+  }
+
   refreshPanelRendering(): void {
     this.panelRenderingKey = uuid();
   }
@@ -224,11 +270,43 @@ export class AssistantService {
     this.searchState.complete();
   }
 
+  getSearchText(val: string): string {
+    switch (this.modeOfSearch) {
+      case SEARCH_MODE.INCLUDE: {
+        return `'${val}`;
+      }
+      case SEARCH_MODE.EXACT: {
+        return `="${val}"`;
+      }
+      case SEARCH_MODE.INVERSE: {
+        return `!${val}`;
+      }
+      default: {
+        return val;
+      }
+    }
+  }
+
   search(): void {
     this.searchState.inProgress();
     this.searchResults = Array.from(
-      this.searchEngine.search(this.searchText).values(),
+      this.searchEngine
+        .search(this.getSearchText(this.searchText), {
+          limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
+        })
+        .values(),
     ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
+
+    if (this.searchResults.length > DOCUMENTATION_SEARCH_RESULTS_LIMIT) {
+      this.setIsOverSearchLimit(true);
+      this.searchResults = this.searchResults.slice(
+        0,
+        DOCUMENTATION_SEARCH_RESULTS_LIMIT,
+      );
+    } else {
+      this.setIsOverSearchLimit(false);
+    }
+
     this.searchState.complete();
   }
 }
