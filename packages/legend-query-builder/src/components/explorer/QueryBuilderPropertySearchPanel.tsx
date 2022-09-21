@@ -315,14 +315,14 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchPanelState.resetPropertyState();
     };
 
-    const handleSearchMode = async (
+    const handleSearchMode = (
       event: React.ChangeEvent<HTMLInputElement>,
-    ): Promise<void> => {
+    ): void => {
       const searchMode = (event.target as HTMLInputElement)
         .value as SEARCH_MODE;
       propertySearchPanelState.changeModeOfSearch(searchMode);
       propertySearchPanelState.resetPropertyState();
-      await propertySearchPanelState.fetchMappedPropertyNodes(
+      propertySearchPanelState.fetchMappedPropertyNodes(
         propertySearchPanelState.searchText,
       );
     };
@@ -694,7 +694,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                       <BaseRadioGroup
                         className="query-builder-property-search-panel__search__mode--radio-group"
                         value={propertySearchPanelState.modeOfSearch}
-                        onChange={() => handleSearchMode}
+                        onChange={handleSearchMode}
                         row={false}
                         options={propertySearchPanelState.modeOfSearchOptions}
                         size={1}

@@ -76,6 +76,7 @@ export class QueryBuilderPropertySearchState {
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
       isSearchPanelTipsOpen: observable,
+      modeOfSearch: observable,
       isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
