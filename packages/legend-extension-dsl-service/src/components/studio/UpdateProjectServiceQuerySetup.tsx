@@ -107,7 +107,7 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
   const [workspaceName, setWorkspaceName] = useState('');
 
   const createWorkspace = (): void => {
-    if (selectedProject && workspaceName) {
+    if (workspaceName) {
       flowResult(
         setupStore.createWorkspace(selectedProject.projectId, workspaceName),
       ).catch(applicationStore.alertUnhandledError);
@@ -272,13 +272,9 @@ export const UpdateProjectServiceQuerySetup =
       };
 
       // workspaces
-      const workspaceOptions = (
-        setupStore.groupWorkspaces
-          ? Array.from(setupStore.groupWorkspaces.values()).map(
-              buildWorkspaceOption,
-            )
-          : []
-      ).sort(compareLabelFn);
+      const workspaceOptions = setupStore.groupWorkspaces
+        .map(buildWorkspaceOption)
+        .sort(compareLabelFn);
       const selectedOption = setupStore.currentGroupWorkspace
         ? buildWorkspaceOption(setupStore.currentGroupWorkspace)
         : null;

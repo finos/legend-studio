@@ -42,7 +42,7 @@ export const CreateWorkspaceModal = observer(
     const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
 
     const createWorkspace = (): void => {
-      if (selectedProject && workspaceName) {
+      if (workspaceName) {
         flowResult(
           setupStore.createWorkspace(
             selectedProject.projectId,
