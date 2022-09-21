@@ -26,7 +26,6 @@ import {
 import {
   QueryEditorStore,
   type QueryExportConfiguration,
-  type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
 } from '@finos/legend-application-query';
 import type { DepotServerClient } from '@finos/legend-server-depot';
@@ -69,7 +68,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -78,7 +76,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     runtimePath: string | undefined,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient);
 
     this.groupId = groupId;
     this.artifactId = artifactId;

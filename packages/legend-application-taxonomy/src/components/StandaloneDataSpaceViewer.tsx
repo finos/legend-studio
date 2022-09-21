@@ -30,10 +30,7 @@ import { DataSpaceViewer } from '@finos/legend-extension-dsl-data-space';
 import { StandaloneDataSpaceViewerStore } from '../stores/StandaloneDataSpaceViewerStore.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  useLegendTaxonomyApplicationStore,
-  useLegendTaxonomyBaseStore,
-} from './LegendTaxonomyBaseStoreProvider.js';
+import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
 
 const StandaloneDataSpaceViewerStoreContext = createContext<
   StandaloneDataSpaceViewerStore | undefined
@@ -44,14 +41,9 @@ const StandaloneDataSpaceViewerStoreProvider: React.FC<{
 }> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendTaxonomyBaseStore();
   const store = useLocalObservable(
     () =>
-      new StandaloneDataSpaceViewerStore(
-        applicationStore,
-        depotServerClient,
-        baseStore.pluginManager,
-      ),
+      new StandaloneDataSpaceViewerStore(applicationStore, depotServerClient),
   );
   return (
     <StandaloneDataSpaceViewerStoreContext.Provider value={store}>

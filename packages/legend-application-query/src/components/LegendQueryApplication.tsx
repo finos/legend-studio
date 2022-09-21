@@ -28,7 +28,6 @@ import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
 } from '@finos/legend-application';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import {
   LegendQueryBaseStoreProvider,
@@ -79,11 +78,8 @@ const LegendQueryApplicationRoot = observer(() => {
 });
 
 export const LegendQueryApplication = observer(
-  (props: {
-    config: LegendQueryApplicationConfig;
-    pluginManager: LegendQueryPluginManager;
-  }) => {
-    const { config, pluginManager } = props;
+  (props: { config: LegendQueryApplicationConfig }) => {
+    const { config } = props;
 
     return (
       <DepotServerClientProvider
@@ -91,7 +87,7 @@ export const LegendQueryApplication = observer(
           serverUrl: config.depotServerUrl,
         }}
       >
-        <LegendQueryBaseStoreProvider pluginManager={pluginManager}>
+        <LegendQueryBaseStoreProvider>
           <LegendApplicationComponentFrameworkProvider>
             <LegendQueryApplicationRoot />
           </LegendApplicationComponentFrameworkProvider>

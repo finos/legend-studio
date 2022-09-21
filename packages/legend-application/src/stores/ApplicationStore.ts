@@ -105,15 +105,15 @@ export class Notification {
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
-  LegendApplicationPlugin
+  LegendApplicationPluginManager<LegendApplicationPlugin>
 >;
 
 export class ApplicationStore<
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
-  pluginManager: LegendApplicationPluginManager<V>;
   config: T;
+  pluginManager: V;
 
   // navigation
   navigator: WebApplicationNavigator;
@@ -144,11 +144,7 @@ export class ApplicationStore<
    */
   TEMPORARY__isLightThemeEnabled = false;
 
-  constructor(
-    config: T,
-    navigator: WebApplicationNavigator,
-    pluginManager: LegendApplicationPluginManager<V>,
-  ) {
+  constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
     makeAutoObservable(this, {
       navigator: false,
       setBlockingAlert: action,

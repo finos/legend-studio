@@ -52,10 +52,10 @@ export const TEST__getGenericApplicationConfig = (
 
 export const TEST__getTestApplicationStore = <
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >(
   config: T,
-  pluginManager: LegendApplicationPluginManager<V>,
+  pluginManager: V,
 ): ApplicationStore<T, V> =>
   new ApplicationStore(
     config,

@@ -35,10 +35,10 @@ export const TEST__ApplicationStoreProvider: React.FC<{
 
 export const TEST__provideMockedApplicationStore = <
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 >(
   config: T,
-  pluginManager: LegendApplicationPluginManager<V>,
+  pluginManager: V,
   customization?: {
     mock?: ApplicationStore<T, V>;
     navigator?: WebApplicationNavigator;

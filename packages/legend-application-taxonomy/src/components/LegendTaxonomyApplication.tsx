@@ -20,7 +20,6 @@ import {
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter.js';
-import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
@@ -62,11 +61,8 @@ export const LegendTaxonomyApplicationRoot = observer(() => {
 });
 
 export const LegendTaxonomyApplication = observer(
-  (props: {
-    config: LegendTaxonomyApplicationConfig;
-    pluginManager: LegendTaxonomyPluginManager;
-  }) => {
-    const { config, pluginManager } = props;
+  (props: { config: LegendTaxonomyApplicationConfig }) => {
+    const { config } = props;
 
     return (
       <DepotServerClientProvider
@@ -74,7 +70,7 @@ export const LegendTaxonomyApplication = observer(
           serverUrl: config.depotServerUrl,
         }}
       >
-        <LegendTaxonomyBaseStoreProvider pluginManager={pluginManager}>
+        <LegendTaxonomyBaseStoreProvider>
           <LegendApplicationComponentFrameworkProvider>
             <LegendTaxonomyApplicationRoot />
           </LegendApplicationComponentFrameworkProvider>

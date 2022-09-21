@@ -478,7 +478,6 @@ export class QuerySetupStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
   ) {
     makeObservable(this, {
       querySetupState: observable,
@@ -488,11 +487,11 @@ export class QuerySetupStore {
 
     this.applicationStore = applicationStore;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
   }
 
   setSetupState(val: QuerySetupState | undefined): void {

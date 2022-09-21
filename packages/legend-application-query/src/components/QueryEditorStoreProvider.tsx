@@ -24,10 +24,7 @@ import {
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import {
-  useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
-} from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 
 export const QueryEditorStoreContext = createContext<
@@ -40,13 +37,11 @@ export const ExistingQueryEditorStoreProvider: React.FC<{
 }> = ({ children, queryId }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ExistingQueryEditorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         queryId,
       ),
   );
@@ -66,13 +61,11 @@ export const MappingQueryCreatorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new MappingQueryCreatorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,
@@ -96,13 +89,11 @@ export const ServiceQueryCreatorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new ServiceQueryCreatorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,

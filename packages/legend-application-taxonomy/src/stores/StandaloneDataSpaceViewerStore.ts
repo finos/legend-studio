@@ -54,7 +54,6 @@ export class StandaloneDataSpaceViewerStore {
   constructor(
     applicationStore: LegendTaxonomyApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       viewerState: observable,
@@ -63,10 +62,10 @@ export class StandaloneDataSpaceViewerStore {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
   }
 
   *initialize(

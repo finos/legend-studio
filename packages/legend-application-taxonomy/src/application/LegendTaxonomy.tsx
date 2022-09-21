@@ -75,10 +75,7 @@ export class LegendTaxonomy extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendTaxonomyApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendTaxonomyApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

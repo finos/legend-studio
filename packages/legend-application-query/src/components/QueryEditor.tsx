@@ -70,11 +70,11 @@ import {
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
-import type { LegendQueryApplicationPlugin } from '../stores/LegendQueryApplicationPlugin.js';
 import {
   QueryBuilder,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
+import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -206,7 +206,7 @@ const QueryLoader = observer(
     editorStore: QueryEditorStore;
     applicationStore: ApplicationStore<
       LegendQueryApplicationConfig,
-      LegendQueryApplicationPlugin
+      LegendQueryPluginManager
     >;
   }) => {
     const { editorStore, applicationStore } = props;

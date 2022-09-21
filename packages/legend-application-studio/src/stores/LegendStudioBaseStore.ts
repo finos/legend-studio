@@ -43,13 +43,12 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventService } from './LegendStudioEventService.js';
-import type { LegendStudioApplicationPlugin } from './LegendStudioApplicationPlugin.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
 export type LegendStudioApplicationStore = ApplicationStore<
   LegendStudioApplicationConfig,
-  LegendStudioApplicationPlugin
+  LegendStudioPluginManager
 >;
 
 export class LegendStudioBaseStore {
@@ -67,7 +66,6 @@ export class LegendStudioBaseStore {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendStudioPluginManager,
   ) {
     makeObservable<LegendStudioBaseStore, 'initializeSDLCServerClient'>(this, {
       isSDLCAuthorized: observable,
@@ -82,7 +80,7 @@ export class LegendStudioBaseStore {
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
 
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.sdlcServerClient.setTracerService(this.applicationStore.tracerService);

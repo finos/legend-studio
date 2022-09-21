@@ -145,7 +145,6 @@ export class TaxonomyExplorerStore {
     applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       treeData: observable.ref,
@@ -159,10 +158,10 @@ export class TaxonomyExplorerStore {
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.taxonomyServerClient.setTracerService(

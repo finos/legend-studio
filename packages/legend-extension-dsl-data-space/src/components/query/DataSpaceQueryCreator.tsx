@@ -23,7 +23,6 @@ import {
   QueryEditor,
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
 } from '@finos/legend-application-query';
 import { useParams } from 'react-router';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
@@ -53,13 +52,11 @@ const DataSpaceQueryCreatorStoreProvider: React.FC<{
   const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
     () =>
       new DataSpaceQueryCreatorStore(
         applicationStore,
         depotServerClient,
-        baseStore.pluginManager,
         groupId,
         artifactId,
         versionId,

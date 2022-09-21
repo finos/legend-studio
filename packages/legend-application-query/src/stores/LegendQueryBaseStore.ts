@@ -18,11 +18,10 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { ApplicationStore } from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
-import type { LegendQueryApplicationPlugin } from './LegendQueryApplicationPlugin.js';
 
 export type LegendQueryApplicationStore = ApplicationStore<
   LegendQueryApplicationConfig,
-  LegendQueryApplicationPlugin
+  LegendQueryPluginManager
 >;
 
 export class LegendQueryBaseStore {
@@ -33,11 +32,10 @@ export class LegendQueryBaseStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
   ) {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.depotServerClient.setTracerService(

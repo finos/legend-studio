@@ -240,7 +240,6 @@ export class EditorStore {
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: LegendStudioPluginManager,
   ) {
     makeAutoObservable(this, {
       applicationStore: false,
@@ -282,7 +281,7 @@ export class EditorStore {
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
 

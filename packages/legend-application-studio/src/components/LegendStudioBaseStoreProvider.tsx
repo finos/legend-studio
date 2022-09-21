@@ -26,13 +26,12 @@ import type { LegendStudioPluginManager } from '../application/LegendStudioPlugi
 import { useLocalObservable } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
-import type { LegendStudioApplicationPlugin } from '../stores/LegendStudioApplicationPlugin.js';
 
 export const useLegendStudioApplicationStore =
   (): LegendStudioApplicationStore =>
     useApplicationStore<
       LegendStudioApplicationConfig,
-      LegendStudioApplicationPlugin
+      LegendStudioPluginManager
     >();
 
 const LegendStudioBaseStoreContext = createContext<
@@ -40,9 +39,8 @@ const LegendStudioBaseStoreContext = createContext<
 >(undefined);
 
 export const LegendStudioBaseStoreProvider: React.FC<{
-  pluginManager: LegendStudioPluginManager;
   children: React.ReactNode;
-}> = ({ pluginManager, children }) => {
+}> = ({ children }) => {
   const applicationStore = useLegendStudioApplicationStore();
   const sdlcServerClient = useSDLCServerClient();
   const depotServerClient = useDepotServerClient();
@@ -52,7 +50,6 @@ export const LegendStudioBaseStoreProvider: React.FC<{
         applicationStore,
         sdlcServerClient,
         depotServerClient,
-        pluginManager,
       ),
   );
   return (
