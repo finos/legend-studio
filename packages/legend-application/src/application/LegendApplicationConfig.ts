@@ -81,8 +81,6 @@ export abstract class LegendApplicationConfig {
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;
-
-    console.log('where is the doumcentation url', this.documentationUrl);
     this.documentationRegistryEntries =
       input.configData.documentation?.registry ?? [];
     this.keyedDocumentationEntries = collectKeyedDocumnetationEntriesFromConfig(

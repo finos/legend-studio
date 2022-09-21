@@ -294,7 +294,7 @@ export const QueryBuilderPropertySearchPanel = observer(
     const propertySearchPanelState = explorerState.propertySearchState;
     const hasHiddenResults =
       propertySearchPanelState.isOverSearchLimit &&
-      propertySearchPanelState.filteredTestPropertyNodes.length !== 0;
+      propertySearchPanelState.filteredPropertyNodes.length !== 0;
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     const handleEnter = (): void => searchInputRef.current?.focus();
@@ -323,18 +323,6 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchPanelState.changeModeOfSearch(searchMode);
       propertySearchPanelState.resetPropertyState();
       await propertySearchPanelState.fetchMappedPropertyNodes(
-        propertySearchPanelState.searchText,
-      );
-    };
-
-    const handleSearchMode = (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ): void => {
-      const searchMode = (event.target as HTMLInputElement)
-        .value as SEARCH_MODE;
-      propertySearchPanelState.changeModeOfSearch(searchMode);
-      propertySearchPanelState.refreshPropertyState();
-      propertySearchPanelState.fetchMappedPropertyNodes(
         propertySearchPanelState.searchText,
       );
     };
@@ -436,8 +424,8 @@ export const QueryBuilderPropertySearchPanel = observer(
                 <>
                   {propertySearchPanelState.searchText.length >= 3 && (
                     <div className="query-builder-property-search-panel__input__search__count">
-                      {propertySearchPanelState.filteredTestPropertyNodes
-                        .length + (hasHiddenResults ? '+' : '')}
+                      {propertySearchPanelState.filteredPropertyNodes.length +
+                        (hasHiddenResults ? '+' : '')}
                     </div>
                   )}
                   <button
@@ -720,7 +708,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                 <div className="query-builder-property-search-panel__results">
                   {!propertySearchPanelState.searchState.isInProgress && (
                     <>
-                      {propertySearchPanelState.filteredTestPropertyNodes.map(
+                      {propertySearchPanelState.filteredPropertyNodes.map(
                         (node) => (
                           <QueryBuilderTreeNodeViewer
                             key={node.id}

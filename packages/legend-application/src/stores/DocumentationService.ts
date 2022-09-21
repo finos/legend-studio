@@ -161,7 +161,6 @@ export class DocumentationService {
         }
       });
 
-    console.log('hmmmm', this.docRegistry);
     // entries from config will override entries specified natively
     applicationStore.config.keyedDocumentationEntries.forEach((entry) =>
       this.docRegistry.set(entry.key, entry.content),
