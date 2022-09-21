@@ -254,7 +254,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
         <div className="modal__footer">
           <button
             type="button"
-            className="btn btn--primary btn--dark"
+            className="btn btn--dark"
             disabled={Boolean(conflicts.length)}
             title="Apply Resolutions"
             onClick={applyResolutions}

@@ -83,6 +83,7 @@ export class UpdateServiceQuerySetupStore {
       groupWorkspaces: observable,
       currentGroupWorkspace: observable,
       currentWorkspaceService: observable,
+      showCreateWorkspaceModal: observable,
       setShowCreateWorkspaceModal: action,
       resetCurrentService: action,
       resetCurrentGroupWorkspace: action,
@@ -263,7 +264,7 @@ export class UpdateServiceQuerySetupStore {
   *createWorkspace(
     projectId: string,
     workspaceId: string,
-    workspaceType: WorkspaceType,
+    servicePath: string,
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
@@ -284,9 +285,9 @@ export class UpdateServiceQuerySetupStore {
       );
       if (!matchingGroupWorkspace) {
         this.groupWorkspaces.push(newGroupWorkspace);
-        this.changeWorkspace(newGroupWorkspace);
+        yield flowResult(this.changeWorkspace(newGroupWorkspace, servicePath));
       } else {
-        this.changeWorkspace(matchingGroupWorkspace);
+        this.changeWorkspace(matchingGroupWorkspace, servicePath);
       }
 
       this.setShowCreateWorkspaceModal(false);

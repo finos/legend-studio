@@ -263,11 +263,7 @@ export const NewMappingElementModal = observer(() => {
             />
           )}
           <div className="search-modal__actions">
-            <button
-              className="btn btn--primary"
-              disabled={disableCreateButton}
-              color="primary"
-            >
+            <button className="btn btn--primary" disabled={disableCreateButton}>
               Create
             </button>
           </div>

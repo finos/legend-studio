@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
 import { useSDLCServerClient } from '@finos/legend-server-sdlc';
@@ -27,7 +34,10 @@ import {
   useLegendStudioApplicationStore,
 } from '@finos/legend-application-studio';
 import { UpdateServiceQuerySetupStore } from '../../stores/studio/UpdateServiceQuerySetupStore.js';
-import { useDepotServerClient } from '@finos/legend-server-depot';
+import {
+  type ProjectData,
+  useDepotServerClient,
+} from '@finos/legend-server-depot';
 import { useParams } from 'react-router';
 import {
   type ServiceQueryUpdaterSetupPathParams,
@@ -35,15 +45,19 @@ import {
 } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
+  type ServiceInfo,
+  type ServiceOption,
   buildServiceOption,
   formatServiceOptionLabel,
-  type ServiceOption,
 } from '@finos/legend-query-builder';
 import {
   compareLabelFn,
   createFilter,
   CustomSelectorInput,
+  Dialog,
   GitBranchIcon,
+  Panel,
+  PanelLoadingIndicator,
   PlusIcon,
   PURE_ServiceIcon,
 } from '@finos/legend-art';
@@ -89,6 +103,90 @@ const withUpdateServiceQuerySetupStore = (
       </UpdateServiceQuerySetupStoreProvider>
     );
   };
+
+const CreateWorkspaceModal = observer(
+  (props: {
+    selectedProject: ProjectData;
+    selectedSnapService: ServiceInfo;
+  }) => {
+    const { selectedProject, selectedSnapService } = props;
+    const setupStore = useUpdateServiceQuerySetupStore();
+    const applicationStore = useLegendStudioApplicationStore();
+    const workspaceNameInputRef = useRef<HTMLInputElement>(null);
+    const [workspaceName, setWorkspaceName] = useState('');
+
+    const createWorkspace = (): void => {
+      if (selectedProject && workspaceName) {
+        flowResult(
+          setupStore.createWorkspace(
+            selectedProject.projectId,
+            workspaceName,
+            selectedSnapService.path,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
+      }
+    };
+    const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
+      event,
+    ) => setWorkspaceName(event.target.value);
+
+    const handleEnter = (): void => {
+      workspaceNameInputRef.current?.focus();
+    };
+    const closeModal = (): void => {
+      setupStore.setShowCreateWorkspaceModal(false);
+    };
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+      event.preventDefault();
+      createWorkspace();
+    };
+
+    return (
+      <Dialog
+        open={setupStore.showCreateWorkspaceModal}
+        onClose={closeModal}
+        TransitionProps={{
+          onEnter: handleEnter,
+        }}
+        classes={{ container: 'search-modal__container' }}
+        PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
+      >
+        <form
+          onSubmit={handleSubmit}
+          className="modal modal--dark search-modal"
+        >
+          <div className="modal__title">Create New Workspace</div>
+          <Panel>
+            <PanelLoadingIndicator
+              isLoading={setupStore.createWorkspaceState.isInProgress}
+            />
+            <div className="panel__content--full">
+              <input
+                className="input input--dark"
+                ref={workspaceNameInputRef}
+                spellCheck={false}
+                disabled={setupStore.createWorkspaceState.isInProgress}
+                placeholder="MyWorkspace"
+                value={workspaceName}
+                onChange={changeWorkspaceName}
+              />
+            </div>
+          </Panel>
+          <div className="search-modal__actions">
+            <button
+              disabled={
+                setupStore.createWorkspaceState.isInProgress || !workspaceName
+              }
+              className="btn btn--dark"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    );
+  },
+);
 
 export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
   observer(() => {
@@ -191,6 +289,8 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
         setupStore.resetCurrentGroupWorkspace();
       }
     };
+    const showCreateWorkspaceModal = (): void =>
+      setupStore.setShowCreateWorkspaceModal(true);
 
     useEffect(() => {
       flowResult(setupStore.loadServices('')).catch(
@@ -264,11 +364,13 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     placeholder={
                       setupStore.loadWorkspacesState.isInProgress
                         ? 'Loading workspaces'
-                        : !setupStore.currentSnapshotService
+                        : !setupStore.currentProject
                         ? 'In order to select a workspace, a project must be selected'
                         : workspaceOptions.length
                         ? 'Choose an existing workspace'
-                        : 'You have no workspaces. Please create one'
+                        : setupStore.loadWorkspacesState.hasFailed
+                        ? `Can't fetch project workspaces. Please try again or select another service`
+                        : 'You have no workspaces. Please create one to proceed...'
                     }
                     isClearable={true}
                     escapeClearsValue={true}
@@ -276,13 +378,22 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                   />
                   <button
                     className="service-query-setup__selector__action btn--dark"
-                    // onClick={create}
+                    onClick={showCreateWorkspaceModal}
+                    disabled={!setupStore.currentProject}
                     tabIndex={-1}
                     title="Create a Workspace"
                   >
                     <PlusIcon />
                   </button>
                 </div>
+                {setupStore.showCreateWorkspaceModal &&
+                  setupStore.currentProject &&
+                  setupStore.currentSnapshotService && (
+                    <CreateWorkspaceModal
+                      selectedProject={setupStore.currentProject}
+                      selectedSnapService={setupStore.currentSnapshotService}
+                    />
+                  )}
                 <div className="service-query-setup__actions">
                   <button
                     className="service-query-setup__next-btn btn--dark"

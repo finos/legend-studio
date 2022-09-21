@@ -40,9 +40,6 @@ export const CreateWorkspaceModal = observer(
     const workspaceNameInputRef = useRef<HTMLInputElement>(null);
     const [workspaceName, setWorkspaceName] = useState('');
     const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
-    const closeModal = (): void => {
-      setupStore.setShowCreateWorkspaceModal(false);
-    };
 
     const createWorkspace = (): void => {
       if (selectedProject && workspaceName) {
@@ -58,10 +55,6 @@ export const CreateWorkspaceModal = observer(
     const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => setWorkspaceName(event.target.value);
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      createWorkspace();
-    };
     const toggleGroupWorkspace = (
       event: React.FormEvent<HTMLButtonElement>,
     ): void => {
@@ -71,6 +64,13 @@ export const CreateWorkspaceModal = observer(
 
     const handleEnter = (): void => {
       workspaceNameInputRef.current?.focus();
+    };
+    const closeModal = (): void => {
+      setupStore.setShowCreateWorkspaceModal(false);
+    };
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+      event.preventDefault();
+      createWorkspace();
     };
 
     return (

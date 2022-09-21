@@ -121,6 +121,12 @@
     overflow-y: auto;
   }
 
+  &__content--full {
+    height: 100%;
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+
   &__content__blank {
     @include flexCenter;
 

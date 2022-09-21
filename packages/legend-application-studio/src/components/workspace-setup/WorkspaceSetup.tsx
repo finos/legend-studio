@@ -286,7 +286,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                           ? 'In order to select a workspace, a project must be selected'
                           : workspaceOptions.length
                           ? 'Choose an existing workspace'
-                          : 'You have no workspaces. Please create one'
+                          : 'You have no workspaces. Please create one to proceed...'
                       }
                       isClearable={true}
                       escapeClearsValue={true}
