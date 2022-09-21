@@ -69,7 +69,7 @@ export enum DSL_SERVICE_PATH_PARAM_TOKEN {
 export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   UPDATE_SERVICE_QUERY_SETUP: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}?`,
   UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}`,
-  UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}`,
+  UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}?`,
   UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
 });
 
@@ -117,11 +117,11 @@ export const generateServiceQueryUpdaterRoute = (
   );
 
 export interface ProjectServiceQueryUpdaterSetupPathParams {
-  [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: string;
+  [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
 }
 
 export const generateProjectServiceQueryUpdaterSetupRoute = (
-  projectId: string,
+  projectId?: string,
 ): string =>
   generatePath(
     generateExtensionUrlPattern(

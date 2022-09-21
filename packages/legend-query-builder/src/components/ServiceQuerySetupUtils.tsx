@@ -42,11 +42,13 @@ export const formatServiceOptionLabel = (
       {option.value.urlPattern ?? 'no pattern'}
     </div>
     <div className="query-setup__service-option__gav">
-      {generateGAVCoordinates(
-        option.value.groupId,
-        option.value.artifactId,
-        option.value.versionId,
-      )}
+      {option.value.groupId && option.value.artifactId
+        ? generateGAVCoordinates(
+            option.value.groupId,
+            option.value.artifactId,
+            option.value.versionId,
+          )
+        : null}
     </div>
   </div>
 );

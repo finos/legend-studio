@@ -20,7 +20,7 @@ import {
   type StoredEntity,
 } from '@finos/legend-server-depot';
 import { isString } from '@finos/legend-shared';
-import { extractEntityNameFromPath } from '@finos/legend-storage';
+import { type Entity, extractEntityNameFromPath } from '@finos/legend-storage';
 
 export interface ServiceInfo {
   groupId: string;
@@ -28,6 +28,7 @@ export interface ServiceInfo {
   versionId: string;
   path: string;
   name: string;
+  entity: Entity;
   urlPattern?: string | undefined;
 }
 
@@ -42,8 +43,9 @@ export const extractServiceInfo = (
       : storedEntity.versionId,
   path: storedEntity.entity.path,
   name: extractEntityNameFromPath(storedEntity.entity.path),
+  entity: storedEntity.entity,
   // NOTE: we don't want to assert the existence of this field even when it
-  // is required in the specification of service, so we don't throw error here
+  // is required in the specification of service to avoid throwing error here
   urlPattern: isString(storedEntity.entity.content.pattern)
     ? storedEntity.entity.content.pattern
     : undefined,

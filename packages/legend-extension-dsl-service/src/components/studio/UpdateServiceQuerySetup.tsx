@@ -363,7 +363,7 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     value={selectedOption}
                     placeholder={
                       setupStore.loadWorkspacesState.isInProgress
-                        ? 'Loading workspaces'
+                        ? 'Loading workspaces...'
                         : !setupStore.currentProject
                         ? 'In order to select a workspace, a project must be selected'
                         : workspaceOptions.length

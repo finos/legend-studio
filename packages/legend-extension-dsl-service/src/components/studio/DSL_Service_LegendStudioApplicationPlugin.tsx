@@ -22,6 +22,7 @@ import {
 import type { ApplicationPageEntry } from '@finos/legend-application';
 import { DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
 import { UpdateServiceQuerySetup } from './UpdateServiceQuerySetup.js';
+import { UpdateProjectServiceQuerySetup } from './UpdateProjectServiceQuerySetup.js';
 
 export class DSL_Service_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -52,7 +53,7 @@ export class DSL_Service_LegendStudioApplicationPlugin
         urlPatterns: [
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY_SETUP,
         ],
-        renderer: () => null,
+        renderer: UpdateProjectServiceQuerySetup,
       },
       {
         key: 'update-project-service-query-application-page',

@@ -24,118 +24,121 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import {
-  type DepotServerClient,
-  type StoredEntity,
-  DepotScope,
-  ProjectData,
-  MASTER_SNAPSHOT_ALIAS,
-} from '@finos/legend-server-depot';
-import {
-  extractServiceInfo,
-  type ServiceInfo,
-} from '@finos/legend-query-builder';
-import {
   type SDLCServerClient,
   Workspace,
   WorkspaceType,
+  Project,
 } from '@finos/legend-server-sdlc';
 import {
   type LegendStudioApplicationStore,
   LEGEND_STUDIO_APP_EVENT,
 } from '@finos/legend-application-studio';
-import {
-  generateServiceQueryUpdaterSetupRoute,
-  parseServiceCoordinates,
-} from './DSL_Service_LegendStudioRouter.js';
+import { generateProjectServiceQueryUpdaterSetupRoute } from './DSL_Service_LegendStudioRouter.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 
-const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 3;
-const DEFAULT_SERVICE_LOADER_LIMIT = 10;
+const MINIMUM_PROJECT_LOADER_SEARCH_LENGTH = 3;
+const DEFAULT_PROJECT_LOADER_LIMIT = 10;
 
-export class UpdateServiceQuerySetupStore {
+export class UpdateProjectServiceQuerySetupStore {
   applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
-  depotServerClient: DepotServerClient;
 
   initState = ActionState.create();
-  loadServicesState = ActionState.create();
-  services: ServiceInfo[] = [];
-  currentProject?: ProjectData | undefined;
-  currentSnapshotService?: ServiceInfo | undefined;
+  loadProjectsState = ActionState.create();
+  projects: Project[] = [];
+  currentProject?: Project | undefined;
 
   loadWorkspacesState = ActionState.create();
   createWorkspaceState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
   currentGroupWorkspace?: Workspace | undefined;
-  currentWorkspaceService?: Entity | undefined;
   showCreateWorkspaceModal = false;
+
+  services: Entity[] = [];
+  currentService?: Entity | undefined;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
-    depotServerClient: DepotServerClient,
   ) {
     makeObservable(this, {
-      services: observable,
+      projects: observable,
       currentProject: observable,
-      currentSnapshotService: observable,
       groupWorkspaces: observable,
       currentGroupWorkspace: observable,
-      currentWorkspaceService: observable,
       showCreateWorkspaceModal: observable,
+      services: observable,
+      currentService: observable,
       setShowCreateWorkspaceModal: action,
-      resetCurrentService: action,
+      resetCurrentProject: action,
       resetCurrentGroupWorkspace: action,
+      resetCurrentService: action,
+      changeService: action,
       initialize: flow,
-      loadServices: flow,
-      changeService: flow,
+      loadProjects: flow,
+      changeProject: flow,
       changeWorkspace: flow,
       createWorkspace: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
-    this.depotServerClient = depotServerClient;
   }
 
   setShowCreateWorkspaceModal(val: boolean): void {
     this.showCreateWorkspaceModal = val;
   }
 
-  resetCurrentService(): void {
+  resetCurrentProject(): void {
     this.currentProject = undefined;
-    this.currentSnapshotService = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
     this.applicationStore.navigator.goTo(
-      generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
+      generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
   }
 
   resetCurrentGroupWorkspace(): void {
     this.currentGroupWorkspace = undefined;
-    this.currentWorkspaceService = undefined;
+    this.services = [];
+    this.resetCurrentService();
   }
 
-  *initialize(serviceCoordinates: string | undefined): GeneratorFn<void> {
+  resetCurrentService(): void {
+    this.currentService = undefined;
+  }
+
+  *initialize(projectId: string | undefined): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
     }
     this.initState.inProgress();
 
     try {
-      if (serviceCoordinates) {
-        const { groupId, artifactId, servicePath } =
-          parseServiceCoordinates(serviceCoordinates);
-        yield flowResult(this.changeService(groupId, artifactId, servicePath));
+      if (projectId) {
+        let project: Project;
+        try {
+          project = Project.serialization.fromJson(
+            (yield this.sdlcServerClient.getProject(
+              projectId,
+            )) as PlainObject<Project>,
+          );
+        } catch {
+          this.applicationStore.navigator.goTo(
+            generateProjectServiceQueryUpdaterSetupRoute(undefined),
+          );
+          this.initState.pass();
+          return;
+        }
+        yield flowResult(this.changeProject(project));
       }
 
       this.initState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -143,68 +146,35 @@ export class UpdateServiceQuerySetupStore {
     }
   }
 
-  *loadServices(searchText: string): GeneratorFn<void> {
+  *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_SERVICE_LOADER_SEARCH_LENGTH;
-    this.loadServicesState.inProgress();
+      searchText.length >= MINIMUM_PROJECT_LOADER_SEARCH_LENGTH;
+    this.loadProjectsState.inProgress();
     try {
-      this.services = (
-        (yield this.depotServerClient.getEntitiesByClassifierPath(
-          CORE_PURE_PATH.SERVICE,
-          {
-            search: isValidSearchString ? searchText : undefined,
-            // NOTE: since this mode is meant for contribution, we want to load services
-            // on the snapshot version (i.e. merged to the default branch on the projects)
-            scope: DepotScope.SNAPSHOT,
-            limit: DEFAULT_SERVICE_LOADER_LIMIT,
-          },
-        )) as StoredEntity[]
-      ).map((storedEntity) => extractServiceInfo(storedEntity));
-      this.loadServicesState.pass();
+      this.projects = (
+        (yield this.sdlcServerClient.getProjects(
+          undefined,
+          isValidSearchString ? searchText : undefined,
+          undefined,
+          DEFAULT_PROJECT_LOADER_LIMIT,
+        )) as PlainObject<Project>[]
+      ).map((v) => Project.serialization.fromJson(v));
+      this.loadProjectsState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
-      this.loadServicesState.fail();
+      this.loadProjectsState.fail();
     }
   }
 
-  *changeService(
-    groupId: string,
-    artifactId: string,
-    servicePath: string,
-  ): GeneratorFn<void> {
+  *changeProject(project: Project): GeneratorFn<void> {
+    this.currentProject = project;
+    this.applicationStore.navigator.goTo(
+      generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
+    );
+
     this.loadWorkspacesState.inProgress();
-
     try {
-      const project = ProjectData.serialization.fromJson(
-        (yield this.depotServerClient.getProject(
-          groupId,
-          artifactId,
-        )) as PlainObject<ProjectData>,
-      );
-
-      this.currentProject = project;
-
-      const serviceEntity = (yield this.depotServerClient.getEntity(
-        project,
-        MASTER_SNAPSHOT_ALIAS,
-        servicePath,
-      )) as Entity;
-      this.currentSnapshotService = extractServiceInfo({
-        groupId: groupId,
-        artifactId: artifactId,
-        versionId: MASTER_SNAPSHOT_ALIAS,
-        entity: serviceEntity,
-      });
-
-      this.applicationStore.navigator.goTo(
-        generateServiceQueryUpdaterSetupRoute(
-          project.groupId,
-          project.artifactId,
-          servicePath,
-        ),
-      );
-
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(
           project.projectId,
@@ -228,10 +198,7 @@ export class UpdateServiceQuerySetupStore {
 
       if (this.groupWorkspaces.length) {
         yield flowResult(
-          this.changeWorkspace(
-            guaranteeNonNullable(this.groupWorkspaces[0]),
-            servicePath,
-          ),
+          this.changeWorkspace(guaranteeNonNullable(this.groupWorkspaces[0])),
         );
       }
 
@@ -239,7 +206,7 @@ export class UpdateServiceQuerySetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);
@@ -247,26 +214,31 @@ export class UpdateServiceQuerySetupStore {
     }
   }
 
-  *changeWorkspace(
-    workspace: Workspace,
-    servicePath: string,
-  ): GeneratorFn<void> {
+  *changeWorkspace(workspace: Workspace): GeneratorFn<void> {
     this.currentGroupWorkspace = workspace;
 
     try {
-      this.currentWorkspaceService = (yield flowResult(
-        this.sdlcServerClient.getWorkspaceEntity(workspace, servicePath),
-      )) as Entity;
+      const entities = (yield flowResult(
+        this.sdlcServerClient.getEntities(workspace.projectId, workspace),
+      )) as Entity[];
+      this.services = entities.filter(
+        (entity) => entity.classifierPath === CORE_PURE_PATH.SERVICE,
+      );
+
+      if (this.services.length) {
+        this.changeService(guaranteeNonNullable(this.services[0]));
+      }
     } catch {
-      this.currentWorkspaceService = undefined;
+      this.services = [];
+      this.resetCurrentService();
     }
   }
 
-  *createWorkspace(
-    projectId: string,
-    workspaceId: string,
-    servicePath: string,
-  ): GeneratorFn<void> {
+  changeService(service: Entity): void {
+    this.currentService = service;
+  }
+
+  *createWorkspace(projectId: string, workspaceId: string): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
     try {
       const newGroupWorkspace = Workspace.serialization.fromJson(
@@ -286,9 +258,9 @@ export class UpdateServiceQuerySetupStore {
       );
       if (!matchingGroupWorkspace) {
         this.groupWorkspaces.push(newGroupWorkspace);
-        yield flowResult(this.changeWorkspace(newGroupWorkspace, servicePath));
+        yield flowResult(this.changeWorkspace(newGroupWorkspace));
       } else {
-        this.changeWorkspace(matchingGroupWorkspace, servicePath);
+        this.changeWorkspace(matchingGroupWorkspace);
       }
 
       this.setShowCreateWorkspaceModal(false);

@@ -145,6 +145,7 @@ export class WorkspaceSetupStore {
           );
         } catch {
           this.applicationStore.navigator.goTo(generateSetupRoute(undefined));
+          this.initState.pass();
           return;
         }
         yield flowResult(
