@@ -25,7 +25,7 @@ import {
   isString,
   ApplicationError,
 } from '@finos/legend-shared';
-import { makeAutoObservable, action } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
@@ -145,8 +145,11 @@ export class ApplicationStore<
   TEMPORARY__isLightThemeEnabled = false;
 
   constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
-    makeAutoObservable(this, {
-      navigator: false,
+    makeObservable(this, {
+      notification: observable,
+      blockingAlertInfo: observable,
+      actionAlertInfo: observable,
+      TEMPORARY__isLightThemeEnabled: observable,
       setBlockingAlert: action,
       setActionAlertInfo: action,
       setNotification: action,

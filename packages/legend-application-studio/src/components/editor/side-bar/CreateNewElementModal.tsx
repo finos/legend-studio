@@ -206,7 +206,10 @@ const NewPureModelConnectionDriverEditor = observer(
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(
-      editorStore.storeOptions.slice().sort(compareLabelFn),
+      editorStore.graphManagerState.usableStores
+        .map(buildElementOption)
+        .slice()
+        .sort(compareLabelFn),
     );
     const selectedStoreOption = {
       label: store?.path ?? 'ModelStore',

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
@@ -95,7 +102,6 @@ import {
 } from '@finos/legend-server-sdlc';
 import {
   type PackageableElement,
-  type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
   PrimitiveType,
@@ -126,8 +132,6 @@ import {
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
-  buildElementOption,
-  type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
@@ -196,6 +200,7 @@ export class EditorStore {
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   devToolState: DevToolState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
+  newElementState: NewElementState;
 
   private _isDisposed = false;
   initState = ActionState.create();
@@ -218,13 +223,12 @@ export class EditorStore {
 
   // Hot keys
   blockGlobalHotkeys = false;
-  defaultHotkeys: HotkeyConfiguration[] = [];
+  readonly defaultHotkeys: HotkeyConfiguration[] = [];
   hotkeys: HotkeyConfiguration[] = [];
 
   // Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
-  newElementState: NewElementState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -241,7 +245,31 @@ export class EditorStore {
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
   ) {
-    makeAutoObservable(this, {
+    makeObservable<
+      EditorStore,
+      '_isDisposed' | 'initStandardMode' | 'initConflictResolutionMode'
+    >(this, {
+      editorMode: observable,
+      mode: observable,
+      _isDisposed: observable,
+      graphEditMode: observable,
+      activeAuxPanelMode: observable,
+      activeActivity: observable,
+      blockGlobalHotkeys: observable,
+      hotkeys: observable,
+      currentEditorState: observable,
+      openedEditorStates: observable,
+      backdrop: observable,
+      ignoreNavigationBlocking: observable,
+      isDevToolEnabled: observable,
+
+      isInViewerMode: computed,
+      isInConflictResolutionMode: computed,
+      isInitialized: computed,
+      isInGrammarTextMode: computed,
+      isInFormMode: computed,
+      hasUnpushedChanges: computed,
+
       applicationStore: false,
       sdlcServerClient: false,
       depotServerClient: false,
@@ -276,6 +304,16 @@ export class EditorStore {
       reprocessElementEditorState: action,
       openGeneratedFile: action,
       closeAllEditorTabs: action,
+
+      initialize: flow,
+      initMode: flow,
+      initStandardMode: flow,
+      initConflictResolutionMode: flow,
+      buildGraph: flow,
+      addElement: flow,
+      deleteElement: flow,
+      renameElement: flow,
+      toggleTextMode: flow,
     });
 
     this.applicationStore = applicationStore;
@@ -1342,14 +1380,6 @@ export class EditorStore {
         'Editor only support form mode and text mode at the moment',
       );
     }
-  }
-
-  get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphManagerState.usableStores.map(buildElementOption);
-  }
-
-  get dataOptions(): PackageableElementOption<DataElement>[] {
-    return this.graphManagerState.usableDataElements.map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {
