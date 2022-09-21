@@ -31,7 +31,7 @@ export enum VIRTUAL_ASSISTANT_TAB {
   CONTEXTUAL_SUPPORT = 'CONTEXTUAL_SUPPORT',
 }
 
-export const DOCUMENTATION_SEARCH_RESULTS_LIMIT = 10;
+export const DOCUMENTATION_SEARCH_RESULTS_LIMIT = 100;
 
 export class VirtualAssistantDocumentationEntry {
   uuid = uuid();

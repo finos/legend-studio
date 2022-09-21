@@ -422,50 +422,45 @@ export class QueryBuilderPropertySearchState {
     this.setFuse();
   }
 
-  //fuse time! takes some time
   getPropertySearchNodes(
     propertySearchText: string,
-  ): Promise<QueryBuilderExplorerTreeNodeData[]> {
-    return new Promise((resolve) => {
-      const results = Array.from(
-        this.searchEngine
-          .search(propertySearchText, {
-            limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
-          })
-          .values(),
-      ).map((result) => {
-        const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
-        return new QueryBuilderExplorerTreePropertyNodeData(
-          node.id,
-          node.label,
-          node.dndText,
-          node.property,
-          node.parentId,
-          node.isPartOfDerivedPropertyBranch,
-          node.mappingData,
-        );
-      });
-      resolve(results);
+  ): QueryBuilderExplorerTreeNodeData[] {
+    return Array.from(
+      this.searchEngine
+        .search(propertySearchText, {
+          limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
+        })
+        .values(),
+    ).map((result) => {
+      const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
+      return new QueryBuilderExplorerTreePropertyNodeData(
+        node.id,
+        node.label,
+        node.dndText,
+        node.property,
+        node.parentId,
+        node.isPartOfDerivedPropertyBranch,
+        node.mappingData,
+      );
     });
   }
 
-  async fetchMappedPropertyNodes(propSearchText: string): Promise<void> {
+  fetchMappedPropertyNodes(propSearchText: string): void {
     if (propSearchText.length < QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH) {
       return;
     }
 
     const propertySearchText = this.getSearchText(propSearchText.toLowerCase());
 
-    const allSearchedMappedPropertyNodes = await this.getPropertySearchNodes(
-      propertySearchText,
-    );
+    const allSearchedMappedPropertyNodes =
+      this.getPropertySearchNodes(propertySearchText);
 
     if (
       allSearchedMappedPropertyNodes.length >
       QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
     ) {
       this.setIsOverSearchLimit(true);
-      await this.setSearchedMappedPropertyNodes(
+      this.setSearchedMappedPropertyNodes(
         allSearchedMappedPropertyNodes.slice(
           0,
           QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
@@ -473,7 +468,7 @@ export class QueryBuilderPropertySearchState {
       );
     } else {
       this.setIsOverSearchLimit(false);
-      await this.setSearchedMappedPropertyNodes(allSearchedMappedPropertyNodes);
+      this.setSearchedMappedPropertyNodes(allSearchedMappedPropertyNodes);
     }
   }
 
@@ -497,7 +492,7 @@ export class QueryBuilderPropertySearchState {
   search(): void {
     this.searchState.inProgress();
     this.resetPropertyState();
-    await this.fetchMappedPropertyNodes(this.searchText);
+    this.fetchMappedPropertyNodes(this.searchText);
     this.searchState.complete();
   }
 
