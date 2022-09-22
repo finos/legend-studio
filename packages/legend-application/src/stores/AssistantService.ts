@@ -25,6 +25,7 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
+import { TextSearchAdvancedConfigState } from '@finos/legend-art';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -79,12 +80,6 @@ export class VirtualAssistantContextualDocumentationEntry {
   }
 }
 
-export enum SEARCH_MODE {
-  NORMAL = 'normal',
-  INCLUDE = 'include match',
-  EXACT = 'exact match',
-  INVERSE = 'excludes exact match',
-}
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
   private readonly searchEngine: Fuse<DocumentationEntry>;
@@ -96,53 +91,53 @@ export class AssistantService {
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
 
-  isSearchPanelTipsOpen = false;
+  isSearchConfigOpen = false;
 
   searchResults: VirtualAssistantDocumentationEntry[] = [];
+  searchedDocumentation: VirtualAssistantDocumentationEntry | undefined;
+
   searchState = ActionState.create().pass();
   searchText = '';
 
   isOverSearchLimit: boolean;
 
-  modeOfSearch: SEARCH_MODE;
-  modeOfSearchOptions: SEARCH_MODE[];
+  textSearchState: TextSearchAdvancedConfigState;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       panelRenderingKey: observable,
-      isSearchPanelTipsOpen: observable,
-      modeOfSearch: observable,
+      isSearchConfigOpen: observable,
       isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
+      textSearchState: observable,
       searchResults: observable,
+      searchedDocumentation: observable,
       currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
-      setIsSearchPanelTipsOpen: action,
+      setisSearchConfigOpen: action,
       setSearchText: action,
       resetSearch: action,
+      setSearchedDocumentation: action,
       search: action,
       refreshPanelRendering: action,
-      changeModeOfSearch: action,
       setIsOverSearchLimit: action,
     });
 
     this.applicationStore = applicationStore;
 
-    this.modeOfSearch = SEARCH_MODE.NORMAL;
     this.isOverSearchLimit = false;
-    this.isSearchPanelTipsOpen = false;
+    this.isSearchConfigOpen = false;
 
-    this.modeOfSearchOptions = [
-      SEARCH_MODE.NORMAL,
-      SEARCH_MODE.INCLUDE,
-      SEARCH_MODE.EXACT,
-      SEARCH_MODE.INVERSE,
-    ];
+    this.searchedDocumentation = undefined;
+
+    this.textSearchState = new TextSearchAdvancedConfigState(() =>
+      this.search(),
+    );
 
     this.searchEngine = new Fuse(
       this.applicationStore.documentationService.getAllDocEntries().filter(
@@ -195,6 +190,7 @@ export class AssistantService {
       this.applicationStore.documentationService.getContextualDocEntry(
         currentContext,
       );
+
     return currentContextualDocumentationEntry
       ? new VirtualAssistantContextualDocumentationEntry(
           currentContext,
@@ -217,8 +213,32 @@ export class AssistantService {
       : undefined;
   }
 
+  getDocumentationFromKey(docKey: string): void {
+    const possibleSearch = this.searchResults.find(
+      (entry) => entry.documentationKey === docKey,
+    );
+    if (possibleSearch) {
+      possibleSearch.setIsOpen(true);
+    } else {
+      const possibleDoc = this.applicationStore.documentationService
+        .getAllDocEntries()
+        .find((entry) => entry._documentationKey === docKey);
+
+      if (possibleDoc) {
+        this.setSearchedDocumentation(
+          new VirtualAssistantDocumentationEntry(possibleDoc),
+        );
+        this.searchedDocumentation?.setIsOpen(true);
+      }
+    }
+  }
+
   setIsHidden(val: boolean): void {
     this.isHidden = val;
+  }
+
+  setSearchedDocumentation(val: VirtualAssistantDocumentationEntry): void {
+    this.searchedDocumentation = val;
   }
 
   setIsOverSearchLimit(val: boolean): void {
@@ -247,13 +267,8 @@ export class AssistantService {
     this.selectedTab = val;
   }
 
-  setIsSearchPanelTipsOpen(val: boolean): void {
-    this.isSearchPanelTipsOpen = val;
-  }
-
-  changeModeOfSearch(val: SEARCH_MODE): void {
-    this.modeOfSearch = val;
-    this.search();
+  setisSearchConfigOpen(val: boolean): void {
+    this.isSearchConfigOpen = val;
   }
 
   refreshPanelRendering(): void {
@@ -270,28 +285,11 @@ export class AssistantService {
     this.searchState.complete();
   }
 
-  getSearchText(val: string): string {
-    switch (this.modeOfSearch) {
-      case SEARCH_MODE.INCLUDE: {
-        return `'${val}`;
-      }
-      case SEARCH_MODE.EXACT: {
-        return `="${val}"`;
-      }
-      case SEARCH_MODE.INVERSE: {
-        return `!${val}`;
-      }
-      default: {
-        return val;
-      }
-    }
-  }
-
   search(): void {
     this.searchState.inProgress();
     this.searchResults = Array.from(
       this.searchEngine
-        .search(this.getSearchText(this.searchText), {
+        .search(this.textSearchState.getSearchText(this.searchText), {
           limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
         })
         .values(),

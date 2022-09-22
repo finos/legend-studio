@@ -1,3 +1,3 @@
 ---
-'@finos/legend-art': minor
+'@finos/legend-art': patch
 ---

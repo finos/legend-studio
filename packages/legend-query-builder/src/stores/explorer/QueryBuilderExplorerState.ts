@@ -201,6 +201,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
   graph: PureModel,
+  //TODO: document parameter
   mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
 ): AbstractPropertyExpression => {
   const multiplicityOne = graph.getTypicalMultiplicity(

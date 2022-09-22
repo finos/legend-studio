@@ -19,6 +19,8 @@ export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';
 export * from './utils/HotkeyConfiguration.js';
 
+export * from './components/CJS__Fuse.cjs';
+
 export * from './components/CJS__Icon.cjs';
 export * from './components/TypeIcon.js';
 export * from './components/Input.js';
@@ -61,3 +63,6 @@ export * from './components/LegendStyleProvider.js';
 export * from './components/markdown/MarkdownTextViewer.js';
 
 export * from './testMocks/MonacoEditorMockUtils.js';
+
+export * from './components/search/TextSearchAdvancedConfig.js';
+export * from './components/search/TextSearchAdvancedConfigState.js';

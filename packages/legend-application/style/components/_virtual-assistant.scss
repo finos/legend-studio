@@ -299,35 +299,6 @@
     position: relative;
   }
 
-  &__guide {
-    position: absolute;
-    width: 99.5%;
-    padding: 1rem;
-    background-color: var(--color-dark-grey-250);
-    box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.3rem 0.1rem;
-    z-index: 1;
-  }
-
-  &__guide__header__label {
-    @include flexVCenter;
-
-    font-weight: 500;
-    color: var(--color-light-grey-50);
-    margin-bottom: 0.5rem;
-    line-height: 2rem;
-    cursor: default;
-  }
-
-  &__question__icon {
-    @include flexCenter;
-
-    border-radius: 0.2rem;
-    padding: 0 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 4 0;
-    color: var(--color-light-grey-300);
-  }
-
   &__input {
     font-size: 1.3rem;
     height: 2.8rem;
@@ -349,7 +320,7 @@
       right: 5.3rem;
       border-radius: 0.8rem;
       height: 1.6rem;
-      width: 2.8rem;
+      padding: 0 0.5rem;
       font-size: 1.1rem;
       font-weight: 700;
       background: var(--color-yellow-100);

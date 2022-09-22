@@ -37,8 +37,7 @@ import {
   BasePopover,
   FaceSadTearIcon,
   CogIcon,
-  BaseRadioGroup,
-  QuestionCircleIcon,
+  TextSearchAdvancedConfig,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -54,7 +53,6 @@ import { TAB_SIZE } from '../const.js';
 import {
   type VirtualAssistantDocumentationEntry,
   VIRTUAL_ASSISTANT_TAB,
-  type SEARCH_MODE,
 } from '../stores/AssistantService.js';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
@@ -226,6 +224,7 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               )}
             </>
           )}
+
           {contextualEntry.related.length && (
             <div className="virtual-assistant__contextual-support__relevant-entries">
               <div className="virtual-assistant__contextual-support__relevant-entries__title">
@@ -249,8 +248,8 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               No contextual documentation found!
             </div>
             <div className="virtual-assistant__panel__placeholder__instruction">
-              Keep using the app; when a contextual doc is available, we will
-              let you know!
+              Keep using the app. When contextual help is available, we will let
+              you know!
             </div>
           </div>
         </BlankPanelContent>
@@ -282,11 +281,15 @@ const VirtualAssistantSearchPanel = observer(() => {
   };
 
   const toggleSearchPanelTip = (): void => {
-    assistantService.setIsSearchPanelTipsOpen(
-      !assistantService.isSearchPanelTipsOpen,
+    assistantService.textSearchState.setisSearchConfigOpen(
+      !assistantService.textSearchState.isSearchConfigOpen,
     );
   };
+
   const results = assistantService.searchResults;
+
+  const searchedDocumentation = assistantService.searchedDocumentation;
+
   const resultCount =
     assistantService.searchResults.length +
     (assistantService.isOverSearchLimit ? '+' : '');
@@ -321,17 +324,9 @@ const VirtualAssistantSearchPanel = observer(() => {
 
   const searchModeRef = useRef<HTMLInputElement>(null);
 
-  const getDocumentationToImplementSvp = (): void => {
-    assistantService.setIsSearchPanelTipsOpen(false);
-    assistantService.setSearchText('="How do I use search?"');
-    assistantService.search();
-  };
-
-  const handleSearchMode = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    const searchMode = (event.target as HTMLInputElement).value as SEARCH_MODE;
-    assistantService.changeModeOfSearch(searchMode);
+  const getDocumentation = (): void => {
+    assistantService.setisSearchConfigOpen(false);
+    assistantService.getDocumentationFromKey('question.how-to-use-search-bar');
   };
 
   useEffect(() => {
@@ -386,11 +381,11 @@ const VirtualAssistantSearchPanel = observer(() => {
             <button
               className={clsx('virtual-assistant__search__input__cog__icon', {
                 'virtual-assistant__search__input__cog__icon--active':
-                  assistantService.isSearchPanelTipsOpen,
+                  assistantService.textSearchState.isSearchConfigOpen,
               })}
               tabIndex={-1}
               onClick={toggleSearchPanelTip}
-              title="View tips for searching"
+              title="Show advanced search configuration"
             >
               <CogIcon />
             </button>
@@ -407,7 +402,7 @@ const VirtualAssistantSearchPanel = observer(() => {
               className="virtual-assistant__search__input__cog__icon"
               tabIndex={-1}
               onClick={toggleSearchPanelTip}
-              title="View tips for searching"
+              title="Show advanced search configuration"
             >
               <CogIcon />
             </button>
@@ -426,25 +421,18 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {assistantService.isSearchPanelTipsOpen && (
-          <div className="virtual-assistant__search__guide">
-            <div className="virtual-assistant__search__guide__header__label">
-              Search Mode
-              <button
-                className="virtual-assistant__search__question__icon"
-                tabIndex={-1}
-                onClick={getDocumentationToImplementSvp}
-              >
-                <QuestionCircleIcon />
-              </button>
-            </div>
-            <BaseRadioGroup
-              className="query-builder-property-search-panel__search__mode--radio-group"
-              value={assistantService.modeOfSearch}
-              onChange={handleSearchMode}
-              row={false}
-              options={assistantService.modeOfSearchOptions}
-              size={1}
+        {assistantService.textSearchState.isSearchConfigOpen && (
+          <TextSearchAdvancedConfig
+            configState={assistantService.textSearchState}
+            getDocumentation={getDocumentation}
+          />
+        )}
+
+        {searchedDocumentation && (
+          <div className="virtual-assistant__search__results">
+            <VirtualAssistantDocumentationEntryViewer
+              key={searchedDocumentation.uuid}
+              entry={searchedDocumentation}
             />
           </div>
         )}
@@ -459,6 +447,7 @@ const VirtualAssistantSearchPanel = observer(() => {
             ))}
           </div>
         )}
+
         {searchText && !results.length && (
           <BlankPanelContent>
             <div className="virtual-assistant__panel__placeholder">
@@ -475,7 +464,7 @@ const VirtualAssistantSearchPanel = observer(() => {
           the search text update, we do this to avoid showing the placeholder too
           early, i.e. when the search results are not yet cleaned
          */}
-        {!searchText && !results.length && (
+        {!searchText && !results.length && !searchedDocumentation && (
           <ContextMenu
             className="virtual-assistant__character__container"
             menuProps={{

@@ -33,9 +33,7 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   CogIcon,
-  Panel,
-  BaseRadioGroup,
-  QuestionCircleIcon,
+  TextSearchAdvancedConfig,
 } from '@finos/legend-art';
 import {
   Class,
@@ -49,7 +47,6 @@ import { useDrag } from 'react-dnd';
 import {
   QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
-  type SEARCH_MODE,
 } from '../../stores/QueryBuilderConfig.js';
 import {
   type QueryBuilderExplorerTreeNodeData,
@@ -292,14 +289,11 @@ export const QueryBuilderPropertySearchPanel = observer(
     const { queryBuilderState, triggerElement } = props;
     const explorerState = queryBuilderState.explorerState;
     const propertySearchPanelState = explorerState.propertySearchState;
-    const hasHiddenResults =
-      propertySearchPanelState.isOverSearchLimit &&
-      propertySearchPanelState.filteredPropertyNodes.length !== 0;
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     const handleEnter = (): void => searchInputRef.current?.focus();
 
-    const debouncedSearch = useMemo(
+    const debouncedSearchProperty = useMemo(
       () => debounce(() => propertySearchPanelState.search(), 100),
       [propertySearchPanelState],
     );
@@ -307,7 +301,7 @@ export const QueryBuilderPropertySearchPanel = observer(
       HTMLInputElement
     > = (event) => {
       propertySearchPanelState.setSearchText(event.target.value);
-      debouncedSearch();
+      debouncedSearchProperty();
     };
 
     const clearSearchPropertyName = (): void => {
@@ -315,32 +309,17 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchPanelState.resetPropertyState();
     };
 
-    const handleSearchMode = (
-      event: React.ChangeEvent<HTMLInputElement>,
-    ): void => {
-      const searchMode = (event.target as HTMLInputElement)
-        .value as SEARCH_MODE;
-      propertySearchPanelState.changeModeOfSearch(searchMode);
-      propertySearchPanelState.resetPropertyState();
-      propertySearchPanelState.fetchMappedPropertyNodes(
-        propertySearchPanelState.searchText,
-      );
-    };
-
     const handleClose = (): void => {
       clearSearchPropertyName();
       propertySearchPanelState.setIsSearchPanelOpen(false);
     };
 
-    const getDocumentationToImplementSvp = (): void => {
+    const getDocumentation = (): void => {
       queryBuilderState.applicationStore.assistantService.setIsOpen(true);
-      queryBuilderState.applicationStore.assistantService.setIsSearchPanelTipsOpen(
-        false,
+
+      queryBuilderState.applicationStore.assistantService.getDocumentationFromKey(
+        'question.how-to-use-search-bar',
       );
-      queryBuilderState.applicationStore.assistantService.setSearchText(
-        '="How do I use search?"',
-      );
-      queryBuilderState.applicationStore.assistantService.search();
     };
 
     const toggleIsMultiple = (): void => {
@@ -350,8 +329,8 @@ export const QueryBuilderPropertySearchPanel = observer(
     };
 
     const toggleSearchPanelTip = (): void => {
-      propertySearchPanelState.setIsSearchPanelTipsOpen(
-        !propertySearchPanelState.isSearchPanelTipsOpen,
+      propertySearchPanelState.setisSearchConfigOpen(
+        !propertySearchPanelState.isSearchConfigOpen,
       );
     };
 
@@ -412,7 +391,7 @@ export const QueryBuilderPropertySearchPanel = observer(
                     className="query-builder-property-search-panel__input__cog__icon"
                     tabIndex={-1}
                     onClick={toggleSearchPanelTip}
-                    title="View tips for searching"
+                    title="Show advanced search configuration"
                   >
                     <CogIcon />
                   </button>
@@ -425,14 +404,18 @@ export const QueryBuilderPropertySearchPanel = observer(
                   {propertySearchPanelState.searchText.length >= 3 && (
                     <div className="query-builder-property-search-panel__input__search__count">
                       {propertySearchPanelState.filteredPropertyNodes.length +
-                        (hasHiddenResults ? '+' : '')}
+                        (propertySearchPanelState.isOverSearchLimit &&
+                        propertySearchPanelState.filteredPropertyNodes
+                          .length !== 0
+                          ? '+'
+                          : '')}
                     </div>
                   )}
                   <button
                     className="query-builder-property-search-panel__input__cog__icon"
                     tabIndex={-1}
                     onClick={toggleSearchPanelTip}
-                    title="View tips for searching"
+                    title="Show advanced search configuration"
                   >
                     <CogIcon />
                   </button>
@@ -664,44 +647,14 @@ export const QueryBuilderPropertySearchPanel = observer(
               </ResizablePanelSplitter>
               <ResizablePanel>
                 <div ref={searchModeRef}></div>
-                <BasePopover
-                  open={Boolean(propertySearchPanelState.isSearchPanelTipsOpen)}
-                  anchorEl={searchModeRef.current}
-                  onClose={() =>
-                    propertySearchPanelState.setIsSearchPanelTipsOpen(false)
-                  }
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                >
-                  <Panel>
-                    <div className="query-builder-property-search-panel__search__mode">
-                      <div className="query-builder-property-search-panel__form__section__header__label">
-                        Search Mode
-                        <button
-                          className="virtual-assistant__search__question__icon"
-                          tabIndex={-1}
-                          onClick={getDocumentationToImplementSvp}
-                        >
-                          <QuestionCircleIcon />
-                        </button>
-                      </div>
-                      <BaseRadioGroup
-                        className="query-builder-property-search-panel__search__mode--radio-group"
-                        value={propertySearchPanelState.modeOfSearch}
-                        onChange={handleSearchMode}
-                        row={false}
-                        options={propertySearchPanelState.modeOfSearchOptions}
-                        size={1}
-                      />
-                    </div>
-                  </Panel>
-                </BasePopover>
+
+                {propertySearchPanelState.isSearchConfigOpen && (
+                  <TextSearchAdvancedConfig
+                    configState={propertySearchPanelState.textSearchState}
+                    getDocumentation={getDocumentation}
+                  />
+                )}
+
                 {propertySearchPanelState.searchState.isInProgress && (
                   <PanelLoadingIndicator isLoading={true} />
                 )}

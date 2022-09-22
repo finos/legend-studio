@@ -27,17 +27,11 @@ export const QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH = 6;
 export const QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES = 50000;
 export const QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT = 100;
 export const QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH = 3;
+
 export enum QUERY_BUILDER_PROPERTY_SEARCH_TYPE {
   CLASS = 'CLASS',
   STRING = 'STRING',
   BOOLEAN = 'BOOLEAN',
   NUMBER = 'NUMBER',
   DATE = 'DATE',
-}
-
-export enum SEARCH_MODE {
-  NORMAL = 'normal',
-  INCLUDE = 'include match',
-  EXACT = 'exact match',
-  INVERSE = 'excludes exact match',
 }

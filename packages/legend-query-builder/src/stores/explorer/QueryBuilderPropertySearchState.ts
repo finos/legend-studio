@@ -34,7 +34,6 @@ import {
   QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
   QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
-  SEARCH_MODE,
   QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES,
 } from '../QueryBuilderConfig.js';
 import {
@@ -45,7 +44,7 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { Fuse } from './CJS__Fuse.cjs';
+import { Fuse, TextSearchAdvancedConfigState } from '@finos/legend-art';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -55,9 +54,11 @@ export class QueryBuilderPropertySearchState {
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
   isSearchPanelOpen = false;
-  isSearchPanelTipsOpen = false;
+  isSearchConfigOpen = false;
   isSearchPanelHidden = false;
   isOverSearchLimit = false;
+
+  textSearchState: TextSearchAdvancedConfigState;
 
   searchText = '';
   searchState = ActionState.create().pass();
@@ -67,44 +68,35 @@ export class QueryBuilderPropertySearchState {
 
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
 
-  modeOfSearch: SEARCH_MODE;
-  modeOfSearchOptions: SEARCH_MODE[];
-
   constructor(queryBuilderState: QueryBuilderState) {
     makeAutoObservable(this, {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
-      isSearchPanelTipsOpen: observable,
-      modeOfSearch: observable,
+      isSearchConfigOpen: observable,
       isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
+      textSearchState: observable,
       searchEngine: observable,
       filteredPropertyNodes: computed,
       setSearchText: action,
       setIsOverSearchLimit: action,
       setSearchedMappedPropertyNodes: action,
       setIsSearchPanelOpen: action,
-      setIsSearchPanelTipsOpen: action,
+      setisSearchConfigOpen: action,
       setIsSearchPanelHidden: action,
       resetPropertyState: action,
       setFilterByMultiple: action,
       toggleTypeFilter: action,
-      changeModeOfSearch: action,
     });
 
     this.queryBuilderState = queryBuilderState;
     this.filterByMultiple = true;
 
-    this.modeOfSearch = SEARCH_MODE.NORMAL;
-
-    this.modeOfSearchOptions = [
-      SEARCH_MODE.NORMAL,
-      SEARCH_MODE.INCLUDE,
-      SEARCH_MODE.EXACT,
-      SEARCH_MODE.INVERSE,
-    ];
+    this.textSearchState = new TextSearchAdvancedConfigState(
+      this.search.bind(this),
+    );
 
     this.typeFilters = [
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
@@ -139,6 +131,8 @@ export class QueryBuilderPropertySearchState {
             ).property.taggedValues.map((taggedValue) => taggedValue.value),
         },
       ],
+      // extended search allows for exact word match through single quote
+      // See https://fusejs.io/examples.html#extended-search
       useExtendedSearch: true,
     });
   }
@@ -149,10 +143,6 @@ export class QueryBuilderPropertySearchState {
     } else {
       addUniqueEntry(this.typeFilters, val);
     }
-  }
-
-  changeModeOfSearch(val: SEARCH_MODE): void {
-    this.modeOfSearch = val;
   }
 
   setFilterByMultiple(val: boolean): void {
@@ -247,6 +237,9 @@ export class QueryBuilderPropertySearchState {
     });
   }
 
+  //takes in the searched mapped property and retrieves the toggles that the
+  //user selected about what they wanted to include, and filters out nodes if
+  //their type or multiplicity is not listed
   get filteredPropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
     const filteredTest = this.searchedMappedPropertyNodes.filter((p) => {
       if (
@@ -292,63 +285,6 @@ export class QueryBuilderPropertySearchState {
     return filteredTest;
   }
 
-  getFilteredPropertyNodes(): Promise<QueryBuilderExplorerTreeNodeData[]> {
-    return new Promise((resolve) => {
-      const filteredProperties = this.searchedMappedPropertyNodes.filter(
-        (p) => {
-          if (
-            !this.filterByMultiple &&
-            this.getMultiplePropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          if (
-            !this.typeFilters.includes(
-              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
-            ) &&
-            this.classPropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          if (
-            !this.typeFilters.includes(
-              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
-            ) &&
-            this.stringPropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          if (
-            !this.typeFilters.includes(
-              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
-            ) &&
-            this.numberPropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          if (
-            !this.typeFilters.includes(
-              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN,
-            ) &&
-            this.booleanPropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          if (
-            !this.typeFilters.includes(
-              QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
-            ) &&
-            this.datePropertyNodes().includes(p)
-          ) {
-            return false;
-          }
-          return true;
-        },
-      );
-      resolve(filteredProperties);
-    });
-  }
-
   fetchAllPropertyNodes(): void {
     const treeData = this.queryBuilderState.explorerState.nonNullableTreeData;
     let currentLevelPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
@@ -391,6 +327,7 @@ export class QueryBuilderPropertySearchState {
                 !propertyTreeNodeData.isPartOfDerivedPropertyBranch
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
+
                 this.mappedPropertyNodes.push(propertyTreeNodeData);
               }
             });
@@ -432,18 +369,7 @@ export class QueryBuilderPropertySearchState {
           limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
         })
         .values(),
-    ).map((result) => {
-      const node = result.item as QueryBuilderExplorerTreePropertyNodeData;
-      return new QueryBuilderExplorerTreePropertyNodeData(
-        node.id,
-        node.label,
-        node.dndText,
-        node.property,
-        node.parentId,
-        node.isPartOfDerivedPropertyBranch,
-        node.mappingData,
-      );
-    });
+    ).map((result) => result.item);
   }
 
   fetchMappedPropertyNodes(propSearchText: string): void {
@@ -451,7 +377,9 @@ export class QueryBuilderPropertySearchState {
       return;
     }
 
-    const propertySearchText = this.getSearchText(propSearchText.toLowerCase());
+    const propertySearchText = this.textSearchState.getSearchText(
+      propSearchText.toLowerCase(),
+    );
 
     const allSearchedMappedPropertyNodes =
       this.getPropertySearchNodes(propertySearchText);
@@ -473,23 +401,6 @@ export class QueryBuilderPropertySearchState {
     }
   }
 
-  getSearchText(val: string): string {
-    switch (this.modeOfSearch) {
-      case SEARCH_MODE.INCLUDE: {
-        return `'${val}`;
-      }
-      case SEARCH_MODE.EXACT: {
-        return `="${val}"`;
-      }
-      case SEARCH_MODE.INVERSE: {
-        return `!${val}`;
-      }
-      default: {
-        return val;
-      }
-    }
-  }
-
   search(): void {
     this.searchState.inProgress();
     this.resetPropertyState();
@@ -505,8 +416,8 @@ export class QueryBuilderPropertySearchState {
     this.isSearchPanelHidden = val;
   }
 
-  setIsSearchPanelTipsOpen(val: boolean): void {
-    this.isSearchPanelTipsOpen = val;
+  setisSearchConfigOpen(val: boolean): void {
+    this.isSearchConfigOpen = val;
   }
 
   setIsOverSearchLimit(val: boolean): void {
@@ -520,9 +431,7 @@ export class QueryBuilderPropertySearchState {
   setSearchedMappedPropertyNodes(
     val: QueryBuilderExplorerTreeNodeData[],
   ): void {
-    this.searchState.inProgress();
     this.searchedMappedPropertyNodes = val;
-    this.searchState.complete();
   }
 
   resetPropertyState(): void {
