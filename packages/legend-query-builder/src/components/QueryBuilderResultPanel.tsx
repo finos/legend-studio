@@ -325,7 +325,9 @@ const QueryBuilderGridResult = observer(
           ) : null
         }
         disabled={
-          !(fetchStructureImplementation instanceof QueryBuilderProjectionState)
+          !(
+            fetchStructureImplementation instanceof QueryBuilderProjectionState
+          ) || !queryBuilderState.isQuerySupported
         }
         menuProps={{ elevation: 7 }}
         key={executionResult._UUID}
