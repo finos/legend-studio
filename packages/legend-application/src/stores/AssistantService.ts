@@ -214,22 +214,17 @@ export class AssistantService {
   }
 
   getDocumentationFromKey(docKey: string): void {
-    const possibleSearch = this.searchResults.find(
-      (entry) => entry.documentationKey === docKey,
-    );
-    if (possibleSearch) {
-      possibleSearch.setIsOpen(true);
-    } else {
-      const possibleDoc = this.applicationStore.documentationService
-        .getAllDocEntries()
-        .find((entry) => entry._documentationKey === docKey);
+    const possibleDoc = this.applicationStore.documentationService
+      .getAllDocEntries()
+      .find((entry) => entry._documentationKey === docKey);
 
-      if (possibleDoc) {
-        this.setSearchedDocumentation(
-          new VirtualAssistantDocumentationEntry(possibleDoc),
-        );
-        this.searchedDocumentation?.setIsOpen(true);
-      }
+    if (possibleDoc) {
+      this.setSearchedDocumentation(
+        new VirtualAssistantDocumentationEntry(possibleDoc),
+      );
+      this.searchedDocumentation?.setIsOpen(true);
+
+      this.resetSearch();
     }
   }
 
@@ -237,7 +232,9 @@ export class AssistantService {
     this.isHidden = val;
   }
 
-  setSearchedDocumentation(val: VirtualAssistantDocumentationEntry): void {
+  setSearchedDocumentation(
+    val: VirtualAssistantDocumentationEntry | undefined,
+  ): void {
     this.searchedDocumentation = val;
   }
 
@@ -286,6 +283,7 @@ export class AssistantService {
   }
 
   search(): void {
+    this.setSearchedDocumentation(undefined);
     this.searchState.inProgress();
     this.searchResults = Array.from(
       this.searchEngine

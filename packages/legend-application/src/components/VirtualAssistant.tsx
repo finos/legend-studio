@@ -281,8 +281,8 @@ const VirtualAssistantSearchPanel = observer(() => {
   };
 
   const toggleSearchPanelTip = (): void => {
-    assistantService.textSearchState.setisSearchConfigOpen(
-      !assistantService.textSearchState.isSearchConfigOpen,
+    assistantService.setisSearchConfigOpen(
+      !assistantService.isSearchConfigOpen,
     );
   };
 
@@ -377,22 +377,9 @@ const VirtualAssistantSearchPanel = observer(() => {
           placeholder="Ask me a question"
         />
         {!searchText ? (
-          <>
-            <button
-              className={clsx('virtual-assistant__search__input__cog__icon', {
-                'virtual-assistant__search__input__cog__icon--active':
-                  assistantService.textSearchState.isSearchConfigOpen,
-              })}
-              tabIndex={-1}
-              onClick={toggleSearchPanelTip}
-              title="Show advanced search configuration"
-            >
-              <CogIcon />
-            </button>
-            <div className="virtual-assistant__search__input__search__icon">
-              <SearchIcon />
-            </div>
-          </>
+          <div className="virtual-assistant__search__input__search__icon">
+            <SearchIcon />
+          </div>
         ) : (
           <>
             <div className="virtual-assistant__search__input__search__count">
@@ -421,14 +408,14 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {assistantService.textSearchState.isSearchConfigOpen && (
+        {assistantService.isSearchConfigOpen && (
           <TextSearchAdvancedConfig
             configState={assistantService.textSearchState}
             getDocumentation={getDocumentation}
           />
         )}
 
-        {searchedDocumentation && (
+        {searchedDocumentation?.isOpen && (
           <div className="virtual-assistant__search__results">
             <VirtualAssistantDocumentationEntryViewer
               key={searchedDocumentation.uuid}
@@ -437,7 +424,7 @@ const VirtualAssistantSearchPanel = observer(() => {
           </div>
         )}
 
-        {Boolean(results.length) && (
+        {!searchedDocumentation?.isOpen && Boolean(results.length) && (
           <div className="virtual-assistant__search__results">
             {results.map((result) => (
               <VirtualAssistantDocumentationEntryViewer
@@ -464,7 +451,7 @@ const VirtualAssistantSearchPanel = observer(() => {
           the search text update, we do this to avoid showing the placeholder too
           early, i.e. when the search results are not yet cleaned
          */}
-        {!searchText && !results.length && !searchedDocumentation && (
+        {!searchText && !results.length && !searchedDocumentation?.isOpen && (
           <ContextMenu
             className="virtual-assistant__character__container"
             menuProps={{

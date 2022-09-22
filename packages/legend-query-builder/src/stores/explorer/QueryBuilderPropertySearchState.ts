@@ -21,6 +21,7 @@ import {
   getAllClassDerivedProperties,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
   ActionState,
@@ -128,7 +129,13 @@ export class QueryBuilderPropertySearchState {
           getFn: (node: QueryBuilderExplorerTreeNodeData) =>
             (
               node as QueryBuilderExplorerTreePropertyNodeData
-            ).property.taggedValues.map((taggedValue) => taggedValue.value),
+            ).property.taggedValues.map((taggedValue) => {
+              const isDoc =
+                taggedValue.tag.ownerReference.valueForSerialization?.includes(
+                  CORE_PURE_PATH.PROFILE_DOC,
+                );
+              return isDoc ? taggedValue.value : '';
+            }),
         },
       ],
       // extended search allows for exact word match through single quote
