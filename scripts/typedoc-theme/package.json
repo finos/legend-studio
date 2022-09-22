@@ -19,7 +19,7 @@
     "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\""
   },
   "dependencies": {
-    "@types/react": "18.0.20",
+    "@types/react": "18.0.21",
     "react": "18.2.0"
   },
   "devDependencies": {
