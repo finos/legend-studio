@@ -1260,6 +1260,28 @@ const PostProcessorRelationalConnectionEditor = observer(
       connectionValueState.selectPostProcessor(postProcessor);
     };
 
+    const getPostProcessorLabel = (
+      postProcessor: PostProcessor,
+    ): string | undefined => {
+      if (postProcessor instanceof MapperPostProcessor) {
+        return POST_PROCESSOR_TYPE.MAPPER;
+      } else {
+        const extraPostProcessorEditorClassifier = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+            ).getExtraPostProcessorClassifierGetters?.() ?? [],
+        );
+        for (const classify of extraPostProcessorEditorClassifier) {
+          const label = classify(postProcessor);
+          if (label) {
+            return label;
+          }
+        }
+      }
+      return undefined;
+    };
+
     return (
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
@@ -1269,7 +1291,7 @@ const PostProcessorRelationalConnectionEditor = observer(
           <ResizablePanel>
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel size={150} minSize={70}>
+                <ResizablePanel size={220} minSize={100}>
                   <Panel>
                     <PanelHeader title="post-processor">
                       <DropdownMenu
@@ -1324,6 +1346,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                         >
                           <PanelListSelectorItem
                             title={`Post-Processor ${idx + 1}`}
+                            badgeTitle={getPostProcessorLabel(postProcessor)}
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={
                               postProcessor ===

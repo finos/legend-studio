@@ -17,11 +17,13 @@ import { clsx } from 'clsx';
 
 export const PanelListSelectorItem: React.FC<{
   title?: string;
+  badgeTitle?: string | undefined;
   onSelect: () => void;
   isSelected: boolean;
   validationErrorMessage?: string | undefined;
 }> = (props) => {
-  const { title, onSelect, isSelected, validationErrorMessage } = props;
+  const { title, badgeTitle, onSelect, isSelected, validationErrorMessage } =
+    props;
   return (
     <div
       className={clsx(
@@ -44,6 +46,13 @@ export const PanelListSelectorItem: React.FC<{
       )}
       onClick={onSelect}
     >
+      {badgeTitle && (
+        <div className="panel__header__title__label">
+          {' '}
+          {badgeTitle.toLowerCase()}{' '}
+        </div>
+      )}
+
       <div
         className="panel__list-selector__item__label"
         title={validationErrorMessage}
