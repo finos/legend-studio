@@ -24,12 +24,11 @@ import {
 } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { debounce, guaranteeNonNullable } from '@finos/legend-shared';
-import { useSDLCServerClient } from '@finos/legend-server-sdlc';
+import { useSDLCServerClient, WorkspaceType } from '@finos/legend-server-sdlc';
 import {
   type WorkspaceOption,
   ActivityBarMenu,
   buildWorkspaceOption,
-  formatWorkspaceOptionLabel,
   LEGEND_STUDIO_TEST_ID,
   useLegendStudioApplicationStore,
 } from '@finos/legend-application-studio';
@@ -51,15 +50,19 @@ import {
   formatServiceOptionLabel,
 } from '@finos/legend-query-builder';
 import {
+  clsx,
   compareLabelFn,
   createFilter,
   CustomSelectorInput,
   Dialog,
+  ErrorIcon,
   GitBranchIcon,
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
   PURE_ServiceIcon,
+  UserIcon,
+  UsersIcon,
 } from '@finos/legend-art';
 
 const UpdateServiceQuerySetupStoreContext = createContext<
@@ -301,6 +304,41 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
     };
     const showCreateWorkspaceModal = (): void =>
       setupStore.setShowCreateWorkspaceModal(true);
+    const formatWorkspaceOptionLabel = (
+      option: WorkspaceOption,
+    ): React.ReactNode => (
+      <div
+        className="workspace-selector__option"
+        title={
+          setupStore.currentGroupWorkspace &&
+          !setupStore.currentWorkspaceService
+            ? `Selected workspace does not have the specified service${
+                setupStore.currentSnapshotService
+                  ? ` '${setupStore.currentSnapshotService.path}'`
+                  : ''
+              }\nPlease select another appropriate workspace or create and use a new workspace`
+            : undefined
+        }
+      >
+        <div className="workspace-selector__option__icon">
+          {option.value.workspaceType === WorkspaceType.GROUP ? (
+            <UsersIcon />
+          ) : (
+            <UserIcon />
+          )}
+        </div>
+        <div
+          className={clsx('workspace-selector__option__name', {
+            'service-query-setup__workspace-selector__option__name--invalid':
+              setupStore.currentGroupWorkspace &&
+              !setupStore.currentWorkspaceService,
+          })}
+        >
+          {option.label}
+          <ErrorIcon />
+        </div>
+      </div>
+    );
 
     useEffect(() => {
       flowResult(setupStore.loadServices('')).catch(

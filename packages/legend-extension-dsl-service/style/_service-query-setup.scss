@@ -95,4 +95,14 @@
       margin-left: 0.5rem;
     }
   }
+
+  &__workspace-selector__option__name--invalid {
+    text-decoration: line-through 0.1rem;
+    color: var(--color-red-100);
+    cursor: help;
+
+    svg {
+      margin-left: 0.5rem;
+    }
+  }
 }

@@ -57,7 +57,7 @@
     color: var(--color-light-grey-400);
 
     &--delete {
-      text-decoration: line-through;
+      text-decoration: line-through 0.1rem;
     }
   }
 

@@ -18,6 +18,7 @@
 
 .workspace-selector__option {
   display: flex;
+  align-items: center;
 
   &__icon {
     @include flexCenter;

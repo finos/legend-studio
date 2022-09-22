@@ -106,7 +106,7 @@
     @include flexVCenter;
 
     &--deprecated &__name {
-      text-decoration: line-through 2px;
+      text-decoration: line-through 0.1rem;
     }
 
     &__milestoning {
