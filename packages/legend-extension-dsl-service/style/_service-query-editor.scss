@@ -155,4 +155,51 @@
       margin-left: 1rem;
     }
   }
+
+  &__review {
+    @include flexVCenter;
+
+    height: 3.2rem;
+    border-radius: 0.2rem;
+    background: var(--color-yellow-200);
+    color: var(--color-dark-grey-280);
+    margin: 0.3rem;
+    cursor: pointer;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 3.2rem;
+      width: 3.2rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+      background: var(--color-dark-shade-50);
+
+      svg {
+        color: var(--color-dark-grey-80);
+      }
+    }
+
+    &__message {
+      @include ellipsisTextOverflow;
+
+      height: 3.2rem;
+      line-height: 3.2rem;
+      padding: 0 0 0 1rem;
+      width: 20rem;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+    }
+
+    &__action {
+      @include flexCenter;
+
+      height: 3.2rem;
+      width: 3.2rem;
+    }
+
+    &:hover,
+    &:hover &__message {
+      color: var(--color-dark-grey-80);
+    }
+  }
 }

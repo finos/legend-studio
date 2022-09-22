@@ -296,7 +296,7 @@ export const observe_Unit = skipObserved((metamodel: Unit): Unit => {
   makeObservable(metamodel, {
     measure: observable,
     conversionFunction: observable,
-    hashCode: override,
+    hashCode: computed,
   });
 
   if (metamodel.conversionFunction) {

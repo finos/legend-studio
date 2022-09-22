@@ -29,7 +29,6 @@ import {
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
-  ReviewIcon,
   RobotIcon,
   RocketIcon,
   SaveIcon,
@@ -63,6 +62,7 @@ import {
 } from '@finos/legend-application-studio';
 import { guaranteeNonEmptyString, uuid } from '@finos/legend-shared';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
+import { ServiceQueryEditorReviewAction } from './ServiceQueryEditorReviewAction.js';
 
 const NewServiceModal = observer(() => {
   const editorStore = useServiceQueryEditorStore();
@@ -446,19 +446,12 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
-          // title="View project"
-          // onClick={viewProject}
-        >
-          <ReviewIcon />
-        </button>
-        <button
-          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
-          tabIndex={-1}
           title="View project"
           onClick={viewProject}
         >
           <ExternalLinkSquareIcon />
         </button>
+        <ServiceQueryEditorReviewAction />
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}

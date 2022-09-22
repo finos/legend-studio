@@ -94,6 +94,8 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     | ServiceRegistrationEnvironmentConfig
     | undefined;
 
+  showSubmitReviewModal = false;
+
   constructor(
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
@@ -117,9 +119,11 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       showNewServiceModal: observable,
       showServiceRegistrationModal: observable,
       currentServiceRegistrationEnvConfig: observable,
+      showSubmitReviewModal: observable,
       setCurrentServiceRegistrationEnvConfig: action,
       setShowNewServiceModal: action,
       setShowServiceRegistrationModal: action,
+      setShowSubmitReviewModal: observable,
       initializeWithServiceQuery: flow,
       saveWorkspace: flow,
       registerService: flow,
@@ -155,6 +159,10 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     val: ServiceRegistrationEnvironmentConfig | undefined,
   ): void {
     this.currentServiceRegistrationEnvConfig = val;
+  }
+
+  setShowSubmitReviewModal(val: boolean): void {
+    this.showSubmitReviewModal = val;
   }
 
   abstract fetchServiceInformation(): Promise<ProjectServiceCoordinates>;
