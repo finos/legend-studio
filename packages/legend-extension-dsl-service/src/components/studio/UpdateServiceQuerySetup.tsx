@@ -50,6 +50,7 @@ import {
   formatServiceOptionLabel,
 } from '@finos/legend-query-builder';
 import {
+  CircleNotchIcon,
   clsx,
   compareLabelFn,
   createFilter,
@@ -306,39 +307,49 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
       setupStore.setShowCreateWorkspaceModal(true);
     const formatWorkspaceOptionLabel = (
       option: WorkspaceOption,
-    ): React.ReactNode => (
-      <div
-        className="workspace-selector__option"
-        title={
-          setupStore.currentGroupWorkspace &&
-          !setupStore.currentWorkspaceService
-            ? `Selected workspace does not have the specified service${
-                setupStore.currentSnapshotService
-                  ? ` '${setupStore.currentSnapshotService.path}'`
-                  : ''
-              }\nPlease select another appropriate workspace or create and use a new workspace`
-            : undefined
-        }
-      >
-        <div className="workspace-selector__option__icon">
-          {option.value.workspaceType === WorkspaceType.GROUP ? (
-            <UsersIcon />
-          ) : (
-            <UserIcon />
-          )}
-        </div>
+    ): React.ReactNode => {
+      const isCurrentOptionInvalid =
+        // we can only check the current workspace
+        setupStore.currentGroupWorkspace === option.value &&
+        !setupStore.currentWorkspaceService &&
+        !setupStore.checkWorkspaceCompatibilityState.isInProgress;
+      return (
         <div
-          className={clsx('workspace-selector__option__name', {
-            'service-query-setup__workspace-selector__option__name--invalid':
-              setupStore.currentGroupWorkspace &&
-              !setupStore.currentWorkspaceService,
-          })}
+          className="workspace-selector__option"
+          title={
+            isCurrentOptionInvalid
+              ? `Selected workspace does not have the specified service${
+                  setupStore.currentSnapshotService
+                    ? ` '${setupStore.currentSnapshotService.path}'`
+                    : ''
+                }\nPlease select another appropriate workspace or create and use a new workspace`
+              : setupStore.checkWorkspaceCompatibilityState.isInProgress
+              ? `Checking if the specified service is present in the workspace`
+              : undefined
+          }
         >
-          {option.label}
-          <ErrorIcon />
+          <div className="workspace-selector__option__icon">
+            {option.value.workspaceType === WorkspaceType.GROUP ? (
+              <UsersIcon />
+            ) : (
+              <UserIcon />
+            )}
+          </div>
+          <div
+            className={clsx('workspace-selector__option__name', {
+              'service-query-setup__workspace-selector__option__name--invalid':
+                isCurrentOptionInvalid,
+            })}
+          >
+            {option.label}
+            {isCurrentOptionInvalid && <ErrorIcon />}
+            {setupStore.checkWorkspaceCompatibilityState.isInProgress && (
+              <CircleNotchIcon className="service-query-setup__workspace-selector__option__loading-indicator" />
+            )}
+          </div>
         </div>
-      </div>
-    );
+      );
+    };
 
     useEffect(() => {
       flowResult(setupStore.loadServices('')).catch(

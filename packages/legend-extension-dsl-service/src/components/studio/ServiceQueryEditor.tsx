@@ -15,12 +15,15 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useParams } from 'react-router';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import {
+  type SelectComponent,
   BlankPanelContent,
+  CustomSelectorInput,
   Dialog,
   ExternalLinkSquareIcon,
   Panel,
@@ -28,7 +31,11 @@ import {
   PlusIcon,
   ReviewIcon,
   RobotIcon,
+  RocketIcon,
   SaveIcon,
+  clsx,
+  CheckSquareIcon,
+  SquareIcon,
 } from '@finos/legend-art';
 import {
   type ProjectServiceQueryUpdaterPathParams,
@@ -42,143 +49,280 @@ import {
   ServiceQueryUpdaterStoreProvider,
   useServiceQueryEditorStore,
 } from './ServiceQueryEditorStoreProvider.js';
-import {
-  type QueryBuilderState,
-  QueryBuilder,
-} from '@finos/legend-query-builder';
+import { QueryBuilder } from '@finos/legend-query-builder';
 import {
   ELEMENT_PATH_DELIMITER,
   extractElementNameFromPath,
-  PureExecution,
   resolvePackagePathAndElementName,
   validate_ServicePattern,
-  type Service,
 } from '@finos/legend-graph';
 import {
+  type ServiceRegistrationEnvironmentConfig,
   generateEditorRoute,
-  pureExecution_setFunction,
   useLegendStudioApplicationStore,
 } from '@finos/legend-application-studio';
-import {
-  guaranteeNonEmptyString,
-  guaranteeType,
-  uuid,
-} from '@finos/legend-shared';
+import { guaranteeNonEmptyString, uuid } from '@finos/legend-shared';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 
-const NewServiceModal = observer(
-  (props: {
-    queryBuilderState: QueryBuilderState;
-    currentService: Service;
-  }) => {
-    const { queryBuilderState, currentService } = props;
-    const editorStore = useServiceQueryEditorStore();
-    const applicationStore = useApplicationStore();
-    const [packagePath] = resolvePackagePathAndElementName(currentService.path);
-    const servicePackagePath = guaranteeNonEmptyString(packagePath);
-    const pathRef = useRef<HTMLInputElement>(null);
+const NewServiceModal = observer(() => {
+  const editorStore = useServiceQueryEditorStore();
+  const applicationStore = useApplicationStore();
+  const [packagePath] = resolvePackagePathAndElementName(
+    editorStore.service.path,
+  );
+  const servicePackagePath = guaranteeNonEmptyString(packagePath);
+  const pathRef = useRef<HTMLInputElement>(null);
 
-    // service name
-    const [serviceName, setServiceName] = useState<string>('MyNewService');
-    const servicePath = `${servicePackagePath}${ELEMENT_PATH_DELIMITER}${serviceName}`;
-    const elementAlreadyExists =
-      editorStore.graphManagerState.graph.allOwnElements
-        .map((s) => s.path)
-        .includes(servicePackagePath + ELEMENT_PATH_DELIMITER + serviceName);
-    const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      setServiceName(event.target.value);
+  // service name
+  const [serviceName, setServiceName] = useState<string>('MyNewService');
+  const servicePath = `${servicePackagePath}${ELEMENT_PATH_DELIMITER}${serviceName}`;
+  const elementAlreadyExists =
+    editorStore.graphManagerState.graph.allOwnElements
+      .map((s) => s.path)
+      .includes(servicePackagePath + ELEMENT_PATH_DELIMITER + serviceName);
+  const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    setServiceName(event.target.value);
 
-    // pattern
-    const [pattern, setPattern] = useState<string>(`/${uuid()}`);
-    const changePattern: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      setPattern(event.target.value);
-    const patternValidationResult = validate_ServicePattern(pattern);
+  // pattern
+  const [pattern, setPattern] = useState<string>(`/${uuid()}`);
+  const changePattern: React.ChangeEventHandler<HTMLInputElement> = (event) =>
+    setPattern(event.target.value);
+  const patternValidationResult = validate_ServicePattern(pattern);
 
-    // actions
-    const handleEnter = (): void => pathRef.current?.focus();
-    const create = (): void => {
-      if (!elementAlreadyExists && !patternValidationResult) {
-        // update the service
-        pureExecution_setFunction(
-          guaranteeType(currentService.execution, PureExecution),
-          queryBuilderState.buildQuery(),
-        );
-        const serviceEntity =
-          editorStore.graphManagerState.graphManager.elementToEntity(
-            currentService,
-            {
-              pruneSourceInformation: true,
-            },
-          );
-        serviceEntity.path = servicePath;
-        // NOTE: this does look a bit sketchy, but it's simple
-        serviceEntity.content.name = serviceName;
-        serviceEntity.content.pattern = pattern;
-
-        flowResult(
-          editorStore.saveWorkspace(serviceEntity, true, (): void => {
-            applicationStore.navigator.jumpTo(
-              generateProjectServiceQueryUpdaterRoute(
-                editorStore.sdlcState.activeProject.projectId,
-                editorStore.sdlcState.activeWorkspace.workspaceId,
-                servicePath,
-              ),
-            );
-          }),
-        ).catch(applicationStore.alertUnhandledError);
-      }
-    };
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      create();
-    };
-    const onClose = (): void => editorStore.setShowNewServiceModal(false);
-
-    return (
-      <Dialog
-        open={editorStore.showNewServiceModal}
-        onClose={onClose}
-        TransitionProps={{
-          onEnter: handleEnter,
-        }}
-        PaperProps={{
-          classes: {
-            root: 'search-modal__inner-container',
+  // actions
+  const handleEnter = (): void => pathRef.current?.focus();
+  const create = (): void => {
+    if (!elementAlreadyExists && !patternValidationResult) {
+      editorStore.updateServiceQuery();
+      const serviceEntity =
+        editorStore.graphManagerState.graphManager.elementToEntity(
+          editorStore.service,
+          {
+            pruneSourceInformation: true,
           },
-        }}
-      >
-        <form onSubmit={onSubmit} className="modal search-modal modal--dark">
-          <div className="modal__title">Create New Service</div>
-          <Panel>
-            <div className="panel__content__form">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Service Name
-                </div>
-                <div className="input-group">
-                  <input
-                    ref={pathRef}
-                    className="input input--dark input-group__input"
-                    value={serviceName}
-                    spellCheck={false}
-                    onChange={changeName}
-                    placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
-                  />
-                  {elementAlreadyExists && (
-                    <div className="input-group__error-message">
-                      Element with same path already exists
-                    </div>
-                  )}
-                </div>
+        );
+      serviceEntity.path = servicePath;
+      // NOTE: this does look a bit sketchy, but it's simple
+      serviceEntity.content.name = serviceName;
+      serviceEntity.content.pattern = pattern;
+
+      flowResult(
+        editorStore.saveWorkspace(serviceEntity, true, (): void => {
+          applicationStore.navigator.jumpTo(
+            generateProjectServiceQueryUpdaterRoute(
+              editorStore.sdlcState.activeProject.projectId,
+              editorStore.sdlcState.activeWorkspace.workspaceId,
+              servicePath,
+            ),
+          );
+        }),
+      ).catch(applicationStore.alertUnhandledError);
+    }
+  };
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    create();
+  };
+  const onClose = (): void => editorStore.setShowNewServiceModal(false);
+
+  return (
+    <Dialog
+      open={editorStore.showNewServiceModal}
+      onClose={onClose}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
+      PaperProps={{
+        classes: {
+          root: 'search-modal__inner-container',
+        },
+      }}
+    >
+      <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+        <div className="modal__title">Create New Service</div>
+        <Panel>
+          <div className="panel__content__form">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Service Name
               </div>
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Service URL Pattern
-                </div>
+              <div className="input-group">
+                <input
+                  ref={pathRef}
+                  className="input input--dark input-group__input"
+                  value={serviceName}
+                  spellCheck={false}
+                  onChange={changeName}
+                  placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
+                />
+                {elementAlreadyExists && (
+                  <div className="input-group__error-message">
+                    Element with same path already exists
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Service URL Pattern
+              </div>
+              <div className="input-group">
+                <input
+                  className="input input--dark input-group__input"
+                  value={pattern}
+                  spellCheck={false}
+                  onChange={changePattern}
+                  placeholder="Enter as service URL pattern, e.g. /myService"
+                />
+                {patternValidationResult && (
+                  <div className="input-group__error-message">
+                    URL pattern is not valid
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </Panel>
+        <div className="search-modal__actions">
+          <button
+            className="btn btn--dark"
+            disabled={elementAlreadyExists}
+            onClick={create}
+          >
+            Create
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+});
+
+type ServiceRegistrationEnvironmentConfigOption = {
+  label: string;
+  value: ServiceRegistrationEnvironmentConfig;
+};
+const buildServiceRegistrationEnvironmentConfigOption = (
+  value: ServiceRegistrationEnvironmentConfig,
+): ServiceRegistrationEnvironmentConfigOption => ({
+  label: value.env.toUpperCase(),
+  value,
+});
+const formatServiceRegistrationEnvironmentConfigOptionLabel = (
+  option: ServiceRegistrationEnvironmentConfigOption,
+): React.ReactNode => (
+  <div className="service-query-editor__registration-env-config__option">
+    <div className="service-query-editor__registration-env-config__option">
+      {option.label}
+    </div>
+    <div className="service-query-editor__registration-env-config__option__url">
+      {option.value.executionUrl}
+    </div>
+  </div>
+);
+
+const RegisterServiceModal = observer(() => {
+  const editorStore = useServiceQueryEditorStore();
+  const applicationStore = useApplicationStore();
+  const envConfigSelectorRef = useRef<SelectComponent>(null);
+
+  const envConfigOptions = editorStore.serviceRegistrationEnvConfigs.map(
+    buildServiceRegistrationEnvironmentConfigOption,
+  );
+  const selectedEnvConfigOption =
+    editorStore.currentServiceRegistrationEnvConfig
+      ? buildServiceRegistrationEnvironmentConfigOption(
+          editorStore.currentServiceRegistrationEnvConfig,
+        )
+      : null;
+  const onEnvConfigChange = (
+    val: ServiceRegistrationEnvironmentConfigOption | null,
+  ): void => {
+    editorStore.setCurrentServiceRegistrationEnvConfig(val?.value);
+  };
+
+  // pattern
+  const patternRef = useRef<HTMLInputElement>(null);
+  const [pattern, setPattern] = useState<string>(editorStore.service.pattern);
+  const [overridePattern, setOverridePattern] = useState<boolean>(false);
+  const toggleOverridePattern = (): void => {
+    const newVal = !overridePattern;
+    flushSync(() => {
+      setOverridePattern(newVal);
+      setPattern(editorStore.service.pattern);
+    });
+    if (newVal) {
+      patternRef.current?.focus();
+    }
+  };
+  const changePattern: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    if (overridePattern) {
+      setPattern(event.target.value);
+    }
+  };
+  const patternValidationResult = validate_ServicePattern(pattern);
+
+  // actions
+  const handleEnter = (): void => envConfigSelectorRef.current?.focus();
+  const registerService = (): void => {
+    if (editorStore.currentServiceRegistrationEnvConfig) {
+      flowResult(
+        editorStore.registerService(overridePattern ? pattern : undefined),
+      ).catch(applicationStore.alertUnhandledError);
+    }
+  };
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    registerService();
+  };
+  const onClose = (): void =>
+    editorStore.setShowServiceRegistrationModal(false);
+
+  return (
+    <Dialog
+      open={editorStore.showServiceRegistrationModal}
+      onClose={onClose}
+      TransitionProps={{
+        onEnter: handleEnter,
+      }}
+      PaperProps={{
+        classes: {
+          root: 'search-modal__inner-container',
+        },
+      }}
+    >
+      <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+        <div className="modal__title">Register Service</div>
+        <Panel>
+          <div className="panel__content__form">
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Environment
+              </div>
+              <CustomSelectorInput
+                ref={envConfigSelectorRef}
+                options={envConfigOptions}
+                onChange={onEnvConfigChange}
+                value={selectedEnvConfigOption}
+                darkMode={true}
+                isClearable={true}
+                escapeClearsValue={true}
+                placeholder="Choose a registration environment"
+                formatOptionLabel={
+                  formatServiceRegistrationEnvironmentConfigOptionLabel
+                }
+              />
+            </div>
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Service URL Pattern
+              </div>
+              <div className="service-query-editor__registration__pattern">
                 <div className="input-group">
                   <input
+                    ref={patternRef}
                     className="input input--dark input-group__input"
                     value={pattern}
+                    disabled={!overridePattern}
                     spellCheck={false}
                     onChange={changePattern}
                     placeholder="Enter as service URL pattern, e.g. /myService"
@@ -189,127 +333,159 @@ const NewServiceModal = observer(
                     </div>
                   )}
                 </div>
+                <div className="panel__content__form__section__toggler service-query-editor__registration__pattern__override">
+                  <button
+                    type="button" // prevent this toggler being activated on form submission
+                    className={clsx(
+                      'panel__content__form__section__toggler__btn',
+                      {
+                        'panel__content__form__section__toggler__btn--toggled':
+                          overridePattern,
+                      },
+                    )}
+                    onClick={toggleOverridePattern}
+                  >
+                    {overridePattern ? <CheckSquareIcon /> : <SquareIcon />}
+                  </button>
+                  <div className="panel__content__form__section__toggler__prompt">
+                    Override
+                  </div>
+                </div>
               </div>
             </div>
-          </Panel>
-          <div className="search-modal__actions">
-            <button
-              className="btn btn--dark"
-              disabled={elementAlreadyExists}
-              onClick={create}
-            >
-              Create
-            </button>
           </div>
-        </form>
-      </Dialog>
-    );
-  },
-);
-
-const ServiceQueryEditorHeaderContent = observer(
-  (props: { queryBuilderState: QueryBuilderState; service: Service }) => {
-    const { queryBuilderState, service } = props;
-    const editorStore = useServiceQueryEditorStore();
-    const applicationStore = useLegendStudioApplicationStore();
-    const viewProject = (): void =>
-      applicationStore.navigator.openNewWindow(
-        applicationStore.navigator.generateLocation(
-          generateEditorRoute(
-            editorStore.sdlcState.activeProject.projectId,
-            editorStore.sdlcState.activeWorkspace.workspaceId,
-            WorkspaceType.GROUP,
-          ),
-        ),
-      );
-    const showNewServiceModal = (): void =>
-      editorStore.setShowNewServiceModal(true);
-    const saveWorkspace = (): void => {
-      // update the service
-      pureExecution_setFunction(
-        guaranteeType(service.execution, PureExecution),
-        queryBuilderState.buildQuery(),
-      );
-      const serviceEntity =
-        editorStore.graphManagerState.graphManager.elementToEntity(service, {
-          pruneSourceInformation: true,
-        });
-      flowResult(
-        editorStore.saveWorkspace(serviceEntity, false, (): void => {
-          applicationStore.navigator.jumpTo(
-            generateServiceQueryUpdaterRoute(
-              editorStore.projectConfigurationEditorState
-                .currentProjectConfiguration.groupId,
-              editorStore.projectConfigurationEditorState
-                .currentProjectConfiguration.artifactId,
-              service.path,
-              editorStore.sdlcState.activeWorkspace.workspaceId,
-            ),
-          );
-        }),
-      ).catch(applicationStore.alertUnhandledError);
-    };
-
-    return (
-      <div className="service-query-editor__header__content">
-        <div className="service-query-editor__header__content__main">
-          <div className="service-query-editor__header__label service-query-editor__header__label--service-query">
-            <RobotIcon className="service-query-editor__header__label__icon" />
-            {extractElementNameFromPath(service.path)}
-          </div>
+        </Panel>
+        <div className="search-modal__actions">
+          <button
+            className="btn btn--dark"
+            disabled={
+              !editorStore.currentServiceRegistrationEnvConfig ||
+              editorStore.registerServiceState.isInProgress
+            }
+            onClick={registerService}
+          >
+            Register
+          </button>
         </div>
+      </form>
+    </Dialog>
+  );
+});
 
-        <div className="service-query-editor__header__actions">
-          <div className="service-query-editor__header__actions__divider" />
-          <button
-            className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
-            tabIndex={-1}
-            // title="View project"
-            // onClick={viewProject}
-          >
-            <ReviewIcon />
-          </button>
-          <button
-            className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
-            tabIndex={-1}
-            title="View project"
-            onClick={viewProject}
-          >
-            <ExternalLinkSquareIcon />
-          </button>
-          <button
-            className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
-            tabIndex={-1}
-            title="Create a new service"
-            onClick={showNewServiceModal}
-          >
-            <PlusIcon />
-            {editorStore.showNewServiceModal && (
-              <NewServiceModal
-                queryBuilderState={queryBuilderState}
-                currentService={service}
-              />
-            )}
-          </button>
-          <button
-            className="service-query-editor__header__action btn--dark"
-            tabIndex={-1}
-            // TODO: we should disable this when we have change detection for query builder
-            // See https://github.com/finos/legend-studio/pull/1456
-            onClick={saveWorkspace}
-          >
-            <div className="service-query-editor__header__action__icon">
-              <SaveIcon />
-            </div>
-            <div className="service-query-editor__header__action__label">
-              Save
-            </div>
-          </button>
+const ServiceQueryEditorHeaderContent = observer(() => {
+  const editorStore = useServiceQueryEditorStore();
+  const applicationStore = useLegendStudioApplicationStore();
+  const viewProject = (): void =>
+    applicationStore.navigator.openNewWindow(
+      applicationStore.navigator.generateLocation(
+        generateEditorRoute(
+          editorStore.sdlcState.activeProject.projectId,
+          editorStore.sdlcState.activeWorkspace.workspaceId,
+          WorkspaceType.GROUP,
+        ),
+      ),
+    );
+  const showNewServiceModal = (): void =>
+    editorStore.setShowNewServiceModal(true);
+  const saveWorkspace = (): void => {
+    editorStore.updateServiceQuery();
+    const serviceEntity =
+      editorStore.graphManagerState.graphManager.elementToEntity(
+        editorStore.service,
+        {
+          pruneSourceInformation: true,
+        },
+      );
+    flowResult(
+      editorStore.saveWorkspace(serviceEntity, false, (): void => {
+        applicationStore.navigator.jumpTo(
+          generateServiceQueryUpdaterRoute(
+            editorStore.projectConfigurationEditorState
+              .currentProjectConfiguration.groupId,
+            editorStore.projectConfigurationEditorState
+              .currentProjectConfiguration.artifactId,
+            editorStore.service.path,
+            editorStore.sdlcState.activeWorkspace.workspaceId,
+          ),
+        );
+      }),
+    ).catch(applicationStore.alertUnhandledError);
+  };
+
+  // register service
+  const showServiceRegistrationModal = (): void =>
+    editorStore.setShowServiceRegistrationModal(true);
+  const canRegisterService = Boolean(
+    editorStore.applicationStore.config.options
+      .TEMPORARY__serviceRegistrationConfig.length,
+  );
+
+  return (
+    <div className="service-query-editor__header__content">
+      <div className="service-query-editor__header__content__main">
+        <div className="service-query-editor__header__label service-query-editor__header__label--service-query">
+          <RobotIcon className="service-query-editor__header__label__icon" />
+          {extractElementNameFromPath(editorStore.service.path)}
         </div>
       </div>
-    );
-  },
-);
+
+      <div className="service-query-editor__header__actions">
+        <button
+          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          disabled={!canRegisterService}
+          title="Register service"
+          onClick={showServiceRegistrationModal}
+        >
+          <RocketIcon />
+          {canRegisterService && editorStore.showServiceRegistrationModal && (
+            <RegisterServiceModal />
+          )}
+        </button>
+        <div className="service-query-editor__header__actions__divider" />
+        <button
+          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          // title="View project"
+          // onClick={viewProject}
+        >
+          <ReviewIcon />
+        </button>
+        <button
+          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          title="View project"
+          onClick={viewProject}
+        >
+          <ExternalLinkSquareIcon />
+        </button>
+        <button
+          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
+          tabIndex={-1}
+          title="Create a new service"
+          onClick={showNewServiceModal}
+        >
+          <PlusIcon />
+          {editorStore.showNewServiceModal && <NewServiceModal />}
+        </button>
+        <button
+          className="service-query-editor__header__action btn--dark"
+          tabIndex={-1}
+          // TODO: we should disable this when we have change detection for query builder
+          // See https://github.com/finos/legend-studio/pull/1456
+          onClick={saveWorkspace}
+        >
+          <div className="service-query-editor__header__action__icon">
+            <SaveIcon />
+          </div>
+          <div className="service-query-editor__header__action__label">
+            Save
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+});
 
 export const ServiceQueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
@@ -324,11 +500,8 @@ export const ServiceQueryEditor = observer(() => {
   return (
     <div className="service-query-editor">
       <div className="service-query-editor__header">
-        {editorStore.queryBuilderState && editorStore.service && (
-          <ServiceQueryEditorHeaderContent
-            queryBuilderState={editorStore.queryBuilderState}
-            service={editorStore.service}
-          />
+        {editorStore.queryBuilderState && editorStore._service && (
+          <ServiceQueryEditorHeaderContent />
         )}
       </div>
       <div className="service-query-editor__content">

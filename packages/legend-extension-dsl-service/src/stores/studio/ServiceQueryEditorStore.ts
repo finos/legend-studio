@@ -15,15 +15,25 @@
  */
 
 import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
+import {
   type LegendStudioApplicationStore,
+  type ServiceRegistrationEnvironmentConfig,
   EditorStore,
   LEGEND_STUDIO_APP_EVENT,
+  MINIMUM_SERVICE_OWNERS,
+  generateServiceManagementUrl,
+  pureExecution_setFunction,
 } from '@finos/legend-application-studio';
 import {
   type Service,
+  type ServiceRegistrationResult,
   GraphManagerState,
   PureExecution,
   CORE_PURE_PATH,
+  ServiceExecutionMode,
 } from '@finos/legend-graph';
 import {
   type QueryBuilderState,
@@ -48,9 +58,21 @@ import {
   HttpStatus,
   NetworkClientError,
   assertNonNullable,
+  ActionState,
+  assertTrue,
+  assertNonEmptyString,
+  guaranteeType,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { parseServiceCoordinates } from './DSL_Service_LegendStudioRouter.js';
 
 type ProjectServiceCoordinates = {
@@ -61,8 +83,16 @@ type ProjectServiceCoordinates = {
 
 export abstract class ServiceQueryEditorStore extends EditorStore {
   queryBuilderState?: QueryBuilderState | undefined;
-  service?: Service | undefined;
+  _service?: Service | undefined;
   showNewServiceModal = false;
+
+  showServiceRegistrationModal = false;
+  registerServiceState = ActionState.create();
+  readonly serviceRegistrationEnvConfigs: ServiceRegistrationEnvironmentConfig[] =
+    [];
+  currentServiceRegistrationEnvConfig?:
+    | ServiceRegistrationEnvironmentConfig
+    | undefined;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -82,16 +112,49 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
 
     makeObservable(this, {
       queryBuilderState: observable,
-      service: observable,
+      _service: observable,
+      service: computed,
       showNewServiceModal: observable,
+      showServiceRegistrationModal: observable,
+      currentServiceRegistrationEnvConfig: observable,
+      setCurrentServiceRegistrationEnvConfig: action,
       setShowNewServiceModal: action,
+      setShowServiceRegistrationModal: action,
       initializeWithServiceQuery: flow,
       saveWorkspace: flow,
+      registerService: flow,
     });
+
+    this.serviceRegistrationEnvConfigs =
+      this.applicationStore.config.options.TEMPORARY__serviceRegistrationConfig.filter(
+        (config) =>
+          config.modes.includes(ServiceExecutionMode.SEMI_INTERACTIVE),
+      );
+    if (this.serviceRegistrationEnvConfigs.length) {
+      this.currentServiceRegistrationEnvConfig =
+        this.serviceRegistrationEnvConfigs[0];
+    }
+  }
+
+  get service(): Service {
+    return guaranteeNonNullable(
+      this._service,
+      `Service query editor store has not been initialized properly`,
+    );
   }
 
   setShowNewServiceModal(val: boolean): void {
     this.showNewServiceModal = val;
+  }
+
+  setShowServiceRegistrationModal(val: boolean): void {
+    this.showServiceRegistrationModal = val;
+  }
+
+  setCurrentServiceRegistrationEnvConfig(
+    val: ServiceRegistrationEnvironmentConfig | undefined,
+  ): void {
+    this.currentServiceRegistrationEnvConfig = val;
   }
 
   abstract fetchServiceInformation(): Promise<ProjectServiceCoordinates>;
@@ -110,7 +173,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
 
       // initialize the query builder state
-      this.service = this.graphManagerState.graph.getService(
+      this._service = this.graphManagerState.graph.getService(
         serviceInfo.servicePath,
       );
 
@@ -224,8 +287,103 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       this.applicationStore.setBlockingAlert(undefined);
       this.localChangesState.pushChangesState.complete();
     }
+  }
 
-    // do something
+  updateServiceQuery(): void {
+    assertNonNullable(
+      this.queryBuilderState,
+      `Service query editor store has not been initialized properly`,
+    );
+    pureExecution_setFunction(
+      guaranteeType(this.service.execution, PureExecution),
+      this.queryBuilderState.buildQuery(),
+    );
+  }
+
+  *registerService(overridePattern?: string | undefined): GeneratorFn<void> {
+    const registrationConfig = this.currentServiceRegistrationEnvConfig;
+    if (registrationConfig) {
+      try {
+        this.registerServiceState.inProgress();
+
+        // make sure the service query is updated
+        this.updateServiceQuery();
+
+        // validate owners
+        this.service.owners.forEach((owner) =>
+          assertNonEmptyString(owner, `Service can't have an empty owner name`),
+        );
+        assertTrue(
+          this.service.owners.length >= MINIMUM_SERVICE_OWNERS,
+          `Service needs to have at least 2 owners in order to be registered`,
+        );
+
+        this.registerServiceState.setMessage(`Registering service...`);
+        const serviceRegistrationResult =
+          (yield this.graphManagerState.graphManager.registerService(
+            this.service,
+            this.graphManagerState.graph,
+            this.projectConfigurationEditorState.currentProjectConfiguration
+              .groupId,
+            this.projectConfigurationEditorState.currentProjectConfiguration
+              .artifactId,
+            undefined, // if not specified, we will use the latest revision version (i.e. SNAPSHOT/HEAD)
+            registrationConfig.executionUrl,
+            ServiceExecutionMode.SEMI_INTERACTIVE,
+            {
+              TEMPORARY__semiInteractiveOverridePattern: overridePattern,
+            },
+          )) as ServiceRegistrationResult;
+
+        this.registerServiceState.setMessage(`Activating service...`);
+        yield this.graphManagerState.graphManager.activateService(
+          registrationConfig.executionUrl,
+          serviceRegistrationResult.serviceInstanceId,
+        );
+        this.setShowServiceRegistrationModal(false);
+
+        assertNonEmptyString(
+          serviceRegistrationResult.pattern,
+          'Service registration pattern is missing or empty',
+        );
+
+        this.setActionAlertInfo({
+          message: `Service with pattern ${serviceRegistrationResult.pattern} registered and activated`,
+          prompt:
+            'You can now launch and monitor the operation of your service',
+          type: ActionAlertType.STANDARD,
+          actions: [
+            {
+              label: 'Launch Service',
+              type: ActionAlertActionType.PROCEED,
+              handler: (): void => {
+                this.applicationStore.navigator.openNewWindow(
+                  generateServiceManagementUrl(
+                    registrationConfig.managementUrl,
+                    serviceRegistrationResult.pattern,
+                  ),
+                );
+              },
+              default: true,
+            },
+            {
+              label: 'Close',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            },
+          ],
+        });
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.log.error(
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
+          error,
+        );
+        this.applicationStore.notifyError(error);
+      } finally {
+        this.registerServiceState.reset();
+        this.registerServiceState.setMessage(undefined);
+      }
+    }
   }
 }
 

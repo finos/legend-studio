@@ -105,4 +105,10 @@
       margin-left: 0.5rem;
     }
   }
+
+  &__workspace-selector__option__loading-indicator {
+    animation: spin 1s infinite ease;
+    color: var(--color-blue-100);
+    margin-left: 0.5rem;
+  }
 }

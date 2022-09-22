@@ -17,8 +17,7 @@
 @use 'mixins' as *;
 
 .workspace-selector__option {
-  display: flex;
-  align-items: center;
+  @include flexVCenter;
 
   &__icon {
     @include flexCenter;

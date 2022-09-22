@@ -69,6 +69,7 @@ export class UpdateServiceQuerySetupStore {
   groupWorkspaces: Workspace[] = [];
   currentGroupWorkspace?: Workspace | undefined;
   currentWorkspaceService?: Entity | undefined;
+  checkWorkspaceCompatibilityState = ActionState.create();
   showCreateWorkspaceModal = false;
 
   constructor(
@@ -253,6 +254,7 @@ export class UpdateServiceQuerySetupStore {
   ): GeneratorFn<void> {
     this.currentGroupWorkspace = workspace;
 
+    this.checkWorkspaceCompatibilityState.inProgress();
     try {
       this.currentWorkspaceService = (yield flowResult(
         this.sdlcServerClient.getWorkspaceEntity(workspace, servicePath),
@@ -260,6 +262,7 @@ export class UpdateServiceQuerySetupStore {
     } catch {
       this.currentWorkspaceService = undefined;
     }
+    this.checkWorkspaceCompatibilityState.reset();
   }
 
   *createWorkspace(

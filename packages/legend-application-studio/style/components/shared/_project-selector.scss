@@ -17,8 +17,8 @@
 @use 'mixins' as *;
 
 .project-selector__option {
-  display: flex;
-  align-items: center;
+  @include flexVCenter;
+
   width: 100%;
 
   &__label {

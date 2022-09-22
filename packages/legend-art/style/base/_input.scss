@@ -27,6 +27,11 @@
   &:focus {
     border: 0.1rem solid var(--color-input-border--focus);
   }
+
+  &[disabled] {
+    cursor: not-allowed;
+    border: 0.1rem solid var(--color-input-border);
+  }
 }
 
 .input--dark {
@@ -42,6 +47,11 @@
   &:focus {
     border: 0.1rem solid var(--color-blue-200);
     outline: none;
+  }
+
+  &[disabled] {
+    border: 0.1rem solid var(--color-dark-grey-100);
+    color: var(--color-dark-grey-400);
   }
 }
 

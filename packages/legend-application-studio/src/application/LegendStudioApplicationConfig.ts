@@ -34,14 +34,14 @@ import {
   type LegendApplicationConfigurationData,
 } from '@finos/legend-application';
 
-export class ServiceRegistrationEnvInfo {
+export class ServiceRegistrationEnvironmentConfig {
   env!: string;
   executionUrl!: string;
   modes: string[] = [];
   managementUrl!: string;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(ServiceRegistrationEnvInfo, {
+    createModelSchema(ServiceRegistrationEnvironmentConfig, {
       env: primitive(),
       executionUrl: primitive(),
       managementUrl: primitive(),
@@ -68,13 +68,14 @@ class LegendStudioApplicationCoreOptions {
    * @modularize
    * See https://github.com/finos/legend-studio/issues/65
    */
-  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvInfo[] = [];
+  TEMPORARY__serviceRegistrationConfig: ServiceRegistrationEnvironmentConfig[] =
+    [];
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
-        object(ServiceRegistrationEnvInfo),
+        object(ServiceRegistrationEnvironmentConfig),
       ),
     }),
   );

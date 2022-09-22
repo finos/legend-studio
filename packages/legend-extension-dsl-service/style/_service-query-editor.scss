@@ -120,4 +120,39 @@
     height: calc(100% - 3.8rem);
     width: 100%;
   }
+
+  &__registration-env-config__option {
+    @include flexVCenter;
+
+    &__url {
+      color: var(--color-dark-grey-200);
+      margin-left: 1rem;
+      line-height: 1.4rem;
+      background: var(--color-dark-grey-500);
+      border-radius: 0.2rem;
+      padding: 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__name {
+      @include flexVCenter;
+
+      height: 1.8rem;
+    }
+  }
+
+  &__registration__pattern {
+    @include flexVCenter;
+
+    .input-group {
+      width: 100%;
+    }
+
+    &__override {
+      width: 10rem;
+      margin-left: 1rem;
+    }
+  }
 }

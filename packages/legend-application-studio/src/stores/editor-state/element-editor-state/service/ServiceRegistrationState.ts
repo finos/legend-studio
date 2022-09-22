@@ -28,6 +28,7 @@ import {
   UnsupportedOperationError,
   getNullableFirstElement,
   assertTrue,
+  URL_SEPARATOR,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
@@ -36,13 +37,26 @@ import {
   type ServiceRegistrationResult,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
-import { ServiceRegistrationEnvInfo } from '../../../../application/LegendStudioApplicationConfig.js';
+import { ServiceRegistrationEnvironmentConfig } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
 
 export const LATEST_PROJECT_REVISION = 'Latest Project Revision';
+
+export const generateServiceManagementUrl = (
+  baseUrl: string,
+  serviceUrlPattern: string,
+): string =>
+  `${baseUrl}${
+    URL_SEPARATOR +
+    encodeURIComponent(
+      serviceUrlPattern[0] === URL_SEPARATOR
+        ? serviceUrlPattern.substring(1)
+        : serviceUrlPattern,
+    )
+  }`;
 
 const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   switch (mode) {
@@ -59,22 +73,15 @@ const getServiceExecutionMode = (mode: string): ServiceExecutionMode => {
   }
 };
 
-const URL_SEPARATOR = '/';
-
 interface ServiceVersionOption {
   label: string;
   value: Version | string;
 }
 
-export enum SERVICE_REGISTRATION_PHASE {
-  REGISTERING_SERVICE = 'REGISTERING_SERVICE',
-  ACTIVATING_SERVICE = 'ACTIVATING_SERVICE',
-}
-
 export class ServiceRegistrationState {
   readonly editorStore: EditorStore;
   readonly service: Service;
-  readonly registrationOptions: ServiceRegistrationEnvInfo[] = [];
+  readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
   registrationState = ActionState.create();
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
@@ -86,7 +93,7 @@ export class ServiceRegistrationState {
   constructor(
     editorStore: EditorStore,
     service: Service,
-    registrationOptions: ServiceRegistrationEnvInfo[],
+    registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
     makeAutoObservable(this, {
@@ -151,13 +158,13 @@ export class ServiceRegistrationState {
     this.setServiceExecutionMode(this.executionModes[0]);
   }
 
-  get options(): ServiceRegistrationEnvInfo[] {
+  get options(): ServiceRegistrationEnvironmentConfig[] {
     if (this.enableModesWithVersioning) {
       return this.registrationOptions;
     }
     return this.registrationOptions
       .map((_envConfig) => {
-        const envConfig = new ServiceRegistrationEnvInfo();
+        const envConfig = new ServiceRegistrationEnvironmentConfig();
         envConfig.env = _envConfig.env;
         envConfig.executionUrl = _envConfig.executionUrl;
         envConfig.managementUrl = _envConfig.managementUrl;
@@ -215,9 +222,7 @@ export class ServiceRegistrationState {
       const projectConfig = guaranteeNonNullable(
         this.editorStore.projectConfigurationEditorState.projectConfiguration,
       );
-      this.registrationState.setMessage(
-        SERVICE_REGISTRATION_PHASE.REGISTERING_SERVICE,
-      );
+      this.registrationState.setMessage(`Registering service...`);
       const serviceRegistrationResult =
         (yield this.editorStore.graphManagerState.graphManager.registerService(
           this.service,
@@ -227,12 +232,12 @@ export class ServiceRegistrationState {
           versionInput,
           serverUrl,
           guaranteeNonNullable(this.serviceExecutionMode),
-          this.TEMPORARY__useStoreModel,
+          {
+            TEMPORARY__useStoreModel: this.TEMPORARY__useStoreModel,
+          },
         )) as ServiceRegistrationResult;
       if (this.activatePostRegistration) {
-        this.registrationState.setMessage(
-          SERVICE_REGISTRATION_PHASE.ACTIVATING_SERVICE,
-        );
+        this.registrationState.setMessage(`Activating service...`);
         yield this.editorStore.graphManagerState.graphManager.activateService(
           serverUrl,
           serviceRegistrationResult.serviceInstanceId,
@@ -240,20 +245,13 @@ export class ServiceRegistrationState {
       }
       assertNonEmptyString(
         serviceRegistrationResult.pattern,
-        'Service registration pattern is missing',
+        'Service registration pattern is missing or empty',
       );
-      const message = `Service with pattern ${
-        serviceRegistrationResult.pattern
-      } registered ${this.activatePostRegistration ? 'and activated ' : ''}`;
-      const encodedServicePattern =
-        URL_SEPARATOR +
-        encodeURIComponent(
-          serviceRegistrationResult.pattern[0] === URL_SEPARATOR
-            ? serviceRegistrationResult.pattern.substring(1)
-            : serviceRegistrationResult.pattern,
-        );
+
       this.editorStore.setActionAlertInfo({
-        message,
+        message: `Service with pattern ${
+          serviceRegistrationResult.pattern
+        } registered ${this.activatePostRegistration ? 'and activated ' : ''}`,
         prompt: 'You can now launch and monitor the operation of your service',
         type: ActionAlertType.STANDARD,
         onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
@@ -264,7 +262,10 @@ export class ServiceRegistrationState {
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
               this.editorStore.applicationStore.navigator.openNewWindow(
-                `${config.managementUrl}${encodedServicePattern}`,
+                generateServiceManagementUrl(
+                  config.managementUrl,
+                  serviceRegistrationResult.pattern,
+                ),
               );
             },
             default: true,

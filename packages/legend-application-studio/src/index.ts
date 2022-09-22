@@ -99,6 +99,8 @@ export * from './stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js
 
 export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 
+export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+export { generateServiceManagementUrl } from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
 export { GenerationFile } from './stores/shared/FileGenerationTreeUtils.js';

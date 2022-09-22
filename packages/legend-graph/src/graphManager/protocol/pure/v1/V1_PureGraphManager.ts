@@ -46,6 +46,7 @@ import {
   type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
   type ExecutionOptions,
+  type ServiceRegistrationOptions,
 } from '../../../../graphManager/AbstractPureGraphManager.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -2105,7 +2106,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    TEMPORARY__useStoreModel: boolean,
+    options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2124,10 +2125,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
         const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
+
         // data
         const data = new V1_PureModelContextData();
         data.origin = new V1_PureModelContextPointer(protocol);
-        data.elements = [this.elementToProtocol<V1_Service>(service)];
+        const serviceProtocol = this.elementToProtocol<V1_Service>(service);
+
+        // override the URL pattern if specified
+        if (options?.TEMPORARY__semiInteractiveOverridePattern) {
+          serviceProtocol.pattern =
+            options.TEMPORARY__semiInteractiveOverridePattern;
+        }
+
+        data.elements = [serviceProtocol];
+
         // SDLC info
         // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
         // and not embedded.
@@ -2181,7 +2192,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input,
         server,
         executionMode,
-        TEMPORARY__useStoreModel,
+        Boolean(options?.TEMPORARY__useStoreModel),
       ),
     );
   }
