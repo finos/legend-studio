@@ -51,6 +51,7 @@ export class ServiceRegistrationEnvironmentConfig {
 }
 
 class LegendStudioApplicationCoreOptions {
+  projectCreationGroupIdSuggestion = 'org.finos.legend.*';
   /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
    * imports.
@@ -73,6 +74,7 @@ class LegendStudioApplicationCoreOptions {
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
+      projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(
         object(ServiceRegistrationEnvironmentConfig),

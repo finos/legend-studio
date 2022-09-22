@@ -202,7 +202,9 @@ const CreateNewProjectTab = observer(() => {
           <input
             className="panel__content__form__section__input"
             spellCheck={false}
-            placeholder="org.finos.legend.*"
+            placeholder={
+              applicationStore.config.options.projectCreationGroupIdSuggestion
+            }
             value={groupId}
             onChange={changeGroupId}
           />
@@ -501,7 +503,9 @@ const ImportProjectTab = observer(() => {
           <input
             className="panel__content__form__section__input"
             spellCheck={false}
-            placeholder="org.finos.legend.*"
+            placeholder={
+              applicationStore.config.options.projectCreationGroupIdSuggestion
+            }
             value={groupId}
             disabled={Boolean(importProjectSuccessReport)}
             onChange={changeGroupId}
