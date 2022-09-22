@@ -369,14 +369,15 @@ export class WorkspaceSetupStore {
           workspace.workspaceId === newWorkspace.workspaceId &&
           workspace.workspaceType === newWorkspace.workspaceType,
       );
+      const newWorkspaceToSelect = matchingWorkspace ?? newWorkspace;
+      this.changeWorkspace(newWorkspaceToSelect);
+      this.setShowCreateWorkspaceModal(false);
+
+      // NOTE: do this after closing the modal to not interfere
+      // with validation of existing workspaces in create workspace modal
       if (!matchingWorkspace) {
         this.workspaces.push(newWorkspace);
-        this.changeWorkspace(newWorkspace);
-      } else {
-        this.changeWorkspace(matchingWorkspace);
       }
-
-      this.setShowCreateWorkspaceModal(false);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(

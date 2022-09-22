@@ -26,6 +26,7 @@ import {
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
+  ReviewIcon,
   RobotIcon,
   SaveIcon,
 } from '@finos/legend-art';
@@ -112,6 +113,7 @@ const NewServiceModal = observer(
         serviceEntity.path = servicePath;
         // NOTE: this does look a bit sketchy, but it's simple
         serviceEntity.content.name = serviceName;
+        serviceEntity.content.pattern = pattern;
 
         flowResult(
           editorStore.saveWorkspace(serviceEntity, true, (): void => {
@@ -130,11 +132,12 @@ const NewServiceModal = observer(
       event.preventDefault();
       create();
     };
+    const onClose = (): void => editorStore.setShowNewServiceModal(false);
 
     return (
       <Dialog
         open={editorStore.showNewServiceModal}
-        onClose={close}
+        onClose={onClose}
         TransitionProps={{
           onEnter: handleEnter,
         }}
@@ -257,6 +260,15 @@ const ServiceQueryEditorHeaderContent = observer(
         </div>
 
         <div className="service-query-editor__header__actions">
+          <div className="service-query-editor__header__actions__divider" />
+          <button
+            className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
+            tabIndex={-1}
+            // title="View project"
+            // onClick={viewProject}
+          >
+            <ReviewIcon />
+          </button>
           <button
             className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
             tabIndex={-1}

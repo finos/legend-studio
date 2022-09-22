@@ -41,6 +41,16 @@ export const CreateWorkspaceModal = observer(
     const [workspaceName, setWorkspaceName] = useState('');
     const [isGroupWorkspace, setIsGroupWorkspace] = useState<boolean>(true);
 
+    const workspaceAlreadyExists = Boolean(
+      setupStore.workspaces.find(
+        (workspace) =>
+          workspace.workspaceId === workspaceName &&
+          ((workspace.workspaceType === WorkspaceType.GROUP &&
+            isGroupWorkspace) ||
+            (workspace.workspaceType === WorkspaceType.USER &&
+              !isGroupWorkspace)),
+      ),
+    );
     const createWorkspace = (): void => {
       if (workspaceName) {
         flowResult(
@@ -65,7 +75,7 @@ export const CreateWorkspaceModal = observer(
     const handleEnter = (): void => {
       workspaceNameInputRef.current?.focus();
     };
-    const closeModal = (): void => {
+    const onClose = (): void => {
       setupStore.setShowCreateWorkspaceModal(false);
     };
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -76,7 +86,7 @@ export const CreateWorkspaceModal = observer(
     return (
       <Dialog
         open={setupStore.showCreateWorkspaceModal}
-        onClose={closeModal}
+        onClose={onClose}
         TransitionProps={{
           onEnter: handleEnter,
         }}
@@ -102,18 +112,26 @@ export const CreateWorkspaceModal = observer(
                 <div className="panel__content__form__section__header__label">
                   Workspace Name
                 </div>
-                <input
-                  className="workspace-setup__create-workspace-modal__form__workspace-name__input"
-                  ref={workspaceNameInputRef}
-                  spellCheck={false}
-                  disabled={
-                    setupStore.createWorkspaceState.isInProgress ||
-                    setupStore.createOrImportProjectState.isInProgress
-                  }
-                  placeholder="MyWorkspace"
-                  value={workspaceName}
-                  onChange={changeWorkspaceName}
-                />
+
+                <div className="input-group">
+                  <input
+                    className="input input--dark input-group__input workspace-setup__create-workspace-modal__form__workspace-name__input"
+                    ref={workspaceNameInputRef}
+                    spellCheck={false}
+                    disabled={
+                      setupStore.createWorkspaceState.isInProgress ||
+                      setupStore.createOrImportProjectState.isInProgress
+                    }
+                    placeholder="MyWorkspace"
+                    value={workspaceName}
+                    onChange={changeWorkspaceName}
+                  />
+                  {workspaceAlreadyExists && (
+                    <div className="input-group__error-message">
+                      Workspace with same name already exists
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">

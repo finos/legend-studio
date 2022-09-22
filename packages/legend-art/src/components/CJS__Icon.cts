@@ -166,6 +166,7 @@ export {
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,
+  MdReviews as ReviewIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,

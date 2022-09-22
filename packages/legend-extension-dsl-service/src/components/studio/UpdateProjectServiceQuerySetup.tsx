@@ -106,8 +106,13 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
   const workspaceNameInputRef = useRef<HTMLInputElement>(null);
   const [workspaceName, setWorkspaceName] = useState('');
 
+  const workspaceAlreadyExists = Boolean(
+    setupStore.groupWorkspaces.find(
+      (workspace) => workspace.workspaceId === workspaceName,
+    ),
+  );
   const createWorkspace = (): void => {
-    if (workspaceName) {
+    if (workspaceName && !workspaceAlreadyExists) {
       flowResult(
         setupStore.createWorkspace(selectedProject.projectId, workspaceName),
       ).catch(applicationStore.alertUnhandledError);
@@ -120,7 +125,7 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
   const handleEnter = (): void => {
     workspaceNameInputRef.current?.focus();
   };
-  const closeModal = (): void => {
+  const onClose = (): void => {
     setupStore.setShowCreateWorkspaceModal(false);
   };
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -131,7 +136,7 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
   return (
     <Dialog
       open={setupStore.showCreateWorkspaceModal}
-      onClose={closeModal}
+      onClose={onClose}
       TransitionProps={{
         onEnter: handleEnter,
       }}
@@ -145,21 +150,30 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <div className="panel__content--full">
-            <input
-              className="input input--dark"
-              ref={workspaceNameInputRef}
-              spellCheck={false}
-              disabled={setupStore.createWorkspaceState.isInProgress}
-              placeholder="MyWorkspace"
-              value={workspaceName}
-              onChange={changeWorkspaceName}
-            />
+            <div className="input-group">
+              <input
+                className="input input--dark input-group__input"
+                ref={workspaceNameInputRef}
+                spellCheck={false}
+                disabled={setupStore.createWorkspaceState.isInProgress}
+                placeholder="MyWorkspace"
+                value={workspaceName}
+                onChange={changeWorkspaceName}
+              />
+              {workspaceAlreadyExists && (
+                <div className="input-group__error-message">
+                  Workspace with same name already exists
+                </div>
+              )}
+            </div>
           </div>
         </Panel>
         <div className="search-modal__actions">
           <button
             disabled={
-              setupStore.createWorkspaceState.isInProgress || !workspaceName
+              setupStore.createWorkspaceState.isInProgress ||
+              !workspaceName ||
+              workspaceAlreadyExists
             }
             className="btn btn--dark"
           >

@@ -77,6 +77,13 @@
       height: 100%;
     }
 
+    &__actions__divider {
+      height: 2.8rem;
+      width: 0.1rem;
+      margin: 0.5rem;
+      background: var(--color-dark-grey-250);
+    }
+
     &__action {
       @include flexCenter;
 

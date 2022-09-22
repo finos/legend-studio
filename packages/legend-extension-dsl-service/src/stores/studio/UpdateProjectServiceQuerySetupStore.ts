@@ -182,7 +182,7 @@ export class UpdateProjectServiceQuerySetupStore {
       ).map((workspace) => workspace.workspaceId);
 
       this.groupWorkspaces = (
-        (yield this.sdlcServerClient.getWorkspaces(
+        (yield this.sdlcServerClient.getGroupWorkspaces(
           project.projectId,
         )) as PlainObject<Workspace>[]
       )
@@ -256,14 +256,17 @@ export class UpdateProjectServiceQuerySetupStore {
       const matchingGroupWorkspace = this.groupWorkspaces.find(
         (workspace) => workspace.workspaceId === newGroupWorkspace.workspaceId,
       );
+      const groupWorkspaceToSelect =
+        matchingGroupWorkspace ?? newGroupWorkspace;
+
+      yield flowResult(this.changeWorkspace(groupWorkspaceToSelect));
+      this.setShowCreateWorkspaceModal(false);
+
+      // NOTE: do this after closing the modal to not interfere
+      // with validation of existing workspaces in create workspace modal
       if (!matchingGroupWorkspace) {
         this.groupWorkspaces.push(newGroupWorkspace);
-        yield flowResult(this.changeWorkspace(newGroupWorkspace));
-      } else {
-        this.changeWorkspace(matchingGroupWorkspace);
       }
-
-      this.setShowCreateWorkspaceModal(false);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
