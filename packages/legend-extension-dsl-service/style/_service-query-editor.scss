@@ -38,6 +38,10 @@
       padding-left: 5rem;
     }
 
+    &__content__main {
+      display: flex;
+    }
+
     &__label {
       @include flexVCenter;
 
@@ -163,7 +167,7 @@
     border-radius: 0.2rem;
     background: var(--color-yellow-200);
     color: var(--color-dark-grey-280);
-    margin: 0.3rem;
+    // margin: 0.3rem;
     cursor: pointer;
 
     &__icon {
@@ -200,6 +204,47 @@
     &:hover,
     &:hover &__message {
       color: var(--color-dark-grey-80);
+    }
+  }
+
+  &__workspace-status {
+    @include flexCenter;
+
+    height: 3.2rem;
+    border-radius: 0.2rem;
+    margin-left: 0.3rem;
+    color: var(--color-dark-shade-800);
+
+    &--up-to-date {
+      width: 3.2rem;
+      background: var(--color-green-100);
+
+      svg {
+        color: var(--color-dark-shade-800);
+        font-size: 1.6rem;
+      }
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      cursor: pointer;
+      height: 3.2rem;
+      width: 3.2rem;
+      background: var(--color-dark-shade-50);
+      border-radius: 0.2rem 0 0 0.2rem;
+    }
+
+    &__text {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 0 1rem;
+    }
+
+    &--out-of-sync,
+    &--outdated {
+      background: var(--color-red-200);
     }
   }
 }

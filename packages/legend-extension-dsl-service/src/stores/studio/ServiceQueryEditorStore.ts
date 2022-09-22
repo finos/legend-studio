@@ -126,6 +126,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       setShowSubmitReviewModal: observable,
       initializeWithServiceQuery: flow,
       saveWorkspace: flow,
+      recreateWorkspace: flow,
       registerService: flow,
     });
 
@@ -294,6 +295,35 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
     } finally {
       this.applicationStore.setBlockingAlert(undefined);
       this.localChangesState.pushChangesState.complete();
+    }
+  }
+
+  *recreateWorkspace(): GeneratorFn<void> {
+    try {
+      this.setBlockingAlert({
+        message: 'Re-creating workspace...',
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
+      yield this.sdlcServerClient.deleteWorkspace(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace,
+      );
+      yield this.sdlcServerClient.createWorkspace(
+        this.sdlcState.activeProject.projectId,
+        this.sdlcState.activeWorkspace.workspaceId,
+        this.sdlcState.activeWorkspace.workspaceType,
+      );
+      this.applicationStore.navigator.reload();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.log.error(
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+        error,
+      );
+      this.applicationStore.notifyError(error);
+    } finally {
+      this.setBlockingAlert(undefined);
     }
   }
 

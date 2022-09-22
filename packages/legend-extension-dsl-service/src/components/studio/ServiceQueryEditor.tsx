@@ -63,6 +63,7 @@ import {
 import { guaranteeNonEmptyString, uuid } from '@finos/legend-shared';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { ServiceQueryEditorReviewAction } from './ServiceQueryEditorReviewAction.js';
+import { ServiceQueryEditorWorkspaceStatus } from './ServiceQueryEditorWorkspaceStatus.js';
 
 const NewServiceModal = observer(() => {
   const editorStore = useServiceQueryEditorStore();
@@ -443,6 +444,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
           )}
         </button>
         <div className="service-query-editor__header__actions__divider" />
+        <ServiceQueryEditorWorkspaceStatus />
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
@@ -451,6 +453,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         >
           <ExternalLinkSquareIcon />
         </button>
+        <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorReviewAction />
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"

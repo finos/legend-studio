@@ -25,7 +25,7 @@ import {
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useServiceQueryEditorStore } from './ServiceQueryEditorStoreProvider.js';
 
 const NewReviewModal = observer(() => {
@@ -45,8 +45,8 @@ const NewReviewModal = observer(() => {
       flowResult(
         editorStore.workspaceReviewState.createWorkspaceReview(message),
       )
-        .catch(applicationStore.alertUnhandledError)
-        .then(() => editorStore.setShowSubmitReviewModal(false));
+        .then(() => editorStore.setShowSubmitReviewModal(false))
+        .catch(applicationStore.alertUnhandledError);
     }
   };
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -136,17 +136,11 @@ export const ServiceQueryEditorReviewAction = observer(() => {
     }
   };
 
-  useEffect(() => {
-    flowResult(
-      editorStore.workspaceReviewState.fetchCurrentWorkspaceReview(),
-    ).catch(applicationStore.alertUnhandledError);
-  }, [applicationStore, editorStore]);
-
   return (
     <>
       {currentReview && (
         <button
-          className="service-query-editor__review"
+          className="service-query-editor__header__action service-query-editor__review"
           title={`${currentReview.title}\n\nClick to see review`}
           onClick={visitReview}
         >
