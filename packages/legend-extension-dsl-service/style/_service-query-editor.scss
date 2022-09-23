@@ -92,26 +92,11 @@
       @include flexCenter;
 
       height: 3.2rem;
+      width: 3.2rem;
       border-radius: 0.2rem;
 
-      &--simple {
-        width: 3.2rem;
-
-        svg {
-          color: var(--color-light-grey-100);
-        }
-      }
-
-      &__icon {
-        @include flexCenter;
-
-        height: 3.2rem;
-        width: 3.2rem;
-        border-right: 0.1rem solid var(--color-dark-shade-230);
-      }
-
-      &__label {
-        padding: 0 1rem;
+      svg {
+        color: var(--color-light-grey-100);
       }
     }
 

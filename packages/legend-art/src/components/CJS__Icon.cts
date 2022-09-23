@@ -148,6 +148,7 @@ export {
   GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
+  MdManageSearch as ManageSearchIcon, // to be reviewed
   MdModeEdit as PencilIcon,
   MdTextFields as StringTypeIcon,
   MdMoreVert as MoreVerticalIcon,

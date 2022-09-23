@@ -30,6 +30,7 @@ import {
   TimesIcon,
   CheckSquareIcon,
   SquareIcon,
+  ManageSearchIcon,
 } from '@finos/legend-art';
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -430,7 +431,7 @@ const QueryEditorHeaderContent = observer(
         ),
       );
     };
-    const toggleLightDarkTheme = (): void =>
+    const toggleLightDarkMode = (): void =>
       applicationStore.TEMPORARY__setIsLightThemeEnabled(
         !applicationStore.TEMPORARY__isLightThemeEnabled,
       );
@@ -459,13 +460,18 @@ const QueryEditorHeaderContent = observer(
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
             onClick={openQueryLoader}
+            title="Load query"
           >
-            <div className="query-editor__header__action__label">
-              Load Query
-            </div>
+            <ManageSearchIcon className="query-editor__header__action__icon--loader" />
+            {editorStore.queryLoaderState.isQueryLoaderOpen && (
+              <QueryLoader
+                editorStore={editorStore}
+                applicationStore={applicationStore}
+              />
+            )}
           </button>
           <button
-            className="query-editor__header__action query-editor__header__action--simple btn--dark"
+            className="query-editor__header__action btn--dark"
             tabIndex={-1}
             title="View project"
             onClick={viewQueryProject}
@@ -474,10 +480,10 @@ const QueryEditorHeaderContent = observer(
           </button>
           {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
             <button
-              className="query-editor__header__action query-editor__header__action--simple btn--dark"
+              className="query-editor__header__action btn--dark"
               tabIndex={-1}
-              title="Toggle Light/Dark Theme"
-              onClick={toggleLightDarkTheme}
+              title="Toggle light/dark mode"
+              onClick={toggleLightDarkMode}
             >
               {applicationStore.TEMPORARY__isLightThemeEnabled ? (
                 <EmptyLightBulbIcon />
@@ -486,22 +492,14 @@ const QueryEditorHeaderContent = observer(
               )}
             </button>
           )}
-          {editorStore.queryLoaderState.isQueryLoaderOpen && (
-            <QueryLoader
-              editorStore={editorStore}
-              applicationStore={applicationStore}
-            />
-          )}
           <button
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
             onClick={saveQuery}
+            title="Save query"
           >
-            <div className="query-editor__header__action__icon">
-              <SaveIcon />
-              <QueryExport />
-            </div>
-            <div className="query-editor__header__action__label">Save</div>
+            <SaveIcon />
+            {editorStore.exportState && <QueryExport />}
           </button>
         </div>
       </div>

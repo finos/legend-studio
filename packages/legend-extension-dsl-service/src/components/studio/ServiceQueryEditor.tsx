@@ -458,25 +458,21 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
-          title="Create a new service"
+          title="Save as a new service"
           onClick={showNewServiceModal}
         >
           <PlusIcon />
           {editorStore.showNewServiceModal && <NewServiceModal />}
         </button>
         <button
-          className="service-query-editor__header__action btn--dark"
+          className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
           // TODO: we should disable this when we have change detection for query builder
           // See https://github.com/finos/legend-studio/pull/1456
           onClick={saveWorkspace}
+          title="Save workspace"
         >
-          <div className="service-query-editor__header__action__icon">
-            <SaveIcon />
-          </div>
-          <div className="service-query-editor__header__action__label">
-            Save
-          </div>
+          <SaveIcon />
         </button>
       </div>
     </div>
