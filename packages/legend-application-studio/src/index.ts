@@ -42,7 +42,7 @@ export {
   TypeDragSource,
   type UMLEditorElementDropTarget,
   type TransformDropTarget,
-} from './stores/shared/DnDUtil.js';
+} from './stores/shared/DnDUtils.js';
 export { ExplorerTreeRootPackageLabel } from './stores/ExplorerTreeState.js';
 export * from './stores/graphModifier/GraphModifierHelper.js';
 export * from './stores/graphModifier/DomainGraphModifierHelper.js';
@@ -54,6 +54,10 @@ export * from './stores/graphModifier/DSLService_GraphModifierHelper.js';
 
 // components
 export * from './components/editor/EditorStoreProvider.js';
+export * from './stores/LegendStudioRouter.js';
+export { ActivityBarMenu } from './components/editor/ActivityBar.js';
+export * from './components/shared/ProjectSelectorUtils.js';
+export * from './components/shared/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
 export { TypeTree } from './components/shared/TypeTree.js';
 export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor.js';
@@ -80,12 +84,6 @@ export { MappingElementState } from './stores/editor-state/element-editor-state/
 export { UnsupportedInstanceSetImplementationState } from './stores/editor-state/element-editor-state/mapping/UnsupportedInstanceSetImplementationState.js';
 export { getElementIcon } from './components/shared/ElementIconUtils.js';
 
-export { ProjectSelector } from './components/workspace-setup/ProjectSelector.js';
-
-// TO BE REMOVED: these setup are currently needed for project dependency dashboard, until we open source, we can remove them
-export * from './components/workspace-setup/WorkspaceSetupStoreProvider.js';
-export { WorkspaceSetupStore } from './stores/workspace-setup/WorkspaceSetupStore.js';
-
 // --------------------------------------------- DSL --------------------------------------------------
 /**
  * @modularize
@@ -97,13 +95,15 @@ export {
   ConnectionEditor_BooleanEditor,
   ConnectionEditor_ArrayEditor,
 } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
-export * from './stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+export * from './stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 
 export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 
+export { MINIMUM_SERVICE_OWNERS } from './stores/editor-state/element-editor-state/service/ServiceEditorState.js';
+export { generateServiceManagementUrl } from './stores/editor-state/element-editor-state/service/ServiceRegistrationState.js';
 export { ServicePureExecutionState } from './stores/editor-state/element-editor-state/service/ServiceExecutionState.js';
 export { NewServiceModal } from './components/editor/edit-panel/service-editor/NewServiceModal.js';
-export { GenerationFile } from './stores/shared/FileGenerationTreeUtil.js';
+export { GenerationFile } from './stores/shared/FileGenerationTreeUtils.js';
 export { FileGenerationState } from './stores/editor-state/FileGenerationState.js';
 export { DSLExternalFormat_LegendStudioApplicationPlugin } from './components/DSLExternalFormat_LegendStudioApplicationPlugin.js';
 export {

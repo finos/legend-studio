@@ -24,7 +24,7 @@ import {
   CORE_DND_TYPE,
   type UMLEditorElementDropTarget,
   type ElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import {
   clsx,
@@ -87,7 +87,7 @@ import {
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   useApplicationNavigationContext,

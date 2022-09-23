@@ -1,0 +1,114 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.service-query-setup {
+  height: 100%;
+  position: relative;
+  background: var(--color-dark-grey-50);
+
+  &__body {
+    height: calc(100% - 2.2rem);
+    width: 100%;
+  }
+
+  &__title {
+    margin-bottom: 1.8rem;
+  }
+
+  &__title__header {
+    font-size: 3.6rem;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    color: var(--color-light-grey-200);
+    margin-bottom: 1.8rem;
+  }
+
+  &__content {
+    height: 100%;
+    width: calc(100% - 5rem);
+  }
+
+  &__content__main {
+    @include absCenter;
+
+    height: 60vh;
+    width: 60vw;
+  }
+
+  &__actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__next-btn {
+    padding: 1rem;
+  }
+
+  &__selector {
+    display: flex;
+    margin-bottom: 0.5rem;
+
+    &__icon {
+      @include flexCenter;
+
+      height: 2.8rem;
+      width: 2.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    &__icon--project,
+    &__icon--workspace {
+      font-size: 1.8rem;
+    }
+
+    &__input {
+      flex: 1 0 auto;
+    }
+
+    &__action {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 2.8rem;
+      width: 2.8rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  &__workspace-selector__option__name--invalid {
+    text-decoration: line-through 0.1rem;
+    color: var(--color-red-100);
+    cursor: help;
+
+    svg {
+      margin-left: 0.5rem;
+    }
+  }
+
+  &__workspace-selector__option__loading-indicator {
+    animation: spin 1s infinite ease;
+    color: var(--color-blue-100);
+    margin-left: 0.5rem;
+  }
+}

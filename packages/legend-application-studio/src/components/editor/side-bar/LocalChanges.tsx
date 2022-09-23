@@ -204,6 +204,7 @@ export const LocalChanges = observer(() => {
       applicationStore.alertUnhandledError,
     );
   }, [applicationStore, localChangesState]);
+
   return (
     <div className="panel local-changes">
       <div className="panel__header side-bar__header">

@@ -131,13 +131,13 @@ const VariableExpressionEditor = observer(
       if (
         value === MULTIPLICITY_INFINITE ||
         value === '' ||
-        !isNaN(parseInt(value))
+        !isNaN(parseInt(value, 10))
       ) {
         lambdaParameterState.changeMultiplicity(
           multiplity.lowerBound,
           value === MULTIPLICITY_INFINITE || value === ''
             ? undefined
-            : parseInt(value),
+            : parseInt(value, 10),
         );
         setUppBound(value);
       }

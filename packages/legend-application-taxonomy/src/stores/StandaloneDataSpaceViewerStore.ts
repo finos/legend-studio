@@ -22,10 +22,9 @@ import {
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  parseGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
 import {
@@ -38,8 +37,8 @@ import { makeObservable, flow, observable, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
-  generateDataSpaceQueryEditorUrl,
-  generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   type LegendTaxonomyStandaloneDataSpaceViewerPathParams,
 } from './LegendTaxonomyRouter.js';
 
@@ -55,7 +54,6 @@ export class StandaloneDataSpaceViewerStore {
   constructor(
     applicationStore: LegendTaxonomyApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       viewerState: observable,
@@ -64,10 +62,10 @@ export class StandaloneDataSpaceViewerStore {
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
   }
 
   *initialize(
@@ -138,7 +136,7 @@ export class StandaloneDataSpaceViewerStore {
             entityPath: string | undefined,
           ): void =>
             this.applicationStore.navigator.openNewWindow(
-              generateStudioProjectViewUrl(
+              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.applicationStore.config.studioUrl,
                 _groupId,
                 _artifactId,
@@ -163,7 +161,7 @@ export class StandaloneDataSpaceViewerStore {
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
       this.applicationStore.navigator.openNewWindow(
-        generateDataSpaceQueryEditorUrl(
+        EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,
           this.viewerState.artifactId,

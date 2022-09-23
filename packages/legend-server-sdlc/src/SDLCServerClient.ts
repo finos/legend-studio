@@ -234,6 +234,8 @@ export class SDLCServerClient extends AbstractServerClient {
     ]).then((workspaces) => workspaces.flat()) as Promise<
       PlainObject<Workspace>[]
     >;
+  getGroupWorkspaces = (projectId: string): Promise<PlainObject<Workspace>[]> =>
+    this.get(this._groupWorkspaces(projectId));
   getWorkspace = (
     projectId: string,
     workspaceId: string,
@@ -698,6 +700,11 @@ export class SDLCServerClient extends AbstractServerClient {
       `${this._adaptiveWorkspace(projectId, workspace)}/entityChanges`,
       command,
     );
+  getWorkspaceEntity = (
+    workspace: Workspace,
+    entityPath: string,
+  ): Promise<PlainObject<Entity>> =>
+    this.get(`${this._entities(workspace.projectId, workspace)}/${entityPath}`);
 
   // ------------------------------------------- Review -------------------------------------------
 

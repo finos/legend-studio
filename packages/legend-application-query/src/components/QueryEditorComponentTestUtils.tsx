@@ -57,11 +57,7 @@ import {
 export const TEST__LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <LegendQueryBaseStoreProvider
-    pluginManager={LegendQueryPluginManager.create()}
-  >
-    {children}
-  </LegendQueryBaseStoreProvider>
+  <LegendQueryBaseStoreProvider>{children}</LegendQueryBaseStoreProvider>
 );
 
 const TEST_QUERY_ID = 'test-query-id';
@@ -84,7 +80,6 @@ export const TEST__provideMockedQueryEditorStore = (customization?: {
           pluginManager,
         ),
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
-      pluginManager,
       TEST_QUERY_ID,
     );
   const MOCK__QueryEditorStoreProvider = require('./QueryEditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment

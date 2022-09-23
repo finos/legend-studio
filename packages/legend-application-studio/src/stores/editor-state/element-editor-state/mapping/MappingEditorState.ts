@@ -34,7 +34,7 @@ import {
   MappingTestState,
   TEST_RESULT,
 } from './MappingTestState.js';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -118,7 +118,7 @@ import {
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
 } from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelUtil.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
 import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {

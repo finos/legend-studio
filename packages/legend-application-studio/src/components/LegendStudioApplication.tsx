@@ -210,7 +210,7 @@ export const LegendStudioApplication = observer(
             pluginManager={pluginManager}
             log={applicationStore.log}
           >
-            <LegendStudioBaseStoreProvider pluginManager={pluginManager}>
+            <LegendStudioBaseStoreProvider>
               <LegendApplicationComponentFrameworkProvider>
                 <LegendStudioApplicationRoot />
               </LegendApplicationComponentFrameworkProvider>

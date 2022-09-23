@@ -16,8 +16,7 @@
 
 import { list, createModelSchema, primitive } from 'serializr';
 import { SerializationFactory } from '@finos/legend-shared';
-import { action, makeObservable, observable } from 'mobx';
-import { generateGAVCoordinates } from '../DepotUtils.js';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export class ProjectData {
   id!: string;
@@ -29,19 +28,8 @@ export class ProjectData {
   // TODO?: properties
   latestVersion!: string;
 
-  constructor() {
-    makeObservable(this, {
-      versions: observable,
-      setVersions: action,
-    });
-  }
-
   get coordinates(): string {
     return generateGAVCoordinates(this.groupId, this.artifactId, undefined);
-  }
-
-  setVersions(val: string[]): void {
-    this.versions = val;
   }
 
   static readonly serialization = new SerializationFactory(

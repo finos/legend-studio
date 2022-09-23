@@ -27,7 +27,7 @@
   @include flexCenter;
 
   flex-direction: column;
-  height: 30rem;
+  height: 35rem;
   width: 32rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
@@ -110,155 +110,8 @@
     font-weight: 500;
   }
 
-  &__icon {
-    &--edit {
-      font-size: 1.6rem;
-    }
-  }
-}
-
-.query-setup__create-query {
-  height: 38.2rem;
-
-  &__header {
-    background: var(--color-lime-75);
-  }
-
-  &__project {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: 16.9rem;
-    padding: 2.5rem 0 1rem;
-  }
-
-  &__graph {
-    display: flex;
-    flex-direction: column;
-    height: 13.4rem;
-    width: 50rem;
-
-    &__loader {
-      height: 13.4rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-top: 2rem;
-    }
-  }
-}
-
-.query-setup__service-query {
-  height: 32.2rem;
-
-  &__header {
-    background: var(--color-blue-50);
-  }
-
-  &__project {
-    @include flexCenter;
-
-    flex-direction: column;
-    height: 16.9rem;
-    padding: 2.5rem 0 1rem;
-  }
-
-  &__graph {
-    display: flex;
-    flex-direction: column;
-    height: 8.4rem;
-    width: 50rem;
-
-    &__loader {
-      height: 13.4rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      margin-top: 2rem;
-    }
-  }
-}
-
-.query-setup__existing-query {
-  &__header {
-    background: var(--color-magenta-50);
-  }
-
-  .query-setup__wizard__content {
-    padding: 2rem 3rem 3rem;
-  }
-
-  .query-setup__wizard__selector {
-    width: 46.7rem;
-  }
-
-  &__input {
-    @include flexVCenter;
-
-    width: 50rem;
-  }
-
-  &__query-option {
-    @include flexVCenter;
-
-    &__label {
-      width: calc(100% - 5rem);
-    }
-
-    &__action {
-      @include flexCenter;
-
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
-
-      &:hover {
-        background: var(--color-magenta-50);
-        color: var(--color-dark-shade-800);
-      }
-    }
-
-    &__user {
-      @include flexCenter;
-
-      width: 5rem;
-      height: 1.8rem;
-      border-radius: 0.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background: var(--color-dark-grey-250);
-      color: var(--color-dark-grey-500);
-
-      &--mine {
-        background: var(--color-magenta-50);
-        color: var(--color-dark-shade-800);
-      }
-    }
-  }
-
-  &__btn {
-    @include flexCenter;
-    @include flexConstantDimension;
-
-    width: 2.8rem;
-    height: 2.8rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-250);
-    margin-left: 0.5rem;
-    border-radius: 0.2rem;
-
-    svg {
-      color: var(--color-dark-grey-500);
-    }
-
-    &--active {
-      background: var(--color-magenta-50);
-      border: none;
-
-      svg {
-        color: var(--color-dark-shade-300);
-      }
-    }
+  &__icon--search {
+    font-size: 2rem;
   }
 }
 
@@ -369,5 +222,178 @@
 
   to {
     transform: translateX(-0.1rem);
+  }
+}
+
+.query-setup__create-query {
+  height: 38.2rem;
+
+  &__header {
+    background: var(--color-lime-75);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 13.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+}
+
+.query-setup__service-query {
+  height: 32.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__project {
+    @include flexCenter;
+
+    flex-direction: column;
+    height: 16.9rem;
+    padding: 2.5rem 0 1rem;
+  }
+
+  &__graph {
+    display: flex;
+    flex-direction: column;
+    height: 8.4rem;
+    width: 50rem;
+
+    &__loader {
+      height: 13.4rem;
+      border: 0.1rem solid var(--color-dark-grey-200);
+      margin-top: 2rem;
+    }
+  }
+
+  .query-setup__wizard__group {
+    width: 100%;
+  }
+}
+
+.query-setup__existing-service-query {
+  width: calc(100% - 10rem);
+  height: 10.2rem;
+
+  &__header {
+    background: var(--color-blue-50);
+  }
+
+  &__search-bar {
+    height: 2.8rem;
+    width: 100%;
+  }
+
+  .query-setup__wizard__selector {
+    width: 100%;
+  }
+
+  .query-setup__wizard__content {
+    @include flexVCenter;
+
+    padding: 2rem;
+  }
+}
+
+.query-setup__existing-query {
+  &__header {
+    background: var(--color-magenta-50);
+  }
+
+  .query-setup__wizard__content {
+    padding: 3rem;
+  }
+
+  .query-setup__wizard__selector {
+    width: 46.7rem;
+  }
+
+  &__input {
+    @include flexVCenter;
+
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      width: calc(100% - 5rem);
+    }
+
+    &__action {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &:hover {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+
+    &__user {
+      @include flexCenter;
+
+      width: 5rem;
+      height: 1.8rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-250);
+      color: var(--color-dark-grey-500);
+
+      &--mine {
+        background: var(--color-magenta-50);
+        color: var(--color-dark-shade-800);
+      }
+    }
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
   }
 }

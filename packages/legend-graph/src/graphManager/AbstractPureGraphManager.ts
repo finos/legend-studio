@@ -94,6 +94,11 @@ export interface ExecutionOptions {
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
 }
 
+export interface ServiceRegistrationOptions {
+  TEMPORARY__useStoreModel?: boolean | undefined;
+  TEMPORARY__semiInteractiveOverridePattern?: string | undefined;
+}
+
 export abstract class AbstractPureGraphManagerExtension {
   graphManager: AbstractPureGraphManager;
 
@@ -381,7 +386,7 @@ export abstract class AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    TEMPORARY__useStoreModel: boolean,
+    options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult>;
   abstract activateService(
     serviceUrl: string,

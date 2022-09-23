@@ -37,8 +37,8 @@ import {
   computed,
 } from 'mobx';
 import {
-  generateDataSpaceQueryEditorUrl,
-  generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
 } from './LegendTaxonomyRouter.js';
 import type {
   DataSpaceTaxonomyContext,
@@ -161,7 +161,7 @@ export class TaxonomyNodeViewerState {
             entityPath: string | undefined,
           ): void => {
             this.explorerStore.applicationStore.navigator.openNewWindow(
-              generateStudioProjectViewUrl(
+              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.explorerStore.applicationStore.config.studioUrl,
                 _groupId,
                 _artifactId,
@@ -188,7 +188,7 @@ export class TaxonomyNodeViewerState {
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
       this.explorerStore.applicationStore.navigator.openNewWindow(
-        generateDataSpaceQueryEditorUrl(
+        EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,

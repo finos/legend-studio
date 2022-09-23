@@ -79,10 +79,7 @@ export class LegendQuery extends LegendApplication {
             config={this.config}
             pluginManager={this.pluginManager}
           >
-            <LegendQueryApplication
-              config={this.config}
-              pluginManager={this.pluginManager}
-            />
+            <LegendQueryApplication config={this.config} />
           </ApplicationStoreProvider>
         </WebApplicationNavigatorProvider>
       </BrowserRouter>,

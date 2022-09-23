@@ -17,7 +17,7 @@
 import type { EditorStore } from '../EditorStore.js';
 import { EditorState } from './EditorState.js';
 import { observable, makeObservable, computed } from 'mobx';
-import type { GenerationFile } from '../shared/FileGenerationTreeUtil.js';
+import type { GenerationFile } from '../shared/FileGenerationTreeUtils.js';
 import { EDITOR_LANGUAGE, TAB_SIZE } from '@finos/legend-application';
 import { returnUndefOnError } from '@finos/legend-shared';
 

@@ -55,7 +55,7 @@ import {
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,
-} from '../../../../shared/MockDataUtil.js';
+} from '../../../../shared/MockDataUtils.js';
 import {
   createRelationalDataFromCSV,
   EmbeddedDataConnectionTypeVisitor,

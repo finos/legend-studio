@@ -21,7 +21,6 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
-import type { LegendQueryApplicationPlugin } from '../stores/LegendQueryApplicationPlugin.js';
 import {
   type ApplicationStore,
   useApplicationStore,
@@ -29,12 +28,9 @@ import {
 
 export const useLegendQueryApplicationStore = (): ApplicationStore<
   LegendQueryApplicationConfig,
-  LegendQueryApplicationPlugin
+  LegendQueryPluginManager
 > =>
-  useApplicationStore<
-    LegendQueryApplicationConfig,
-    LegendQueryApplicationPlugin
-  >();
+  useApplicationStore<LegendQueryApplicationConfig, LegendQueryPluginManager>();
 
 const LegendQueryBaseStoreContext = createContext<
   LegendQueryBaseStore | undefined
@@ -42,17 +38,11 @@ const LegendQueryBaseStoreContext = createContext<
 
 export const LegendQueryBaseStoreProvider: React.FC<{
   children: React.ReactNode;
-  pluginManager: LegendQueryPluginManager;
-}> = ({ children, pluginManager }) => {
+}> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
   const store = useLocalObservable(
-    () =>
-      new LegendQueryBaseStore(
-        applicationStore,
-        depotServerClient,
-        pluginManager,
-      ),
+    () => new LegendQueryBaseStore(applicationStore, depotServerClient),
   );
   return (
     <LegendQueryBaseStoreContext.Provider value={store}>

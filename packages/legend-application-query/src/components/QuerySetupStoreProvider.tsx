@@ -19,10 +19,7 @@ import { useLocalObservable } from 'mobx-react-lite';
 import { QuerySetupStore } from '../stores/QuerySetupStore.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import {
-  useLegendQueryApplicationStore,
-  useLegendQueryBaseStore,
-} from './LegendQueryBaseStoreProvider.js';
+import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 
 const QuerySetupStoreContext = createContext<QuerySetupStore | undefined>(
   undefined,
@@ -33,14 +30,8 @@ export const QuerySetupStoreProvider: React.FC<{
 }> = ({ children }) => {
   const applicationStore = useLegendQueryApplicationStore();
   const depotServerClient = useDepotServerClient();
-  const baseStore = useLegendQueryBaseStore();
   const store = useLocalObservable(
-    () =>
-      new QuerySetupStore(
-        applicationStore,
-        depotServerClient,
-        baseStore.pluginManager,
-      ),
+    () => new QuerySetupStore(applicationStore, depotServerClient),
   );
   return (
     <QuerySetupStoreContext.Provider value={store}>

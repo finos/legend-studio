@@ -40,13 +40,13 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
   type ProjectVersionDependencies,
-  generateGAVCoordinates,
   MASTER_SNAPSHOT_ALIAS,
   ProjectData,
   ProjectDependencyInfo,
   ProjectDependencyCoordinates,
 } from '@finos/legend-server-depot';
 import { TAB_SIZE } from '@finos/legend-application';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',

@@ -25,7 +25,9 @@ import {
   PureSingleExecution,
 } from '@finos/legend-graph';
 import {
+  assertTrue,
   getNullableFirstElement,
+  guaranteeNonNullable,
   IllegalStateError,
 } from '@finos/legend-shared';
 import { action, makeObservable, observable } from 'mobx';
@@ -81,17 +83,30 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
         }),
       );
 
-      const matchingExecutionContext = this.executionContexts.find(
-        (ec) => ec.key === executionContextKey,
-      );
-      if (!matchingExecutionContext) {
-        throw new IllegalStateError(
-          `Can't initialize state: multi-execution service's execution context with key '${executionContextKey}' not found`,
+      let selectedExecutionContext: ServiceExecutionContext;
+      if (executionContextKey) {
+        const matchingExecutionContext = this.executionContexts.find(
+          (ec) => ec.key === executionContextKey,
+        );
+        if (!matchingExecutionContext) {
+          throw new IllegalStateError(
+            `Can't initialize service query builder state: multi-execution service's execution context with key '${executionContextKey}' not found`,
+          );
+        }
+        selectedExecutionContext = matchingExecutionContext;
+      } else {
+        assertTrue(
+          this.executionContexts.length > 0,
+          `Can't initialize service query builder state: multi-execution service has no execution context`,
+        );
+        selectedExecutionContext = guaranteeNonNullable(
+          this.executionContexts[0],
         );
       }
-      this.setSelectedExecutionContext(matchingExecutionContext);
-      this.mapping = matchingExecutionContext.mapping;
-      this.runtimeValue = matchingExecutionContext.runtimeValue;
+
+      this.setSelectedExecutionContext(selectedExecutionContext);
+      this.mapping = selectedExecutionContext.mapping;
+      this.runtimeValue = selectedExecutionContext.runtimeValue;
     }
   }
 

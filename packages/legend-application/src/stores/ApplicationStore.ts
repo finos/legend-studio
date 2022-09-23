@@ -25,7 +25,7 @@ import {
   isString,
   ApplicationError,
 } from '@finos/legend-shared';
-import { makeAutoObservable, action } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from './ApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
 import type { WebApplicationNavigator } from './WebApplicationNavigator.js';
@@ -105,15 +105,15 @@ export class Notification {
 
 export type GenericLegendApplicationStore = ApplicationStore<
   LegendApplicationConfig,
-  LegendApplicationPlugin
+  LegendApplicationPluginManager<LegendApplicationPlugin>
 >;
 
 export class ApplicationStore<
   T extends LegendApplicationConfig,
-  V extends LegendApplicationPlugin,
+  V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
 > {
-  pluginManager: LegendApplicationPluginManager<V>;
   config: T;
+  pluginManager: V;
 
   // navigation
   navigator: WebApplicationNavigator;
@@ -144,13 +144,12 @@ export class ApplicationStore<
    */
   TEMPORARY__isLightThemeEnabled = false;
 
-  constructor(
-    config: T,
-    navigator: WebApplicationNavigator,
-    pluginManager: LegendApplicationPluginManager<V>,
-  ) {
-    makeAutoObservable(this, {
-      navigator: false,
+  constructor(config: T, navigator: WebApplicationNavigator, pluginManager: V) {
+    makeObservable(this, {
+      notification: observable,
+      blockingAlertInfo: observable,
+      actionAlertInfo: observable,
+      TEMPORARY__isLightThemeEnabled: observable,
       setBlockingAlert: action,
       setActionAlertInfo: action,
       setNotification: action,

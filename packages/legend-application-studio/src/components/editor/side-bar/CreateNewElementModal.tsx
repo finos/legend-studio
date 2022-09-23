@@ -48,7 +48,7 @@ import {
 } from '@finos/legend-application';
 import type { EmbeddedDataTypeOption } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
 import { EmbeddedDataType } from '../../../stores/editor-state/ExternalFormatState.js';
 
 export const getElementTypeLabel = (
@@ -206,7 +206,10 @@ const NewPureModelConnectionDriverEditor = observer(
       { label: 'ModelStore', value: undefined },
     ];
     storeOptions = storeOptions.concat(
-      editorStore.storeOptions.slice().sort(compareLabelFn),
+      editorStore.graphManagerState.usableStores
+        .map(buildElementOption)
+        .slice()
+        .sort(compareLabelFn),
     );
     const selectedStoreOption = {
       label: store?.path ?? 'ModelStore',

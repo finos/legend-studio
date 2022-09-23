@@ -60,11 +60,13 @@ import {
   SNAPSHOT_VERSION_ALIAS,
   MASTER_SNAPSHOT_ALIAS,
   type ProjectData,
-  compareSemVerVersions,
-  generateGAVCoordinates,
   type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import { generateViewProjectRoute } from '../../../../stores/LegendStudioRouter.js';
+import {
+  compareSemVerVersions,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 
 interface VersionOption {
   label: string;

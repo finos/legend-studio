@@ -26,8 +26,8 @@ import {
 import {
   CORE_DND_TYPE,
   FlatDataColumnDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
-import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
+import type { FlatDataRecordTypeTreeNodeData } from '../../../../stores/shared/TreeUtils.js';
 import { addUniqueEntry } from '@finos/legend-shared';
 import {
   DEFAULT_SOURCE_PARAMETER_NAME,

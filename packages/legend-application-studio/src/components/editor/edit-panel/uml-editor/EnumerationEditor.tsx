@@ -25,7 +25,7 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type UMLEditorElementDropTarget,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,

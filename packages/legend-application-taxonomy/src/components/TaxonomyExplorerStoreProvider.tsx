@@ -40,7 +40,6 @@ const TaxonomyExplorerStoreProvider: React.FC<{
         applicationStore,
         baseStore.taxonomyServerClient,
         depotServerClient,
-        baseStore.pluginManager,
       ),
   );
   return (

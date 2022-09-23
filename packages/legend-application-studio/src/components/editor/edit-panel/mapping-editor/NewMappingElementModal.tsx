@@ -43,7 +43,7 @@ import {
   Enumeration,
   Association,
 } from '@finos/legend-graph';
-import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelUtil.js';
+import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
@@ -263,11 +263,7 @@ export const NewMappingElementModal = observer(() => {
             />
           )}
           <div className="search-modal__actions">
-            <button
-              className="btn btn--primary"
-              disabled={disableCreateButton}
-              color="primary"
-            >
+            <button className="btn btn--primary" disabled={disableCreateButton}>
               Create
             </button>
           </div>

@@ -214,7 +214,7 @@ export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry.js';
 export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';
 export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension.js';
-export * from './graphManager/DSLGenerationSpecification_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/DSLGeneration_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
   TdsExecutionResult,
@@ -326,20 +326,21 @@ export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelpe
 export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
-export * from './graphManager/action/changeDetection/DSLGenerationSpecification_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSLGeneration_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
+
+export * from './DSLMapping_Exports.js';
+export * from './DSLGeneration_Exports.js';
+export * from './DSLData_Exports.js';
+
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-
-export * from './DSLMapping_Exports.js';
 export * from './DSLService_Exports.js';
-export * from './DSLGenerationSpecification_Exports.js';
 export * from './StoreFlatData_Exports.js';
 export * from './StoreRelational_Exports.js';
-export * from './DSLData_Exports.js';

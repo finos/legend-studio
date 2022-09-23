@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { ClassEditorState } from './editor-state/element-editor-state/ClassEditorState.js';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
 import {
@@ -74,7 +81,7 @@ import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GenerationSpecificationEditorState } from './editor-state/GenerationSpecificationEditorState.js';
 import { UnsupportedElementEditorState } from './editor-state/UnsupportedElementEditorState.js';
 import { FileGenerationViewerState } from './editor-state/FileGenerationViewerState.js';
-import type { GenerationFile } from './shared/FileGenerationTreeUtil.js';
+import type { GenerationFile } from './shared/FileGenerationTreeUtils.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
@@ -95,7 +102,6 @@ import {
 } from '@finos/legend-server-sdlc';
 import {
   type PackageableElement,
-  type Store,
   type GraphManagerState,
   GRAPH_MANAGER_EVENT,
   PrimitiveType,
@@ -126,8 +132,6 @@ import {
   ActionAlertType,
   APPLICATION_EVENT,
   TAB_SIZE,
-  buildElementOption,
-  type PackageableElementOption,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
 import type { EditorMode } from './editor/EditorMode.js';
@@ -139,7 +143,7 @@ import {
   graph_deleteOwnElement,
   graph_renameElement,
 } from './graphModifier/GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
@@ -196,6 +200,7 @@ export class EditorStore {
   conflictResolutionState: WorkspaceUpdateConflictResolutionState;
   devToolState: DevToolState;
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
+  newElementState: NewElementState;
 
   private _isDisposed = false;
   initState = ActionState.create();
@@ -218,13 +223,12 @@ export class EditorStore {
 
   // Hot keys
   blockGlobalHotkeys = false;
-  defaultHotkeys: HotkeyConfiguration[] = [];
+  readonly defaultHotkeys: HotkeyConfiguration[] = [];
   hotkeys: HotkeyConfiguration[] = [];
 
   // Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
-  newElementState: NewElementState;
   /**
    * Since we want to share element generation state across all element in the editor, we will create 1 element generate state
    * per file generation configuration type.
@@ -240,9 +244,32 @@ export class EditorStore {
     sdlcServerClient: SDLCServerClient,
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
-    pluginManager: LegendStudioPluginManager,
   ) {
-    makeAutoObservable(this, {
+    makeObservable<
+      EditorStore,
+      '_isDisposed' | 'initStandardMode' | 'initConflictResolutionMode'
+    >(this, {
+      editorMode: observable,
+      mode: observable,
+      _isDisposed: observable,
+      graphEditMode: observable,
+      activeAuxPanelMode: observable,
+      activeActivity: observable,
+      blockGlobalHotkeys: observable,
+      hotkeys: observable,
+      currentEditorState: observable,
+      openedEditorStates: observable,
+      backdrop: observable,
+      ignoreNavigationBlocking: observable,
+      isDevToolEnabled: observable,
+
+      isInViewerMode: computed,
+      isInConflictResolutionMode: computed,
+      isInitialized: computed,
+      isInGrammarTextMode: computed,
+      isInFormMode: computed,
+      hasUnpushedChanges: computed,
+
       applicationStore: false,
       sdlcServerClient: false,
       depotServerClient: false,
@@ -277,12 +304,22 @@ export class EditorStore {
       reprocessElementEditorState: action,
       openGeneratedFile: action,
       closeAllEditorTabs: action,
+
+      initialize: flow,
+      initMode: flow,
+      initStandardMode: flow,
+      initConflictResolutionMode: flow,
+      buildGraph: flow,
+      addElement: flow,
+      deleteElement: flow,
+      renameElement: flow,
+      toggleTextMode: flow,
     });
 
     this.applicationStore = applicationStore;
     this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     this.editorMode = new StandardEditorMode(this);
 
@@ -838,6 +875,8 @@ export class EditorStore {
         return;
       }
 
+      this.initState.setMessage(`Starting change detection engine...`);
+
       // build explorer tree
       this.explorerTreeState.buildImmutableModelTrees();
       this.explorerTreeState.build();
@@ -875,6 +914,8 @@ export class EditorStore {
       );
       // since errors have been handled accordingly, we don't need to do anything here
       return;
+    } finally {
+      this.initState.setMessage(undefined);
     }
   }
 
@@ -1343,14 +1384,6 @@ export class EditorStore {
         'Editor only support form mode and text mode at the moment',
       );
     }
-  }
-
-  get storeOptions(): PackageableElementOption<Store>[] {
-    return this.graphManagerState.usableStores.map(buildElementOption);
-  }
-
-  get dataOptions(): PackageableElementOption<DataElement>[] {
-    return this.graphManagerState.usableDataElements.map(buildElementOption);
   }
 
   getSupportedElementTypes(): string[] {

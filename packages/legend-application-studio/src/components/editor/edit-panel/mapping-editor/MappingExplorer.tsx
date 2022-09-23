@@ -21,7 +21,7 @@ import {
   type ElementDragSource,
   CORE_DND_TYPE,
   MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import {
   type TreeNodeContainerProps,
   clsx,

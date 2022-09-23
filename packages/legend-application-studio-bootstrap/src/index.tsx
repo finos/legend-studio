@@ -51,6 +51,7 @@ import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
 
 export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
@@ -74,6 +75,7 @@ export class LegendStudioWebApplication {
       new DSLText_LegendStudioApplicationPlugin(),
       new DSLDiagram_LegendStudioApplicationPlugin(),
       new DSLDataSpace_LegendStudioApplicationPlugin(),
+      new DSL_Service_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
       new DSLPersistence_LegendStudioApplicationPlugin(),
       new DSLMastery_LegendStudioApplicationPlugin(),

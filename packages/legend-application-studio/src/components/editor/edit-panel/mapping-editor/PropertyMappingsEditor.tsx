@@ -60,7 +60,7 @@ import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
   SET_IMPLEMENTATION_TYPE,
-} from '../../../../stores/shared/ModelUtil.js';
+} from '../../../../stores/shared/ModelClassifierUtils.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getExpectedReturnType = (

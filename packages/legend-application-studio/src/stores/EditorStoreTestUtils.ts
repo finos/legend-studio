@@ -68,6 +68,5 @@ export const TEST__getTestEditorStore = (
     TEST__getTestSDLCServerClient(),
     TEST__getTestDepotServerClient(),
     TEST__getTestGraphManagerState(pluginManager),
-    pluginManager,
   );
 };

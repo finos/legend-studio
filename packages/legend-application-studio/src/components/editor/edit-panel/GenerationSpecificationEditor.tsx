@@ -47,15 +47,15 @@ import {
   CORE_DND_TYPE,
   type ElementDragSource,
   type FileGenerationSourceDropTarget,
-} from '../../../stores/shared/DnDUtil.js';
+} from '../../../stores/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension.js';
+import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElement,
   type PackageableElementReference,
-  type DSLGenerationSpecification_PureGraphManagerPlugin_Extension,
+  type DSLGeneration_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
@@ -233,7 +233,7 @@ const ModelGenerationSpecifications = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGenerationSpecification_PureGraphManagerPlugin_Extension
+            plugin as DSLGeneration_PureGraphManagerPlugin_Extension
           ).getExtraModelGenerationElementGetters?.() ?? [],
       )
       .flatMap((getter) => getter(editorStore.graphManagerState.graph));
@@ -243,7 +243,7 @@ const ModelGenerationSpecifications = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGenerationSpecification_LegendStudioApplicationPlugin_Extension
+              plugin as DSLGeneration_LegendStudioApplicationPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =

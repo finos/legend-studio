@@ -148,6 +148,7 @@ export {
   GiHouseKeys as HouseKeys,
 } from 'react-icons/gi';
 export {
+  MdManageSearch as ManageSearchIcon, // to be reviewed
   MdModeEdit as PencilIcon,
   MdTextFields as StringTypeIcon,
   MdMoreVert as MoreVerticalIcon,
@@ -166,6 +167,7 @@ export {
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,
+  MdReviews as ReviewIcon,
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
@@ -229,6 +231,7 @@ export {
 export {
   RiShapeLine as ShapeLineIcon,
   RiTestTubeFill as TestTubeIcon,
+  RiRobotFill as DroidIcon,
 } from 'react-icons/ri';
 export {
   TbArrowsJoin2 as ArrowsJoinIcon,

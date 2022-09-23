@@ -57,10 +57,9 @@ import {
   generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import type { Entity } from '@finos/legend-storage';
+import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
-  type ProjectGAVCoordinates,
   ProjectData,
 } from '@finos/legend-server-depot';
 import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
@@ -275,7 +274,6 @@ export abstract class QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
   ) {
     makeObservable(this, {
       exportState: observable,
@@ -287,10 +285,10 @@ export abstract class QueryEditorStore {
 
     this.applicationStore = applicationStore;
     this.depotServerClient = depotServerClient;
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
     this.graphManagerState = new GraphManagerState(
-      this.pluginManager,
-      this.applicationStore.log,
+      applicationStore.pluginManager,
+      applicationStore.log,
     );
     this.queryLoaderState = new QueryLoaderState(this);
   }
@@ -467,14 +465,13 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
     versionId: string,
     mappingPath: string,
     runtimePath: string,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient);
 
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -556,14 +553,13 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
     versionId: string,
     servicePath: string,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient);
 
     this.groupId = groupId;
     this.artifactId = artifactId;
@@ -634,10 +630,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
     queryId: string,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient);
 
     makeObservable<ExistingQueryEditorStore, '_query'>(this, {
       _query: observable,

@@ -26,13 +26,9 @@ import {
 import {
   QueryEditorStore,
   type QueryExportConfiguration,
-  type LegendQueryPluginManager,
   type LegendQueryApplicationStore,
 } from '@finos/legend-application-query';
-import type {
-  DepotServerClient,
-  ProjectGAVCoordinates,
-} from '@finos/legend-server-depot';
+import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
   guaranteeNonNullable,
   guaranteeType,
@@ -48,6 +44,7 @@ import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 
 export const createQueryDataSpaceTaggedValue = (
   dataSpacePath: string,
@@ -71,7 +68,6 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendQueryPluginManager,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -80,7 +76,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
     runtimePath: string | undefined,
     executionKey: string | undefined,
   ) {
-    super(applicationStore, depotServerClient, pluginManager);
+    super(applicationStore, depotServerClient);
 
     this.groupId = groupId;
     this.artifactId = artifactId;

@@ -74,6 +74,7 @@ import {
   DataElement,
   stub_RawLambda,
   stub_Database,
+  Measure,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -91,7 +92,7 @@ import {
 } from '../graphModifier/DSLService_GraphModifierHelper.js';
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
 import { dataElement_setEmbeddedData } from '../graphModifier/DSLData_GraphModifierHelper.js';
-import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelUtil.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
 import {
   buildElementOption,
   type PackageableElementOption,
@@ -755,6 +756,9 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
         element = new Enumeration(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
+        element = new Measure(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
         element = new Profile(name);

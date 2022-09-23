@@ -45,10 +45,16 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6060/api',
         },
         depot: {
-          url: 'http://localhost:8075/depot/api',
+          url: 'http://localhost:9090/depot/api',
         },
         studio: {
           url: 'http://localhost:8080/studio',
+          instances: [
+            {
+              sdlcProjectIDPrefix: 'PROD',
+              url: 'http://localhost:8080/studio',
+            },
+          ],
         },
       },
       undefined,

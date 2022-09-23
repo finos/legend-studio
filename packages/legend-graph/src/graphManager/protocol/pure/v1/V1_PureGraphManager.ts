@@ -46,6 +46,7 @@ import {
   type TEMPORARY__EngineSetupConfig,
   type GraphBuilderOptions,
   type ExecutionOptions,
+  type ServiceRegistrationOptions,
 } from '../../../../graphManager/AbstractPureGraphManager.js';
 import type { Mapping } from '../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { Runtime } from '../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -162,7 +163,7 @@ import {
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-import type { DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension } from '../DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension.js';
+import type { DSLGeneration_PureProtocolProcessorPlugin_Extension } from '../DSLGeneration_PureProtocolProcessorPlugin_Extension.js';
 import type { RawRelationalOperationElement } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
@@ -1581,7 +1582,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGenerationSpecification_PureProtocolProcessorPlugin_Extension
+            plugin as DSLGeneration_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraModelGenerators?.() ?? [],
       );
     for (const generator of extraModelGenerators) {
@@ -2105,7 +2106,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     version: string | undefined,
     server: string,
     executionMode: ServiceExecutionMode,
-    TEMPORARY__useStoreModel: boolean,
+    options?: ServiceRegistrationOptions,
   ): Promise<ServiceRegistrationResult> {
     const serverServiceInfo = await this.engine.getServerServiceInfo();
     // input
@@ -2124,10 +2125,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       case ServiceExecutionMode.SEMI_INTERACTIVE: {
         const sdlcInfo = new V1_AlloySDLC(groupId, artifactId, version);
         const pointer = new V1_PureModelContextPointer(protocol, sdlcInfo);
+
         // data
         const data = new V1_PureModelContextData();
         data.origin = new V1_PureModelContextPointer(protocol);
-        data.elements = [this.elementToProtocol<V1_Service>(service)];
+        const serviceProtocol = this.elementToProtocol<V1_Service>(service);
+
+        // override the URL pattern if specified
+        if (options?.TEMPORARY__semiInteractiveOverridePattern) {
+          serviceProtocol.pattern =
+            options.TEMPORARY__semiInteractiveOverridePattern;
+        }
+
+        data.elements = [serviceProtocol];
+
         // SDLC info
         // TODO: We may need to add `runtime` pointers if the runtime defned in the service is a packageable runtime
         // and not embedded.
@@ -2181,7 +2192,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         input,
         server,
         executionMode,
-        TEMPORARY__useStoreModel,
+        Boolean(options?.TEMPORARY__useStoreModel),
       ),
     );
   }

@@ -134,11 +134,7 @@ export const TEST_DATA__DefaultDepotInfo = {
 export const TEST__LegendStudioBaseStoreProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => (
-  <LegendStudioBaseStoreProvider
-    pluginManager={LegendStudioPluginManager.create()}
-  >
-    {children}
-  </LegendStudioBaseStoreProvider>
+  <LegendStudioBaseStoreProvider>{children}</LegendStudioBaseStoreProvider>
 );
 
 export const TEST__provideMockedEditorStore = (customization?: {
@@ -163,7 +159,6 @@ export const TEST__provideMockedEditorStore = (customization?: {
       customization?.depotServerClient ?? TEST__getTestDepotServerClient(),
       customization?.graphManagerState ??
         TEST__getTestGraphManagerState(customization?.pluginManager),
-      pluginManager,
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   MockedEditorStoreProvider.useEditorStore = jest.fn();

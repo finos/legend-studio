@@ -22,7 +22,6 @@ import { useDepotServerClient } from '@finos/legend-server-depot';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import { TaxonomyServerClient } from '../stores/TaxonomyServerClient.js';
-import type { LegendTaxonomyApplicationPlugin } from '../stores/LegendTaxonomyApplicationPlugin.js';
 import {
   type LegendTaxonomyApplicationStore,
   LegendTaxonomyBaseStore,
@@ -32,7 +31,7 @@ export const useLegendTaxonomyApplicationStore =
   (): LegendTaxonomyApplicationStore =>
     useApplicationStore<
       LegendTaxonomyApplicationConfig,
-      LegendTaxonomyApplicationPlugin
+      LegendTaxonomyPluginManager
     >();
 
 const LegendTaxonomyBaseStoreContext = createContext<
@@ -41,8 +40,7 @@ const LegendTaxonomyBaseStoreContext = createContext<
 
 export const LegendTaxonomyBaseStoreProvider: React.FC<{
   children: React.ReactNode;
-  pluginManager: LegendTaxonomyPluginManager;
-}> = ({ children, pluginManager }) => {
+}> = ({ children }) => {
   const applicationStore = useLegendTaxonomyApplicationStore();
   const taxonomyServerClient = new TaxonomyServerClient(
     applicationStore.config.currentTaxonomyTreeOption.url,
@@ -54,7 +52,6 @@ export const LegendTaxonomyBaseStoreProvider: React.FC<{
         applicationStore,
         taxonomyServerClient,
         depotServerClient,
-        pluginManager,
       ),
   );
   return (

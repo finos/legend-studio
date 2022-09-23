@@ -29,7 +29,7 @@ import {
   CORE_DND_TYPE,
   type OperationSetImplementationDropTarget,
   type MappingElementDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { useDrop } from 'react-dnd';
 import { noop } from '@finos/legend-shared';
 import {

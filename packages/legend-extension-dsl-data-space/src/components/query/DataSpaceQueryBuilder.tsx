@@ -43,7 +43,7 @@ import {
   RuntimePointer,
 } from '@finos/legend-graph';
 import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect, useMemo, useState } from 'react';
 import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -275,7 +275,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 inputValue={dataSpaceSearchText}
                 onChange={onDataSpaceOptionChange}
                 value={selectedDataSpaceOption}
-                placeholder="Search for data space by name..."
+                placeholder="Search for data space..."
                 escapeClearsValue={true}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 filterOption={dataSpaceFilterOption}

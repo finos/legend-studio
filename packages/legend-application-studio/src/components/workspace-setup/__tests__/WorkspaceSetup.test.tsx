@@ -38,69 +38,30 @@ beforeEach(() => {
   sdlcServerClient = TEST__provideMockedSDLCServerClient();
 });
 
-test(
-  integrationTest(
-    'Shows project selector properly when there are at least 1 project',
-  ),
-  async () => {
-    jest
-      .spyOn(sdlcServerClient, 'getProjects')
-      .mockReturnValueOnce(
-        Promise.resolve([TEST_DATA__DefaultSDLCInfo.project]),
-      )
-      .mockReturnValueOnce(Promise.resolve([]));
+test(integrationTest('Shows project searcher properly'), async () => {
+  jest
+    .spyOn(sdlcServerClient, 'getProjects')
+    .mockReturnValueOnce(Promise.resolve([TEST_DATA__DefaultSDLCInfo.project]))
+    .mockReturnValueOnce(Promise.resolve([]));
 
-    TEST__provideMockedWebApplicationNavigator();
+  TEST__provideMockedWebApplicationNavigator();
 
-    const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getLegendStudioApplicationConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <WorkspaceSetup />
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
-    );
+  const { queryByText } = render(
+    <MemoryRouter>
+      <TEST__ApplicationStoreProvider
+        config={TEST__getLegendStudioApplicationConfig()}
+        pluginManager={LegendStudioPluginManager.create()}
+      >
+        <TEST__SDLCServerClientProvider>
+          <WorkspaceSetup />
+        </TEST__SDLCServerClientProvider>
+      </TEST__ApplicationStoreProvider>
+    </MemoryRouter>,
+  );
 
-    // NOTE: react-select is not like a normal input box where we could set the placeholder, so we just
-    // cannot use `queryByPlaceholderText` but have to use `queryByText`
-    await waitFor(() =>
-      expect(queryByText('Choose an existing project')).not.toBeNull(),
-    );
-  },
-);
-
-test(
-  integrationTest('Disable project selector when there is no projects'),
-  async () => {
-    jest
-      .spyOn(sdlcServerClient, 'getProjects')
-      .mockReturnValue(Promise.resolve([]));
-
-    TEST__provideMockedWebApplicationNavigator();
-
-    const { queryByText } = render(
-      <MemoryRouter>
-        <TEST__ApplicationStoreProvider
-          config={TEST__getLegendStudioApplicationConfig()}
-          pluginManager={LegendStudioPluginManager.create()}
-        >
-          <TEST__SDLCServerClientProvider>
-            <WorkspaceSetup />
-          </TEST__SDLCServerClientProvider>
-        </TEST__ApplicationStoreProvider>
-      </MemoryRouter>,
-    );
-
-    await waitFor(() =>
-      expect(
-        queryByText(
-          'You have no projects, please create or acquire access for at least one',
-        ),
-      ).not.toBeNull(),
-    );
-  },
-);
+  // NOTE: react-select does not seem to produce a normal input box where we could set the placeholder attribute
+  // as such, we cannot use `queryByPlaceholderText` but use `queryByText` instead
+  await waitFor(() =>
+    expect(queryByText('Search for project...')).not.toBeNull(),
+  );
+});

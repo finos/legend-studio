@@ -20,7 +20,7 @@ import type { Entity } from '@finos/legend-storage';
 import {
   type QuerySetupStore,
   QuerySetupState,
-  generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
 } from '@finos/legend-application-query';
 import {
   type StoredEntity,
@@ -164,7 +164,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             entityPath: string | undefined,
           ): void =>
             this.setupStore.applicationStore.navigator.openNewWindow(
-              generateStudioProjectViewUrl(
+              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.setupStore.applicationStore.config.studioUrl,
                 groupId,
                 artifactId,

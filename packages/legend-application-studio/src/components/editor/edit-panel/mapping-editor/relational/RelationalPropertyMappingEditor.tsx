@@ -51,7 +51,7 @@ import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
-} from '../../../../../stores/shared/ModelUtil.js';
+} from '../../../../../stores/shared/ModelClassifierUtils.js';
 
 const SimplePropertyMappingEditor = observer(
   (props: {

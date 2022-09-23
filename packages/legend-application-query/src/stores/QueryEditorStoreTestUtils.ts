@@ -28,6 +28,7 @@ const TEST_DATA__appConfig = {
   },
   studio: {
     url: 'http://testStudioUrl',
+    instances: [],
   },
 };
 

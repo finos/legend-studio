@@ -30,14 +30,14 @@ import {
   openNodeById,
   openNodes,
   populatePackageTreeNodeChildren,
-} from './shared/PackageTreeUtil.js';
+} from './shared/PackageTreeUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
-import type { PackageTreeNodeData } from './shared/TreeUtil.js';
+import type { PackageTreeNodeData } from './shared/TreeUtils.js';
 import type { TreeData } from '@finos/legend-art';
 import {
   type GenerationTreeNodeData,
   getGenerationTreeData,
-} from './shared/FileGenerationTreeUtil.js';
+} from './shared/FileGenerationTreeUtils.js';
 import {
   type PackageableElement,
   ROOT_PACKAGE_NAME,

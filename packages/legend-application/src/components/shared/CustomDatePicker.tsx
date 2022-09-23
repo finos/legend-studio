@@ -41,6 +41,8 @@ import {
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
+  parseNumber,
+  returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useEffect, useState } from 'react';
@@ -859,7 +861,9 @@ const CustomDateInstanceValueEditor: React.FC<{
     event,
   ) => {
     const duration =
-      event.target.value !== '' ? parseInt(event.target.value) : 0;
+      event.target.value !== ''
+        ? returnUndefOnError(() => parseNumber(event.target.value)) ?? 0
+        : 0;
     setDurationValue(duration);
     changeValue(duration, unitValue, directionValue, referenceMomentValue);
   };

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { generateGAVCoordinates } from '@finos/legend-server-depot';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { generatePath } from 'react-router';
 
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
@@ -95,7 +95,10 @@ export interface ExistingQueryEditorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID]: string;
 }
 
-export const generateStudioProjectViewUrl = (
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl = (
   studioUrl: string,
   groupId: string,
   artifactId: string,
@@ -107,3 +110,26 @@ export const generateStudioProjectViewUrl = (
     artifactId,
     versionId,
   )}${entityPath ? `/entity/${entityPath}` : ''}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl =
+  (
+    studioUrl: string,
+    groupId: string,
+    artifactId: string,
+    servicePath: string,
+  ): string =>
+    `${studioUrl}/extensions/update-service-query/${servicePath}@${generateGAVCoordinates(
+      groupId,
+      artifactId,
+      undefined,
+    )}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl =
+  (studioUrl: string, projectId: string): string =>
+    `${studioUrl}/extensions/update-project-service-query/${projectId}`;

@@ -39,6 +39,7 @@ import { returnUndefOnError } from '../error/ErrorUtils.js';
 const compressData = (data: Record<PropertyKey, unknown> | string): Blob =>
   new Blob([deflate(isObject(data) ? JSON.stringify(data) : data)]);
 
+export const URL_SEPARATOR = '/';
 export const HttpStatus = StatusCodes;
 export const CHARSET = 'charset=utf-8';
 

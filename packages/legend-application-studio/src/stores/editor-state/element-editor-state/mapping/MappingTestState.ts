@@ -47,7 +47,7 @@ import {
   makeAutoObservable,
   flowResult,
 } from 'mobx';
-import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtil.js';
+import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type MappingTest,
   type RawLambda,

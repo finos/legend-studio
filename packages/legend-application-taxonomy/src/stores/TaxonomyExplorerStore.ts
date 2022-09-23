@@ -27,10 +27,9 @@ import {
   extractDataSpaceTaxonomyNodes,
 } from '@finos/legend-extension-dsl-data-space';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import {
-  type DepotServerClient,
-  type StoredEntity,
-  generateGAVCoordinates,
+import type {
+  DepotServerClient,
+  StoredEntity,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -43,6 +42,7 @@ import {
   ActionState,
   assertErrorThrown,
 } from '@finos/legend-shared';
+import { generateGAVCoordinates } from '@finos/legend-storage';
 import { makeObservable, flow, observable, action, flowResult } from 'mobx';
 import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyPluginManager.js';
 import { LEGEND_TAXONOMY_APP_EVENT } from './LegendTaxonomyAppEvent.js';
@@ -145,7 +145,6 @@ export class TaxonomyExplorerStore {
     applicationStore: LegendTaxonomyApplicationStore,
     taxonomyServerClient: TaxonomyServerClient,
     depotServerClient: DepotServerClient,
-    pluginManager: LegendTaxonomyPluginManager,
   ) {
     makeObservable(this, {
       treeData: observable.ref,
@@ -159,10 +158,10 @@ export class TaxonomyExplorerStore {
     this.taxonomyServerClient = taxonomyServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = new BasicGraphManagerState(
-      pluginManager,
+      applicationStore.pluginManager,
       applicationStore.log,
     );
-    this.pluginManager = pluginManager;
+    this.pluginManager = applicationStore.pluginManager;
 
     // Register plugins
     this.taxonomyServerClient.setTracerService(

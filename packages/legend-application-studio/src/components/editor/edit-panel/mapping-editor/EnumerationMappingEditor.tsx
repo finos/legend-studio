@@ -41,7 +41,7 @@ import {
   type MappingElementSourceDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
-} from '../../../../stores/shared/DnDUtil.js';
+} from '../../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { noop } from '@finos/legend-shared';
 import {

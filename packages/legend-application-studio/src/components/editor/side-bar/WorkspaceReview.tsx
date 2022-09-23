@@ -252,7 +252,7 @@ export const WorkspaceReview = observer(() => {
                     value={workspaceReviewState.reviewTitle}
                     disabled={Boolean(workspaceReview)}
                     onChange={editReviewTitle}
-                    placeholder={'Title'}
+                    placeholder="Title"
                   />
                 </div>
                 <button
