@@ -74,6 +74,7 @@ import {
   DataElement,
   stub_RawLambda,
   stub_Database,
+  Measure,
 } from '@finos/legend-graph';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -755,6 +756,9 @@ export class NewElementState {
         break;
       case PACKAGEABLE_ELEMENT_TYPE.ENUMERATION:
         element = new Enumeration(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE.MEASURE:
+        element = new Measure(name);
         break;
       case PACKAGEABLE_ELEMENT_TYPE.PROFILE:
         element = new Profile(name);
