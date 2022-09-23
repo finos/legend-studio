@@ -27,7 +27,7 @@
   @include flexCenter;
 
   flex-direction: column;
-  height: 30rem;
+  height: 35rem;
   width: 32rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
@@ -110,10 +110,8 @@
     font-weight: 500;
   }
 
-  &__icon {
-    &--edit {
-      font-size: 1.6rem;
-    }
+  &__icon--search {
+    font-size: 2rem;
   }
 }
 
@@ -269,36 +267,6 @@
     flex-direction: column;
     height: 16.9rem;
     padding: 2.5rem 0 1rem;
-  }
-
-  &__project-loader {
-    display: flex;
-
-    &__arrow {
-      @include flexCenter;
-
-      width: 4rem;
-      height: 2.8rem;
-      color: var(--color-dark-grey-280);
-
-      svg {
-        font-size: 1.6rem;
-      }
-    }
-
-    &__btn {
-      padding: 0 1.5rem;
-      border-radius: 0.2rem;
-
-      &__icon {
-        font-size: 1.2rem;
-        margin-left: 0.5rem;
-      }
-    }
-
-    .query-setup__wizard__selector {
-      width: 100%;
-    }
   }
 
   &__graph {

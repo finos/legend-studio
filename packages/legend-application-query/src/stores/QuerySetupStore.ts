@@ -324,12 +324,66 @@ export class CreateMappingQuerySetupState extends QuerySetupState {
   }
 }
 
+export class LoadProjectServiceQuerySetupState extends QuerySetupState {
+  projects: ProjectData[] = [];
+  loadProjectsState = ActionState.create();
+
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
+
+    makeObservable(this, {
+      projects: observable,
+      loadProjects: flow,
+    });
+  }
+
+  *loadProjects(): GeneratorFn<void> {
+    this.loadProjectsState.inProgress();
+    try {
+      this.projects = (
+        (yield this.setupStore.depotServerClient.getProjects()) as PlainObject<ProjectData>[]
+      ).map((v) => ProjectData.serialization.fromJson(v));
+      this.loadProjectsState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setupStore.applicationStore.notifyError(error);
+      this.loadProjectsState.fail();
+    }
+  }
+
+  async loadProjectServiceUpdater(project: ProjectData): Promise<void> {
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry =
+      this.setupStore.applicationStore.config.studioInstances.find(
+        (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+      );
+    if (matchingSDLCEntry) {
+      this.setupStore.applicationStore.setBlockingAlert({
+        message: `Loading service project...`,
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
+      this.setupStore.applicationStore.navigator.jumpTo(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
+          matchingSDLCEntry.url,
+          project.projectId,
+        ),
+      );
+    } else {
+      this.setupStore.applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to load project '${project.projectId}'`,
+      );
+    }
+  }
+}
+
 export interface ServiceExecutionOption {
   service: Service;
   key?: string | undefined;
 }
 
-export class LoadServiceQuerySetupState extends QuerySetupState {
+export class CloneServiceQuerySetupState extends QuerySetupState {
   projects: ProjectData[] = [];
   loadProjectsState = ActionState.create();
   loadServiceExecutionsState = ActionState.create();
@@ -434,35 +488,6 @@ export class LoadServiceQuerySetupState extends QuerySetupState {
       );
       this.setupStore.applicationStore.notifyError(error);
       this.loadServiceExecutionsState.fail();
-    }
-  }
-
-  async loadProjectServiceUpdater(): Promise<void> {
-    if (this.currentProject) {
-      const project = this.currentProject;
-      // find the matching SDLC instance
-      const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
-      const matchingSDLCEntry =
-        this.setupStore.applicationStore.config.studioInstances.find(
-          (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-        );
-      if (matchingSDLCEntry) {
-        this.setupStore.applicationStore.setBlockingAlert({
-          message: `Loading service project...`,
-          prompt: 'Please do not close the application',
-          showLoading: true,
-        });
-        this.setupStore.applicationStore.navigator.jumpTo(
-          EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
-            matchingSDLCEntry.url,
-            project.projectId,
-          ),
-        );
-      } else {
-        this.setupStore.applicationStore.notifyWarning(
-          `Can't find the corresponding SDLC instance to load project '${project.projectId}'`,
-        );
-      }
     }
   }
 }
