@@ -16,12 +16,12 @@
 import { clsx } from 'clsx';
 
 export const PanelListSelectorItem: React.FC<{
-  title?: string;
+  children?: React.ReactNode;
   onSelect: () => void;
   isSelected: boolean;
-  validationErrorMessage?: string | undefined;
+  validationError?: boolean;
 }> = (props) => {
-  const { title, onSelect, isSelected, validationErrorMessage } = props;
+  const { children, onSelect, isSelected, validationError } = props;
   return (
     <div
       className={clsx(
@@ -33,23 +33,31 @@ export const PanelListSelectorItem: React.FC<{
           'panel__list-selector__item--selected': isSelected,
         },
         {
-          'panel__list-selector__item--with-validation--error': Boolean(
-            validationErrorMessage,
-          ),
+          'panel__list-selector__item--with-validation--error': validationError,
         },
         {
           'panel__list-selector__item--selected--with-validation--error':
-            Boolean(validationErrorMessage) && isSelected,
+            validationError && isSelected,
         },
       )}
       onClick={onSelect}
     >
-      <div
-        className="panel__list-selector__item__label"
-        title={validationErrorMessage}
-      >
-        {title}
-      </div>
+      {children}
+    </div>
+  );
+};
+
+export const PanelListSelectorItemLabel: React.FC<{
+  title: string;
+  validationErrorMessage?: string | undefined;
+}> = (props) => {
+  const { title, validationErrorMessage } = props;
+  return (
+    <div
+      className="panel__list-selector__item__label"
+      title={validationErrorMessage}
+    >
+      {title}
     </div>
   );
 };

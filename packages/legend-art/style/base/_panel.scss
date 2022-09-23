@@ -196,6 +196,7 @@
     &__label {
       color: var(--color-white);
       font-size: 1.2rem;
+      white-space: nowrap;
     }
 
     &--with-validation--error {

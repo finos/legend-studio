@@ -32,6 +32,7 @@ import {
   Panel,
   PanelHeader,
   PanelContent,
+  PanelListSelectorItemLabel,
 } from '@finos/legend-art';
 import {
   type Mapper,
@@ -181,21 +182,25 @@ export const MapperPostProcessorEditor = observer(
                       menuProps={{ elevation: 7 }}
                     >
                       <PanelListSelectorItem
-                        title={
-                          mapper instanceof TableNameMapper
-                            ? 'Table Mapper'
-                            : 'Schema Mapper'
-                        }
-                        validationErrorMessage={
-                          isMapperDuplicated(mapper)
-                            ? 'Mappers have the same values'
-                            : undefined
-                        }
+                        validationError={true}
                         isSelected={
                           mapper === postProcessorState.selectedMapper
                         }
                         onSelect={() => selectMapper(mapper)}
-                      />
+                      >
+                        <PanelListSelectorItemLabel
+                          title={
+                            mapper instanceof TableNameMapper
+                              ? 'Table Mapper'
+                              : 'Schema Mapper'
+                          }
+                          validationErrorMessage={
+                            isMapperDuplicated(mapper)
+                              ? 'Mappers have the same values'
+                              : undefined
+                          }
+                        />
+                      </PanelListSelectorItem>
                     </ContextMenu>
                   ))}
                 </PanelContent>{' '}

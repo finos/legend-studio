@@ -27,6 +27,7 @@ export * from './components/TreeView.js';
 export * from './components/CustomSelectorInput.js';
 export * from './components/ComponentsConfiguration.js';
 export * from './components/ResizablePanel.js';
+export * from './components/Badge.js';
 
 export * from './components/dialog/Dialog.js';
 export * from './components/dialog/NonBlockingDialog.js';

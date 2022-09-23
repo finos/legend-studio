@@ -48,6 +48,8 @@ import {
   ResizablePanelSplitterLine,
   PanelContent,
   Panel,
+  Badge,
+  PanelListSelectorItemLabel,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -1260,6 +1262,26 @@ const PostProcessorRelationalConnectionEditor = observer(
       connectionValueState.selectPostProcessor(postProcessor);
     };
 
+    const getPostProcessorLabel = (postProcessor: PostProcessor): string => {
+      if (postProcessor instanceof MapperPostProcessor) {
+        return POST_PROCESSOR_TYPE.MAPPER;
+      } else {
+        const extraPostProcessorEditorClassifier = plugins.flatMap(
+          (plugin) =>
+            (
+              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+            ).getExtraPostProcessorClassifierGetters?.() ?? [],
+        );
+        for (const classify of extraPostProcessorEditorClassifier) {
+          const label = classify(postProcessor);
+          if (label) {
+            return label;
+          }
+        }
+      }
+      return 'unknown type';
+    };
+
     return (
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
@@ -1269,7 +1291,7 @@ const PostProcessorRelationalConnectionEditor = observer(
           <ResizablePanel>
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel size={150} minSize={70}>
+                <ResizablePanel size={200} minSize={100}>
                   <Panel>
                     <PanelHeader title="post-processor">
                       <DropdownMenu
@@ -1323,13 +1345,19 @@ const PostProcessorRelationalConnectionEditor = observer(
                           menuProps={{ elevation: 7 }}
                         >
                           <PanelListSelectorItem
-                            title={`Post-Processor ${idx + 1}`}
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={
                               postProcessor ===
                               postProcessorState?.postProcessor
                             }
-                          />
+                          >
+                            <PanelListSelectorItemLabel
+                              title={`Post-Processor ${idx + 1}`}
+                            />
+                            <Badge
+                              title={getPostProcessorLabel(postProcessor)}
+                            />
+                          </PanelListSelectorItem>
                         </ContextMenu>
                       ))}
                     </PanelContent>
