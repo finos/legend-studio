@@ -86,7 +86,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.9.1",
-    "@actions/github": "5.0.3",
+    "@actions/github": "5.1.0",
     "@babel/core": "7.19.1",
     "@changesets/cli": "2.24.4",
     "@finos/babel-preset-legend-studio": "workspace:*",

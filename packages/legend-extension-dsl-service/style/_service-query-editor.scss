@@ -149,10 +149,10 @@
     @include flexVCenter;
 
     height: 3.2rem;
+    width: unset;
     border-radius: 0.2rem;
     background: var(--color-yellow-200);
     color: var(--color-dark-grey-280);
-    // margin: 0.3rem;
     cursor: pointer;
 
     &__icon {
@@ -184,11 +184,10 @@
 
       height: 3.2rem;
       width: 3.2rem;
-    }
 
-    &:hover,
-    &:hover &__message {
-      color: var(--color-dark-grey-80);
+      svg {
+        color: var(--color-dark-grey-80);
+      }
     }
   }
 
@@ -201,7 +200,6 @@
     color: var(--color-dark-shade-800);
 
     &--up-to-date {
-      width: 3.2rem;
       background: var(--color-green-100);
 
       svg {
@@ -229,6 +227,8 @@
 
     &--out-of-sync,
     &--outdated {
+      width: unset;
+      color: var(--color-light-grey-100);
       background: var(--color-red-200);
     }
   }
