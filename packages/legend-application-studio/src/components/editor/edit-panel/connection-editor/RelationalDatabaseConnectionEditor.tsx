@@ -49,6 +49,7 @@ import {
   PanelContent,
   Panel,
   Badge,
+  PanelListSelectorItemLabel,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -1344,17 +1345,15 @@ const PostProcessorRelationalConnectionEditor = observer(
                           menuProps={{ elevation: 7 }}
                         >
                           <PanelListSelectorItem
-                            title={`Post-Processor ${idx + 1}`}
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={
                               postProcessor ===
                               postProcessorState?.postProcessor
                             }
                           >
-                            <Badge
-                              title={getPostProcessorLabel(postProcessor)}
+                            <PanelListSelectorItemLabel
+                              title={`Post-Processor ${idx + 1}`}
                             />
-
                             <Badge
                               title={getPostProcessorLabel(postProcessor)}
                             />
