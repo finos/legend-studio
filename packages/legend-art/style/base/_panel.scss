@@ -77,6 +77,18 @@
     @include ellipsisTextOverflow;
   }
 
+  &__header__badge__label {
+    color: var(--color-dark-grey-250);
+    background: var(--color-dark-grey-400);
+    border-radius: 0.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0 0.5rem;
+    padding: 0.2rem 0.4rem;
+    margin: 0 0.5rem 0 1rem;
+    white-space: nowrap;
+  }
+
   &__header--with-tabs {
     padding-left: 0;
   }
@@ -184,6 +196,7 @@
     display: flex;
     align-items: center;
     height: 2.4rem;
+    justify-content: space-between;
     padding: 1rem;
 
     &__label {

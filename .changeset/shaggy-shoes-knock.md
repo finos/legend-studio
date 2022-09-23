@@ -1,6 +1,5 @@
 ---
-'@finos/legend-application-studio': minor
-'@finos/legend-art': minor
+'@finos/legend-art': patch
 ---
 
-minor add label for post processor selector panel
+Add badge component

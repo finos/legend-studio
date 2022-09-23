@@ -56,6 +56,18 @@ export const PanelHeader: React.FC<{
   );
 };
 
+export const Badge: React.FC<{
+  title: string;
+  className?: string;
+}> = (props) => {
+  const { title, className } = props;
+  return (
+    <div className={clsx('panel__header__badge__label', className)}>
+      {title.toLowerCase()}
+    </div>
+  );
+};
+
 export const PanelTabs: React.FC<{
   tabTitles: string[];
   changeTheTab: <T>(

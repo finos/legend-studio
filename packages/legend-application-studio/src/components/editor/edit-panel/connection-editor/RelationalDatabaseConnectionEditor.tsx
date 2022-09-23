@@ -48,6 +48,7 @@ import {
   ResizablePanelSplitterLine,
   PanelContent,
   Panel,
+  Badge,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -1260,9 +1261,7 @@ const PostProcessorRelationalConnectionEditor = observer(
       connectionValueState.selectPostProcessor(postProcessor);
     };
 
-    const getPostProcessorLabel = (
-      postProcessor: PostProcessor,
-    ): string | undefined => {
+    const getPostProcessorLabel = (postProcessor: PostProcessor): string => {
       if (postProcessor instanceof MapperPostProcessor) {
         return POST_PROCESSOR_TYPE.MAPPER;
       } else {
@@ -1279,7 +1278,7 @@ const PostProcessorRelationalConnectionEditor = observer(
           }
         }
       }
-      return undefined;
+      return 'unknown type';
     };
 
     return (
@@ -1291,7 +1290,7 @@ const PostProcessorRelationalConnectionEditor = observer(
           <ResizablePanel>
             <div className="relational-connection-editor__content">
               <ResizablePanelGroup orientation="vertical">
-                <ResizablePanel size={220} minSize={100}>
+                <ResizablePanel size={200} minSize={100}>
                   <Panel>
                     <PanelHeader title="post-processor">
                       <DropdownMenu
@@ -1346,13 +1345,20 @@ const PostProcessorRelationalConnectionEditor = observer(
                         >
                           <PanelListSelectorItem
                             title={`Post-Processor ${idx + 1}`}
-                            badgeTitle={getPostProcessorLabel(postProcessor)}
                             onSelect={() => selectPostProcessor(postProcessor)}
                             isSelected={
                               postProcessor ===
                               postProcessorState?.postProcessor
                             }
-                          />
+                          >
+                            <Badge
+                              title={getPostProcessorLabel(postProcessor)}
+                            />
+
+                            <Badge
+                              title={getPostProcessorLabel(postProcessor)}
+                            />
+                          </PanelListSelectorItem>
                         </ContextMenu>
                       ))}
                     </PanelContent>
