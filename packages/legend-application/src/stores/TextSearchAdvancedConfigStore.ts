@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- * so we have to workaround by importing these and re-export them from CJS
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- */
-export { default as Fuse } from 'fuse.js';
+export enum SEARCH_MODE {
+  STANDARD = 'standard',
+  INCLUDE = 'include match',
+  EXACT = 'exact match',
+  INVERSE = 'excludes exact match',
+}

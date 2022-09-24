@@ -15,33 +15,23 @@
  */
 
 import { action, makeObservable, observable } from 'mobx';
-
-export enum SEARCH_MODE {
-  STANDARD = 'standard',
-  INCLUDE = 'include match',
-  EXACT = 'exact match',
-  INVERSE = 'excludes exact match',
-}
+import { SEARCH_MODE } from '../../stores/TextSearchAdvancedConfigStore.js';
 
 export class TextSearchAdvancedConfigState {
   isOpen = false;
   modeOfSearch: SEARCH_MODE;
   modeOfSearchOptions: SEARCH_MODE[];
-  isSearchConfigOpen = false;
   search: () => void;
 
   constructor(search: () => void) {
     makeObservable(this, {
       isOpen: observable,
       modeOfSearch: observable,
-      isSearchConfigOpen: observable,
       modeOfSearchOptions: observable,
       setIsOpen: action,
       changeModeOfSearch: action,
     });
-
     this.modeOfSearch = SEARCH_MODE.STANDARD;
-    this.isSearchConfigOpen = false;
 
     this.search = search;
 
@@ -77,9 +67,5 @@ export class TextSearchAdvancedConfigState {
   changeModeOfSearch(val: SEARCH_MODE): void {
     this.modeOfSearch = val;
     this.search();
-  }
-
-  setisSearchConfigOpen(val: boolean): void {
-    this.isSearchConfigOpen = val;
   }
 }

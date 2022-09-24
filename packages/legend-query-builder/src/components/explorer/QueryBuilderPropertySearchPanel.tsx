@@ -33,7 +33,7 @@ import {
   PanelLoadingIndicator,
   BlankPanelContent,
   CogIcon,
-  TextSearchAdvancedConfig,
+  DropdownMenu,
 } from '@finos/legend-art';
 import {
   Class,
@@ -64,6 +64,7 @@ import {
 } from './QueryBuilderExplorerPanel.js';
 import { QueryBuilderPropertyInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
+import { TextSearchAdvancedConfig } from '@finos/legend-application';
 
 const prettyPropertyNameFromNodeId = (name: string): string => {
   let propNameArray = name.split('.');
@@ -293,10 +294,12 @@ export const QueryBuilderPropertySearchPanel = observer(
 
     const handleEnter = (): void => searchInputRef.current?.focus();
 
+    // search text
     const debouncedSearchProperty = useMemo(
       () => debounce(() => propertySearchPanelState.search(), 100),
       [propertySearchPanelState],
     );
+
     const onSearchPropertyTextChange: React.ChangeEventHandler<
       HTMLInputElement
     > = (event) => {
@@ -314,28 +317,11 @@ export const QueryBuilderPropertySearchPanel = observer(
       propertySearchPanelState.setIsSearchPanelOpen(false);
     };
 
-    const getDocumentation = (): void => {
-      queryBuilderState.applicationStore.assistantService.setIsOpen(true);
-
-      queryBuilderState.applicationStore.assistantService.getDocumentationFromKey(
-        'question.how-to-use-search-bar',
-      );
-    };
-
     const toggleIsMultiple = (): void => {
       propertySearchPanelState.setFilterByMultiple(
         !propertySearchPanelState.filterByMultiple,
       );
     };
-
-    const toggleSearchPanelTip = (): void => {
-      propertySearchPanelState.setisSearchConfigOpen(
-        !propertySearchPanelState.isSearchConfigOpen,
-      );
-    };
-
-    const searchModeRef = useRef<HTMLInputElement>(null);
-
     return (
       <BasePopover
         open={propertySearchPanelState.isSearchPanelOpen}
@@ -387,14 +373,26 @@ export const QueryBuilderPropertySearchPanel = observer(
               />
               {!propertySearchPanelState.searchText ? (
                 <>
-                  <button
-                    className="query-builder-property-search-panel__input__cog__icon"
-                    tabIndex={-1}
-                    onClick={toggleSearchPanelTip}
-                    title="Show advanced search configuration"
+                  <DropdownMenu
+                    content={
+                      <TextSearchAdvancedConfig
+                        configState={propertySearchPanelState.textSearchState}
+                      />
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
                   >
-                    <CogIcon />
-                  </button>
+                    <button
+                      className="query-builder-property-search-panel__input__cog__icon"
+                      tabIndex={-1}
+                      title="Show advanced search configuration"
+                    >
+                      <CogIcon />
+                    </button>
+                  </DropdownMenu>
+
                   <div className="query-builder-property-search-panel__input__search__icon">
                     <SearchIcon />
                   </div>
@@ -411,14 +409,26 @@ export const QueryBuilderPropertySearchPanel = observer(
                           : '')}
                     </div>
                   )}
-                  <button
-                    className="query-builder-property-search-panel__input__cog__icon"
-                    tabIndex={-1}
-                    onClick={toggleSearchPanelTip}
-                    title="Show advanced search configuration"
+                  <DropdownMenu
+                    content={
+                      <TextSearchAdvancedConfig
+                        configState={propertySearchPanelState.textSearchState}
+                      />
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    }}
                   >
-                    <CogIcon />
-                  </button>
+                    <button
+                      className="query-builder-property-search-panel__input__cog__icon"
+                      tabIndex={-1}
+                      title="Show advanced search configuration"
+                    >
+                      <CogIcon />
+                    </button>
+                  </DropdownMenu>
+
                   <button
                     className="query-builder-property-search-panel__input__clear-btn"
                     tabIndex={-1}
@@ -646,15 +656,6 @@ export const QueryBuilderPropertySearchPanel = observer(
                 <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
               </ResizablePanelSplitter>
               <ResizablePanel>
-                <div ref={searchModeRef}></div>
-
-                {propertySearchPanelState.isSearchConfigOpen && (
-                  <TextSearchAdvancedConfig
-                    configState={propertySearchPanelState.textSearchState}
-                    getDocumentation={getDocumentation}
-                  />
-                )}
-
                 {propertySearchPanelState.searchState.isInProgress && (
                   <PanelLoadingIndicator isLoading={true} />
                 )}

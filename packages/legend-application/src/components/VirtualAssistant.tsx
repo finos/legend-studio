@@ -37,7 +37,7 @@ import {
   BasePopover,
   FaceSadTearIcon,
   CogIcon,
-  TextSearchAdvancedConfig,
+  DropdownMenu,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -58,6 +58,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import { TextSearchAdvancedConfig } from './search/TextSearchAdvancedConfig.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -262,34 +263,26 @@ const VirtualAssistantSearchPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const assistantService = applicationStore.assistantService;
+  const searchedDocumentation = assistantService.searchedDocumentation;
+
+  // search text
   const searchText = assistantService.searchText;
   const debouncedSearch = useMemo(
     () => debounce(() => assistantService.search(), 100),
     [assistantService],
   );
-
   const onSearchTextChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
   ) => {
     assistantService.setSearchText(event.target.value);
     debouncedSearch();
   };
-
   const clearSearchText = (): void => {
     assistantService.resetSearch();
     searchInputRef.current?.focus();
   };
 
-  const toggleSearchPanelTip = (): void => {
-    assistantService.setisSearchConfigOpen(
-      !assistantService.isSearchConfigOpen,
-    );
-  };
-
   const results = assistantService.searchResults;
-
-  const searchedDocumentation = assistantService.searchedDocumentation;
-
   const resultCount =
     assistantService.searchResults.length +
     (assistantService.isOverSearchLimit ? '+' : '');
@@ -322,19 +315,12 @@ const VirtualAssistantSearchPanel = observer(() => {
     );
   };
 
-  const searchModeRef = useRef<HTMLInputElement>(null);
-
-  const getDocumentation = (): void => {
-    assistantService.setisSearchConfigOpen(false);
-    assistantService.getDocumentationFromKey('question.how-to-use-search-bar');
-  };
-
   useEffect(() => {
     searchInputRef.current?.focus();
   }, []);
 
   return (
-    <div className="virtual-assistant__search" ref={searchModeRef}>
+    <div className="virtual-assistant__search">
       <div className="virtual-assistant__search__header">
         <input
           ref={searchInputRef}
@@ -385,14 +371,27 @@ const VirtualAssistantSearchPanel = observer(() => {
             <div className="virtual-assistant__search__input__search__count">
               {resultCount}
             </div>
-            <button
-              className="virtual-assistant__search__input__cog__icon"
-              tabIndex={-1}
-              onClick={toggleSearchPanelTip}
-              title="Show advanced search configuration"
+
+            <DropdownMenu
+              content={
+                <TextSearchAdvancedConfig
+                  configState={assistantService.textSearchState}
+                />
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+              }}
             >
-              <CogIcon />
-            </button>
+              <button
+                className="virtual-assistant__search__input__cog__icon"
+                tabIndex={-1}
+                title="Show advanced search configuration"
+              >
+                <CogIcon />
+              </button>
+            </DropdownMenu>
+
             <button
               className="virtual-assistant__search__input__clear-btn"
               tabIndex={-1}
@@ -408,12 +407,6 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {assistantService.isSearchConfigOpen && (
-          <TextSearchAdvancedConfig
-            configState={assistantService.textSearchState}
-            getDocumentation={getDocumentation}
-          />
-        )}
 
         {searchedDocumentation?.isOpen && (
           <div className="virtual-assistant__search__results">

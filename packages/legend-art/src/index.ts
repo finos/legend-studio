@@ -63,6 +63,3 @@ export * from './components/LegendStyleProvider.js';
 export * from './components/markdown/MarkdownTextViewer.js';
 
 export * from './testMocks/MonacoEditorMockUtils.js';
-
-export * from './components/search/TextSearchAdvancedConfig.js';
-export * from './components/search/TextSearchAdvancedConfigState.js';

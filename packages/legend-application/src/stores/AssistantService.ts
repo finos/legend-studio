@@ -25,7 +25,7 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import { TextSearchAdvancedConfigState } from '@finos/legend-art';
+import { TextSearchAdvancedConfigState } from '../components/search/TextSearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -91,24 +91,21 @@ export class AssistantService {
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
 
-  isSearchConfigOpen = false;
-
-  searchResults: VirtualAssistantDocumentationEntry[] = [];
+  // search config
+  textSearchState: TextSearchAdvancedConfigState;
   searchedDocumentation: VirtualAssistantDocumentationEntry | undefined;
 
-  searchState = ActionState.create().pass();
+  // search text
+  searchResults: VirtualAssistantDocumentationEntry[] = [];
   searchText = '';
-
+  searchState = ActionState.create().pass();
   isOverSearchLimit: boolean;
-
-  textSearchState: TextSearchAdvancedConfigState;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       panelRenderingKey: observable,
-      isSearchConfigOpen: observable,
       isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
@@ -119,7 +116,6 @@ export class AssistantService {
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
-      setisSearchConfigOpen: action,
       setSearchText: action,
       resetSearch: action,
       setSearchedDocumentation: action,
@@ -131,7 +127,6 @@ export class AssistantService {
     this.applicationStore = applicationStore;
 
     this.isOverSearchLimit = false;
-    this.isSearchConfigOpen = false;
 
     this.searchedDocumentation = undefined;
 
@@ -262,10 +257,6 @@ export class AssistantService {
 
   setSelectedTab(val: VIRTUAL_ASSISTANT_TAB): void {
     this.selectedTab = val;
-  }
-
-  setisSearchConfigOpen(val: boolean): void {
-    this.isSearchConfigOpen = val;
   }
 
   refreshPanelRendering(): void {

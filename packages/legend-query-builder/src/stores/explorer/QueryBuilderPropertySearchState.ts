@@ -45,7 +45,8 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { Fuse, TextSearchAdvancedConfigState } from '@finos/legend-art';
+import { Fuse } from '@finos/legend-art';
+import { TextSearchAdvancedConfigState } from '@finos/legend-application';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
@@ -54,19 +55,18 @@ export class QueryBuilderPropertySearchState {
   mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
-  isSearchPanelOpen = false;
-  isSearchConfigOpen = false;
-  isSearchPanelHidden = false;
-  isOverSearchLimit = false;
-
+  // search config
   textSearchState: TextSearchAdvancedConfigState;
 
+  // search text
+  isOverSearchLimit = false;
+  isSearchPanelOpen = false;
+  isSearchPanelHidden = false;
   searchText = '';
   searchState = ActionState.create().pass();
   searchEngine: Fuse<QueryBuilderExplorerTreeNodeData>;
 
   filterByMultiple: boolean;
-
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
 
   constructor(queryBuilderState: QueryBuilderState) {
@@ -74,7 +74,6 @@ export class QueryBuilderPropertySearchState {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
-      isSearchConfigOpen: observable,
       isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
@@ -85,7 +84,6 @@ export class QueryBuilderPropertySearchState {
       setIsOverSearchLimit: action,
       setSearchedMappedPropertyNodes: action,
       setIsSearchPanelOpen: action,
-      setisSearchConfigOpen: action,
       setIsSearchPanelHidden: action,
       resetPropertyState: action,
       setFilterByMultiple: action,
@@ -108,40 +106,6 @@ export class QueryBuilderPropertySearchState {
     ];
 
     this.searchEngine = new Fuse(this.mappedPropertyNodes);
-  }
-
-  setFuse(): void {
-    this.searchEngine = new Fuse(this.mappedPropertyNodes, {
-      includeScore: true,
-      shouldSort: true,
-      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
-      ignoreLocation: true,
-      threshold: 0.3,
-      keys: [
-        {
-          name: 'id',
-        },
-        {
-          name: 'label',
-        },
-        {
-          name: 'taggedValues',
-          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
-            (
-              node as QueryBuilderExplorerTreePropertyNodeData
-            ).property.taggedValues.map((taggedValue) => {
-              const isDoc =
-                taggedValue.tag.ownerReference.valueForSerialization?.includes(
-                  CORE_PURE_PATH.PROFILE_DOC,
-                );
-              return isDoc ? taggedValue.value : '';
-            }),
-        },
-      ],
-      // extended search allows for exact word match through single quote
-      // See https://fusejs.io/examples.html#extended-search
-      useExtendedSearch: true,
-    });
   }
 
   toggleTypeFilter(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -244,9 +208,11 @@ export class QueryBuilderPropertySearchState {
     });
   }
 
-  //takes in the searched mapped property and retrieves the toggles that the
-  //user selected about what they wanted to include, and filters out nodes if
-  //their type or multiplicity is not listed
+  /**
+   * takes in the searched mapped property and retrives the toggles
+   * that the user selects about what they want to include and filters
+   * out nodes if their type or multiplicity is not listed
+   */
   get filteredPropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
     const filteredTest = this.searchedMappedPropertyNodes.filter((p) => {
       if (
@@ -364,7 +330,37 @@ export class QueryBuilderPropertySearchState {
       }
     }
 
-    this.setFuse();
+    this.searchEngine = new Fuse(this.mappedPropertyNodes, {
+      includeScore: true,
+      shouldSort: true,
+      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+      ignoreLocation: true,
+      threshold: 0.3,
+      keys: [
+        {
+          name: 'id',
+        },
+        {
+          name: 'label',
+        },
+        {
+          name: 'taggedValues',
+          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+            (
+              node as QueryBuilderExplorerTreePropertyNodeData
+            ).property.taggedValues.map((taggedValue) => {
+              const isDoc =
+                taggedValue.tag.ownerReference.valueForSerialization?.includes(
+                  CORE_PURE_PATH.PROFILE_DOC,
+                );
+              return isDoc ? taggedValue.value : '';
+            }),
+        },
+      ],
+      // extended search allows for exact word match through single quote
+      // See https://fusejs.io/examples.html#extended-search
+      useExtendedSearch: true,
+    });
   }
 
   getPropertySearchNodes(
@@ -421,10 +417,6 @@ export class QueryBuilderPropertySearchState {
 
   setIsSearchPanelHidden(val: boolean): void {
     this.isSearchPanelHidden = val;
-  }
-
-  setisSearchConfigOpen(val: boolean): void {
-    this.isSearchConfigOpen = val;
   }
 
   setIsOverSearchLimit(val: boolean): void {
