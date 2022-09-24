@@ -2045,7 +2045,7 @@ __metadata:
     rimraf: 3.0.2
     typescript: 4.8.3
   peerDependencies:
-    "@babel/core": ^7.16.0
+    "@babel/core": ^7.0.0
   languageName: unknown
   linkType: soft
 
@@ -2067,8 +2067,8 @@ __metadata:
     prettier: 2.7.1
     rimraf: 3.0.2
   peerDependencies:
-    eslint: ^8.6.0
-    prettier: ^2.2.1
+    eslint: ^8.0.0
+    prettier: ^2.0.0
   languageName: unknown
   linkType: soft
 
@@ -3069,7 +3069,7 @@ __metadata:
     stylelint-config-standard: 28.0.0
     stylelint-scss: 4.3.0
   peerDependencies:
-    stylelint: ^14.2.0
+    stylelint: ^14.0.0
   languageName: unknown
   linkType: soft
 
