@@ -132,7 +132,6 @@ const SchemaLoader = observer(
           </div>
           <div className="modal__footer">
             <button
-              type="button"
               className="btn btn--dark blocking-alert__action--standard"
               onClick={importSchemas}
               disabled={!importState.files?.length}

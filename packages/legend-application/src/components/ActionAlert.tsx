@@ -106,7 +106,7 @@ const ActionAlertContent = observer((props: { info: ActionAlertInfo }) => {
           })}
           {!actions.length && (
             <button
-              type="button"
+              type="button" // prevent this toggler being activated on form submission
               className="btn btn--dark blocking-alert__action--standard"
               onClick={handleClose}
             >
