@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
-
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/backdrop';
-@forward 'components/notification';
-@forward 'components/virtual-assistant';
-@forward 'components/text-search';
-
-// Shared
-@forward 'components/shared/documentation-link';
-@forward 'components/shared/lambda-editor';
-@forward 'components/shared/text-editor';
-@forward 'components/shared/value-spec-editor';
-@forward 'components/shared/packageable-element-format-option';
-@forward 'components/shared/execution-plan-viewer';
+/**
+ * Previously, these exports rely on ES module interop to expose `default` export
+ * properly. But since we use `ESM` for Typescript resolution now, we lose this
+ * so we have to workaround by importing these and re-export them from CJS
+ *
+ * TODO: remove these when the package properly work with Typescript's nodenext
+ * module resolution
+ *
+ * @workaround ESM
+ * See https://github.com/microsoft/TypeScript/issues/49298
+ */
+export { default as Fuse } from 'fuse.js';

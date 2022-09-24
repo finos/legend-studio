@@ -789,7 +789,7 @@ export const QueryBuilderExplorerPanel = observer(
       if (explorerState.treeData) {
         if (!propertySearchPanelState.isSearchPanelOpen) {
           propertySearchPanelState.setIsSearchPanelOpen(true);
-          if (!propertySearchPanelState.allMappedPropertyNodes.length) {
+          if (!propertySearchPanelState.mappedPropertyNodes.length) {
             propertySearchPanelState.fetchAllPropertyNodes();
           }
         } else {

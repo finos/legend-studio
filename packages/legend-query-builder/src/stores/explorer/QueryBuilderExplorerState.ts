@@ -201,7 +201,8 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
   graph: PureModel,
-  allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
+  //TODO: document parameter
+  mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
 ): AbstractPropertyExpression => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -219,7 +220,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     propertyExpression;
   let parentNode =
     treeData.nodes.get(node.parentId) ??
-    allMappedPropertyNodes.find((n) => n.id === node.parentId);
+    mappedPropertyNodes.find((n) => n.id === node.parentId);
   let currentNode: QueryBuilderExplorerTreeNodeData = node;
   while (
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
@@ -270,7 +271,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
         currentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData)
     ) {
-      for (const propertyNode of allMappedPropertyNodes) {
+      for (const propertyNode of mappedPropertyNodes) {
         if (propertyNode.id === currentNode.parentId) {
           parentNode = propertyNode;
           break;
@@ -714,7 +715,7 @@ export class QueryBuilderExplorerState {
       this.nonNullableTreeData,
       node,
       this.queryBuilderState.graphManagerState.graph,
-      this.propertySearchState.allMappedPropertyNodes,
+      this.propertySearchState.mappedPropertyNodes,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {

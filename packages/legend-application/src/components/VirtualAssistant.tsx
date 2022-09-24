@@ -36,6 +36,8 @@ import {
   PanelLoadingIndicator,
   BasePopover,
   FaceSadTearIcon,
+  CogIcon,
+  DropdownMenu,
 } from '@finos/legend-art';
 import {
   ContentType,
@@ -56,6 +58,7 @@ import { useApplicationStore } from './ApplicationStoreProvider.js';
 import Draggable from 'react-draggable';
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 import { ApplicationTelemetry } from '../stores/ApplicationTelemetry.js';
+import { TextSearchAdvancedConfig } from './search/TextSearchAdvancedConfig.js';
 
 const WIZARD_GREETING = `Bonjour, It's Pierre!`;
 
@@ -222,6 +225,7 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               )}
             </>
           )}
+
           {contextualEntry.related.length && (
             <div className="virtual-assistant__contextual-support__relevant-entries">
               <div className="virtual-assistant__contextual-support__relevant-entries__title">
@@ -245,8 +249,8 @@ const VirtualAssistantContextualSupportPanel = observer(() => {
               No contextual documentation found!
             </div>
             <div className="virtual-assistant__panel__placeholder__instruction">
-              Keep using the app, when contextual doc available, we will let you
-              know!
+              Keep using the app. When contextual help is available, we will let
+              you know!
             </div>
           </div>
         </BlankPanelContent>
@@ -259,6 +263,9 @@ const VirtualAssistantSearchPanel = observer(() => {
   const applicationStore = useApplicationStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const assistantService = applicationStore.assistantService;
+  const searchedDocumentation = assistantService.searchedDocumentation;
+
+  // search text
   const searchText = assistantService.searchText;
   const debouncedSearch = useMemo(
     () => debounce(() => assistantService.search(), 100),
@@ -274,11 +281,11 @@ const VirtualAssistantSearchPanel = observer(() => {
     assistantService.resetSearch();
     searchInputRef.current?.focus();
   };
+
   const results = assistantService.searchResults;
   const resultCount =
-    assistantService.searchResults.length > 99
-      ? '99+'
-      : assistantService.searchResults.length;
+    assistantService.searchResults.length +
+    (assistantService.isOverSearchLimit ? '+' : '');
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
       `documentation-registry_${format(
@@ -364,6 +371,27 @@ const VirtualAssistantSearchPanel = observer(() => {
             <div className="virtual-assistant__search__input__search__count">
               {resultCount}
             </div>
+
+            <DropdownMenu
+              content={
+                <TextSearchAdvancedConfig
+                  configState={assistantService.textSearchState}
+                />
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+              }}
+            >
+              <button
+                className="virtual-assistant__search__input__cog__icon"
+                tabIndex={-1}
+                title="Show advanced search configuration"
+              >
+                <CogIcon />
+              </button>
+            </DropdownMenu>
+
             <button
               className="virtual-assistant__search__input__clear-btn"
               tabIndex={-1}
@@ -379,7 +407,17 @@ const VirtualAssistantSearchPanel = observer(() => {
         <PanelLoadingIndicator
           isLoading={assistantService.searchState.isInProgress}
         />
-        {Boolean(results.length) && (
+
+        {searchedDocumentation?.isOpen && (
+          <div className="virtual-assistant__search__results">
+            <VirtualAssistantDocumentationEntryViewer
+              key={searchedDocumentation.uuid}
+              entry={searchedDocumentation}
+            />
+          </div>
+        )}
+
+        {!searchedDocumentation?.isOpen && Boolean(results.length) && (
           <div className="virtual-assistant__search__results">
             {results.map((result) => (
               <VirtualAssistantDocumentationEntryViewer
@@ -389,6 +427,7 @@ const VirtualAssistantSearchPanel = observer(() => {
             ))}
           </div>
         )}
+
         {searchText && !results.length && (
           <BlankPanelContent>
             <div className="virtual-assistant__panel__placeholder">
@@ -405,7 +444,7 @@ const VirtualAssistantSearchPanel = observer(() => {
           the search text update, we do this to avoid showing the placeholder too
           early, i.e. when the search results are not yet cleaned
          */}
-        {!searchText && !results.length && (
+        {!searchText && !results.length && !searchedDocumentation?.isOpen && (
           <ContextMenu
             className="virtual-assistant__character__container"
             menuProps={{

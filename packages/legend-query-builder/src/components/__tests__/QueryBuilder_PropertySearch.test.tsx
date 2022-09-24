@@ -48,12 +48,14 @@ test(
         queryBuilderState.graphManagerState.graph.getClass('my::Firm'),
       );
     });
+
     const queryBuilderSetupPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP),
     );
     await waitFor(() => getByText(queryBuilderSetupPanel, 'Firm'));
     await waitFor(() => getByText(queryBuilderSetupPanel, 'map'));
     await waitFor(() => getByText(queryBuilderSetupPanel, 'runtime'));
+
     const queryBuilder = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
     );
@@ -69,6 +71,13 @@ test(
     expect(queryBuilderState.explorerState.propertySearchState.searchText).toBe(
       'name',
     );
+
+    act(() => {
+      queryBuilderState.explorerState.propertySearchState.fetchMappedPropertyNodes(
+        'Name',
+      );
+    });
+
     expect(
       queryBuilderState.explorerState.propertySearchState
         .searchedMappedPropertyNodes.length,

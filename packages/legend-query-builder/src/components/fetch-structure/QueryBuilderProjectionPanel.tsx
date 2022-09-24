@@ -543,7 +543,7 @@ export const QueryBuilderProjectionPanel = observer(
                   (item as QueryBuilderExplorerTreeDragSource).node,
                   projectionState.queryBuilderState.graphManagerState.graph,
                   projectionState.queryBuilderState.explorerState
-                    .propertySearchState.allMappedPropertyNodes,
+                    .propertySearchState.mappedPropertyNodes,
                 ),
                 projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),

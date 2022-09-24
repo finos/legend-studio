@@ -19,6 +19,8 @@ export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';
 export * from './utils/HotkeyConfiguration.js';
 
+export * from './components/CJS__Fuse.cjs';
+
 export * from './components/CJS__Icon.cjs';
 export * from './components/TypeIcon.js';
 export * from './components/Input.js';

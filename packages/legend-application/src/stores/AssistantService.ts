@@ -25,11 +25,14 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
+import { TextSearchAdvancedConfigState } from '../components/search/TextSearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
   CONTEXTUAL_SUPPORT = 'CONTEXTUAL_SUPPORT',
 }
+
+export const DOCUMENTATION_SEARCH_RESULTS_LIMIT = 100;
 
 export class VirtualAssistantDocumentationEntry {
   uuid = uuid();
@@ -88,29 +91,49 @@ export class AssistantService {
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
 
+  // search config
+  textSearchState: TextSearchAdvancedConfigState;
+  searchedDocumentation: VirtualAssistantDocumentationEntry | undefined;
+
+  // search text
   searchResults: VirtualAssistantDocumentationEntry[] = [];
-  searchState = ActionState.create().pass();
   searchText = '';
+  searchState = ActionState.create().pass();
+  isOverSearchLimit: boolean;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
       isHidden: observable,
       isOpen: observable,
       panelRenderingKey: observable,
+      isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
+      textSearchState: observable,
       searchResults: observable,
+      searchedDocumentation: observable,
       currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
       setSearchText: action,
       resetSearch: action,
+      setSearchedDocumentation: action,
       search: action,
       refreshPanelRendering: action,
+      setIsOverSearchLimit: action,
     });
 
     this.applicationStore = applicationStore;
+
+    this.isOverSearchLimit = false;
+
+    this.searchedDocumentation = undefined;
+
+    this.textSearchState = new TextSearchAdvancedConfigState(() =>
+      this.search(),
+    );
+
     this.searchEngine = new Fuse(
       this.applicationStore.documentationService.getAllDocEntries().filter(
         (entry) =>
@@ -143,6 +166,9 @@ export class AssistantService {
             weight: 1,
           },
         ],
+        // extended search allows for exact word match through single quote
+        // See https://fusejs.io/examples.html#extended-search
+        useExtendedSearch: true,
       },
     );
   }
@@ -159,6 +185,7 @@ export class AssistantService {
       this.applicationStore.documentationService.getContextualDocEntry(
         currentContext,
       );
+
     return currentContextualDocumentationEntry
       ? new VirtualAssistantContextualDocumentationEntry(
           currentContext,
@@ -181,8 +208,33 @@ export class AssistantService {
       : undefined;
   }
 
+  getDocumentationFromKey(docKey: string): void {
+    const possibleDoc = this.applicationStore.documentationService
+      .getAllDocEntries()
+      .find((entry) => entry._documentationKey === docKey);
+
+    if (possibleDoc) {
+      this.setSearchedDocumentation(
+        new VirtualAssistantDocumentationEntry(possibleDoc),
+      );
+      this.searchedDocumentation?.setIsOpen(true);
+
+      this.resetSearch();
+    }
+  }
+
   setIsHidden(val: boolean): void {
     this.isHidden = val;
+  }
+
+  setSearchedDocumentation(
+    val: VirtualAssistantDocumentationEntry | undefined,
+  ): void {
+    this.searchedDocumentation = val;
+  }
+
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
   }
 
   hideAssistant(): void {
@@ -222,10 +274,26 @@ export class AssistantService {
   }
 
   search(): void {
+    this.setSearchedDocumentation(undefined);
     this.searchState.inProgress();
     this.searchResults = Array.from(
-      this.searchEngine.search(this.searchText).values(),
+      this.searchEngine
+        .search(this.textSearchState.getSearchText(this.searchText), {
+          limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
+        })
+        .values(),
     ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
+
+    if (this.searchResults.length > DOCUMENTATION_SEARCH_RESULTS_LIMIT) {
+      this.setIsOverSearchLimit(true);
+      this.searchResults = this.searchResults.slice(
+        0,
+        DOCUMENTATION_SEARCH_RESULTS_LIMIT,
+      );
+    } else {
+      this.setIsOverSearchLimit(false);
+    }
+
     this.searchState.complete();
   }
 }

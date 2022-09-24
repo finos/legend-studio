@@ -21,8 +21,10 @@ import {
   getAllClassDerivedProperties,
   PrimitiveType,
   PRIMITIVE_TYPE,
+  CORE_PURE_PATH,
 } from '@finos/legend-graph';
 import {
+  ActionState,
   addUniqueEntry,
   deleteEntry,
   guaranteeNonNullable,
@@ -32,6 +34,8 @@ import {
   QUERY_BUILDER_PROPERTY_SEARCH_MAX_DEPTH,
   QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
   QUERY_BUILDER_PROPERTY_SEARCH_TYPE,
+  QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+  QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES,
 } from '../QueryBuilderConfig.js';
 import {
   getQueryBuilderPropertyNodeData,
@@ -41,16 +45,27 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from './QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { Fuse } from '@finos/legend-art';
+import { TextSearchAdvancedConfigState } from '@finos/legend-application';
 
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
   // TODO: Check if we could clean this up as this seems quite complicated and its purpose is not clear to me
   // See https://github.com/finos/legend-studio/pull/1212
-  allMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+  mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
   searchedMappedPropertyNodes: QueryBuilderExplorerTreeNodeData[] = [];
+
+  // search config
+  textSearchState: TextSearchAdvancedConfigState;
+
+  // search text
+  isOverSearchLimit = false;
   isSearchPanelOpen = false;
   isSearchPanelHidden = false;
   searchText = '';
+  searchState = ActionState.create().pass();
+  searchEngine: Fuse<QueryBuilderExplorerTreeNodeData>;
+
   filterByMultiple: boolean;
   typeFilters: QUERY_BUILDER_PROPERTY_SEARCH_TYPE[];
 
@@ -59,20 +74,29 @@ export class QueryBuilderPropertySearchState {
       queryBuilderState: false,
       searchedMappedPropertyNodes: observable,
       isSearchPanelOpen: observable,
+      isOverSearchLimit: observable,
       isSearchPanelHidden: observable,
       searchText: observable,
+      textSearchState: observable,
+      searchEngine: observable,
       filteredPropertyNodes: computed,
       setSearchText: action,
+      setIsOverSearchLimit: action,
       setSearchedMappedPropertyNodes: action,
       setIsSearchPanelOpen: action,
       setIsSearchPanelHidden: action,
-      refreshPropertyState: action,
+      resetPropertyState: action,
       setFilterByMultiple: action,
       toggleTypeFilter: action,
     });
 
     this.queryBuilderState = queryBuilderState;
     this.filterByMultiple = true;
+
+    this.textSearchState = new TextSearchAdvancedConfigState(
+      this.search.bind(this),
+    );
+
     this.typeFilters = [
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.CLASS,
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING,
@@ -80,6 +104,8 @@ export class QueryBuilderPropertySearchState {
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.NUMBER,
       QUERY_BUILDER_PROPERTY_SEARCH_TYPE.DATE,
     ];
+
+    this.searchEngine = new Fuse(this.mappedPropertyNodes);
   }
 
   toggleTypeFilter(val: QUERY_BUILDER_PROPERTY_SEARCH_TYPE): void {
@@ -103,7 +129,7 @@ export class QueryBuilderPropertySearchState {
         ) {
           return true;
         }
-        const parentNode = this.allMappedPropertyNodes.find(
+        const parentNode = this.mappedPropertyNodes.find(
           (pn) => pn.id === node.parentId,
         );
         if (
@@ -182,8 +208,13 @@ export class QueryBuilderPropertySearchState {
     });
   }
 
+  /**
+   * takes in the searched mapped property and retrives the toggles
+   * that the user selects about what they want to include and filters
+   * out nodes if their type or multiplicity is not listed
+   */
   get filteredPropertyNodes(): QueryBuilderExplorerTreeNodeData[] {
-    return this.searchedMappedPropertyNodes.filter((p) => {
+    const filteredTest = this.searchedMappedPropertyNodes.filter((p) => {
       if (
         !this.filterByMultiple &&
         this.getMultiplePropertyNodes().includes(p)
@@ -224,6 +255,7 @@ export class QueryBuilderPropertySearchState {
       }
       return true;
     });
+    return filteredTest;
   }
 
   fetchAllPropertyNodes(): void {
@@ -235,7 +267,7 @@ export class QueryBuilderPropertySearchState {
       .forEach((node) => {
         if (node.mappingData.mapped && !node.isPartOfDerivedPropertyBranch) {
           currentLevelPropertyNodes.push(node);
-          this.allMappedPropertyNodes.push(node);
+          this.mappedPropertyNodes.push(node);
         }
       });
     let currentDepth = 1;
@@ -268,7 +300,8 @@ export class QueryBuilderPropertySearchState {
                 !propertyTreeNodeData.isPartOfDerivedPropertyBranch
               ) {
                 nextLevelPropertyNodes.push(propertyTreeNodeData);
-                this.allMappedPropertyNodes.push(propertyTreeNodeData);
+
+                this.mappedPropertyNodes.push(propertyTreeNodeData);
               }
             });
             node.type._subclasses.forEach((subclass) => {
@@ -281,32 +314,101 @@ export class QueryBuilderPropertySearchState {
                 ),
               );
               nextLevelPropertyNodes.push(subTypeTreeNodeData);
-              this.allMappedPropertyNodes.push(subTypeTreeNodeData);
+              this.mappedPropertyNodes.push(subTypeTreeNodeData);
             });
           }
         }
       }
-      if (!currentLevelPropertyNodes.length) {
+      if (
+        !currentLevelPropertyNodes.length &&
+        this.mappedPropertyNodes.length <
+          QUERY_BUILDER_PROPERTY_SEARCH_MAX_NODES
+      ) {
         currentLevelPropertyNodes = nextLevelPropertyNodes;
         nextLevelPropertyNodes = [];
         currentDepth++;
       }
     }
+
+    this.searchEngine = new Fuse(this.mappedPropertyNodes, {
+      includeScore: true,
+      shouldSort: true,
+      minMatchCharLength: QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH,
+      ignoreLocation: true,
+      threshold: 0.3,
+      keys: [
+        {
+          name: 'id',
+        },
+        {
+          name: 'label',
+        },
+        {
+          name: 'taggedValues',
+          getFn: (node: QueryBuilderExplorerTreeNodeData) =>
+            (
+              node as QueryBuilderExplorerTreePropertyNodeData
+            ).property.taggedValues.map((taggedValue) => {
+              const isDoc =
+                taggedValue.tag.ownerReference.valueForSerialization?.includes(
+                  CORE_PURE_PATH.PROFILE_DOC,
+                );
+              return isDoc ? taggedValue.value : '';
+            }),
+        },
+      ],
+      // extended search allows for exact word match through single quote
+      // See https://fusejs.io/examples.html#extended-search
+      useExtendedSearch: true,
+    });
   }
 
-  fetchMappedPropertyNodes(propName: string): void {
-    const propertyName = propName.toLowerCase();
-    for (const node of this.allMappedPropertyNodes) {
-      if (node.label.toLowerCase().includes(propertyName)) {
-        this.searchedMappedPropertyNodes.push(node);
-        if (
-          this.searchedMappedPropertyNodes.length >
-          QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
-        ) {
-          break;
-        }
-      }
+  getPropertySearchNodes(
+    propertySearchText: string,
+  ): QueryBuilderExplorerTreeNodeData[] {
+    return Array.from(
+      this.searchEngine
+        .search(propertySearchText, {
+          limit: QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT + 1,
+        })
+        .values(),
+    ).map((result) => result.item);
+  }
+
+  fetchMappedPropertyNodes(propSearchText: string): void {
+    if (propSearchText.length < QUERY_BUILDER_PROPERTY_SEARCH_TEXT_MIN_LENGTH) {
+      return;
     }
+
+    const propertySearchText = this.textSearchState.getSearchText(
+      propSearchText.toLowerCase(),
+    );
+
+    const allSearchedMappedPropertyNodes =
+      this.getPropertySearchNodes(propertySearchText);
+
+    if (
+      allSearchedMappedPropertyNodes.length >
+      QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT
+    ) {
+      this.setIsOverSearchLimit(true);
+      this.setSearchedMappedPropertyNodes(
+        allSearchedMappedPropertyNodes.slice(
+          0,
+          QUERY_BUILDER_PROPERTY_SEARCH_RESULTS_LIMIT,
+        ),
+      );
+    } else {
+      this.setIsOverSearchLimit(false);
+      this.setSearchedMappedPropertyNodes(allSearchedMappedPropertyNodes);
+    }
+  }
+
+  search(): void {
+    this.searchState.inProgress();
+    this.resetPropertyState();
+    this.fetchMappedPropertyNodes(this.searchText);
+    this.searchState.complete();
   }
 
   setIsSearchPanelOpen(val: boolean): void {
@@ -315,6 +417,10 @@ export class QueryBuilderPropertySearchState {
 
   setIsSearchPanelHidden(val: boolean): void {
     this.isSearchPanelHidden = val;
+  }
+
+  setIsOverSearchLimit(val: boolean): void {
+    this.isOverSearchLimit = val;
   }
 
   setSearchText(val: string): void {
@@ -327,7 +433,7 @@ export class QueryBuilderPropertySearchState {
     this.searchedMappedPropertyNodes = val;
   }
 
-  refreshPropertyState(): void {
+  resetPropertyState(): void {
     this.setSearchedMappedPropertyNodes([]);
   }
 }

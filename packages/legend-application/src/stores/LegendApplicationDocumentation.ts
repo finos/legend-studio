@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-// Dependencies
-@forward 'extensions';
-
-// Components
-@forward 'components/app';
-@forward 'components/blocking-alert';
-@forward 'components/backdrop';
-@forward 'components/notification';
-@forward 'components/virtual-assistant';
-@forward 'components/text-search';
-
-// Shared
-@forward 'components/shared/documentation-link';
-@forward 'components/shared/lambda-editor';
-@forward 'components/shared/text-editor';
-@forward 'components/shared/value-spec-editor';
-@forward 'components/shared/packageable-element-format-option';
-@forward 'components/shared/execution-plan-viewer';
+export enum LEGEND_APPLICATION_DOCUMENTATION_KEY {
+  QUESTION_HOW_TO_USE_A_SEARCH_BAR = 'question.how-to-use-search-bar',
+}

@@ -21,6 +21,7 @@ export { QUERY_BUILDER_TEST_ID } from './components//QueryBuilder_TestID.js';
 export { QueryBuilder } from './components//QueryBuilder.js';
 export { QueryBuilderState } from './stores//QueryBuilderState.js';
 
+export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';
 export {
   QueryBuilderClassSelector,
   buildRuntimeValueOption,
