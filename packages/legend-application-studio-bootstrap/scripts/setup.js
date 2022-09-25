@@ -68,7 +68,11 @@ export const setup = (outputDir) => {
              */
             // { url: 'http://localhost:60001/studio/documentation.json' },
             {
-              url: 'https://legend.finos.org/resource/studio/documentation.json',
+              url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
+              simple: true,
+            },
+            {
+              url: 'https://legend.finos.org/resource/studio/documentation/studio.json',
               simple: true,
             },
           ],
