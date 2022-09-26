@@ -132,7 +132,7 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
         node,
         this.projectionState.queryBuilderState.graphManagerState.graph,
         this.projectionState.queryBuilderState.explorerState.propertySearchState
-          .mappedPropertyNodes,
+          .indexedExplorerTreeNodes,
       ),
     );
     this.columnName = getPropertyChainName(

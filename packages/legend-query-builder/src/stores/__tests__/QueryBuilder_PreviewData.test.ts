@@ -116,7 +116,7 @@ describe(integrationTest('Query builder preview data'), () => {
           propertyNode,
           queryBuilderState.graphManagerState.graph,
           queryBuilderState.explorerState.propertySearchState
-            .mappedPropertyNodes,
+            .indexedExplorerTreeNodes,
         );
       const rawLambda = numeric
         ? buildNumericPreviewDataQuery(queryBuilderState, propertyExpression)

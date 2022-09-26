@@ -715,7 +715,7 @@ export class QueryBuilderExplorerState {
       this.nonNullableTreeData,
       node,
       this.queryBuilderState.graphManagerState.graph,
-      this.propertySearchState.mappedPropertyNodes,
+      this.propertySearchState.indexedExplorerTreeNodes,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {

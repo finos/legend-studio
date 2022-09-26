@@ -130,6 +130,7 @@ export enum CORE_PURE_PATH {
   TDS_ROW = 'meta::pure::tds::TDSRow',
 }
 
+export const PURE_DOC_TAG = 'doc';
 export const PURE_DEPRECATED_STEREOTYPE = 'deprecated';
 
 export enum MILESTONING_STEREOTYPE {

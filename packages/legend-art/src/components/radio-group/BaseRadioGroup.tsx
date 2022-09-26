@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { uuid } from '@finos/legend-shared';
 import {
   type RadioGroupProps as MuiRadioGroupProps,
   RadioGroup as MuiRadioGroup,
@@ -35,7 +34,7 @@ export const BaseRadioGroup: React.FC<
   {
     options: unknown[];
     /**
-     * Display raidio buttons in a [n, size] matrix
+     * Display radio buttons in a (size x n) matrix (i.e. size is the number of columns).
      */
     size: number;
     className?: string | undefined;
@@ -50,12 +49,14 @@ export const BaseRadioGroup: React.FC<
 
   return (
     <div className={clsx('mui-radio-group', className)}>
-      {targetOptionsValuesInMatrix.map((row) => (
-        <div key={uuid()}>
+      {targetOptionsValuesInMatrix.map((row, idx) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={idx}>
           <MuiRadioGroup className="mui-radio-group__group" {...otherProps}>
             {row.map((op) => (
               <FormControlLabel
                 className="mui-radio-group__group__column"
+                style={{ width: `${100 / size}%` }}
                 key={op}
                 value={op}
                 control={

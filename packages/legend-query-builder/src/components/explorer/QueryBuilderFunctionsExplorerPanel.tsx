@@ -56,6 +56,8 @@ import {
   Package,
   ROOT_PACKAGE_NAME,
   getMultiplicityDescription,
+  CORE_PURE_PATH,
+  PURE_DOC_TAG,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 
@@ -114,7 +116,12 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
             </div>
             <div className="query-builder__tooltip__item__value">
               {element.taggedValues
-                .filter((t) => t.tag.value._OWNER.name === 'doc')
+                .filter(
+                  (t) =>
+                    t.tag.ownerReference.value.path ===
+                      CORE_PURE_PATH.PROFILE_DOC &&
+                    t.tag.value.value === PURE_DOC_TAG,
+                )
                 .map((t) => t.value)
                 .join('; ')}
             </div>
