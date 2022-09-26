@@ -123,7 +123,7 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
                     t.tag.value.value === PURE_DOC_TAG,
                 )
                 .map((t) => t.value)
-                .join('; ')}
+                .join('\n\n')}
             </div>
           </div>
           <div className="query-builder__tooltip__item">
