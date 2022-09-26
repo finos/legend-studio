@@ -158,6 +158,11 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const onWorkspaceChange = (val: WorkspaceOption | null): void => {
       if (val) {
         setupStore.changeWorkspace(val.value);
+        if (!setupStore.currentProjectConfigurationStatus?.projectConfigured) {
+          applicationStore.notifyIllegalState(
+            `Can't edit current workspace as the current project is not configured`,
+          );
+        }
       } else {
         setupStore.resetWorkspace();
       }
@@ -254,6 +259,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       darkMode={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
+                        setupStore,
                       )}
                     />
                     <button
@@ -317,7 +323,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         !setupStore.currentProject ||
                         !setupStore.currentWorkspace ||
                         setupStore.createWorkspaceState.isInProgress ||
-                        setupStore.createOrImportProjectState.isInProgress
+                        setupStore.createOrImportProjectState.isInProgress ||
+                        !setupStore.currentProjectConfigurationStatus
+                          ?.projectConfigured
                       }
                     >
                       Edit Workspace

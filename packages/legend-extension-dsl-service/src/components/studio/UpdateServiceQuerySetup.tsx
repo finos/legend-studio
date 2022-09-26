@@ -126,7 +126,11 @@ const CreateWorkspaceModal = observer(
       ),
     );
     const createWorkspace = (): void => {
-      if (workspaceName && !workspaceAlreadyExists) {
+      if (
+        workspaceName &&
+        !workspaceAlreadyExists &&
+        setupStore.currentProjectConfigurationStatus?.projectConfigured
+      ) {
         flowResult(
           setupStore.createWorkspace(
             selectedProject.projectId,
@@ -134,6 +138,12 @@ const CreateWorkspaceModal = observer(
             selectedSnapService.path,
           ),
         ).catch(applicationStore.alertUnhandledError);
+      } else if (
+        !setupStore.currentProjectConfigurationStatus?.projectConfigured
+      ) {
+        applicationStore.notifyIllegalState(
+          `Can't create a workspace as the project is not configured`,
+        );
       }
     };
     const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
@@ -218,7 +228,8 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
     const disableProceedButton =
       !setupStore.currentProject ||
       !setupStore.currentGroupWorkspace ||
-      !setupStore.currentWorkspaceService;
+      !setupStore.currentWorkspaceService ||
+      setupStore.currentProjectConfigurationStatus?.projectConfigured;
     const handleProceed = (): void => {
       if (
         setupStore.currentProject &&
@@ -250,6 +261,11 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
             option.value.path,
           ),
         ).catch(applicationStore.alertUnhandledError);
+        if (!setupStore.currentProjectConfigurationStatus?.projectConfigured) {
+          applicationStore.notifyIllegalState(
+            `Can't edit current service query as the current project is not configured`,
+          );
+        }
       } else {
         setupStore.resetCurrentService();
       }
@@ -289,6 +305,13 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
               setupStore.currentSnapshotService.path,
             ),
           ).catch(applicationStore.alertUnhandledError);
+          if (
+            !setupStore.currentProjectConfigurationStatus?.projectConfigured
+          ) {
+            applicationStore.notifyIllegalState(
+              `Can't edit service query as the project is not configured`,
+            );
+          }
         }
       } else {
         setupStore.resetCurrentGroupWorkspace();

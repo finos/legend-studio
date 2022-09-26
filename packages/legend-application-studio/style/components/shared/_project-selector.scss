@@ -68,4 +68,49 @@
       background: var(--color-light-grey-400);
     }
   }
+
+  &__project-modal-not-configured {
+    @include flexCenter;
+  }
+
+  &__project-model-not-configured-icon {
+    font-size: 2rem;
+    color: var(--color-red-200);
+    margin-left: 1rem;
+    cursor: pointer;
+    display: flex;
+    margin-right: 0.5rem;
+  }
+
+  &__review-url-visit-btn {
+    display: flex;
+    width: 6rem;
+    margin-right: 0.5rem;
+
+    &__label {
+      @include flexCenter;
+
+      width: 4.2rem;
+      height: 1.8rem;
+      background: var(--color-yellow-400);
+      border-radius: 0.2rem 0 0 0.2rem;
+      font-size: 1.2rem;
+      color: var(--color-dark-grey-200);
+      font-weight: 500;
+    }
+
+    &__icon {
+      @include flexCenter;
+
+      height: 1.8rem;
+      width: 1.8rem;
+      background: var(--color-yellow-400);
+      border-radius: 0 50% 50% 0;
+
+      svg {
+        font-size: 1.6rem;
+        color: var(--color-dark-grey-200);
+      }
+    }
+  }
 }

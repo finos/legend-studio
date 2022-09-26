@@ -53,6 +53,7 @@ import type {
 import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
 import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
 import type { Platform } from './models/configuration/Platform.js';
+import type { ProjectConfigurationStatus } from './models/project/ProjectConfigurationStatus.js';
 
 enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
@@ -396,6 +397,12 @@ export class SDLCServerClient extends AbstractServerClient {
   getLatestProjectStructureVersion = (): Promise<
     PlainObject<ProjectStructureVersion>
   > => this.get(`${this.baseUrl}/configuration/latestProjectStructureVersion`);
+  projectConfigurationStatus = (
+    projectId: string,
+  ): Promise<PlainObject<ProjectConfigurationStatus>> =>
+    this.get(
+      `${this.baseUrl}/projects/${projectId}/configuration/projectConfigurationStatus`,
+    );
 
   // ------------------------------------------- Workflow -------------------------------------------
 

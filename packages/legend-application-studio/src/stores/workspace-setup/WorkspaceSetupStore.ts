@@ -34,10 +34,7 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-} from '@finos/legend-application';
+import { ProjectSetupStore } from '../project-setup/ProjectSetupStore.js';
 
 interface ImportProjectSuccessReport {
   projectId: string;
@@ -45,14 +42,9 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
-export class WorkspaceSetupStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
+export class WorkspaceSetupStore extends ProjectSetupStore {
   initState = ActionState.create();
 
-  projects: Project[] = [];
-  currentProject?: Project | undefined;
-  loadProjectsState = ActionState.create();
   createOrImportProjectState = ActionState.create();
   importProjectSuccessReport?: ImportProjectSuccessReport | undefined;
   showCreateProjectModal = false;
@@ -67,9 +59,9 @@ export class WorkspaceSetupStore {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
   ) {
+    super(applicationStore, sdlcServerClient);
+
     makeObservable(this, {
-      projects: observable,
-      currentProject: observable,
       importProjectSuccessReport: observable,
       showCreateProjectModal: observable,
       workspaces: observable,
@@ -82,15 +74,11 @@ export class WorkspaceSetupStore {
       resetProject: action,
       resetWorkspace: action,
       initialize: flow,
-      loadProjects: flow,
       changeProject: flow,
       createProject: flow,
       importProject: flow,
       createWorkspace: flow,
     });
-
-    this.applicationStore = applicationStore;
-    this.sdlcServerClient = sdlcServerClient;
   }
 
   setShowCreateProjectModal(val: boolean): void {
@@ -114,6 +102,7 @@ export class WorkspaceSetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
+    this.resetCurrentProjectConfigurationStatus();
   }
 
   resetWorkspace(): void {
@@ -178,27 +167,6 @@ export class WorkspaceSetupStore {
     }
   }
 
-  *loadProjects(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadProjectsState.inProgress();
-    try {
-      this.projects = (
-        (yield this.sdlcServerClient.getProjects(
-          undefined,
-          isValidSearchString ? searchText : undefined,
-          undefined,
-          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-        )) as PlainObject<Project>[]
-      ).map((v) => Project.serialization.fromJson(v));
-      this.loadProjectsState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      this.loadProjectsState.fail();
-    }
-  }
-
   *changeProject(
     project: Project,
     workspaceInfo?:
@@ -211,7 +179,9 @@ export class WorkspaceSetupStore {
     this.loadWorkspacesState.inProgress();
 
     try {
+      this.resetCurrentProjectConfigurationStatus();
       this.currentProject = project;
+      yield flowResult(this.fetchCurrentProjectConfigurationStatus());
 
       const workspacesInConflictResolutionIds = (
         (yield this.sdlcServerClient.getWorkspacesInConflictResolutionMode(

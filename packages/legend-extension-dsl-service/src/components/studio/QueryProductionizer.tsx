@@ -392,6 +392,7 @@ const QueryProductionizerContent = observer(() => {
                       escapeClearsValue={true}
                       formatOptionLabel={getProjectOptionLabelFormatter(
                         applicationStore,
+                        productionizerStore,
                       )}
                     />
                   </div>

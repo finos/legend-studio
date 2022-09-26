@@ -55,7 +55,10 @@ export const CreateWorkspaceModal = observer(
       ),
     );
     const createWorkspace = (): void => {
-      if (workspaceName) {
+      if (
+        workspaceName &&
+        setupStore.currentProjectConfigurationStatus?.projectConfigured
+      ) {
         flowResult(
           setupStore.createWorkspace(
             selectedProject.projectId,
@@ -63,6 +66,12 @@ export const CreateWorkspaceModal = observer(
             isGroupWorkspace ? WorkspaceType.GROUP : WorkspaceType.USER,
           ),
         ).catch(applicationStore.alertUnhandledError);
+      } else if (
+        !setupStore.currentProjectConfigurationStatus?.projectConfigured
+      ) {
+        applicationStore.notifyIllegalState(
+          `Can't create a workspace as the project is not configured`,
+        );
       }
     };
     const toggleGroupWorkspace = (): void => {

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { ArrowCircleRightIcon } from '@finos/legend-art';
+import { ArrowCircleRightIcon, ExclamationCircleIcon } from '@finos/legend-art';
 import type { Project } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../../stores/LegendStudioBaseStore.js';
 import { generateViewProjectRoute } from '../../stores/LegendStudioRouter.js';
+import type { ProjectSetupStore } from '../../stores/project-setup/ProjectSetupStore.js';
 
 export interface ProjectOption {
   label: string;
@@ -31,6 +32,7 @@ export const buildProjectOption = (project: Project): ProjectOption => ({
 
 export const getProjectOptionLabelFormatter = (
   applicationStore: LegendStudioApplicationStore,
+  setupStore: ProjectSetupStore,
 ): ((option: ProjectOption) => React.ReactNode) =>
   function ProjectOptionLabel(option: ProjectOption): React.ReactNode {
     const viewProject = (): void =>
@@ -39,6 +41,13 @@ export const getProjectOptionLabelFormatter = (
           generateViewProjectRoute(option.value.projectId),
         ),
       );
+    const openReview = (): void => {
+      if (setupStore.currentProjectConfigurationReviewUrl) {
+        applicationStore.navigator.visitAddress(
+          setupStore.currentProjectConfigurationReviewUrl,
+        );
+      }
+    };
 
     return (
       <div className="project-selector__option">
@@ -47,17 +56,48 @@ export const getProjectOptionLabelFormatter = (
             {option.label}
           </div>
         </div>
-        <button
-          type="button" // prevent this toggler being activated on form submission
-          className="project-selector__option__visit-btn"
-          tabIndex={-1}
-          onClick={viewProject}
-        >
-          <div className="project-selector__option__visit-btn__label">view</div>
-          <div className="project-selector__option__visit-btn__icon">
-            <ArrowCircleRightIcon />
-          </div>
-        </button>
+        {setupStore.currentProject &&
+          setupStore.currentProject.name === option.label &&
+          setupStore.currentProjectConfigurationStatus?.projectConfigured ===
+            false && (
+            <div className="project-selector__option__project-modal-not-configured">
+              <ExclamationCircleIcon
+                title="Your project is not configured correctly. To complete the configuration, please click the visit button and commit it"
+                className="project-selector__option__project-model-not-configured-icon"
+              />
+              <button
+                type="button"
+                className="project-selector__option__visit-btn"
+                tabIndex={-1}
+                onClick={openReview}
+              >
+                <div className="project-selector__option__visit-btn__label">
+                  review
+                </div>
+                <div className="project-selector__option__visit-btn__icon">
+                  <ArrowCircleRightIcon />
+                </div>
+              </button>
+            </div>
+          )}
+        {setupStore.currentProject &&
+          setupStore.currentProject.name === option.label &&
+          setupStore.currentProjectConfigurationStatus?.projectConfigured ===
+            true && (
+            <button
+              type="button" // prevent this toggler being activated on form submission
+              className="project-selector__option__visit-btn"
+              tabIndex={-1}
+              onClick={viewProject}
+            >
+              <div className="project-selector__option__visit-btn__label">
+                view
+              </div>
+              <div className="project-selector__option__visit-btn__icon">
+                <ArrowCircleRightIcon />
+              </div>
+            </button>
+          )}
       </div>
     );
   };

@@ -32,24 +32,14 @@ import {
 import {
   type LegendStudioApplicationStore,
   LEGEND_STUDIO_APP_EVENT,
+  ProjectSetupStore,
 } from '@finos/legend-application-studio';
 import { generateProjectServiceQueryUpdaterSetupRoute } from './DSL_Service_LegendStudioRouter.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-import {
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
-} from '@finos/legend-application';
 
-export class UpdateProjectServiceQuerySetupStore {
-  readonly applicationStore: LegendStudioApplicationStore;
-  readonly sdlcServerClient: SDLCServerClient;
-
+export class UpdateProjectServiceQuerySetupStore extends ProjectSetupStore {
   readonly initState = ActionState.create();
-
-  readonly loadProjectsState = ActionState.create();
-  projects: Project[] = [];
-  currentProject?: Project | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   readonly createWorkspaceState = ActionState.create();
@@ -64,9 +54,9 @@ export class UpdateProjectServiceQuerySetupStore {
     applicationStore: LegendStudioApplicationStore,
     sdlcServerClient: SDLCServerClient,
   ) {
+    super(applicationStore, sdlcServerClient);
+
     makeObservable(this, {
-      projects: observable,
-      currentProject: observable,
       groupWorkspaces: observable,
       currentGroupWorkspace: observable,
       showCreateWorkspaceModal: observable,
@@ -78,7 +68,6 @@ export class UpdateProjectServiceQuerySetupStore {
       resetCurrentService: action,
       changeService: action,
       initialize: flow,
-      loadProjects: flow,
       changeProject: flow,
       changeWorkspace: flow,
       createWorkspace: flow,
@@ -99,6 +88,7 @@ export class UpdateProjectServiceQuerySetupStore {
     this.applicationStore.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
+    this.resetCurrentProjectConfigurationStatus();
   }
 
   resetCurrentGroupWorkspace(): void {
@@ -148,32 +138,13 @@ export class UpdateProjectServiceQuerySetupStore {
     }
   }
 
-  *loadProjects(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadProjectsState.inProgress();
-    try {
-      this.projects = (
-        (yield this.sdlcServerClient.getProjects(
-          undefined,
-          isValidSearchString ? searchText : undefined,
-          undefined,
-          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-        )) as PlainObject<Project>[]
-      ).map((v) => Project.serialization.fromJson(v));
-      this.loadProjectsState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      this.loadProjectsState.fail();
-    }
-  }
-
   *changeProject(project: Project): GeneratorFn<void> {
+    this.resetCurrentProjectConfigurationStatus();
     this.currentProject = project;
     this.applicationStore.navigator.updateCurrentLocation(
       generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
     );
+    yield flowResult(this.fetchCurrentProjectConfigurationStatus());
 
     this.loadWorkspacesState.inProgress();
     try {

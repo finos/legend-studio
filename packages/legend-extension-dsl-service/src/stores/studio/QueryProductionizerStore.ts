@@ -25,6 +25,7 @@ import {
   type LegendStudioApplicationStore,
   LEGEND_STUDIO_APP_EVENT,
   generateEditorRoute,
+  ProjectSetupStore,
 } from '@finos/legend-application-studio';
 import {
   type LightQuery,
@@ -145,9 +146,7 @@ const createServiceEntity = async (
 
 const DEFAULT_WORKSPACE_NAME_PREFIX = 'productionize-query';
 
-export class QueryProductionizerStore {
-  readonly applicationStore: LegendStudioApplicationStore;
-  readonly sdlcServerClient: SDLCServerClient;
+export class QueryProductionizerStore extends ProjectSetupStore {
   readonly depotServerClient: DepotServerClient;
   readonly graphManagerState: GraphManagerState;
 
@@ -161,10 +160,6 @@ export class QueryProductionizerStore {
   currentQueryInfo?: QueryInfo | undefined;
   currentQueryProject?: ProjectData | undefined;
   showQueryPreviewModal = false;
-
-  readonly loadProjectsState = ActionState.create();
-  projects: Project[] = [];
-  currentProject?: Project | undefined;
 
   readonly loadWorkspacesState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
@@ -180,14 +175,14 @@ export class QueryProductionizerStore {
     depotServerClient: DepotServerClient,
     graphManagerState: GraphManagerState,
   ) {
+    super(applicationStore, sdlcServerClient);
+
     makeObservable(this, {
       queries: observable,
       currentQuery: observable,
       currentQueryInfo: observable,
       currentQueryProject: observable,
       showQueryPreviewModal: observable,
-      projects: observable,
-      currentProject: observable,
       isAutoConfigurationEnabled: observable,
       groupWorkspaces: observable,
       workspaceName: observable,
@@ -206,12 +201,8 @@ export class QueryProductionizerStore {
       initialize: flow,
       loadQueries: flow,
       changeQuery: flow,
-      loadProjects: flow,
       changeProject: flow,
     });
-
-    this.applicationStore = applicationStore;
-    this.sdlcServerClient = sdlcServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = graphManagerState;
   }
@@ -384,27 +375,6 @@ export class QueryProductionizerStore {
       assertErrorThrown(error);
       this.applicationStore.notifyError(error);
       this.loadQueriesState.fail();
-    }
-  }
-
-  *loadProjects(searchText: string): GeneratorFn<void> {
-    const isValidSearchString =
-      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
-    this.loadProjectsState.inProgress();
-    try {
-      this.projects = (
-        (yield this.sdlcServerClient.getProjects(
-          undefined,
-          isValidSearchString ? searchText : undefined,
-          undefined,
-          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-        )) as PlainObject<Project>[]
-      ).map((v) => Project.serialization.fromJson(v));
-      this.loadProjectsState.pass();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.notifyError(error);
-      this.loadProjectsState.fail();
     }
   }
 
