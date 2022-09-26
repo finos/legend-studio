@@ -24,6 +24,9 @@ import type {
   AbstractPureGraphManagerExtension,
 } from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
+import type { V1_AssertionStatus } from './protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
+import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 
 export type PureGraphManagerExtensionBuilder = (
   graphManager: AbstractPureGraphManager,
@@ -33,6 +36,11 @@ export type ElementObserver = (
   metamodel: PackageableElement,
   context: ObserverContext,
 ) => PackageableElement | undefined;
+
+export type AtomicTestObserver = (
+  metamodel: AtomicTest,
+  context: ObserverContext,
+) => AtomicTest | undefined;
 
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
@@ -52,6 +60,11 @@ export type TestableFinder = (
   id: string,
   graph: PureModel,
 ) => Testable | undefined;
+
+export type TestableAssertion = (
+  testable: AtomicTest,
+  element: V1_AssertionStatus,
+) => TestAssertion | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
@@ -106,4 +119,11 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of testable finders.
    */
   getExtraTestableFinders?(): TestableFinder[];
+
+  /**
+   * Get the list of testable assertion builders.
+   */
+  getExtraTestableAssertionBuilders?(): TestableAssertion[];
+
+  getExtraAtomicTestObservers?(): AtomicTestObserver[];
 }

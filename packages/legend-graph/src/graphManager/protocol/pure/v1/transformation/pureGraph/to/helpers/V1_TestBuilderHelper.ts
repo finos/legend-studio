@@ -34,6 +34,7 @@ import type { V1_TestSuite } from '../../../../model/test/V1_TestSuite.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
+import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
 
 const buildEqualTo = (
   element: V1_EqualTo,
@@ -46,7 +47,7 @@ const buildEqualTo = (
   return equalTo;
 };
 
-const buildEqualToJson = (
+export const buildEqualToJson = (
   element: V1_EqualToJson,
   parentTest: AtomicTest | undefined,
   context: V1_GraphBuilderContext,
@@ -89,6 +90,25 @@ export const V1_buildTestAssertion = (
     return buildEqualToTDS(value, parentTest, context);
   }
   throw new UnsupportedOperationError(`Can't build test assertion`, value);
+};
+
+export const V1_buildAtomicTest = (
+  value: V1_AtomicTest,
+  context: V1_GraphBuilderContext,
+): AtomicTest => {
+  const extraAtomicTestBuilder = context.extensions.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraAtomicTestBuilders?.() ?? [],
+  );
+  for (const builder of extraAtomicTestBuilder) {
+    const metamodel = builder(value, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build AtomicTest: no compatible builder available from plugins`,
+    value,
+  );
 };
 
 export const V1_buildTestSuite = (

@@ -53,6 +53,7 @@ import {
   AssertionTestTreeNodeData,
   TestableTreeNodeData,
   TestSuiteTreeNodeData,
+  TestBatchTreeNodeData,
   getNodeTestableResult,
   getAtomicTest_TestResult,
   getAssertionStatus,
@@ -334,6 +335,13 @@ const TestableTreeNodeContainer: React.FC<
           </div>
         )}
         {node instanceof AtomicTestTreeNodeData && (
+          <div className="global-test-runner__item__link__content">
+            <span className="global-test-runner__item__link__content__id">
+              {node.label}
+            </span>
+          </div>
+        )}
+        {node instanceof TestBatchTreeNodeData && (
           <div className="global-test-runner__item__link__content">
             <span className="global-test-runner__item__link__content__id">
               {node.label}

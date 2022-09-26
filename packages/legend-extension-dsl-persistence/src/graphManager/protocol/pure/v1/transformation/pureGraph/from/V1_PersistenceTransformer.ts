@@ -150,8 +150,19 @@ import type { DSLPersistence_PureProtocolProcessorPlugin_Extension } from '../..
 import {
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
+  V1_transformEmbeddedData,
+  TestAssertion,
+  V1_transformTestAssertion,
+  V1_transformAtomicTest,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
+import type { PersistenceTestBatch } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestBatch.js';
+import { V1_PersistenceTestBatch } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceTestBatch.js';
+import type { PersistenceTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestData.js';
+import { V1_PersistenceTestData } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceTestData.js';
+import type { ConnectionTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_ConnectionTestData.js';
+import { V1_ConnectionTestData } from '../../../model/packageableElements/persistence/V1_DSLPersistence_ConnectionTestData.js';
+import type { V1_PersistenceTest } from '../../../model/packageableElements/persistence/V1_DSLPersistence_PersistenceTest.js';
 
 /**********
  * trigger
@@ -609,6 +620,47 @@ export const V1_transformNotifier = (
 };
 
 /**********
+ * test
+ **********/
+
+const V1_transformConnectionTestData = (
+  element: ConnectionTestData,
+  context: V1_GraphTransformerContext,
+): V1_ConnectionTestData => {
+  const connectionTestData = new V1_ConnectionTestData();
+  connectionTestData.data = V1_transformEmbeddedData(element.data, context);
+  return connectionTestData;
+};
+
+const V1_transformTestData = (
+  element: PersistenceTestData,
+  context: V1_GraphTransformerContext,
+): V1_PersistenceTestData => {
+  const testData = new V1_PersistenceTestData();
+  testData.connection = V1_transformConnectionTestData(
+    element.connection,
+    context,
+  );
+  return testData;
+};
+
+export const V1_transformPersistenceTestBatch = (
+  element: PersistenceTestBatch,
+  context: V1_GraphTransformerContext,
+): V1_PersistenceTestBatch => {
+  const persistenceTestBatch = new V1_PersistenceTestBatch();
+  persistenceTestBatch.id = element.id;
+  persistenceTestBatch.testData = V1_transformTestData(
+    element.testData,
+    context,
+  );
+  persistenceTestBatch.assertions = element.assertions.map(
+    (assertion: TestAssertion) => V1_transformTestAssertion(assertion),
+  );
+  return persistenceTestBatch;
+};
+
+/**********
  * persistence
  **********/
 
@@ -623,5 +675,10 @@ export const V1_transformPersistence = (
   protocol.service = element.service.valueForSerialization ?? '';
   protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
+  if (element.tests) {
+    protocol.tests = element.tests.map(
+      (test) => <V1_PersistenceTest>V1_transformAtomicTest(test, context),
+    );
+  }
   return protocol;
 };

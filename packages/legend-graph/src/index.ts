@@ -180,6 +180,7 @@ export * from './graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
 
 export * from './graphManager/helpers/DSLData_GraphManagerHelper.js';
 export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_TestBuilderHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -241,6 +242,7 @@ export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
 
 export { V1_transformConnection } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_ConnectionTransformer.js';
 export { V1_transformRuntime } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_RuntimeTransformer.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_TestTransformer.js';
 export { V1_transformPackageableElement } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_PackageableElementTransformer.js';
 export {
   V1_transformStereotype,
@@ -265,6 +267,7 @@ export {
   V1_serializeRawValueSpecification,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 export { V1_transformPropertyReference } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_MappingTransformer.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DataElementTransformer.js';
 export { V1_EngineServerClient } from './graphManager/protocol/pure/v1/engine/V1_EngineServerClient.js';
 export { V1_Engine } from './graphManager/protocol/pure/v1/engine/V1_Engine.js';
 export {
@@ -290,6 +293,9 @@ export {
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DataElementSerializationHelper.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
 
@@ -302,10 +308,16 @@ export * from './graph/metamodel/pure/test/assertion/status/AssertPass.js';
 export * from './graph/metamodel/pure/test/assertion/status/EqualToJsonAssertFail.js';
 export * from './graph/metamodel/pure/test/assertion/TestAssertion.js';
 export * from './graph/metamodel/pure/test/Test.js';
+export * from './graph/metamodel/pure/test/TestBatch.js';
 export * from './graph/metamodel/pure/test/assertion/EqualTo.js';
 export * from './graph/metamodel/pure/test/assertion/EqualToJson.js';
 export * from './graph/metamodel/pure/test/assertion/EqualToTDS.js';
 export * from './graph/metamodel/pure/test/result/AtomicTestId.js';
+export * from './graphManager/protocol/pure/v1/model/test/V1_AtomicTest.js';
+export * from './graphManager/protocol/pure/v1/model/test/V1_TestBatch.js';
+export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_EqualToJson.js';
+export * from './graphManager/protocol/pure/v1/model/test/assertion/V1_TestAssertion.js';
+export * from './graphManager/protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
 
 // --------------------------------------------- VALIDATION --------------------------------------------------
 

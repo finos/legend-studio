@@ -124,7 +124,7 @@ export const observe_ServiceTestSuite = skipObservedWithContext(
       hashCode: computed,
     });
 
-    metamodel.tests.forEach(observe_AtomicTest);
+    metamodel.tests.forEach((test) => observe_AtomicTest(test, context));
     observe_TestData(metamodel.testData, context);
 
     return metamodel;

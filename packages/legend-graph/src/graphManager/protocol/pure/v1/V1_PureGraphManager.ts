@@ -1641,6 +1641,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           graph,
           this.pluginManager.getPureGraphManagerPlugins(),
         ),
+      this.pluginManager.getPureGraphManagerPlugins(),
     );
     return result;
   }
@@ -1680,6 +1681,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
             graph,
             this.pluginManager.getPureGraphManagerPlugins(),
           ),
+        this.pluginManager.getPureGraphManagerPlugins(),
       );
       const result = results[0];
       let status: AssertFail | undefined = undefined;

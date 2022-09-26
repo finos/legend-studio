@@ -18,6 +18,7 @@ import {
   filterByType,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MultiExecutionServiceTestResult } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';
@@ -49,6 +50,7 @@ import {
   V1_TestError,
 } from '../../../../model/test/result/V1_TestResult.js';
 import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId.js';
+import type { PureGraphManagerPlugin } from '../../../../../../../PureGraphManagerPlugin.js';
 
 const buildAtomicTestId = (
   element: V1_AtomicTestId,
@@ -74,48 +76,92 @@ const buildAtomicTestId = (
 const buildAssertFail = (
   element: V1_AssertFail,
   atomicTest: AtomicTest,
+  plugins: PureGraphManagerPlugin[],
 ): AssertFail => {
-  const assertion = guaranteeNonNullable(
-    atomicTest.assertions.find((a) => a.id === element.id),
+  let assertion = atomicTest.assertions.find((a) => a.id === element.id);
+  const extraAssertionBuilder = plugins.flatMap(
+    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
   );
-  return new AssertFail(assertion, element.message);
+
+  for (const builder of extraAssertionBuilder) {
+    const assertionBuilder = builder(atomicTest, element);
+    if (assertionBuilder) {
+      assertion = assertionBuilder;
+    }
+  }
+
+  if (assertion) {
+    return new AssertFail(assertion, element.message);
+  }
+  throw new UnsupportedOperationError("Can't build AssertFail ", element);
 };
+
 const buildAssertPass = (
   element: V1_AssertPass,
   atomicTest: AtomicTest,
+  plugins: PureGraphManagerPlugin[],
 ): AssertPass => {
-  const assertion = guaranteeNonNullable(
-    atomicTest.assertions.find((a) => a.id === element.id),
+  let assertion = atomicTest.assertions.find((a) => a.id === element.id);
+  const extraAssertionBuilder = plugins.flatMap(
+    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
   );
-  return new AssertPass(assertion);
+
+  for (const builder of extraAssertionBuilder) {
+    const assertionBuilder = builder(atomicTest, element);
+    if (assertionBuilder) {
+      assertion = assertionBuilder;
+    }
+  }
+
+  if (assertion) {
+    return new AssertPass(assertion);
+  }
+  throw new UnsupportedOperationError("Can't build AssertPass ", element);
 };
 
 const buildEqualToJsonAssertFail = (
   element: V1_EqualToJsonAssertFail,
   atomicTest: AtomicTest,
+  plugins: PureGraphManagerPlugin[],
 ): EqualToJsonAssertFail => {
-  const assertion = guaranteeNonNullable(
-    atomicTest.assertions.find((a) => a.id === element.id),
+  let assertion = atomicTest.assertions.find((a) => a.id === element.id);
+  const extraAssertionBuilder = plugins.flatMap(
+    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
   );
-  const equalToJsonAssertFail = new EqualToJsonAssertFail(
-    assertion,
-    element.message,
+
+  for (const builder of extraAssertionBuilder) {
+    const assertionBuilder = builder(atomicTest, element);
+    if (assertionBuilder) {
+      assertion = assertionBuilder;
+    }
+  }
+
+  if (assertion) {
+    const equalToJsonAssertFail = new EqualToJsonAssertFail(
+      assertion,
+      element.message,
+    );
+    equalToJsonAssertFail.actual = element.actual;
+    equalToJsonAssertFail.expected = element.expected;
+    return equalToJsonAssertFail;
+  }
+  throw new UnsupportedOperationError(
+    "Can't build EqualToJsonAssertFail ",
+    element,
   );
-  equalToJsonAssertFail.actual = element.actual;
-  equalToJsonAssertFail.expected = element.expected;
-  return equalToJsonAssertFail;
 };
 
 const buildAssertionStatus = (
   value: V1_AssertionStatus,
   atomicTest: AtomicTest,
+  plugins: PureGraphManagerPlugin[],
 ): AssertionStatus => {
   if (value instanceof V1_EqualToJsonAssertFail) {
-    return buildEqualToJsonAssertFail(value, atomicTest);
+    return buildEqualToJsonAssertFail(value, atomicTest, plugins);
   } else if (value instanceof V1_AssertFail) {
-    return buildAssertFail(value, atomicTest);
+    return buildAssertFail(value, atomicTest, plugins);
   } else if (value instanceof V1_AssertPass) {
-    return buildAssertPass(value, atomicTest);
+    return buildAssertPass(value, atomicTest, plugins);
   }
   throw new UnsupportedOperationError(`Can't build assertion status`, value);
 };
@@ -132,12 +178,13 @@ export const V1_buildTestError = (
 export const V1_buildTestFailed = (
   element: V1_TestFailed,
   testable: Testable,
+  plugins: PureGraphManagerPlugin[],
 ): TestFailed => {
   const testFailed = new TestFailed();
   testFailed.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
   testFailed.testable = testable;
   testFailed.assertStatuses = element.assertStatuses.map((e) =>
-    buildAssertionStatus(e, testFailed.atomicTestId.atomicTest),
+    buildAssertionStatus(e, testFailed.atomicTestId.atomicTest, plugins),
   );
   return testFailed;
 };
@@ -155,6 +202,7 @@ export const V1_buildTestPassed = (
 export const V1_buildMultiExecutionServiceTestResult = (
   element: V1_MultiExecutionServiceTestResult,
   testable: Testable,
+  plugins: PureGraphManagerPlugin[],
 ): MultiExecutionServiceTestResult => {
   const multi = new MultiExecutionServiceTestResult();
   multi.testable = testable;
@@ -163,7 +211,7 @@ export const V1_buildMultiExecutionServiceTestResult = (
   Array.from(element.keyIndexedTestResults.entries()).forEach((result) => {
     multi.keyIndexedTestResults.set(
       result[0],
-      V1_buildTestResult(result[1], testable),
+      V1_buildTestResult(result[1], testable, plugins),
     );
   });
   return multi;
@@ -172,15 +220,16 @@ export const V1_buildMultiExecutionServiceTestResult = (
 export function V1_buildTestResult(
   element: V1_TestResult,
   testable: Testable,
+  plugins: PureGraphManagerPlugin[],
 ): TestResult {
   if (element instanceof V1_TestPassed) {
     return V1_buildTestPassed(element, testable);
   } else if (element instanceof V1_TestFailed) {
-    return V1_buildTestFailed(element, testable);
+    return V1_buildTestFailed(element, testable, plugins);
   } else if (element instanceof V1_TestError) {
     return V1_buildTestError(element, testable);
   } else if (element instanceof V1_MultiExecutionServiceTestResult) {
-    return V1_buildMultiExecutionServiceTestResult(element, testable);
+    return V1_buildMultiExecutionServiceTestResult(element, testable, plugins);
   }
   throw new UnsupportedOperationError(`Can't build test result`, element);
 }

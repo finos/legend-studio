@@ -30,6 +30,8 @@ import type { SimpleFunctionExpression } from '../../../graph/metamodel/pure/val
 import type { ValueSpecification } from '../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.js';
 import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
+import type { V1_AtomicTest } from './v1/model/test/V1_AtomicTest.js';
+import type { AtomicTest } from '../../../graph/metamodel/pure/test/Test.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -78,6 +80,16 @@ export type V1_MappingModelRuntimeCompatibilityAnalysisInputCollector = (
 export type V1_PropertyExpressionTypeInferrer = (
   variable: ValueSpecification | undefined,
 ) => Type | undefined;
+
+export type V1_AtomicTestBuilder = (
+  protocol: V1_AtomicTest,
+  context: V1_GraphBuilderContext,
+) => AtomicTest | undefined;
+
+export type V1_AtomicTestTransformer = (
+  metamodel: AtomicTest,
+  context: V1_GraphTransformerContext,
+) => V1_AtomicTest | undefined;
 
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
@@ -161,4 +173,8 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of type inferrers for property expression.
    */
   V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
+
+  V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[];
+
+  V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[];
 }

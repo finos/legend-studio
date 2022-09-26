@@ -30,6 +30,7 @@ import {
   TestPassed,
   AssertPass,
   AssertFail,
+  TestBatch,
   PackageableElement,
   getNullableIDFromTestable,
   MultiExecutionServiceTestResult,
@@ -131,6 +132,14 @@ export class AtomicTestTreeNodeData extends TestTreeNodeData {
   constructor(id: string, atomicTest: AtomicTest) {
     super(id, atomicTest.id);
     this.atomicTest = atomicTest;
+  }
+}
+
+export class TestBatchTreeNodeData extends TestTreeNodeData {
+  testBatch: TestBatch;
+  constructor(id: string, testBatch: TestBatch) {
+    super(id, testBatch.id);
+    this.testBatch = testBatch;
   }
 }
 
@@ -327,6 +336,14 @@ export const getNodeTestableResult = (
     return getTestableResultFromTestResult(
       getAtomicTest_TestResult(node.atomicTest, results),
     );
+  } else if (node instanceof TestBatchTreeNodeData) {
+    node.testBatch.assertions.forEach((assertion) => {
+      getNodeTestableResult(
+        new AssertionTestTreeNodeData(assertion.id, assertion),
+        globalRun,
+        results,
+      );
+    });
   } else if (node instanceof TestSuiteTreeNodeData) {
     return getTestableResultFromTestResults(
       getTestSuite_TestResults(node.testSuite, results),
@@ -346,6 +363,7 @@ export class TestableState {
   testableMetadata: TestableMetadata;
   treeData: TreeData<TestableExplorerTreeNodeData>;
   results: Map<AtomicTest, TestResult> = new Map();
+  batchResults: Map<TestBatch, TestResult> = new Map();
   isRunningTests = ActionState.create();
 
   constructor(

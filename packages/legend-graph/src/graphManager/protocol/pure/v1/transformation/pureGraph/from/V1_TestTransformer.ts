@@ -59,9 +59,24 @@ const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
   return equalToTDS;
 };
 
-export const V1_transformAtomicTest = (value: AtomicTest): V1_AtomicTest => {
+export const V1_transformAtomicTest = (
+  value: AtomicTest,
+  context: V1_GraphTransformerContext,
+): V1_AtomicTest => {
   if (value instanceof ServiceTest) {
     return V1_transformServiceTest(value);
+  }
+
+  const extraAtomicTestBuilder = context.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraAtomicTestTransformers?.() ?? [],
+  );
+
+  for (const builder of extraAtomicTestBuilder) {
+    let atomicTestBuilder: V1_AtomicTest | undefined;
+    atomicTestBuilder = builder(value, context);
+    if (atomicTestBuilder) {
+      return atomicTestBuilder;
+    }
   }
   throw new UnsupportedOperationError(`Can't transform atomic test`, value);
 };

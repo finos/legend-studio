@@ -40,9 +40,15 @@ import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceContextModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSLPersistenceContext_ProtocolHelper.js';
-import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
+import {
+  V1_buildPersistence,
+  V1_buildTestBatch,
+} from './v1/transformation/pureGraph/to/V1_PersistenceBuilder.js';
 import { V1_buildPersistenceContext } from './v1/transformation/pureGraph/to/V1_PersistenceContextBuilder.js';
-import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
+import {
+  V1_transformPersistence,
+  V1_transformPersistenceTestBatch,
+} from './v1/transformation/pureGraph/from/V1_PersistenceTransformer.js';
 import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/from/V1_PersistenceContextTransformer.js';
 import type {
   DSLPersistence_PureProtocolProcessorPlugin_Extension,
@@ -63,9 +69,16 @@ import {
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
   V1_buildFullPath,
+  AtomicTest,
+  V1_AtomicTest,
+  V1_AtomicTestBuilder,
+  V1_AtomicTestTransformer,
 } from '@finos/legend-graph';
-import { assertType, type PlainObject } from '@finos/legend-shared';
+import { assertType, PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
+import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceTest.js';
+import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTest.js';
+import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::Persistence';
@@ -249,6 +262,52 @@ export class DSLPersistence_PureProtocolProcessorPlugin
           protocol.month = metamodel.month;
           protocol.dayOfWeek = metamodel.dayOfWeek;
           return protocol;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[] {
+    return [
+      (
+        protocol: V1_AtomicTest,
+        context: V1_GraphBuilderContext,
+      ): AtomicTest | undefined => {
+        if (protocol instanceof V1_PersistenceTest) {
+          const test = new PersistenceTest();
+          test.id = protocol.id;
+          test.isTestDataFromServiceOutput = (<V1_PersistenceTest>(
+            protocol
+          )).isTestDataFromServiceOutput;
+          test.testBatches = V1_buildTestBatch(
+            (<V1_PersistenceTest>protocol).testBatches,
+            test,
+            context,
+          );
+          return test;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[] {
+    return [
+      (
+        metamodel: AtomicTest,
+        context: V1_GraphTransformerContext,
+      ): V1_AtomicTest | undefined => {
+        if (metamodel instanceof PersistenceTest) {
+          const persistenceTest = new V1_PersistenceTest();
+          persistenceTest.id = metamodel.id;
+          persistenceTest.isTestDataFromServiceOutput =
+            metamodel.isTestDataFromServiceOutput;
+          persistenceTest.testBatches = metamodel.testBatches.map(
+            (testBatch: PersistenceTestBatch) =>
+              V1_transformPersistenceTestBatch(testBatch, context),
+          );
+          return persistenceTest;
         }
         return undefined;
       },
