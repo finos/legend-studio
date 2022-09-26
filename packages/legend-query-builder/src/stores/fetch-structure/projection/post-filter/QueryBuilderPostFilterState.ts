@@ -302,7 +302,7 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData
 }
 
 export class PostFilterConditionState implements Hashable {
-  postFilterState: QueryBuilderPostFilterState;
+  readonly postFilterState: QueryBuilderPostFilterState;
   columnState:
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState;
@@ -322,7 +322,7 @@ export class PostFilterConditionState implements Hashable {
     makeObservable(this, {
       postFilterState: observable,
       value: observable,
-      typeaheadSearchState: observable,
+      operator: observable,
       columnState: observable,
       typeaheadSearchResults: observable,
       changeOperator: action,
@@ -497,6 +497,7 @@ export class QueryBuilderPostFilterState
       expandTree: action,
       replaceBlankNodeWithNode: action,
       suppressClickawayEventListener: action,
+      setRearrangingConditions: action,
       hashCode: computed,
     });
 

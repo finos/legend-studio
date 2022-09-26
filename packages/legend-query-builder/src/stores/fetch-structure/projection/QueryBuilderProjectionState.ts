@@ -93,10 +93,10 @@ export class QueryBuilderProjectionState
   extends QueryBuilderFetchStructureImplementationState
   implements Hashable
 {
+  readonly aggregationState: QueryBuilderAggregationState;
+  readonly postFilterState: QueryBuilderPostFilterState;
+  readonly resultSetModifierState: QueryResultSetModifierState;
   columns: QueryBuilderProjectionColumnState[] = [];
-  aggregationState: QueryBuilderAggregationState;
-  postFilterState: QueryBuilderPostFilterState;
-  resultSetModifierState: QueryResultSetModifierState;
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel = false;
 
@@ -113,9 +113,6 @@ export class QueryBuilderProjectionState
 
     makeObservable(this, {
       columns: observable,
-      aggregationState: observable,
-      postFilterState: observable,
-      resultSetModifierState: observable,
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
       derivations: computed,

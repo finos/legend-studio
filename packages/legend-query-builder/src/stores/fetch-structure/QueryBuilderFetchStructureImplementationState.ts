@@ -34,8 +34,8 @@ export enum FETCH_STRUCTURE_IMPLEMENTATION {
 export abstract class QueryBuilderFetchStructureImplementationState
   implements Hashable
 {
-  queryBuilderState: QueryBuilderState;
-  fetchStructureState: QueryBuilderFetchStructureState;
+  readonly queryBuilderState: QueryBuilderState;
+  readonly fetchStructureState: QueryBuilderFetchStructureState;
 
   constructor(
     queryBuilderState: QueryBuilderState,

@@ -31,7 +31,7 @@ import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuil
 
 export class QueryBuilderAggregateColumnState implements Hashable {
   readonly uuid = uuid();
-  aggregationState: QueryBuilderAggregationState;
+  readonly aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   operator: QueryBuilderAggregateOperator;
@@ -85,8 +85,8 @@ export class QueryBuilderAggregateColumnState implements Hashable {
 }
 
 export class QueryBuilderAggregationState implements Hashable {
-  projectionState: QueryBuilderProjectionState;
-  operators: QueryBuilderAggregateOperator[] = [];
+  readonly projectionState: QueryBuilderProjectionState;
+  readonly operators: QueryBuilderAggregateOperator[] = [];
   columns: QueryBuilderAggregateColumnState[] = [];
 
   constructor(

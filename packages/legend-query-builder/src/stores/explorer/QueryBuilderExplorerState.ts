@@ -585,15 +585,15 @@ export class QueryBuilderExplorerPreviewDataState {
 }
 
 export class QueryBuilderExplorerState {
-  queryBuilderState: QueryBuilderState;
-  previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly queryBuilderState: QueryBuilderState;
+  readonly previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly propertySearchState: QueryBuilderPropertySearchState;
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
   highlightUsedProperties = true;
-  propertySearchState: QueryBuilderPropertySearchState;
-  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   mappingModelCoverageAnalysisState = ActionState.create();
+  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
@@ -601,17 +601,15 @@ export class QueryBuilderExplorerState {
       humanizePropertyName: observable,
       showUnmappedProperties: observable,
       highlightUsedProperties: observable,
-      mappingModelCoverageAnalysisState: observable,
       mappingModelCoverageAnalysisResult: observable,
-      propertySearchState: observable,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
-      previewData: flow,
       setHighlightUsedProperties: action,
       analyzeMappingModelCoverage: flow,
+      previewData: flow,
     });
 
     this.queryBuilderState = queryBuilderState;

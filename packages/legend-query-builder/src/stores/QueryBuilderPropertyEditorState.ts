@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   getNullableFirstElement,
   guaranteeNonNullable,
@@ -560,11 +560,10 @@ export class QueryBuilderDerivedPropertyExpressionState {
 }
 
 export class QueryBuilderPropertyExpressionState implements Hashable {
-  queryBuilderState: QueryBuilderState;
+  readonly queryBuilderState: QueryBuilderState;
+  readonly propertyExpression: AbstractPropertyExpression;
   path: string;
   title: string;
-  readonly propertyExpression: AbstractPropertyExpression;
-
   isEditingDerivedPropertyExpression = false;
   // Since this property is a chain expression, some link of the chain can be
   // derived property, as such, we need to keep track of the derived properties state in an array
@@ -583,13 +582,15 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
     queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
   ) {
-    makeAutoObservable<
+    makeObservable<
       QueryBuilderPropertyExpressionState,
       'initDerivedPropertyExpressionStates'
     >(this, {
-      propertyExpression: observable,
+      isEditingDerivedPropertyExpression: observable,
+      derivedPropertyExpressionStates: observable,
       setIsEditingDerivedProperty: action,
       initDerivedPropertyExpressionStates: action,
+      isValid: computed,
       hashCode: computed,
     });
 

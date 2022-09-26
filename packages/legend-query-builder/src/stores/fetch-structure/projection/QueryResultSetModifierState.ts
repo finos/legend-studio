@@ -64,7 +64,7 @@ export class SortColumnState implements Hashable {
 }
 
 export class QueryResultSetModifierState implements Hashable {
-  projectionState: QueryBuilderProjectionState;
+  readonly projectionState: QueryBuilderProjectionState;
   showModal = false;
   limit?: number | undefined;
   distinct = false;

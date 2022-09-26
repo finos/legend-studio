@@ -45,29 +45,29 @@ import {
 const DEFAULT_LIMIT = 1000;
 
 export class QueryBuilderResultState {
-  queryBuilderState: QueryBuilderState;
-  exportDataState = ActionState.create();
+  readonly queryBuilderState: QueryBuilderState;
+  readonly exportDataState = ActionState.create();
+  readonly executionPlanState: ExecutionPlanState;
+
   previewLimit = DEFAULT_LIMIT;
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
-  executionPlanState: ExecutionPlanState;
   executionDuration?: number | undefined;
-  currentExecutedQueryHashCode?: string | undefined;
+  latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      exportDataState: observable,
       executionResult: observable,
       previewLimit: observable,
-      isGeneratingPlan: observable,
       executionDuration: observable,
-      currentExecutedQueryHashCode: observable,
+      latestRunHashCode: observable,
       queryRunPromise: observable,
+      isGeneratingPlan: observable,
+      isRunningQuery: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
-      setCurrentExecutedQueryHashCode: action,
       setExecutionDuration: action,
       setPreviewLimit: action,
       setQueryRunPromise: action,
@@ -82,10 +82,6 @@ export class QueryBuilderResultState {
       this.queryBuilderState.graphManagerState,
     );
   }
-
-  setCurrentExecutedQueryHashCode = (val: string | undefined): void => {
-    this.currentExecutedQueryHashCode = val;
-  };
 
   setIsRunningQuery = (val: boolean): void => {
     this.isRunningQuery = val;
@@ -110,7 +106,7 @@ export class QueryBuilderResultState {
   };
 
   get checkForStaleResults(): boolean {
-    if (this.currentExecutedQueryHashCode !== this.queryBuilderState.hashCode) {
+    if (this.latestRunHashCode !== this.queryBuilderState.hashCode) {
       return true;
     }
     return false;
@@ -212,7 +208,8 @@ export class QueryBuilderResultState {
 
   *runQuery(): GeneratorFn<void> {
     try {
-      this.isRunningQuery = true;
+      this.setIsRunningQuery(true);
+      const currentHashCode = this.queryBuilderState.hashCode;
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.mapping,
         'Mapping is required to execute query',
@@ -234,6 +231,7 @@ export class QueryBuilderResultState {
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
+        this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(Date.now() - startTime);
       }
     } catch (error) {

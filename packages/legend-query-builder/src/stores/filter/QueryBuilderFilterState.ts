@@ -70,7 +70,7 @@ export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
 
 export class FilterConditionState implements Hashable {
-  filterState: QueryBuilderFilterState;
+  readonly filterState: QueryBuilderFilterState;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification | undefined;
@@ -84,15 +84,15 @@ export class FilterConditionState implements Hashable {
   ) {
     makeObservable(this, {
       propertyExpressionState: observable,
+      operator: observable,
       value: observable,
-      operators: computed,
       existsLambdaParamNames: observable,
+      typeaheadSearchResults: observable,
+      operators: computed,
       changeProperty: action,
       changeOperator: action,
       setOperator: action,
       setValue: action,
-      typeaheadSearchResults: observable,
-      typeaheadSearchState: observable,
       addExistsLambdaParamNames: action,
       handleTypeaheadSearch: flow,
       hashCode: computed,

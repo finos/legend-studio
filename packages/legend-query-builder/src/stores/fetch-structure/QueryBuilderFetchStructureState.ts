@@ -30,7 +30,7 @@ import {
 } from './QueryBuilderFetchStructureImplementationState.js';
 
 export class QueryBuilderFetchStructureState {
-  queryBuilderState: QueryBuilderState;
+  readonly queryBuilderState: QueryBuilderState;
   implementation: QueryBuilderFetchStructureImplementationState;
 
   constructor(queryBuilderState: QueryBuilderState) {
