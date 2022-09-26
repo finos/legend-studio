@@ -148,12 +148,8 @@ const QueryBuilderFilterConditionEditor = observer(
     ): void =>
       node.condition.changeProperty(
         buildPropertyExpressionFromExplorerTreeNodeData(
-          node.condition.filterState.queryBuilderState.explorerState
-            .nonNullableTreeData,
           propertyNode,
-          graph,
-          node.condition.filterState.queryBuilderState.explorerState
-            .propertySearchState.mappedPropertyNodes,
+          node.condition.filterState.queryBuilderState.explorerState,
         ),
       );
     // Drag and Drop on filter condition value
@@ -402,11 +398,8 @@ const QueryBuilderFilterTreeNodeContainer = observer(
             filterConditionState = new FilterConditionState(
               filterState,
               buildPropertyExpressionFromExplorerTreeNodeData(
-                filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 dropNode,
-                filterState.queryBuilderState.graphManagerState.graph,
-                filterState.queryBuilderState.explorerState.propertySearchState
-                  .mappedPropertyNodes,
+                filterState.queryBuilderState.explorerState,
               ),
             );
           } catch (error) {
@@ -729,11 +722,8 @@ export const QueryBuilderFilterPanel = observer(
           } else {
             propertyExpression =
               buildPropertyExpressionFromExplorerTreeNodeData(
-                filterState.queryBuilderState.explorerState.nonNullableTreeData,
                 (item as QueryBuilderExplorerTreeDragSource).node,
-                filterState.queryBuilderState.graphManagerState.graph,
-                filterState.queryBuilderState.explorerState.propertySearchState
-                  .mappedPropertyNodes,
+                filterState.queryBuilderState.explorerState,
               );
           }
           filterConditionState = new FilterConditionState(

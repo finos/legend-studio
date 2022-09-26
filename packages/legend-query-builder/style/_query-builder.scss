@@ -49,7 +49,7 @@
     border-radius: 0.2rem;
     margin-right: 0.5rem;
     font-weight: 500;
-    border: 0.1rem solid var(--color-dark-grey-500);
+    border: 0.1rem solid var(--color-dark-grey-300);
 
     &__label {
       font-size: 1.2rem;
@@ -526,6 +526,9 @@
   background: var(--color-dark-grey-200) !important;
   opacity: 0.9 !important;
   transition: none;
+  // as this tooltip can contain long documentation, it's best we limit its dimension
+  max-height: 30rem;
+  overflow: auto;
 
   &--right {
     margin: 0 0.5rem !important;
@@ -541,7 +544,8 @@
   }
 
   &__item {
-    @include flexVCenter;
+    display: flex;
+    line-height: 1.6rem;
   }
 
   &__item__label {
@@ -557,6 +561,9 @@
     cursor: default;
     font-weight: 500;
     margin-left: 0.5rem;
+    // as this tooltip can contain long documentation, it's best we limit its dimension
+    max-width: 50rem;
+    white-space: pre-line; // properly preserve newline characters
   }
 }
 

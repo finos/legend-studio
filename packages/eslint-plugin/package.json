@@ -48,8 +48,8 @@
     "rimraf": "3.0.2"
   },
   "peerDependencies": {
-    "eslint": "^8.6.0",
-    "prettier": "^2.2.1"
+    "eslint": "^8.0.0",
+    "prettier": "^2.0.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

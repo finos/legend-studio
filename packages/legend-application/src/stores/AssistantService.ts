@@ -25,7 +25,7 @@ import {
   isNonNullable,
   ActionState,
 } from '@finos/legend-shared';
-import { TextSearchAdvancedConfigState } from '../components/search/TextSearchAdvancedConfigState.js';
+import { TextSearchAdvancedConfigState } from './shared/TextSearchAdvancedConfigState.js';
 
 export enum VIRTUAL_ASSISTANT_TAB {
   SEARCH = 'SEARCH',
@@ -82,7 +82,6 @@ export class VirtualAssistantContextualDocumentationEntry {
 
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
-  private readonly searchEngine: Fuse<DocumentationEntry>;
   /**
    * This key is used to allow programmatic re-rendering of the assistant panel
    */
@@ -90,16 +89,16 @@ export class AssistantService {
   isHidden = false;
   isOpen = false;
   selectedTab = VIRTUAL_ASSISTANT_TAB.SEARCH;
-
-  // search config
-  textSearchState: TextSearchAdvancedConfigState;
-  searchedDocumentation: VirtualAssistantDocumentationEntry | undefined;
+  currentDocumentationEntry: VirtualAssistantDocumentationEntry | undefined;
 
   // search text
-  searchResults: VirtualAssistantDocumentationEntry[] = [];
+  private readonly searchEngine: Fuse<DocumentationEntry>;
+  searchConfigurationState: TextSearchAdvancedConfigState;
+  searchState = ActionState.create();
   searchText = '';
-  searchState = ActionState.create().pass();
-  isOverSearchLimit: boolean;
+  searchResults: VirtualAssistantDocumentationEntry[] = [];
+  showSearchConfigurationMenu = false;
+  isOverSearchLimit = false;
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     makeObservable(this, {
@@ -109,31 +108,22 @@ export class AssistantService {
       isOverSearchLimit: observable,
       selectedTab: observable,
       searchText: observable,
-      textSearchState: observable,
       searchResults: observable,
-      searchedDocumentation: observable,
+      currentDocumentationEntry: observable,
+      showSearchConfigurationMenu: observable,
       currentContextualDocumentationEntry: computed,
       setIsHidden: action,
       setIsOpen: action,
       setSelectedTab: action,
       setSearchText: action,
       resetSearch: action,
-      setSearchedDocumentation: action,
       search: action,
+      openDocumentationEntry: action,
       refreshPanelRendering: action,
-      setIsOverSearchLimit: action,
+      setShowSearchConfigurationMenu: action,
     });
 
     this.applicationStore = applicationStore;
-
-    this.isOverSearchLimit = false;
-
-    this.searchedDocumentation = undefined;
-
-    this.textSearchState = new TextSearchAdvancedConfigState(() =>
-      this.search(),
-    );
-
     this.searchEngine = new Fuse(
       this.applicationStore.documentationService.getAllDocEntries().filter(
         (entry) =>
@@ -171,6 +161,9 @@ export class AssistantService {
         useExtendedSearch: true,
       },
     );
+    this.searchConfigurationState = new TextSearchAdvancedConfigState(() => {
+      this.search();
+    });
   }
 
   get currentContextualDocumentationEntry():
@@ -208,33 +201,24 @@ export class AssistantService {
       : undefined;
   }
 
-  getDocumentationFromKey(docKey: string): void {
-    const possibleDoc = this.applicationStore.documentationService
+  openDocumentationEntry(docKey: string): void {
+    const matchingDocEntry = this.applicationStore.documentationService
       .getAllDocEntries()
       .find((entry) => entry._documentationKey === docKey);
 
-    if (possibleDoc) {
-      this.setSearchedDocumentation(
-        new VirtualAssistantDocumentationEntry(possibleDoc),
+    if (matchingDocEntry) {
+      this.setIsOpen(true);
+      this.setIsHidden(false);
+      this.currentDocumentationEntry = new VirtualAssistantDocumentationEntry(
+        matchingDocEntry,
       );
-      this.searchedDocumentation?.setIsOpen(true);
-
+      this.currentDocumentationEntry.setIsOpen(true);
       this.resetSearch();
     }
   }
 
   setIsHidden(val: boolean): void {
     this.isHidden = val;
-  }
-
-  setSearchedDocumentation(
-    val: VirtualAssistantDocumentationEntry | undefined,
-  ): void {
-    this.searchedDocumentation = val;
-  }
-
-  setIsOverSearchLimit(val: boolean): void {
-    this.isOverSearchLimit = val;
   }
 
   hideAssistant(): void {
@@ -274,26 +258,39 @@ export class AssistantService {
   }
 
   search(): void {
-    this.setSearchedDocumentation(undefined);
+    if (!this.searchText) {
+      this.searchResults = [];
+      return;
+    }
+    this.currentDocumentationEntry = undefined;
     this.searchState.inProgress();
     this.searchResults = Array.from(
       this.searchEngine
-        .search(this.textSearchState.getSearchText(this.searchText), {
-          limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
-        })
+        .search(
+          this.searchConfigurationState.generateSearchText(this.searchText),
+          {
+            // NOTE: search for limit + 1 item so we can know if there are more search results
+            limit: DOCUMENTATION_SEARCH_RESULTS_LIMIT + 1,
+          },
+        )
         .values(),
     ).map((result) => new VirtualAssistantDocumentationEntry(result.item));
 
+    // check if the search results exceed the limit
     if (this.searchResults.length > DOCUMENTATION_SEARCH_RESULTS_LIMIT) {
-      this.setIsOverSearchLimit(true);
+      this.isOverSearchLimit = true;
       this.searchResults = this.searchResults.slice(
         0,
         DOCUMENTATION_SEARCH_RESULTS_LIMIT,
       );
     } else {
-      this.setIsOverSearchLimit(false);
+      this.isOverSearchLimit = false;
     }
 
     this.searchState.complete();
+  }
+
+  setShowSearchConfigurationMenu(val: boolean): void {
+    this.showSearchConfigurationMenu = val;
   }
 }

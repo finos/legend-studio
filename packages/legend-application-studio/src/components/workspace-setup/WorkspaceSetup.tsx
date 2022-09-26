@@ -227,7 +227,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                     </div>
                   )}
                 </div>
-                <div>
+                <form onSubmit={handleProceed}>
                   <div className="workspace-setup__selector">
                     <div
                       className="workspace-setup__selector__icon"
@@ -255,6 +255,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       className="workspace-setup__selector__action btn--dark"
                       onClick={showCreateProjectModal}
                       tabIndex={-1}
+                      type="button" // prevent this toggler being activated on form submission
                       title="Create a Project"
                     >
                       <PlusIcon />
@@ -297,6 +298,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       onClick={showCreateWorkspaceModal}
                       disabled={!setupStore.currentProject}
                       tabIndex={-1}
+                      type="button" // prevent this toggler being activated on form submission
                       title="Create a Workspace"
                     >
                       <PlusIcon />
@@ -316,7 +318,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       Edit Workspace
                     </button>
                   </div>
-                </div>
+                </form>
                 {/* NOTE: We do this to reset the initial state of the modals */}
                 {setupStore.showCreateProjectModal && <CreateProjectModal />}
                 {setupStore.showCreateWorkspaceModal &&

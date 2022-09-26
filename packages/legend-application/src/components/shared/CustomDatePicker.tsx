@@ -15,6 +15,7 @@
  */
 
 import {
+  type SelectComponent,
   BasePopover,
   BaseRadioGroup,
   CustomSelectorInput,
@@ -45,7 +46,7 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   genericType_setRawType,
   instanceValue_changeValue,
@@ -684,6 +685,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
   const absoluteDateValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
@@ -719,9 +721,15 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
       ),
     );
   };
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="value-spec-editor__date-picker__absolute-date">
       <input
+        ref={inputRef}
         className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         type="date"
         spellCheck={false}
@@ -744,6 +752,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
   const absoluteTimeValue =
     valueSpecification instanceof SimpleFunctionExpression
       ? ''
@@ -779,9 +788,15 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
       ),
     );
   };
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="value-spec-editor__date-picker__absolute-date">
       <input
+        ref={inputRef}
         className="panel__content__form__section__input value-spec-editor__date-picker__absolute-date__input input--dark"
         // Despite its name this would actually allow us to register time in UTC
         // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
@@ -806,6 +821,7 @@ const CustomDateInstanceValueEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
   const [durationValue, setDurationValue] = useState(
     customDateOptionValue.duration,
   );
@@ -868,10 +884,15 @@ const CustomDateInstanceValueEditor: React.FC<{
     changeValue(duration, unitValue, directionValue, referenceMomentValue);
   };
 
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="value-spec-editor__date-picker__custom-date">
       <div className="value-spec-editor__date-picker__custom-date__input">
         <input
+          ref={inputRef}
           className="value-spec-editor__date-picker__custom-date__input-text-editor input--dark"
           spellCheck={false}
           value={durationValue}
@@ -962,6 +983,7 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const selectorRef = useRef<SelectComponent>(null);
   const [unitValue, setUnitValue] = useState(
     customDateAdjustOptionValue instanceof CustomFirstDayOfOption
       ? (customDateAdjustOptionValue.unit as string)
@@ -986,10 +1008,15 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
     }
   };
 
+  useEffect(() => {
+    selectorRef.current?.focus();
+  }, []);
+
   return (
     <div className="value-spec-editor__date-picker__custom-date">
       <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
+          ref={selectorRef}
           placeholder="Choose a unit..."
           className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_FIRST_DAY_OF_UNIT).map((t) => ({
@@ -1022,6 +1049,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
     setValueSpecification,
     setDatePickerOption,
   } = props;
+  const selectorRef = useRef<SelectComponent>(null);
   const [dayOfWeekValue, setDayOfWeekValue] = useState(
     customDateAdjustOptionValue instanceof CustomPreviousDayOfWeekOption
       ? (customDateAdjustOptionValue.day as string)
@@ -1040,10 +1068,15 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
     }
   };
 
+  useEffect(() => {
+    selectorRef.current?.focus();
+  }, []);
+
   return (
     <div className="value-spec-editor__date-picker__custom-date">
       <div className="value-spec-editor__date-picker__custom-date__input">
         <CustomSelectorInput
+          ref={selectorRef}
           placeholder="Choose a day..."
           className="value-spec-editor__date-picker__custom-date__input-dropdown value-spec-editor__date-picker__custom-date__input-dropdown--full"
           options={Object.values(CUSTOM_DATE_DAY_OF_WEEK).map((t) => ({
@@ -1245,6 +1278,7 @@ export const CustomDatePicker: React.FC<{
         }}
       >
         <BaseRadioGroup
+          className="value-spec-editor__date-picker__options"
           value={datePickerOption.value}
           onChange={handleDatePickerOptionChange}
           row={true}

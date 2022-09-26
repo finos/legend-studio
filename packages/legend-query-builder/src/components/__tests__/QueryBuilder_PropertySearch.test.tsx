@@ -73,19 +73,16 @@ test(
     );
 
     act(() => {
-      queryBuilderState.explorerState.propertySearchState.fetchMappedPropertyNodes(
-        'Name',
-      );
+      queryBuilderState.explorerState.propertySearchState.setSearchText('Name');
+      queryBuilderState.explorerState.propertySearchState.search();
     });
 
     expect(
-      queryBuilderState.explorerState.propertySearchState
-        .searchedMappedPropertyNodes.length,
+      queryBuilderState.explorerState.propertySearchState.searchResults.length,
     ).toBe(3);
     fireEvent.click(getByTitle(searchPanel, 'Clear'));
     expect(
-      queryBuilderState.explorerState.propertySearchState
-        .searchedMappedPropertyNodes.length,
+      queryBuilderState.explorerState.propertySearchState.searchResults.length,
     ).toBe(0);
   },
 );

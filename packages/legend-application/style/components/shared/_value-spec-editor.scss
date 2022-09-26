@@ -70,8 +70,12 @@
       font-size: 1.2rem;
     }
 
+    &__options {
+      min-width: 29rem;
+    }
+
     &__absolute-date {
-      padding: 2rem;
+      padding: 1rem;
       border-top: 0.1rem solid var(--color-dark-grey-50);
 
       &__input {
@@ -85,7 +89,7 @@
     &__custom-date {
       @include flexCenter;
 
-      padding: 2rem;
+      padding: 1rem;
       border-top: 0.1rem solid var(--color-dark-grey-50);
 
       &__input {

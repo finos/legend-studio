@@ -264,9 +264,6 @@ const QueryBuilderExplorerContextMenu = observer(
     }
   >(function QueryBuilderExplorerContextMenu(props, ref) {
     const { queryBuilderState, openNode, node } = props;
-    const applicationStore = useApplicationStore();
-    const viewType = (): void =>
-      applicationStore.notifyUnsupportedFeature('View Type');
     const addNodeToFetchStructure = (): void =>
       queryBuilderState.fetchStructureState.fetchProperty(node);
     const addNodeChildrenToFetchStructure = (): void => {
@@ -305,7 +302,6 @@ const QueryBuilderExplorerContextMenu = observer(
             Add Properties to Fetch Structure
           </MenuContentItem>
         )}
-        <MenuContentItem onClick={viewType}>View Type</MenuContentItem>
       </MenuContent>
     );
   }),
@@ -411,10 +407,6 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
       }
     };
     // context menu
-    const showContextMenu =
-      node instanceof QueryBuilderExplorerTreeRootNodeData ||
-      (node instanceof QueryBuilderExplorerTreePropertyNodeData &&
-        !(node.type instanceof PrimitiveType));
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
     const previewData = (): void => {
@@ -442,7 +434,10 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
             node={node}
           />
         }
-        disabled={!showContextMenu || queryBuilderState.backdrop}
+        disabled={
+          !(node instanceof QueryBuilderExplorerTreePropertyNodeData) ||
+          queryBuilderState.backdrop
+        }
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
         onClose={onContextMenuClose}
@@ -789,9 +784,7 @@ export const QueryBuilderExplorerPanel = observer(
       if (explorerState.treeData) {
         if (!propertySearchPanelState.isSearchPanelOpen) {
           propertySearchPanelState.setIsSearchPanelOpen(true);
-          if (!propertySearchPanelState.mappedPropertyNodes.length) {
-            propertySearchPanelState.fetchAllPropertyNodes();
-          }
+          propertySearchPanelState.initialize();
         } else {
           propertySearchPanelState.setIsSearchPanelOpen(false);
         }

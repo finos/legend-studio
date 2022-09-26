@@ -64,18 +64,12 @@
     min-width: 4rem;
   }
 
-  &__expand-icon,
   &__type-icon {
     @include flexCenter;
 
     width: 1.7rem;
     min-width: 1.7rem;
     height: 1.4rem;
-  }
-
-  &__expand-icon svg {
-    font-size: 1rem;
-    color: var(--color-light-grey-200) !important;
   }
 
   &__node__label {
@@ -108,16 +102,6 @@
     display: flex;
     height: 2rem;
     padding-right: 0.5rem;
-  }
-
-  &__info__label {
-    @include flexCenter;
-
-    right: 0.3rem;
-    font-size: 1.3rem;
-    height: 2.8rem;
-    width: 2.8rem;
-    color: var(--color-light-grey-400);
   }
 
   &__node__action {
@@ -178,7 +162,7 @@
     }
 
     &--searching {
-      padding-right: 5.6rem;
+      padding-right: 9rem; // account for the count badge
     }
 
     &__search__count {
@@ -210,22 +194,27 @@
       }
     }
 
-    &__cog__icon {
+    &__search__config__trigger {
       @include flexCenter;
 
       position: absolute;
-      right: 2.4rem;
+      right: 3.1rem;
       height: 2.8rem;
-      top: 0;
-      width: 2.8rem;
+      width: 1.8rem;
+      cursor: pointer;
 
       svg {
-        color: var(--color-light-shade-100);
+        color: var(--color-dark-grey-400);
       }
 
+      &--toggled svg,
       &:hover svg {
         color: var(--color-dark-grey-500);
-        cursor: pointer;
+      }
+
+      &--active svg,
+      &--active:hover svg {
+        color: var(--color-blue-150);
       }
     }
 
@@ -322,5 +311,20 @@
     height: 100%;
     padding: 1rem;
     overflow-y: auto;
+  }
+
+  &__result-placeholder {
+    cursor: default;
+    user-select: none;
+
+    &__text {
+      color: var(--color-dark-grey-500);
+      font-weight: 700;
+    }
+
+    &__placeholder {
+      color: var(--color-dark-grey-300);
+      margin-top: 1rem;
+    }
   }
 }

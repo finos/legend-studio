@@ -39,8 +39,8 @@ export * from './stores/AssistantService.js';
 export * from './stores/ApplicationNavigationContextService.js';
 export * from './stores/LegendApplicationPlugin.js';
 
-export * from './components/search/TextSearchAdvancedConfig.js';
-export * from './components/search/TextSearchAdvancedConfigState.js';
+export * from './components/shared/TextSearchAdvancedConfigMenu.js';
+export * from './stores/shared/TextSearchAdvancedConfigState.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 
