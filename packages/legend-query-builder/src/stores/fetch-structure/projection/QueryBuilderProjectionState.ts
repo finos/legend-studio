@@ -504,11 +504,8 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
       new QueryBuilderSimpleProjectionColumnState(
         this,
         buildPropertyExpressionFromExplorerTreeNodeData(
-          this.queryBuilderState.explorerState.nonNullableTreeData,
           node,
-          this.queryBuilderState.graphManagerState.graph,
-          this.queryBuilderState.explorerState.propertySearchState
-            .indexedExplorerTreeNodes,
+          this.queryBuilderState.explorerState,
         ),
         this.queryBuilderState.explorerState.humanizePropertyName,
       ),
@@ -521,11 +518,8 @@ export class QueryBuilderProjectionState extends QueryBuilderFetchStructureImple
         new QueryBuilderSimpleProjectionColumnState(
           this,
           buildPropertyExpressionFromExplorerTreeNodeData(
-            this.queryBuilderState.explorerState.nonNullableTreeData,
             nodeToAdd,
-            this.queryBuilderState.graphManagerState.graph,
-            this.queryBuilderState.explorerState.propertySearchState
-              .indexedExplorerTreeNodes,
+            this.queryBuilderState.explorerState,
           ),
           this.queryBuilderState.explorerState.humanizePropertyName,
         ),

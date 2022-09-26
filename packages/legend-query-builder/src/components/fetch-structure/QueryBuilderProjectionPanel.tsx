@@ -538,12 +538,8 @@ export const QueryBuilderProjectionPanel = observer(
               new QueryBuilderSimpleProjectionColumnState(
                 projectionState,
                 buildPropertyExpressionFromExplorerTreeNodeData(
-                  projectionState.queryBuilderState.explorerState
-                    .nonNullableTreeData,
                   (item as QueryBuilderExplorerTreeDragSource).node,
-                  projectionState.queryBuilderState.graphManagerState.graph,
-                  projectionState.queryBuilderState.explorerState
-                    .propertySearchState.indexedExplorerTreeNodes,
+                  projectionState.queryBuilderState.explorerState,
                 ),
                 projectionState.queryBuilderState.explorerState.humanizePropertyName,
               ),

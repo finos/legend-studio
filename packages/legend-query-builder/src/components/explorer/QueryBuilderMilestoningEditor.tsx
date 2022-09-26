@@ -145,7 +145,7 @@ const MilestoningParameterEditor = observer(
   },
 );
 
-const BiTemporalMilestoneEditor = observer(
+const BiTemporalMilestoningEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
@@ -173,7 +173,7 @@ const BiTemporalMilestoneEditor = observer(
   },
 );
 
-const BusinessTemporalMilestoneEditor = observer(
+const BusinessTemporalMilestoningEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
@@ -191,7 +191,7 @@ const BusinessTemporalMilestoneEditor = observer(
   },
 );
 
-const ProcessingTemporalMilestoneEditor = observer(
+const ProcessingTemporalMilestoningEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
@@ -209,7 +209,7 @@ const ProcessingTemporalMilestoneEditor = observer(
   },
 );
 
-const TemporalMilestoneEditor: React.FC<{
+const TemporalMilestoningEditor: React.FC<{
   queryBuilderState: QueryBuilderState;
 }> = (props) => {
   const { queryBuilderState } = props;
@@ -218,14 +218,18 @@ const TemporalMilestoneEditor: React.FC<{
     queryBuilderState.milestoningState.processingDate &&
     queryBuilderState.milestoningState.businessDate
   ) {
-    return <BiTemporalMilestoneEditor queryBuilderState={queryBuilderState} />;
+    return (
+      <BiTemporalMilestoningEditor queryBuilderState={queryBuilderState} />
+    );
   } else if (queryBuilderState.milestoningState.businessDate) {
     return (
-      <BusinessTemporalMilestoneEditor queryBuilderState={queryBuilderState} />
+      <BusinessTemporalMilestoningEditor
+        queryBuilderState={queryBuilderState}
+      />
     );
   } else if (queryBuilderState.milestoningState.processingDate) {
     return (
-      <ProcessingTemporalMilestoneEditor
+      <ProcessingTemporalMilestoningEditor
         queryBuilderState={queryBuilderState}
       />
     );
@@ -256,7 +260,7 @@ export const MilestoningParametersEditor = observer(
             <div className="modal__title">Milestoning Parameters</div>
           </div>
           <div className="modal__body query-builder__parameters__modal__body">
-            <TemporalMilestoneEditor queryBuilderState={queryBuilderState} />
+            <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters
             </div>

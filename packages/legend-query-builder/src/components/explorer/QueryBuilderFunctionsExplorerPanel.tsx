@@ -73,6 +73,15 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
   placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { element, children, placement } = props;
+  const documentation = element.taggedValues
+    .filter(
+      (taggedValue) =>
+        taggedValue.tag.ownerReference.value.path ===
+          CORE_PURE_PATH.PROFILE_DOC &&
+        taggedValue.tag.value.value === PURE_DOC_TAG,
+    )
+    .map((taggedValue) => taggedValue.value);
+
   return (
     <Tooltip
       arrow={true}
@@ -102,30 +111,24 @@ const QueryBuilderFunctionInfoTooltip: React.FC<{
             <div className="query-builder__tooltip__item__value">
               {element.parameters
                 .map(
-                  (t) =>
-                    `${t.name}: ${
-                      t.type.value.name
-                    }${getMultiplicityDescription(t.multiplicity)}`,
+                  (param) =>
+                    `${param.name}: ${
+                      param.type.value.name
+                    }${getMultiplicityDescription(param.multiplicity)}`,
                 )
                 .join('; ')}
             </div>
           </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">
-              Documentation
+          {Boolean(documentation.length) && (
+            <div className="query-builder__tooltip__item">
+              <div className="query-builder__tooltip__item__label">
+                Documentation
+              </div>
+              <div className="query-builder__tooltip__item__value">
+                {documentation.join('\n\n')}
+              </div>
             </div>
-            <div className="query-builder__tooltip__item__value">
-              {element.taggedValues
-                .filter(
-                  (t) =>
-                    t.tag.ownerReference.value.path ===
-                      CORE_PURE_PATH.PROFILE_DOC &&
-                    t.tag.value.value === PURE_DOC_TAG,
-                )
-                .map((t) => t.value)
-                .join('\n\n')}
-            </div>
-          </div>
+          )}
           <div className="query-builder__tooltip__item">
             <div className="query-builder__tooltip__item__label">
               Return Type

@@ -57,10 +57,17 @@ import { TextSearchAdvancedConfigState } from '@finos/legend-application';
 export class QueryBuilderPropertySearchState {
   queryBuilderState: QueryBuilderState;
 
-  // TODO: Check if we could clean this up as this seems quite complicated and its purpose is not clear to me
-  // document about the place we use this! maybe cleanup some of the usage as well!
-  // See https://github.com/finos/legend-studio/pull/1212
-  // TODO-BEFORE-PR: document this?
+  /**
+   * When we initialize property search engine, we practically extend
+   * the existing explorer by a few depth. As such, we create new explorer
+   * nodes which are not part of the main explorer tree. Together with the
+   * nodes already explored in the tree, these nodes are stored here to help
+   * searching. Think of this as the knowledge base of property search
+   *
+   * NOTE: a big reason why we want to store these as explorer tree nodes
+   * is that we could interact with the searched nodes, i.e. drag them to
+   * various panels to create filter, fetch-structure, etc.
+   */
   indexedExplorerTreeNodes: QueryBuilderExplorerTreeNodeData[] = [];
 
   // search

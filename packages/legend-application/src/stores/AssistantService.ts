@@ -118,6 +118,7 @@ export class AssistantService {
       setSearchText: action,
       resetSearch: action,
       search: action,
+      openDocumentationEntry: action,
       refreshPanelRendering: action,
       setShowSearchConfigurationMenu: action,
     });

@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
-  type PureModel,
   type Type,
   type MappingModelCoverageAnalysisResult,
   type EnumMappedProperty,
@@ -198,15 +197,17 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
 }
 
 export const buildPropertyExpressionFromExplorerTreeNodeData = (
-  treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
-  graph: PureModel,
-  //TODO: document parameter
-  mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
+  explorerState: QueryBuilderExplorerState,
 ): AbstractPropertyExpression => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
+  const treeData = explorerState.nonNullableTreeData;
+  const propertySearchIndexedTreeNodes =
+    explorerState.propertySearchState.indexedExplorerTreeNodes;
+
+  const multiplicityOne =
+    explorerState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
     multiplicityOne,
@@ -220,13 +221,13 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     propertyExpression;
   let parentNode =
     treeData.nodes.get(node.parentId) ??
-    mappedPropertyNodes.find((n) => n.id === node.parentId);
+    propertySearchIndexedTreeNodes.find((n) => n.id === node.parentId);
   let currentNode: QueryBuilderExplorerTreeNodeData = node;
   while (
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
     parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
   ) {
-    // NOTE: here, we deliverately simplify subtypes chain
+    // NOTE: here, we deliberately simplify subtypes chain
     // $x.employees->subType(@Person)->subType(@Staff).department will be simplified to $x.employees->subType(@Staff).department
     if (
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
@@ -271,7 +272,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
         currentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData)
     ) {
-      for (const propertyNode of mappedPropertyNodes) {
+      for (const propertyNode of propertySearchIndexedTreeNodes) {
         if (propertyNode.id === currentNode.parentId) {
           parentNode = propertyNode;
           break;
@@ -712,10 +713,8 @@ export class QueryBuilderExplorerState {
     this.previewDataState.setPropertyName(node.property.name);
     this.previewDataState.setIsGeneratingPreviewData(true);
     const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
-      this.nonNullableTreeData,
       node,
-      this.queryBuilderState.graphManagerState.graph,
-      this.propertySearchState.indexedExplorerTreeNodes,
+      this,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {
