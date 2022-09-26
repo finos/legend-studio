@@ -193,7 +193,7 @@ const MappingExecutionQueryEditor = observer(
                 embeddedQueryBuilderState.editorStore.applicationStore,
                 embeddedQueryBuilderState.editorStore.graphManagerState,
               );
-              queryBuilderState.initializeQueryWithChangeDetection(
+              queryBuilderState.initializeWithQuery(
                 executionState.queryState.query,
               );
               return queryBuilderState;

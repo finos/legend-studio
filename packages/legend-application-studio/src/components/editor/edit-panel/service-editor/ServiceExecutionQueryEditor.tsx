@@ -269,7 +269,7 @@ export const ServiceExecutionQueryEditor = observer(
                       ? selectedExecutionState.executionContext.key
                       : undefined,
                   );
-                  queryBuilderState.initializeQueryWithChangeDetection(
+                  queryBuilderState.initializeWithQuery(
                     executionState.execution.func,
                   );
                   return queryBuilderState;

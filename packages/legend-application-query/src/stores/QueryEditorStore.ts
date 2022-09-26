@@ -601,9 +601,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    await queryBuilderState.initializeQueryWithChangeDetection(
-      service.execution.func,
-    );
+    queryBuilderState.initializeWithQuery(service.execution.func);
 
     return queryBuilderState;
   }
@@ -696,7 +694,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
 
     // leverage initialization of query builder state to ensure we handle unsupported queries
-    await queryBuilderState.initializeQueryWithChangeDetection(
+    queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
     );
 

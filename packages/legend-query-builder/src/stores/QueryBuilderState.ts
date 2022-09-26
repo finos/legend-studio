@@ -281,16 +281,39 @@ export abstract class QueryBuilderState {
     );
   }
 
-  async initializeQueryWithChangeDetection(
-    rawLambda: RawLambda,
-  ): Promise<void> {
-    this.initializeWithQuery(rawLambda);
+  initializeWithQuery(rawLambda: RawLambda): void {
+    this.rebuildWithQuery(rawLambda);
     this.changeDetectionState.initialize();
   }
 
-  initializeWithQuery(rawLambda: RawLambda): void {
+  /**
+   * Process the provided query, and rebuild the query builder state.
+   */
+  rebuildWithQuery(rawLambda: RawLambda): void {
     try {
-      this.rebuildWithQuery(rawLambda);
+      this.resetQueryResult();
+      this.resetQueryContent();
+
+      if (!isStubbed_RawLambda(rawLambda)) {
+        const valueSpec = observe_ValueSpecification(
+          this.graphManagerState.graphManager.buildValueSpecification(
+            this.graphManagerState.graphManager.serializeRawValueSpecification(
+              rawLambda,
+            ),
+            this.graphManagerState.graph,
+          ),
+          this.observableContext,
+        );
+        const compiledValueSpecification = guaranteeType(
+          valueSpec,
+          LambdaFunctionInstanceValue,
+          `Can't build query state: query builder only support lambda`,
+        );
+        processQueryLambdaFunction(
+          guaranteeNonNullable(compiledValueSpecification.values[0]),
+          this,
+        );
+      }
       if (this.parametersState.parameterStates.length > 0) {
         this.setShowParametersPanel(true);
       }
@@ -310,37 +333,6 @@ export abstract class QueryBuilderState {
         )
         .filter(filterByType(VariableExpression));
       processParameters(parameters, this);
-    }
-  }
-
-  /**
-   * Process the provided query, and rebuild the query builder state.
-   *
-   * @throws error if there is an issue building the compiled lambda or rebuilding the state.
-   * consumers of function should handle the errors.
-   */
-  rebuildWithQuery(val: RawLambda): void {
-    this.resetQueryResult();
-    this.resetQueryContent();
-    if (!isStubbed_RawLambda(val)) {
-      const valueSpec = observe_ValueSpecification(
-        this.graphManagerState.graphManager.buildValueSpecification(
-          this.graphManagerState.graphManager.serializeRawValueSpecification(
-            val,
-          ),
-          this.graphManagerState.graph,
-        ),
-        this.observableContext,
-      );
-      const compiledValueSpecification = guaranteeType(
-        valueSpec,
-        LambdaFunctionInstanceValue,
-        `Can't build query state: query builder only support lambda`,
-      );
-      processQueryLambdaFunction(
-        guaranteeNonNullable(compiledValueSpecification.values[0]),
-        this,
-      );
     }
   }
 
