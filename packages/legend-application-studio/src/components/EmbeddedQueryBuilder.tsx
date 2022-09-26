@@ -66,7 +66,7 @@ const QueryBuilderDialog = observer(
 
     const confirmCloseQueryBuilder = (): void => {
       if (
-        queryBuilderState.changeDetectionState.hashCode !==
+        queryBuilderState.changeDetectionState.initialHashCode !==
         queryBuilderState.hashCode
       ) {
         applicationStore.setActionAlertInfo({

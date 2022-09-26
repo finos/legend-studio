@@ -285,7 +285,7 @@ export abstract class QueryBuilderState {
     rawLambda: RawLambda,
   ): Promise<void> {
     this.initializeWithQuery(rawLambda);
-    await this.changeDetectionState.start();
+    this.changeDetectionState.initialize();
   }
 
   initializeWithQuery(rawLambda: RawLambda): void {

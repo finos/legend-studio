@@ -18,8 +18,8 @@ import {
   assertType,
   addUniqueEntry,
   deleteEntry,
-  type Hashable,
   hashArray,
+  type Hashable,
 } from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
@@ -44,17 +44,18 @@ import {
   graphFetchTree_removeSubTree,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { computed, makeObservable } from 'mobx';
 
 export class QueryBuilderGraphFetchTreeNodeData
   implements TreeNodeData, Hashable
 {
+  readonly id: string;
+  readonly label: string;
+  readonly tree: PropertyGraphFetchTree;
+  readonly parentId?: string | undefined;
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
-  id: string;
-  label: string;
   childrenIds: string[] = [];
-  parentId?: string | undefined;
-  tree: PropertyGraphFetchTree;
 
   constructor(
     id: string,
@@ -62,6 +63,10 @@ export class QueryBuilderGraphFetchTreeNodeData
     parentId: string | undefined,
     graphFetchTreeNode: PropertyGraphFetchTree,
   ) {
+    makeObservable(this, {
+      hashCode: computed,
+    });
+
     this.id = id;
     this.label = label;
     this.parentId = parentId;
@@ -79,9 +84,9 @@ export class QueryBuilderGraphFetchTreeNodeData
       QUERY_BUILDER_HASH_STRUCTURE.GRAPH_FETCH_TREE_NODE_DATA,
       this.id,
       this.label,
-      hashArray(this.childrenIds),
-      this.parentId ?? '',
       this.tree,
+      this.parentId ?? '',
+      hashArray(this.childrenIds),
     ]);
   }
 }

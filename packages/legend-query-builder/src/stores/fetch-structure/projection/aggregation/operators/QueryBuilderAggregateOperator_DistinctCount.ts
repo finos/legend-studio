@@ -40,20 +40,12 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from '../../QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { makeObservable, computed } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
 export class QueryBuilderAggregateOperator_DistinctCount
   extends QueryBuilderAggregateOperator
   implements Hashable
 {
-  constructor() {
-    super();
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'distinct count';
   }

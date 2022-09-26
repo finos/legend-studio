@@ -32,9 +32,16 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from '../QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderAggregateColumnState } from './QueryBuilderAggregationState.js';
+import { computed, makeObservable } from 'mobx';
 
 export abstract class QueryBuilderAggregateOperator implements Hashable {
   readonly uuid = uuid();
+
+  constructor() {
+    makeObservable(this, {
+      hashCode: computed,
+    });
+  }
 
   abstract getLabel(
     projectionColumnState: QueryBuilderProjectionColumnState,

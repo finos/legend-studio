@@ -83,7 +83,7 @@ test(integrationTest('Test change detection'), () => {
     await waitFor(() => getByText(projectionCols, 'Name'));
     expect(
       queryBuilderState.hashCode !==
-        queryBuilderState.changeDetectionState.hashCode,
+        queryBuilderState.changeDetectionState.initialHashCode,
     ).toBeTruthy();
     guaranteeNonNullable(
       guaranteeType(
@@ -93,7 +93,7 @@ test(integrationTest('Test change detection'), () => {
     ).setColumnName('Legal Name');
     await waitFor(() => getByText(projectionCols, 'Legal Name'));
     expect(queryBuilderState.hashCode).toBe(
-      queryBuilderState.changeDetectionState.hashCode,
+      queryBuilderState.changeDetectionState.initialHashCode,
     );
   };
 });

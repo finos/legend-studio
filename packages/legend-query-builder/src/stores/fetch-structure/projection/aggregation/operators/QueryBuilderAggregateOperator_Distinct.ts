@@ -35,20 +35,12 @@ import {
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { makeObservable, computed } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
 export class QueryBuilderAggregateOperator_Distinct
   extends QueryBuilderAggregateOperator
   implements Hashable
 {
-  constructor() {
-    super();
-    makeObservable(this, {
-      hashCode: computed,
-    });
-  }
-
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'distinct';
   }
