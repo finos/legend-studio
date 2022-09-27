@@ -65,10 +65,7 @@ const QueryBuilderDialog = observer(
     );
 
     const confirmCloseQueryBuilder = (): void => {
-      if (
-        queryBuilderState.changeDetectionState.initialHashCode !==
-        queryBuilderState.hashCode
-      ) {
+      if (queryBuilderState.changeDetectionState.hasChanged) {
         applicationStore.setActionAlertInfo({
           message:
             'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',

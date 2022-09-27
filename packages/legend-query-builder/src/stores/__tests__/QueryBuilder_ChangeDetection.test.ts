@@ -81,10 +81,7 @@ test(integrationTest('Test change detection'), () => {
       ).columns[0],
     ).setColumnName('Name');
     await waitFor(() => getByText(projectionCols, 'Name'));
-    expect(
-      queryBuilderState.hashCode !==
-        queryBuilderState.changeDetectionState.initialHashCode,
-    ).toBeTruthy();
+    expect(queryBuilderState.changeDetectionState.hasChanged).toBeTruthy();
     guaranteeNonNullable(
       guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
