@@ -29,6 +29,8 @@ import type {
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilderPostFilterOperator_GreaterThan {
   override getLabel(): string {
@@ -66,5 +68,11 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.GREATER_THAN,
       this,
     );
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_GREATER_THAN_EQUAL,
+    ]);
   }
 }

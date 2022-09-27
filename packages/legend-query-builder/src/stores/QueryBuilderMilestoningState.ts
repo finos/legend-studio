@@ -28,10 +28,12 @@ import {
   VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
-export class QueryBuilderMilestoningState {
+export class QueryBuilderMilestoningState implements Hashable {
   queryBuilderState: QueryBuilderState;
 
   showMilestoningEditor = false;
@@ -49,6 +51,7 @@ export class QueryBuilderMilestoningState {
       setProcessingDate: action,
       setBusinessDate: action,
       setShowMilestoningEditor: action,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -160,5 +163,13 @@ export class QueryBuilderMilestoningState {
       this.queryBuilderState.parametersState.addParameter(variableState);
     }
     return milestoningParameter;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.MILESTONING_STATE,
+      this.businessDate ?? '',
+      this.processingDate ?? '',
+    ]);
   }
 }

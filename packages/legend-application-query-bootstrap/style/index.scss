@@ -106,7 +106,7 @@
   .table {
     th,
     td {
-      border: 0.1rem solid var(--color-light-grey-250);
+      border-color: var(--color-light-grey-250);
     }
 
     thead {
@@ -197,7 +197,7 @@
 
   .value-spec-editor__reset-btn {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     border-left: none;
 
     svg {
@@ -207,7 +207,7 @@
 
   .value-spec-editor__date-picker__trigger {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     color: var(--color-legacy-dark-grey-200);
   }
 
@@ -265,10 +265,10 @@
       }
 
       &__search-section {
-        border-bottom: 0.1rem solid var(--color-legacy-light-grey-200);
+        border-color: var(--color-legacy-light-grey-200);
 
         &__input {
-          border: 0.1rem solid var(--color-legacy-light-grey-200);
+          border-color: var(--color-legacy-light-grey-200);
         }
       }
 
@@ -279,11 +279,11 @@
 
         &__table__row:hover {
           color: var(--color-legacy-light-blue-100);
-          background-color: var(--color-legacy-light-grey-200);
+          background: var(--color-legacy-light-grey-200);
         }
 
         &__table__row--selected {
-          background-color: var(--color-legacy-light-grey-200);
+          background: var(--color-legacy-light-grey-200);
         }
       }
     }
@@ -299,6 +299,10 @@
     &__form__section__header__label,
     &__form__section__toggler__prompt {
       color: var(--color-legacy-dark-grey-200);
+    }
+
+    &__form__section__toggler__btn--toggled svg {
+      color: var(--color-legacy-light-blue-100);
     }
 
     .resizable-panel__splitter-line {
@@ -321,6 +325,66 @@
       &:focus {
         border-color: var(--color-legacy-light-blue-100);
       }
+    }
+
+    &__input__search__icon svg {
+      color: var(--color-dark-grey-400);
+    }
+
+    &__input__search__count {
+      background: var(--color-legacy-light-blue-100);
+      color: var(--color-white);
+    }
+  }
+
+  // ---------------------------- Diff Panel -------------------------------
+
+  .query-builder__diff-panel {
+    &__header {
+      background: var(--color-white);
+    }
+
+    &__actions {
+      border-color: var(--color-legacy-light-grey-300);
+
+      .btn {
+        height: 3.6rem;
+        border-radius: 0.2rem;
+        color: var(--color-light-grey-50);
+      }
+    }
+
+    &__mode {
+      background: var(--color-light-grey-250);
+      color: var(--color-dark-grey-500);
+    }
+
+    &__mode--selected {
+      background: var(--color-legacy-light-blue-200);
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  // ---------------------------- Search config -------------------------------
+
+  .text-search-advanced-config__panel {
+    background: var(--color-white);
+
+    &__header__label {
+      color: var(--color-legacy-dark-grey-400);
+      background: var(--color-legacy-light-grey-100);
+    }
+
+    &__header__hint {
+      color: var(--color-legacy-dark-grey-400);
+    }
+
+    .mui-radio-group__group__item__label {
+      color: var(--color-legacy-dark-grey-200);
+    }
+
+    .Mui-checked {
+      color: var(--color-legacy-light-blue-200);
     }
   }
 
@@ -346,8 +410,8 @@
     background: var(--color-legacy-light-grey-300);
     outline-offset: -0.2rem;
     border-radius: 0.4rem;
-    outline: 0.2rem solid var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-100);
+    outline-color: var(--color-legacy-light-grey-100);
+    border-color: var(--color-legacy-light-grey-100);
   }
 
   ::-webkit-scrollbar-track-piece {
@@ -406,13 +470,13 @@
   }
 
   .query-builder__main {
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     background: var(--color-legacy-light-grey-200);
   }
 
   .query-builder__activity-bar {
     background: var(--color-legacy-light-grey-100);
-    border-top: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
   }
 
   .query-builder__status-bar {
@@ -438,12 +502,11 @@
     color: var(--color-legacy-dark-grey-200);
     background: var(--color-legacy-light-grey-100);
     border-color: var(--color-legacy-light-grey-300);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
   }
 
   .query-builder .panel__content {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     border-top: none;
   }
 
@@ -491,12 +554,12 @@
 
   .query-builder__setup__config-group__item__label {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
   }
 
   .query-builder__setup__runtime-option--custom__label {
     background: var(--color-light-grey-50);
-    border: 0.1rem solid var(--color-light-grey-180);
+    border-color: var(--color-light-grey-180);
   }
 
   .query-builder__setup__config-group__header {
@@ -785,6 +848,11 @@
 
   // ------------------------------------ Result Panel ---------------------------------------
 
+  .query-builder__result__stale-status__icon,
+  .query-builder__result__stale-status__label {
+    color: var(--color-legacy-orange-100);
+  }
+
   .query-builder__result__limit__input:not(:focus) {
     border-color: var(--color-light-grey-250);
   }
@@ -943,7 +1011,7 @@
   }
 
   .query-builder__lambda-editor {
-    border: 0.1rem solid var(--color-legacy-light-blue-100);
+    border-color: var(--color-legacy-light-blue-100);
 
     .monaco-editor {
       .margin,

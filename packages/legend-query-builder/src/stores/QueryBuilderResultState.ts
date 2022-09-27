@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   type GeneratorFn,
   assertErrorThrown,
@@ -45,22 +45,35 @@ import {
 const DEFAULT_LIMIT = 1000;
 
 export class QueryBuilderResultState {
-  queryBuilderState: QueryBuilderState;
-  exportDataState = ActionState.create();
+  readonly queryBuilderState: QueryBuilderState;
+  readonly exportDataState = ActionState.create();
+  readonly executionPlanState: ExecutionPlanState;
+
   previewLimit = DEFAULT_LIMIT;
   isRunningQuery = false;
   isGeneratingPlan = false;
   executionResult?: ExecutionResult | undefined;
-  executionPlanState: ExecutionPlanState;
   executionDuration?: number | undefined;
+  latestRunHashCode?: string | undefined;
   queryRunPromise: Promise<ExecutionResult> | undefined = undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      executionPlanState: false,
+    makeObservable(this, {
+      executionResult: observable,
+      previewLimit: observable,
+      executionDuration: observable,
+      latestRunHashCode: observable,
+      queryRunPromise: observable,
+      isGeneratingPlan: observable,
+      isRunningQuery: observable,
       setIsRunningQuery: action,
       setExecutionResult: action,
+      setExecutionDuration: action,
+      setPreviewLimit: action,
+      setQueryRunPromise: action,
+      exportData: flow,
+      runQuery: flow,
+      generatePlan: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -91,6 +104,13 @@ export class QueryBuilderResultState {
   ): void => {
     this.queryRunPromise = promise;
   };
+
+  get checkForStaleResults(): boolean {
+    if (this.latestRunHashCode !== this.queryBuilderState.hashCode) {
+      return true;
+    }
+    return false;
+  }
 
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
@@ -188,7 +208,8 @@ export class QueryBuilderResultState {
 
   *runQuery(): GeneratorFn<void> {
     try {
-      this.isRunningQuery = true;
+      this.setIsRunningQuery(true);
+      const currentHashCode = this.queryBuilderState.hashCode;
       const mapping = guaranteeNonNullable(
         this.queryBuilderState.mapping,
         'Mapping is required to execute query',
@@ -210,6 +231,7 @@ export class QueryBuilderResultState {
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResult(result);
+        this.latestRunHashCode = currentHashCode;
         this.setExecutionDuration(Date.now() - startTime);
       }
     } catch (error) {

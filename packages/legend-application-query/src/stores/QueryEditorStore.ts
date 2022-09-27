@@ -203,17 +203,16 @@ export class QueryExportState {
 }
 
 export class QueryLoaderState {
-  editorStore: QueryEditorStore;
-  isQueryLoaderOpen = false;
+  readonly editorStore: QueryEditorStore;
   loadQueriesState = ActionState.create();
   queries: LightQuery[] = [];
+  isQueryLoaderOpen = false;
   showCurrentUserQueriesOnly = false;
 
   constructor(editorStore: QueryEditorStore) {
     makeObservable(this, {
       isQueryLoaderOpen: observable,
       queries: observable,
-      loadQueriesState: observable,
       showCurrentUserQueriesOnly: observable,
       setIsQueryLoaderOpen: action,
       setQueries: action,
@@ -527,7 +526,6 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         ),
       ),
     );
-
     return queryBuilderState;
   }
 

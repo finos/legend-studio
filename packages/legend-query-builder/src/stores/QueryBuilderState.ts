@@ -23,6 +23,7 @@ import {
   guaranteeType,
   filterByType,
   ActionState,
+  hashArray,
 } from '@finos/legend-shared';
 import { QueryBuilderFilterState } from './filter/QueryBuilderFilterState.js';
 import { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
@@ -62,6 +63,7 @@ import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOper
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 
 export abstract class QueryBuilderState {
   applicationStore: GenericLegendApplicationStore;
@@ -134,6 +136,7 @@ export abstract class QueryBuilderState {
       rebuildWithQuery: action,
       saveQuery: action,
       compileQuery: flow,
+      hashCode: computed,
     });
 
     this.applicationStore = applicationStore;
@@ -278,9 +281,39 @@ export abstract class QueryBuilderState {
     );
   }
 
-  initializeWithQuery(rawLambda: RawLambda): void {
+  initializeWithQuery(query: RawLambda): void {
+    this.rebuildWithQuery(query);
+    this.changeDetectionState.initialize(query);
+  }
+
+  /**
+   * Process the provided query, and rebuild the query builder state.
+   */
+  rebuildWithQuery(query: RawLambda): void {
     try {
-      this.rebuildWithQuery(rawLambda);
+      this.resetQueryResult();
+      this.resetQueryContent();
+
+      if (!isStubbed_RawLambda(query)) {
+        const valueSpec = observe_ValueSpecification(
+          this.graphManagerState.graphManager.buildValueSpecification(
+            this.graphManagerState.graphManager.serializeRawValueSpecification(
+              query,
+            ),
+            this.graphManagerState.graph,
+          ),
+          this.observableContext,
+        );
+        const compiledValueSpecification = guaranteeType(
+          valueSpec,
+          LambdaFunctionInstanceValue,
+          `Can't build query state: query builder only support lambda`,
+        );
+        processQueryLambdaFunction(
+          guaranteeNonNullable(compiledValueSpecification.values[0]),
+          this,
+        );
+      }
       if (this.parametersState.parameterStates.length > 0) {
         this.setShowParametersPanel(true);
       }
@@ -289,10 +322,10 @@ export abstract class QueryBuilderState {
       this.resetQueryContent();
       this.resetQueryResult();
       this.unsupportedQueryState.setLambdaError(error);
-      this.unsupportedQueryState.setRawLambda(rawLambda);
+      this.unsupportedQueryState.setRawLambda(query);
       this.setClass(undefined);
       const parameters = buildLambdaVariableExpressions(
-        rawLambda,
+        query,
         this.graphManagerState,
       )
         .map((param) =>
@@ -303,43 +336,12 @@ export abstract class QueryBuilderState {
     }
   }
 
-  /**
-   * Process the provided query, and rebuild the query builder state.
-   *
-   * @throws error if there is an issue building the compiled lambda or rebuilding the state.
-   * consumers of function should handle the errors.
-   */
-  rebuildWithQuery(val: RawLambda): void {
-    this.resetQueryResult();
-    this.resetQueryContent();
-    if (!isStubbed_RawLambda(val)) {
-      const valueSpec = observe_ValueSpecification(
-        this.graphManagerState.graphManager.buildValueSpecification(
-          this.graphManagerState.graphManager.serializeRawValueSpecification(
-            val,
-          ),
-          this.graphManagerState.graph,
-        ),
-        this.observableContext,
-      );
-      const compiledValueSpecification = guaranteeType(
-        valueSpec,
-        LambdaFunctionInstanceValue,
-        `Can't build query state: query builder only support lambda`,
-      );
-      processQueryLambdaFunction(
-        guaranteeNonNullable(compiledValueSpecification.values[0]),
-        this,
-      );
-    }
-  }
-
   async saveQuery(
     onSaveQuery: (lambda: RawLambda) => Promise<void>,
   ): Promise<void> {
     try {
-      const rawLambda = this.buildQuery();
-      await onSaveQuery(rawLambda);
+      const query = this.buildQuery();
+      await onSaveQuery(query);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(`Can't save query: ${error.message}`);
@@ -449,6 +451,17 @@ export abstract class QueryBuilderState {
     basicState.mapping = this.mapping;
     basicState.runtimeValue = this.runtimeValue;
     return basicState;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.QUERY_BUILDER_STATE,
+      this.unsupportedQueryState,
+      this.milestoningState,
+      this.parametersState,
+      this.filterState,
+      this.fetchStructureState.implementation,
+    ]);
   }
 }
 

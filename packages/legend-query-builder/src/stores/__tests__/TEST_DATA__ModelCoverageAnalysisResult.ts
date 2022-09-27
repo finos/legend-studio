@@ -1136,3 +1136,22 @@ export const TEST_DATA__ModelCoverageAnalysisResult_NestedSubtype = {
     },
   ],
 };
+
+export const TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection = {
+  mappedEntities: [
+    {
+      path: 'my::Firm',
+      properties: [
+        { _type: 'MappedProperty', name: 'legalName' },
+        { _type: 'entity', entityPath: 'my::Person', name: 'employees' },
+      ],
+    },
+    {
+      path: 'my::Person',
+      properties: [
+        { _type: 'MappedProperty', name: 'name' },
+        { _type: 'entity', entityPath: 'my::Firm', name: 'firm' },
+      ],
+    },
+  ],
+};

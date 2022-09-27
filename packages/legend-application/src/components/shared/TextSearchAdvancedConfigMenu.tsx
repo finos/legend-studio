@@ -54,7 +54,7 @@ export const TextSearchAdvancedConfigMenu = observer(
         </div>
         <div>
           <BaseRadioGroup
-            className="text-search-advanced-config--radio-group"
+            className="text-search-advanced-config__options"
             value={configState.currentMode}
             onChange={handleSearchMode}
             row={false}

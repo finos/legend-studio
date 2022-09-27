@@ -29,7 +29,12 @@ import {
   GenericType,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
-import { assertTrue, guaranteeType } from '@finos/legend-shared';
+import {
+  assertTrue,
+  guaranteeType,
+  type Hashable,
+  hashArray,
+} from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
 import {
@@ -37,8 +42,12 @@ import {
   QueryBuilderSimpleProjectionColumnState,
 } from '../../QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_JoinString
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'join';
   }
@@ -151,5 +160,11 @@ export class QueryBuilderAggregateOperator_JoinString extends QueryBuilderAggreg
       aggregateColumnState.aggregationState.projectionState.queryBuilderState
         .graphManagerState.graph;
     return graph.getType(PRIMITIVE_TYPE.STRING);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_JOIN_STRING,
+    ]);
   }
 }

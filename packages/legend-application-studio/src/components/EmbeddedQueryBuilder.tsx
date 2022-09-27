@@ -24,7 +24,7 @@ import {
   EmptyWindowRestoreIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import { hashObject, noop } from '@finos/legend-shared';
+import { noop } from '@finos/legend-shared';
 import {
   useApplicationNavigationContext,
   ActionAlertActionType,
@@ -65,13 +65,7 @@ const QueryBuilderDialog = observer(
     );
 
     const confirmCloseQueryBuilder = (): void => {
-      // NOTE: This is poor-man change detection for query
-      // in the future, we could consider a similar approach to how we do change detection in Studio
-      if (
-        queryBuilderState.changeDetectionState.isEnabled &&
-        queryBuilderState.changeDetectionState.queryHashCode !==
-          hashObject(queryBuilderState.buildQuery())
-      ) {
+      if (queryBuilderState.changeDetectionState.hasChanged) {
         applicationStore.setActionAlertInfo({
           message:
             'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',

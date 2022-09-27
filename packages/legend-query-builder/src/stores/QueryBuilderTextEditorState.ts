@@ -193,7 +193,7 @@ export class QueryBuilderTextEditorState extends LambdaEditorState {
           `Can't parse query. Please fix error before closing: ${this.parserError.message}`,
         );
       } else {
-        this.queryBuilderState.initializeWithQuery(this.rawLambdaState.lambda);
+        this.queryBuilderState.rebuildWithQuery(this.rawLambdaState.lambda);
         this.setMode(undefined);
       }
       return;

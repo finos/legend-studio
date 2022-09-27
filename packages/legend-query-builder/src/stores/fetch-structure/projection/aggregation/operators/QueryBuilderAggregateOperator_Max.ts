@@ -34,8 +34,13 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Max
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'max';
   }
@@ -170,5 +175,9 @@ export class QueryBuilderAggregateOperator_Max extends QueryBuilderAggregateOper
       );
     }
     return undefined;
+  }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_MAX]);
   }
 }

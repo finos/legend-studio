@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 import { InstanceValue } from './InstanceValue.js';
 
-export class AlloySerializationConfig {
+export class AlloySerializationConfig implements Hashable {
   typeKeyName: string;
   includeType?: boolean | undefined;
   includeEnumType?: boolean | undefined;
@@ -28,8 +30,33 @@ export class AlloySerializationConfig {
   constructor(typeKeyName: string) {
     this.typeKeyName = typeKeyName;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ALLOY_SERIALIZATION_CONFIG_INSTANCE_VALUE,
+      this.typeKeyName,
+      this.includeType ?? '',
+      this.includeEnumType ?? '',
+      this.removePropertiesWithEmptySets ?? '',
+      this.removePropertiesWithNullValues ?? '',
+      this.fullyQualifiedTypePath ?? '',
+      this.includeObjectReference ?? '',
+    ]);
+  }
 }
 
-export class AlloySerializationConfigInstanceValue extends InstanceValue {
+export class AlloySerializationConfigInstanceValue
+  extends InstanceValue
+  implements Hashable
+{
   override values: AlloySerializationConfig[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ALLOY_SERIALIZATION_CONFIG_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
 }

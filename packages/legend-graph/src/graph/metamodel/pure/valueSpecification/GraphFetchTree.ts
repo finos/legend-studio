@@ -22,17 +22,29 @@ import type {
   ValueSpecificationVisitor,
 } from './ValueSpecification.js';
 import { InstanceValue } from './InstanceValue.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 
-export abstract class GraphFetchTree {
+export abstract class GraphFetchTree implements Hashable {
   subTrees: GraphFetchTree[] = [];
+
+  abstract get hashCode(): string;
 
   get isEmpty(): boolean {
     return !this.subTrees.length;
   }
 }
 
-export class RootGraphFetchTree extends GraphFetchTree {
+export class RootGraphFetchTree extends GraphFetchTree implements Hashable {
   class: PackageableElementReference<Class>;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ROOT_GRAPH_FETCH_TREE,
+      hashArray(this.subTrees),
+      this.class.valueForSerialization ?? '',
+    ]);
+  }
 
   constructor(_class: PackageableElementReference<Class>) {
     super();
@@ -40,7 +52,7 @@ export class RootGraphFetchTree extends GraphFetchTree {
   }
 }
 
-export class PropertyGraphFetchTree extends GraphFetchTree {
+export class PropertyGraphFetchTree extends GraphFetchTree implements Hashable {
   property: PropertyReference;
   alias?: string | undefined;
   parameters: ValueSpecification[] = []; //TODO
@@ -54,14 +66,40 @@ export class PropertyGraphFetchTree extends GraphFetchTree {
     this.property = property;
     this.subType = subType;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PROPERTY_GRAPH_FETCH_TREE,
+      hashArray(this.subTrees),
+      this.property.ownerReference.valueForSerialization ?? '',
+      this.alias ?? '',
+      hashArray(this.parameters),
+      this.subType?.valueForSerialization ?? '',
+    ]);
+  }
 }
 
-export abstract class GraphFetchTreeInstanceValue extends InstanceValue {
+export abstract class GraphFetchTreeInstanceValue
+  extends InstanceValue
+  implements Hashable
+{
   override values: GraphFetchTree[] = [];
 }
 
-export class PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
+export class PropertyGraphFetchTreeInstanceValue
+  extends GraphFetchTreeInstanceValue
+  implements Hashable
+{
   override values: PropertyGraphFetchTree[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.PROPERTY_GRAPH_FETCH_TREE_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
@@ -70,8 +108,20 @@ export class PropertyGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceV
   }
 }
 
-export class RootGraphFetchTreeInstanceValue extends GraphFetchTreeInstanceValue {
+export class RootGraphFetchTreeInstanceValue
+  extends GraphFetchTreeInstanceValue
+  implements Hashable
+{
   override values: RootGraphFetchTree[] = [];
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.ROOT_GRAPH_FETCH_TREE_INSTANCE_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+      hashArray(this.values),
+    ]);
+  }
 
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

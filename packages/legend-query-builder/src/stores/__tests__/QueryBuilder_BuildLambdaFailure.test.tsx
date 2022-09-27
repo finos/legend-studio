@@ -40,6 +40,7 @@ import {
   TEST__LegendApplicationPluginManager,
 } from '@finos/legend-application';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
+import { act } from 'react-dom/test-utils';
 
 type TestCase = [
   string,
@@ -131,11 +132,14 @@ describe(
           applicationStore,
           graphManagerState,
         );
-        expect(() =>
-          queryBuilderState.rebuildWithQuery(
+        await act(async () => {
+          queryBuilderState.initializeWithQuery(
             create_RawLambda(lambdaJson.parameters, lambdaJson.body),
-          ),
-        ).toThrowError(errorMessage);
+          );
+        });
+        expect(
+          queryBuilderState.unsupportedQueryState.lambdaError?.message,
+        ).toEqual(errorMessage);
       },
     );
   },

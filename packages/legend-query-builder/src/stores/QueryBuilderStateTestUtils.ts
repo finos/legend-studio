@@ -61,7 +61,7 @@ export const TEST__setUpQueryBuilderState = async (
     graphManagerState,
   );
   if (rawLambda) {
-    queryBuilderState.rebuildWithQuery(rawLambda);
+    queryBuilderState.initializeWithQuery(rawLambda);
   }
   if (executionContext) {
     const graph = queryBuilderState.graphManagerState.graph;

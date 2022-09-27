@@ -35,8 +35,13 @@ import {
   isPropertyExpressionChainOptional,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperator {
+export class QueryBuilderFilterOperator_IsEmpty
+  extends QueryBuilderFilterOperator
+  implements Hashable
+{
   getLabel(filterConditionState: FilterConditionState): string {
     return 'is empty';
   }
@@ -96,6 +101,10 @@ export class QueryBuilderFilterOperator_IsEmpty extends QueryBuilderFilterOperat
       true,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IS_EMPTY]);
+  }
 }
 
 export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOperator_IsEmpty {
@@ -121,5 +130,11 @@ export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOpe
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_IS_NOT_EMPTY,
+    ]);
   }
 }

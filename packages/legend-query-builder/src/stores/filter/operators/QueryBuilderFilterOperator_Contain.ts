@@ -25,7 +25,11 @@ import {
   type SimpleFunctionExpression,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
@@ -37,8 +41,12 @@ import {
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperator {
+export class QueryBuilderFilterOperator_Contain
+  extends QueryBuilderFilterOperator
+  implements Hashable
+{
   getLabel(filterConditionState: FilterConditionState): string {
     return 'contains';
   }
@@ -105,6 +113,10 @@ export class QueryBuilderFilterOperator_Contain extends QueryBuilderFilterOperat
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_CONTAIN]);
+  }
 }
 
 export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOperator_Contain {
@@ -130,5 +142,11 @@ export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOpe
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_CONTAIN,
+    ]);
   }
 }

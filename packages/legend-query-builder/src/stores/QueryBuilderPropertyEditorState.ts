@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   getNullableFirstElement,
   guaranteeNonNullable,
   guaranteeType,
+  type Hashable,
+  hashArray,
   isCamelCase,
   prettyCamelCase,
   prettyCONSTName,
@@ -59,6 +61,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import { functionExpression_setParametersValues } from '@finos/legend-application';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
@@ -556,12 +559,11 @@ export class QueryBuilderDerivedPropertyExpressionState {
   }
 }
 
-export class QueryBuilderPropertyExpressionState {
-  queryBuilderState: QueryBuilderState;
+export class QueryBuilderPropertyExpressionState implements Hashable {
+  readonly queryBuilderState: QueryBuilderState;
+  readonly propertyExpression: AbstractPropertyExpression;
   path: string;
   title: string;
-  readonly propertyExpression: AbstractPropertyExpression;
-
   isEditingDerivedPropertyExpression = false;
   // Since this property is a chain expression, some link of the chain can be
   // derived property, as such, we need to keep track of the derived properties state in an array
@@ -580,13 +582,16 @@ export class QueryBuilderPropertyExpressionState {
     queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
   ) {
-    makeAutoObservable<
+    makeObservable<
       QueryBuilderPropertyExpressionState,
       'initDerivedPropertyExpressionStates'
     >(this, {
-      queryBuilderState: false,
+      isEditingDerivedPropertyExpression: observable,
+      derivedPropertyExpressionStates: observable,
       setIsEditingDerivedProperty: action,
       initDerivedPropertyExpressionStates: action,
+      isValid: computed,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -664,5 +669,12 @@ export class QueryBuilderPropertyExpressionState {
     }
     this.requiresExistsHandling = requiresExistsHandling;
     this.derivedPropertyExpressionStates = result.slice().reverse();
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.PROPERTY_EXPRESSION_STATE,
+      this.propertyExpression,
+    ]);
   }
 }

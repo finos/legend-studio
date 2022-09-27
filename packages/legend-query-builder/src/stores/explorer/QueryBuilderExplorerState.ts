@@ -59,14 +59,7 @@ import {
   getAllSubclasses,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import {
-  action,
-  flow,
-  flowResult,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import {
   buildNonNumericPreviewDataQuery,
@@ -568,8 +561,10 @@ export class QueryBuilderExplorerPreviewDataState {
   previewData?: QueryBuilderPreviewData | undefined;
 
   constructor() {
-    makeAutoObservable(this, {
+    makeObservable(this, {
       previewData: observable.ref,
+      isGeneratingPreviewData: observable,
+      propertyName: observable,
       setPropertyName: action,
       setIsGeneratingPreviewData: action,
       setPreviewData: action,
@@ -590,30 +585,31 @@ export class QueryBuilderExplorerPreviewDataState {
 }
 
 export class QueryBuilderExplorerState {
-  queryBuilderState: QueryBuilderState;
-  previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly queryBuilderState: QueryBuilderState;
+  readonly previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly propertySearchState: QueryBuilderPropertySearchState;
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
   highlightUsedProperties = true;
-  propertySearchState: QueryBuilderPropertySearchState;
-  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   mappingModelCoverageAnalysisState = ActionState.create();
+  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      previewDataState: false,
+    makeObservable(this, {
       treeData: observable.ref,
+      humanizePropertyName: observable,
+      showUnmappedProperties: observable,
       highlightUsedProperties: observable,
+      mappingModelCoverageAnalysisResult: observable,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
-      previewData: flow,
       setHighlightUsedProperties: action,
       analyzeMappingModelCoverage: flow,
+      previewData: flow,
     });
 
     this.queryBuilderState = queryBuilderState;

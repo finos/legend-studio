@@ -21,7 +21,11 @@ import {
   PRIMITIVE_TYPE,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
@@ -36,8 +40,12 @@ import {
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_EndWith
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return 'ends with';
   }
@@ -101,6 +109,12 @@ export class QueryBuilderPostFilterOperator_EndWith extends QueryBuilderPostFilt
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_END_WITH,
+    ]);
+  }
 }
 
 export class QueryBuilderPostFilterOperator_NotEndWith extends QueryBuilderPostFilterOperator_EndWith {
@@ -131,5 +145,11 @@ export class QueryBuilderPostFilterOperator_NotEndWith extends QueryBuilderPostF
     return innerExpression
       ? super.buildPostFilterConditionState(postFilterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_END_WITH,
+    ]);
   }
 }

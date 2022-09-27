@@ -18,7 +18,9 @@ import {
   LambdaParametersState,
   type LambdaParameterState,
 } from '@finos/legend-application';
-import { observable, makeObservable, action } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { observable, makeObservable, action, override } from 'mobx';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export const QUERY_BUILDER_PARAMETER_DND_TYPE = 'PARAMETER';
@@ -27,7 +29,10 @@ export interface QueryBuilderParameterDragSource {
   variable: LambdaParameterState;
 }
 
-export class QueryBuilderParametersState extends LambdaParametersState {
+export class QueryBuilderParametersState
+  extends LambdaParametersState
+  implements Hashable
+{
   selectedParameter: LambdaParameterState | undefined;
   queryBuilderState: QueryBuilderState;
 
@@ -41,9 +46,17 @@ export class QueryBuilderParametersState extends LambdaParametersState {
       setParameters: action,
       selectedParameter: observable,
       setSelectedParameter: action,
+      hashCode: override,
     });
 
     this.queryBuilderState = queryBuilderState;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.PARAMETERS_STATE,
+      hashArray(this.parameterStates),
+    ]);
   }
 
   setSelectedParameter(val: LambdaParameterState | undefined): void {
