@@ -106,7 +106,7 @@
   .table {
     th,
     td {
-      border: 0.1rem solid var(--color-light-grey-250);
+      border-color: var(--color-light-grey-250);
     }
 
     thead {
@@ -197,7 +197,7 @@
 
   .value-spec-editor__reset-btn {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     border-left: none;
 
     svg {
@@ -207,7 +207,7 @@
 
   .value-spec-editor__date-picker__trigger {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-light-grey-300);
+    border-color: var(--color-light-grey-300);
     color: var(--color-legacy-dark-grey-200);
   }
 
@@ -265,10 +265,10 @@
       }
 
       &__search-section {
-        border-bottom: 0.1rem solid var(--color-legacy-light-grey-200);
+        border-color: var(--color-legacy-light-grey-200);
 
         &__input {
-          border: 0.1rem solid var(--color-legacy-light-grey-200);
+          border-color: var(--color-legacy-light-grey-200);
         }
       }
 
@@ -337,6 +337,34 @@
     }
   }
 
+  // ---------------------------- Diff Panel -------------------------------
+
+  .query-builder__diff-panel {
+    &__header {
+      background: var(--color-white);
+    }
+
+    &__actions {
+      border-color: var(--color-legacy-light-grey-300);
+
+      .btn {
+        height: 3.6rem;
+        border-radius: 0.2rem;
+        color: var(--color-light-grey-50);
+      }
+    }
+
+    &__mode {
+      background: var(--color-light-grey-250);
+      color: var(--color-dark-grey-500);
+    }
+
+    &__mode--selected {
+      background: var(--color-legacy-light-blue-200);
+      color: var(--color-light-grey-100);
+    }
+  }
+
   // ---------------------------- Other -------------------------------
 
   .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
@@ -359,8 +387,8 @@
     background: var(--color-legacy-light-grey-300);
     outline-offset: -0.2rem;
     border-radius: 0.4rem;
-    outline: 0.2rem solid var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-100);
+    outline-color: var(--color-legacy-light-grey-100);
+    border-color: var(--color-legacy-light-grey-100);
   }
 
   ::-webkit-scrollbar-track-piece {
@@ -419,13 +447,13 @@
   }
 
   .query-builder__main {
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     background: var(--color-legacy-light-grey-200);
   }
 
   .query-builder__activity-bar {
     background: var(--color-legacy-light-grey-100);
-    border-top: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
   }
 
   .query-builder__status-bar {
@@ -451,12 +479,11 @@
     color: var(--color-legacy-dark-grey-200);
     background: var(--color-legacy-light-grey-100);
     border-color: var(--color-legacy-light-grey-300);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
   }
 
   .query-builder .panel__content {
     background: var(--color-white);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
     border-top: none;
   }
 
@@ -504,12 +531,12 @@
 
   .query-builder__setup__config-group__item__label {
     background: var(--color-legacy-light-grey-100);
-    border: 0.1rem solid var(--color-legacy-light-grey-300);
+    border-color: var(--color-legacy-light-grey-300);
   }
 
   .query-builder__setup__runtime-option--custom__label {
     background: var(--color-light-grey-50);
-    border: 0.1rem solid var(--color-light-grey-180);
+    border-color: var(--color-light-grey-180);
   }
 
   .query-builder__setup__config-group__header {
@@ -961,7 +988,7 @@
   }
 
   .query-builder__lambda-editor {
-    border: 0.1rem solid var(--color-legacy-light-blue-100);
+    border-color: var(--color-legacy-light-blue-100);
 
     .monaco-editor {
       .margin,

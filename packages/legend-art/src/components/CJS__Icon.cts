@@ -177,6 +177,7 @@ export {
   VscRunAll as RunAllIcon,
   VscRunErrors as RunErrorsIcon,
   VscOpenPreview as OpenPreviewIcon,
+  VscDiff as DiffIcon,
 } from 'react-icons/vsc';
 export {
   GoChevronDown as ChevronDownIcon,

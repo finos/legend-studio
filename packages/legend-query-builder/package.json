@@ -63,6 +63,7 @@
     "react-dnd": "16.0.1",
     "react-dom": "18.2.0",
     "react-hotkeys": "2.0.0",
+    "react-resize-detector": "7.1.2",
     "react-router": "5.3.3",
     "react-router-dom": "5.3.3",
     "serializr": "2.0.5"

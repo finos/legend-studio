@@ -281,24 +281,24 @@ export abstract class QueryBuilderState {
     );
   }
 
-  initializeWithQuery(rawLambda: RawLambda): void {
-    this.rebuildWithQuery(rawLambda);
-    this.changeDetectionState.initialize();
+  initializeWithQuery(query: RawLambda): void {
+    this.rebuildWithQuery(query);
+    this.changeDetectionState.initialize(query);
   }
 
   /**
    * Process the provided query, and rebuild the query builder state.
    */
-  rebuildWithQuery(rawLambda: RawLambda): void {
+  rebuildWithQuery(query: RawLambda): void {
     try {
       this.resetQueryResult();
       this.resetQueryContent();
 
-      if (!isStubbed_RawLambda(rawLambda)) {
+      if (!isStubbed_RawLambda(query)) {
         const valueSpec = observe_ValueSpecification(
           this.graphManagerState.graphManager.buildValueSpecification(
             this.graphManagerState.graphManager.serializeRawValueSpecification(
-              rawLambda,
+              query,
             ),
             this.graphManagerState.graph,
           ),
@@ -322,10 +322,10 @@ export abstract class QueryBuilderState {
       this.resetQueryContent();
       this.resetQueryResult();
       this.unsupportedQueryState.setLambdaError(error);
-      this.unsupportedQueryState.setRawLambda(rawLambda);
+      this.unsupportedQueryState.setRawLambda(query);
       this.setClass(undefined);
       const parameters = buildLambdaVariableExpressions(
-        rawLambda,
+        query,
         this.graphManagerState,
       )
         .map((param) =>
@@ -340,8 +340,8 @@ export abstract class QueryBuilderState {
     onSaveQuery: (lambda: RawLambda) => Promise<void>,
   ): Promise<void> {
     try {
-      const rawLambda = this.buildQuery();
-      await onSaveQuery(rawLambda);
+      const query = this.buildQuery();
+      await onSaveQuery(query);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notifyError(`Can't save query: ${error.message}`);
@@ -456,9 +456,10 @@ export abstract class QueryBuilderState {
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_HASH_STRUCTURE.QUERY_BUILDER_STATE,
-      this.filterState,
-      this.parametersState,
+      this.unsupportedQueryState,
       this.milestoningState,
+      this.parametersState,
+      this.filterState,
       this.fetchStructureState.implementation,
     ]);
   }

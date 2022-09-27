@@ -32,6 +32,7 @@ import {
   CheckIcon,
   CaretDownIcon,
   CogIcon,
+  DiffIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -49,6 +50,7 @@ import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
 
 enum QUERY_BUILDER_HOTKEY {
   COMPILE = 'COMPILE',
@@ -62,6 +64,8 @@ const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const showDiff = (): void =>
+      queryBuilderState.changeDetectionState.showDiffViewPanel();
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
     const compile = applicationStore.guardUnhandledError(() =>
@@ -72,6 +76,32 @@ const QueryBuilderStatusBar = observer(
       <div className="query-builder__status-bar">
         <div className="query-builder__status-bar__left"></div>
         <div className="query-builder__status-bar__right">
+          {queryBuilderState.changeDetectionState.initState.hasCompleted && (
+            <>
+              <button
+                className={clsx(
+                  'query-builder__status-bar__action query-builder__status-bar__view-diff-btn',
+                )}
+                disabled={!queryBuilderState.changeDetectionState.hasChanged}
+                onClick={showDiff}
+                tabIndex={-1}
+                title={
+                  queryBuilderState.changeDetectionState.hasChanged
+                    ? 'Show changes'
+                    : 'Query has not been changed'
+                }
+              >
+                <DiffIcon />
+              </button>
+              {queryBuilderState.changeDetectionState.diffViewState && (
+                <QueryBuilderDiffViewPanel
+                  diffViewState={
+                    queryBuilderState.changeDetectionState.diffViewState
+                  }
+                />
+              )}
+            </>
+          )}
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__compile-btn',
@@ -90,6 +120,11 @@ const QueryBuilderStatusBar = observer(
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  queryBuilderState.textEditorState.mode ===
+                  QueryBuilderTextEditorMode.JSON,
+              },
             )}
             onClick={(): void =>
               openLambdaEditor(QueryBuilderTextEditorMode.JSON)
@@ -100,12 +135,17 @@ const QueryBuilderStatusBar = observer(
           <button
             className={clsx(
               'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+              {
+                'query-builder__status-bar__action__toggler--toggled':
+                  queryBuilderState.textEditorState.mode ===
+                  QueryBuilderTextEditorMode.TEXT,
+              },
             )}
             onClick={(): void =>
               openLambdaEditor(QueryBuilderTextEditorMode.TEXT)
             }
             tabIndex={-1}
-            title="View Pure Query"
+            title="View Query in Pure"
           >
             <HackerIcon />
           </button>
