@@ -38,8 +38,8 @@ import {
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
 import {
-  DEFAULT_DATA_SPACE_LOADER_LIMIT,
-  MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH,
+  DATA_SPACE_LOADER_LIMIT,
+  DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH,
 } from '../../DSLDataSpace_Const.js';
 import type {
   DataSpace,
@@ -124,7 +124,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH;
+      searchText.length >= DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadDataSpacesState.inProgress();
     const toGetSnapShot = this.versionId === SNAPSHOT_VERSION_ALIAS;
     try {
@@ -134,7 +134,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
           {
             search: isValidSearchString ? searchText : undefined,
             scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            limit: DEFAULT_DATA_SPACE_LOADER_LIMIT,
+            limit: DATA_SPACE_LOADER_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) =>

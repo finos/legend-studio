@@ -50,7 +50,7 @@ import {
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 
-const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 3;
+const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 2;
 const DEFAULT_SERVICE_LOADER_LIMIT = 10;
 
 export class UpdateServiceQuerySetupStore {

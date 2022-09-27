@@ -74,8 +74,8 @@ import {
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
 
-const QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH = 3;
-const QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT = 10;
+const QUERY_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+const QUERY_LOADER_LIMIT = 10;
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -236,14 +236,14 @@ export class QueryLoaderState {
 
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= QUERY_BUILDER_SEARCH_TEXT_MIN_LENGTH;
+      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = QUERY_BUILDER_QUERY_LOAD_MAX_AMOUNT;
+      searchSpecification.limit = QUERY_LOADER_LIMIT;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       this.queries =

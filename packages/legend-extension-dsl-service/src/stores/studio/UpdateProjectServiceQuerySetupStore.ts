@@ -37,8 +37,8 @@ import { generateProjectServiceQueryUpdaterSetupRoute } from './DSL_Service_Lege
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 
-const MINIMUM_PROJECT_LOADER_SEARCH_LENGTH = 3;
-const DEFAULT_PROJECT_LOADER_LIMIT = 10;
+const PROJECT_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+const PROJECT_LOADER_LIMIT = 10;
 
 export class UpdateProjectServiceQuerySetupStore {
   applicationStore: LegendStudioApplicationStore;
@@ -148,7 +148,7 @@ export class UpdateProjectServiceQuerySetupStore {
 
   *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_PROJECT_LOADER_SEARCH_LENGTH;
+      searchText.length >= PROJECT_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
@@ -156,7 +156,7 @@ export class UpdateProjectServiceQuerySetupStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
-          DEFAULT_PROJECT_LOADER_LIMIT,
+          PROJECT_LOADER_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
       this.loadProjectsState.pass();

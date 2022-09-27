@@ -41,8 +41,8 @@ import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import {
-  DEFAULT_DATA_SPACE_LOADER_LIMIT,
-  MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH,
+  DATA_SPACE_LOADER_LIMIT,
+  DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH,
 } from '../../DSLDataSpace_Const.js';
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
@@ -84,7 +84,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_DATA_SPACE_LOADER_SEARCH_LENGTH;
+      searchText.length >= DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
@@ -95,7 +95,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             scope: this.toGetSnapShot
               ? DepotScope.SNAPSHOT
               : DepotScope.RELEASES,
-            limit: DEFAULT_DATA_SPACE_LOADER_LIMIT,
+            limit: DATA_SPACE_LOADER_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) =>

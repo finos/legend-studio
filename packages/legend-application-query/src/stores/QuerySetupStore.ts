@@ -69,6 +69,9 @@ export abstract class QuerySetupState {
   }
 }
 
+const QUERY_LOADER_LIMIT = 10;
+const QUERY_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+
 export class EditExistingQuerySetupState extends QuerySetupState {
   queries: LightQuery[] = [];
   loadQueriesState = ActionState.create();
@@ -113,14 +116,15 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   }
 
   *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString = searchText.length >= 3;
+    const isValidSearchString =
+      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = 10;
+      searchSpecification.limit = QUERY_LOADER_LIMIT;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       this.queries =
@@ -136,8 +140,8 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   }
 }
 
-const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 3;
-const DEFAULT_SERVICE_LOADER_LIMIT = 10;
+const SERVICE_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+const SERVICE_LOADER_LIMIT = 10;
 
 export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
   services: ServiceInfo[] = [];
@@ -190,7 +194,7 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
 
   *loadServices(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_SERVICE_LOADER_SEARCH_LENGTH;
+      searchText.length >= SERVICE_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadServicesState.inProgress();
     try {
       this.services = (
@@ -201,7 +205,7 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
             // NOTE: since this mode is meant for contribution, we want to load services
             // on the snapshot version (i.e. merged to the default branch on the projects)
             scope: DepotScope.SNAPSHOT,
-            limit: DEFAULT_SERVICE_LOADER_LIMIT,
+            limit: SERVICE_LOADER_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) => extractServiceInfo(storedEntity));

@@ -168,6 +168,9 @@ interface QueryImportInfo {
   content: string;
 }
 
+const QUERY_LOADER_LIMIT = 10;
+const QUERY_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+
 export class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
@@ -273,7 +276,8 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
   }
 
   *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString = searchText.length >= 3;
+    const isValidSearchString =
+      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
@@ -285,7 +289,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = 10;
+      searchSpecification.limit = QUERY_LOADER_LIMIT;
       searchSpecification.projectCoordinates = [
         // either get queries for the current project
         currentProjectCoordinates,

@@ -41,8 +41,8 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
-const MINIMUM_PROJECT_LOADER_SEARCH_LENGTH = 3;
-const DEFAULT_PROJECT_LOADER_LIMIT = 10;
+const PROJECT_LOADER_MINIMUM_SEARCH_LENGTH = 2;
+const PROJECT_LOADER_LIMIT = 10;
 
 export class WorkspaceSetupStore {
   applicationStore: LegendStudioApplicationStore;
@@ -177,7 +177,7 @@ export class WorkspaceSetupStore {
 
   *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_PROJECT_LOADER_SEARCH_LENGTH;
+      searchText.length >= PROJECT_LOADER_MINIMUM_SEARCH_LENGTH;
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
@@ -185,7 +185,7 @@ export class WorkspaceSetupStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
-          DEFAULT_PROJECT_LOADER_LIMIT,
+          PROJECT_LOADER_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
       this.loadProjectsState.pass();

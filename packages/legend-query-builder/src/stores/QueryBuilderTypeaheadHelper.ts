@@ -38,7 +38,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
 
 const TYPEAHEAD_TAKE_LIMIT = 10;
-const START_LENGTH = 3;
+const TYPEAHEAD_MINIMUM_SEARCH_LENGTH = 2;
 
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
@@ -142,7 +142,7 @@ export const performTypeahead = (
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING: {
         const value = val.values[0] as string;
-        return value.length >= START_LENGTH;
+        return value.length >= TYPEAHEAD_MINIMUM_SEARCH_LENGTH;
       }
       default:
         return false;
