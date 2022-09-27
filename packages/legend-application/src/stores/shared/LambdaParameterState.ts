@@ -94,6 +94,7 @@ export const buildParametersLetLambdaFunc = (
     .filter(isNonNullable);
   return letlambdaFunction;
 };
+
 export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
@@ -121,8 +122,7 @@ export class LambdaParameterState implements Hashable {
   get hashCode(): string {
     return hashArray([
       LAMABA_PARAMETER_HASH_STRUCTURE.LAMBDA_PARAMETER_STATE,
-      this.value ?? '',
-      this.parameter.name,
+      this.parameter,
     ]);
   }
 
