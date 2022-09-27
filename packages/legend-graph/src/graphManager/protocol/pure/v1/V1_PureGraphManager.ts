@@ -251,7 +251,6 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
 import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
@@ -2300,14 +2299,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
+    /**
+     * @ToDelete
+     * This will be deleted once all users have migrated to using full function signature as function name
+     */
+    const TEMPORARY_elementToEntityMap = new Map<string, string>();
     await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      TEMPORARY_elementToEntityMap,
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
-        promisify(() => hashMap.set(element.path, element.hashCode)),
+        promisify(() =>
+          hashMap.set(
+            TEMPORARY_elementToEntityMap.get(element.path)
+              ? guaranteeNonNullable(
+                  TEMPORARY_elementToEntityMap.get(element.path),
+                )
+              : element.path,
+            element.hashCode,
+          ),
+        ),
       ),
     );
     return hashMap;
@@ -2582,23 +2596,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         .build(),
     ) as T;
 
-  private getElementPath = (elementProtocol: V1_PackageableElement): string => {
-    let name = elementProtocol.name;
-    // These functions calculation the function suffix and are used to identify if an
-    // function imported into Studio via model loader already has a suffix attached to the name
-    // if so, we will remove that suffix
-    // TODO: to be revised when we support function overloading
-    if (elementProtocol instanceof V1_ConcreteFunctionDefinition) {
-      const suffixIndex = elementProtocol.name.indexOf(
-        V1_getFunctionSuffix(elementProtocol),
-      );
-      if (suffixIndex > 0) {
-        name = elementProtocol.name.substring(0, suffixIndex - 1);
-      }
-    }
-
-    return `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${name}`;
-  };
+  private getElementPath = (elementProtocol: V1_PackageableElement): string =>
+    `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${elementProtocol.name}`;
 
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,

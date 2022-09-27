@@ -26,6 +26,7 @@ import {
   type ElementDragSource,
 } from '../../../stores/shared/DnDUtils.js';
 import {
+  assertErrorThrown,
   prettyCONSTName,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -75,9 +76,15 @@ import {
   stub_TaggedValue,
   stub_Stereotype,
   stub_RawVariableExpression,
+  ELEMENT_PATH_DELIMITER,
+  getFunctionSignature,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
+  type ApplicationStore,
+  type LegendApplicationPlugin,
+  type LegendApplicationConfig,
+  type LegendApplicationPluginManager,
   useApplicationNavigationContext,
   useApplicationStore,
   buildElementOption,
@@ -101,6 +108,8 @@ import {
 } from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import { LambdaEditor } from '@finos/legend-query-builder';
+import type { EditorStore } from '../../../stores/EditorStore.js';
+import { graph_renameElement } from '../../../stores/shared/modifier/GraphModifierHelper.js';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -130,6 +139,35 @@ type FunctionParameterDragSource = {
 
 const FUNCTION_PARAMETER_DND_TYPE = 'FUNCTION_PARAMETER';
 
+/**
+ * Use a hack to update graph's functionIndex based on the fact that functionIndex
+ * is readOnly. Changing  parameter/returnValue's type/multiplicity of the function
+ * or adding/deleting parameters will change the function's signature too.
+ * Therefore, graph.functionIndex needs to be updated.
+ */
+const updateFunctionName = (
+  editorStore: EditorStore,
+  applicationStore: ApplicationStore<
+    LegendApplicationConfig,
+    LegendApplicationPluginManager<LegendApplicationPlugin>
+  >,
+  func: ConcreteFunctionDefinition,
+): void => {
+  try {
+    graph_renameElement(
+      editorStore.graphManagerState.graph,
+      func,
+      `${func.package?.path}${ELEMENT_PATH_DELIMITER}${
+        func.functionName
+      }${getFunctionSignature(func)}`,
+      editorStore.changeDetectionState.observerContext,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    applicationStore.notifyError(error);
+  }
+};
+
 const ParameterBasicEditor = observer(
   (props: {
     parameter: RawVariableExpression;
@@ -140,6 +178,7 @@ const ParameterBasicEditor = observer(
     const ref = useRef<HTMLDivElement>(null);
     const { parameter, _func, deleteParameter, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     // Name
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       rawVariableExpression_setName(parameter, event.target.value);
@@ -159,7 +198,10 @@ const ParameterBasicEditor = observer(
     });
     const selectedType = { value: paramType, label: paramType.name };
     const changeType = (val: PackageableElementOption<Type>): void => {
-      rawVariableExpression_setType(parameter, val.value);
+      if (val.value !== parameter.type.value) {
+        rawVariableExpression_setType(parameter, val.value);
+        updateFunctionName(editorStore, applicationStore, _func);
+      }
       setIsEditingType(false);
     };
     const openElement = (): void => {
@@ -192,6 +234,7 @@ const ParameterBasicEditor = observer(
           parameter,
           editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
+        updateFunctionName(editorStore, applicationStore, _func);
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -395,6 +438,7 @@ const ReturnTypeEditor = observer(
     const { functionElement, isReadOnly } = props;
     const { returnType, returnMultiplicity } = functionElement;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     // Type
     const [isEditingType, setIsEditingType] = useState(false);
     const typeOptions =
@@ -412,6 +456,7 @@ const ReturnTypeEditor = observer(
     const changeType = (val: PackageableElementOption<Type>): void => {
       function_setReturnType(functionElement, val.value);
       setIsEditingType(false);
+      updateFunctionName(editorStore, applicationStore, functionElement);
     };
 
     const openElement = (): void => {
@@ -446,6 +491,7 @@ const ReturnTypeEditor = observer(
           functionElement,
           editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
+        updateFunctionName(editorStore, applicationStore, functionElement);
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -580,6 +626,7 @@ export const FunctionMainEditor = observer(
     functionEditorState: FunctionEditorState;
   }) => {
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
     const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
       PRIMITIVE_TYPE.STRING,
     );
@@ -591,11 +638,13 @@ export const FunctionMainEditor = observer(
         functionElement,
         stub_RawVariableExpression(defaultType),
       );
+      updateFunctionName(editorStore, applicationStore, functionElement);
     };
     const deleteParameter =
       (val: RawVariableExpression): (() => void) =>
       (): void => {
         function_deleteParameter(functionElement, val);
+        updateFunctionName(editorStore, applicationStore, functionElement);
       };
     const handleDropParameter = useCallback(
       (item: UMLEditorElementDropTarget): void => {
@@ -604,9 +653,10 @@ export const FunctionMainEditor = observer(
             functionElement,
             stub_RawVariableExpression(item.data.packageableElement),
           );
+          updateFunctionName(editorStore, applicationStore, functionElement);
         }
       },
-      [functionElement, isReadOnly],
+      [applicationStore, editorStore, functionElement, isReadOnly],
     );
     const [{ isParameterDragOver }, dropParameterRef] = useDrop<
       ElementDragSource,
@@ -827,7 +877,7 @@ export const FunctionEditor = observer(() => {
             )}
             <div className="panel__header__title__label">function</div>
             <div className="panel__header__title__content">
-              {functionElement.name}
+              {functionElement.functionName}
             </div>
           </div>
         </div>

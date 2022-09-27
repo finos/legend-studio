@@ -67,6 +67,7 @@ import { V1_checkDuplicatedElement } from './V1_ElementBuilder.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { V1_generateFunctionNamePlusSignature } from '../../../helpers/V1_DomainHelper.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -243,8 +244,9 @@ export class V1_ElementFirstPassBuilder
       element.name,
       `Function 'name' field is missing or empty`,
     );
+    const name = V1_generateFunctionNamePlusSignature(element);
     const func = new ConcreteFunctionDefinition(
-      element.name,
+      name,
       // This is just a stub to fill in when we first create the function
       PackageableElementImplicitReference.create(
         this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
@@ -254,7 +256,7 @@ export class V1_ElementFirstPassBuilder
         TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
       ),
     );
-    const path = V1_buildFullPath(element.package, element.name);
+    const path = V1_buildFullPath(element.package, name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     addElementToPackage(
       getOrCreateGraphPackage(

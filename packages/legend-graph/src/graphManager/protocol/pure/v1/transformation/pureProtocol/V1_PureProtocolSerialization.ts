@@ -64,9 +64,22 @@ export const V1_entitiesToPureModelContextData = async (
   entities: Entity[] | undefined,
   graph: V1_PureModelContextData,
   plugins: PureProtocolProcessorPlugin[],
+  /**
+   * @ToDelete
+   * This will be deleted once all users have migrated to using full function signature as function name
+   */
+  TEMPORARY_elementToEntityMap?: Map<string, string>,
 ): Promise<void> => {
   try {
     if (entities?.length) {
+      const entityToElement = (entity: Entity): V1_PackageableElement => {
+        const element = V1_deserializePackageableElement(
+          entity.content as PlainObject<V1_PackageableElement>,
+          plugins,
+        );
+        TEMPORARY_elementToEntityMap?.set(element.path, entity.path);
+        return element;
+      };
       graph.elements = await Promise.all<V1_PackageableElement>(
         entities.map(
           (e) =>
@@ -80,10 +93,7 @@ export const V1_entitiesToPureModelContextData = async (
                     // path is changed in the backend. If we are to check for this, we might consider
                     // not throwing error but quitely print out warnings about elements that would not
                     // be built.
-                    V1_deserializePackageableElement(
-                      e.content as PlainObject<V1_PackageableElement>,
-                      plugins,
-                    ),
+                    entityToElement(e),
                   );
                 } catch (error) {
                   assertErrorThrown(error);

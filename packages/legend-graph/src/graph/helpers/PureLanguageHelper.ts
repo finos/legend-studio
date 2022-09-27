@@ -16,6 +16,7 @@
 
 import {
   DATE_FORMAT,
+  ELEMENT_PATH_DELIMITER,
   MULTIPLICITY_INFINITE,
   MULTIPLICITY_RANGE_OPERATOR,
   PRIMITIVE_TYPE,
@@ -131,14 +132,17 @@ export const generateFunctionCallString = (
         separator;
     }
   }
-  return `${element.path}(${lambdaString})`;
+  return `${element.package?.path}${ELEMENT_PATH_DELIMITER}${element.functionName}(${lambdaString})`;
 };
 
 export const generateFunctionSignature = (
   element: ConcreteFunctionDefinition,
   fullPath: boolean,
 ): string =>
-  `${fullPath ? element.path : element.name}(${element.parameters
+  `${
+    (fullPath ? element.package?.path + ELEMENT_PATH_DELIMITER : '') +
+    element.functionName
+  }(${element.parameters
     .map(
       (p) =>
         `${p.name}: ${p.type.value.name}[${generateMultiplicityString(

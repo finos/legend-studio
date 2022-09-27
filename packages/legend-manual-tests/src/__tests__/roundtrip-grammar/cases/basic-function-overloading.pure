@@ -1,0 +1,10 @@
+###Pure
+function model::test(name: String[1]): String[*]
+{
+  'for testing'
+}
+
+function model::test(name: Number[1]): String[*]
+{
+  'for testing'
+}

@@ -22,7 +22,9 @@ import type { V1_Multiplicity } from '../model/packageableElements/domain/V1_Mul
 import type { V1_ConcreteFunctionDefinition } from '../model/packageableElements/function/V1_ConcreteFunctionDefinition.js';
 import type { V1_RawVariable } from '../model/rawValueSpecification/V1_RawVariable.js';
 
-const V1_getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
+const V1_buildFunctionMultiplicitySignature = (
+  multiplicity: V1_Multiplicity,
+): string => {
   if (multiplicity.lowerBound === multiplicity.upperBound) {
     return multiplicity.lowerBound.toString();
   } else if (
@@ -36,16 +38,25 @@ const V1_getMultiplicitySuffix = (multiplicity: V1_Multiplicity): string => {
   }$`;
 };
 
-const V1_getVariableSuffix = (variable: V1_RawVariable): string =>
+const V1_buildFunctionParameterSignature = (variable: V1_RawVariable): string =>
   `${variable.class
     .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${V1_getMultiplicitySuffix(variable.multiplicity)}_`;
+    .pop()}_${V1_buildFunctionMultiplicitySignature(variable.multiplicity)}_`;
 
 export const V1_getFunctionSuffix = (
   fn: V1_ConcreteFunctionDefinition,
 ): string =>
   `${fn.parameters
-    .map((p) => V1_getVariableSuffix(p))
+    .map((p) => V1_buildFunctionParameterSignature(p))
     .join('_')}_${fn.returnType
     .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${V1_getMultiplicitySuffix(fn.returnMultiplicity)}_`;
+    .pop()}_${V1_buildFunctionMultiplicitySignature(fn.returnMultiplicity)}_`;
+
+export const V1_buildFunctionSignature = (
+  func: V1_ConcreteFunctionDefinition,
+): string => {
+  const functionSignature = `_${V1_getFunctionSuffix(func)}`;
+  return func.name.endsWith(functionSignature)
+    ? func.name
+    : func.name + functionSignature;
+};

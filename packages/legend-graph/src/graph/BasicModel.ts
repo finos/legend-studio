@@ -65,6 +65,7 @@ import {
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
+import { getFunctionName } from './metamodel/pure/packageableElements/domain/ConcreteFunctionDefinitionHelper.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -657,6 +658,9 @@ export abstract class BasicModel {
           : this.root);
       // update element name
       element.name = newElementName;
+      if (element instanceof ConcreteFunctionDefinition) {
+        element.functionName = getFunctionName(element, element.name);
+      }
       // update element package if needed
       if (element.package !== newParentPackage) {
         if (element.package) {
