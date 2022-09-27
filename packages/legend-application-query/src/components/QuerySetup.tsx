@@ -72,6 +72,8 @@ import {
   type PackageableElementOption,
   useApplicationStore,
   buildElementOption,
+  EDITOR_LANGUAGE,
+  TextInputEditor,
 } from '@finos/legend-application';
 import {
   type ServiceOption,
@@ -262,6 +264,30 @@ const EditExistingQuerySetup = observer(
                 <UserIcon />
               </button>
             </div>
+          </div>
+          <div className="query-setup__existing-query__preview">
+            <PanelLoadingIndicator
+              isLoading={querySetupState.loadQueryState.isInProgress}
+            />
+            {querySetupState.currentQuery && (
+              <>
+                {!querySetupState.currentQueryContent && (
+                  <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
+                )}
+                {querySetupState.currentQueryContent && (
+                  <TextInputEditor
+                    inputValue={querySetupState.currentQueryContent}
+                    isReadOnly={true}
+                    language={EDITOR_LANGUAGE.PURE}
+                    showMiniMap={false}
+                    hideGutter={true}
+                  />
+                )}
+              </>
+            )}
+            {!querySetupState.currentQuery && (
+              <BlankPanelContent>No query to preview</BlankPanelContent>
+            )}
           </div>
         </div>
       </div>

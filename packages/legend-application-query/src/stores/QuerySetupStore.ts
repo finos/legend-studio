@@ -77,6 +77,7 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
   currentQuery?: LightQuery | undefined;
+  currentQueryContent?: string | undefined;
   showCurrentUserQueriesOnly = false;
 
   constructor(setupStore: QuerySetupStore) {
@@ -85,6 +86,7 @@ export class EditExistingQuerySetupState extends QuerySetupState {
     makeObservable(this, {
       queries: observable,
       currentQuery: observable,
+      currentQueryContent: observable,
       showCurrentUserQueriesOnly: observable,
       setShowCurrentUserQueriesOnly: action,
       setCurrentQuery: flow,
@@ -104,6 +106,10 @@ export class EditExistingQuerySetupState extends QuerySetupState {
           (yield this.setupStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
+        this.currentQueryContent =
+          (yield this.setupStore.graphManagerState.graphManager.getQueryContent(
+            queryId,
+          )) as string;
       } catch (error) {
         assertErrorThrown(error);
         this.setupStore.applicationStore.notifyError(error);
