@@ -133,3 +133,10 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServic
 export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl =
   (studioUrl: string, projectId: string): string =>
     `${studioUrl}/extensions/update-project-service-query/${projectId}`;
+
+/**
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl =
+  (studioUrl: string, queryId: string): string =>
+    `${studioUrl}/extensions/productionize-query/${queryId}`;

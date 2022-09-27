@@ -57,6 +57,7 @@ import {
   extractServiceInfo,
 } from '@finos/legend-query-builder';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl,
 } from './LegendQueryRouter.js';
@@ -133,6 +134,110 @@ export class EditExistingQuerySetupState extends QuerySetupState {
       searchSpecification.limit = QUERY_LOADER_LIMIT;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
+      this.queries =
+        (yield this.setupStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
+      this.loadQueriesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setupStore.applicationStore.notifyError(error);
+      this.loadQueriesState.fail();
+    }
+  }
+}
+
+export class QueryProductionizationSetupState extends QuerySetupState {
+  queries: LightQuery[] = [];
+  loadQueriesState = ActionState.create();
+  loadQueryState = ActionState.create();
+  currentQuery?: LightQuery | undefined;
+  currentQueryContent?: string | undefined;
+
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
+
+    makeObservable(this, {
+      queries: observable,
+      currentQuery: observable,
+      currentQueryContent: observable,
+      setCurrentQuery: flow,
+      loadQueries: flow,
+    });
+  }
+
+  async loadQueryProductionizer(): Promise<void> {
+    if (!this.currentQuery) {
+      return;
+    }
+
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await this.setupStore.depotServerClient.getProject(
+        this.currentQuery.groupId,
+        this.currentQuery.artifactId,
+      ),
+    );
+
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry =
+      this.setupStore.applicationStore.config.studioInstances.find(
+        (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+      );
+    if (matchingSDLCEntry) {
+      this.setupStore.applicationStore.setBlockingAlert({
+        message: `Loading query...`,
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
+      this.setupStore.applicationStore.navigator.jumpTo(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
+          matchingSDLCEntry.url,
+          this.currentQuery.id,
+        ),
+      );
+    } else {
+      this.setupStore.applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to productionize the query`,
+      );
+    }
+  }
+
+  *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
+    if (queryId) {
+      try {
+        this.loadQueryState.inProgress();
+        this.currentQuery =
+          (yield this.setupStore.graphManagerState.graphManager.getLightQuery(
+            queryId,
+          )) as LightQuery;
+        this.currentQueryContent =
+          (yield this.setupStore.graphManagerState.graphManager.getQueryContent(
+            queryId,
+          )) as string;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.setupStore.applicationStore.notifyError(error);
+      } finally {
+        this.loadQueryState.reset();
+      }
+    } else {
+      this.currentQuery = undefined;
+    }
+  }
+
+  *loadQueries(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
+    this.loadQueriesState.inProgress();
+    try {
+      const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = QUERY_LOADER_LIMIT;
+      searchSpecification.showCurrentUserQueriesOnly = true;
       this.queries =
         (yield this.setupStore.graphManagerState.graphManager.searchQueries(
           searchSpecification,
