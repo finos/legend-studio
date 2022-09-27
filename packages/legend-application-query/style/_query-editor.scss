@@ -261,11 +261,11 @@
 
       &__table__row:hover {
         color: var(--color-light-grey-50);
-        background-color: var(--color-dark-grey-350);
+        background: var(--color-dark-grey-350);
       }
 
       &__table__row--selected {
-        background-color: var(--color-dark-grey-200);
+        background: var(--color-dark-grey-200);
       }
     }
   }
