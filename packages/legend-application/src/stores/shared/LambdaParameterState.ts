@@ -98,7 +98,8 @@ export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
   readonly graph: PureModel;
-  observableContext: ObserverContext;
+  readonly observableContext: ObserverContext;
+
   value: ValueSpecification | undefined;
 
   constructor(
@@ -245,6 +246,7 @@ export class LambdaParametersState implements Hashable {
   removeParameter(val: LambdaParameterState): void {
     deleteEntry(this.parameterStates, val);
   }
+
   setParameters(val: LambdaParameterState[]): void {
     this.parameterStates = val;
   }

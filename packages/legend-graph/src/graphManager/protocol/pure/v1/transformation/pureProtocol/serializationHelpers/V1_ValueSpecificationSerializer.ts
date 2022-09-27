@@ -162,8 +162,8 @@ const hackedUnitSchema = createModelSchema(V1_HackedUnit, {
 const variableModelSchema = createModelSchema(V1_Variable, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.VARIABLE),
   class: optional(primitive()),
-  name: primitive(),
   multiplicity: usingModelSchema(V1_multiplicitySchema),
+  name: primitive(),
 });
 
 const enumValueModelSchema = createModelSchema(V1_EnumValue, {

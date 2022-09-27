@@ -104,6 +104,7 @@ export {
   FaFolder as FolderIcon,
   FaFileCode as FileCodeIcon,
   FaCodeBranch as CodeBranchIcon,
+  FaArrowAltCircleUp as ArrowCirceUpIcon,
   FaArrowAltCircleLeft as ArrowCircleLeftIcon,
   FaRegStopCircle as EmptyStopCircleIcon,
   FaAsterisk as AsteriskIcon,
