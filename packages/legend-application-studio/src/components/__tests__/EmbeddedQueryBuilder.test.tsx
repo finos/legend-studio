@@ -38,7 +38,7 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../stores/EditorStoreTestUtils.js';
 import type { EditorStore } from '../../stores/EditorStore.js';
 
-const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
+export const TEST__buildQueryBuilderMockedEditorStore = (): EditorStore => {
   const pluginManager = LegendStudioPluginManager.create();
   pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
 

@@ -17,6 +17,10 @@
 import { describe, test, expect } from '@jest/globals';
 import { act } from '@testing-library/react';
 import {
+  TEST_DATA__getAllWithHardcodedDateInput,
+  TEST_DATA__getAllWithHardcodedDateOutput,
+  TEST_DATA__simpleProjectionWithAggregationInput,
+  TEST_DATA__simpleProjectionWithAggregationOutput,
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
   TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget,
@@ -52,6 +56,19 @@ type TestCase = [
     rawLambda: { parameters?: object; body?: object };
     expectedNumberOfDerivedPropertyStates: number;
     expectedNumberOfParameterValues: number;
+    expectedNumberOfPropertyParameterValues: number;
+  },
+];
+
+type JSONComparisonTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    inputRawLambda: { parameters?: object; body?: object };
+    outputRawLambda: { parameters?: object; body?: object };
   },
 ];
 
@@ -67,6 +84,7 @@ const cases: TestCase[] = [
         TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -79,7 +97,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 2,
+      expectedNumberOfParameterValues: 1,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -92,7 +111,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 3,
+      expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 3,
     },
   ],
   [
@@ -105,7 +125,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 3,
+      expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 3,
     },
   ],
   [
@@ -119,6 +140,7 @@ const cases: TestCase[] = [
         TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -132,6 +154,7 @@ const cases: TestCase[] = [
         TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -144,7 +167,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 3,
+      expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 3,
     },
   ],
   [
@@ -158,6 +182,7 @@ const cases: TestCase[] = [
         TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
       expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -170,7 +195,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessingTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 2,
+      expectedNumberOfParameterValues: 1,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -183,7 +209,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 2,
+      expectedNumberOfParameterValues: 1,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -196,7 +223,8 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 2,
+      expectedNumberOfParameterValues: 1,
+      expectedNumberOfPropertyParameterValues: 2,
     },
   ],
   [
@@ -209,7 +237,33 @@ const cases: TestCase[] = [
       rawLambda:
         TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget,
       expectedNumberOfDerivedPropertyStates: 1,
-      expectedNumberOfParameterValues: 3,
+      expectedNumberOfParameterValues: 2,
+      expectedNumberOfPropertyParameterValues: 3,
+    },
+  ],
+];
+
+const JSONComparionCases: JSONComparisonTestCase[] = [
+  [
+    'ValueSpecification is properly build after processing a lambda with Business Temporal source with Aggregation',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      inputRawLambda: TEST_DATA__simpleProjectionWithAggregationInput,
+      outputRawLambda: TEST_DATA__simpleProjectionWithAggregationOutput,
+    },
+  ],
+  [
+    'ValueSpecification is properly build after processing a lambda with Business Temporal source with hardcoded date in getAll()',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      inputRawLambda: TEST_DATA__getAllWithHardcodedDateInput,
+      outputRawLambda: TEST_DATA__getAllWithHardcodedDateOutput,
     },
   ],
 ];
@@ -226,6 +280,7 @@ describe(integrationTest('Query builder milestoning'), () => {
         rawLambda,
         expectedNumberOfDerivedPropertyStates,
         expectedNumberOfParameterValues,
+        expectedNumberOfPropertyParameterValues,
       } = testCase;
       const { queryBuilderState } = await TEST__setUpQueryBuilder(
         entities,
@@ -245,6 +300,11 @@ describe(integrationTest('Query builder milestoning'), () => {
           create_RawLambda(rawLambda.parameters, rawLambda.body),
         );
       });
+
+      // check if the number of query parameters is as expected for a given milestoned stereotype
+      expect(queryBuilderState.parametersState.parameterStates.length).toBe(
+        expectedNumberOfParameterValues,
+      );
 
       const projectionState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
@@ -267,7 +327,54 @@ describe(integrationTest('Query builder milestoning'), () => {
       );
 
       // default milestoning date is propagated as date propagation is not supported.
-      expect(parameterValues.length).toBe(expectedNumberOfParameterValues);
+      expect(parameterValues.length).toBe(
+        expectedNumberOfPropertyParameterValues,
+      );
     },
   );
 });
+
+describe(
+  integrationTest('Milestoning query is properly built after transformation'),
+  () => {
+    test.each(JSONComparionCases)(
+      '%s',
+      async (
+        testName: JSONComparisonTestCase[0],
+        testCase: JSONComparisonTestCase[1],
+      ) => {
+        const {
+          mappingPath,
+          runtimePath,
+          classPath,
+          entities,
+          inputRawLambda,
+          outputRawLambda,
+        } = testCase;
+        const { queryBuilderState } = await TEST__setUpQueryBuilder(
+          entities,
+          stub_RawLambda(),
+          mappingPath,
+          runtimePath,
+        );
+
+        const _personClass =
+          queryBuilderState.graphManagerState.graph.getClass(classPath);
+        await act(async () => {
+          queryBuilderState.changeClass(_personClass);
+        });
+
+        await act(async () => {
+          queryBuilderState.initializeWithQuery(
+            create_RawLambda(inputRawLambda.parameters, inputRawLambda.body),
+          );
+        });
+        const receivedOutput = queryBuilderState.buildQuery();
+
+        // Compare input JSON and output JSON for building a query
+        expect(receivedOutput.parameters).toEqual(outputRawLambda.parameters);
+        expect(receivedOutput.body).toEqual(outputRawLambda.body);
+      },
+    );
+  },
+);

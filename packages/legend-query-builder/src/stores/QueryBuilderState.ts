@@ -246,13 +246,14 @@ export abstract class QueryBuilderState {
     this.resetQueryContent();
     this.setClass(val);
     this.explorerState.refreshTreeData();
-    this.milestoningState.updateMilestoningConfiguration();
     this.fetchStructureState.implementation.onClassChange(val);
+    this.milestoningState.updateMilestoningConfiguration();
   }
 
   changeMapping(val: Mapping): void {
     this.resetQueryResult();
     this.resetQueryContent();
+    this.milestoningState.updateMilestoningConfiguration();
     this.setMapping(val);
   }
 
