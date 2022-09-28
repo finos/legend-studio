@@ -65,7 +65,6 @@ enum V1_AssertionStatusType {
 
 export enum V1_AtomicTestType {
   SERVICE_TEST = 'serviceTest',
-  PERSISTENCE_TEST = 'test',
 }
 
 export enum V1_TestAssertionType {

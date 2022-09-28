@@ -67,18 +67,21 @@ export const V1_transformAtomicTest = (
     return V1_transformServiceTest(value);
   }
 
-  const extraAtomicTestBuilder = context.plugins.flatMap(
+  const extraAtomicTestTransformers = context.plugins.flatMap(
     (plugin) => plugin.V1_getExtraAtomicTestTransformers?.() ?? [],
   );
 
-  for (const builder of extraAtomicTestBuilder) {
-    let atomicTestBuilder: V1_AtomicTest | undefined;
-    atomicTestBuilder = builder(value, context);
-    if (atomicTestBuilder) {
-      return atomicTestBuilder;
+  for (const transformer of extraAtomicTestTransformers) {
+    let atomicTestTransformer: V1_AtomicTest | undefined;
+    atomicTestTransformer = transformer(value, context);
+    if (atomicTestTransformer) {
+      return atomicTestTransformer;
     }
   }
-  throw new UnsupportedOperationError(`Can't transform atomic test`, value);
+  throw new UnsupportedOperationError(
+    `Can't transform atomic test: no compatible transformer available from plugins `,
+    value,
+  );
 };
 
 export const V1_transformTestAssertion = (

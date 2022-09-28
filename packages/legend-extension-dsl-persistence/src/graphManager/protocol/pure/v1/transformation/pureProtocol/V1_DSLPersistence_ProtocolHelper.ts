@@ -90,7 +90,6 @@ import type {
   V1_TestBatch,
 } from '@finos/legend-graph';
 import {
-  V1_AtomicTestType,
   V1_deserializeEmbeddedDataType,
   V1_serializeEmbeddedDataType,
   V1_serializeTestAssertion,
@@ -1055,6 +1054,10 @@ export const V1_deserializeTrigger = (
  * test
  **********/
 
+enum V1_AtomicTestType {
+  PERSISTENCE_TEST = 'test',
+}
+
 export const V1_serializePersistenceTest = (
   protocol: V1_AtomicTest,
   plugins: PureProtocolProcessorPlugin[],
@@ -1090,20 +1093,6 @@ export const V1_persistenceTestModelSchema = (
     ),
     isTestDataFromServiceOutput: primitive(),
   });
-
-export const V1_deserializePersistenceTest = (
-  json: PlainObject<V1_AtomicTest>,
-  plugins: PureProtocolProcessorPlugin[],
-): V1_AtomicTest => {
-  switch (json._type) {
-    case V1_AtomicTestType.PERSISTENCE_TEST:
-      return deserialize(V1_persistenceTestModelSchema(plugins), json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize atomic test of type '${json._type}'`,
-      );
-  }
-};
 
 export const V1_serializePersistenceTestBatch = (
   protocol: V1_TestBatch,
@@ -1195,7 +1184,10 @@ export const V1_persistenceModelSchema = (
       (values) =>
         deserializeArray(
           values,
-          (v) => V1_deserializePersistenceTest(v, plugins),
+          (v) =>
+            v._type === V1_AtomicTestType.PERSISTENCE_TEST
+              ? deserialize(V1_persistenceTestModelSchema(plugins), v)
+              : undefined,
           {
             skipIfEmpty: true,
           },

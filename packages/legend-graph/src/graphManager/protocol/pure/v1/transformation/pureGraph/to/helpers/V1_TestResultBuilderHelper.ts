@@ -93,7 +93,10 @@ const buildAssertFail = (
   if (assertion) {
     return new AssertFail(assertion, element.message);
   }
-  throw new UnsupportedOperationError("Can't build AssertFail ", element);
+  throw new UnsupportedOperationError(
+    "Can't build AssertFail: no compatible builder available from plugins ",
+    element,
+  );
 };
 
 const buildAssertPass = (
@@ -116,7 +119,10 @@ const buildAssertPass = (
   if (assertion) {
     return new AssertPass(assertion);
   }
-  throw new UnsupportedOperationError("Can't build AssertPass ", element);
+  throw new UnsupportedOperationError(
+    "Can't build AssertPass: no compatible builder available from plugins ",
+    element,
+  );
 };
 
 const buildEqualToJsonAssertFail = (
@@ -146,7 +152,7 @@ const buildEqualToJsonAssertFail = (
     return equalToJsonAssertFail;
   }
   throw new UnsupportedOperationError(
-    "Can't build EqualToJsonAssertFail ",
+    "Can't build EqualToJsonAssertFail: no compatible builder available from plugins ",
     element,
   );
 };

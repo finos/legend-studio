@@ -125,5 +125,8 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    */
   getExtraTestableAssertionBuilders?(): TestableAssertion[];
 
+  /**
+   * Get the list of atomic test observers.
+   */
   getExtraAtomicTestObservers?(): AtomicTestObserver[];
 }
