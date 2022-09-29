@@ -34,8 +34,13 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Distinct
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'distinct';
   }
@@ -92,5 +97,11 @@ export class QueryBuilderAggregateOperator_Distinct extends QueryBuilderAggregat
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.UNIQUE_VALUE_ONLY,
       this,
     );
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_DISTINCT,
+    ]);
   }
 }

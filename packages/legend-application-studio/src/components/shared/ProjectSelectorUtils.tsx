@@ -48,6 +48,7 @@ export const getProjectOptionLabelFormatter = (
           </div>
         </div>
         <button
+          type="button" // prevent this toggler being activated on form submission
           className="project-selector__option__visit-btn"
           tabIndex={-1}
           onClick={viewProject}

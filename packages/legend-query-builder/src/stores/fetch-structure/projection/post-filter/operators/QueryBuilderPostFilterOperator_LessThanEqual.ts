@@ -29,8 +29,13 @@ import type {
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPostFilterOperator_LessThan {
+export class QueryBuilderPostFilterOperator_LessThanEqual
+  extends QueryBuilderPostFilterOperator_LessThan
+  implements Hashable
+{
   override getLabel(): string {
     return '<=';
   }
@@ -66,5 +71,11 @@ export class QueryBuilderPostFilterOperator_LessThanEqual extends QueryBuilderPo
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.LESS_THAN_EQUAL,
       this,
     );
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_LESS_THAN_EQUAL,
+    ]);
   }
 }

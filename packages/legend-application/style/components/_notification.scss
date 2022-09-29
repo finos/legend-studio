@@ -18,15 +18,15 @@
 
 .notification {
   &__position {
-    bottom: 3rem !important;
-    right: 1rem !important;
+    bottom: 3rem;
+    right: 1rem;
   }
 
   &__content {
-    background-color: var(--color-dark-grey-200) !important;
-    color: var(--color-light-grey-150) !important;
-    border-radius: 0.3rem !important;
-    align-items: flex-start !important;
+    background: var(--color-dark-grey-200);
+    color: var(--color-light-grey-150);
+    border-radius: 0.3rem;
+    align-items: flex-start;
   }
 
   &__message__content {
@@ -81,17 +81,17 @@
   }
 
   &__actions {
-    padding: 0.8rem 0 0.8rem 1rem !important;
+    padding: 0.8rem 0 0.8rem 1rem;
   }
 
   &__action {
     @include flexCenter;
 
     width: 2rem;
-    color: var(--color-dark-grey-400) !important;
+    color: var(--color-dark-grey-400);
   }
 
   &__action:hover {
-    color: var(--color-light-grey-400) !important;
+    color: var(--color-light-grey-400);
   }
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 import {
   ValueSpecification,
   type ValueSpecificationVisitor,
@@ -24,8 +26,19 @@ import {
  *
  * @internal This type is specific to Studio only, not a standard, recognizeable in Pure/engine.
  */
-export class INTERNAL__PropagatedValue extends ValueSpecification {
+export class INTERNAL__PropagatedValue
+  extends ValueSpecification
+  implements Hashable
+{
   getValue!: () => ValueSpecification;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.INTERNAL_PROPAGATED_VALUE,
+      this.genericType?.ownerReference.valueForSerialization ?? '',
+      this.multiplicity,
+    ]);
+  }
 
   accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,

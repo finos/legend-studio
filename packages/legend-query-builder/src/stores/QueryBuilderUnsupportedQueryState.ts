@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { makeObservable, action, observable } from 'mobx';
+import { makeObservable, action, observable, computed } from 'mobx';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { RawLambda } from '@finos/legend-graph';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderUnsupportedQueryState {
-  queryBuilderState: QueryBuilderState;
+export class QueryBuilderUnsupportedQueryState implements Hashable {
+  readonly queryBuilderState: QueryBuilderState;
   rawLambda?: RawLambda | undefined;
   lambdaError?: Error | undefined;
 
@@ -29,6 +31,7 @@ export class QueryBuilderUnsupportedQueryState {
       lambdaError: observable,
       setRawLambda: action,
       setLambdaError: action,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -40,5 +43,12 @@ export class QueryBuilderUnsupportedQueryState {
 
   setLambdaError(val: Error | undefined): void {
     this.lambdaError = val;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.UNSUPPORTED_QUERY_STATE,
+      this.rawLambda ?? '',
+    ]);
   }
 }

@@ -26,6 +26,7 @@ import {
   ContextMenu,
   clsx,
   PauseCircleIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -376,20 +377,18 @@ const QueryBuilderResultValues = observer(
           isReadOnly={true}
         />
       );
-    } else {
-      const executionResultString = JSON.stringify(
-        extractExecutionResultValues(executionResult),
-        null,
-        TAB_SIZE,
-      );
-      return (
-        <TextInputEditor
-          language={EDITOR_LANGUAGE.JSON}
-          inputValue={executionResultString}
-          isReadOnly={true}
-        />
-      );
     }
+    return (
+      <TextInputEditor
+        language={EDITOR_LANGUAGE.JSON}
+        inputValue={JSON.stringify(
+          extractExecutionResultValues(executionResult),
+          null,
+          TAB_SIZE,
+        )}
+        isReadOnly={true}
+      />
+    );
   },
 );
 
@@ -477,10 +476,12 @@ export const QueryBuilderResultPanel = observer(
     };
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
     const resultSetSize = (result: ExecutionResult | undefined): string =>
-      result && result instanceof TdsExecutionResult
-        ? `${
-            result.result.rows.length
-          } row(s) in ${resultState.executionDuration?.toString()} ms`
+      result
+        ? result instanceof TdsExecutionResult
+          ? `${
+              result.result.rows.length
+            } row(s) in ${resultState.executionDuration?.toString()} ms`
+          : `run in ${resultState.executionDuration?.toString()} ms`
         : '';
 
     return (
@@ -491,6 +492,16 @@ export const QueryBuilderResultPanel = observer(
             <div className="query-builder__result__analytics">
               {resultSetSize(executionResult)}
             </div>
+            {executionResult && resultState.checkForStaleResults && (
+              <div className="query-builder__result__stale-status">
+                <div className="query-builder__result__stale-status__icon">
+                  <ExclamationTriangleIcon />
+                </div>
+                <div className="query-builder__result__stale-status__label">
+                  Preview data might be stale
+                </div>
+              </div>
+            )}
           </div>
           <div className="panel__header__actions query-builder__result__header__actions">
             {allowSettingPreviewLimit && (

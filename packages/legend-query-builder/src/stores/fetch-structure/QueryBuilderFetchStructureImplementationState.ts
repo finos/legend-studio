@@ -19,6 +19,7 @@ import type {
   CompilationError,
   LambdaFunction,
 } from '@finos/legend-graph';
+import type { Hashable } from '@finos/legend-shared';
 import { computed, makeObservable } from 'mobx';
 import type { QueryBuilderExplorerTreePropertyNodeData } from '../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
@@ -30,9 +31,11 @@ export enum FETCH_STRUCTURE_IMPLEMENTATION {
   GRAPH_FETCH = 'GRAPH_FETCH',
 }
 
-export abstract class QueryBuilderFetchStructureImplementationState {
-  queryBuilderState: QueryBuilderState;
-  fetchStructureState: QueryBuilderFetchStructureState;
+export abstract class QueryBuilderFetchStructureImplementationState
+  implements Hashable
+{
+  readonly queryBuilderState: QueryBuilderState;
+  readonly fetchStructureState: QueryBuilderFetchStructureState;
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -41,6 +44,7 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     makeObservable(this, {
       usedExplorerTreePropertyNodeIDs: computed,
       validationIssues: computed,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -62,4 +66,5 @@ export abstract class QueryBuilderFetchStructureImplementationState {
     lambdaFunction: LambdaFunction,
     options?: LambdaFunctionBuilderOption,
   ): void;
+  abstract get hashCode(): string;
 }

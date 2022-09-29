@@ -439,10 +439,10 @@ const ServiceQueryEditorHeaderContent = observer(() => {
           onClick={showServiceRegistrationModal}
         >
           <RocketIcon />
-          {canRegisterService && editorStore.showServiceRegistrationModal && (
-            <RegisterServiceModal />
-          )}
         </button>
+        {canRegisterService && editorStore.showServiceRegistrationModal && (
+          <RegisterServiceModal />
+        )}
         <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorWorkspaceStatus />
         <button
@@ -462,8 +462,8 @@ const ServiceQueryEditorHeaderContent = observer(() => {
           onClick={showNewServiceModal}
         >
           <PlusIcon />
-          {editorStore.showNewServiceModal && <NewServiceModal />}
         </button>
+        {editorStore.showNewServiceModal && <NewServiceModal />}
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}

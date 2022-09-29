@@ -18,13 +18,13 @@ import type {
   SimpleFunctionExpression,
   ValueSpecification,
 } from '@finos/legend-graph';
-import { uuid } from '@finos/legend-shared';
+import { type Hashable, uuid } from '@finos/legend-shared';
 import type {
   FilterConditionState,
   QueryBuilderFilterState,
 } from './QueryBuilderFilterState.js';
 
-export abstract class QueryBuilderFilterOperator {
+export abstract class QueryBuilderFilterOperator implements Hashable {
   readonly uuid = uuid();
 
   abstract getLabel(filterConditionState: FilterConditionState): string;
@@ -49,4 +49,6 @@ export abstract class QueryBuilderFilterOperator {
     filterState: QueryBuilderFilterState,
     expression: SimpleFunctionExpression,
   ): FilterConditionState | undefined;
+
+  abstract get hashCode(): string;
 }

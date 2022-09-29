@@ -19,6 +19,8 @@ import {
   type AbstractProperty,
   DerivedProperty,
   getMultiplicityDescription,
+  CORE_PURE_PATH,
+  PURE_DOC_TAG,
 } from '@finos/legend-graph';
 
 export const QueryBuilderPropertyInfoTooltip: React.FC<{
@@ -29,6 +31,15 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
   placement?: TooltipPlacement | undefined;
 }> = (props) => {
   const { property, path, isMapped, children, placement } = props;
+  const documentation = property.taggedValues
+    .filter(
+      (taggedValue) =>
+        taggedValue.tag.ownerReference.value.path ===
+          CORE_PURE_PATH.PROFILE_DOC &&
+        taggedValue.tag.value.value === PURE_DOC_TAG,
+    )
+    .map((taggedValue) => taggedValue.value);
+
   return (
     <Tooltip
       arrow={true}
@@ -78,6 +89,17 @@ export const QueryBuilderPropertyInfoTooltip: React.FC<{
               {isMapped ? 'Yes' : 'No'}
             </div>
           </div>
+
+          {Boolean(documentation.length) && (
+            <div className="query-builder__tooltip__item">
+              <div className="query-builder__tooltip__item__label">
+                Documentation
+              </div>
+              <div className="query-builder__tooltip__item__value">
+                {documentation.join('\n\n')}
+              </div>
+            </div>
+          )}
         </div>
       }
     >

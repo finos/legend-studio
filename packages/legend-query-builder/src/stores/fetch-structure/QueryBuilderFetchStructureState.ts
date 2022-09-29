@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderProjectionState } from './projection/QueryBuilderProjectionState.js';
@@ -30,12 +30,12 @@ import {
 } from './QueryBuilderFetchStructureImplementationState.js';
 
 export class QueryBuilderFetchStructureState {
-  queryBuilderState: QueryBuilderState;
+  readonly queryBuilderState: QueryBuilderState;
   implementation: QueryBuilderFetchStructureImplementationState;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
+    makeObservable(this, {
+      implementation: observable,
       changeImplementation: action,
     });
 

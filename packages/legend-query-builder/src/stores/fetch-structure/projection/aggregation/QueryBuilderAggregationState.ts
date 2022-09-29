@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
-import { uuid, deleteEntry, addUniqueEntry } from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
+import {
+  uuid,
+  deleteEntry,
+  addUniqueEntry,
+  type Hashable,
+  hashArray,
+} from '@finos/legend-shared';
 import type { Type } from '@finos/legend-graph';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
 import type { QueryBuilderProjectionColumnState } from '../QueryBuilderProjectionColumnState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateColumnState {
+export class QueryBuilderAggregateColumnState implements Hashable {
   readonly uuid = uuid();
-  aggregationState: QueryBuilderAggregationState;
+  readonly aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   operator: QueryBuilderAggregateOperator;
@@ -34,12 +41,14 @@ export class QueryBuilderAggregateColumnState {
     projectionColumnState: QueryBuilderProjectionColumnState,
     operator: QueryBuilderAggregateOperator,
   ) {
-    makeAutoObservable(this, {
-      uuid: false,
-      aggregationState: false,
+    makeObservable(this, {
+      projectionColumnState: observable,
+      lambdaParameterName: observable,
+      operator: observable,
       setColumnState: action,
       setLambdaParameterName: action,
       setOperator: action,
+      hashCode: computed,
     });
 
     this.aggregationState = aggregationState;
@@ -66,21 +75,30 @@ export class QueryBuilderAggregateColumnState {
   getReturnType(): Type {
     return this.operator.getReturnType(this);
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_COLUMN_STATE,
+      this.operator,
+    ]);
+  }
 }
 
-export class QueryBuilderAggregationState {
-  projectionState: QueryBuilderProjectionState;
-  operators: QueryBuilderAggregateOperator[] = [];
+export class QueryBuilderAggregationState implements Hashable {
+  readonly projectionState: QueryBuilderProjectionState;
+  readonly operators: QueryBuilderAggregateOperator[] = [];
   columns: QueryBuilderAggregateColumnState[] = [];
 
   constructor(
     projectionState: QueryBuilderProjectionState,
     operators: QueryBuilderAggregateOperator[],
   ) {
-    makeAutoObservable(this, {
-      projectionState: false,
+    makeObservable(this, {
+      columns: observable,
       removeColumn: action,
       addColumn: action,
+      changeColumnAggregateOperator: action,
+      hashCode: computed,
     });
 
     this.projectionState = projectionState;
@@ -141,5 +159,12 @@ export class QueryBuilderAggregationState {
         this.removeColumn(aggregateColumnState);
       }
     }
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.AGGREGATION_STATE,
+      hashArray(this.columns),
+    ]);
   }
 }

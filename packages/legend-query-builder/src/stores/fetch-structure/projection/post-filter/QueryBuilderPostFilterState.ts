@@ -38,13 +38,14 @@ import {
   uuid,
   filterByType,
   ActionState,
+  type Hashable,
+  hashArray,
 } from '@finos/legend-shared';
 import {
   action,
   computed,
   flow,
   flowResult,
-  makeAutoObservable,
   makeObservable,
   observable,
 } from 'mobx';
@@ -63,6 +64,7 @@ import {
 } from '../../../QueryBuilderTypeaheadHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
 import type { QueryBuilderProjectionState } from '../QueryBuilderProjectionState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -146,7 +148,7 @@ export const getTypeFromDerivedProperty = (
 };
 
 export abstract class QueryBuilderPostFilterTreeNodeData
-  implements TreeNodeData
+  implements TreeNodeData, Hashable
 {
   readonly id = uuid();
   readonly label = '';
@@ -162,6 +164,7 @@ export abstract class QueryBuilderPostFilterTreeNodeData
       parentId: observable,
       setIsOpen: action,
       setParentId: action,
+      hashCode: computed,
     });
   }
 
@@ -172,6 +175,8 @@ export abstract class QueryBuilderPostFilterTreeNodeData
   setParentId(val: string | undefined): void {
     this.parentId = val;
   }
+
+  abstract get hashCode(): string;
 }
 
 export interface QueryBuilderPostFilterConditionDragSource {
@@ -182,7 +187,10 @@ export type QueryBuilderPostFilterDropTarget =
   | QueryBuilderProjectionColumnDragSource
   | QueryBuilderPostFilterConditionDragSource;
 
-export class QueryBuilderPostFilterTreeGroupNodeData extends QueryBuilderPostFilterTreeNodeData {
+export class QueryBuilderPostFilterTreeGroupNodeData
+  extends QueryBuilderPostFilterTreeNodeData
+  implements Hashable
+{
   groupOperation: QUERY_BUILDER_GROUP_OPERATION;
   childrenIds: string[] = [];
 
@@ -225,9 +233,21 @@ export class QueryBuilderPostFilterTreeGroupNodeData extends QueryBuilderPostFil
       node.setParentId(this.id);
     }
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_GROUP_NODE_DATA,
+      this.parentId ?? '',
+      hashArray(this.childrenIds),
+      this.groupOperation,
+    ]);
+  }
 }
 
-export class QueryBuilderPostFilterTreeConditionNodeData extends QueryBuilderPostFilterTreeNodeData {
+export class QueryBuilderPostFilterTreeConditionNodeData
+  extends QueryBuilderPostFilterTreeNodeData
+  implements Hashable
+{
   condition: PostFilterConditionState;
 
   constructor(
@@ -247,9 +267,20 @@ export class QueryBuilderPostFilterTreeConditionNodeData extends QueryBuilderPos
   get dragPreviewLabel(): string {
     return this.condition.columnName;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_CONDIITION_NODE_DATA,
+      this.parentId ?? '',
+      this.condition,
+    ]);
+  }
 }
 
-export class QueryBuilderPostFilterTreeBlankConditionNodeData extends QueryBuilderPostFilterTreeNodeData {
+export class QueryBuilderPostFilterTreeBlankConditionNodeData
+  extends QueryBuilderPostFilterTreeNodeData
+  implements Hashable
+{
   constructor(parentId: string | undefined) {
     super(parentId);
 
@@ -261,9 +292,17 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData extends QueryBuild
   get dragPreviewLabel(): string {
     return '<blank>';
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_TREE_BLANK_CONDITION_NODE_DATA,
+      this.parentId ?? '',
+    ]);
+  }
 }
-export class PostFilterConditionState {
-  postFilterState: QueryBuilderPostFilterState;
+
+export class PostFilterConditionState implements Hashable {
+  readonly postFilterState: QueryBuilderPostFilterState;
   columnState:
     | QueryBuilderProjectionColumnState
     | QueryBuilderAggregateColumnState;
@@ -280,7 +319,10 @@ export class PostFilterConditionState {
     value: ValueSpecification | undefined,
     operator: QueryBuilderPostFilterOperator | undefined,
   ) {
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      postFilterState: observable,
+      value: observable,
+      operator: observable,
       columnState: observable,
       typeaheadSearchResults: observable,
       changeOperator: action,
@@ -289,6 +331,8 @@ export class PostFilterConditionState {
       setOperator: action,
       changeColumn: flow,
       handleTypeaheadSearch: flow,
+      columnName: computed,
+      hashCode: computed,
     });
 
     this.postFilterState = postFilterState;
@@ -407,10 +451,19 @@ export class PostFilterConditionState {
       );
     }
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_CONDITION_STATE,
+      this.columnState,
+      this.value ?? '',
+      this.operator,
+    ]);
+  }
 }
 
 export class QueryBuilderPostFilterState
-  implements TreeData<QueryBuilderPostFilterTreeNodeData>
+  implements TreeData<QueryBuilderPostFilterTreeNodeData>, Hashable
 {
   projectionState: QueryBuilderProjectionState;
   lambdaParameterName = DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME;
@@ -425,8 +478,13 @@ export class QueryBuilderPostFilterState
     projectionState: QueryBuilderProjectionState,
     operators: QueryBuilderPostFilterOperator[],
   ) {
-    makeAutoObservable(this, {
+    makeObservable(this, {
       projectionState: false,
+      selectedNode: observable,
+      isRearrangingConditions: observable,
+      rootIds: observable,
+      nodes: observable,
+      lambdaParameterName: observable,
       setLambdaParameterName: action,
       setSelectedNode: action,
       addNodeFromNode: action,
@@ -439,6 +497,8 @@ export class QueryBuilderPostFilterState
       expandTree: action,
       replaceBlankNodeWithNode: action,
       suppressClickawayEventListener: action,
+      setRearrangingConditions: action,
+      hashCode: computed,
     });
 
     this.projectionState = projectionState;
@@ -803,5 +863,13 @@ export class QueryBuilderPostFilterState
 
   expandTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_STATE,
+      hashArray(this.rootIds),
+      hashArray(Array.from(this.nodes.values())),
+    ]);
   }
 }

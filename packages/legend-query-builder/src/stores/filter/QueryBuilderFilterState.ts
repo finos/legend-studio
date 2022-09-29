@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  action,
-  computed,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-  flow,
-} from 'mobx';
+import { action, computed, makeObservable, observable, flow } from 'mobx';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type GeneratorFn,
@@ -36,6 +29,8 @@ import {
   assertErrorThrown,
   filterByType,
   ActionState,
+  type Hashable,
+  hashArray,
 } from '@finos/legend-shared';
 import type { QueryBuilderExplorerTreeDragSource } from '../explorer/QueryBuilderExplorerState.js';
 import { QueryBuilderPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
@@ -55,6 +50,7 @@ import {
 } from '../QueryBuilderTypeaheadHelper.js';
 import type { QueryBuilderFilterOperator } from './QueryBuilderFilterOperator.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../QueryBuilderGroupOperationHelper.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
 
 export enum QUERY_BUILDER_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -73,8 +69,8 @@ export type QueryBuilderFilterDropTarget =
 export type QueryBuilderFilterConditionRearrangeDropTarget =
   QueryBuilderFilterConditionDragSource;
 
-export class FilterConditionState {
-  filterState: QueryBuilderFilterState;
+export class FilterConditionState implements Hashable {
+  readonly filterState: QueryBuilderFilterState;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
   operator!: QueryBuilderFilterOperator;
   value?: ValueSpecification | undefined;
@@ -86,17 +82,20 @@ export class FilterConditionState {
     filterState: QueryBuilderFilterState,
     propertyExpression: AbstractPropertyExpression,
   ) {
-    makeAutoObservable(this, {
-      filterState: false,
+    makeObservable(this, {
+      propertyExpressionState: observable,
+      operator: observable,
+      value: observable,
+      existsLambdaParamNames: observable,
+      typeaheadSearchResults: observable,
       operators: computed,
       changeProperty: action,
       changeOperator: action,
       setOperator: action,
       setValue: action,
-      typeaheadSearchResults: observable,
-      typeaheadSearchState: observable,
       addExistsLambdaParamNames: action,
       handleTypeaheadSearch: flow,
+      hashCode: computed,
     });
 
     this.filterState = filterState;
@@ -208,9 +207,20 @@ export class FilterConditionState {
   addExistsLambdaParamNames(val: string): void {
     this.existsLambdaParamNames.push(val);
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_CONDITION_STATE,
+      this.propertyExpressionState,
+      this.value ?? '',
+      this.operator,
+    ]);
+  }
 }
 
-export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
+export abstract class QueryBuilderFilterTreeNodeData
+  implements TreeNodeData, Hashable
+{
   readonly id = uuid();
   readonly label = '';
   // NOTE: we don't use the `isSelected` attribute is not used since we keep track of it from the tree data level
@@ -225,6 +235,7 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
       parentId: observable,
       setIsOpen: action,
       setParentId: action,
+      hashCode: computed,
     });
   }
 
@@ -235,9 +246,14 @@ export abstract class QueryBuilderFilterTreeNodeData implements TreeNodeData {
   setParentId(val: string | undefined): void {
     this.parentId = val;
   }
+
+  abstract get hashCode(): string;
 }
 
-export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeNodeData {
+export class QueryBuilderFilterTreeGroupNodeData
+  extends QueryBuilderFilterTreeNodeData
+  implements Hashable
+{
   groupOperation: QUERY_BUILDER_GROUP_OPERATION;
   childrenIds: string[] = [];
 
@@ -282,9 +298,21 @@ export class QueryBuilderFilterTreeGroupNodeData extends QueryBuilderFilterTreeN
       node.setParentId(this.id);
     }
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_GROUP_NODE_DATA,
+      this.parentId ?? '',
+      hashArray(this.childrenIds),
+      this.groupOperation,
+    ]);
+  }
 }
 
-export class QueryBuilderFilterTreeConditionNodeData extends QueryBuilderFilterTreeNodeData {
+export class QueryBuilderFilterTreeConditionNodeData
+  extends QueryBuilderFilterTreeNodeData
+  implements Hashable
+{
   condition: FilterConditionState;
 
   constructor(parentId: string | undefined, condition: FilterConditionState) {
@@ -301,9 +329,20 @@ export class QueryBuilderFilterTreeConditionNodeData extends QueryBuilderFilterT
   get dragPreviewLabel(): string {
     return this.condition.propertyExpressionState.title;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_CONDIITION_NODE_DATA,
+      this.parentId ?? '',
+      this.condition,
+    ]);
+  }
 }
 
-export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFilterTreeNodeData {
+export class QueryBuilderFilterTreeBlankConditionNodeData
+  extends QueryBuilderFilterTreeNodeData
+  implements Hashable
+{
   constructor(parentId: string | undefined) {
     super(parentId);
 
@@ -315,10 +354,17 @@ export class QueryBuilderFilterTreeBlankConditionNodeData extends QueryBuilderFi
   get dragPreviewLabel(): string {
     return '<blank>';
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_TREE_BLANK_CONDITION_NODE_DATA,
+      this.parentId ?? '',
+    ]);
+  }
 }
 
 export class QueryBuilderFilterState
-  implements TreeData<QueryBuilderFilterTreeNodeData>
+  implements TreeData<QueryBuilderFilterTreeNodeData>, Hashable
 {
   queryBuilderState: QueryBuilderState;
   lambdaParameterName = DEFAULT_LAMBDA_VARIABLE_NAME;
@@ -333,9 +379,12 @@ export class QueryBuilderFilterState
     queryBuilderState: QueryBuilderState,
     operators: QueryBuilderFilterOperator[],
   ) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      isValidMove: false,
+    makeObservable(this, {
+      rootIds: observable,
+      nodes: observable,
+      selectedNode: observable,
+      isRearrangingConditions: observable,
+      lambdaParameterName: observable,
       setLambdaParameterName: action,
       setRearrangingConditions: action,
       suppressClickawayEventListener: action,
@@ -350,6 +399,7 @@ export class QueryBuilderFilterState
       simplifyTree: action,
       collapseTree: action,
       expandTree: action,
+      hashCode: computed,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -732,5 +782,13 @@ export class QueryBuilderFilterState
 
   expandTree(): void {
     Array.from(this.nodes.values()).forEach((node) => node.setIsOpen(true));
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_STATE,
+      hashArray(this.rootIds),
+      hashArray(Array.from(this.nodes.values())),
+    ]);
   }
 }

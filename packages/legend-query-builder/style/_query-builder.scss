@@ -49,7 +49,7 @@
     border-radius: 0.2rem;
     margin-right: 0.5rem;
     font-weight: 500;
-    border: 0.1rem solid var(--color-dark-grey-500);
+    border: 0.1rem solid var(--color-dark-grey-300);
 
     &__label {
       font-size: 1.2rem;
@@ -213,6 +213,20 @@
 
       &__toggler {
         color: var(--color-dark-shade-300);
+
+        &--toggled {
+          color: var(--color-light-grey-0);
+        }
+      }
+    }
+
+    &__view-diff-btn {
+      &:not([disabled]) {
+        color: var(--color-light-grey-0);
+      }
+
+      svg {
+        font-size: 1.8rem;
       }
     }
 
@@ -246,6 +260,58 @@
   }
 }
 
+.query-builder__diff-panel {
+  height: 100%;
+  width: 100%;
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    height: 3.4rem;
+    background: var(--color-dark-grey-50);
+    padding: 0 0.5rem;
+  }
+
+  &__content {
+    height: calc(100% - 8.4rem);
+    position: relative;
+  }
+
+  &__actions {
+    @include flexVCenter;
+
+    border-top: 0.1rem solid var(--color-dark-grey-100);
+    height: 5rem;
+    padding-right: 1rem;
+    justify-content: flex-end;
+    margin: 0;
+
+    .btn {
+      @include flexCenter;
+
+      height: 3.6rem;
+      border-radius: 0.2rem;
+      color: var(--color-light-grey-50);
+    }
+  }
+
+  &__mode {
+    @include flexVCenter;
+
+    background: var(--color-dark-grey-250);
+    color: var(--color-light-grey-200);
+    height: 2.2rem;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+
+  &__mode--selected {
+    background: var(--color-blue-200);
+  }
+}
+
 .query-builder__dnd__placeholder .dnd__entry-dropzone__placeholder__content {
   border-color: var(--color-dark-grey-100);
   color: var(--color-dark-grey-300);
@@ -260,8 +326,8 @@
   }
 
   &__mode {
-    display: flex;
-    align-items: center;
+    @include flexVCenter;
+
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
     height: 2.2rem;
@@ -281,10 +347,28 @@
   }
 
   &__analytics {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--color-dark-grey-400);
     margin-left: 0.5rem;
     font-family: 'Roboto Mono', monospace;
+  }
+
+  &__stale-status {
+    @include flexVCenter;
+
+    margin-left: 1rem;
+
+    &__label {
+      font-size: 1.2rem;
+      color: var(--color-yellow-200);
+      margin-left: 0.5rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__icon {
+      color: var(--color-yellow-200);
+      margin-left: 0.5rem;
+    }
   }
 
   &__limit {
@@ -526,6 +610,9 @@
   background: var(--color-dark-grey-200) !important;
   opacity: 0.9 !important;
   transition: none;
+  // as this tooltip can contain long documentation, it's best we limit its dimension
+  max-height: 30rem;
+  overflow: auto;
 
   &--right {
     margin: 0 0.5rem !important;
@@ -541,7 +628,8 @@
   }
 
   &__item {
-    @include flexVCenter;
+    display: flex;
+    line-height: 1.6rem;
   }
 
   &__item__label {
@@ -557,6 +645,9 @@
     cursor: default;
     font-weight: 500;
     margin-left: 0.5rem;
+    // as this tooltip can contain long documentation, it's best we limit its dimension
+    max-width: 50rem;
+    white-space: pre-line; // properly preserve newline characters
   }
 }
 

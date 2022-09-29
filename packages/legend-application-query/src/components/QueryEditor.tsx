@@ -216,21 +216,7 @@ const QueryLoader = observer(
     const [selectedQueryID, setSelectedQueryID] = useState('');
     const [isMineOnly, setIsMineOnly] = useState(false);
     const [searchText, setSearchText] = useState('');
-    const closeQueryImporter = (): void => {
-      editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-    };
-    const handleEnterQueryImporter = (): void =>
-      queryFinderRef.current?.focus();
-    const loadSelectedQuery = (): void => {
-      if (selectedQueryID) {
-        editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-        applicationStore.navigator.jumpTo(
-          applicationStore.navigator.generateLocation(
-            generateExistingQueryEditorRoute(selectedQueryID),
-          ),
-        );
-      }
-    };
+
     // search text
     const debouncedLoadQueries = useMemo(
       () =>
@@ -270,12 +256,30 @@ const QueryLoader = observer(
       );
     }, [applicationStore, editorStore.queryLoaderState]);
 
+    // actions
+    const loadQuery = (): void => {
+      if (selectedQueryID) {
+        editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+        applicationStore.navigator.jumpTo(
+          applicationStore.navigator.generateLocation(
+            generateExistingQueryEditorRoute(selectedQueryID),
+          ),
+        );
+      }
+    };
+
+    // life-cycle
+    const close = (): void => {
+      editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+    };
+    const onEnter = (): void => queryFinderRef.current?.focus();
+
     return (
       <Dialog
         open={editorStore.queryLoaderState.isQueryLoaderOpen}
-        onClose={closeQueryImporter}
+        onClose={close}
         TransitionProps={{
-          onEnter: handleEnterQueryImporter,
+          onEnter,
         }}
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
@@ -396,12 +400,12 @@ const QueryLoader = observer(
           <div className="search-modal__actions">
             <button
               className="btn btn--dark"
-              onClick={loadSelectedQuery}
+              onClick={loadQuery}
               disabled={selectedQueryID === ''}
             >
               Load Query
             </button>
-            <button className="btn btn--dark" onClick={closeQueryImporter}>
+            <button className="btn btn--dark" onClick={close}>
               Close
             </button>
           </div>
@@ -416,6 +420,8 @@ const QueryEditorHeaderContent = observer(
     const { queryBuilderState } = props;
     const editorStore = useQueryEditorStore();
     const applicationStore = useLegendQueryApplicationStore();
+
+    // actions
     const openQueryLoader = (): void => {
       editorStore.queryLoaderState.setIsQueryLoaderOpen(true);
     };
@@ -463,13 +469,13 @@ const QueryEditorHeaderContent = observer(
             title="Load query"
           >
             <ManageSearchIcon className="query-editor__header__action__icon--loader" />
-            {editorStore.queryLoaderState.isQueryLoaderOpen && (
-              <QueryLoader
-                editorStore={editorStore}
-                applicationStore={applicationStore}
-              />
-            )}
           </button>
+          {editorStore.queryLoaderState.isQueryLoaderOpen && (
+            <QueryLoader
+              editorStore={editorStore}
+              applicationStore={applicationStore}
+            />
+          )}
           <button
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
@@ -499,8 +505,8 @@ const QueryEditorHeaderContent = observer(
             title="Save query"
           >
             <SaveIcon />
-            {editorStore.exportState && <QueryExport />}
           </button>
+          {editorStore.exportState && <QueryExport />}
         </div>
       </div>
     );

@@ -22,7 +22,11 @@ import {
   PRIMITIVE_TYPE,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
@@ -37,8 +41,12 @@ import {
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_StartWith
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return 'starts with';
   }
@@ -102,8 +110,17 @@ export class QueryBuilderPostFilterOperator_StartWith extends QueryBuilderPostFi
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_START_WITH,
+    ]);
+  }
 }
-export class QueryBuilderPostFilterOperator_NotStartWith extends QueryBuilderPostFilterOperator_StartWith {
+export class QueryBuilderPostFilterOperator_NotStartWith
+  extends QueryBuilderPostFilterOperator_StartWith
+  implements Hashable
+{
   override getLabel(): string {
     return `doesn't start with`;
   }
@@ -131,5 +148,11 @@ export class QueryBuilderPostFilterOperator_NotStartWith extends QueryBuilderPos
     return innerExpression
       ? super.buildPostFilterConditionState(postFilterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_START_WITH,
+    ]);
   }
 }

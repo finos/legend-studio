@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable, flow } from 'mobx';
+import { action, makeObservable, observable, flow, computed } from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -23,6 +23,8 @@ import {
   guaranteeNonNullable,
   assertTrue,
   assertNonEmptyString,
+  type Hashable,
+  hashArray,
 } from '@finos/legend-shared';
 import {
   type QueryBuilderExplorerTreePropertyNodeData,
@@ -54,6 +56,7 @@ import {
 } from '../../QueryBuilderConfig.js';
 import { LambdaEditorState } from '@finos/legend-application';
 import type { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 
@@ -61,7 +64,7 @@ export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
 
-export abstract class QueryBuilderProjectionColumnState {
+export abstract class QueryBuilderProjectionColumnState implements Hashable {
   readonly uuid = uuid();
   projectionState: QueryBuilderProjectionState;
   columnName: string;
@@ -75,6 +78,7 @@ export abstract class QueryBuilderProjectionColumnState {
       projectionState: false,
       columnName: observable,
       setColumnName: action,
+      hashCode: computed,
     });
 
     this.projectionState = projectionState;
@@ -86,9 +90,14 @@ export abstract class QueryBuilderProjectionColumnState {
   }
 
   abstract getReturnType(): Type | undefined;
+
+  abstract get hashCode(): string;
 }
 
-export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProjectionColumnState {
+export class QueryBuilderSimpleProjectionColumnState
+  extends QueryBuilderProjectionColumnState
+  implements Hashable
+{
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
   propertyExpressionState: QueryBuilderPropertyExpressionState;
 
@@ -127,12 +136,8 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
     this.propertyExpressionState = new QueryBuilderPropertyExpressionState(
       this.projectionState.queryBuilderState,
       buildPropertyExpressionFromExplorerTreeNodeData(
-        this.projectionState.queryBuilderState.explorerState
-          .nonNullableTreeData,
         node,
-        this.projectionState.queryBuilderState.graphManagerState.graph,
-        this.projectionState.queryBuilderState.explorerState.propertySearchState
-          .mappedPropertyNodes,
+        this.projectionState.queryBuilderState.explorerState,
       ),
     );
     this.columnName = getPropertyChainName(
@@ -144,6 +149,14 @@ export class QueryBuilderSimpleProjectionColumnState extends QueryBuilderProject
   override getReturnType(): Type | undefined {
     return this.propertyExpressionState.propertyExpression.func.genericType
       .value.rawType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.SIMPLE_PROJECTION_COLUMN_STATE,
+      this.propertyExpressionState,
+      this.columnName,
+    ]);
   }
 }
 
@@ -243,7 +256,10 @@ class QueryBuilderDerivationProjectionLambdaState extends LambdaEditorState {
   }
 }
 
-export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderProjectionColumnState {
+export class QueryBuilderDerivationProjectionColumnState
+  extends QueryBuilderProjectionColumnState
+  implements Hashable
+{
   derivationLambdaEditorState: QueryBuilderDerivationProjectionLambdaState;
   lambda: RawLambda;
   returnType: Type | undefined;
@@ -323,5 +339,14 @@ export class QueryBuilderDerivationProjectionColumnState extends QueryBuilderPro
 
   override getReturnType(): Type | undefined {
     return this.returnType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.DERIVATION_PROJECTION_COLUMN_STATE,
+      this.returnType ?? '',
+      this.lambda,
+      this.columnName,
+    ]);
   }
 }

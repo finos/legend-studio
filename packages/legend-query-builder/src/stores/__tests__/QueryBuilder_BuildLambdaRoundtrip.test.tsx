@@ -359,7 +359,7 @@ describe(
         );
         // do the check using input and output lambda
         const rawLambda = inputLambda ?? lambda;
-        queryBuilderState.rebuildWithQuery(
+        queryBuilderState.initializeWithQuery(
           new RawLambda(rawLambda.parameters, rawLambda.body),
         );
         const jsonQuery =

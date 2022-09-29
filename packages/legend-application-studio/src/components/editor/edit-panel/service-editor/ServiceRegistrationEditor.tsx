@@ -163,7 +163,6 @@ export const ServiceRegistrationEditor = observer(() => {
             onClick={toggleActivatePostRegistration}
           >
             <button
-              type="button"
               className={clsx('panel__content__form__section__toggler__btn', {
                 'panel__content__form__section__toggler__btn--toggled':
                   registrationState.activatePostRegistration,
@@ -221,7 +220,6 @@ export const ServiceRegistrationEditor = observer(() => {
               onClick={toggleUseStoreModel}
             >
               <button
-                type="button"
                 className={clsx('panel__content__form__section__toggler__btn', {
                   'panel__content__form__section__toggler__btn--toggled':
                     registrationState.TEMPORARY__useStoreModel,

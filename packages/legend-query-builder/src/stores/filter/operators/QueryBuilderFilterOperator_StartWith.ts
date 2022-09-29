@@ -25,7 +25,11 @@ import {
   type SimpleFunctionExpression,
   buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import {
+  type Hashable,
+  UnsupportedOperationError,
+  hashArray,
+} from '@finos/legend-shared';
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
@@ -37,8 +41,12 @@ import {
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOperator {
+export class QueryBuilderFilterOperator_StartWith
+  extends QueryBuilderFilterOperator
+  implements Hashable
+{
   getLabel(filterConditionState: FilterConditionState): string {
     return 'starts with';
   }
@@ -105,6 +113,10 @@ export class QueryBuilderFilterOperator_StartWith extends QueryBuilderFilterOper
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_START_WITH]);
+  }
 }
 
 export class QueryBuilderFilterOperator_NotStartWith extends QueryBuilderFilterOperator_StartWith {
@@ -130,5 +142,11 @@ export class QueryBuilderFilterOperator_NotStartWith extends QueryBuilderFilterO
     return innerExpression
       ? super.buildFilterConditionState(filterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.FILTER_OPERATOR_NOT_START_WITH,
+    ]);
   }
 }

@@ -53,12 +53,7 @@ import {
   type MappingElementDragSource,
   CORE_DND_TYPE,
 } from '../../../../stores/shared/DnDUtils.js';
-import {
-  assertErrorThrown,
-  guaranteeType,
-  hashObject,
-  uniq,
-} from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeType, uniq } from '@finos/legend-shared';
 import {
   type MappingExecutionState,
   MappingExecutionEmptyInputDataState,
@@ -201,10 +196,6 @@ const MappingExecutionQueryEditor = observer(
               queryBuilderState.initializeWithQuery(
                 executionState.queryState.query,
               );
-              queryBuilderState.changeDetectionState.setQueryHashCode(
-                hashObject(executionState.queryState.query),
-              );
-              queryBuilderState.changeDetectionState.setIsEnabled(true);
               return queryBuilderState;
             },
             actionConfigs: [
@@ -222,9 +213,6 @@ const MappingExecutionQueryEditor = observer(
                         );
                         applicationStore.notifySuccess(
                           `Mapping execution query is updated`,
-                        );
-                        queryBuilderState.changeDetectionState.setQueryHashCode(
-                          hashObject(rawLambda),
                         );
                         embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
                           undefined,

@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-shared';
 import {
   type AbstractProperty,
-  type PureModel,
   type Type,
   type MappingModelCoverageAnalysisResult,
   type EnumMappedProperty,
@@ -60,14 +59,7 @@ import {
   getAllSubclasses,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import {
-  action,
-  flow,
-  flowResult,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../QueryBuilderConfig.js';
 import {
   buildNonNumericPreviewDataQuery,
@@ -198,15 +190,17 @@ export class QueryBuilderExplorerTreeSubTypeNodeData extends QueryBuilderExplore
 }
 
 export const buildPropertyExpressionFromExplorerTreeNodeData = (
-  treeData: TreeData<QueryBuilderExplorerTreeNodeData>,
   node: QueryBuilderExplorerTreePropertyNodeData,
-  graph: PureModel,
-  //TODO: document parameter
-  mappedPropertyNodes: QueryBuilderExplorerTreeNodeData[],
+  explorerState: QueryBuilderExplorerState,
 ): AbstractPropertyExpression => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
+  const treeData = explorerState.nonNullableTreeData;
+  const propertySearchIndexedTreeNodes =
+    explorerState.propertySearchState.indexedExplorerTreeNodes;
+
+  const multiplicityOne =
+    explorerState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
     multiplicityOne,
@@ -220,13 +214,13 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     propertyExpression;
   let parentNode =
     treeData.nodes.get(node.parentId) ??
-    mappedPropertyNodes.find((n) => n.id === node.parentId);
+    propertySearchIndexedTreeNodes.find((n) => n.id === node.parentId);
   let currentNode: QueryBuilderExplorerTreeNodeData = node;
   while (
     parentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
     parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
   ) {
-    // NOTE: here, we deliverately simplify subtypes chain
+    // NOTE: here, we deliberately simplify subtypes chain
     // $x.employees->subType(@Person)->subType(@Staff).department will be simplified to $x.employees->subType(@Staff).department
     if (
       parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData &&
@@ -271,7 +265,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       (currentNode instanceof QueryBuilderExplorerTreePropertyNodeData ||
         currentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData)
     ) {
-      for (const propertyNode of mappedPropertyNodes) {
+      for (const propertyNode of propertySearchIndexedTreeNodes) {
         if (propertyNode.id === currentNode.parentId) {
           parentNode = propertyNode;
           break;
@@ -567,8 +561,10 @@ export class QueryBuilderExplorerPreviewDataState {
   previewData?: QueryBuilderPreviewData | undefined;
 
   constructor() {
-    makeAutoObservable(this, {
+    makeObservable(this, {
       previewData: observable.ref,
+      isGeneratingPreviewData: observable,
+      propertyName: observable,
       setPropertyName: action,
       setIsGeneratingPreviewData: action,
       setPreviewData: action,
@@ -589,30 +585,31 @@ export class QueryBuilderExplorerPreviewDataState {
 }
 
 export class QueryBuilderExplorerState {
-  queryBuilderState: QueryBuilderState;
-  previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly queryBuilderState: QueryBuilderState;
+  readonly previewDataState = new QueryBuilderExplorerPreviewDataState();
+  readonly propertySearchState: QueryBuilderPropertySearchState;
   treeData?: TreeData<QueryBuilderExplorerTreeNodeData> | undefined;
   humanizePropertyName = true;
   showUnmappedProperties = false;
   highlightUsedProperties = true;
-  propertySearchState: QueryBuilderPropertySearchState;
-  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
   mappingModelCoverageAnalysisState = ActionState.create();
+  mappingModelCoverageAnalysisResult?: MappingModelCoverageAnalysisResult;
 
   constructor(queryBuilderState: QueryBuilderState) {
-    makeAutoObservable(this, {
-      queryBuilderState: false,
-      previewDataState: false,
+    makeObservable(this, {
       treeData: observable.ref,
+      humanizePropertyName: observable,
+      showUnmappedProperties: observable,
       highlightUsedProperties: observable,
+      mappingModelCoverageAnalysisResult: observable,
       setTreeData: action,
       refreshTree: action,
       refreshTreeData: action,
       setHumanizePropertyName: action,
       setShowUnmappedProperties: action,
-      previewData: flow,
       setHighlightUsedProperties: action,
       analyzeMappingModelCoverage: flow,
+      previewData: flow,
     });
 
     this.queryBuilderState = queryBuilderState;
@@ -712,10 +709,8 @@ export class QueryBuilderExplorerState {
     this.previewDataState.setPropertyName(node.property.name);
     this.previewDataState.setIsGeneratingPreviewData(true);
     const propertyExpression = buildPropertyExpressionFromExplorerTreeNodeData(
-      this.nonNullableTreeData,
       node,
-      this.queryBuilderState.graphManagerState.graph,
-      this.propertySearchState.mappedPropertyNodes,
+      this,
     );
     const propertyType = node.property.genericType.value.rawType;
     try {

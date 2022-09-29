@@ -14,24 +14,33 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import type { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
 import type { QueryBuilderProjectionColumnState } from './QueryBuilderProjectionColumnState.js';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  deleteEntry,
+  type Hashable,
+  hashArray,
+} from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
 export enum COLUMN_SORT_TYPE {
   ASC,
   DESC,
 }
 
-export class SortColumnState {
+export class SortColumnState implements Hashable {
   columnState: QueryBuilderProjectionColumnState;
   sortType = COLUMN_SORT_TYPE.ASC;
 
   constructor(columnState: QueryBuilderProjectionColumnState) {
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      columnState: observable,
+      sortType: observable,
       setColumnState: action,
       setSortType: action,
+      hashCode: computed,
     });
 
     this.columnState = columnState;
@@ -44,24 +53,36 @@ export class SortColumnState {
   setSortType(val: COLUMN_SORT_TYPE): void {
     this.sortType = val;
   }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.SORT_COLUMN_STATE,
+      this.sortType.toString(),
+      this.columnState,
+    ]);
+  }
 }
 
-export class QueryResultSetModifierState {
-  projectionState: QueryBuilderProjectionState;
+export class QueryResultSetModifierState implements Hashable {
+  readonly projectionState: QueryBuilderProjectionState;
   showModal = false;
   limit?: number | undefined;
   distinct = false;
   sortColumns: SortColumnState[] = [];
 
   constructor(projectionState: QueryBuilderProjectionState) {
-    makeAutoObservable(this, {
-      projectionState: false,
+    makeObservable(this, {
+      showModal: observable,
+      limit: observable,
+      distinct: observable,
+      sortColumns: observable,
       setShowModal: action,
       setLimit: action,
       toggleDistinct: action,
       deleteSortColumn: action,
       addSortColumn: action,
       updateSortColumns: action,
+      hashCode: computed,
     });
 
     this.projectionState = projectionState;
@@ -91,5 +112,14 @@ export class QueryResultSetModifierState {
     this.sortColumns = this.sortColumns.filter((e) =>
       this.projectionState.columns.includes(e.columnState),
     );
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.RESULT_SET_MODIFIER_STATE,
+      hashArray(this.sortColumns),
+      this.limit?.toString() ?? '',
+      this.distinct.toString(),
+    ]);
   }
 }

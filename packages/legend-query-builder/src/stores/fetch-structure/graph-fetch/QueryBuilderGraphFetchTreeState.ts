@@ -45,9 +45,17 @@ import {
 } from '@finos/legend-application';
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
 import { appendGraphFetch } from './QueryBuilderGraphFetchValueSpecificationBuilder.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureImplementationState {
+export class QueryBuilderGraphFetchTreeState
+  extends QueryBuilderFetchStructureImplementationState
+  implements Hashable
+{
   treeData?: QueryBuilderGraphFetchTreeData | undefined;
   /**
    * If set to `true` we will use `graphFetchChecked` function instead of `graphFetch`.
@@ -236,5 +244,13 @@ export class QueryBuilderGraphFetchTreeState extends QueryBuilderFetchStructureI
     } else {
       onChange();
     }
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.GRAPH_FETCH_STATE,
+      this.isChecked.toString(),
+      this.treeData?.tree ?? '',
+    ]);
   }
 }

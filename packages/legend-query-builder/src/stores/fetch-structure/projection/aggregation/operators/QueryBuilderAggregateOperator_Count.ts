@@ -35,8 +35,13 @@ import {
   buildAggregateExpression,
 } from './QueryBuilderAggregateOperatorHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOperator {
+export class QueryBuilderAggregateOperator_Count
+  extends QueryBuilderAggregateOperator
+  implements Hashable
+{
   getLabel(projectionColumnState: QueryBuilderProjectionColumnState): string {
     return 'count';
   }
@@ -102,5 +107,9 @@ export class QueryBuilderAggregateOperator_Count extends QueryBuilderAggregateOp
       aggregateColumnState.aggregationState.projectionState.queryBuilderState
         .graphManagerState.graph;
     return graph.getType(PRIMITIVE_TYPE.INTEGER);
+  }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_OPERATOR_COUNT]);
   }
 }

@@ -15,5 +15,5 @@
  */
 
 export enum LEGEND_APPLICATION_DOCUMENTATION_KEY {
-  QUESTION_HOW_TO_USE_A_SEARCH_BAR = 'question.how-to-use-search-bar',
+  QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX = 'question.how-to-use-advanced-search-syntax',
 }

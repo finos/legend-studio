@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { assertType, addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  assertType,
+  addUniqueEntry,
+  deleteEntry,
+  hashArray,
+  type Hashable,
+} from '@finos/legend-shared';
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
 import {
   type AbstractProperty,
@@ -37,15 +43,19 @@ import {
   graphFetchTree_addSubTree,
   graphFetchTree_removeSubTree,
 } from '@finos/legend-application';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { computed, makeObservable } from 'mobx';
 
-export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
+export class QueryBuilderGraphFetchTreeNodeData
+  implements TreeNodeData, Hashable
+{
+  readonly id: string;
+  readonly label: string;
+  readonly tree: PropertyGraphFetchTree;
+  readonly parentId?: string | undefined;
   isSelected?: boolean | undefined;
   isOpen?: boolean | undefined;
-  id: string;
-  label: string;
   childrenIds: string[] = [];
-  parentId?: string | undefined;
-  tree: PropertyGraphFetchTree;
 
   constructor(
     id: string,
@@ -53,6 +63,10 @@ export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
     parentId: string | undefined,
     graphFetchTreeNode: PropertyGraphFetchTree,
   ) {
+    makeObservable(this, {
+      hashCode: computed,
+    });
+
     this.id = id;
     this.label = label;
     this.parentId = parentId;
@@ -63,6 +77,17 @@ export class QueryBuilderGraphFetchTreeNodeData implements TreeNodeData {
 
   get type(): Type {
     return this.tree.property.value.genericType.value.rawType;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.GRAPH_FETCH_TREE_NODE_DATA,
+      this.id,
+      this.label,
+      this.tree,
+      this.parentId ?? '',
+      hashArray(this.childrenIds),
+    ]);
   }
 }
 

@@ -38,11 +38,11 @@
   },
   "devDependencies": {
     "cross-env": "7.0.3",
-    "eslint": "8.23.1",
+    "eslint": "8.24.0",
     "rimraf": "3.0.2"
   },
   "peerDependencies": {
-    "stylelint": "^14.2.0"
+    "stylelint": "^14.0.0"
   },
   "publishConfig": {
     "directory": "build/publishContent"

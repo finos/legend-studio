@@ -372,7 +372,7 @@ export const NewConnectionDataModal = observer(
           </div>
           <div className="modal__footer">
             <button
-              type="button"
+              type="button" // prevent this toggler being activated on form submission
               className="btn btn--dark"
               onClick={closeModal}
             >

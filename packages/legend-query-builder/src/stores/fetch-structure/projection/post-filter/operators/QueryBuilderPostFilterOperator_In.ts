@@ -27,7 +27,11 @@ import {
   GenericType,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  type Hashable,
+  hashArray,
+} from '@finos/legend-shared';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
 import type {
@@ -41,8 +45,12 @@ import {
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 
-export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOperator {
+export class QueryBuilderPostFilterOperator_In
+  extends QueryBuilderPostFilterOperator
+  implements Hashable
+{
   getLabel(): string {
     return 'is in';
   }
@@ -149,6 +157,10 @@ export class QueryBuilderPostFilterOperator_In extends QueryBuilderPostFilterOpe
       this,
     );
   }
+
+  get hashCode(): string {
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_IN]);
+  }
 }
 
 export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilterOperator_In {
@@ -179,5 +191,11 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
     return innerExpression
       ? super.buildPostFilterConditionState(postFilterState, innerExpression)
       : undefined;
+  }
+
+  override get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.POST_FILTER_OPERATOR_NOT_IN,
+    ]);
   }
 }
