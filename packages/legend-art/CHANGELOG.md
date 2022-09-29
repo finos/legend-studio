@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 3.2.2
+
+### Patch Changes
+
+- [#1500](https://github.com/finos/legend-studio/pull/1500) [`bed2c111`](https://github.com/finos/legend-studio/commit/bed2c11115bdeafe1a769363922bce13428d9433) ([@xannem](https://github.com/xannem)) - Add badge component and panel list selector item label component
+
 ## 3.2.1
 
 ## 3.2.0
