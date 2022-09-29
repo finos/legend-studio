@@ -262,12 +262,12 @@ export class QueryLoaderState {
 }
 
 export abstract class QueryEditorStore {
-  applicationStore: LegendQueryApplicationStore;
-  depotServerClient: DepotServerClient;
-  pluginManager: LegendQueryPluginManager;
-  graphManagerState: GraphManagerState;
+  readonly applicationStore: LegendQueryApplicationStore;
+  readonly depotServerClient: DepotServerClient;
+  readonly pluginManager: LegendQueryPluginManager;
+  readonly graphManagerState: GraphManagerState;
 
-  initState = ActionState.create();
+  readonly initState = ActionState.create();
   queryBuilderState?: QueryBuilderState | undefined;
   exportState?: QueryExportState | undefined;
   queryLoaderState: QueryLoaderState;
