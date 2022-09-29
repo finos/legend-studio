@@ -91,7 +91,7 @@ export const mergeRequestHeaders = (
   return requestHeaders;
 };
 
-const MAX_ERROR_MESSAGE_LENGTH = 500;
+const MAX_ERROR_MESSAGE_LENGTH = 5000;
 
 type ParamterValue = string | number | boolean | undefined;
 /**
@@ -111,10 +111,20 @@ export type Payload = Record<PropertyKey, unknown> | string;
  * as pure/generic as possible
  */
 const extractMessage = (payload: Payload): string => {
-  if (isObject(payload) && isString(payload.message)) {
-    return payload.message;
+  if (isObject(payload)) {
+    return isString(payload.message)
+      ? payload.message
+      : JSON.stringify(payload);
   }
-  return isString(payload) ? payload : '';
+  let payloadAsObject: Record<PropertyKey, unknown> | undefined;
+  try {
+    payloadAsObject = JSON.parse(payload);
+  } catch {
+    // NOTE: ignored, above is best effort
+  }
+  return payloadAsObject && isString(payloadAsObject.message)
+    ? payloadAsObject.message
+    : payload;
 };
 
 // NOTE: status 0 is either timeout or client error possibly caused by authentication

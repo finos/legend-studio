@@ -222,7 +222,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
                   } catch (error) {
                     assertErrorThrown(error);
                     editorStore.applicationStore.log.error(
-                      LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+                      LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
                       error,
                     );
                     editorStore.applicationStore.notifyError(error);

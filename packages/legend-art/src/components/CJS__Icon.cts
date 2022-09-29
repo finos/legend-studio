@@ -238,4 +238,5 @@ export {
 export {
   TbArrowsJoin2 as ArrowsJoinIcon,
   TbArrowsSplit2 as ArrowsSplitIcon,
+  TbMathFunction as FunctionIcon,
 } from 'react-icons/tb';

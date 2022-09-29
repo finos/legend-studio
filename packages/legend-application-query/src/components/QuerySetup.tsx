@@ -28,7 +28,6 @@ import {
   UserIcon,
   QuestionCircleIcon,
   DroidIcon,
-  createFilter,
   ManageSearchIcon,
   ArrowCirceUpIcon,
 } from '@finos/legend-art';
@@ -65,11 +64,7 @@ import {
   SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import { compareSemVerVersions } from '@finos/legend-storage';
-import type {
-  LightQuery,
-  Mapping,
-  PackageableRuntime,
-} from '@finos/legend-graph';
+import type { Mapping, PackageableRuntime } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
   useApplicationStore,
@@ -79,16 +74,12 @@ import {
 } from '@finos/legend-application';
 import {
   type ServiceOption,
+  type QueryOption,
   buildServiceOption,
   formatServiceOptionLabel,
+  buildQueryOption,
 } from '@finos/legend-query-builder';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
-
-type QueryOption = { label: string; value: LightQuery };
-const buildQueryOption = (query: LightQuery): QueryOption => ({
-  label: query.name,
-  value: query,
-});
 
 const EditExistingQuerySetup = observer(
   (props: { querySetupState: EditExistingQuerySetupState }) => {
@@ -141,7 +132,10 @@ const EditExistingQuerySetup = observer(
       }
       return (
         <div className="query-setup__existing-query__query-option">
-          <div className="query-setup__existing-query__query-option__label">
+          <div
+            className="query-setup__existing-query__query-option__label"
+            title={option.label}
+          >
             {option.label}
           </div>
           {querySetupState.showCurrentUserQueriesOnly && (
@@ -274,12 +268,12 @@ const EditExistingQuerySetup = observer(
             />
             {querySetupState.currentQuery && (
               <>
-                {!querySetupState.currentQueryContent && (
+                {!querySetupState.currentQueryInfo && (
                   <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
                 )}
-                {querySetupState.currentQueryContent && (
+                {querySetupState.currentQueryInfo && (
                   <TextInputEditor
-                    inputValue={querySetupState.currentQueryContent}
+                    inputValue={querySetupState.currentQueryInfo.content}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
                     showMiniMap={false}
@@ -408,12 +402,12 @@ const QueryProductionizationSetup = observer(
             />
             {querySetupState.currentQuery && (
               <>
-                {!querySetupState.currentQueryContent && (
+                {!querySetupState.currentQueryInfo && (
                   <BlankPanelContent>{`Can't preview query`}</BlankPanelContent>
                 )}
-                {querySetupState.currentQueryContent && (
+                {querySetupState.currentQueryInfo && (
                   <TextInputEditor
-                    inputValue={querySetupState.currentQueryContent}
+                    inputValue={querySetupState.currentQueryInfo.content}
                     isReadOnly={true}
                     language={EDITOR_LANGUAGE.PURE}
                     showMiniMap={false}
@@ -450,15 +444,6 @@ export const UpdateExistingServiceQuerySetup = observer(
         .loadServiceUpdater(option.value)
         .catch(applicationStore.alertUnhandledError);
     };
-    const serviceFilterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: ServiceOption): string =>
-        // NOTE: account for label, path, and URL pattern
-        `${option.label} - ${option.value.urlPattern ?? ''} - ${
-          option.value.path
-        }`,
-    });
 
     // search text
     const debouncedLoadServices = useMemo(
@@ -517,7 +502,6 @@ export const UpdateExistingServiceQuerySetup = observer(
               onChange={onServiceOptionChange}
               placeholder="Search for service..."
               darkMode={true}
-              filterOption={serviceFilterOption}
               formatOptionLabel={formatServiceOptionLabel}
             />
           </div>

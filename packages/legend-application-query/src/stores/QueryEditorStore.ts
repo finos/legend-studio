@@ -62,7 +62,12 @@ import {
   type DepotServerClient,
   ProjectData,
 } from '@finos/legend-server-depot';
-import { TAB_SIZE, APPLICATION_EVENT } from '@finos/legend-application';
+import {
+  TAB_SIZE,
+  APPLICATION_EVENT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import { LegendQueryEventService } from './LegendQueryEventService.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
@@ -73,9 +78,6 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
-
-const QUERY_LOADER_MINIMUM_SEARCH_LENGTH = 2;
-const QUERY_LOADER_LIMIT = 10;
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -150,7 +152,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -191,7 +193,7 @@ export class QueryExportState {
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.editorStore.applicationStore.notifyError(error);
@@ -236,14 +238,14 @@ export class QueryLoaderState {
 
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = QUERY_LOADER_LIMIT;
+      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       this.queries =
@@ -356,7 +358,7 @@ export abstract class QueryEditorStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.applicationStore.notifyError(error);

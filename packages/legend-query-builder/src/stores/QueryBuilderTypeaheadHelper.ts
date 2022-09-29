@@ -36,9 +36,10 @@ import {
 } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
-
-const TYPEAHEAD_TAKE_LIMIT = 10;
-const TYPEAHEAD_MINIMUM_SEARCH_LENGTH = 2;
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
@@ -49,7 +50,7 @@ const initializeQueryBuilderState = (
     QueryBuilderProjectionState,
   );
   projectionState.resultSetModifierState.distinct = true;
-  projectionState.resultSetModifierState.limit = TYPEAHEAD_TAKE_LIMIT;
+  projectionState.resultSetModifierState.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
   return builderState;
 };
 
@@ -142,7 +143,7 @@ export const performTypeahead = (
     switch (_type.path) {
       case PRIMITIVE_TYPE.STRING: {
         const value = val.values[0] as string;
-        return value.length >= TYPEAHEAD_MINIMUM_SEARCH_LENGTH;
+        return value.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
       }
       default:
         return false;

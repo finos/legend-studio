@@ -34,15 +34,16 @@ import {
   Workspace,
 } from '@finos/legend-server-sdlc';
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 interface ImportProjectSuccessReport {
   projectId: string;
   projectName: string;
   reviewUrl: string;
 }
-
-const PROJECT_LOADER_MINIMUM_SEARCH_LENGTH = 2;
-const PROJECT_LOADER_LIMIT = 10;
 
 export class WorkspaceSetupStore {
   applicationStore: LegendStudioApplicationStore;
@@ -177,7 +178,7 @@ export class WorkspaceSetupStore {
 
   *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= PROJECT_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
@@ -185,7 +186,7 @@ export class WorkspaceSetupStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
-          PROJECT_LOADER_LIMIT,
+          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
       this.loadProjectsState.pass();

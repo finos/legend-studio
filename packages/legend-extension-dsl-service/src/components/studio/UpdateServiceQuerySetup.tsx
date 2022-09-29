@@ -53,12 +53,12 @@ import {
   CircleNotchIcon,
   clsx,
   compareLabelFn,
-  createFilter,
   CustomSelectorInput,
   Dialog,
   ErrorIcon,
   GitBranchIcon,
   Panel,
+  PanelFullContent,
   PanelLoadingIndicator,
   PlusIcon,
   PURE_ServiceIcon,
@@ -169,7 +169,7 @@ const CreateWorkspaceModal = observer(
             <PanelLoadingIndicator
               isLoading={setupStore.createWorkspaceState.isInProgress}
             />
-            <div className="panel__content--full">
+            <PanelFullContent>
               <div className="input-group">
                 <input
                   className="input input--dark input-group__input"
@@ -186,7 +186,7 @@ const CreateWorkspaceModal = observer(
                   </div>
                 )}
               </div>
-            </div>
+            </PanelFullContent>
           </Panel>
           <div className="search-modal__actions">
             <button
@@ -254,15 +254,6 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
         setupStore.resetCurrentService();
       }
     };
-    const serviceFilterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: ServiceOption): string =>
-        // NOTE: account for label, path, and URL pattern
-        `${option.label} - ${option.value.urlPattern ?? ''} - ${
-          option.value.path
-        }`,
-    });
 
     // service search text
     const debouncedLoadServices = useMemo(
@@ -397,7 +388,6 @@ export const UpdateServiceQuerySetup = withUpdateServiceQuerySetupStore(
                     darkMode={true}
                     isClearable={true}
                     escapeClearsValue={true}
-                    filterOption={serviceFilterOption}
                     formatOptionLabel={formatServiceOptionLabel}
                   />
                 </div>

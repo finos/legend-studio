@@ -41,9 +41,9 @@ import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import {
-  DATA_SPACE_LOADER_LIMIT,
-  DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH,
-} from '../../DSLDataSpace_Const.js';
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: DataSpaceInfo[] = [];
@@ -84,7 +84,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
@@ -95,7 +95,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             scope: this.toGetSnapShot
               ? DepotScope.SNAPSHOT
               : DepotScope.RELEASES,
-            limit: DATA_SPACE_LOADER_LIMIT,
+            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) =>

@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-export const TAB_SIZE = 2;
-export const DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 2;
-export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
+import type { LightQuery } from '@finos/legend-graph';
 
-export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
-
-export enum EDITOR_THEME {
-  LEGEND = 'LEGEND',
-  TEMPORARY__VSCODE_LIGHT = 'vs',
-}
-
-export enum EDITOR_LANGUAGE {
-  TEXT = 'text',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
-}
+export type QueryOption = { label: string; value: LightQuery };
+export const buildQueryOption = (query: LightQuery): QueryOption => ({
+  label: query.name,
+  value: query,
+});

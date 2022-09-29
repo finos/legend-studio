@@ -68,6 +68,7 @@ export enum DSL_SERVICE_PATH_PARAM_TOKEN {
   PROJECT_ID = 'projectId',
   GROUP_WORKSPACE_ID = 'groupWorkspaceId',
   SERVICE_PATH = 'servicePath',
+  QUERY_ID = 'queryId',
 }
 
 export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
@@ -75,6 +76,7 @@ export const DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   UPDATE_SERVICE_QUERY: `/update-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_COORDINATES}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}`,
   UPDATE_PROJECT_SERVICE_QUERY_SETUP: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}?`,
   UPDATE_PROJECT_SERVICE_QUERY: `/update-project-service-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/:${DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH}`,
+  PRODUCTIONIZE_QUERY: `/productionize-query/:${DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID}?`,
 });
 
 export interface ServiceQueryUpdaterSetupPathParams {
@@ -155,5 +157,21 @@ export const generateProjectServiceQueryUpdaterRoute = (
       [DSL_SERVICE_PATH_PARAM_TOKEN.PROJECT_ID]: projectId,
       [DSL_SERVICE_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: groupWorkspaceId,
       [DSL_SERVICE_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+    },
+  );
+
+export interface QueryProductionizerPathParams {
+  [DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID]?: string;
+}
+
+export const generateQueryProductionizerRoute = (
+  queryId: string | undefined,
+): string =>
+  generatePath(
+    generateExtensionUrlPattern(
+      DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.PRODUCTIONIZE_QUERY,
+    ),
+    {
+      [DSL_SERVICE_PATH_PARAM_TOKEN.QUERY_ID]: queryId,
     },
   );

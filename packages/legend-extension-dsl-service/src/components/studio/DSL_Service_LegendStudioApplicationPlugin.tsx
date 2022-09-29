@@ -27,6 +27,7 @@ import {
   ProjectServiceQueryUpdater,
   ServiceQueryUpdater,
 } from './ServiceQueryEditor.js';
+import { QueryProductionizer } from './QueryProductionizer.js';
 
 export class DSL_Service_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -65,6 +66,13 @@ export class DSL_Service_LegendStudioApplicationPlugin
           DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.UPDATE_PROJECT_SERVICE_QUERY,
         ],
         renderer: ProjectServiceQueryUpdater,
+      },
+      {
+        key: 'productionize-query-application-page',
+        urlPatterns: [
+          DSL_SERVICE_LEGEND_STUDIO_ROUTE_PATTERN.PRODUCTIONIZE_QUERY,
+        ],
+        renderer: QueryProductionizer,
       },
     ];
   }

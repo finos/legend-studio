@@ -20,6 +20,7 @@ import {
   Dialog,
   ExternalLinkSquareIcon,
   Panel,
+  PanelFullContent,
   PanelLoadingIndicator,
   ReviewIcon,
 } from '@finos/legend-art';
@@ -76,7 +77,7 @@ const NewReviewModal = observer(() => {
               editorStore.workspaceReviewState.isCreatingWorkspaceReview
             }
           />
-          <div className="panel__content--full">
+          <PanelFullContent>
             <div className="input-group">
               <input
                 ref={messageInputRef}
@@ -91,7 +92,7 @@ const NewReviewModal = observer(() => {
                 </div>
               )}
             </div>
-          </div>
+          </PanelFullContent>
         </Panel>
         <div className="search-modal__actions">
           <button

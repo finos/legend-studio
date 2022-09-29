@@ -21,3 +21,6 @@
 export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
 export const LATEST_VERSION_ALIAS = 'latest';
 export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
+
+export const resolveVersion = (versionId: string): string =>
+  versionId === SNAPSHOT_VERSION_ALIAS ? MASTER_SNAPSHOT_ALIAS : versionId;

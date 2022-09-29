@@ -36,21 +36,23 @@ import {
 import { generateProjectServiceQueryUpdaterSetupRoute } from './DSL_Service_LegendStudioRouter.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-
-const PROJECT_LOADER_MINIMUM_SEARCH_LENGTH = 2;
-const PROJECT_LOADER_LIMIT = 10;
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 export class UpdateProjectServiceQuerySetupStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
+  readonly applicationStore: LegendStudioApplicationStore;
+  readonly sdlcServerClient: SDLCServerClient;
 
-  initState = ActionState.create();
-  loadProjectsState = ActionState.create();
+  readonly initState = ActionState.create();
+
+  readonly loadProjectsState = ActionState.create();
   projects: Project[] = [];
   currentProject?: Project | undefined;
 
-  loadWorkspacesState = ActionState.create();
-  createWorkspaceState = ActionState.create();
+  readonly loadWorkspacesState = ActionState.create();
+  readonly createWorkspaceState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
   currentGroupWorkspace?: Workspace | undefined;
   showCreateWorkspaceModal = false;
@@ -148,7 +150,7 @@ export class UpdateProjectServiceQuerySetupStore {
 
   *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= PROJECT_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadProjectsState.inProgress();
     try {
       this.projects = (
@@ -156,7 +158,7 @@ export class UpdateProjectServiceQuerySetupStore {
           undefined,
           isValidSearchString ? searchText : undefined,
           undefined,
-          PROJECT_LOADER_LIMIT,
+          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
         )) as PlainObject<Project>[]
       ).map((v) => Project.serialization.fromJson(v));
       this.loadProjectsState.pass();

@@ -48,28 +48,29 @@ import {
   parseServiceCoordinates,
 } from './DSL_Service_LegendStudioRouter.js';
 import { CORE_PURE_PATH } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
-
-const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 2;
-const DEFAULT_SERVICE_LOADER_LIMIT = 10;
+import { type Entity, generateGAVCoordinates } from '@finos/legend-storage';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 
 export class UpdateServiceQuerySetupStore {
-  applicationStore: LegendStudioApplicationStore;
-  sdlcServerClient: SDLCServerClient;
-  depotServerClient: DepotServerClient;
+  readonly applicationStore: LegendStudioApplicationStore;
+  readonly sdlcServerClient: SDLCServerClient;
+  readonly depotServerClient: DepotServerClient;
 
-  initState = ActionState.create();
-  loadServicesState = ActionState.create();
+  readonly initState = ActionState.create();
+  readonly loadServicesState = ActionState.create();
   services: ServiceInfo[] = [];
   currentProject?: ProjectData | undefined;
   currentSnapshotService?: ServiceInfo | undefined;
 
-  loadWorkspacesState = ActionState.create();
-  createWorkspaceState = ActionState.create();
+  readonly loadWorkspacesState = ActionState.create();
+  readonly createWorkspaceState = ActionState.create();
   groupWorkspaces: Workspace[] = [];
   currentGroupWorkspace?: Workspace | undefined;
   currentWorkspaceService?: Entity | undefined;
-  checkWorkspaceCompatibilityState = ActionState.create();
+  readonly checkWorkspaceCompatibilityState = ActionState.create();
   showCreateWorkspaceModal = false;
 
   constructor(
@@ -146,7 +147,7 @@ export class UpdateServiceQuerySetupStore {
 
   *loadServices(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_SERVICE_LOADER_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadServicesState.inProgress();
     try {
       this.services = (
@@ -157,7 +158,7 @@ export class UpdateServiceQuerySetupStore {
             // NOTE: since this mode is meant for contribution, we want to load services
             // on the snapshot version (i.e. merged to the default branch on the projects)
             scope: DepotScope.SNAPSHOT,
-            limit: DEFAULT_SERVICE_LOADER_LIMIT,
+            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) => extractServiceInfo(storedEntity));
@@ -177,20 +178,43 @@ export class UpdateServiceQuerySetupStore {
     this.loadWorkspacesState.inProgress();
 
     try {
-      const project = ProjectData.serialization.fromJson(
-        (yield this.depotServerClient.getProject(
-          groupId,
-          artifactId,
-        )) as PlainObject<ProjectData>,
-      );
+      let project: ProjectData | undefined;
+      let serviceEntity: Entity | undefined;
+      try {
+        project = ProjectData.serialization.fromJson(
+          (yield this.depotServerClient.getProject(
+            groupId,
+            artifactId,
+          )) as PlainObject<ProjectData>,
+        );
+        serviceEntity = (yield this.depotServerClient.getEntity(
+          project,
+          MASTER_SNAPSHOT_ALIAS,
+          servicePath,
+        )) as Entity;
+      } catch {
+        project = undefined;
+        serviceEntity = undefined;
+      }
+
+      if (!project || !serviceEntity) {
+        this.applicationStore.navigator.goTo(
+          generateServiceQueryUpdaterSetupRoute(
+            undefined,
+            undefined,
+            undefined,
+          ),
+        );
+        throw Error(
+          `Can't find service '${servicePath}' from project with coordinates '${generateGAVCoordinates(
+            groupId,
+            artifactId,
+            undefined,
+          )}'`,
+        );
+      }
 
       this.currentProject = project;
-
-      const serviceEntity = (yield this.depotServerClient.getEntity(
-        project,
-        MASTER_SNAPSHOT_ALIAS,
-        servicePath,
-      )) as Entity;
       this.currentSnapshotService = extractServiceInfo({
         groupId: groupId,
         artifactId: artifactId,

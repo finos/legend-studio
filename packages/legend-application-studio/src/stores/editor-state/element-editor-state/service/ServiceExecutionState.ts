@@ -31,6 +31,8 @@ import {
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
   buildParametersLetLambdaFunc,
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   ExecutionPlanState,
   LambdaEditorState,
   LambdaParametersState,
@@ -40,17 +42,18 @@ import {
 } from '@finos/legend-application';
 import {
   type ServiceExecution,
-  KeyedExecutionParameter,
   type PureExecution,
   type Mapping,
   type Runtime,
   type ExecutionResult,
   type LightQuery,
   type PackageableRuntime,
-  PureSingleExecution,
-  PureMultiExecution,
   type RawExecutionPlan,
   type PackageableElementReference,
+  type QueryInfo,
+  PureSingleExecution,
+  PureMultiExecution,
+  KeyedExecutionParameter,
   GRAPH_MANAGER_EVENT,
   RawLambda,
   EngineRuntime,
@@ -168,9 +171,6 @@ interface QueryImportInfo {
   content: string;
 }
 
-const QUERY_LOADER_LIMIT = 10;
-const QUERY_LOADER_MINIMUM_SEARCH_LENGTH = 2;
-
 export class ServicePureExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;
   execution: PureExecution;
@@ -235,9 +235,11 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         const content =
           (yield this.editorStore.graphManagerState.graphManager.lambdaToPureCode(
             (yield this.editorStore.graphManagerState.graphManager.pureCodeToLambda(
-              (yield this.editorStore.graphManagerState.graphManager.getQueryContent(
-                query.id,
-              )) as string,
+              (
+                (yield this.editorStore.graphManagerState.graphManager.getQueryInfo(
+                  query.id,
+                )) as QueryInfo
+              ).content,
             )) as RawLambda,
             true,
           )) as string;
@@ -277,7 +279,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
 
   *loadQueries(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= QUERY_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
@@ -289,7 +291,7 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = QUERY_LOADER_LIMIT;
+      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
       searchSpecification.projectCoordinates = [
         // either get queries for the current project
         currentProjectCoordinates,

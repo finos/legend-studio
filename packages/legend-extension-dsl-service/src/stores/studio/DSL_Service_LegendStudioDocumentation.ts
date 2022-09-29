@@ -14,22 +14,7 @@
  * limitations under the License.
  */
 
-export const TAB_SIZE = 2;
-export const DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 2;
-export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
-
-export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
-
-export enum EDITOR_THEME {
-  LEGEND = 'LEGEND',
-  TEMPORARY__VSCODE_LIGHT = 'vs',
-}
-
-export enum EDITOR_LANGUAGE {
-  TEXT = 'text',
-  PURE = 'pure',
-  JSON = 'json',
-  JAVA = 'java',
-  MARKDOWN = 'markdown',
-  SQL = 'sql',
+export enum DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY {
+  SETUP_PRODUCTIONIZE_QUERY = 'dsl-service.setup.productionize-query',
+  QUESTION_WHEN_TO_ENABLE_AUTO_CONFIGURATION_FOR_QUERY_PRODUCTIONIZATION = 'dsl-service.setup.productionize-query.question.when-to-enable-auto-configuration',
 }

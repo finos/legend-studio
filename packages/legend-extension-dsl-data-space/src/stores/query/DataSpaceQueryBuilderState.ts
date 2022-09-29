@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import {
+  type GenericLegendApplicationStore,
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+} from '@finos/legend-application';
 import { QueryBuilderState } from '@finos/legend-query-builder';
 import {
   type GraphManagerState,
@@ -37,10 +41,6 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
-import {
-  DATA_SPACE_LOADER_LIMIT,
-  DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH,
-} from '../../DSLDataSpace_Const.js';
 import type {
   DataSpace,
   DataSpaceExecutionContext,
@@ -124,7 +124,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= DATA_SPACE_LOADER_MINIMUM_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadDataSpacesState.inProgress();
     const toGetSnapShot = this.versionId === SNAPSHOT_VERSION_ALIAS;
     try {
@@ -134,7 +134,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
           {
             search: isValidSearchString ? searchText : undefined,
             scope: toGetSnapShot ? DepotScope.SNAPSHOT : DepotScope.RELEASES,
-            limit: DATA_SPACE_LOADER_LIMIT,
+            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) =>

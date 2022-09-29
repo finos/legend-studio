@@ -80,6 +80,26 @@ export class VirtualAssistantContextualDocumentationEntry {
   }
 }
 
+/**
+ * NOTE: since we're displaying the documentation entry in virtual assistant
+ * we want only user-friendly docs, we will discard anything that doesn't
+ * come with a title, or does not have any content/url
+ */
+export const isValidVirtualAssistantDocumentationEntry = (
+  entry: DocumentationEntry,
+): boolean =>
+  Boolean(entry.title && (entry.url ?? entry.text ?? entry.markdownText));
+
+/**
+ * Check if the documentation entry should be displayed in virtual assistant,
+ * i.e. it has some text content, rather just a link
+ */
+export const shouldDisplayVirtualAssistantDocumentationEntry = (
+  entry: DocumentationEntry,
+): boolean =>
+  isValidVirtualAssistantDocumentationEntry(entry) &&
+  Boolean(entry.text ?? entry.markdownText);
+
 export class AssistantService {
   readonly applicationStore: GenericLegendApplicationStore;
   /**
@@ -125,12 +145,9 @@ export class AssistantService {
 
     this.applicationStore = applicationStore;
     this.searchEngine = new Fuse(
-      this.applicationStore.documentationService.getAllDocEntries().filter(
-        (entry) =>
-          // NOTE: since we're searching for user-friendly docs, we will discard anything that
-          // doesn't come with a title, or does not have any content/url
-          entry.title && (entry.url ?? entry.text ?? entry.markdownText),
-      ),
+      this.applicationStore.documentationService
+        .getAllDocEntries()
+        .filter(isValidVirtualAssistantDocumentationEntry),
       {
         includeScore: true,
         shouldSort: true,
@@ -188,14 +205,7 @@ export class AssistantService {
               this.applicationStore.documentationService.getDocEntry(entry),
             )
             .filter(isNonNullable)
-            .filter(
-              (entry) =>
-                // NOTE: since we're searching for user-friendly docs, we will discard anything that
-                // doesn't come with a title, or does not have any content/url
-                //
-                // We could also consider having a flag in each documentation entry to be hidden from users
-                entry.title && (entry.url ?? entry.text ?? entry.markdownText),
-            )
+            .filter(isValidVirtualAssistantDocumentationEntry)
             .map((entry) => new VirtualAssistantDocumentationEntry(entry)),
         )
       : undefined;
