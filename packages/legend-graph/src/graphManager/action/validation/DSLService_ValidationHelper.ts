@@ -30,6 +30,8 @@ export const validate_ServicePattern = (
   const errors: string[] = [];
   if (!pattern) {
     addUniqueEntry(errors, 'Pattern must not be empty');
+  } else if (pattern === '/') {
+    addUniqueEntry(errors, `Pattern must not be '/'`);
   } else if (!pattern.startsWith('/')) {
     addUniqueEntry(errors, `Pattern must start with a '/'`);
   }

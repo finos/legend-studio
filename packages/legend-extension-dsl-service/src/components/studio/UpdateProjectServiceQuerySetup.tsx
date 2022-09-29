@@ -45,11 +45,11 @@ import {
 import { flowResult } from 'mobx';
 import {
   compareLabelFn,
-  createFilter,
   CustomSelectorInput,
   Dialog,
   GitBranchIcon,
   Panel,
+  PanelFullContent,
   PanelLoadingIndicator,
   PlusIcon,
   PURE_ServiceIcon,
@@ -149,7 +149,7 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
           <PanelLoadingIndicator
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
-          <div className="panel__content--full">
+          <PanelFullContent>
             <div className="input-group">
               <input
                 className="input input--dark input-group__input"
@@ -166,7 +166,7 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
                 </div>
               )}
             </div>
-          </div>
+          </PanelFullContent>
         </Panel>
         <div className="search-modal__actions">
           <button
@@ -316,15 +316,6 @@ export const UpdateProjectServiceQuerySetup =
           setupStore.resetCurrentService();
         }
       };
-      const serviceFilterOption = createFilter({
-        ignoreCase: true,
-        ignoreAccents: false,
-        stringify: (option: ServiceOption): string =>
-          // NOTE: account for label, path, and URL pattern
-          `${option.label} - ${option.value.urlPattern ?? ''} - ${
-            option.value.path
-          }`,
-      });
 
       useEffect(() => {
         flowResult(setupStore.loadProjects('')).catch(
@@ -446,7 +437,6 @@ export const UpdateProjectServiceQuerySetup =
                       darkMode={true}
                       isClearable={true}
                       escapeClearsValue={true}
-                      filterOption={serviceFilterOption}
                       formatOptionLabel={formatServiceOptionLabel}
                     />
                   </div>

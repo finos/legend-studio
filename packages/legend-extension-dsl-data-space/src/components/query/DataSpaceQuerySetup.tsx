@@ -26,7 +26,6 @@ import {
   ArrowLeftIcon,
   CustomSelectorInput,
   SearchIcon,
-  createFilter,
 } from '@finos/legend-art';
 import { useQuerySetupStore } from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -82,12 +81,6 @@ export const DataspaceQuerySetup = observer(
       querySetupState.setCurrentDataSpace(option?.value);
       querySetupState.setDataSpaceViewerState(undefined);
     };
-    const filterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: DataSpaceOption): string =>
-        `${option.label} - ${option.value.path}`,
-    });
     const formatDataSpaceOptionLabel = (
       option: DataSpaceOption,
     ): React.ReactNode => (
@@ -195,7 +188,6 @@ export const DataspaceQuerySetup = observer(
               isClearable={true}
               escapeClearsValue={true}
               darkMode={true}
-              filterOption={filterOption}
               formatOptionLabel={formatDataSpaceOptionLabel}
             />
             <button

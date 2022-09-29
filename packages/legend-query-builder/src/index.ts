@@ -39,3 +39,4 @@ export type { ServiceExecutionAnalysisResult } from './graphManager/action/analy
 export type { MappingRuntimeCompatibilityAnalysisResult } from './graphManager/action/analytics/MappingRuntimeCompatibilityAnalysis.js';
 export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
+export * from './components/QuerySetupUtils.js';

@@ -16,6 +16,10 @@
 
 @use 'mixins' as *;
 
+.query-editor__header__action__icon--service {
+  font-size: 1.6rem;
+}
+
 .service-query-editor {
   display: flex;
   flex-direction: column;

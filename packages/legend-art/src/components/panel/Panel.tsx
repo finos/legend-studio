@@ -132,6 +132,13 @@ export const Panel: React.FC<{
   return <div className="panel">{children}</div>;
 };
 
+export const PanelFullContent: React.FC<{
+  children?: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  return <div className="panel__content--full">{children}</div>;
+};
+
 export const PanelTextEditor = observer(
   (props: {
     name: string;

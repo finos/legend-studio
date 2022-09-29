@@ -33,6 +33,7 @@ export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
 export { LegendQueryApplicationConfig } from './application/LegendQueryApplicationConfig.js';
 export {
   QueryEditorStore,
+  ExistingQueryEditorStore,
   type QueryExportConfiguration,
 } from './stores/QueryEditorStore.js';
 export {

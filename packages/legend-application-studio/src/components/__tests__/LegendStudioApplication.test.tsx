@@ -16,7 +16,11 @@
 
 import { test, jest, expect } from '@jest/globals';
 import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
-import { integrationTest, noop } from '@finos/legend-shared';
+import {
+  integrationTest,
+  noop,
+  type TEMPORARY__JestMock,
+} from '@finos/legend-shared';
 import {
   WebApplicationNavigator,
   TEST__provideMockedApplicationStore,
@@ -132,7 +136,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   await waitFor(() =>
-    expect(jumpToSpy).toHaveBeenCalledWith(
+    expect(jumpToSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
         applicationStore.config.sdlcServerUrl,
         stubURL,

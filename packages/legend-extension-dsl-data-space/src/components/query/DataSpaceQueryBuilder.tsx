@@ -105,12 +105,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
       queryBuilderState.onDataSpaceChange(option.value);
     };
-    const dataSpaceFilterOption = createFilter({
-      ignoreCase: true,
-      ignoreAccents: false,
-      stringify: (option: DataSpaceOption): string =>
-        `${option.label} - ${option.value.path}`,
-    });
     const formatDataSpaceOptionLabel = (
       option: DataSpaceOption,
     ): React.ReactNode => (
@@ -278,7 +272,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 placeholder="Search for data space..."
                 escapeClearsValue={true}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-                filterOption={dataSpaceFilterOption}
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />
             </div>

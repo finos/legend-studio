@@ -27,8 +27,6 @@ import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
 import {
   useApplicationNavigationContext,
-  ActionAlertActionType,
-  ActionAlertType,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -52,43 +50,20 @@ const QueryBuilderDialog = observer(
     const applicationStore = useApplicationStore();
     const [isMaximized, setIsMaximized] = useState(false);
     const toggleMaximize = (): void => setIsMaximized(!isMaximized);
-    const closeQueryBuilder = (): void => {
-      flowResult(
-        embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
-          undefined,
-        ),
-      ).catch(applicationStore.alertUnhandledError);
+
+    const confirmCloseQueryBuilder = (): void => {
+      queryBuilderState.changeDetectionState.alertUnsavedChanges((): void => {
+        flowResult(
+          embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration(
+            undefined,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
+      });
     };
 
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EMBEDDED_QUERY_BUILDER,
     );
-
-    const confirmCloseQueryBuilder = (): void => {
-      if (queryBuilderState.changeDetectionState.hasChanged) {
-        applicationStore.setActionAlertInfo({
-          message:
-            'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Proceed',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: applicationStore.guardUnhandledError(async () =>
-                closeQueryBuilder(),
-              ),
-            },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        closeQueryBuilder();
-      }
-    };
 
     return (
       <Dialog

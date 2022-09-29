@@ -94,11 +94,13 @@ export const buildParametersLetLambdaFunc = (
     .filter(isNonNullable);
   return letlambdaFunction;
 };
+
 export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
   readonly graph: PureModel;
-  observableContext: ObserverContext;
+  readonly observableContext: ObserverContext;
+
   value: ValueSpecification | undefined;
 
   constructor(
@@ -120,8 +122,7 @@ export class LambdaParameterState implements Hashable {
   get hashCode(): string {
     return hashArray([
       LAMABA_PARAMETER_HASH_STRUCTURE.LAMBDA_PARAMETER_STATE,
-      this.value ?? '',
-      this.parameter.name,
+      this.parameter,
     ]);
   }
 
@@ -245,6 +246,7 @@ export class LambdaParametersState implements Hashable {
   removeParameter(val: LambdaParameterState): void {
     deleteEntry(this.parameterStates, val);
   }
+
   setParameters(val: LambdaParameterState[]): void {
     this.parameterStates = val;
   }

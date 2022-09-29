@@ -15,6 +15,7 @@
  */
 
 import { clsx, QuestionCircleIcon } from '@finos/legend-art';
+import { shouldDisplayVirtualAssistantDocumentationEntry } from '../../stores/AssistantService.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
 
 export const DocumentationLink: React.FC<{
@@ -26,12 +27,22 @@ export const DocumentationLink: React.FC<{
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
   const openDocLink = (): void => {
-    if (documentationEntry?.url) {
-      applicationStore.navigator.openNewWindow(documentationEntry.url);
+    if (documentationEntry) {
+      if (shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry)) {
+        applicationStore.assistantService.openDocumentationEntry(
+          documentationKey,
+        );
+      } else if (documentationEntry.url) {
+        applicationStore.navigator.openNewWindow(documentationEntry.url);
+      }
     }
   };
 
-  if (!documentationEntry?.url) {
+  if (
+    !documentationEntry ||
+    (!documentationEntry.url &&
+      !shouldDisplayVirtualAssistantDocumentationEntry(documentationEntry))
+  ) {
     return null;
   }
   return (

@@ -23,6 +23,7 @@ import {
   type QuerySetupState,
   type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
+  type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
   LegendQueryEventService,
@@ -134,7 +135,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
     return [
       (
         query: Query,
-        editorStore: QueryEditorStore,
+        editorStore: ExistingQueryEditorStore,
       ): QueryBuilderState | undefined => {
         const dataSpaceTaggedValue = query.taggedValues?.find(
           (taggedValue) =>
@@ -222,7 +223,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
                   } catch (error) {
                     assertErrorThrown(error);
                     editorStore.applicationStore.log.error(
-                      LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+                      LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
                       error,
                     );
                     editorStore.applicationStore.notifyError(error);

@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export { DSL_Service_LegendQueryApplicationPlugin } from './components/query/DSL_Service_LegendQueryApplicationPlugin.js';
 export { DSL_Service_LegendStudioApplicationPlugin } from './components/studio/DSL_Service_LegendStudioApplicationPlugin.js';

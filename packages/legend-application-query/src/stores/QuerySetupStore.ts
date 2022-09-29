@@ -34,6 +34,7 @@ import {
   type Mapping,
   type PackageableRuntime,
   type Service,
+  type QueryInfo,
   QuerySearchSpecification,
   BasicGraphManagerState,
   CORE_PURE_PATH,
@@ -46,7 +47,12 @@ import {
 } from '@finos/legend-server-depot';
 import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import { APPLICATION_EVENT, TAB_SIZE } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+  TAB_SIZE,
+} from '@finos/legend-application';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import {
@@ -57,6 +63,7 @@ import {
   extractServiceInfo,
 } from '@finos/legend-query-builder';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl,
 } from './LegendQueryRouter.js';
@@ -74,6 +81,7 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   loadQueriesState = ActionState.create();
   loadQueryState = ActionState.create();
   currentQuery?: LightQuery | undefined;
+  currentQueryInfo?: QueryInfo | undefined;
   showCurrentUserQueriesOnly = false;
 
   constructor(setupStore: QuerySetupStore) {
@@ -82,6 +90,7 @@ export class EditExistingQuerySetupState extends QuerySetupState {
     makeObservable(this, {
       queries: observable,
       currentQuery: observable,
+      currentQueryInfo: observable,
       showCurrentUserQueriesOnly: observable,
       setShowCurrentUserQueriesOnly: action,
       setCurrentQuery: flow,
@@ -101,6 +110,10 @@ export class EditExistingQuerySetupState extends QuerySetupState {
           (yield this.setupStore.graphManagerState.graphManager.getLightQuery(
             queryId,
           )) as LightQuery;
+        this.currentQueryInfo =
+          (yield this.setupStore.graphManagerState.graphManager.getQueryInfo(
+            queryId,
+          )) as QueryInfo;
       } catch (error) {
         assertErrorThrown(error);
         this.setupStore.applicationStore.notifyError(error);
@@ -113,14 +126,15 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   }
 
   *loadQueries(searchText: string): GeneratorFn<void> {
-    const isValidSearchString = searchText.length >= 3;
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadQueriesState.inProgress();
     try {
       const searchSpecification = new QuerySearchSpecification();
       searchSpecification.searchTerm = isValidSearchString
         ? searchText
         : undefined;
-      searchSpecification.limit = 10;
+      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
       searchSpecification.showCurrentUserQueriesOnly =
         this.showCurrentUserQueriesOnly;
       this.queries =
@@ -136,8 +150,108 @@ export class EditExistingQuerySetupState extends QuerySetupState {
   }
 }
 
-const MINIMUM_SERVICE_LOADER_SEARCH_LENGTH = 3;
-const DEFAULT_SERVICE_LOADER_LIMIT = 10;
+export class QueryProductionizationSetupState extends QuerySetupState {
+  queries: LightQuery[] = [];
+  loadQueriesState = ActionState.create();
+  loadQueryState = ActionState.create();
+  currentQuery?: LightQuery | undefined;
+  currentQueryInfo?: QueryInfo | undefined;
+
+  constructor(setupStore: QuerySetupStore) {
+    super(setupStore);
+
+    makeObservable(this, {
+      queries: observable,
+      currentQuery: observable,
+      currentQueryInfo: observable,
+      setCurrentQuery: flow,
+      loadQueries: flow,
+    });
+  }
+
+  async loadQueryProductionizer(): Promise<void> {
+    if (!this.currentQuery) {
+      return;
+    }
+
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await this.setupStore.depotServerClient.getProject(
+        this.currentQuery.groupId,
+        this.currentQuery.artifactId,
+      ),
+    );
+
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry =
+      this.setupStore.applicationStore.config.studioInstances.find(
+        (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+      );
+    if (matchingSDLCEntry) {
+      this.setupStore.applicationStore.setBlockingAlert({
+        message: `Loading query...`,
+        prompt: 'Please do not close the application',
+        showLoading: true,
+      });
+      this.setupStore.applicationStore.navigator.jumpTo(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
+          matchingSDLCEntry.url,
+          this.currentQuery.id,
+        ),
+      );
+    } else {
+      this.setupStore.applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to productionize the query`,
+      );
+    }
+  }
+
+  *setCurrentQuery(queryId: string | undefined): GeneratorFn<void> {
+    if (queryId) {
+      try {
+        this.loadQueryState.inProgress();
+        this.currentQuery =
+          (yield this.setupStore.graphManagerState.graphManager.getLightQuery(
+            queryId,
+          )) as LightQuery;
+        this.currentQueryInfo =
+          (yield this.setupStore.graphManagerState.graphManager.getQueryInfo(
+            queryId,
+          )) as QueryInfo;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.setupStore.applicationStore.notifyError(error);
+      } finally {
+        this.loadQueryState.reset();
+      }
+    } else {
+      this.currentQuery = undefined;
+    }
+  }
+
+  *loadQueries(searchText: string): GeneratorFn<void> {
+    const isValidSearchString =
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+    this.loadQueriesState.inProgress();
+    try {
+      const searchSpecification = new QuerySearchSpecification();
+      searchSpecification.searchTerm = isValidSearchString
+        ? searchText
+        : undefined;
+      searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
+      this.queries =
+        (yield this.setupStore.graphManagerState.graphManager.searchQueries(
+          searchSpecification,
+        )) as LightQuery[];
+      this.loadQueriesState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setupStore.applicationStore.notifyError(error);
+      this.loadQueriesState.fail();
+    }
+  }
+}
 
 export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
   services: ServiceInfo[] = [];
@@ -190,7 +304,7 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
 
   *loadServices(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
-      searchText.length >= MINIMUM_SERVICE_LOADER_SEARCH_LENGTH;
+      searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
     this.loadServicesState.inProgress();
     try {
       this.services = (
@@ -201,7 +315,7 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
             // NOTE: since this mode is meant for contribution, we want to load services
             // on the snapshot version (i.e. merged to the default branch on the projects)
             scope: DepotScope.SNAPSHOT,
-            limit: DEFAULT_SERVICE_LOADER_LIMIT,
+            limit: DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
           },
         )) as StoredEntity[]
       ).map((storedEntity) => extractServiceInfo(storedEntity));
@@ -315,7 +429,7 @@ export class CreateMappingQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.setupStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.setupStore.applicationStore.notifyError(error);
@@ -483,7 +597,7 @@ export class CloneServiceQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.setupStore.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.setupStore.applicationStore.notifyError(error);
@@ -493,12 +607,13 @@ export class CloneServiceQuerySetupState extends QuerySetupState {
 }
 
 export class QuerySetupStore {
-  applicationStore: LegendQueryApplicationStore;
-  graphManagerState: BasicGraphManagerState;
-  depotServerClient: DepotServerClient;
-  pluginManager: LegendQueryPluginManager;
+  readonly applicationStore: LegendQueryApplicationStore;
+  readonly graphManagerState: BasicGraphManagerState;
+  readonly depotServerClient: DepotServerClient;
+  readonly pluginManager: LegendQueryPluginManager;
+
+  readonly initState = ActionState.create();
   querySetupState?: QuerySetupState | undefined;
-  initState = ActionState.create();
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -560,7 +675,7 @@ export class QuerySetupStore {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
-        LogEvent.create(LEGEND_QUERY_APP_EVENT.QUERY_PROBLEM),
+        LogEvent.create(LEGEND_QUERY_APP_EVENT.GENERIC_FAILURE),
         error,
       );
       this.applicationStore.setBlockingAlert({
