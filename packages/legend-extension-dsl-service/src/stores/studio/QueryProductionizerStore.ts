@@ -388,7 +388,6 @@ export class QueryProductionizerStore {
         ? searchText
         : undefined;
       searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      searchSpecification.showCurrentUserQueriesOnly = true;
       this.queries = (yield this.graphManagerState.graphManager.searchQueries(
         searchSpecification,
       )) as LightQuery[];
@@ -642,14 +641,7 @@ export class QueryProductionizerStore {
             },
           );
 
-          // iv. try to delete the query
-          try {
-            await this.graphManagerState.graphManager.deleteQuery(query.id);
-          } catch {
-            // do nothing
-          }
-
-          // v. complete, redirect user to the service query editor screen
+          // iv. complete, redirect user to the service query editor screen
           this.applicationStore.setBlockingAlert(undefined);
           this.productionizeState.pass();
           this.applicationStore.setActionAlertInfo({

@@ -363,7 +363,7 @@ const QueryProductionizationSetup = observer(
             <ArrowLeftIcon />
           </button>
           <div className="query-setup__wizard__header__title">
-            Loading an existing query...
+            Productionizing an existing query...
           </div>
           <button
             className={clsx('query-setup__wizard__header__btn', {

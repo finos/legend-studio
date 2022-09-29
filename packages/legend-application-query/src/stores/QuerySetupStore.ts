@@ -240,7 +240,6 @@ export class QueryProductionizationSetupState extends QuerySetupState {
         ? searchText
         : undefined;
       searchSpecification.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
-      searchSpecification.showCurrentUserQueriesOnly = true;
       this.queries =
         (yield this.setupStore.graphManagerState.graphManager.searchQueries(
           searchSpecification,

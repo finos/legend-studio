@@ -78,7 +78,6 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
             <button
               className="query-editor__header__action btn--dark"
               tabIndex={-1}
-              disabled={!editorStore.query.isCurrentUserQuery}
               onClick={proceed}
               title="Productionize query..."
             >
