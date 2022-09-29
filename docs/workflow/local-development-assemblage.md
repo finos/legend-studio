@@ -1,6 +1,6 @@
 # Local Development Assemblage
 
-This guide is meant for deverlopers who needs to work on this project and an external project that relies on their changes in this project. For example: the developer creates a new core extension of `Legend Studio` and plan to use this new extension in their external project `My New DSL`. This guide will cover setup needed to make this workflow smooth.
+This guide is meant for developers who needs to work on this project and an external project that relies on their changes in this project. For example: the developer creates a new core extension of `Legend Studio` and plan to use this new extension in their external project `My New DSL`. This guide will cover setup needed to make this workflow smooth.
 
 ## Workstation Setup
 

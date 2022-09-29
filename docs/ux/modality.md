@@ -33,7 +33,7 @@ Read more:
 
 ## Modal Components Classification and Usage Guidelines
 
-[Material-UI](https://material-ui.com/) created an interesting inheritance hiearchy between their components: `Modal < Popover < Menu` and `Modal < Dialog`, but this hierarchy is purely for functional purpose, conceptually, things like `Tooltip` and `Banner` should also be considered modal. [Visual Studio Code: Command Pallete](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) is also modal. As such, the classification of these various modal components is important.
+[Material-UI](https://material-ui.com/) created an interesting inheritance hierarchy between their components: `Modal < Popover < Menu` and `Modal < Dialog`, but this hierarchy is purely for functional purpose, conceptually, things like `Tooltip` and `Banner` should also be considered modal. [Visual Studio Code: Command Pallete](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) is also modal. As such, the classification of these various modal components is important.
 
 Read more:
 

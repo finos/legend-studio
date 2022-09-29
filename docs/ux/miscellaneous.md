@@ -1,6 +1,6 @@
 ## Ellipses
 
-Understand when ellipses are needed when labelling commands, prompts, and button titles. Read more from [Microsofts Windows Design Guideline](https://docs.microsoft.com/en-us/windows/win32/uxguide/cmd-menus) and see this [discussion](https://stackoverflow.com/questions/637683/when-to-use-ellipsis-after-menu-items).
+Understand when ellipses are needed when labeling commands, prompts, and button titles. Read more from [Microsofts Windows Design Guideline](https://docs.microsoft.com/en-us/windows/win32/uxguide/cmd-menus) and see this [discussion](https://stackoverflow.com/questions/637683/when-to-use-ellipsis-after-menu-items).
 
 - Put `ellipses` after command text when the menu triggered by this command requires additional information (input or a selection) before it carries out the operation, e.g. `Search`, (non-example: `About`, `Help`)
 - `ellipses` should be used to indicate wait, e.g. `Loading...`
@@ -13,7 +13,7 @@ Understand the differences between `ALL CAPS CASE`, `Title Case`, and `Sentence 
 
 - `ALL CAPS CASE` sometimes can be used purely for visual purpose, but also for emphasis, the latter we should really be careful not to abuse.
 - `Title Case` should only be used for title, command and button labels; it's has some emphasis to it, as well as nice symmetry, but harder to read for long sentences. A controversial case is button command, for example, Microsofts would favor `Clear all notifications` whereas Apple would favor `Clear All Notifications`, we choose to follow the latter style. In short, we will use `Title Case` for button title, command.
-- `Sentence case` (or normal mixed case) should be used for longer text like instructions, promp texts, etc.
+- `Sentence case` (or normal mixed case) should be used for longer text like instructions, prompt texts, etc.
 
 ## Panel/List Placeholder
 
