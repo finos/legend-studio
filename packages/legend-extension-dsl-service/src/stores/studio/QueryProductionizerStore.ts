@@ -671,7 +671,7 @@ export class QueryProductionizerStore {
                 ]
               : [
                   {
-                    label: 'View Service',
+                    label: 'Open Service',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
                       this.applicationStore.navigator.jumpTo(
