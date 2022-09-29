@@ -31,8 +31,8 @@ import {
   fromGrammarString,
   toGrammarString,
   createUrlStringFromData,
-  losslessParse,
-  losslessStringify,
+  parseLosslessJSON,
+  stringifyLosslessJSON,
   tryToMinifyLosslessJSONString,
   tryToFormatLosslessJSONString,
   tryToMinifyJSONString,
@@ -641,7 +641,7 @@ export class MappingTestState {
         this.assertionState instanceof MappingTestExpectedOutputAssertionState
       ) {
         this.assertionState.setExpectedResult(
-          losslessStringify(
+          stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
             TAB_SIZE,
@@ -700,7 +700,7 @@ export class MappingTestState {
       this.setTestRunPromise(promise);
       const result = (yield promise) as ExecutionResult;
       if (this.testRunPromise === promise) {
-        this.testExecutionResultText = losslessStringify(
+        this.testExecutionResultText = stringifyLosslessJSON(
           extractExecutionResultValues(result),
           undefined,
           TAB_SIZE,
@@ -712,7 +712,7 @@ export class MappingTestState {
           // TODO: this logic should probably be better handled in by engine mapping test runner
           assertionMatched =
             hashObject(extractExecutionResultValues(result)) ===
-            hashObject(losslessParse(this.assertionState.expectedResult));
+            hashObject(parseLosslessJSON(this.assertionState.expectedResult));
         } else {
           throw new UnsupportedOperationError();
         }

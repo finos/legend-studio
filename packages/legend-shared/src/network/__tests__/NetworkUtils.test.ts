@@ -15,8 +15,8 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '../application/TestUtils.js';
-import { buildUrl } from '../index.js';
+import { unitTest } from '../../application/TestUtils.js';
+import { buildUrl } from '../NetworkUtils.js';
 
 test(unitTest('Build URL'), () => {
   expect(buildUrl(['http://www.example.org/', '/subroute'])).toEqual(

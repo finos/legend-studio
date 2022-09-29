@@ -43,7 +43,7 @@ import {
   toGrammarString,
   isValidJSONString,
   createUrlStringFromData,
-  losslessStringify,
+  stringifyLosslessJSON,
   guaranteeType,
   ContentType,
   generateEnumerableNameFromToken,
@@ -752,7 +752,7 @@ export class MappingExecutionState {
             },
           )) as ExecutionResult;
         this.setExecutionResultText(
-          losslessStringify(
+          stringifyLosslessJSON(
             extractExecutionResultValues(result),
             undefined,
             TAB_SIZE,

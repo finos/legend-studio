@@ -19,7 +19,7 @@ import {
   type PlainObject,
   type ServerClientConfig,
   LogEvent,
-  losslessParse,
+  parseLosslessJSON,
   assertErrorThrown,
   mergeObjects,
   HttpStatus,
@@ -470,7 +470,7 @@ export class V1_Engine {
       ).text();
       const rawExecutionResult = (returnUndefOnError(() =>
         options?.useLosslessParse
-          ? losslessParse(executionResultInText)
+          ? parseLosslessJSON(executionResultInText)
           : JSON.parse(executionResultInText),
       ) ?? executionResultInText) as PlainObject<V1_ExecutionResult> | string;
       return V1_serializeExecutionResult(rawExecutionResult);

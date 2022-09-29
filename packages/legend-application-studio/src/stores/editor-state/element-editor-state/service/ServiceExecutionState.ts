@@ -20,7 +20,7 @@ import {
   ActionState,
   assertErrorThrown,
   LogEvent,
-  losslessStringify,
+  stringifyLosslessJSON,
   UnsupportedOperationError,
   filterByType,
 } from '@finos/legend-shared';
@@ -590,7 +590,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       const result = (yield promise) as ExecutionResult;
       if (this.queryRunPromise === promise) {
         this.setExecutionResultText(
-          losslessStringify(result, undefined, TAB_SIZE),
+          stringifyLosslessJSON(result, undefined, TAB_SIZE),
         );
         this.parameterState.setParameters([]);
       }
