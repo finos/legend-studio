@@ -740,7 +740,9 @@ export class QueryProductionizerStore {
               label: `Proceed`,
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
-                setupWorkspace();
+                setupWorkspace().catch(
+                  this.applicationStore.alertUnhandledError,
+                );
               },
             },
             {

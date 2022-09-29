@@ -23,6 +23,7 @@ import {
   type QuerySetupState,
   type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
+  type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
   LegendQueryEventService,
@@ -134,7 +135,7 @@ export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplic
     return [
       (
         query: Query,
-        editorStore: QueryEditorStore,
+        editorStore: ExistingQueryEditorStore,
       ): QueryBuilderState | undefined => {
         const dataSpaceTaggedValue = query.taggedValues?.find(
           (taggedValue) =>

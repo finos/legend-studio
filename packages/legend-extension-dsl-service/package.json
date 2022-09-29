@@ -79,6 +79,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-service"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-dsl-service",
+    "applicationQueryPlugin": "@finos/legend-application-query-plugin-dsl-service"
   }
 }

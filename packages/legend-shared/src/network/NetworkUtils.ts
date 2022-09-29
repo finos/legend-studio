@@ -118,7 +118,7 @@ const extractMessage = (payload: Payload): string => {
   }
   let payloadAsObject: Record<PropertyKey, unknown> | undefined;
   try {
-    payloadAsObject = JSON.parse(payload);
+    payloadAsObject = JSON.parse(payload) as Record<PropertyKey, unknown>;
   } catch {
     // NOTE: ignored, above is best effort
   }
@@ -531,3 +531,8 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
     : _getQueryParams(url);
   return params as unknown as T;
 };
+
+export const buildUrl = (parts: string[]): string =>
+  parts
+    .map((part) => part.replaceAll(/^\/+/g, '').replaceAll(/\/+$/g, ''))
+    .join(URL_SEPARATOR);

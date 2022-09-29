@@ -19,6 +19,7 @@
 @import '@finos/legend-query-builder/lib/index.css';
 @import '@finos/legend-application-query/lib/index.css';
 @import '@finos/legend-extension-dsl-data-space/lib/index.css';
+@import '@finos/legend-extension-dsl-service/lib/index.css';
 
 // NOTE: the following styles are temporary so we can have a poor-man version of
 // theming for Legend Query. The reason why we put the code here is that this is
@@ -282,6 +283,7 @@
           background: var(--color-legacy-light-grey-200);
         }
 
+        &__table__row--selected:hover,
         &__table__row--selected {
           background: var(--color-legacy-light-grey-200);
         }
