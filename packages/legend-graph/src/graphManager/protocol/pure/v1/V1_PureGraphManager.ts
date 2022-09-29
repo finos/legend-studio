@@ -2011,7 +2011,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
-    testDataGenerationExecuteInput.hashValues = Boolean(
+    testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
     return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
