@@ -64,7 +64,7 @@ export class V1_ExecuteInput {
 
 export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
   parameters: (string | number | boolean)[] = [];
-  hashValues = false;
+  hashStrings = false;
 
   static override readonly serialization = new SerializationFactory(
     createModelSchema(V1_TestDataGenerationExecutionInput, {
@@ -77,7 +77,7 @@ export class V1_TestDataGenerationExecutionInput extends V1_ExecuteInput {
         () => SKIP,
       ),
       context: usingModelSchema(V1_rawBaseExecutionContextModelSchema),
-      hashValues: primitive(),
+      hashStrings: primitive(),
       parameters: list(primitive()),
     }),
   );
