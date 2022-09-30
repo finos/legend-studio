@@ -21,8 +21,8 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import {
-  DSLDataSpace_GraphManagerPreset,
-  DSLDataSpace_LegendQueryApplicationPlugin,
+  DSL_DataSpace_GraphManagerPreset as DSL_DataSpace_GraphManagerPreset,
+  DSL_DataSpace_LegendQueryApplicationPlugin as DSL_DataSpace_LegendQueryApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
 import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
@@ -40,7 +40,7 @@ export class LegendQueryWebApplication {
       // graph managers
       new DSLText_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
-      new DSLDataSpace_GraphManagerPreset(),
+      new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),
       new DSLMastery_GraphManagerPreset(),
@@ -54,7 +54,7 @@ export class LegendQueryWebApplication {
     return [
       // application
       new DSL_Service_LegendQueryApplicationPlugin(),
-      new DSLDataSpace_LegendQueryApplicationPlugin(),
+      new DSL_DataSpace_LegendQueryApplicationPlugin(),
 
       // loggers
       new WebConsole(),

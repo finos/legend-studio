@@ -21,7 +21,7 @@ import type {
   PureModel,
 } from '@finos/legend-graph';
 import { uuid } from '@finos/legend-shared';
-import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export class DataSpaceExecutionContextAnalysisResult {
   name!: string;

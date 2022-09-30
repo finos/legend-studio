@@ -42,21 +42,21 @@ import {
 import {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLDataSpace_LegendStudioDocumentation.js';
+} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_DataSpace_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DATA_SPACE_PARSER_NAME,
-} from '../../graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
-import { SIMPLE_DATA_SPACE_SNIPPET } from './DSLDataSpace_CodeSnippets.js';
+} from '../../graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
+import { SIMPLE_DATA_SPACE_SNIPPET } from './DSL_DataSpace_CodeSnippets.js';
 import type { DocumentationEntry } from '@finos/legend-application';
-import { DataSpaceIcon } from '../DSLDataSpace_Icon.js';
+import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 
 const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 
-export class DSLDataSpace_LegendStudioApplicationPlugin
+export class DSL_DataSpace_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {

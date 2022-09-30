@@ -25,13 +25,13 @@ import {
   useLegendQueryApplicationStore,
 } from '@finos/legend-application-query';
 import { useParams } from 'react-router';
-import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
+import { DataSpaceQueryCreatorStore } from '../../stores/query/DSL_DataSpace_DataSpaceQueryCreatorStore.js';
 import {
   type DataSpaceQueryCreatorPathParams,
   type DataSpaceQueryEditorQueryParams,
   DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN,
   DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN,
-} from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
+} from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
 import { parseGAVCoordinates } from '@finos/legend-storage';
 
 const DataSpaceQueryCreatorStoreProvider: React.FC<{

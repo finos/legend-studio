@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
-import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import type { Clazz } from '@finos/legend-shared';
-import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
-export class DSLDataSpace_PureGraphPlugin extends PureGraphPlugin {
-  constructor() {
-    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
-  }
+export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
+  graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);
 
-  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
-    return [DataSpace];
-  }
-}
+export const getOwnDataSpace = (path: string, graph: BasicModel): DataSpace =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, DataSpace),
+    `Can't find data space '${path}'`,
+  );

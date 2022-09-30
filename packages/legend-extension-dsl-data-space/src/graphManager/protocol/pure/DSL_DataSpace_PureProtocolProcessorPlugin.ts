@@ -15,12 +15,12 @@
  */
 
 import packageJson from '../../../../package.json';
-import V1_SYSTEM_MODELS from './v1/V1_DSLDataSpace_SystemModels.json';
+import V1_SYSTEM_MODELS from './v1/V1_DSL_DataSpace_SystemModels.json';
 import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
   V1_DataSpaceSupportEmail,
-} from './v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
+} from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   type PlainObject,
   guaranteeNonEmptyString,
@@ -33,13 +33,13 @@ import { deserialize, serialize } from 'serializr';
 import {
   V1_dataSpaceModelSchema,
   V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLDataSpace_ProtocolHelper.js';
-import { getOwnDataSpace } from '../../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+} from './v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
+import { getOwnDataSpace } from '../../DSL_DataSpace_GraphManagerHelper.js';
 import {
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceSupportEmail,
-} from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+} from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
@@ -71,7 +71,7 @@ import {
 export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
-export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSL_DataSpace_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,

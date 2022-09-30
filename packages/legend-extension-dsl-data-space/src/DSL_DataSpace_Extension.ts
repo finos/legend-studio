@@ -16,16 +16,16 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLDataSpace_PureGraphManagerPlugin } from './graphManager/DSLDataSpace_PureGraphManagerPlugin.js';
-import { DSLDataSpace_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
-import { DSLDataSpace_PureGraphPlugin } from './graph/DSLDataSpace_PureGraphPlugin.js';
+import { DSL_DataSpace_PureGraphManagerPlugin } from './graphManager/DSL_DataSpace_PureGraphManagerPlugin.js';
+import { DSL_DataSpace_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
+import { DSL_DataSpace_PureGraphPlugin } from './graph/DSL_DataSpace_PureGraphPlugin.js';
 
-export class DSLDataSpace_GraphManagerPreset extends AbstractPreset {
+export class DSL_DataSpace_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new DSLDataSpace_PureGraphPlugin(),
-      new DSLDataSpace_PureGraphManagerPlugin(),
-      new DSLDataSpace_PureProtocolProcessorPlugin(),
+      new DSL_DataSpace_PureGraphPlugin(),
+      new DSL_DataSpace_PureGraphManagerPlugin(),
+      new DSL_DataSpace_PureProtocolProcessorPlugin(),
     ]);
   }
 }

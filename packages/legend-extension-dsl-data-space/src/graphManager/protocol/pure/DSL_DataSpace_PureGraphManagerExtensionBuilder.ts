@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import type { BasicModel, PureModel } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import type {
+  AbstractPureGraphManager,
+  AbstractPureGraphManagerExtension,
+} from '@finos/legend-graph';
+import { V1_DSL_DataSpace_PureGraphManagerExtension } from './v1/V1_DSL_DataSpace_PureGraphManagerExtension.js';
 
-export const getDataSpace = (path: string, graph: PureModel): DataSpace =>
-  graph.getExtensionElement(path, DataSpace, `Can't find data space '${path}'`);
-
-export const getOwnDataSpace = (path: string, graph: BasicModel): DataSpace =>
-  guaranteeNonNullable(
-    graph.getOwnNullableExtensionElement(path, DataSpace),
-    `Can't find data space '${path}'`,
-  );
+export const DSL_DataSpace_buildGraphManagerExtension = (
+  graphManager: AbstractPureGraphManager,
+): AbstractPureGraphManagerExtension =>
+  // NOTE: until we support more client versions, we always default to return V1
+  new V1_DSL_DataSpace_PureGraphManagerExtension(graphManager);

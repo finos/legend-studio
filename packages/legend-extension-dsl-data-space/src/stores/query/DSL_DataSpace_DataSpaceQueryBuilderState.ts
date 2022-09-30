@@ -40,13 +40,13 @@ import {
   getNullableFirstElement,
 } from '@finos/legend-shared';
 import { action, flow, makeObservable, observable } from 'mobx';
-import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DataSpaceQueryBuilder.js';
+import { renderDataSpaceQueryBuilderSetupPanelContent } from '../../components/query/DSL_DataSpace_DataSpaceQueryBuilder.js';
 import type {
   DataSpace,
   DataSpaceExecutionContext,
-} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
-import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
+} from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
+import { type DataSpaceInfo, extractDataSpaceInfo } from './DSL_DataSpace_DataSpaceInfo.js';
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
   readonly dataSpace: DataSpace;

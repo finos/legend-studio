@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { getDataSpace } from '../../../../../../graphManager/DSLDataSpace_GraphManagerHelper.js';
-import type { DataSpace } from '../../../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import type {
-  PackageableElementImplicitReference,
-  V1_GraphBuilderContext,
-} from '@finos/legend-graph';
+import packageJson from '../../package.json';
+import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import type { Clazz } from '@finos/legend-shared';
+import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 
-export const V1_resolveDataSpace = (
-  path: string,
-  context: V1_GraphBuilderContext,
-): PackageableElementImplicitReference<DataSpace> =>
-  context.createImplicitPackageableElementReference(path, (_path: string) =>
-    getDataSpace(_path, context.graph),
-  );
+export class DSL_DataSpace_PureGraphPlugin extends PureGraphPlugin {
+  constructor() {
+    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
+  }
+
+  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
+    return [DataSpace];
+  }
+}

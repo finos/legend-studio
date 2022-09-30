@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../package.json';
-import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
+import { DataSpace } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import {
   PureGraphManagerPlugin,
   type ObserverContext,
@@ -24,19 +24,19 @@ import {
   type PureGrammarElementLabeler,
   type PureGraphManagerExtensionBuilder,
 } from '@finos/legend-graph';
-import { observe_DataSpace } from './action/changeDetection/DSLDataSpace_ObserverHelper.js';
-import { DSLDataSpace_buildGraphManagerExtension } from './protocol/pure/DSLDataSpace_PureGraphManagerExtensionBuilder.js';
+import { observe_DataSpace } from './action/changeDetection/DSL_DataSpace_ObserverHelper.js';
+import { DSL_DataSpace_buildGraphManagerExtension } from './protocol/pure/DSL_DataSpace_PureGraphManagerExtensionBuilder.js';
 
 export const PURE_GRAMMAR_DATA_SPACE_PARSER_NAME = 'DataSpace';
 export const PURE_GRAMMAR_DATA_SPACE_ELEMENT_TYPE_LABEL = 'DataSpace';
 
-export class DSLDataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSL_DataSpace_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
 
   override getExtraPureGraphManagerExtensionBuilders(): PureGraphManagerExtensionBuilder[] {
-    return [DSLDataSpace_buildGraphManagerExtension];
+    return [DSL_DataSpace_buildGraphManagerExtension];
   }
 
   override getExtraPureGrammarParserNames(): string[] {

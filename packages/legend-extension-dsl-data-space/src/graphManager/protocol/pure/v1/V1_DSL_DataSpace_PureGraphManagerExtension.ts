@@ -39,20 +39,20 @@ import {
   uniq,
   type PlainObject,
 } from '@finos/legend-shared';
-import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSLDataSpace_DataSpace.js';
-import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSLDataSpace_DataSpace.js';
+import { DataSpaceSupportEmail } from '../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { V1_DataSpaceSupportEmail } from '../../../../graphManager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
   DataSpaceAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
-} from '../../../action/analytics/DataSpaceAnalysis.js';
-import { DSLDataSpace_PureGraphManagerExtension } from '../DSLDataSpace_PureGraphManagerExtension.js';
-import { V1_DataSpaceAnalysisResult } from './engine/analytics/V1_DataSpaceAnalysis.js';
+} from '../../../action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
+import { V1_DataSpaceAnalysisResult } from './engine/analytics/V1_DSL_DataSpace_DataSpaceAnalysis.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 
-export class V1_DSLDataSpace_PureGraphManagerExtension extends DSLDataSpace_PureGraphManagerExtension {
+export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_PureGraphManagerExtension {
   declare graphManager: V1_PureGraphManager;
 
   constructor(graphManager: AbstractPureGraphManager) {

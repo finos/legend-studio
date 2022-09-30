@@ -30,19 +30,19 @@ import {
   LEGEND_QUERY_APP_EVENT,
 } from '@finos/legend-application-query';
 import { SquareIcon } from '@finos/legend-art';
-import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
-import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
+import { DataSpaceQuerySetupState } from '../../stores/query/DSL_DataSpace_DataSpaceQuerySetupState.js';
+import { DataspaceQuerySetup } from './DSL_DataSpace_DataSpaceQuerySetup.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import { CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN } from '../../stores/query/DSLDataSpace_LegendQueryRouter.js';
-import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
+import { CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
+import { DataSpaceQueryCreator } from './DSL_DataSpace_DataSpaceQueryCreator.js';
 import {
   createQueryDataSpaceTaggedValue,
   DataSpaceQueryCreatorStore,
-} from '../../stores/query/DataSpaceQueryCreatorStore.js';
+} from '../../stores/query/DSL_DataSpace_DataSpaceQueryCreatorStore.js';
 import {
   Query,
   extractElementNameFromPath,
@@ -51,14 +51,14 @@ import {
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
-} from '../../DSLDataSpace_Const.js';
-import { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
-import { getOwnDataSpace } from '../../graphManager/DSLDataSpace_GraphManagerHelper.js';
+} from '../../DSL_DataSpace_Const.js';
+import { DataSpaceQueryBuilderState } from '../../stores/query/DSL_DataSpace_DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from '../../stores/query/DSL_DataSpace_DataSpaceInfo.js';
+import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 
-export class DSLDataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
+export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
     super(packageJson.extensions.queryApplicationPlugin, packageJson.version);
   }

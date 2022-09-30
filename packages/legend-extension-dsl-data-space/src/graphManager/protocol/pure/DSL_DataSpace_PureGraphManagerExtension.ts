@@ -20,9 +20,9 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAnalysis.js';
+import type { DataSpaceAnalysisResult } from '../../action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
 
-export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
+export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(
     dataSpacePath: string,
     entities: Entity[],
@@ -32,11 +32,11 @@ export abstract class DSLDataSpace_PureGraphManagerExtension extends AbstractPur
 
 export const getDSLDataSpaceGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,
-): DSLDataSpace_PureGraphManagerExtension =>
+): DSL_DataSpace_PureGraphManagerExtension =>
   guaranteeNonNullable(
     graphManager.extensions.find(
       (extension) =>
-        extension instanceof DSLDataSpace_PureGraphManagerExtension,
+        extension instanceof DSL_DataSpace_PureGraphManagerExtension,
     ),
     `Can't find DSL Data Space Pure graph manager extension`,
-  ) as DSLDataSpace_PureGraphManagerExtension;
+  ) as DSL_DataSpace_PureGraphManagerExtension;

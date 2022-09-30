@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
+import { getDataSpace } from '../../../../../DSL_DataSpace_GraphManagerHelper.js';
+import type { DataSpace } from '../../../../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type {
-  AbstractPureGraphManager,
-  AbstractPureGraphManagerExtension,
+  PackageableElementImplicitReference,
+  V1_GraphBuilderContext,
 } from '@finos/legend-graph';
-import { V1_DSLDataSpace_PureGraphManagerExtension } from './v1/V1_DSLDataSpace_PureGraphManagerExtension.js';
 
-export const DSLDataSpace_buildGraphManagerExtension = (
-  graphManager: AbstractPureGraphManager,
-): AbstractPureGraphManagerExtension =>
-  // NOTE: until we support more client versions, we always default to return V1
-  new V1_DSLDataSpace_PureGraphManagerExtension(graphManager);
+export const V1_resolveDataSpace = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): PackageableElementImplicitReference<DataSpace> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getDataSpace(_path, context.graph),
+  );

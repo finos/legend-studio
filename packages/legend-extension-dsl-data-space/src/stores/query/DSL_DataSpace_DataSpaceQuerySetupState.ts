@@ -34,12 +34,12 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
-import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSLDataSpace_PureGraphManagerExtension.js';
-import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSLDataSpace_PureProtocolProcessorPlugin.js';
-import { DataSpaceViewerState } from '../DataSpaceViewerState.js';
-import { generateDataSpaceQueryCreatorRoute } from './DSLDataSpace_LegendQueryRouter.js';
-import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
+import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
+import { DataSpaceViewerState } from '../DSL_DataSpace_DataSpaceViewerState.js';
+import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
+import { type DataSpaceInfo, extractDataSpaceInfo } from './DSL_DataSpace_DataSpaceInfo.js';
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,

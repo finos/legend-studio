@@ -17,15 +17,15 @@
 import { test } from '@jest/globals';
 import type { Entity } from '@finos/legend-storage';
 import { unitTest } from '@finos/legend-shared';
-import { TEST_DATA__roundtrip } from './TEST_DATA__DSLDataSpace_Roundtrip.js';
-import { DSLDataSpace_GraphManagerPreset } from '../../DSLDataSpace_Extension.js';
+import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_DataSpace_Roundtrip.js';
+import { DSL_DataSpace_GraphManagerPreset } from '../../DSL_DataSpace_Extension.js';
 import {
   TEST__GraphManagerPluginManager,
   TEST__checkBuildingElementsRoundtrip,
 } from '@finos/legend-graph';
 
 const pluginManager = new TEST__GraphManagerPluginManager();
-pluginManager.usePresets([new DSLDataSpace_GraphManagerPreset()]).install();
+pluginManager.usePresets([new DSL_DataSpace_GraphManagerPreset()]).install();
 
 test(unitTest('Data space import resolution roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
