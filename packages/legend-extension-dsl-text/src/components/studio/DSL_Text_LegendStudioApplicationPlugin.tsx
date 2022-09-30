@@ -34,27 +34,27 @@ import {
   type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
-import { TextEditorState } from '../../stores/studio/TextEditorState.js';
-import { TextElementEditor } from './TextElementEditor.js';
+import { TextEditorState } from '../../stores/studio/DSL_Text_TextEditorState.js';
+import { TextElementEditor } from './DSL_Text_TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
-import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
-import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSLText_LegendStudioDocumentation.js';
+import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
+import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_Text_LegendStudioDocumentation.js';
 import {
   PURE_GRAMMAR_TEXT_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_TEXT_PARSER_NAME,
-} from '../../graphManager/DSLText_PureGraphManagerPlugin.js';
+} from '../../graphManager/DSL_Text_PureGraphManagerPlugin.js';
 import {
   MARKDOWN_TEXT_SNIPPET,
   PLAIN_TEXT_SNIPPET,
-} from './DSLText_CodeSnippets.js';
-import { create_TextElement } from '../../graph/helpers/DSLText_Helper.js';
+} from './DSL_Text_CodeSnippets.js';
+import { create_TextElement } from '../../graph/helpers/DSL_Text_Helper.js';
 import type { DocumentationEntry } from '@finos/legend-application';
-import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
+import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
 
 const TEXT_ELEMENT_TYPE = 'TEXT';
 const TEXT_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_TEXT';
 
-export class DSLText_LegendStudioApplicationPlugin
+export class DSL_Text_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {

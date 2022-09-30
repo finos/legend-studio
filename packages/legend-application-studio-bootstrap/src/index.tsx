@@ -24,8 +24,8 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import {
-  DSLText_GraphManagerPreset,
-  DSLText_LegendStudioApplicationPlugin,
+  DSL_Text_GraphManagerPreset,
+  DSL_Text_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-text';
 import {
   DSL_Diagram_GraphManagerPreset,
@@ -57,7 +57,7 @@ export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
-      new DSLText_GraphManagerPreset(),
+      new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
@@ -72,7 +72,7 @@ export class LegendStudioWebApplication {
   static getPluginCollection(): AbstractPlugin[] {
     return [
       // application
-      new DSLText_LegendStudioApplicationPlugin(),
+      new DSL_Text_LegendStudioApplicationPlugin(),
       new DSL_Diagram_LegendStudioApplicationPlugin(),
       new DSL_DataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),

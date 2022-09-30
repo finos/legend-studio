@@ -21,7 +21,7 @@ import {
   StudioTextInputEditor,
   useEditorStore,
 } from '@finos/legend-application-studio';
-import { TextEditorState } from '../../stores/studio/TextEditorState.js';
+import { TextEditorState } from '../../stores/studio/DSL_Text_TextEditorState.js';
 import {
   OpenPreviewIcon,
   LockIcon,
@@ -42,9 +42,9 @@ import {
 import {
   text_setContent,
   text_setType,
-} from '../../stores/studio/DSLText_GraphModifierHelper.js';
-import { TEXT_TYPE } from '../../graph/helpers/DSLText_Helper.js';
-import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSLText_LegendStudioApplicationNavigationContext.js';
+} from '../../stores/studio/DSL_Text_GraphModifierHelper.js';
+import { TEXT_TYPE } from '../../graph/helpers/DSL_Text_Helper.js';
+import { DSL_TEXT_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Text_LegendStudioApplicationNavigationContext.js';
 
 const getTextElementEditorLanguage = (
   type: string | undefined,

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import type { BasicModel, PureModel } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { Text } from '../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
+import packageJson from '../../package.json';
+import { Text } from '../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
+import type { Clazz } from '@finos/legend-shared';
+import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 
-export const getText = (path: string, graph: PureModel): Text =>
-  graph.getExtensionElement(path, Text, `Can't find text element '${path}'`);
+export class DSL_Text_PureGraphPlugin extends PureGraphPlugin {
+  constructor() {
+    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
+  }
 
-export const getOwnText = (path: string, graph: BasicModel): Text =>
-  guaranteeNonNullable(
-    graph.getOwnNullableExtensionElement(path, Text),
-    `Can't find text '${path}'`,
-  );
+  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
+    return [Text];
+  }
+}

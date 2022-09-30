@@ -24,7 +24,7 @@ import {
   DSL_DataSpace_GraphManagerPreset as DSL_DataSpace_GraphManagerPreset,
   DSL_DataSpace_LegendQueryApplicationPlugin as DSL_DataSpace_LegendQueryApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
-import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
+import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
@@ -38,7 +38,7 @@ export class LegendQueryWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
-      new DSLText_GraphManagerPreset(),
+      new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),

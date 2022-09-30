@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-import {
-  observe_Abstract_PackageableElement,
-  skipObserved,
+import { getText } from '../../../../../DSL_Text_GraphManagerHelper.js';
+import type { Text } from '../../../../../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
+import type {
+  PackageableElementImplicitReference,
+  V1_GraphBuilderContext,
 } from '@finos/legend-graph';
-import { makeObservable, observable, override } from 'mobx';
-import type { Text } from '../../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
 
-export const observe_Text = skipObserved((metamodel: Text): Text => {
-  observe_Abstract_PackageableElement(metamodel);
-
-  makeObservable<Text, '_elementHashCode'>(metamodel, {
-    type: observable,
-    content: observable,
-    _elementHashCode: override,
-  });
-
-  return metamodel;
-});
+export const V1_resolveText = (
+  path: string,
+  context: V1_GraphBuilderContext,
+): PackageableElementImplicitReference<Text> =>
+  context.createImplicitPackageableElementReference(path, (_path: string) =>
+    getText(_path, context.graph),
+  );

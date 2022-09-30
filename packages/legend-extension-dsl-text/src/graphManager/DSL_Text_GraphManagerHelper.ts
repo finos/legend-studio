@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import { getText } from '../../../../../DSLText_GraphManagerHelper.js';
-import type { Text } from '../../../../../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
-import type {
-  PackageableElementImplicitReference,
-  V1_GraphBuilderContext,
-} from '@finos/legend-graph';
+import type { BasicModel, PureModel } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { Text } from '../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 
-export const V1_resolveText = (
-  path: string,
-  context: V1_GraphBuilderContext,
-): PackageableElementImplicitReference<Text> =>
-  context.createImplicitPackageableElementReference(path, (_path: string) =>
-    getText(_path, context.graph),
+export const getText = (path: string, graph: PureModel): Text =>
+  graph.getExtensionElement(path, Text, `Can't find text element '${path}'`);
+
+export const getOwnText = (path: string, graph: BasicModel): Text =>
+  guaranteeNonNullable(
+    graph.getOwnNullableExtensionElement(path, Text),
+    `Can't find text '${path}'`,
   );

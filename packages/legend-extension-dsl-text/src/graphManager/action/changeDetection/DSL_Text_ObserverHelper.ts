@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
+import {
+  observe_Abstract_PackageableElement,
+  skipObserved,
+} from '@finos/legend-graph';
+import { makeObservable, observable, override } from 'mobx';
+import type { Text } from '../../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 
-export enum TEXT_TYPE {
-  PLAIN_TEXT = 'plainText',
-  MARKDOWN = 'markdown',
-}
+export const observe_Text = skipObserved((metamodel: Text): Text => {
+  observe_Abstract_PackageableElement(metamodel);
 
-export const create_TextElement = (name: string): Text => {
-  const metamodel = new Text(name);
-  metamodel.type = TEXT_TYPE.PLAIN_TEXT;
-  metamodel.content = '';
+  makeObservable<Text, '_elementHashCode'>(metamodel, {
+    type: observable,
+    content: observable,
+    _elementHashCode: override,
+  });
 
   return metamodel;
-};
+});

@@ -15,7 +15,7 @@
  */
 
 import packageJson from '../../../../package.json';
-import { V1_Text } from './v1/model/packageableElements/text/V1_DSLText_Text.js';
+import { V1_Text } from './v1/model/packageableElements/text/V1_DSL_Text_Text.js';
 import {
   type PlainObject,
   guaranteeNonNullable,
@@ -25,9 +25,9 @@ import { deserialize, serialize } from 'serializr';
 import {
   V1_textModelSchema,
   V1_TEXT_ELEMENT_PROTOCOL_TYPE,
-} from './v1/transformation/pureProtocol/V1_DSLText_ProtocolHelper.js';
-import { getOwnText } from '../../DSLText_GraphManagerHelper.js';
-import { Text } from '../../../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
+} from './v1/transformation/pureProtocol/V1_DSL_Text_ProtocolHelper.js';
+import { getOwnText } from '../../DSL_Text_GraphManagerHelper.js';
+import { Text } from '../../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 import {
   type PackageableElement,
   type V1_ElementProtocolClassifierPathGetter,
@@ -45,7 +45,7 @@ import {
 
 const TEXT_ELEMENT_CLASSIFIER_PATH = 'meta::pure::metamodel::text::Text';
 
-export class DSLText_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSL_Text_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,

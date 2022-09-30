@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import { usingConstantValueSchema } from '@finos/legend-shared';
-import { createModelSchema, primitive } from 'serializr';
-import { V1_Text } from '../../model/packageableElements/text/V1_DSLText_Text.js';
+import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 
-export const V1_TEXT_ELEMENT_PROTOCOL_TYPE = 'text';
+export enum TEXT_TYPE {
+  PLAIN_TEXT = 'plainText',
+  MARKDOWN = 'markdown',
+}
 
-export const V1_textModelSchema = createModelSchema(V1_Text, {
-  _type: usingConstantValueSchema(V1_TEXT_ELEMENT_PROTOCOL_TYPE),
-  content: primitive(),
-  name: primitive(),
-  package: primitive(),
-  type: primitive(),
-});
+export const create_TextElement = (name: string): Text => {
+  const metamodel = new Text(name);
+  metamodel.type = TEXT_TYPE.PLAIN_TEXT;
+  metamodel.content = '';
+
+  return metamodel;
+};

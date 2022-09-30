@@ -15,17 +15,17 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { TEXT_HASH_STRUCTURE } from '../../../../../DSLText_HashUtils.js';
+import { TEXT_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Text_HashUtils.js';
 import {
-  type PackageableElementVisitor,
-  PackageableElement,
+  type V1_PackageableElementVisitor,
+  V1_PackageableElement,
 } from '@finos/legend-graph';
 
-export class Text extends PackageableElement implements Hashable {
+export class V1_Text extends V1_PackageableElement implements Hashable {
   type?: string | undefined;
   content!: string;
 
-  protected override get _elementHashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       TEXT_HASH_STRUCTURE.TEXT,
       this.path,
@@ -35,7 +35,7 @@ export class Text extends PackageableElement implements Hashable {
   }
 
   accept_PackageableElementVisitor<T>(
-    visitor: PackageableElementVisitor<T>,
+    visitor: V1_PackageableElementVisitor<T>,
   ): T {
     return visitor.visit_PackageableElement(this);
   }

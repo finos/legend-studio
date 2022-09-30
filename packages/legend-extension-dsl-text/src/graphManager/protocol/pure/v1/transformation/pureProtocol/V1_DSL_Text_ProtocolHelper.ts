@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-import packageJson from '../../package.json';
-import { Text } from '../graph/metamodel/pure/model/packageableElements/text/DSLText_Text.js';
-import type { Clazz } from '@finos/legend-shared';
-import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
+import { usingConstantValueSchema } from '@finos/legend-shared';
+import { createModelSchema, primitive } from 'serializr';
+import { V1_Text } from '../../model/packageableElements/text/V1_DSL_Text_Text.js';
 
-export class DSLText_PureGraphPlugin extends PureGraphPlugin {
-  constructor() {
-    super(packageJson.extensions.pureGraphPlugin, packageJson.version);
-  }
+export const V1_TEXT_ELEMENT_PROTOCOL_TYPE = 'text';
 
-  override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
-    return [Text];
-  }
-}
+export const V1_textModelSchema = createModelSchema(V1_Text, {
+  _type: usingConstantValueSchema(V1_TEXT_ELEMENT_PROTOCOL_TYPE),
+  content: primitive(),
+  name: primitive(),
+  package: primitive(),
+  type: primitive(),
+});
