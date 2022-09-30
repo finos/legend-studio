@@ -28,14 +28,17 @@ import {
   V1_PackageableRuntime,
   V1_EngineRuntime,
   V1_Class,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import {
   ActionState,
+  assertErrorThrown,
   guaranteeNonEmptyString,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
+  LogEvent,
   uniq,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -68,36 +71,56 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     dataSpacePath: string,
     entities: Entity[],
     dependencyEntitiesIndex: Map<string, Entity[]>,
+    cacheRetriever?: () => Promise<
+      PlainObject<DataSpaceAnalysisResult> | undefined
+    >,
   ): Promise<DataSpaceAnalysisResult> {
-    // prepare graph data for analysis
-    // NOTE: we don't do serialization roundtrip here to save time
-    const graphDataForAnalysis = {
-      _type: V1_PureModelContextType.DATA,
-      elements: Array.from(dependencyEntitiesIndex.values())
-        .flat()
-        .concat(entities)
-        .map((entity) => entity.content),
-    };
-
-    const engineServerClient = this.graphManager.engine.getEngineServerClient();
-    const analysisResult = V1_DataSpaceAnalysisResult.serialization.fromJson(
-      await engineServerClient.postWithTracing<
+    let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
+    if (cacheRetriever) {
+      try {
+        cachResult = (await cacheRetriever()) as
+          | PlainObject<V1_DataSpaceAnalysisResult>
+          | undefined;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.graphManager.log.warn(
+          LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
+          `Can't fetch data space analysis result from cache: ${error.message}`,
+        );
+      }
+    }
+    const engineClient = this.graphManager.engine.getEngineServerClient();
+    const analysisResult =
+      cachResult ??
+      (await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
-        engineServerClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
-        `${engineServerClient._pure()}/analytics/dataSpace/render`,
+        engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
+        `${engineClient._pure()}/analytics/dataSpace/render`,
         {
           clientVersion: V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
           dataSpace: dataSpacePath,
-          model: graphDataForAnalysis,
+          model: {
+            _type: V1_PureModelContextType.DATA,
+            elements: Array.from(dependencyEntitiesIndex.values())
+              .flat()
+              .concat(entities)
+              .map((entity) => entity.content),
+          },
         },
         {},
         undefined,
         undefined,
         { enableCompression: true },
-      ),
+      ));
+    return await this.buildDataSpaceAnalytics(
+      V1_DataSpaceAnalysisResult.serialization.fromJson(analysisResult),
     );
+  }
 
+  private async buildDataSpaceAnalytics(
+    analysisResult: V1_DataSpaceAnalysisResult,
+  ): Promise<DataSpaceAnalysisResult> {
     const result = new DataSpaceAnalysisResult();
     result.name = analysisResult.name;
     result.package = analysisResult.package;
