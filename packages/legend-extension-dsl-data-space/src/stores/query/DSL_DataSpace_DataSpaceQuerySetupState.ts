@@ -34,7 +34,6 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
 import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DSL_DataSpace_DataSpaceViewerState.js';
@@ -47,6 +46,8 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
+import { retrieveCachedAnalyticsResultFromDepot } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysisHelper.js';
+import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
   dataSpaces: DataSpaceInfo[] = [];
@@ -152,8 +153,15 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         dataSpace.path,
         entities,
         dependencyEntitiesIndex,
+        () =>
+          retrieveCachedAnalyticsResultFromDepot(
+            this.setupStore.depotServerClient,
+            dataSpace.groupId,
+            dataSpace.artifactId,
+            dataSpace.versionId,
+            dataSpace.path,
+          ),
       )) as DataSpaceAnalysisResult;
-
       this.dataSpaceViewerState = new DataSpaceViewerState(
         dataSpace.groupId,
         dataSpace.artifactId,

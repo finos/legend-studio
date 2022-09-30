@@ -19,6 +19,7 @@ import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
   getDSLDataSpaceGraphManagerExtension,
+  retrieveCachedAnalyticsResultFromDepot,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { BasicGraphManagerState } from '@finos/legend-graph';
@@ -117,10 +118,14 @@ export class StandaloneDataSpaceViewerStore {
       this.initState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
         this.graphManagerState.graphManager,
-      ).analyzeDataSpace(
-        dataSpacePath,
-        entities,
-        dependencyEntitiesIndex,
+      ).analyzeDataSpace(dataSpacePath, entities, dependencyEntitiesIndex, () =>
+        retrieveCachedAnalyticsResultFromDepot(
+          this.depotServerClient,
+          project.groupId,
+          project.artifactId,
+          versionId,
+          dataSpacePath,
+        ),
       )) as DataSpaceAnalysisResult;
 
       this.viewerState = new DataSpaceViewerState(

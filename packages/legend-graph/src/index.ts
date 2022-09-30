@@ -177,6 +177,7 @@ export * from './graph/helpers/creator/DomainModelCreatorHelper.js';
 export * from './graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
 export * from './graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 export * from './graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
+export * from './graph/helpers/ArtifactGenerationExtensionHelper.js';
 
 export * from './graphManager/helpers/DSLData_GraphManagerHelper.js';
 export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
