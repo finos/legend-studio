@@ -35,6 +35,7 @@ import {
   CheckCircleIcon,
   PauseCircleIcon,
   BanIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
@@ -520,7 +521,7 @@ export const WorkflowManager = observer(
                 {workflowManagerState.workflowStates.length}
               </div>
             </div>
-            <div className="panel__content">{renderWorkflowContent()}</div>
+            <PanelContent>{renderWorkflowContent()}</PanelContent>
           </div>
         </div>
       </div>

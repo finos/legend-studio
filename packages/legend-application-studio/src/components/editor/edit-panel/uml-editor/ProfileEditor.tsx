@@ -30,6 +30,8 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -293,7 +295,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
 
   return (
     <div className="uml-element-editor profile-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -334,7 +336,7 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           {selectedTab === UML_EDITOR_TAB.TAGS && (
             <div className="panel__content__lists">
               <DragPreviewLayer
@@ -375,8 +377,8 @@ export const ProfileEditor = observer((props: { profile: Profile }) => {
               ))}
             </div>
           )}
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     </div>
   );
 });

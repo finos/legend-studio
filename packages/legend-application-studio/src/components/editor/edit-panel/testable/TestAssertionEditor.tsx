@@ -19,6 +19,7 @@ import {
   clsx,
   CompareIcon,
   Dialog,
+  PanelContent,
   PanelLoadingIndicator,
   RefreshIcon,
   WrenchIcon,
@@ -243,7 +244,7 @@ const TestAssertionResultViewer = observer(
           </div>
           <div className="panel__header__actions"></div>
         </div>
-        <div className="testable-test-assertion-result__content panel__content">
+        <PanelContent className="testable-test-assertion-result__content">
           <div
             className={clsx('testable-test-assertion-result__summary', {
               'testable-test-assertion-result__summary--fail':
@@ -275,7 +276,7 @@ const TestAssertionResultViewer = observer(
             )}
           </div>
           <div></div>
-        </div>
+        </PanelContent>
       </>
     );
   },

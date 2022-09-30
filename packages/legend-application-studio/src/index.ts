@@ -90,11 +90,7 @@ export { getElementIcon } from './components/shared/ElementIconUtils.js';
  * See https://github.com/finos/legend-studio/issues/65
  */
 
-export {
-  ConnectionEditor_TextEditor,
-  ConnectionEditor_BooleanEditor,
-  ConnectionEditor_ArrayEditor,
-} from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
+export { ConnectionEditor_TextEditor } from './components/editor/edit-panel/connection-editor/RelationalDatabaseConnectionEditor.js';
 export * from './stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
 
 export * from './stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';

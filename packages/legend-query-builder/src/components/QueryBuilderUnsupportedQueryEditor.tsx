@@ -22,6 +22,9 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
+  Panel,
+  PanelContent,
+  PanelHeader,
 } from '@finos/legend-art';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
@@ -39,13 +42,9 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
         QueryBuilderTextEditorMode.TEXT,
       );
     return (
-      <div className="panel">
-        <div className="panel__header">
-          <div className="panel__header__title">
-            <div className="panel__header__title__label">content</div>
-          </div>
-        </div>
-        <div className="panel__content">
+      <Panel>
+        <PanelHeader title="content" />
+        <PanelContent>
           <BlankPanelContent>
             <div className="query-builder__unsupported-view__main">
               <div className="query-builder__unsupported-view__summary">{`Can't display query in form mode${errorMessage}`}</div>
@@ -57,8 +56,8 @@ const QueryBuilderUnsupportedQueryEditPanel = observer(
               </button>
             </div>
           </BlankPanelContent>
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     );
   },
 );

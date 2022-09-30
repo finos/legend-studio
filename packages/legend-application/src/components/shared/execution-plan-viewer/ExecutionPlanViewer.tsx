@@ -31,6 +31,7 @@ import {
   MenuContent,
   DropdownMenu,
   BlankPanelContent,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
@@ -517,14 +518,14 @@ export const ExecutionPlanViewer = observer(
                         </div>
                       </div>
                     </div>
-                    <div className="panel__content">
+                    <PanelContent>
                       <TextInputEditor
                         inputValue={executionPlanState.debugText}
                         isReadOnly={true}
                         language={EDITOR_LANGUAGE.TEXT}
                         showMiniMap={true}
                       />
-                    </div>
+                    </PanelContent>
                   </div>
                 </ResizablePanel>
               </ResizablePanelGroup>

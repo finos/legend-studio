@@ -42,6 +42,7 @@ import {
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -851,7 +852,7 @@ export const QueryBuilderFilterPanel = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -874,7 +875,7 @@ export const QueryBuilderFilterPanel = observer(
               </>
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },

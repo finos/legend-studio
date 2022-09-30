@@ -27,6 +27,7 @@ import {
   clsx,
   PauseCircleIcon,
   ExclamationTriangleIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -622,7 +623,7 @@ export const QueryBuilderResultPanel = observer(
             </DropdownMenu>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelLoadingIndicator
             isLoading={
               resultState.isRunningQuery ||
@@ -643,7 +644,7 @@ export const QueryBuilderResultPanel = observer(
               />
             </div>
           )}
-        </div>
+        </PanelContent>
         <ExecutionPlanViewer
           executionPlanState={resultState.executionPlanState}
         />

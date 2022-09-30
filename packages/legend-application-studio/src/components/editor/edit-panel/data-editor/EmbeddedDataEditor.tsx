@@ -26,6 +26,7 @@ import {
   LongArrowRightIcon,
   MenuContent,
   MenuContentItem,
+  PanelContent,
   PURE_DataIcon,
   WrenchIcon,
 } from '@finos/legend-art';
@@ -289,12 +290,12 @@ export function renderEmbeddedDataEditor(
             </div>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <UnsupportedEditorPanel
             text="Can't display this embedded data in form-mode"
             isReadOnly={isReadOnly}
           />
-        </div>
+        </PanelContent>
       </div>
     );
   }

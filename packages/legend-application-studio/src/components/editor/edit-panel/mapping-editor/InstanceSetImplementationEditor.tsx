@@ -26,6 +26,7 @@ import {
   LongArrowAltDownIcon,
   PencilEditIcon,
   PanelDropZone,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -323,7 +324,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropRef}
             isDragOver={isDragOver && !isReadOnly}
@@ -375,7 +376,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
               />
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -535,7 +536,7 @@ export const InstanceSetImplementationEditor = observer(
                       </div>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <PanelContent>
                     {!isReadOnly &&
                       !isUnsupported &&
                       sortedProperties.map((property) => (
@@ -576,7 +577,7 @@ export const InstanceSetImplementationEditor = observer(
                         text="Can't display class mapping in form mode"
                       ></UnsupportedEditorPanel>
                     )}
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
               <ResizablePanelSplitter />

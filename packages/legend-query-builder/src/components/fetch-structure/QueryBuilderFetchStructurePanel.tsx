@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, BlankPanelContent } from '@finos/legend-art';
+import {
+  clsx,
+  BlankPanelContent,
+  Panel,
+  PanelContent,
+} from '@finos/legend-art';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel.js';
@@ -47,7 +52,7 @@ const QueryBuilderFetchStructureEditor = observer(
       );
     }
     return (
-      <div className="panel__content">
+      <PanelContent>
         <BlankPanelContent>
           <div className="query-builder__unsupported-view__main">
             <div className="query-builder__unsupported-view__summary">
@@ -55,7 +60,7 @@ const QueryBuilderFetchStructureEditor = observer(
             </div>
           </div>
         </BlankPanelContent>
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -78,7 +83,7 @@ export const QueryBuilderFetchStructurePanel = observer(
       };
 
     return (
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">fetch structure</div>
@@ -106,7 +111,7 @@ export const QueryBuilderFetchStructurePanel = observer(
         <QueryBuilderFetchStructureEditor
           queryBuilderState={queryBuilderState}
         />
-      </div>
+      </Panel>
     );
   },
 );

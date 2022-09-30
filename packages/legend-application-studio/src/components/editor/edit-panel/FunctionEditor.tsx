@@ -42,6 +42,8 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import {
@@ -624,7 +626,6 @@ export const FunctionMainEditor = observer(
       }),
       [handleDropParameter],
     );
-
     return (
       <div className="panel__content function-editor__element">
         <div className="function-editor__element__item">
@@ -817,7 +818,7 @@ export const FunctionEditor = observer(() => {
 
   return (
     <div className="function-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -864,7 +865,7 @@ export const FunctionEditor = observer(() => {
             isReadOnly={isReadOnly}
           />
         ) : (
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === FUNCTION_SPEC_TAB.TAGGED_VALUES && (
               <div
                 ref={dropTaggedValueRef}
@@ -905,9 +906,9 @@ export const FunctionEditor = observer(() => {
                 ))}
               </div>
             )}
-          </div>
+          </PanelContent>
         )}
-      </div>
+      </Panel>
     </div>
   );
 });

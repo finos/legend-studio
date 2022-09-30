@@ -16,7 +16,15 @@
 
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import React, { useState } from 'react';
+import {
+  CheckSquareIcon,
+  PencilIcon,
+  SquareIcon,
+  TimesIcon,
+} from '../CJS__Icon.cjs';
 
 export const PanelHeaderActionItem: React.FC<{
   title: string;
@@ -94,11 +102,39 @@ export const PanelForm: React.FC<{
   return <div className="panel__content__form">{children}</div>;
 };
 
-export const PanelContent: React.FC<{
-  children?: React.ReactNode;
+export const PanelSection: React.FC<{
+  children: React.ReactNode;
 }> = (props) => {
   const { children } = props;
-  return <div className="panel__content">{children}</div>;
+  const addElementSections = (
+    sectionChildren: React.ReactNode,
+  ): JSX.Element[] | JSX.Element => {
+    const section = React.Children.map(sectionChildren, (child) => {
+      if (React.isValidElement(child)) {
+        const elementChild: React.ReactElement = child;
+        return (
+          <div className="panel__content__form__section">{elementChild}</div>
+        );
+      } else {
+        return <></>;
+      }
+    });
+    if (section) {
+      return section;
+    } else {
+      return <></>;
+    }
+  };
+
+  return <> {addElementSections(children)} </>;
+};
+
+export const PanelContent: React.FC<{
+  children?: React.ReactNode;
+  className?: string;
+}> = (props) => {
+  const { children, className } = props;
+  return <div className={clsx('panel__content', className)}>{children}</div>;
 };
 
 export const PanelList: React.FC<{
@@ -127,9 +163,10 @@ export const PanelListItem: React.FC<{
 
 export const Panel: React.FC<{
   children?: React.ReactNode;
+  className?: string;
 }> = (props) => {
-  const { children } = props;
-  return <div className="panel">{children}</div>;
+  const { children, className } = props;
+  return <div className={clsx('panel', className)}>{children}</div>;
 };
 
 export const PanelFullContent: React.FC<{
@@ -139,17 +176,15 @@ export const PanelFullContent: React.FC<{
   return <div className="panel__content--full">{children}</div>;
 };
 
-export const PanelTextEditor = observer(
+export const PanelFormTextEditor = observer(
   (props: {
     name: string;
     description?: string;
-    //TODO: address padding
-    padding?: boolean;
     value: string | undefined;
     isReadOnly: boolean;
     update: (value: string | undefined) => void;
   }) => {
-    const { value, name, description, padding, isReadOnly, update } = props;
+    const { value, name, description, isReadOnly, update } = props;
     const displayValue = value ?? '';
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const stringValue = event.target.value;
@@ -158,11 +193,7 @@ export const PanelTextEditor = observer(
     };
 
     return (
-      <div
-        className={clsx('panel__content__form__section', {
-          'panel__content__form__section--padding': padding,
-        })}
-      >
+      <>
         <div className="panel__content__form__section__header__label">
           {capitalize(name)}
         </div>
@@ -176,7 +207,55 @@ export const PanelTextEditor = observer(
           value={displayValue}
           onChange={changeValue}
         />
-      </div>
+      </>
+    );
+  },
+);
+
+/**
+ * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
+ * This is subjected to change and review, especially in terms in UX.
+ */
+export const PanelFormBooleanEditor = observer(
+  (props: {
+    name: string;
+    description?: string;
+    value: boolean | undefined;
+    isReadOnly: boolean;
+    update: (value: boolean | undefined) => void;
+  }) => {
+    const { value, name, description, isReadOnly, update } = props;
+    const toggle = (): void => {
+      if (!isReadOnly) {
+        update(!value);
+      }
+    };
+
+    return (
+      <>
+        <div className="panel__content__form__section__header__label">
+          {capitalize(name)}
+        </div>
+        <div
+          className={clsx('panel__content__form__section__toggler', {
+            'panel__content__form__section__toggler--disabled': isReadOnly,
+          })}
+          onClick={toggle}
+        >
+          <button
+            className={clsx('panel__content__form__section__toggler__btn', {
+              'panel__content__form__section__toggler__btn--toggled': value,
+            })}
+            disabled={isReadOnly}
+            tabIndex={-1}
+          >
+            {value ? <CheckSquareIcon /> : <SquareIcon />}
+          </button>
+          <div className="panel__content__form__section__toggler__prompt">
+            {description}
+          </div>
+        </div>
+      </>
     );
   },
 );

@@ -55,6 +55,8 @@ import {
   ArrowsJoinIcon,
   ArrowsSplitIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -247,7 +249,7 @@ const PureExecutionContextConfigurationEditor = observer(
     );
 
     return (
-      <div className="panel__content">
+      <PanelContent>
         <PanelDropZone
           dropTargetConnector={dropMappingOrRuntimeRef}
           isDragOver={isMappingOrRuntimeDragOver && !isReadOnly}
@@ -318,7 +320,7 @@ const PureExecutionContextConfigurationEditor = observer(
             </div>
           </div>
         </PanelDropZone>
-      </div>
+      </PanelContent>
     );
   },
 );
@@ -439,7 +441,7 @@ const PureSingleExecutionEditor = observer(
 
     return (
       <div className="service-execution-editor__execution">
-        <div className="panel">
+        <Panel>
           <div className="panel__content service-editor__content">
             <PureExecutionContextConfigurationEditor
               pureExecutionState={singleExecutionState}
@@ -448,7 +450,7 @@ const PureSingleExecutionEditor = observer(
               }
             />
           </div>
-        </div>
+        </Panel>
       </div>
     );
   },
@@ -816,7 +818,7 @@ const ServicePureExecutionEditor = observer(
           </ResizablePanelSplitter>
           <ResizablePanel minSize={56}>
             <div className="service-execution-editor__content">
-              <div className="panel">
+              <Panel>
                 <div className="panel__header">
                   <div className="panel__header__title">
                     <div className="panel__header__title__label service-editor__execution__label--test">
@@ -859,7 +861,7 @@ const ServicePureExecutionEditor = observer(
                     />
                   )}
                 </div>
-              </div>
+              </Panel>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

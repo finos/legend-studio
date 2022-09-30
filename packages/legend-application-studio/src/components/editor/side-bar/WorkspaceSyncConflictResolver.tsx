@@ -26,6 +26,7 @@ import {
   InfoCircleIcon,
   TimesIcon,
   Dialog,
+  PanelContent,
 } from '@finos/legend-art';
 import type {
   EntityChangeConflict,
@@ -137,7 +138,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                           {changes.length + conflicts.length}
                         </div>
                       </div>
-                      <div className="panel__content">
+                      <PanelContent>
                         {!hadResolvedAllConflicts && (
                           <>
                             {conflicts
@@ -182,7 +183,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                                 openDiff={openChange(diff)}
                               />
                             ))}
-                      </div>
+                      </PanelContent>
                     </div>
                   </ResizablePanelGroup>
                 </div>
@@ -229,7 +230,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                     ))}
                   </div>
                 </div>
-                <div className="panel__content">
+                <PanelContent>
                   {updateConflictState.currentDiffEditorState instanceof
                     EntityChangeConflictEditorState && (
                     <EntityChangeConflictEditor
@@ -246,7 +247,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                       }
                     />
                   )}
-                </div>
+                </PanelContent>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>

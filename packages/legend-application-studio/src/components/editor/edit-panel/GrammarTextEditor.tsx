@@ -36,6 +36,7 @@ import {
   normalizeLineEnding,
   MoreHorizontalIcon,
   HackerIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -1255,11 +1256,11 @@ export const GrammarTextEditor = observer(() => {
           </button>
         </div>
       </ContextMenu>
-      <div className="panel__content edit-panel__content">
+      <PanelContent className="edit-panel__content">
         <div ref={ref} className="text-editor__container">
           <div className="text-editor__body" ref={textEditorRef} />
         </div>
-      </div>
+      </PanelContent>
     </div>
   );
 });

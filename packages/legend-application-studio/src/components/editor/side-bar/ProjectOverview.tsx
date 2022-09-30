@@ -32,6 +32,7 @@ import {
   UserIcon,
   ExternalLinkIcon,
   Dialog,
+  PanelContent,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
@@ -381,7 +382,7 @@ const ReleaseEditor = observer(() => {
                   </div>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {latestProjectVersion && (
                   <div className="project-overview__release__info__current-version">
                     <Link
@@ -411,7 +412,7 @@ const ReleaseEditor = observer(() => {
                     </span>
                   </div>
                 )}
-              </div>
+              </PanelContent>
             </div>
             <div className="panel project-overview__release__info__reviews">
               <div className="panel__header">
@@ -435,7 +436,7 @@ const ReleaseEditor = observer(() => {
                   {commitedReviews.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {commitedReviews.map((review) => (
                   <Link
                     key={review.id}
@@ -455,7 +456,7 @@ const ReleaseEditor = observer(() => {
                     </div>
                   </Link>
                 ))}
-              </div>
+              </PanelContent>
             </div>
           </div>
         )}

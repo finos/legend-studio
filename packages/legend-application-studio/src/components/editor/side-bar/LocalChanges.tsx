@@ -30,6 +30,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   CloudUploadIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
@@ -314,7 +315,7 @@ export const LocalChanges = observer(() => {
                   {changes.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {changes
                   .slice()
                   .sort(entityDiffSorter)
@@ -326,7 +327,7 @@ export const LocalChanges = observer(() => {
                       openDiff={openChange(diff)}
                     />
                   ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
@@ -350,7 +351,7 @@ export const LocalChanges = observer(() => {
                   {updateState.incomingRevisions.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {updateState.incomingRevisions.map((revision) => (
                   <div key={revision.id} className="side-bar__panel__item">
                     <div className="local-changes__revision">
@@ -363,7 +364,7 @@ export const LocalChanges = observer(() => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
 
@@ -396,7 +397,7 @@ export const LocalChanges = observer(() => {
                   {workspacePullChanges.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {conflicts
                   .slice()
                   .sort((a, b) => a.entityName.localeCompare(b.entityName))
@@ -423,7 +424,7 @@ export const LocalChanges = observer(() => {
                       openDiff={openWorkspacePullChange(diff)}
                     />
                   ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

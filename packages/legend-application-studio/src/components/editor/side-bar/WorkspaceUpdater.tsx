@@ -28,6 +28,7 @@ import {
   CloudDownloadIcon,
   RefreshIcon,
   InfoCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor.js';
@@ -193,7 +194,7 @@ export const WorkspaceUpdater = observer(() => {
                   {changes.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {conflicts
                   .slice()
                   .sort((a, b) => a.entityName.localeCompare(b.entityName))
@@ -220,7 +221,7 @@ export const WorkspaceUpdater = observer(() => {
                       openDiff={openChange(diff)}
                     />
                   ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
@@ -249,7 +250,7 @@ export const WorkspaceUpdater = observer(() => {
                   {commitedReviews.length}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {commitedReviews.map((review) => (
                   <Link
                     key={review.id}
@@ -269,7 +270,7 @@ export const WorkspaceUpdater = observer(() => {
                     </div>
                   </Link>
                 ))}
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

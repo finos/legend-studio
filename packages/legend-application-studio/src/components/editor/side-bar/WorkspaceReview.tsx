@@ -28,6 +28,7 @@ import {
   TimesIcon,
   PlusIcon,
   ExternalLinkSquareIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
 import { formatDistanceToNow } from 'date-fns';
@@ -78,7 +79,7 @@ export const WorkspaceReviewDiffs = observer(() => {
           {changes.length}
         </div>
       </div>
-      <div className="panel__content">
+      <PanelContent>
         {changes
           .slice()
           .sort(entityDiffSorter)
@@ -90,7 +91,7 @@ export const WorkspaceReviewDiffs = observer(() => {
               openDiff={openChange(diff)}
             />
           ))}
-      </div>
+      </PanelContent>
     </div>
   );
 });

@@ -52,6 +52,7 @@ import {
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
   BlankPanelContent,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -1035,7 +1036,7 @@ const QueryBuilderPostFilterPanelContent = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -1058,7 +1059,7 @@ const QueryBuilderPostFilterPanelContent = observer(
               </>
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -1090,11 +1091,11 @@ export const QueryBuilderPostFilterPanel = observer(
                 <div className="panel__header__title__label">post-filter</div>
               </div>
             </div>
-            <div className="panel__content">
+            <PanelContent>
               <BlankPanelContent>
                 Post-filter is not supported for the current fetch-structure
               </BlankPanelContent>
-            </div>
+            </PanelContent>
           </>
         )}
       </div>
