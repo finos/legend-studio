@@ -289,6 +289,21 @@
       color: var(--color-dark-grey-500);
       cursor: not-allowed;
     }
+
+    &--with-validation {
+      position: relative;
+      max-width: 20rem;
+
+      &__error {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.7rem;
+      }
+
+      &__error__indicator {
+        color: var(--color-red-180);
+      }
+    }
   }
 
   &__section__textarea {
