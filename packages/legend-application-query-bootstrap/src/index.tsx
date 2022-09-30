@@ -25,7 +25,7 @@ import {
   DSLDataSpace_LegendQueryApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
 import { DSLText_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
-import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
@@ -39,7 +39,7 @@ export class LegendQueryWebApplication {
     return [
       // graph managers
       new DSLText_GraphManagerPreset(),
-      new DSLDiagram_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),

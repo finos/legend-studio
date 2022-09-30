@@ -28,8 +28,8 @@ import {
   DSLText_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-text';
 import {
-  DSLDiagram_GraphManagerPreset,
-  DSLDiagram_LegendStudioApplicationPlugin,
+  DSL_Diagram_GraphManagerPreset,
+  DSL_Diagram_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-diagram';
 import {
   DSLDataSpace_GraphManagerPreset,
@@ -58,7 +58,7 @@ export class LegendStudioWebApplication {
     return [
       // graph managers
       new DSLText_GraphManagerPreset(),
-      new DSLDiagram_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
       new DSLPersistence_GraphManagerPreset(),
@@ -73,7 +73,7 @@ export class LegendStudioWebApplication {
     return [
       // application
       new DSLText_LegendStudioApplicationPlugin(),
-      new DSLDiagram_LegendStudioApplicationPlugin(),
+      new DSL_Diagram_LegendStudioApplicationPlugin(),
       new DSLDataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),

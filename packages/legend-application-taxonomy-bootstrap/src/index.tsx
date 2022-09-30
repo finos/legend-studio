@@ -20,14 +20,14 @@ import {
   type AbstractPreset,
   WebConsole,
 } from '@finos/legend-shared';
-import { DSLDiagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
+import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSLDataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
 
 export class LegendTaxonomyWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
-      new DSLDiagram_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
       new DSLDataSpace_GraphManagerPreset(),
     ];
   }

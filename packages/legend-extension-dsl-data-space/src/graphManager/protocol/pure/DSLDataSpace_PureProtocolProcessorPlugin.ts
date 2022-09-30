@@ -64,7 +64,7 @@ import {
   V1_buildFullPath,
 } from '@finos/legend-graph';
 import {
-  V1_DSLDiagram_PackageableElementPointerType,
+  V1_DSL_Diagram_PackageableElementPointerType,
   getDiagram,
 } from '@finos/legend-extension-dsl-diagram';
 
@@ -260,7 +260,7 @@ export class DSLDataSpace_PureProtocolProcessorPlugin extends PureProtocolProces
           protocol.featuredDiagrams = metamodel.featuredDiagrams?.map(
             (diagramPath) =>
               new V1_PackageableElementPointer(
-                V1_DSLDiagram_PackageableElementPointerType,
+                V1_DSL_Diagram_PackageableElementPointerType,
                 diagramPath.valueForSerialization ?? '',
               ),
           );
