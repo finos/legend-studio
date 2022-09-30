@@ -42,10 +42,16 @@ import {
   ArchiveIcon,
   Dialog,
   Panel,
+  PanelForm,
+  PanelFormToogleEditor,
+  PanelSection,
+  PanelFormTextEditorWithValidation,
+  PanelFormTextEditor,
 } from '@finos/legend-art';
-import { flowResult } from 'mobx';
+import { action, flowResult } from 'mobx';
 import {
   ProjectDependency,
+  type ProjectServerPlatform,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -151,41 +157,32 @@ const ProjectStructureEditor = observer(
             </button>
           )}
         </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Group ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The domain for artifacts generated as part of the project build
-              pipeline and published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
+
+        <PanelForm>
+          <PanelSection>
+            <PanelFormTextEditor
+              isReadOnly={isReadOnly}
               value={projectConfig.groupId}
-              onChange={changeGroupId}
+              name="Group ID"
+              description="The domain for artifacts generated as part of the project build
+              pipeline and published to an artifact repository"
+              update={(value: string | undefined): void =>
+                projectConfig.setGroupId(value ?? '')
+              }
             />
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Artifact ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The identifier (within the domain specified by group ID) for
-              artifacts generated as part of the project build pipeline and
-              published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
+            <PanelFormTextEditor
+              isReadOnly={isReadOnly}
               value={projectConfig.artifactId}
-              onChange={changeArtifactId}
+              name="Artifact ID"
+              description="The identifier (within the domain specified by group ID) for
+              artifacts generated as part of the project build pipeline and
+              published to an artifact repository"
+              update={(value: string | undefined): void =>
+                projectConfig.setArtifactId(value ?? '')
+              }
             />
-          </div>
-        </div>
+          </PanelSection>
+        </PanelForm>
       </div>
     );
   },
@@ -445,6 +442,133 @@ const ProjectDependencyEditor = observer(
   },
 );
 
+const PlatformBasicEditor = observer(
+  (props: {
+    platform: ProjectServerPlatform;
+    projectConfig: ProjectConfiguration;
+    isReadOnly: boolean;
+  }) => {
+    const { platform, projectConfig, isReadOnly } = props;
+
+    const changeVersion = action((val: string | undefined): void => {
+      projectConfig.changePlatformVersion(platform, val ? val : '');
+    });
+
+    const changeValue = action((val: string | undefined): void => {
+      changeVersion(val);
+    });
+
+    const isNotValidPlatformVersion = action(
+      (val: string): boolean => val === '',
+    );
+
+    return (
+      <PanelFormTextEditorWithValidation
+        isReadOnly={isReadOnly}
+        value={platform.platformVersion}
+        name={platform.name}
+        update={changeValue}
+        validationErrorMessage={
+          isNotValidPlatformVersion(platform.platformVersion)
+            ? 'Version cannot be empty'
+            : undefined
+        }
+      />
+    );
+  },
+);
+
+const ProjectPlatformVersionEditor = observer(
+  (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
+    const { projectConfig, isReadOnly } = props;
+    const editorStore = useEditorStore();
+
+    const platformConfigurations = projectConfig.platformConfigurations;
+
+    if (platformConfigurations) {
+      editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
+        true,
+      );
+    }
+
+    const isEditingPlatformConfigs =
+      editorStore.projectConfigurationEditorState.overridesDefaultPlatform;
+
+    const defaultPlatforms = editorStore.sdlcServerClient.platforms;
+
+    const overridePlatforms = (): void => {
+      if (isEditingPlatformConfigs !== true) {
+        editorStore.setActionAlertInfo({
+          message:
+            'This is an advanced configuration meant for users who already have in mind the platform version they would like to input.',
+          prompt:
+            'Do you still want to proceed to override default project configurations?',
+          type: ActionAlertType.CAUTION,
+          onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
+          onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => {
+                editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
+                  !isEditingPlatformConfigs,
+                );
+              },
+            },
+            {
+              label: 'Cancel',
+              type: ActionAlertActionType.PROCEED,
+              default: true,
+            },
+          ],
+        });
+      } else {
+        editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
+          !isEditingPlatformConfigs,
+        );
+      }
+    };
+
+    return (
+      <Panel>
+        <PanelForm>
+          <PanelSection>
+            <PanelFormToogleEditor
+              isToogled={isEditingPlatformConfigs}
+              prompt="Override default platform configurations"
+              update={overridePlatforms}
+            />
+
+            {defaultPlatforms &&
+              !isEditingPlatformConfigs &&
+              defaultPlatforms.map((p) => (
+                <PlatformBasicEditor
+                  key={p.name}
+                  platform={p}
+                  projectConfig={projectConfig}
+                  isReadOnly={true}
+                />
+              ))}
+            {isEditingPlatformConfigs && (
+              <div>
+                {platformConfigurations?.map((p) => (
+                  <PlatformBasicEditor
+                    key={p.name}
+                    platform={p}
+                    projectConfig={projectConfig}
+                    isReadOnly={isReadOnly}
+                  />
+                ))}
+              </div>
+            )}
+          </PanelSection>
+        </PanelForm>
+      </Panel>
+    );
+  },
+);
+
 const ProjectDependencyActions = observer(
   (props: { config: ProjectConfigurationEditorState }) => {
     const { config } = props;
@@ -501,6 +625,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
+    CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS,
   ];
   const changeTab =
     (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
@@ -610,6 +735,7 @@ export const ProjectConfigurationEditor = observer(() => {
             </div>
           </div>
           <button
+            id="project_config_update_button"
             // TODO: remove this ugly button when we integrate project configuration into change detection flow
             className="project-configuration-editor__update-btn"
             disabled={
@@ -674,7 +800,12 @@ export const ProjectConfigurationEditor = observer(() => {
               )}
             </div>
           )}
-
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS && (
+            <ProjectPlatformVersionEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
           {configState.dependencyInfo &&
             configState.dependencyInfoModalType && (
               <ProjectDependencyInfoModal

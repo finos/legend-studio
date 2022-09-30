@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { list, createModelSchema, primitive } from 'serializr';
+import {
+  list,
+  createModelSchema,
+  primitive,
+  custom,
+  serialize,
+  deserialize,
+} from 'serializr';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { ProjectStructureVersion } from '../configuration/ProjectStructureVersion.js';
 import { ProjectDependency } from '../configuration/ProjectDependency.js';
@@ -25,8 +32,11 @@ import {
   deleteEntry,
   SerializationFactory,
   usingModelSchema,
+  serializeArray,
+  deserializeArray,
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
+import { ProjectServerPlatform } from './ProjectServerPlatform.js';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 
@@ -35,6 +45,7 @@ export class ProjectConfiguration implements Hashable {
   groupId!: string;
   artifactId!: string;
   projectStructureVersion!: ProjectStructureVersion;
+  platformConfigurations: ProjectServerPlatform[] | null = null;
   projectDependencies: ProjectDependency[] = [];
 
   constructor() {
@@ -42,8 +53,11 @@ export class ProjectConfiguration implements Hashable {
       groupId: observable,
       artifactId: observable,
       projectStructureVersion: observable,
+      platformConfigurations: observable,
       projectDependencies: observable,
       setGroupId: action,
+      changePlatformVersion: action,
+      setPlatformConfigurations: action,
       setArtifactId: action,
       deleteProjectDependency: action,
       addProjectDependency: action,
@@ -56,6 +70,26 @@ export class ProjectConfiguration implements Hashable {
     createModelSchema(ProjectConfiguration, {
       artifactId: primitive(),
       groupId: primitive(),
+      platformConfigurations: custom(
+        (values) =>
+          serializeArray(
+            values,
+            (value) =>
+              serialize(ProjectServerPlatform.serialization.schema, value),
+            {
+              skipIfEmpty: true,
+              INTERNAL__forceReturnEmptyInTest: true,
+            },
+          ),
+        (values) =>
+          deserializeArray(
+            values,
+            (v) => deserialize(ProjectServerPlatform.serialization.schema, v),
+            {
+              skipIfEmpty: true,
+            },
+          ),
+      ),
       projectDependencies: list(
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
@@ -66,8 +100,27 @@ export class ProjectConfiguration implements Hashable {
     }),
   );
 
+  changePlatformVersion(platform: ProjectServerPlatform, val: string): void {
+    const newPlatformConfigs = this.platformConfigurations?.find(
+      (p) => p === platform,
+    );
+    const ind = this.platformConfigurations?.findIndex((p) => p === platform);
+    if (
+      newPlatformConfigs &&
+      this.platformConfigurations &&
+      ind !== undefined
+    ) {
+      newPlatformConfigs.platformVersion = val;
+      this.platformConfigurations[ind] = newPlatformConfigs;
+    }
+  }
+
   setGroupId(val: string): void {
     this.groupId = val;
+  }
+
+  setPlatformConfigurations(val: ProjectServerPlatform[] | null): void {
+    this.platformConfigurations = val;
   }
 
   setArtifactId(val: string): void {
@@ -90,13 +143,25 @@ export class ProjectConfiguration implements Hashable {
   }
 
   get hashCode(): string {
-    return hashArray([
-      PROJECT_CONFIGURATION_HASH_STRUCTURE,
-      this.groupId,
-      this.artifactId,
-      this.projectStructureVersion.version.toString(),
-      this.projectStructureVersion.extensionVersion?.toString() ?? '',
-      hashArray(this.projectDependencies),
-    ]);
+    if (this.platformConfigurations !== null) {
+      return hashArray([
+        PROJECT_CONFIGURATION_HASH_STRUCTURE,
+        this.groupId,
+        this.artifactId,
+        hashArray(this.platformConfigurations),
+        this.projectStructureVersion.version.toString(),
+        this.projectStructureVersion.extensionVersion?.toString() ?? '',
+        hashArray(this.projectDependencies),
+      ]);
+    } else {
+      return hashArray([
+        PROJECT_CONFIGURATION_HASH_STRUCTURE,
+        this.groupId,
+        this.artifactId,
+        this.projectStructureVersion.version.toString(),
+        this.projectStructureVersion.extensionVersion?.toString() ?? '',
+        hashArray(this.projectDependencies),
+      ]);
+    }
   }
 }

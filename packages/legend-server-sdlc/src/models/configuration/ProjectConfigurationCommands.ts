@@ -18,11 +18,13 @@ import { ProjectDependency } from './ProjectDependency.js';
 import { ProjectStructureVersion } from './ProjectStructureVersion.js';
 import { createModelSchema, list, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
+import { PlatformConfigurationUpdate } from './ProjectServerPlatform.js';
 
 export class UpdateProjectConfigurationCommand {
   artifactId: string;
   groupId: string;
   message: string;
+  platformConfigurations?: PlatformConfigurationUpdate;
   projectDependenciesToAdd?: ProjectDependency[];
   projectDependenciesToRemove?: ProjectDependency[];
   projectStructureVersion: ProjectStructureVersion;
@@ -44,6 +46,9 @@ export class UpdateProjectConfigurationCommand {
       artifactId: primitive(),
       groupId: primitive(),
       message: primitive(),
+      platformConfigurations: usingModelSchema(
+        PlatformConfigurationUpdate.serialization.schema,
+      ),
       projectDependenciesToAdd: list(
         usingModelSchema(ProjectDependency.serialization.schema),
       ),
