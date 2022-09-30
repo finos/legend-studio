@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-import type { V1_IdentityResolution } from './V1_DSLMastery_IdentityResolution.js';
-import type { V1_RecordSource } from './V1_DSLMastery_RecordSource.js';
+import type { IdentityResolution } from './DSL_Mastery_IdentityResolution.js';
+import type { RecordSource } from './DSL_Mastery_RecordSource.js';
 import {
-  V1_PackageableElement,
-  type V1_PackageableElementVisitor,
+  PackageableElement,
+  type PackageableElementVisitor,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSLMastery_HashUtils.js';
+import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
 
-export class V1_MasterRecordDefinition
-  extends V1_PackageableElement
+export class MasterRecordDefinition
+  extends PackageableElement
   implements Hashable
 {
   modelClass!: string;
-  identityResolution!: V1_IdentityResolution;
-  sources: V1_RecordSource[] = [];
+  identityResolution!: IdentityResolution;
+  sources: RecordSource[] = [];
 
-  override get hashCode(): string {
+  protected override get _elementHashCode(): string {
     return hashArray([
       MASTERY_HASH_STRUCTURE.MASTER_RECORD_DEFINITION,
       this.modelClass,
@@ -41,7 +41,7 @@ export class V1_MasterRecordDefinition
   }
 
   accept_PackageableElementVisitor<T>(
-    visitor: V1_PackageableElementVisitor<T>,
+    visitor: PackageableElementVisitor<T>,
   ): T {
     return visitor.visit_PackageableElement(this);
   }

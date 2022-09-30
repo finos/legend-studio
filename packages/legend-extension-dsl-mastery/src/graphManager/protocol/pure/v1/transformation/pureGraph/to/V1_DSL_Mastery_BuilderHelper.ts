@@ -17,21 +17,21 @@
 import {
   IdentityResolution,
   ResolutionQuery,
-} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_IdentityResolution.js';
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_IdentityResolution.js';
 import {
   RecordSource,
   RecordSourcePartition,
-} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_RecordSource.js';
-import type { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSLMastery_MasterRecordDefinition.js';
+} from '../../../../../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_RecordSource.js';
+import type { V1_MasterRecordDefinition } from '../../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import type {
   V1_IdentityResolution,
   V1_ResolutionQuery,
-} from '../../../model/packageableElements/mastery/V1_DSLMastery_IdentityResolution.js';
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_IdentityResolution.js';
 import type {
   V1_RecordSource,
   V1_RecordSourcePartition,
-} from '../../../model/packageableElements/mastery/V1_DSLMastery_RecordSource.js';
-import { getOwnMasterRecordDefinition } from '../../../../../../../graphManager/DSLMastery_GraphManagerHelper.js';
+} from '../../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
+import { getOwnMasterRecordDefinition } from '../../../../../../DSL_Mastery_GraphManagerHelper.js';
 import {
   type V1_GraphBuilderContext,
   V1_buildFullPath,

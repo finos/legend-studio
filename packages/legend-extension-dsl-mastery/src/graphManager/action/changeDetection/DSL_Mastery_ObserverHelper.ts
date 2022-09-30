@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
+import type { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import {
   observe_Abstract_PackageableElement,
   skipObserved,

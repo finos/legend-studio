@@ -15,8 +15,8 @@
  */
 
 import packageJson from '../../package.json';
-import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
-import { observe_Mastery } from './action/changeDetection/DSLMastery_ObserverHelper.js';
+import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { observe_Mastery } from './action/changeDetection/DSL_Mastery_ObserverHelper.js';
 import {
   PureGraphManagerPlugin,
   type PackageableElement,
@@ -28,7 +28,7 @@ import {
 export const PURE_GRAMMAR_MASTERY_PARSER_NAME = 'Mastery';
 export const PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL = 'MasterRecordDefinition';
 
-export class DSLMastery_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSL_Mastery_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }

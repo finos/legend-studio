@@ -33,18 +33,18 @@ import {
   LegendStudioApplicationPlugin,
   UnsupportedElementEditorState,
 } from '@finos/legend-application-studio';
-import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
-import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from './DSLMastery_CodeSnippets.js';
+import { MasterRecordDefinition } from '../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { SIMPLE_MASTER_RECORD_DEFINITION_SNIPPET } from './DSL_Mastery_CodeSnippets.js';
 import {
   PURE_GRAMMAR_MASTERY_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_MASTERY_PARSER_NAME,
-} from '../../graphManager/DSLMastery_PureGraphManagerPlugin.js';
+} from '../../graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
 
 const MASTERY_ELEMENT_TYPE = 'MASTERY';
 const MASTERY_CONTEXT_ELEMENT_TYPE = 'MASTERY_CONTEXT';
 const MASTERY_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_MASTERY';
 
-export class DSLMastery_LegendStudioApplicationPlugin
+export class DSL_Mastery_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements DSL_LegendStudioApplicationPlugin_Extension
 {

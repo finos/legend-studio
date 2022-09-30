@@ -15,11 +15,11 @@
  */
 
 import packageJson from '../../package.json';
-import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
+import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import type { Clazz } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 
-export class DSLMastery_PureGraphPlugin extends PureGraphPlugin {
+export class DSL_Mastery_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphPlugin, packageJson.version);
   }

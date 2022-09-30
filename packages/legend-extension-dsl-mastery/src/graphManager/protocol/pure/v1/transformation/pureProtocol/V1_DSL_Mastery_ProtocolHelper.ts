@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { V1_MasterRecordDefinition } from '../../model/packageableElements/mastery/V1_DSLMastery_MasterRecordDefinition.js';
+import { V1_MasterRecordDefinition } from '../../model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
   V1_IdentityResolution,
   V1_ResolutionQuery,
-} from '../../model/packageableElements/mastery/V1_DSLMastery_IdentityResolution.js';
+} from '../../model/packageableElements/mastery/V1_DSL_Mastery_IdentityResolution.js';
 import {
   V1_RecordSource,
   V1_RecordSourcePartition,
-} from '../../model/packageableElements/mastery/V1_DSLMastery_RecordSource.js';
+} from '../../model/packageableElements/mastery/V1_DSL_Mastery_RecordSource.js';
 import {
   type PureProtocolProcessorPlugin,
   V1_rawLambdaModelSchema,

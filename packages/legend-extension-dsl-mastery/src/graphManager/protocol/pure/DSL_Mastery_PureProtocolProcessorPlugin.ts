@@ -15,14 +15,14 @@
  */
 
 import packageJson from '../../../../package.json';
-import { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
-import { V1_MasterRecordDefinition } from './v1/model/packageableElements/mastery/V1_DSLMastery_MasterRecordDefinition.js';
+import { MasterRecordDefinition } from '../../../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
+import { V1_MasterRecordDefinition } from './v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 import {
   V1_MASTER_RECORD_DEFINITION_ELEMENT_PROTOCOL_TYPE,
   V1_masterRecordDefinitionModelSchema,
-} from './v1/transformation/pureProtocol/V1_DSLMastery_ProtocolHelper.js';
-import { V1_buildMasterRecordDefinition } from './v1/transformation/pureGraph/to/V1_MasteryBuilder.js';
-import { V1_transformMasterRecordDefinition } from './v1/transformation/pureGraph/from/V1_MasteryTransformer.js';
+} from './v1/transformation/pureProtocol/V1_DSL_Mastery_ProtocolHelper.js';
+import { V1_buildMasterRecordDefinition } from './v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';
+import { V1_transformMasterRecordDefinition } from './v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
 import {
   type PackageableElement,
   PureProtocolProcessorPlugin,
@@ -42,7 +42,7 @@ import { deserialize, serialize } from 'serializr';
 export const MASTER_RECORD_DEFINITION_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::mastery::metamodel::MasterRecordDefinition';
 
-export class DSLMastery_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class DSL_Mastery_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,

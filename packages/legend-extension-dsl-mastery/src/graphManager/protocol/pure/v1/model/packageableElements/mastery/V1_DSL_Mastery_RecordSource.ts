@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSLMastery_HashUtils.js';
+import { MASTERY_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Mastery_HashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class V1_RecordSource implements Hashable {

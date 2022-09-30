@@ -15,7 +15,7 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { MASTERY_HASH_STRUCTURE } from '../../../../../DSLMastery_HashUtils.js';
+import { MASTERY_HASH_STRUCTURE } from '../../../../../DSL_Mastery_HashUtils.js';
 
 export class RecordSource implements Hashable {
   id!: string;

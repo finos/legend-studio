@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
+import { MasterRecordDefinition } from '../graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 import type { BasicModel, PureModel } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 

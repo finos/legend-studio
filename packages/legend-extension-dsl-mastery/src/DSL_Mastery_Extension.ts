@@ -16,16 +16,16 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { DSLMastery_PureGraphPlugin } from './graph/DSLMastery_PureGraphPlugin.js';
-import { DSLMastery_PureGraphManagerPlugin } from './graphManager/DSLMastery_PureGraphManagerPlugin.js';
-import { DSLMastery_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSLMastery_PureProtocolProcessorPlugin.js';
+import { DSL_Mastery_PureGraphPlugin as DSL_Mastery_PureGraphPlugin } from './graph/DSL_Mastery_PureGraphPlugin.js';
+import { DSL_Mastery_PureGraphManagerPlugin } from './graphManager/DSL_Mastery_PureGraphManagerPlugin.js';
+import { DSL_Mastery_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSL_Mastery_PureProtocolProcessorPlugin.js';
 
-export class DSLMastery_GraphManagerPreset extends AbstractPreset {
+export class DSL_Mastery_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new DSLMastery_PureGraphPlugin(),
-      new DSLMastery_PureGraphManagerPlugin(),
-      new DSLMastery_PureProtocolProcessorPlugin(),
+      new DSL_Mastery_PureGraphPlugin(),
+      new DSL_Mastery_PureGraphManagerPlugin(),
+      new DSL_Mastery_PureProtocolProcessorPlugin(),
     ]);
   }
 }
