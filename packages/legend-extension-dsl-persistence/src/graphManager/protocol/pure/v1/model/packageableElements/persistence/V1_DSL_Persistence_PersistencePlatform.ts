@@ -14,4 +14,18 @@
  * limitations under the License.
  */
 
-export * from './DSL_PersistenceCloud_Extension.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+
+export abstract class V1_PersistencePlatform implements Hashable {
+  abstract get hashCode(): string;
+}
+
+export class V1_DefaultPersistencePlatform
+  extends V1_PersistencePlatform
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([PERSISTENCE_HASH_STRUCTURE.DEFAULT_PERSISTENCE_PLATFORM]);
+  }
+}

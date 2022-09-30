@@ -14,4 +14,20 @@
  * limitations under the License.
  */
 
-export * from './DSL_PersistenceCloud_Extension.js';
+import { PERSISTENCE_CLOUD_HASH_STRUCTURE } from '../../../../../../../../graph/DSL_PersistenceCloud_HashUtils.js';
+import { V1_PersistencePlatform } from '@finos/legend-extension-dsl-persistence';
+import { type Hashable, hashArray } from '@finos/legend-shared';
+
+export class V1_AwsGluePersistencePlatform
+  extends V1_PersistencePlatform
+  implements Hashable
+{
+  dataProcessingUnits!: number;
+
+  override get hashCode(): string {
+    return hashArray([
+      PERSISTENCE_CLOUD_HASH_STRUCTURE.AWS_GLUE_PERSISTENCE_PLATFORM,
+      this.dataProcessingUnits.toString(),
+    ]);
+  }
+}

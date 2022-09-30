@@ -14,4 +14,14 @@
  * limitations under the License.
  */
 
-export * from './DSL_PersistenceCloud_Extension.js';
+import packageJson from '../package.json';
+import { DSL_PersistenceCloud_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/DSL_PersistenceCloud_PureProtocolProcessorPlugin.js';
+import { AbstractPreset } from '@finos/legend-shared';
+
+export class DSL_PersistenceCloud_GraphManagerPreset extends AbstractPreset {
+  constructor() {
+    super(packageJson.extensions.graphManagerPreset, packageJson.version, [
+      new DSL_PersistenceCloud_PureProtocolProcessorPlugin(),
+    ]);
+  }
+}

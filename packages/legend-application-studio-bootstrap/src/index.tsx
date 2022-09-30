@@ -36,8 +36,8 @@ import {
   DSL_DataSpace_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
 import {
-  DSLPersistence_GraphManagerPreset,
-  DSLPersistence_LegendStudioApplicationPlugin,
+  DSL_Persistence_GraphManagerPreset,
+  DSL_Persistence_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-persistence';
 import {
   DSL_Mastery_GraphManagerPreset,
@@ -49,7 +49,7 @@ import {
 } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
-import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
 
@@ -61,9 +61,9 @@ export class LegendStudioWebApplication {
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
-      new DSLPersistence_GraphManagerPreset(),
+      new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
-      new DSLPersistenceCloud_GraphManagerPreset(),
+      new DSL_PersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
     ];
@@ -77,7 +77,7 @@ export class LegendStudioWebApplication {
       new DSL_DataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
-      new DSLPersistence_LegendStudioApplicationPlugin(),
+      new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
       new ESService_LegendStudioApplicationPlugin(),
       new ELMorphir_LegendStudioApplicationPlugin(),

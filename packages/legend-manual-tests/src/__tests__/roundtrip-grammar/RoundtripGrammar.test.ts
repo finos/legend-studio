@@ -50,9 +50,9 @@ import {
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-data-space';
-import { DSLPersistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
+import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
-import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
 
 const engineConfig = JSON.parse(
@@ -132,9 +132,9 @@ const checkGrammarRoundtrip = async (
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
-      new DSLPersistence_GraphManagerPreset(),
+      new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
-      new DSLPersistenceCloud_GraphManagerPreset(),
+      new DSL_PersistenceCloud_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
     ])
     .usePlugins([new WebConsole()]);
