@@ -103,20 +103,6 @@ const ProjectStructureEditor = observer(
       latestVersion &&
       (latestVersion.version > projectConfig.projectStructureVersion.version ||
         latestProjectExtensionVersion > currentProjectExtensionVersion);
-    const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setGroupId(event.target.value);
-      }
-    };
-    const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setArtifactId(event.target.value);
-      }
-    };
     const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
@@ -500,7 +486,7 @@ const ProjectPlatformVersionEditor = observer(
       if (isEditingPlatformConfigs !== true) {
         editorStore.setActionAlertInfo({
           message:
-            'This is an advanced configuration meant for users who already have in mind the platform version they would like to input.',
+            'This is an advanced configuration option meant for users who already have in mind the platform version they would like to input.',
           prompt:
             'Do you still want to proceed to override default project configurations?',
           type: ActionAlertType.CAUTION,
