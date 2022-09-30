@@ -121,8 +121,6 @@ export const MapperPostProcessorEditor = observer(
           (mapper) =>
             (mapper as TableNameMapper).schema.from ===
               (val as TableNameMapper).schema.from &&
-            (mapper as TableNameMapper).schema.from ===
-              (val as TableNameMapper).schema.from &&
             (mapper as TableNameMapper).from ===
               (val as TableNameMapper).from &&
             (mapper as TableNameMapper).from === (val as TableNameMapper).from,

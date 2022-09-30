@@ -186,7 +186,7 @@ export class ServiceRegistrationState {
   get versionOptions(): ServiceVersionOption[] | undefined {
     if (
       this.enableModesWithVersioning &&
-      !(this.serviceExecutionMode === ServiceExecutionMode.FULL_INTERACTIVE)
+      this.serviceExecutionMode !== ServiceExecutionMode.FULL_INTERACTIVE
     ) {
       const options: ServiceVersionOption[] =
         this.editorStore.sdlcState.projectVersions.map((version) => ({
