@@ -45,6 +45,7 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
+  Panel,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { PropertyEditor } from './PropertyEditor.js';
@@ -1692,7 +1693,7 @@ export const ClassFormEditor = observer(
       >
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel minSize={56}>
-            <div className="panel">
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   {isReadOnly && (
@@ -1795,7 +1796,7 @@ export const ClassFormEditor = observer(
                   />
                 )}
               </div>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />

@@ -23,6 +23,7 @@ import { debounce } from '@finos/legend-shared';
 import {
   clsx,
   InputWithInlineValidation,
+  PanelContent,
   PanelLoadingIndicator,
   RefreshIcon,
   ResizablePanel,
@@ -113,7 +114,7 @@ export const SchemaSetModelGenerationEditor = observer(
                   </button>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 <div className="file-generation-editor__configuration__content">
                   <div className="panel__content__form__section">
                     <div className="panel__content__form__section__header__label">
@@ -155,7 +156,7 @@ export const SchemaSetModelGenerationEditor = observer(
                       />
                     ))}
                 </div>
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
           <ResizablePanelSplitter>
@@ -203,7 +204,7 @@ export const SchemaSetModelGenerationEditor = observer(
                   )}
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 <PanelLoadingIndicator
                   isLoading={
                     modelGenerationState.generatingModelsState.isInProgress ||
@@ -216,7 +217,7 @@ export const SchemaSetModelGenerationEditor = observer(
                   isReadOnly={true}
                   language={EDITOR_LANGUAGE.PURE}
                 />
-              </div>
+              </PanelContent>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

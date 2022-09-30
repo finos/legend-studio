@@ -54,6 +54,9 @@ import {
   CogIcon,
   CaretRightIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
+  PanelHeader,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtils.js';
@@ -585,14 +588,8 @@ const IdentifiedConnectionEditor = observer(
     return (
       <div className="runtime-connection-editor">
         <div className="panel runtime-connection-editor__pointer">
-          <div className="panel__header">
-            <div className="panel__header__title">
-              <div className="panel__header__title__label">
-                runtime connection
-              </div>
-            </div>
-          </div>
-          <div className="panel__content">
+          <PanelHeader title="runtime connection" />
+          <PanelContent>
             <div className="runtime-connection-editor__connection-option">
               <div className="runtime-connection-editor__connection-option__label">
                 <PURE_ConnectionIcon />
@@ -616,7 +613,7 @@ const IdentifiedConnectionEditor = observer(
                 </button>
               )}
             </div>
-          </div>
+          </PanelContent>
         </div>
         <div className="runtime-connection-editor__embedded">
           <ConnectionEditor
@@ -799,7 +796,7 @@ const IdentifiedConnectionsPerStoreEditor = observer(
               />
             )}
             {(!connectionEditorState || !identifiedConnection) && (
-              <div className="panel">
+              <Panel>
                 <div className="panel__header">
                   <div className="panel__header__title">
                     <div className="panel__header__title__label">
@@ -807,10 +804,10 @@ const IdentifiedConnectionsPerStoreEditor = observer(
                     </div>
                   </div>
                 </div>
-                <div className="panel__content">
+                <PanelContent>
                   <BlankPanelContent>No connection selected</BlankPanelContent>
-                </div>
-              </div>
+                </PanelContent>
+              </Panel>
             )}
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -937,7 +934,7 @@ const RuntimeGeneralEditor = observer(
     return (
       <div className="panel runtime-explorer">
         <div className="panel__header"></div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={dropMappingRef}
             isDragOver={isMappingDragOver && !isReadOnly}
@@ -976,7 +973,7 @@ const RuntimeGeneralEditor = observer(
               </div>
             </div>
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },

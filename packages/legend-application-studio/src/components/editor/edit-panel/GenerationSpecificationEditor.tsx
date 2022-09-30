@@ -42,6 +42,8 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelEntryDropZonePlaceholder,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -289,7 +291,7 @@ const ModelGenerationSpecifications = observer(
       [handleDrop],
     );
     return (
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">Model Generations</div>
@@ -306,7 +308,7 @@ const ModelGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -336,8 +338,8 @@ const ModelGenerationSpecifications = observer(
               </BlankPanelContent>
             )}
           </PanelDropZone>
-        </div>
-      </div>
+        </PanelContent>
+      </Panel>
     );
   },
 );
@@ -470,7 +472,7 @@ const FileGenerationSpecifications = observer(
             </button>
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             isDragOver={isDragOver}
             dropTargetConnector={dropTargetConnector}
@@ -496,7 +498,7 @@ const FileGenerationSpecifications = observer(
               </BlankPanelContent>
             )}
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -519,7 +521,7 @@ export const GenerationSpecificationEditor = observer(() => {
 
   return (
     <div className="generation-spec-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">
@@ -579,7 +581,7 @@ export const GenerationSpecificationEditor = observer(() => {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

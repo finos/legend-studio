@@ -49,6 +49,7 @@ import {
   NonBlockingDialog,
   FileTrayIcon,
   MenuIcon,
+  Panel,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree.js';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
@@ -124,7 +125,7 @@ const TaxonomyExplorerSideBar = observer(() => {
   return (
     <div className="taxonomy-explorer__side-bar">
       <div className="taxonomy-explorer__side-bar__view">
-        <div className="panel">
+        <Panel>
           <div className="panel__header taxonomy-explorer__side-bar__header">
             <div className="panel__header__title">
               <div className="panel__header__title__content taxonomy-explorer__side-bar__header__title__content">
@@ -181,7 +182,7 @@ const TaxonomyExplorerSideBar = observer(() => {
             )}
           </div>
           <div className="panel__content taxonomy-explorer__side-bar__content">
-            <div className="panel">
+            <Panel>
               <div className="panel__header taxonomy-explorer__explorer__header">
                 <div className="panel__header__title">
                   <div className="panel__header__title__content">
@@ -216,9 +217,9 @@ const TaxonomyExplorerSideBar = observer(() => {
                   <TaxonomyTree treeData={explorerStore.treeData} />
                 )}
               </div>
-            </div>
+            </Panel>
           </div>
-        </div>
+        </Panel>
       </div>
     </div>
   );

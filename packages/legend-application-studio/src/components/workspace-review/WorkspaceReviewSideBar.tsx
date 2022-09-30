@@ -24,6 +24,7 @@ import {
   ArrowUpIcon,
   CheckIcon,
   InfoCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { formatDistanceToNow } from 'date-fns';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
@@ -229,7 +230,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                 {changes.length}
               </div>
             </div>
-            <div className="panel__content">
+            <PanelContent>
               {changes
                 .slice()
                 .sort(entityDiffSorter)
@@ -241,7 +242,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                     openDiff={openChange(diff)}
                   />
                 ))}
-            </div>
+            </PanelContent>
           </div>
         </div>
       </div>

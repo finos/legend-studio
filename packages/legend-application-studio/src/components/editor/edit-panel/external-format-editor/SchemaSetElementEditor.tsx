@@ -31,6 +31,7 @@ import {
   BlankPanelContent,
   MenuContent,
   MenuContentItem,
+  PanelContent,
 } from '@finos/legend-art';
 import { ExternalFormatSchema as Schema } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
@@ -430,7 +431,7 @@ export const SchemaSetEditor = observer(() => {
           </div>
         </div>
       </div>
-      <div className="panel__content">
+      <PanelContent>
         <PanelLoadingIndicator isLoading={isFetchingDescriptions} />
         <div className="panel__header">
           <div className="uml-element-editor__tabs">
@@ -460,7 +461,7 @@ export const SchemaSetEditor = observer(() => {
           {currentTab === SCHEMA_SET_TAB_TYPE.GENERATE_MODEL &&
             renderMainEditPanel()}
         </div>
-      </div>
+      </PanelContent>
     </div>
   );
 });

@@ -22,22 +22,16 @@ import {
   RELATIONAL_DATABASE_TAB_TYPE,
   POST_PROCESSOR_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
-import { useState } from 'react';
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizablePanelSplitter,
-  clsx,
   CustomSelectorInput,
-  CheckSquareIcon,
-  SquareIcon,
-  TimesIcon,
   ErrorIcon,
-  PencilIcon,
   PanelHeader,
   PanelHeaderActionItem,
   PlusIcon,
-  PanelTextEditor,
+  PanelFormTextEditor,
   ContextMenu,
   MenuContent,
   MenuContentItem,
@@ -50,6 +44,8 @@ import {
   Panel,
   Badge,
   PanelListSelectorItemLabel,
+  PanelSection,
+  PanelFormBooleanEditor,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -75,7 +71,6 @@ import {
   PackageableElementExplicitReference,
   MapperPostProcessor,
 } from '@finos/legend-graph';
-import { runInAction } from 'mobx';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
 import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
@@ -143,56 +138,6 @@ import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostPro
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
-/**
- * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
- * This is subjected to change and review, especially in terms in UX.
- */
-
-// TODO: consider to move this to shared
-export const ConnectionEditor_BooleanEditor = observer(
-  (props: {
-    name: string;
-    description?: string;
-    value: boolean | undefined;
-    isReadOnly: boolean;
-    update: (value: boolean | undefined) => void;
-  }) => {
-    const { value, name, description, isReadOnly, update } = props;
-    const toggle = (): void => {
-      if (!isReadOnly) {
-        update(!value);
-      }
-    };
-
-    return (
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
-        </div>
-        <div
-          className={clsx('panel__content__form__section__toggler', {
-            'panel__content__form__section__toggler--disabled': isReadOnly,
-          })}
-          onClick={toggle}
-        >
-          <button
-            className={clsx('panel__content__form__section__toggler__btn', {
-              'panel__content__form__section__toggler__btn--toggled': value,
-            })}
-            disabled={isReadOnly}
-            tabIndex={-1}
-          >
-            {value ? <CheckSquareIcon /> : <SquareIcon />}
-          </button>
-          <div className="panel__content__form__section__toggler__prompt">
-            {description}
-          </div>
-        </div>
-      </div>
-    );
-  },
-);
-
 // TODO: consider to move this to shared
 export const ConnectionEditor_TextEditor = observer(
   (props: {
@@ -220,188 +165,6 @@ export const ConnectionEditor_TextEditor = observer(
             isReadOnly={isReadOnly}
             language={language}
           />
-        </div>
-      </div>
-    );
-  },
-);
-
-// TODO: consider to move this to shared
-export const ConnectionEditor_ArrayEditor = observer(
-  (props: {
-    name: string;
-    description?: string;
-    values: string[];
-    isReadOnly: boolean;
-    update: (updatedValues: string[]) => void;
-  }) => {
-    const { name, description, values, isReadOnly, update } = props;
-    const arrayValues = values;
-    // NOTE: `showEditInput` is either boolean (to hide/show the add value button) or a number (index of the item being edited)
-    const [showEditInput, setShowEditInput] = useState<boolean | number>(false);
-    const [itemValue, setItemValue] = useState<string>('');
-    const showAddItemInput = (): void => setShowEditInput(true);
-    const showEditItemInput =
-      (value: string, idx: number): (() => void) =>
-      (): void => {
-        setItemValue(value);
-        setShowEditInput(idx);
-      };
-    const hideAddOrEditItemInput = (): void => {
-      setShowEditInput(false);
-      setItemValue('');
-    };
-    const changeItemInputValue: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setItemValue(event.target.value);
-    const addValue = (): void => {
-      if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
-        update(arrayValues.concat([itemValue]));
-      }
-      hideAddOrEditItemInput();
-    };
-    const updateValue =
-      (idx: number): (() => void) =>
-      (): void => {
-        if (itemValue && !isReadOnly && !arrayValues.includes(itemValue)) {
-          runInAction(() => {
-            arrayValues[idx] = itemValue;
-          });
-          update(arrayValues);
-        }
-        hideAddOrEditItemInput();
-      };
-    const deleteValue =
-      (idx: number): (() => void) =>
-      (): void => {
-        if (!isReadOnly) {
-          runInAction(() => arrayValues.splice(idx, 1));
-          update(arrayValues);
-          // Since we keep track of the value currently being edited using the index, we have to account for it as we delete entry
-          if (typeof showEditInput === 'number' && showEditInput > idx) {
-            setShowEditInput(showEditInput - 1);
-          }
-        }
-      };
-
-    return (
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          {description}
-        </div>
-        <div className="panel__content__form__section__list">
-          <div className="panel__content__form__section__list__items">
-            {arrayValues.map((value, idx) => (
-              // NOTE: since the value must be unique, we will use it as the key
-              <div
-                key={value}
-                className={
-                  showEditInput === idx
-                    ? 'panel__content__form__section__list__new-item'
-                    : 'panel__content__form__section__list__item'
-                }
-              >
-                {showEditInput === idx ? (
-                  <>
-                    <input
-                      className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                      spellCheck={false}
-                      disabled={isReadOnly}
-                      value={itemValue}
-                      onChange={changeItemInputValue}
-                    />
-                    <div className="panel__content__form__section__list__new-item__actions">
-                      <button
-                        className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                        disabled={isReadOnly || arrayValues.includes(itemValue)}
-                        onClick={updateValue(idx)}
-                        tabIndex={-1}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                        disabled={isReadOnly}
-                        onClick={hideAddOrEditItemInput}
-                        tabIndex={-1}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="panel__content__form__section__list__item__value">
-                      {value}
-                    </div>
-                    <div className="panel__content__form__section__list__item__actions">
-                      <button
-                        className="panel__content__form__section__list__item__edit-btn"
-                        disabled={isReadOnly}
-                        onClick={showEditItemInput(value, idx)}
-                        tabIndex={-1}
-                      >
-                        <PencilIcon />
-                      </button>
-                      <button
-                        className="panel__content__form__section__list__item__remove-btn"
-                        disabled={isReadOnly}
-                        onClick={deleteValue(idx)}
-                        tabIndex={-1}
-                      >
-                        <TimesIcon />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            {/* ADD NEW VALUE */}
-            {showEditInput === true && (
-              <div className="panel__content__form__section__list__new-item">
-                <input
-                  className="panel__content__form__section__input panel__content__form__section__list__new-item__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={itemValue}
-                  onChange={changeItemInputValue}
-                />
-                <div className="panel__content__form__section__list__new-item__actions">
-                  <button
-                    className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                    disabled={isReadOnly || arrayValues.includes(itemValue)}
-                    onClick={addValue}
-                    tabIndex={-1}
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                    disabled={isReadOnly}
-                    onClick={hideAddOrEditItemInput}
-                    tabIndex={-1}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          {showEditInput !== true && (
-            <div className="panel__content__form__section__list__new-item__add">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                disabled={isReadOnly}
-                onClick={showAddItemInput}
-                tabIndex={-1}
-              >
-                Add Value
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -448,8 +211,8 @@ const StaticDatasourceSpecificationEditor = observer(
     };
 
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
           name={'host'}
@@ -457,20 +220,16 @@ const StaticDatasourceSpecificationEditor = observer(
             staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            port
-          </div>
-          <input
-            className="panel__content__form__section__input panel__content__form__section__number-input"
-            spellCheck={false}
-            type="number"
-            disabled={isReadOnly}
-            value={sourceSpec.port}
-            onChange={changePort}
-          />
-        </div>
-        <PanelTextEditor
+        <div className="panel__content__form__section__header__label">port</div>
+        <input
+          className="panel__content__form__section__input panel__content__form__section__number-input"
+          spellCheck={false}
+          type="number"
+          disabled={isReadOnly}
+          value={sourceSpec.port}
+          onChange={changePort}
+        />
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
           name={'database'}
@@ -481,7 +240,7 @@ const StaticDatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -493,8 +252,8 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
   }) => {
     const { sourceSpec, isReadOnly } = props;
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
           name={'database'}
@@ -505,7 +264,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.directory}
           name={'directory'}
@@ -516,7 +275,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
             )
           }
         />
-        <ConnectionEditor_BooleanEditor
+        <PanelFormBooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.autoServerMode}
           name={'auto server mode'}
@@ -527,7 +286,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -539,8 +298,8 @@ const DatabricksDatasourceSpecificationEditor = observer(
   }) => {
     const { sourceSpec, isReadOnly } = props;
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.hostname}
           name="hostname"
@@ -551,7 +310,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.port}
           name="port"
@@ -559,7 +318,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
             databricksDatasourceSpecification_setPort(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.protocol}
           name="protocol"
@@ -570,7 +329,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.httpPath}
           name="httpPath"
@@ -581,7 +340,7 @@ const DatabricksDatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -593,8 +352,8 @@ const SnowflakeDatasourceSpecificationEditor = observer(
   }) => {
     const { sourceSpec, isReadOnly } = props;
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountName}
           name="account"
@@ -602,7 +361,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setAccountName(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
           name="region"
@@ -610,7 +369,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setRegion(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.warehouseName}
           name="warehouse"
@@ -618,7 +377,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setWarehouseName(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
           name="database"
@@ -626,7 +385,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setDatabaseName(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.cloudType}
           name="cloud type"
@@ -634,7 +393,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setCloudType(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
           name="proxy host"
@@ -642,7 +401,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setProxyHost(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
           name="proxy port"
@@ -650,7 +409,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setProxyPort(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.nonProxyHosts}
           name="non proxy hosts"
@@ -658,7 +417,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setNonProxyHosts(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.organization}
           name="organization"
@@ -666,7 +425,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setOrganization(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.accountType}
           name="account type"
@@ -674,7 +433,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             snowflakeDatasourceSpec_setAccountType(sourceSpec, value)
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.role}
           name="role"
@@ -683,7 +442,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           }
         />
         {/* TODO: we should reconsider adding this field, it's an optional boolean, should we default it to `undefined` when it's `false`?*/}
-        <ConnectionEditor_BooleanEditor
+        <PanelFormBooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
           name="quoted identifiers ignore case"
@@ -695,7 +454,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -711,8 +470,8 @@ const RedshiftDatasourceSpecificationEditor = observer(
       redshiftDatasourceSpecification_setPort(sourceSpec, parseInt(val, 10));
     };
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
           name="host"
@@ -733,7 +492,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
             onChange={changePort}
           />
         </div>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
           name="database"
@@ -745,7 +504,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
           }
         />
 
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.region}
           name="region"
@@ -753,7 +512,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
             redshiftDatasourceSpecification_setRegion(sourceSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.clusterID}
           name="cluster"
@@ -764,7 +523,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.endpointURL}
           name="endpointURL"
@@ -775,7 +534,7 @@ const RedshiftDatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -787,8 +546,8 @@ const BigQueryDatasourceSpecificationEditor = observer(
   }) => {
     const { sourceSpec, isReadOnly } = props;
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
           name={'project id'}
@@ -799,7 +558,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.defaultDataset}
           name={'default dataset'}
@@ -810,7 +569,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
           name="proxy host"
@@ -822,7 +581,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
           name="proxy port"
@@ -834,7 +593,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -849,7 +608,7 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serverPrincipal}
           name={'server principal'}
@@ -873,7 +632,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.apiToken}
           name={'apiTokenRef'}
@@ -893,8 +652,8 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
   }) => {
     const { authSpec, isReadOnly } = props;
     return (
-      <>
-        <PanelTextEditor
+      <PanelSection>
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.privateKeyVaultReference}
           name={'private key vault reference'}
@@ -905,7 +664,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passPhraseVaultReference}
           name={'pass phrase vault reference'}
@@ -916,7 +675,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.publicUserName}
           name={'public user name'}
@@ -927,7 +686,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
             )
           }
         />
-      </>
+      </PanelSection>
     );
   },
 );
@@ -937,7 +696,7 @@ const OAuthAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.oauthKey}
           name={'oauth key'}
@@ -945,7 +704,7 @@ const OAuthAuthenticationStrategyEditor = observer(
             oAuthAuthenticationStrategy_setOauthKey(authSpec, value ?? '')
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.scopeName}
           name={'scope name'}
@@ -966,7 +725,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.baseVaultReference}
           name={'base vault reference'}
@@ -977,7 +736,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.userNameVaultReference}
           name={'user name vault reference'}
@@ -988,7 +747,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
           name={'password vault reference'}
@@ -1012,7 +771,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
     const { authSpec, isReadOnly } = props;
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
           name={'vault reference'}
@@ -1038,7 +797,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
     const GCPScopes = authSpec.additionalGcpScopes.join('\n');
     return (
       <>
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serviceAccountEmail}
           name={'Service Account Email'}
@@ -1049,7 +808,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
             )
           }
         />
-        <PanelTextEditor
+        <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={GCPScopes}
           name={'Additional GCP Scopes'}
@@ -1626,7 +1385,7 @@ const RelationalConnectionGeneralEditor = observer(
       <div className="relational-connection-editor">
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel size={200} minSize={15}>
-            <div className="panel">
+            <Panel>
               <PanelHeader title="general"></PanelHeader>
 
               <div className="panel__content relational-connection-editor__general">
@@ -1641,7 +1400,7 @@ const RelationalConnectionGeneralEditor = observer(
                     darkMode={true}
                   />
                 </div>
-                <ConnectionEditor_BooleanEditor
+                <PanelFormBooleanEditor
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   name="Quote identifiers"
@@ -1651,7 +1410,7 @@ const RelationalConnectionGeneralEditor = observer(
                   }
                 />
               </div>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel>
@@ -1734,14 +1493,14 @@ export const RelationalDatabaseConnectionEditor = observer(
         );
       };
     return (
-      <>
+      <Panel>
         <PanelTabs
           tabTitles={Object.values(RELATIONAL_DATABASE_TAB_TYPE)}
           changeTheTab={changeTab}
           selectedTab={selectedTab}
           tabClassName="relational-connection-editor__tab"
         />
-        <div className="panel__content">
+        <PanelContent>
           {selectedTab === RELATIONAL_DATABASE_TAB_TYPE.GENERAL && (
             <RelationalConnectionGeneralEditor
               connectionValueState={connectionValueState}
@@ -1760,8 +1519,8 @@ export const RelationalDatabaseConnectionEditor = observer(
               isReadOnly={isReadOnly}
             />
           )}
-        </div>
-      </>
+        </PanelContent>
+      </Panel>
     );
   },
 );

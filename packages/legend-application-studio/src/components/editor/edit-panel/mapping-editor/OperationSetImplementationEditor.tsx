@@ -24,6 +24,8 @@ import {
   ArrowCircleRightIcon,
   PlusIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -195,7 +197,7 @@ export const OperationSetImplementationEditor = observer(
 
     return (
       <div className="mapping-element-editor__content">
-        <div className="panel">
+        <Panel>
           <div className="panel__header">
             <div className="panel__header__title">
               <div className="panel__header__title__content">PARAMETERS</div>
@@ -219,7 +221,7 @@ export const OperationSetImplementationEditor = observer(
             isDragOver={isDragOver && !isReadOnly}
             dropTargetConnector={dropRef}
           >
-            <div className="panel__content">
+            <PanelContent>
               {setImplementation.parameters.map((param) => (
                 <div
                   key={param._UUID}
@@ -259,9 +261,9 @@ export const OperationSetImplementationEditor = observer(
                   )}
                 </div>
               ))}
-            </div>
+            </PanelContent>
           </PanelDropZone>
-        </div>
+        </Panel>
       </div>
     );
   },

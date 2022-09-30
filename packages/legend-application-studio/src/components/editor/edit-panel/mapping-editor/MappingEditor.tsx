@@ -32,6 +32,7 @@ import {
   PURE_ClassIcon,
   PURE_EnumerationIcon,
   PURE_AssociationIcon,
+  Panel,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -241,7 +242,7 @@ export const MappingEditor = observer(() => {
         </ResizablePanel>
         <ResizablePanelSplitter />
         <ResizablePanel>
-          <div className="panel">
+          <Panel>
             <ContextMenu
               className="panel__header mapping-editor__header"
               disabled={true}
@@ -340,7 +341,7 @@ export const MappingEditor = observer(() => {
             <div className="panel__content mapping-editor__content">
               {renderActiveMappingElementTab()}
             </div>
-          </div>
+          </Panel>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

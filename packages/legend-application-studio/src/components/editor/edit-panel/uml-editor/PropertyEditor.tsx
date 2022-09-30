@@ -25,6 +25,7 @@ import {
 import {
   clsx,
   LockIcon,
+  PanelContent,
   PanelDropZone,
   PlusIcon,
   TimesIcon,
@@ -215,7 +216,7 @@ export const PropertyEditor = observer(
               </button>
             </div>
           </div>
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
               <PanelDropZone
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
@@ -254,7 +255,7 @@ export const PropertyEditor = observer(
                 </div>
               </PanelDropZone>
             )}
-          </div>
+          </PanelContent>
         </div>
       </div>
     );
