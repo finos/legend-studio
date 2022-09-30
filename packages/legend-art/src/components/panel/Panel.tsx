@@ -16,15 +16,9 @@
 
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
-import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React, { useState } from 'react';
-import {
-  CheckSquareIcon,
-  PencilIcon,
-  SquareIcon,
-  TimesIcon,
-} from '../CJS__Icon.cjs';
+import React from 'react';
+import { CheckSquareIcon, SquareIcon } from '../CJS__Icon.cjs';
 
 export const PanelHeaderActionItem: React.FC<{
   title: string;

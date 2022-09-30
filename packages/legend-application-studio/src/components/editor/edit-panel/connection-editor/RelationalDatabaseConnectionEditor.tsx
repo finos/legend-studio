@@ -139,6 +139,37 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
 
 // TODO: consider to move this to shared
+export const ConnectionEditor_TextEditor = observer(
+  (props: {
+    name: string;
+    description?: string;
+    value: string | undefined;
+    isReadOnly: boolean;
+    language: EDITOR_LANGUAGE;
+    update: (value: string | undefined) => void;
+  }) => {
+    const { value, name, description, isReadOnly, language, update } = props;
+
+    return (
+      <div className="panel__content__form__section">
+        <div className="panel__content__form__section__header__label">
+          {capitalize(name)}
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          {description}
+        </div>
+        <div className="panel__content__form__section__text-editor">
+          <StudioTextInputEditor
+            inputValue={value ?? ''}
+            updateInput={update}
+            isReadOnly={isReadOnly}
+            language={language}
+          />
+        </div>
+      </div>
+    );
+  },
+);
 
 const LocalH2DatasourceSpecificationEditor = observer(
   (props: {
