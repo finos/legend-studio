@@ -135,9 +135,10 @@ export class DSL_Persistence_LegendStudioApplicationPlugin
         editorStore: EditorStore,
         element: PackageableElement,
       ): ElementEditorState | undefined => {
-        if (element instanceof Persistence) {
-          return new UnsupportedElementEditorState(editorStore, element);
-        } else if (element instanceof PersistenceContext) {
+        if (
+          element instanceof Persistence ||
+          element instanceof PersistenceContext
+        ) {
           return new UnsupportedElementEditorState(editorStore, element);
         }
         return undefined;

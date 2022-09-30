@@ -199,8 +199,8 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
 
       // leverage initialization of query builder state to ensure we handle unsupported queries
-      queryBuilderState.initializeWithQuery(this.service.execution.func),
-        (this.queryBuilderState = queryBuilderState);
+      queryBuilderState.initializeWithQuery(this.service.execution.func);
+      this.queryBuilderState = queryBuilderState;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(

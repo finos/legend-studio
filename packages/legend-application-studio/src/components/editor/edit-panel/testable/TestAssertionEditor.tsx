@@ -262,7 +262,7 @@ const TestAssertionResultViewer = observer(
               </div>
             )}
 
-            {!(assertionResult === TESTABLE_RESULT.IN_PROGRESS) && (
+            {assertionResult !== TESTABLE_RESULT.IN_PROGRESS && (
               <>
                 <div className="testable-test-assertion-result__summary-info">
                   Id: {testAssertionEditorState.assertion.id}
