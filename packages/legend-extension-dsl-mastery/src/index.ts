@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-export * from './DSLMastery_Extension.js';
-export { DSLMastery_LegendStudioApplicationPlugin } from './components/studio/DSLMastery_LegendStudioApplicationPlugin.js';
+export * from './DSL_Mastery_Extension.js';
+export { DSL_Mastery_LegendStudioApplicationPlugin } from './components/studio/DSL_Mastery_LegendStudioApplicationPlugin.js';
 
 // ---------- PACKAGEABLE ELEMENT ----------
 
 // metamodels
-export { MasterRecordDefinition } from './graph/metamodel/pure/model/packageableElements/mastery/DSLMastery_MasterRecordDefinition.js';
+export { MasterRecordDefinition } from './graph/metamodel/pure/model/packageableElements/mastery/DSL_Mastery_MasterRecordDefinition.js';
 
 // v1 protocols
-export { V1_MasterRecordDefinition } from './graphManager/protocol/pure/v1/model/packageableElements/mastery/V1_DSLMastery_MasterRecordDefinition.js';
+export { V1_MasterRecordDefinition } from './graphManager/protocol/pure/v1/model/packageableElements/mastery/V1_DSL_Mastery_MasterRecordDefinition.js';
 
 // ---------- TRANSFORMATION ----------
 
-export { V1_transformMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_MasteryTransformer.js';
-export { V1_buildMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_MasteryBuilder.js';
+export { V1_transformMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/from/V1_DSL_Mastery_TransformerHelper.js';
+export { V1_buildMasterRecordDefinition } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_Mastery_BuilderHelper.js';

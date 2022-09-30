@@ -24,24 +24,24 @@ import {
   WebConsole,
 } from '@finos/legend-shared';
 import {
-  DSLText_GraphManagerPreset,
-  DSLText_LegendStudioApplicationPlugin,
+  DSL_Text_GraphManagerPreset,
+  DSL_Text_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-text';
 import {
-  DSLDiagram_GraphManagerPreset,
-  DSLDiagram_LegendStudioApplicationPlugin,
+  DSL_Diagram_GraphManagerPreset,
+  DSL_Diagram_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-diagram';
 import {
-  DSLDataSpace_GraphManagerPreset,
-  DSLDataSpace_LegendStudioApplicationPlugin,
+  DSL_DataSpace_GraphManagerPreset,
+  DSL_DataSpace_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-data-space';
 import {
-  DSLPersistence_GraphManagerPreset,
-  DSLPersistence_LegendStudioApplicationPlugin,
+  DSL_Persistence_GraphManagerPreset,
+  DSL_Persistence_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-persistence';
 import {
-  DSLMastery_GraphManagerPreset,
-  DSLMastery_LegendStudioApplicationPlugin,
+  DSL_Mastery_GraphManagerPreset,
+  DSL_Mastery_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-mastery';
 import {
   ESService_GraphManagerPreset,
@@ -49,7 +49,7 @@ import {
 } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
-import { DSLPersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
+import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
 
@@ -57,13 +57,13 @@ export class LegendStudioWebApplication {
   static getPresetCollection(): AbstractPreset[] {
     return [
       // graph managers
-      new DSLText_GraphManagerPreset(),
-      new DSLDiagram_GraphManagerPreset(),
-      new DSLDataSpace_GraphManagerPreset(),
+      new DSL_Text_GraphManagerPreset(),
+      new DSL_Diagram_GraphManagerPreset(),
+      new DSL_DataSpace_GraphManagerPreset(),
       new DSLExternalFormat_GraphPreset(),
-      new DSLPersistence_GraphManagerPreset(),
-      new DSLMastery_GraphManagerPreset(),
-      new DSLPersistenceCloud_GraphManagerPreset(),
+      new DSL_Persistence_GraphManagerPreset(),
+      new DSL_Mastery_GraphManagerPreset(),
+      new DSL_PersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
       new ESService_GraphManagerPreset(),
     ];
@@ -72,13 +72,13 @@ export class LegendStudioWebApplication {
   static getPluginCollection(): AbstractPlugin[] {
     return [
       // application
-      new DSLText_LegendStudioApplicationPlugin(),
-      new DSLDiagram_LegendStudioApplicationPlugin(),
-      new DSLDataSpace_LegendStudioApplicationPlugin(),
+      new DSL_Text_LegendStudioApplicationPlugin(),
+      new DSL_Diagram_LegendStudioApplicationPlugin(),
+      new DSL_DataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
-      new DSLPersistence_LegendStudioApplicationPlugin(),
-      new DSLMastery_LegendStudioApplicationPlugin(),
+      new DSL_Persistence_LegendStudioApplicationPlugin(),
+      new DSL_Mastery_LegendStudioApplicationPlugin(),
       new ESService_LegendStudioApplicationPlugin(),
       new ELMorphir_LegendStudioApplicationPlugin(),
 
