@@ -16,14 +16,14 @@
 
 import packageJson from '../package.json';
 import { AbstractPreset } from '@finos/legend-shared';
-import { EFJSONSchema_PureGraphManagerPlugin } from './graphManager/EFJSONSchema_PureGraphManagerPlugin.js';
-import { EFJSONSchema_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/EFJSONSchema_PureProtocolProcessorPlugin.js';
+import { FMT_JSONSchema_PureGraphManagerPlugin } from './graphManager/FMT_JSONSchema_PureGraphManagerPlugin.js';
+import { FMT_JSONSchema_PureProtocolProcessorPlugin } from './graphManager/protocol/pure/FMT_JSONSchema_PureProtocolProcessorPlugin.js';
 
-export class EFJSONSchema_GraphManagerPreset extends AbstractPreset {
+export class FMT_JSONSchema_GraphManagerPreset extends AbstractPreset {
   constructor() {
     super(packageJson.extensions.graphManagerPreset, packageJson.version, [
-      new EFJSONSchema_PureGraphManagerPlugin(),
-      new EFJSONSchema_PureProtocolProcessorPlugin(),
+      new FMT_JSONSchema_PureGraphManagerPlugin(),
+      new FMT_JSONSchema_PureProtocolProcessorPlugin(),
     ]);
   }
 }

@@ -16,13 +16,13 @@
 
 import packageJson from '../../../../package.json';
 import type { PlainObject } from '@finos/legend-shared';
-import V1_SYSTEM_MODELS from './v1/V1_EFJSONSchema_SystemModels.json';
+import V1_SYSTEM_MODELS from './v1/V1_FMT_JSONSchema_SystemModels.json';
 import {
   type V1_PureModelContextData,
   PureProtocolProcessorPlugin,
 } from '@finos/legend-graph';
 
-export class EFJSONSchema_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
+export class FMT_JSONSchema_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {
   constructor() {
     super(
       packageJson.extensions.pureProtocolProcessorPlugin,

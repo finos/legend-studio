@@ -17,7 +17,7 @@
 import { PureGraphManagerPlugin } from '@finos/legend-graph';
 import packageJson from '../../package.json';
 
-export class EFJSONSchema_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class FMT_JSONSchema_PureGraphManagerPlugin extends PureGraphManagerPlugin {
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }

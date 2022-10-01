@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './EFJSONSchema_Extension.js';
+export * from './FMT_JSONSchema_Extension.js';
