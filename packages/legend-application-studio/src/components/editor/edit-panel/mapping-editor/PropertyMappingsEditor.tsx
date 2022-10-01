@@ -90,10 +90,10 @@ export const PropertyMappingsEditor = observer(
     const propertyBasicType = getClassPropertyType(propertyRawType);
     const instanceSetImplementationType =
       editorStore.graphState.getSetImplementationType(
-        instanceSetImplementationState.setImplementation,
+        instanceSetImplementationState.mappingElement,
       );
     const isEmbedded =
-      instanceSetImplementationState.setImplementation._isEmbedded;
+      instanceSetImplementationState.mappingElement._isEmbedded;
     // Parser Error
     const propertyMappingStates =
       instanceSetImplementationState.propertyMappingStates.filter(

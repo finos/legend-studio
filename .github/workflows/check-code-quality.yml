@@ -21,6 +21,7 @@ jobs:
     name: SonarCloud Code Quality Check
     runs-on: ubuntu-latest
     # NOTE: we cannot run this action in PR because secrets are not accessible from forks
+    # See https://portal.productboard.com/sonarsource/1-sonarcloud/c/50-sonarcloud-analyzes-external-pull-request
     # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
     if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
     steps:

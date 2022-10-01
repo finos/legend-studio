@@ -78,14 +78,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     if (cacheRetriever) {
       try {
-        cachResult = (await cacheRetriever()) as
-          | PlainObject<V1_DataSpaceAnalysisResult>
-          | undefined;
+        cachResult = await cacheRetriever();
       } catch (error) {
         assertErrorThrown(error);
         this.graphManager.log.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-          `Can't fetch data space analysis result from cache: ${error.message}`,
+          `Can't fetch data space analysis result cache: ${error.message}`,
         );
       }
     }
@@ -113,7 +111,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         undefined,
         { enableCompression: true },
       ));
-    return await this.buildDataSpaceAnalytics(
+    return this.buildDataSpaceAnalytics(
       V1_DataSpaceAnalysisResult.serialization.fromJson(analysisResult),
     );
   }
