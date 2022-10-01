@@ -59,12 +59,12 @@ module.exports = {
   plugins: ['@finos/legend-studio'],
   extends: [
     'plugin:@finos/legend-studio/recommended',
-    !enableFastMode && 'plugin:@finos/legend-studio/computationally-expensive',
+    // !enableFastMode && 'plugin:@finos/legend-studio/computationally-expensive',
     'plugin:@finos/legend-studio/scripts-override', // must be called last to turn off rules which are not applicable for scripts
   ].filter(Boolean),
   rules: {
     // turn off the prettier format check when running this in CI (i.e. production environment)
     // to speed up pipeline
-    'prettier/prettier': process.env.NODE_ENV === 'production' ? OFF : ERROR,
+    // 'prettier/prettier': process.env.NODE_ENV === 'production' ? OFF : ERROR,
   },
 };
