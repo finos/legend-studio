@@ -44,8 +44,8 @@ import {
   DSL_Mastery_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-mastery';
 import {
-  ESService_GraphManagerPreset,
-  ESService_LegendStudioApplicationPlugin,
+  STO_ServiceStore_GraphManagerPreset,
+  STO_ServiceStore_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-external-store-service';
 import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
@@ -65,7 +65,7 @@ export class LegendStudioWebApplication {
       new DSL_Mastery_GraphManagerPreset(),
       new DSL_PersistenceCloud_GraphManagerPreset(),
       new EFJSONSchema_GraphManagerPreset(),
-      new ESService_GraphManagerPreset(),
+      new STO_ServiceStore_GraphManagerPreset(),
     ];
   }
 
@@ -79,7 +79,7 @@ export class LegendStudioWebApplication {
       new DSLExternalFormat_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
-      new ESService_LegendStudioApplicationPlugin(),
+      new STO_ServiceStore_LegendStudioApplicationPlugin(),
       new ELMorphir_LegendStudioApplicationPlugin(),
 
       // loggers

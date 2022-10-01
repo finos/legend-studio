@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export * from './ESService_Extension.js';
-export { ESService_LegendStudioApplicationPlugin } from './components/ESService_LegendStudioApplicationPlugin.js';
-export * from './graphManager/protocol/pure/ESService_PureProtocolPlugin_Extension.js';
-export * from './graphManager/ESService_PureGraphManagerPlugin_Extension.js';
+export * from './STO_ServiceStore_Extension.js';
+export { STO_ServiceStore_LegendStudioApplicationPlugin } from './components/STO_ServiceStore_LegendStudioApplicationPlugin.js';
+export * from './graphManager/protocol/pure/STO_ServiceStore_PureProtocolPlugin_Extension.js';
+export * from './graphManager/STO_ServiceStore_PureGraphManagerPlugin_Extension.js';
 
-export { SecurityScheme } from './graph/metamodel/pure/model/packageableElements/store/serviceStore/model/ESService_SecurityScheme.js';
-export { V1_SecurityScheme } from './graphManager/protocol/pure/v1/model/packageableElements/store/serviceStore/model/V1_ESService_SecurityScheme.js';
+export { SecurityScheme } from './graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_SecurityScheme.js';
+export { V1_SecurityScheme } from './graphManager/protocol/pure/v1/model/packageableElements/store/serviceStore/model/V1_STO_ServiceStore_SecurityScheme.js';
