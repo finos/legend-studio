@@ -27,14 +27,14 @@ import {
   type ElementClassifier,
   type DragElementClassifier,
   type NewElementState,
-  type DSLMapping_LegendStudioApplicationPlugin_Extension,
+  type DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   type SetImplemtationClassifier,
   type MappingElementStateCreator,
   type MappingElement,
   type MappingElementState,
   type MappingElementSourceExtractor,
   type ElementIconGetter,
-  type DSLData_LegendStudioApplicationPlugin_Extension,
+  type DSL_Data_LegendStudioApplicationPlugin_Extension,
   type EmbeddedDataTypeOption,
   type PureGrammarTextSuggestion,
   type PureGrammarParserElementSnippetSuggestionsGetter,
@@ -84,8 +84,8 @@ const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 export class STO_ServiceStore_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
   implements
-    DSLMapping_LegendStudioApplicationPlugin_Extension,
-    DSLData_LegendStudioApplicationPlugin_Extension
+    DSL_Mapping_LegendStudioApplicationPlugin_Extension,
+    DSL_Data_LegendStudioApplicationPlugin_Extension
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);

@@ -102,9 +102,9 @@ import {
   POST_PROCESSOR_RELATIONAL_DATABASE_CONNECTION_SNIPPET,
   createConnectionSnippetWithPostProcessorSuggestionSnippet,
 } from '../../../stores/LegendStudioCodeSnippets.js';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
-import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 
 const getSectionParserNameFromLineText = (
   lineText: string,
@@ -532,7 +532,7 @@ const getParserElementSnippetSuggestions = (
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraPostProcessorSnippetSuggestions?.() ?? [],
         );
       return [
@@ -626,7 +626,7 @@ const getParserElementSnippetSuggestions = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLData_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
             ).getExtraEmbeddedDataSnippetSuggestions?.() ?? [],
         );
       return [

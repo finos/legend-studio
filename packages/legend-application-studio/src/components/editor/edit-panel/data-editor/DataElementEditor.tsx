@@ -66,7 +66,7 @@ import {
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/DSL_Data_GraphModifierHelper.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';

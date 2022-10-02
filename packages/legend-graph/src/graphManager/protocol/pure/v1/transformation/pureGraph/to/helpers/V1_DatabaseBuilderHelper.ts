@@ -31,7 +31,7 @@ import {
   getJoinType,
   getSchema,
   getView,
-} from '../../../../../../../../graph/helpers/StoreRelational_Helper.js';
+} from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import { Schema } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
 import { Table } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 import { Column } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';

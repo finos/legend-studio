@@ -84,12 +84,12 @@ import {
   getAllEnumerationMappings,
   getClassMappingById,
   getClassMappingsByClass,
-} from '../../../../../../../graph/helpers/DSLMapping_Helper.js';
+} from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
 import type { AbstractProperty } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
-import { BindingTransformer } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
+import { BindingTransformer } from '../../../../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 import type { Mapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
-import { V1_resolveBinding } from './V1_DSLExternalFormat_GraphBuilderHelper.js';
+import { V1_resolveBinding } from './V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 import { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
 import {
   getAssociatedPropertyClass,
@@ -97,7 +97,7 @@ import {
   getClassProperty,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
 import { SetImplementationImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import { EnumerationMappingExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
 
 /**
@@ -179,7 +179,7 @@ export class V1_PropertyMappingBuilder
       this.context.extensions.plugins.flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+            plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraPropertyMappingBuilders?.() ?? [],
       );
     for (const builder of extraPropertyMappingBuilders) {

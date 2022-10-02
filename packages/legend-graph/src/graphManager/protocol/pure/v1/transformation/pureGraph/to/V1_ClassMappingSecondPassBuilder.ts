@@ -63,8 +63,8 @@ import {
   getAllClassMappings,
   getAllEnumerationMappings,
   getOwnClassMappingById,
-} from '../../../../../../../graph/helpers/DSLMapping_Helper.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+} from '../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 
 export class V1_ClassMappingSecondPassBuilder
@@ -82,7 +82,7 @@ export class V1_ClassMappingSecondPassBuilder
     const extraClassMappingBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraClassMappingSecondPassBuilders?.() ?? [],
     );
     for (const builder of extraClassMappingBuilders) {

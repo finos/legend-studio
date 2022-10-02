@@ -72,7 +72,7 @@ import {
   MapperPostProcessor,
 } from '@finos/legend-graph';
 import type { LegendStudioApplicationPlugin } from '../../../../stores/LegendStudioApplicationPlugin.js';
-import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/StoreRelational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../../stores/STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilder } from './DatabaseBuilder.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -81,7 +81,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { connection_setStore } from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -133,7 +133,7 @@ import {
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
   relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
-} from '../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';
@@ -889,7 +889,7 @@ const renderEditorPostProcessor = (
     const extraPostProcessorEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+          plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
         ).getExtraPostProcessorEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraPostProcessorEditorRenderers) {
@@ -947,7 +947,7 @@ const PostProcessorRelationalConnectionEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraPostProcessorClassifiers?.() ?? [],
         ),
       )
@@ -972,7 +972,7 @@ const PostProcessorRelationalConnectionEditor = observer(
             const extraPostProcessorCreators = plugins.flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
                 ).getExtraPostProcessorCreators?.() ?? [],
             );
             for (const creator of extraPostProcessorCreators) {
@@ -999,7 +999,7 @@ const PostProcessorRelationalConnectionEditor = observer(
         const extraPostProcessorEditorClassifier = plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraPostProcessorClassifierGetters?.() ?? [],
         );
         for (const classify of extraPostProcessorEditorClassifier) {
@@ -1180,7 +1180,7 @@ const renderDatasourceSpecificationEditor = (
     const extraDatasourceSpecificationEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+          plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
         ).getExtraDatasourceSpecificationEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraDatasourceSpecificationEditorRenderers) {
@@ -1257,7 +1257,7 @@ const renderAuthenticationStrategyEditor = (
     const extraAuthenticationStrategyEditorRenderers = plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+          plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
         ).getExtraAuthenticationStrategyEditorRenderers?.() ?? [],
     );
     for (const editorRenderer of extraAuthenticationStrategyEditorRenderers) {
@@ -1304,7 +1304,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraDatasourceSpecificationTypes?.() ?? [],
         ),
       )
@@ -1332,7 +1332,7 @@ const RelationalConnectionGeneralEditor = observer(
         plugins.flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraAuthenticationStrategyTypes?.() ?? [],
         ),
       )

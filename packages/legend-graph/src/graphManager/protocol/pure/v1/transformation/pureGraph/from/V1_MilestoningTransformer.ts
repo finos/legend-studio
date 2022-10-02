@@ -23,7 +23,7 @@ import { V1_BusinessSnapshotMilestoning } from '../../../model/packageableElemen
 import { BusinessSnapshotMilestoning } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/BusinessSnapshotMilestoning.js';
 import { V1_ProcessingMilestoning } from '../../../model/packageableElements/store/relational/model/milestoning/V1_ProcessingMilestoning.js';
 import { ProcessingMilestoning } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/milestoning/ProcessingMilestoning.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import { V1_RawValueSpecificationTransformer } from './V1_RawValueSpecificationTransformer.js';
@@ -88,7 +88,7 @@ export const V1_transformMilestoning = (
   const extraMilestoningTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraMilestoningTransformers?.() ?? [],
   );
   for (const transformer of extraMilestoningTransformers) {

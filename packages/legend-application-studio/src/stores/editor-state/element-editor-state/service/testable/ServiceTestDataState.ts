@@ -51,7 +51,7 @@ import type { EditorStore } from '../../../../EditorStore.js';
 import {
   service_addConnectionTestData,
   service_setConnectionTestDataEmbeddedData,
-} from '../../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../../graphModifier/DSL_Service_GraphModifierHelper.js';
 import {
   createMockEnumerationProperty,
   createMockPrimitiveProperty,

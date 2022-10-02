@@ -35,9 +35,9 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSLData_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/DSL_Data_GraphModifierHelper.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import {
   type EmbeddedDataState,
@@ -267,7 +267,7 @@ export function renderEmbeddedDataEditor(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLData_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
             ).getExtraEmbeddedDataEditorRenderers?.() ?? [],
         );
     for (const editorRenderer of extraEmbeddedDataEditorRenderers) {

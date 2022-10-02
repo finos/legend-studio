@@ -34,7 +34,7 @@ import {
   optional,
   list,
 } from 'serializr';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
 import {
   type V1_EmbeddedData,
@@ -119,7 +119,7 @@ export const V1_serializeEmbeddedDataType = (
   const extraEmbeddedDataSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLData_PureProtocolProcessorPlugin_Extension
+        plugin as DSL_Data_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraEmbeddedDataProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraEmbeddedDataSerializers) {
@@ -152,7 +152,7 @@ export const V1_deserializeEmbeddedDataType = (
       const extraEmbeddedDataProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
-            plugin as DSLData_PureProtocolProcessorPlugin_Extension
+            plugin as DSL_Data_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraEmbeddedDataProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraEmbeddedDataProtocolDeserializers) {

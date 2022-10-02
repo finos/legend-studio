@@ -28,11 +28,11 @@ import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedEl
 import type { Class } from '@finos/legend-graph';
 import { CustomSelectorInput, LockIcon, PanelContent } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   useApplicationNavigationContext,
@@ -144,7 +144,7 @@ export const ConnectionEditor = observer(
         const extraConnectionEditorRenderers = plugins.flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraConnectionEditorRenderers?.() ?? [],
         );
         for (const editorRenderer of extraConnectionEditorRenderers) {

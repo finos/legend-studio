@@ -65,7 +65,7 @@ import {
   V1_GCPWorkloadIdentityFederationAuthenticationStrategy,
   V1_MiddleTierUsernamePasswordAuthenticationStrategy,
 } from '../../../../model/packageableElements/store/relational/connection/V1_AuthenticationStrategy.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_buildDatasourceSpecification = (
   protocol: V1_DatasourceSpecification,
@@ -220,7 +220,7 @@ export const V1_buildDatasourceSpecification = (
     context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionDatasourceSpecificationBuilders?.() ?? [],
     );
   for (const builder of extraConnectionDatasourceSpecificationBuilders) {
@@ -327,7 +327,7 @@ export const V1_buildAuthenticationStrategy = (
     context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+          plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionAuthenticationStrategyBuilders?.() ?? [],
     );
   for (const builder of extraConnectionAuthenticationStrategyBuilders) {

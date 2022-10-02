@@ -26,7 +26,7 @@ import {
   RelationalCSVData,
 } from '../../../../../../../graph/metamodel/pure/data/RelationalCSVData.js';
 import type { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import {
   type V1_EmbeddedData,
   V1_DataElementReference,
@@ -111,7 +111,7 @@ export const V1_transformEmbeddedData = (
   const extraEmbeddedDataTransformers = context.plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLData_PureProtocolProcessorPlugin_Extension
+        plugin as DSL_Data_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraEmbeddedDataTransformers?.() ?? [],
   );
   for (const transformer of extraEmbeddedDataTransformers) {

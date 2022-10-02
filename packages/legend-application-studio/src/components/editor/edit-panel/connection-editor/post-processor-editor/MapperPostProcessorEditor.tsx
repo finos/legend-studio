@@ -50,7 +50,7 @@ import {
   mapper_setTo,
   schemaNameMapper_setFrom,
   schemaNameMapper_setTo,
-} from '../../../../../stores/graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
 
 export const MapperPostProcessorEditor = observer(
   (props: {

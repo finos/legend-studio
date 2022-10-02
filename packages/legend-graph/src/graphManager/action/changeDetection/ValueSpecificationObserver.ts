@@ -68,7 +68,7 @@ import {
   observe_GenericTypeReference,
   observe_PropertyReference,
 } from './DomainObserverHelper.js';
-import { observe_Runtime } from './DSLMapping_ObserverHelper.js';
+import { observe_Runtime } from './DSL_Mapping_ObserverHelper.js';
 
 const observe_Abstract_ValueSpecification = (
   metamodel: ValueSpecification,

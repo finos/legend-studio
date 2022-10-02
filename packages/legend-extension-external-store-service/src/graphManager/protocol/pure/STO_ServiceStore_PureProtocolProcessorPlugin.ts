@@ -60,8 +60,8 @@ import {
   type V1_ConnectionProtocolDeserializer,
   type V1_ConnectionProtocolSerializer,
   type V1_ConnectionTransformer,
-  type DSLMapping_PureProtocolProcessorPlugin_Extension,
-  type DSLData_PureProtocolProcessorPlugin_Extension,
+  type DSL_Mapping_PureProtocolProcessorPlugin_Extension,
+  type DSL_Data_PureProtocolProcessorPlugin_Extension,
   type V1_EmbeddedDataBuilder,
   type V1_EmbeddedDataProtocolDeserializer,
   type V1_EmbeddedDataProtocolSerializer,
@@ -106,8 +106,8 @@ const SERVICE_STORE_ELEMENT_CLASSIFIER_PATH =
 export class STO_ServiceStore_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
   implements
-    DSLMapping_PureProtocolProcessorPlugin_Extension,
-    DSLData_PureProtocolProcessorPlugin_Extension
+    DSL_Mapping_PureProtocolProcessorPlugin_Extension,
+    DSL_Data_PureProtocolProcessorPlugin_Extension
 {
   constructor() {
     super(

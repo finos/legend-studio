@@ -100,11 +100,11 @@ import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (
@@ -131,7 +131,7 @@ const getConnectionTooltipText = (
     .flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+          plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
         ).getExtraRuntimeConnectionTooltipTextBuilders?.() ?? [],
     );
   for (const builder of extraConnectionToolTipTexts) {

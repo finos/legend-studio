@@ -66,7 +66,7 @@ import {
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { packageableElementReference_setValue } from '../../graphModifier/DomainGraphModifierHelper.js';
 import {
   runtime_addIdentifiedConnection,
@@ -74,7 +74,7 @@ import {
   runtime_addUniqueStoreConnectionsForStore,
   runtime_deleteIdentifiedConnection,
   runtime_deleteMapping,
-} from '../../graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const getClassMappingStore = (
   setImplementation: SetImplementation,
@@ -98,7 +98,7 @@ export const getClassMappingStore = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraInstanceSetImplementationStoreExtractors?.() ?? [],
         );
     for (const extractor of extraInstanceSetImplementationStoreExtractors) {
@@ -504,7 +504,7 @@ export class IdentifiedConnectionsPerStoreEditorTabState extends IdentifiedConne
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraDefaultConnectionValueBuilders?.() ?? [],
       );
 

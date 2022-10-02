@@ -18,7 +18,7 @@ import packageJson from '../../package.json';
 import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
 import {
   PureGraphManagerPlugin,
-  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type DSL_Mapping_PureGraphManagerPlugin_Extension,
   type PackageableElement,
   type PureGrammarElementLabeler,
   type PureGrammarConnectionLabeler,
@@ -48,7 +48,7 @@ const PURE_GRAMMAR_SERVICE_STORE_SERVICE_GROUP_LABEL = 'ServiceGroup';
 export class STO_ServiceStore_PureGraphManagerPlugin
   extends PureGraphManagerPlugin
   implements
-    DSLMapping_PureGraphManagerPlugin_Extension,
+    DSL_Mapping_PureGraphManagerPlugin_Extension,
     EmbeddedData_PureGraphManagerPlugin_Extension
 {
   constructor() {

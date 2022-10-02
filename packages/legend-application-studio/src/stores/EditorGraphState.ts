@@ -99,7 +99,7 @@ import {
   CONFIGURATION_EDITOR_TAB,
   getConflictsString,
 } from './editor-state/ProjectConfigurationEditorState.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from './DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from './DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
 import {
   PACKAGEABLE_ELEMENT_TYPE,
@@ -1290,7 +1290,7 @@ export class EditorGraphState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraSetImplementationClassifiers?.() ?? [],
       );
     for (const Classifier of extraSetImplementationClassifiers) {

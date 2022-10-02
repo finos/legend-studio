@@ -76,15 +76,15 @@ export {
 // relational packageable elements
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 // metamodel external formats
-export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_Binding.js';
-export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_ModelUnit.js';
-export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
-export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_Schema.js';
-export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_ExternalFormatConnection.js';
-export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSLExternalFormat_UrlStream.js';
-export { DSLExternalFormat_GraphPreset } from './DSLExternalFormat_Extension.js';
-export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSLExternalFormat_BindingTransformer.js';
-export * from './graphManager/DSLExternalFormat_PureGraphManagerPlugin.js';
+export { Binding } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_Binding.js';
+export { ModelUnit } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
+export { SchemaSet } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+export { Schema as ExternalFormatSchema } from './graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_Schema.js';
+export { ExternalFormatConnection } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_ExternalFormatConnection.js';
+export { UrlStream } from './graph/metamodel/pure/packageableElements/externalFormat/connection/DSL_ExternalFormat_UrlStream.js';
+export { DSL_ExternalFormat_GraphPreset } from './DSL_ExternalFormat_Extension.js';
+export { BindingTransformer } from './graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
+export * from './graphManager/DSL_ExternalFormat_PureGraphManagerPlugin.js';
 // V1 protocols
 export * from './graphManager/protocol/pure/v1/model/packageableElements/V1_PackageableElement.js';
 export { V1_StereotypePtr } from './graphManager/protocol/pure/v1/model/packageableElements/domain/V1_StereotypePtr.js';
@@ -165,21 +165,21 @@ export * from './graph/MetaModelConst.js';
 export * from './graph/Core_HashUtils.js';
 
 export * from './graph/helpers/DomainHelper.js';
-export * from './graph/helpers/DSLMapping_Helper.js';
-export * from './graph/helpers/StoreRelational_Helper.js';
-export * from './graph/helpers/StoreFlatData_Helper.js';
-export * from './graph/helpers/DSLGeneration_Helper.js';
+export * from './graph/helpers/DSL_Mapping_Helper.js';
+export * from './graph/helpers/STO_Relational_Helper.js';
+export * from './graph/helpers/STO_FlatData_Helper.js';
+export * from './graph/helpers/DSL_Generation_Helper.js';
 export * from './graph/helpers/ValueSpecificationHelper.js';
 
 export * from './graph/helpers/PureLanguageHelper.js';
 
 export * from './graph/helpers/creator/DomainModelCreatorHelper.js';
-export * from './graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
+export * from './graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';
 export * from './graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
-export * from './graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
+export * from './graph/helpers/creator/STO_Relational_ModelCreatorHelper.js';
 export * from './graph/helpers/ArtifactGenerationExtensionHelper.js';
 
-export * from './graphManager/helpers/DSLData_GraphManagerHelper.js';
+export * from './graphManager/helpers/DSL_Data_GraphManagerHelper.js';
 export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
@@ -214,8 +214,8 @@ export { GraphBuilderReport } from './graphManager/GraphBuilderReport.js';
 export { GraphManagerTelemetry } from './graphManager/GraphManagerTelemetry.js';
 export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';
-export * from './graphManager/DSLMapping_PureGraphManagerPlugin_Extension.js';
-export * from './graphManager/DSLGeneration_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/DSL_Generation_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
   TdsExecutionResult,
@@ -290,7 +290,7 @@ export {
   V1_buildBaseSimpleFunctionExpression,
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
-export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSL_ExternalFormat_GraphBuilderHelper.js';
 
 // --------------------------------------------- TESTING --------------------------------------------------
 
@@ -311,37 +311,37 @@ export * from './graph/metamodel/pure/test/result/AtomicTestId.js';
 // --------------------------------------------- VALIDATION --------------------------------------------------
 
 export * from './graphManager/action/validation/ValidationHelper.js';
-export * from './graphManager/action/validation/DSLService_ValidationHelper.js';
-export * from './graphManager/action/validation/DSLMapping_ValidationHelper.js';
+export * from './graphManager/action/validation/DSL_Service_ValidationHelper.js';
+export * from './graphManager/action/validation/DSL_Mapping_ValidationHelper.js';
 
 // --------------------------------------------- OBSERVER --------------------------------------------------
 
 export * from './graphManager/action/changeDetection/PackageableElementObserver.js';
 export * from './graphManager/action/changeDetection/CoreObserverHelper.js';
 export * from './graphManager/action/changeDetection/DomainObserverHelper.js';
-export * from './graphManager/action/changeDetection/DSLMapping_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSL_Mapping_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/RawValueSpecificationObserver.js';
 export * from './graphManager/action/changeDetection/ValueSpecificationObserver.js';
-export * from './graphManager/action/changeDetection/StoreRelational_ObserverHelper.js';
-export * from './graphManager/action/changeDetection/StoreFlatData_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/STO_Relational_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/STO_FlatData_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/GraphObserverHelper.js';
-export * from './graphManager/action/changeDetection/DSLExternalFormat_ObserverHelper.js';
-export * from './graphManager/action/changeDetection/DSLService_ObserverHelper.js';
-export * from './graphManager/action/changeDetection/DSLGeneration_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSL_ExternalFormat_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSL_Service_ObserverHelper.js';
+export * from './graphManager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graphManager/action/changeDetection/Testable_ObserverHelper.js';
 
 export * from './graphManager/action/changeDetection/EngineObserverHelper.js';
 
 // --------------------------------------------- DSL --------------------------------------------------
 
-export * from './DSLMapping_Exports.js';
-export * from './DSLGeneration_Exports.js';
-export * from './DSLData_Exports.js';
+export * from './DSL_Mapping_Exports.js';
+export * from './DSL_Generation_Exports.js';
+export * from './DSL_Data_Exports.js';
 
 /**
  * @modularize
  * See https://github.com/finos/legend-studio/issues/65
  */
-export * from './DSLService_Exports.js';
-export * from './StoreFlatData_Exports.js';
-export * from './StoreRelational_Exports.js';
+export * from './DSL_Service_Exports.js';
+export * from './STO_FlatData_Exports.js';
+export * from './STO_Relational_Exports.js';
