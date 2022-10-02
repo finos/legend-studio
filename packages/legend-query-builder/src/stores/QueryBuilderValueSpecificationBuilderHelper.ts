@@ -16,12 +16,9 @@
 
 import {
   AbstractPropertyExpression,
-  Class,
   DerivedProperty,
-  getMilestoneTemporalStereotype,
   INTERNAL__PropagatedValue,
   matchFunctionName,
-  MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
@@ -31,104 +28,11 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
+import {
+  checkIfInternalPropagatedValueCanBeRemoved,
+  getValueOfInternalPropagatedValue,
+} from './QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-
-/**
- * Checks if the provided property expression match the criteria for default
- * date propagation so we know whether we need to fill in values for the parameter
- * or just propgate values from the parent's expression
- *
- * NOTE: this takes date propgation into account. See the table below for all
- * the combination:
- *
- *             | [source] |          |          |          |          |
- * ----------------------------------------------------------------------
- *   [target]  |          |   NONE   |  PR_TMP  |  BI_TMP  |  BU_TMP  |
- * ----------------------------------------------------------------------
- *             |   NONE   |   N.A.   |   PRD    | PRD,BUD  |    BUD   |
- * ----------------------------------------------------------------------
- *             |  PR_TMP  |   N.A.   |    X     | PRD,BUD  |    BUD   |
- * ----------------------------------------------------------------------
- *             |  BI_TMP  |   N.A.   |    X     |    X     |    X     |
- * ----------------------------------------------------------------------
- *             |  BU_TMP  |   N.A.   |   PRD    | PRD,BUD  |    X     |
- * ----------------------------------------------------------------------
- *
- * Annotations:
- *
- * [source]: source temporal type
- * [target]: target temporal type
- *
- * PR_TMP  : processing temporal
- * BI_TMP  : bitemporal
- * BU_TMP  : business temporal
- *
- * X       : no default date propagated
- * PRD     : default processing date is propagated
- * BUD     : default business date is propgated
- */
-const isDefaultDatePropagationSupported = (
-  currentPropertyExpression: AbstractPropertyExpression,
-  queryBuilderState: QueryBuilderState,
-  prevPropertyExpression?: AbstractPropertyExpression | undefined,
-): boolean => {
-  const property = currentPropertyExpression.func.value;
-  const graph = queryBuilderState.graphManagerState.graph;
-  // Default date propagation is not supported for current expression when the previous property expression is a derived property.
-  if (
-    prevPropertyExpression &&
-    prevPropertyExpression.func.value instanceof DerivedProperty &&
-    prevPropertyExpression.func.value._OWNER.derivedProperties.includes(
-      prevPropertyExpression.func.value,
-    )
-  ) {
-    return false;
-  }
-  // Default date propagation is not supported for current expression when the milestonedParameterValues of
-  // the previous property expression doesn't match with the global milestonedParameterValues
-  if (
-    prevPropertyExpression &&
-    prevPropertyExpression.func.value.genericType.value.rawType instanceof Class
-  ) {
-    const milestoningStereotype = getMilestoneTemporalStereotype(
-      prevPropertyExpression.func.value.genericType.value.rawType,
-      graph,
-    );
-    if (
-      milestoningStereotype &&
-      !prevPropertyExpression.parametersValues
-        .slice(1)
-        .every(
-          (parameterValue) =>
-            parameterValue instanceof INTERNAL__PropagatedValue,
-        )
-    ) {
-      return false;
-    }
-  }
-  if (property.genericType.value.rawType instanceof Class) {
-    // the stereotype of source class of current property expression.
-    const sourceStereotype =
-      property instanceof DerivedProperty
-        ? getDerivedPropertyMilestoningSteoreotype(property, graph)
-        : undefined;
-    // Default date propagation is always supported if the source is `bitemporal`
-    if (sourceStereotype === MILESTONING_STEREOTYPE.BITEMPORAL) {
-      return true;
-    }
-    // the stereotype (if exists) of the generic type of current property expression.
-    const targetStereotype = getMilestoneTemporalStereotype(
-      property.genericType.value.rawType,
-      graph,
-    );
-    // Default date propagation is supported when stereotype of both source and target matches
-    if (sourceStereotype && targetStereotype) {
-      return sourceStereotype === targetStereotype;
-    }
-  }
-  return false;
-};
 
 export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
@@ -171,12 +75,12 @@ export const buildPropertyExpressionChain = (
           // Replace with argumentless derived property expression only when default date propagation is supported
           if (
             !TEMPORARY__disableDatePropagation &&
-            isDefaultDatePropagationSupported(
-              currentPropertyExpression,
+            checkIfInternalPropagatedValueCanBeRemoved(
+              guaranteeType(currentExpression, AbstractPropertyExpression),
               queryBuilderState,
-              nextExpression instanceof AbstractPropertyExpression
-                ? nextExpression
-                : undefined,
+              index,
+              parameterValue.getValue(),
+              nextExpression,
             )
           ) {
             // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
@@ -192,7 +96,7 @@ export const buildPropertyExpressionChain = (
                 ))
             ) {
               currentPropertyExpression.parametersValues[index + 1] =
-                parameterValue.getValue();
+                getValueOfInternalPropagatedValue(parameterValue);
             } else {
               currentPropertyExpression.parametersValues = [
                 guaranteeNonNullable(
@@ -203,7 +107,7 @@ export const buildPropertyExpressionChain = (
             }
           } else {
             currentPropertyExpression.parametersValues[index + 1] =
-              parameterValue.getValue();
+              getValueOfInternalPropagatedValue(parameterValue);
           }
         }
       });
