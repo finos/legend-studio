@@ -184,7 +184,6 @@ const checkGrammarRoundtrip = async (
       `[entities: ${entities.length}]`,
     );
   }
-  GRAPH_MANAGER_EVENT;
   startTime = Date.now();
   await TEST__buildGraphWithEntities(graphManagerState, entities, {
     TEMPORARY__preserveSectionIndex: true,
@@ -195,7 +194,6 @@ const checkGrammarRoundtrip = async (
       Date.now() - startTime,
       'ms',
     );
-    GRAPH_MANAGER_EVENT;
   }
   startTime = Date.now();
   const transformedEntities = graphManagerState.graph.allOwnElements.map(
@@ -207,7 +205,6 @@ const checkGrammarRoundtrip = async (
       Date.now() - startTime,
       'ms',
     );
-    GRAPH_MANAGER_EVENT;
   }
 
   if (!excludes.includes(phase)) {
