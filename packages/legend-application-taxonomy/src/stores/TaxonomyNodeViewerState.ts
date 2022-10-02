@@ -18,7 +18,7 @@ import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
   getDSLDataSpaceGraphManagerExtension,
-  retrieveCachedAnalyticsResultFromDepot,
+  retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Entity } from '@finos/legend-storage';
@@ -148,12 +148,12 @@ export class TaxonomyNodeViewerState {
         entities,
         dependencyEntitiesIndex,
         () =>
-          retrieveCachedAnalyticsResultFromDepot(
-            this.explorerStore.depotServerClient,
+          retrieveAnalyticsResultCache(
             project.groupId,
             project.artifactId,
             versionId,
             dataSpaceTaxonomyContext.path,
+            this.explorerStore.depotServerClient,
           ),
       )) as DataSpaceAnalysisResult;
       const dataSpaceViewerState = new DataSpaceViewerState(

@@ -202,7 +202,7 @@ export class ProjectViewerStore {
     // fetch entities
     stopWatch.record();
     this.editorStore.initState.setMessage(`Fetching entities...`);
-    if (versionId) {
+    if (versionId && !revisionId) {
       // get version info if a version is specified
       this.version =
         versionId !== this.latestVersion.id.id
@@ -223,7 +223,7 @@ export class ProjectViewerStore {
           versionId,
         ),
       ])) as [Entity[], PlainObject<ProjectConfiguration>];
-    } else if (revisionId) {
+    } else if (revisionId && !versionId) {
       // get revision info if a revision is specified
       this.revision =
         revisionId !== this.currentRevision.id

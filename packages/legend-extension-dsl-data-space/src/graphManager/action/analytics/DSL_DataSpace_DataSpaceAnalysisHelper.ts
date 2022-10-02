@@ -22,14 +22,14 @@ import type { DataSpaceAnalysisResult } from './DSL_DataSpace_DataSpaceAnalysis.
 const DATASPACE_ANALYTICS_FILE_NAME = 'AnalyticsResult.json';
 const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';
 
-export const retrieveCachedAnalyticsResultFromDepot = async (
-  depotServer: DepotServerClient,
+export const retrieveAnalyticsResultCache = async (
   groupId: string,
   artifactId: string,
   versionId: string,
   dataSpacePath: string,
+  depotServerClient: DepotServerClient,
 ): Promise<PlainObject<DataSpaceAnalysisResult> | undefined> => {
-  const result = await depotServer.getGenerationContentByPath(
+  const result = await depotServerClient.getGenerationContentByPath(
     groupId,
     artifactId,
     versionId,

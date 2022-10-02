@@ -1,4 +1,4 @@
-name: Check Code Quality
+name: Check Code
 
 on:
   push:
@@ -17,62 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  sonar-code-quality-check:
-    name: SonarCloud Code Quality Check
-    runs-on: ubuntu-latest
-    # NOTE: we cannot run this action in PR because secrets are not accessible from forks
-    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
-    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # disabling shallow clone is recommended for improving relevancy of reporting
-      - name: Get Yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - name: Setup Yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-yarn-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-        # Install step is needed for Typescript scanning to work properly since
-        # we refer to another packages in `tsconfig` files, which is used by Sonar
-        # See https://community.sonarsource.com/t/sonarts-is-not-able-to-analyse-typescript-files/21510/5
-      - name: Install dependencies
-        run: yarn
-      - name: SonarCloud scan
-        uses: sonarsource/sonarcloud-github-action@v1.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  codeql-code-quality-check:
-    name: CodeQL Code Quality Check
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: javascript, typescript
-          config-file: ./.github/codeql-config.yml
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
-  check-code:
-    name: Run Code Checks
+  check-code-core:
+    name: Run Code Checks (Core)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -97,7 +43,35 @@ jobs:
       - name: Check typings
         run: yarn check:ts
       - name: Run lint
-        run: yarn lint:ci
+        run: yarn lint:ci:core
+
+  check-code-extension:
+    name: Run Code Checks (Extension)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - name: Setup Yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: yarn
+      # NOTE: we need this step to build the code before linting
+      - name: Check typings
+        run: yarn check:ts
+      - name: Run lint
+        run: yarn lint:ci:extension
 
   check-codebase-maintenance:
     name: Run Codebase Maintenance Checks

@@ -46,7 +46,7 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
-import { retrieveCachedAnalyticsResultFromDepot } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysisHelper.js';
+import { retrieveAnalyticsResultCache } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
 
 export class DataSpaceQuerySetupState extends QuerySetupState {
@@ -154,12 +154,12 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
         entities,
         dependencyEntitiesIndex,
         () =>
-          retrieveCachedAnalyticsResultFromDepot(
-            this.setupStore.depotServerClient,
+          retrieveAnalyticsResultCache(
             dataSpace.groupId,
             dataSpace.artifactId,
             dataSpace.versionId,
             dataSpace.path,
+            this.setupStore.depotServerClient,
           ),
       )) as DataSpaceAnalysisResult;
       this.dataSpaceViewerState = new DataSpaceViewerState(

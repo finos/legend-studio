@@ -69,19 +69,27 @@ export abstract class LoggerPlugin extends AbstractPlugin {
   protected abstract _error(event: LogEvent, ...data: unknown[]): void;
 
   debug(event: LogEvent, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.DEBUG ? undefined : this._debug(event, ...data);
+    if (this.level <= LOG_LEVEL.DEBUG) {
+      this._debug(event, ...data);
+    }
   }
 
   info(event: LogEvent, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.INFO ? undefined : this._info(event, ...data);
+    if (this.level <= LOG_LEVEL.INFO) {
+      this._info(event, ...data);
+    }
   }
 
   warn(event: LogEvent, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.WARN ? undefined : this._warn(event, ...data);
+    if (this.level <= LOG_LEVEL.WARN) {
+      this._warn(event, ...data);
+    }
   }
 
   error(event: LogEvent, ...data: unknown[]): void {
-    this.level > LOG_LEVEL.ERROR ? undefined : this._error(event, ...data);
+    if (this.level <= LOG_LEVEL.ERROR) {
+      this._error(event, ...data);
+    }
   }
 }
 
