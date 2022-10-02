@@ -196,6 +196,10 @@ If you make change to the interface, please kindly include the screenshots, scre
 
 Also please try to commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
 
+#### :scroll: Writing application documentation/guide/contextual-support
+
+In many occasions, you would like to provide users with help/guidance (even contextual support) as they are using the application. Follow this [guide](./docs/workflow/writing-application-documentation.md) to learn how to do so.
+
 #### :package: Releasing
 
 This section is only for maintainers, or whoever has [write access and above](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization#repository-access-for-each-permission-level) permission in this repository. Only this group of people should have the permission to trigger the release. For details of the release process, please read this [guide](./docs/workflow/release-process.md).
@@ -203,10 +207,6 @@ This section is only for maintainers, or whoever has [write access and above](ht
 #### :woman_technologist: Code contributor guide `[advanced]`
 
 To keep this guide succinct, we have a separate [guide](./docs/workflow/code-contributor-guide.md) for more advanced and miscellaneous topics regarding the development process: e.g. debugging, troubleshooting, etc.
-
-#### :scroll: Documentation
-
-For contributing documentation to the codebase, we also have a [guide](./docs/workflow/docs.md) for instructions on how to test and view docs while developing.
 
 ### Code Conventions
 
