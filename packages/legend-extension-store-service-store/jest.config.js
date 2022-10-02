@@ -25,5 +25,5 @@ const packageJson = loadJSON(resolve(__dirname, './package.json'));
 
 export default getBaseJestDOMProjectConfig(
   packageJson.name,
-  'packages/legend-extension-external-store-service',
+  'packages/legend-extension-store-service-store',
 );

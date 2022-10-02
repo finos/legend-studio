@@ -1,22 +1,21 @@
 {
-  "name": "@finos/legend-extension-external-store-service",
-  "version": "4.0.15",
+  "name": "@finos/legend-extension-store-service-store",
+  "version": "0.0.0",
   "description": "Legend extension for Service Store",
   "keywords": [
     "legend",
     "legend-extension",
     "store",
-    "external-store",
     "service-store"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-external-store-service",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-store-service-store",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-external-store-service"
+    "directory": "packages/legend-extension-store-service-store"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -74,10 +73,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-external-store-service",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-external-store-service",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-external-store-service",
-    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-external-store-service",
-    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-external-store-service"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-store-service-stor",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-store-service-stor",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-store-service-stor",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-store-service-stor",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-store-service-stor"
   }
 }

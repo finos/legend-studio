@@ -50,7 +50,7 @@
       "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
+      "path": "packages/legend-extension-store-service-store/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"

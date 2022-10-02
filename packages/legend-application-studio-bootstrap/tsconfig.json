@@ -22,6 +22,6 @@
     { "path": "../legend-extension-dsl-text" },
     { "path": "../legend-extension-format-json-schema" },
     { "path": "../legend-extension-external-language-morphir" },
-    { "path": "../legend-extension-external-store-service" }
+    { "path": "../legend-extension-store-service-store" }
   ]
 }

@@ -53,7 +53,7 @@ import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-da
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
+import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {

@@ -46,7 +46,7 @@ import {
 import {
   STO_ServiceStore_GraphManagerPreset,
   STO_ServiceStore_LegendStudioApplicationPlugin,
-} from '@finos/legend-extension-external-store-service';
+} from '@finos/legend-extension-store-service-store';
 import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 import { DSL_ExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';

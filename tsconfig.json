@@ -59,7 +59,7 @@
       "path": "packages/legend-extension-dsl-mastery"
     },
     {
-      "path": "packages/legend-extension-external-store-service"
+      "path": "packages/legend-extension-store-service-store"
     },
     {
       "path": "packages/legend-extension-store-flat-data"
