@@ -50,7 +50,7 @@ import {
 import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
 import { DSL_ExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
 
 export class LegendStudioWebApplication {

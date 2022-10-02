@@ -20,7 +20,7 @@
     { "path": "../legend-extension-dsl-mastery" },
     { "path": "../legend-extension-dsl-persistence-cloud" },
     { "path": "../legend-extension-dsl-text" },
-    { "path": "../legend-extension-external-format-json-schema" },
+    { "path": "../legend-extension-format-json-schema" },
     { "path": "../legend-extension-external-language-morphir" },
     { "path": "../legend-extension-external-store-service" }
   ]

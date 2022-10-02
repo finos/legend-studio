@@ -1,22 +1,21 @@
 {
-  "name": "@finos/legend-extension-external-format-json-schema",
-  "version": "3.0.13",
+  "name": "@finos/legend-extension-format-json-schema",
+  "version": "0.0.0",
   "description": "Legend extension for JSON Schema external format",
   "keywords": [
     "legend",
     "legend-extension",
-    "external-format",
-    "external-format-json-schema",
+    "format-json-schema",
     "json-schema"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-external-format-json-schema",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-format-json-schema",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-external-format-json-schema"
+    "directory": "packages/legend-extension-format-json-schema"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -56,8 +55,8 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-external-format-json-schema",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-external-format-json-schema",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-external-format-json-schema"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-format-json-schema",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-format-json-schema",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-format-json-schema"
   }
 }

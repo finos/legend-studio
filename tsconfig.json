@@ -68,7 +68,7 @@
       "path": "packages/legend-extension-store-relational"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema"
+      "path": "packages/legend-extension-format-json-schema"
     },
     {
       "path": "packages/legend-extension-external-language-morphir"

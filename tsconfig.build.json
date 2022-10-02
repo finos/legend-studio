@@ -59,7 +59,7 @@
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "packages/legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"

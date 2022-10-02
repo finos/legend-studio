@@ -19,7 +19,7 @@
     { "path": "../legend-extension-dsl-persistence-cloud/tsconfig.build.json" },
     { "path": "../legend-extension-dsl-text/tsconfig.build.json" },
     {
-      "path": "../legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "../legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
       "path": "../legend-extension-external-language-morphir/tsconfig.build.json"
