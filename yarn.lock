@@ -2103,8 +2103,8 @@ __metadata:
     "@finos/legend-extension-dsl-persistence-cloud": "workspace:*"
     "@finos/legend-extension-dsl-service": "workspace:*"
     "@finos/legend-extension-dsl-text": "workspace:*"
-    "@finos/legend-extension-external-language-morphir": "workspace:*"
     "@finos/legend-extension-format-json-schema": "workspace:*"
+    "@finos/legend-extension-format-morphir": "workspace:*"
     "@finos/legend-extension-store-service-store": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2616,11 +2616,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-external-language-morphir@workspace:*, @finos/legend-extension-external-language-morphir@workspace:packages/legend-extension-external-language-morphir":
+"@finos/legend-extension-format-json-schema@workspace:*, @finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-external-language-morphir@workspace:packages/legend-extension-external-language-morphir"
+  resolution: "@finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema"
   dependencies:
-    "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2630,15 +2629,15 @@ __metadata:
     jest: 29.1.2
     npm-run-all: 4.1.5
     rimraf: 3.0.2
-    sass: 1.55.0
     typescript: 4.8.4
   languageName: unknown
   linkType: soft
 
-"@finos/legend-extension-format-json-schema@workspace:*, @finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema":
+"@finos/legend-extension-format-morphir@workspace:*, @finos/legend-extension-format-morphir@workspace:packages/legend-extension-format-morphir":
   version: 0.0.0-use.local
-  resolution: "@finos/legend-extension-format-json-schema@workspace:packages/legend-extension-format-json-schema"
+  resolution: "@finos/legend-extension-format-morphir@workspace:packages/legend-extension-format-morphir"
   dependencies:
+    "@finos/legend-application-studio": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
     "@finos/legend-shared": "workspace:*"
@@ -2652,6 +2651,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     npm-run-all: 4.1.5
     rimraf: 3.0.2
+    sass: 1.55.0
     typescript: 4.8.4
   languageName: unknown
   linkType: soft

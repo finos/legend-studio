@@ -1,22 +1,21 @@
 {
-  "name": "@finos/legend-extension-external-language-morphir",
-  "version": "2.0.27",
-  "description": "Legend extension for Morphir external language",
+  "name": "@finos/legend-extension-format-morphir",
+  "version": "0.0.0",
+  "description": "Legend extension for Morphir",
   "keywords": [
     "legend",
     "legend-extension",
-    "external-language",
-    "external-language-morphir",
+    "format-morphir",
     "morphir"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-external-language-morphir",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-extension-format-morphir",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-extension-external-language-morphir"
+    "directory": "packages/legend-extension-format-morphir"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
@@ -58,6 +57,6 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-external-language-morphir"
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-format-morphir"
   }
 }

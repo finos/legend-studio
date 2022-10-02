@@ -71,7 +71,7 @@
       "path": "packages/legend-extension-format-json-schema"
     },
     {
-      "path": "packages/legend-extension-external-language-morphir"
+      "path": "packages/legend-extension-format-morphir"
     },
     // fixtures
     {

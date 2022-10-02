@@ -62,7 +62,7 @@
       "path": "packages/legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
+      "path": "packages/legend-extension-format-morphir/tsconfig.build.json"
     },
     // fixtures
     {

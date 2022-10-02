@@ -47,7 +47,7 @@ import {
   STO_ServiceStore_GraphManagerPreset,
   STO_ServiceStore_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-store-service-store';
-import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
+import { FMT_Morphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-format-morphir';
 import { DSL_ExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
 import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
@@ -80,7 +80,7 @@ export class LegendStudioWebApplication {
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
       new STO_ServiceStore_LegendStudioApplicationPlugin(),
-      new ELMorphir_LegendStudioApplicationPlugin(),
+      new FMT_Morphir_LegendStudioApplicationPlugin(),
 
       // loggers
       new WebConsole(),
