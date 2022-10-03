@@ -27,9 +27,7 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
     dataSpacePath: string,
     entities: Entity[],
     dependencyEntitiesIndex: Map<string, Entity[]>,
-    cacheRetriever?: () => Promise<
-      PlainObject<DataSpaceAnalysisResult> | undefined
-    >,
+    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
   ): Promise<DataSpaceAnalysisResult>;
 }
 
