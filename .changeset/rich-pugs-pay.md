@@ -2,4 +2,4 @@
 '@finos/legend-graph': major
 ---
 
-Rename files prefix from `StoreFlatData` to `STO_FlatData`.
+**BREAKING CHANGE:** Renamed `FlataData store` plugins and presets to use the prefix `STO_FlatData` instead of `StoreFlatData`

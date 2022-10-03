@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-mastery': major
 ---
 
-Rename files prefix from `DSLMastery` to `DSL_Mastery`.
+**BREAKING CHANGE:** Rename DSL Mastery plugins and presets to use prefix `DSL_Mastery` instead of `DSLMastery`

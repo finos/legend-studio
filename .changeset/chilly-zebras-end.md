@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-data-space': major
 ---
 
-Rename files prefix from `DSLDataSpace` to `DSL_DataSpace`.
+**BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_DataSpace` instead of `DSLDatSpace`

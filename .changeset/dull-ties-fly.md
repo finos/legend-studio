@@ -2,4 +2,4 @@
 '@finos/legend-graph': major
 ---
 
-Rename files to start with prefix `DSL_`
+**BREAKING CHANGE:** Rename DSL plugins and presets to use prefix `DSL_` instead of `DSL`

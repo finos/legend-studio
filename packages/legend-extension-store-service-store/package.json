@@ -1,7 +1,7 @@
 {
   "name": "@finos/legend-extension-store-service-store",
   "version": "0.0.0",
-  "description": "Legend extension for Service Store",
+  "description": "Legend extension for Service store",
   "keywords": [
     "legend",
     "legend-extension",
@@ -73,10 +73,10 @@
     "directory": "build/publishContent"
   },
   "extensions": {
-    "graphManagerPreset": "@finos/legend-graph-manager-preset-store-service-stor",
-    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-store-service-stor",
-    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-store-service-stor",
-    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-store-service-stor",
-    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-store-service-stor"
+    "graphManagerPreset": "@finos/legend-graph-manager-preset-store-service-store",
+    "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-store-service-store",
+    "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-store-service-store",
+    "pureGraphPlugin": "@finos/legend-pure-graph-plugin-store-service-store",
+    "applicationStudioPlugin": "@finos/legend-application-studio-plugin-store-service-store"
   }
 }

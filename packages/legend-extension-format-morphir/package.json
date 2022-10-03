@@ -1,7 +1,7 @@
 {
   "name": "@finos/legend-extension-format-morphir",
   "version": "0.0.0",
-  "description": "Legend extension for Morphir",
+  "description": "Legend extension for Morphir format",
   "keywords": [
     "legend",
     "legend-extension",

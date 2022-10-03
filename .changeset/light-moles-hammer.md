@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-diagram': major
 ---
 
-Rename files prefix from `DSLDiagram` to `DSL_Diagram`.
+**BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_Diagram` instead of `DSLDiagram`
