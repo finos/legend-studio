@@ -148,18 +148,18 @@ import type { Trigger } from '../../../../../../../graph/metamodel/pure/model/pa
 import { getOwnPersistence } from '../../../../../../DSL_Persistence_GraphManagerHelper.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type AtomicTest,
   type Binding,
   type Database,
   type PackageableElementImplicitReference,
-  type V1_GraphBuilderContext,
-  V1_buildFullPath,
-  V1_TestAssertion,
-  V1_EqualToJson,
-  TestAssertion,
-  AtomicTest,
-  V1_buildEmbeddedData,
-  buildEqualToJson,
+  type TestAssertion,
   V1_buildAtomicTest,
+  V1_buildEmbeddedData,
+  V1_buildEqualToJson,
+  V1_buildFullPath,
+  V1_EqualToJson,
+  type V1_GraphBuilderContext,
+  type V1_TestAssertion,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
@@ -640,12 +640,43 @@ export const V1_buildNotifier = (
  * test
  **********/
 
+export const V1_buildPersistenceTestAssertions = (
+  value: V1_TestAssertion[],
+  parentTest: AtomicTest | undefined,
+  context: V1_GraphBuilderContext,
+): TestAssertion[] =>
+  value.map((assertion) => {
+    if (assertion instanceof V1_EqualToJson) {
+      return V1_buildEqualToJson(assertion, parentTest, context);
+    } else {
+      throw new UnsupportedOperationError(`Can't build test assertion`, value);
+    }
+  });
+
+const V1_buildConnectionTestData = (
+  element: V1_ConnectionTestData,
+  context: V1_GraphBuilderContext,
+): ConnectionTestData => {
+  const connectionTestData = new ConnectionTestData();
+  connectionTestData.data = V1_buildEmbeddedData(element.data, context);
+  return connectionTestData;
+};
+
+const V1_buildTestData = (
+  element: V1_PersistenceTestData,
+  context: V1_GraphBuilderContext,
+): PersistenceTestData => {
+  const testData = new PersistenceTestData();
+  testData.connection = V1_buildConnectionTestData(element.connection, context);
+  return testData;
+};
+
 export const V1_buildTestBatch = (
   protocol: V1_PersistenceTestBatch[],
   parentTest: PersistenceTest | undefined,
   context: V1_GraphBuilderContext,
-): PersistenceTestBatch[] => {
-  return protocol.map((persistenceTestBatch) => {
+): PersistenceTestBatch[] =>
+  protocol.map((persistenceTestBatch) => {
     const testBatch = new PersistenceTestBatch();
     testBatch.id = persistenceTestBatch.id;
     testBatch.batchId = persistenceTestBatch.batchId;
@@ -660,39 +691,6 @@ export const V1_buildTestBatch = (
     );
     return testBatch;
   });
-};
-
-export const V1_buildPersistenceTestAssertions = (
-  value: V1_TestAssertion[],
-  parentTest: AtomicTest | undefined,
-  context: V1_GraphBuilderContext,
-): TestAssertion[] => {
-  return value.map((assertion) => {
-    if (assertion instanceof V1_EqualToJson) {
-      return buildEqualToJson(assertion, parentTest, context);
-    } else {
-      throw new UnsupportedOperationError(`Can't build test assertion`, value);
-    }
-  });
-};
-
-const V1_buildTestData = (
-  element: V1_PersistenceTestData,
-  context: V1_GraphBuilderContext,
-): PersistenceTestData => {
-  const testData = new PersistenceTestData();
-  testData.connection = V1_buildConnectionTestData(element.connection, context);
-  return testData;
-};
-
-const V1_buildConnectionTestData = (
-  element: V1_ConnectionTestData,
-  context: V1_GraphBuilderContext,
-): ConnectionTestData => {
-  const connectionTestData = new ConnectionTestData();
-  connectionTestData.data = V1_buildEmbeddedData(element.data, context);
-  return connectionTestData;
-};
 
 /**********
  * persistence

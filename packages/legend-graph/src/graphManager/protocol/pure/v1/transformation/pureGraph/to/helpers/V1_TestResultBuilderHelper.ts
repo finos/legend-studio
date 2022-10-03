@@ -18,7 +18,6 @@ import {
   filterByType,
   guaranteeNonNullable,
   guaranteeType,
-  isNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { MultiExecutionServiceTestResult } from '../../../../../../../../graph/metamodel/pure/packageableElements/service/MultiExecutionServiceTestResult.js';

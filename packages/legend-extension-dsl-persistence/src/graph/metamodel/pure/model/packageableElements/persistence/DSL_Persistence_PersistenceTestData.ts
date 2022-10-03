@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { hashArray, Hashable } from '@finos/legend-shared';
 import type { ConnectionTestData } from './DSL_Persistence_ConnectionTestData.js';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 
 export class PersistenceTestData implements Hashable {
   connection!: ConnectionTestData;

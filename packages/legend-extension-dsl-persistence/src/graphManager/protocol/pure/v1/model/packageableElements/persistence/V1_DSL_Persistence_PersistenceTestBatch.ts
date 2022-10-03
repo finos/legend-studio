@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Hashable, hashArray } from '@finos/legend-shared';
 import { V1_TestBatch } from '@finos/legend-graph';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_PersistenceTestData } from './V1_DSL_Persistence_PersistenceTestData.js';
 

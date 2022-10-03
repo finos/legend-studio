@@ -36,7 +36,7 @@ import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
 
-const buildEqualTo = (
+const V1_buildEqualTo = (
   element: V1_EqualTo,
   parentTest: AtomicTest | undefined,
 ): EqualTo => {
@@ -47,7 +47,7 @@ const buildEqualTo = (
   return equalTo;
 };
 
-export const buildEqualToJson = (
+export const V1_buildEqualToJson = (
   element: V1_EqualToJson,
   parentTest: AtomicTest | undefined,
   context: V1_GraphBuilderContext,
@@ -83,9 +83,9 @@ export const V1_buildTestAssertion = (
   context: V1_GraphBuilderContext,
 ): TestAssertion => {
   if (value instanceof V1_EqualTo) {
-    return buildEqualTo(value, parentTest);
+    return V1_buildEqualTo(value, parentTest);
   } else if (value instanceof V1_EqualToJson) {
-    return buildEqualToJson(value, parentTest, context);
+    return V1_buildEqualToJson(value, parentTest, context);
   } else if (value instanceof V1_EqualToTDS) {
     return buildEqualToTDS(value, parentTest, context);
   }

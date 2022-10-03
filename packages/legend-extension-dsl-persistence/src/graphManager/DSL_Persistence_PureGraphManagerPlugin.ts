@@ -23,15 +23,15 @@ import {
 } from './action/changeDetection/DSL_Persistence_ObserverHelper.js';
 import { observe_PersistenceContext } from './action/changeDetection/DSL_PersistenceContext_ObserverHelper.js';
 import {
-  PureGraphManagerPlugin,
-  type PackageableElement,
-  type PureGrammarElementLabeler,
+  type AtomicTest,
+  type AtomicTestObserver,
   type ElementObserver,
   type ObserverContext,
-  TestAssertion,
-  V1_AssertionStatus,
-  AtomicTest,
-  AtomicTestObserver,
+  type PackageableElement,
+  type PureGrammarElementLabeler,
+  PureGraphManagerPlugin,
+  type TestAssertion,
+  type V1_AssertionStatus,
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
 import type { TestableAssertion } from '../../../legend-graph/src/graphManager/PureGraphManagerPlugin.js';

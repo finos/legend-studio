@@ -58,8 +58,12 @@ import type {
   V1_TriggerTransformer,
 } from './DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type AtomicTest,
   type PackageableElement,
   PureProtocolProcessorPlugin,
+  type V1_AtomicTest,
+  type V1_AtomicTestBuilder,
+  type V1_AtomicTestTransformer,
   V1_ElementBuilder,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -69,12 +73,8 @@ import {
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
   V1_buildFullPath,
-  AtomicTest,
-  V1_AtomicTest,
-  V1_AtomicTestBuilder,
-  V1_AtomicTestTransformer,
 } from '@finos/legend-graph';
-import { assertType, PlainObject } from '@finos/legend-shared';
+import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
 import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
 import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
@@ -277,11 +277,10 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
         if (protocol instanceof V1_PersistenceTest) {
           const test = new PersistenceTest();
           test.id = protocol.id;
-          test.isTestDataFromServiceOutput = (<V1_PersistenceTest>(
-            protocol
-          )).isTestDataFromServiceOutput;
+          test.isTestDataFromServiceOutput =
+            protocol.isTestDataFromServiceOutput;
           test.testBatches = V1_buildTestBatch(
-            (<V1_PersistenceTest>protocol).testBatches,
+            protocol.testBatches,
             test,
             context,
           );

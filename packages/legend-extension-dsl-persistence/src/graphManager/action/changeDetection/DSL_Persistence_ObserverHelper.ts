@@ -16,13 +16,13 @@
 
 import type { Persistence } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import {
+  type ObserverContext,
   observe_Abstract_PackageableElement,
-  observe_EmbeddedData,
-  ObserverContext,
-  skipObservedWithContext,
-  observe_TestAssertion,
   observe_AtomicTest,
-  TestBatch,
+  observe_EmbeddedData,
+  observe_TestAssertion,
+  skipObservedWithContext,
+  type TestBatch,
 } from '@finos/legend-graph';
 import { makeObservable, observable, override, computed } from 'mobx';
 import type { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
@@ -67,12 +67,37 @@ export const observe_PersistenceTest = skipObservedWithContext(
   },
 );
 
-export function observe_TestBatch(
-  metamodel: PersistenceTestBatch,
-  context: ObserverContext,
-): TestBatch {
-  return observe_PersistenceTestBatch(metamodel, context);
-}
+export const observe_ConnectionTestData = skipObservedWithContext(
+  (
+    metamodel: ConnectionTestData,
+    context: ObserverContext,
+  ): ConnectionTestData => {
+    makeObservable(metamodel, {
+      data: observable,
+      hashCode: computed,
+    });
+
+    observe_EmbeddedData(metamodel.data, context);
+
+    return metamodel;
+  },
+);
+
+export const observe_TestData = skipObservedWithContext(
+  (
+    metamodel: PersistenceTestData,
+    context: ObserverContext,
+  ): PersistenceTestData => {
+    makeObservable(metamodel, {
+      connection: observable,
+      hashCode: computed,
+    });
+
+    observe_ConnectionTestData(metamodel.connection, context);
+
+    return metamodel;
+  },
+);
 
 export const observe_PersistenceTestBatch = skipObservedWithContext(
   (
@@ -95,34 +120,9 @@ export const observe_PersistenceTestBatch = skipObservedWithContext(
   },
 );
 
-export const observe_TestData = skipObservedWithContext(
-  (
-    metamodel: PersistenceTestData,
-    context: ObserverContext,
-  ): PersistenceTestData => {
-    makeObservable(metamodel, {
-      connection: observable,
-      hashCode: computed,
-    });
-
-    observe_ConnectionTestData(metamodel.connection, context);
-
-    return metamodel;
-  },
-);
-
-export const observe_ConnectionTestData = skipObservedWithContext(
-  (
-    metamodel: ConnectionTestData,
-    context: ObserverContext,
-  ): ConnectionTestData => {
-    makeObservable(metamodel, {
-      data: observable,
-      hashCode: computed,
-    });
-
-    observe_EmbeddedData(metamodel.data, context);
-
-    return metamodel;
-  },
-);
+export function observe_TestBatch(
+  metamodel: PersistenceTestBatch,
+  context: ObserverContext,
+): TestBatch {
+  return observe_PersistenceTestBatch(metamodel, context);
+}

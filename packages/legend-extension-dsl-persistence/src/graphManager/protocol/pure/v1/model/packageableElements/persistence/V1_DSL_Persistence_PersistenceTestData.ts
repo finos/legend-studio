@@ -15,7 +15,7 @@
  */
 
 import {} from '@finos/legend-graph';
-import { Hashable, hashArray } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 import type { V1_ConnectionTestData } from './V1_DSL_Persistence_ConnectionTestData.js';
 

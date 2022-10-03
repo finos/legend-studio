@@ -72,8 +72,10 @@ export const V1_transformAtomicTest = (
   );
 
   for (const transformer of extraAtomicTestTransformers) {
-    let atomicTestTransformer: V1_AtomicTest | undefined;
-    atomicTestTransformer = transformer(value, context);
+    const atomicTestTransformer: V1_AtomicTest | undefined = transformer(
+      value,
+      context,
+    );
     if (atomicTestTransformer) {
       return atomicTestTransformer;
     }

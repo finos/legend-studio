@@ -25,13 +25,12 @@ import type {
   AtomicTest,
   TestSuite,
 } from '../../../graph/metamodel/pure/test/Test.js';
-import { ObserverContext, skipObserved } from './CoreObserverHelper.js';
+import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ExternalFormatData } from './DSLData_ObserverHelper.js';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
 } from './DSLService_ObserverHelper.js';
-import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
 
 export const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   makeObservable(metamodel, {

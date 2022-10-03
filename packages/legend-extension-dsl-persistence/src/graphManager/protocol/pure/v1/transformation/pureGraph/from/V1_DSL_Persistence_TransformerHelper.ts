@@ -148,10 +148,10 @@ import {
 import type { V1_Trigger } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_Trigger.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type TestAssertion,
   type V1_GraphTransformerContext,
   V1_initPackageableElement,
   V1_transformEmbeddedData,
-  TestAssertion,
   V1_transformTestAssertion,
   V1_transformAtomicTest,
 } from '@finos/legend-graph';
@@ -675,10 +675,8 @@ export const V1_transformPersistence = (
   protocol.service = element.service.valueForSerialization ?? '';
   protocol.persister = V1_transformPersister(element.persister, context);
   protocol.notifier = V1_transformNotifier(element.notifier, context);
-  if (element.tests) {
-    protocol.tests = element.tests.map((test) =>
-      guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),
-    );
-  }
+  protocol.tests = element.tests.map((test) =>
+    guaranteeType(V1_transformAtomicTest(test, context), V1_PersistenceTest),
+  );
   return protocol;
 };
