@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "@types/lodash-es": "4.17.6",
-    "@types/lossless-json": "1.0.1",
     "@types/object-hash": "2.2.1",
     "@types/pako": "2.0.0",
     "@types/seedrandom": "3.0.2",

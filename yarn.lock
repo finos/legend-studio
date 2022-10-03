@@ -2943,7 +2943,6 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     "@jest/globals": 29.1.2
     "@types/lodash-es": 4.17.6
-    "@types/lossless-json": 1.0.1
     "@types/object-hash": 2.2.1
     "@types/pako": 2.0.0
     "@types/seedrandom": 3.0.2
@@ -4171,13 +4170,6 @@ __metadata:
   version: 4.14.186
   resolution: "@types/lodash@npm:4.14.186"
   checksum: ee0c1368a8100bb6efb88335107473a41928fc307ff1ef4ff1278868ccddba9c04c68c36d1ffe3a0392ef4a956e1955f7de3203ec09df4f1655dd1b88485c549
-  languageName: node
-  linkType: hard
-
-"@types/lossless-json@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@types/lossless-json@npm:1.0.1"
-  checksum: c256b17b9ac339d4bb4724f0bc3df2199af7c89457b6a68b282d19ce76f2e0433df2559198c1a4026174251d4932602f2c994224d20ee959dcb200a9a07a9dd5
   languageName: node
   linkType: hard
 
