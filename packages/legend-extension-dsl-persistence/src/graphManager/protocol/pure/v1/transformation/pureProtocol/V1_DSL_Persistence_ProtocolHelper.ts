@@ -1071,6 +1071,7 @@ export const V1_persistenceTestModelSchema = (
   createModelSchema(V1_PersistenceTest, {
     _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
     id: primitive(),
+    isTestDataFromServiceOutput: primitive(),
     testBatches: custom(
       (values) =>
         serializeArray(
@@ -1091,7 +1092,6 @@ export const V1_persistenceTestModelSchema = (
           },
         ),
     ),
-    isTestDataFromServiceOutput: primitive(),
   });
 
 export const V1_serializePersistenceTestBatch = (
@@ -1115,7 +1115,6 @@ export const V1_persistenceTestBatchModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_PersistenceTestBatch> =>
   createModelSchema(V1_PersistenceTestBatch, {
-    testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
     assertions: custom(
       (values) =>
         serializeArray(values, (value: V1_TestAssertion) =>
@@ -1126,8 +1125,9 @@ export const V1_persistenceTestBatchModelSchema = (
           skipIfEmpty: false,
         }),
     ),
-    id: primitive(),
     batchId: primitive(),
+    id: primitive(),
+    testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
   });
 
 export const V1_persistenceTestDataModelSchema = (
@@ -1167,10 +1167,6 @@ export const V1_persistenceModelSchema = (
       (val) => V1_deserializePersister(val, plugins),
     ),
     service: primitive(),
-    trigger: custom(
-      (val) => V1_serializeTrigger(val, plugins),
-      (val) => V1_deserializeTrigger(val, plugins),
-    ),
     tests: optionalCustom(
       (values) =>
         serializeArray(
@@ -1192,6 +1188,10 @@ export const V1_persistenceModelSchema = (
             skipIfEmpty: true,
           },
         ),
+    ),
+    trigger: custom(
+      (val) => V1_serializeTrigger(val, plugins),
+      (val) => V1_deserializeTrigger(val, plugins),
     ),
   });
 };

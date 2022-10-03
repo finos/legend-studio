@@ -458,8 +458,8 @@ export const TEST_DATA__roundtrip = [
       },
       tests: [
         {
-          assertions: [],
           _type: 'test',
+          assertions: [],
           id: 'success_test',
           testBatches: [
             {
