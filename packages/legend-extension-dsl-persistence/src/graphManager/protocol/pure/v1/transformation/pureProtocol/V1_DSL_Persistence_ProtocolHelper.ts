@@ -84,7 +84,6 @@ import {
   V1_StreamingPersister,
 } from '../../model/packageableElements/persistence/V1_DSL_Persistence_Persister.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
-import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
 import type {
   PureProtocolProcessorPlugin,
   V1_AtomicTest,

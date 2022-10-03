@@ -39,7 +39,7 @@ import {
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceContextModelSchema,
-} from './v1/transformation/pureProtocol/V1_DSL_Persistence_BuilderHelper.js';
+} from './v1/transformation/pureProtocol/V1_DSL_PersistenceContext_ProtocolHelper.js';
 import {
   V1_buildPersistence,
   V1_buildTestBatch,

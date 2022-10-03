@@ -18,6 +18,7 @@ import packageJson from '../../package.json';
 import { Persistence } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
 import type { Clazz } from '@finos/legend-shared';
+import { filterByType } from '@finos/legend-shared';
 import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
 import type {
   PureModel,
@@ -37,7 +38,7 @@ export class DSL_Persistence_PureGraphPlugin extends PureGraphPlugin {
   override getExtraTestablesCollectors(): TestablesCollector[] {
     return [
       (graph: PureModel): Testable[] => {
-        return graph.allElements.forEach(filterByType(Persistence));
+        return graph.allElements.filter(filterByType(Persistence));
       },
     ];
   }
