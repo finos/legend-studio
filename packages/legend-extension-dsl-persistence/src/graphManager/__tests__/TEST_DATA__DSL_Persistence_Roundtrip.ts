@@ -345,7 +345,7 @@ export const TEST_DATA__roundtrip = [
         ingestMode: {
           _type: 'appendOnly',
           auditing: {
-            _type: 'NoAuditing',
+            _type: 'noAuditing',
           },
           filterDuplicates: false,
         },
@@ -369,6 +369,7 @@ export const TEST_DATA__roundtrip = [
       },
       tests: [
         {
+          assertions: [],
           _type: 'test',
           id: 'success_test',
           testBatches: [
