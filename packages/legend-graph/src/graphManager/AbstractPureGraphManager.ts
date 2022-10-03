@@ -67,7 +67,7 @@ import type {
   MappingModelCoverageAnalysisResult,
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
-import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;

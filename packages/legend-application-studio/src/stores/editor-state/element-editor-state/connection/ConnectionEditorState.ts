@@ -22,7 +22,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { ElementEditorState } from './../ElementEditorState.js';
-import type { StoreRelational_LegendStudioApplicationPlugin_Extension } from '../../../StoreRelational_LegendStudioApplicationPlugin_Extension.js';
+import type { STO_Relational_LegendStudioApplicationPlugin_Extension } from '../../../STO_Relational_LegendStudioApplicationPlugin_Extension.js';
 import { DatabaseBuilderState } from './DatabaseBuilderState.js';
 import {
   type PackageableElement,
@@ -55,11 +55,11 @@ import {
   type PostProcessor,
   MapperPostProcessor,
 } from '@finos/legend-graph';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
 import {
   MapperPostProcessorEditorState,
   type PostProcessorEditorState,
@@ -149,7 +149,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
           .flatMap(
             (plugin) =>
               (
-                plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
               ).getExtraPostProcessorStateCreators?.() ?? [],
           );
         for (const creator of extraPostProcessorStateCreators) {
@@ -202,7 +202,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraDatasourceSpecificationClassifiers?.() ?? [],
         );
     for (const classifier of extraDatasourceSpecificationClassifiers) {
@@ -264,7 +264,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
                 ).getExtraDatasourceSpecificationCreators?.() ?? [],
             );
         for (const creator of extraDatasourceSpecificationCreators) {
@@ -321,7 +321,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
         .flatMap(
           (plugin) =>
             (
-              plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+              plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
             ).getExtraAuthenticationStrategyClassifiers?.() ?? [],
         );
     for (const classifier of extraAuthenticationStrategyClassifiers) {
@@ -388,7 +388,7 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
             .flatMap(
               (plugin) =>
                 (
-                  plugin as StoreRelational_LegendStudioApplicationPlugin_Extension
+                  plugin as STO_Relational_LegendStudioApplicationPlugin_Extension
                 ).getExtraAuthenticationStrategyCreators?.() ?? [],
             );
         for (const creator of extraAuthenticationStrategyCreators) {
@@ -478,7 +478,7 @@ export class ConnectionEditorState {
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+                plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
               ).getExtraConnectionValueEditorStateBuilders?.() ?? [],
           );
       for (const stateBuilder of extraConnectionValueEditorStateBuilders) {

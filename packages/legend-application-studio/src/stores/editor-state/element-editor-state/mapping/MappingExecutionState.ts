@@ -111,18 +111,18 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
   service_setExecution,
-} from '../../../graphModifier/DSLService_GraphModifierHelper.js';
+} from '../../../graphModifier/DSL_Service_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,

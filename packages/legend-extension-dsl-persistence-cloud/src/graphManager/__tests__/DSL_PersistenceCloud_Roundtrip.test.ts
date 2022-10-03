@@ -19,7 +19,7 @@ import { DSL_PersistenceCloud_GraphManagerPreset } from '../../DSL_PersistenceCl
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_PersistenceCloud_Roundtrip.js';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import {
-  DSLExternalFormat_GraphPreset,
+  DSL_ExternalFormat_GraphPreset,
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph';
@@ -31,7 +31,7 @@ pluginManager
   .usePresets([
     new DSL_Persistence_GraphManagerPreset(),
     new DSL_PersistenceCloud_GraphManagerPreset(),
-    new DSLExternalFormat_GraphPreset(),
+    new DSL_ExternalFormat_GraphPreset(),
   ])
   .install();
 

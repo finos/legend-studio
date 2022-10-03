@@ -15,7 +15,7 @@
  */
 
 import { computed, makeObservable, observable } from 'mobx';
-import { ServiceTest } from '../../../DSLService_Exports.js';
+import { ServiceTest } from '../../../DSL_Service_Exports.js';
 import { ServiceTestSuite } from '../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { EqualTo } from '../../../graph/metamodel/pure/test/assertion/EqualTo.js';
 import { EqualToJson } from '../../../graph/metamodel/pure/test/assertion/EqualToJson.js';
@@ -26,11 +26,11 @@ import type {
   TestSuite,
 } from '../../../graph/metamodel/pure/test/Test.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
-import { observe_ExternalFormatData } from './DSLData_ObserverHelper.js';
+import { observe_ExternalFormatData } from './DSL_Data_ObserverHelper.js';
 import {
   observe_ServiceTest,
   observe_ServiceTestSuite,
-} from './DSLService_ObserverHelper.js';
+} from './DSL_Service_ObserverHelper.js';
 
 const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   makeObservable(metamodel, {

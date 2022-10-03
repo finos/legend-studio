@@ -55,13 +55,13 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   setImpl_nominateRoot,
   setImpl_setRoot,
-} from '../../../../stores/graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
   SET_IMPLEMENTATION_TYPE,
 } from '../../../../stores/shared/ModelClassifierUtils.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
@@ -293,7 +293,7 @@ export const PropertyMappingsEditor = observer(
                     .flatMap(
                       (plugin) =>
                         (
-                          plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+                          plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
                         ).getExtraPropertyMappingEditorRenderers?.() ?? [],
                     );
                 for (const renderer of extraPropertyMappingEditorRenderers) {

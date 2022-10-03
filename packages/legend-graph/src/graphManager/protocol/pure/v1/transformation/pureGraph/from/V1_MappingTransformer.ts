@@ -137,16 +137,16 @@ import { RelationalInputData } from '../../../../../../../graph/metamodel/pure/p
 import { V1_RelationalInputData } from '../../../model/packageableElements/store/relational/mapping/V1_RelationalInputData.js';
 import { PackageableElementPointerType } from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { InstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import type { SubstituteStore } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SubstituteStore.js';
-import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_BindingTransformer.js';
+import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import { MergeOperationSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/MergeOperationSetImplementation.js';
 import type { TEMPORARY__UnresolvedSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/TEMPORARY__UnresolvedSetImplementation.js';
-import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSLMapping_ModelCreatorHelper.js';
+import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/creator/DSL_Mapping_ModelCreatorHelper.js';
 import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
-import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/StoreRelational_ModelCreatorHelper.js';
+import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/STO_Relational_ModelCreatorHelper.js';
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
 
 export const V1_transformPropertyReference = (
@@ -360,7 +360,7 @@ const transformClassMappingPropertyMappings = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+              plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
             ).getExtraPropertyMappingTransformationExcludabilityCheckers?.() ??
             [],
         )
@@ -660,7 +660,7 @@ class PropertyMappingTransformer
     const extraPropertyMappingTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraPropertyMappingTransformers?.() ?? [],
     );
     for (const transformer of extraPropertyMappingTransformers) {
@@ -1043,7 +1043,7 @@ export class V1_SetImplementationTransformer
     const extraClassMappingTransformers = this.context.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraClassMappingTransformers?.() ?? [],
     );
     for (const transformer of extraClassMappingTransformers) {

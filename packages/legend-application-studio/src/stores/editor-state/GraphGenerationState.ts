@@ -54,19 +54,19 @@ import type { Entity } from '@finos/legend-storage';
 import {
   type GenerationConfigurationDescription,
   type GenerationOutput,
-  type DSLGeneration_PureGraphManagerPlugin_Extension,
+  type DSL_Generation_PureGraphManagerPlugin_Extension,
   type GenerationTreeNode,
   Class,
   Enumeration,
   GenerationSpecification,
   ELEMENT_PATH_DELIMITER,
 } from '@finos/legend-graph';
-import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../graphModifier/DSL_Generation_GraphModifierHelper.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';
@@ -142,7 +142,7 @@ export class GraphGenerationState {
           .flatMap(
             (plugin) =>
               (
-                plugin as DSLGeneration_LegendStudioApplicationPlugin_Extension
+                plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
               ).getExtraFileGenerationScopeFilterConfigurations?.() ?? [],
           );
       return this.fileGenerationConfigurations.filter((generationType) => {
@@ -370,7 +370,7 @@ export class GraphGenerationState {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGeneration_PureGraphManagerPlugin_Extension
+              plugin as DSL_Generation_PureGraphManagerPlugin_Extension
             ).getExtraModelGenerationElementGetters?.() ?? [],
         )
         .flatMap((getter) => getter(this.editorStore.graphManagerState.graph));

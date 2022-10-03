@@ -56,7 +56,7 @@ import {
   V1_buildDatasourceSpecification,
   V1_buildAuthenticationStrategy,
 } from './V1_RelationalConnectionBuilderHelper.js';
-import type { DSLMapping_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLMapping_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import type { V1_ModelChainConnection } from '../../../../model/packageableElements/store/modelToModel/connection/V1_ModelChainConnection.js';
 import { V1_buildPostProcessor } from './V1_PostProcessorBuilderHelper.js';
 
@@ -76,7 +76,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     const extraConnectionBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLMapping_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraConnectionBuilders?.() ?? [],
     );
     for (const builder of extraConnectionBuilders) {

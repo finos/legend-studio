@@ -36,7 +36,7 @@ import {
 } from '@finos/legend-shared';
 import { V1_MapperPostProcessor } from '../../../model/packageableElements/store/relational/connection/postprocessor/V1_MapperPostProcessor.js';
 import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProcessorPlugin.js';
-import type { StoreRelational_PureProtocolProcessorPlugin_Extension } from '../../../../StoreRelational_PureProtocolProcessorPlugin_Extension.js';
+import type { STO_Relational_PureProtocolProcessorPlugin_Extension } from '../../../../STO_Relational_PureProtocolProcessorPlugin_Extension.js';
 
 enum V1_MapperType {
   TABLE = 'table',
@@ -109,7 +109,7 @@ export const V1_serializePostProcessor = (
   const extraPostprocessorProtocolSerializers = plugins.flatMap(
     (plugin) =>
       (
-        plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+        plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
       ).V1_getExtraConnectionPostProcessorProtocolSerializers?.() ?? [],
   );
   for (const serializer of extraPostprocessorProtocolSerializers) {
@@ -135,7 +135,7 @@ export const V1_deserializePostProcessor = (
       const extraPostprocessorProtocolDeserializers = plugins.flatMap(
         (plugin) =>
           (
-            plugin as StoreRelational_PureProtocolProcessorPlugin_Extension
+            plugin as STO_Relational_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraConnectionPostProcessorProtocolDeserializers?.() ?? [],
       );
       for (const deserializer of extraPostprocessorProtocolDeserializers) {

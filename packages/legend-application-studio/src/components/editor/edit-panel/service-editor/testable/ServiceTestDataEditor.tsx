@@ -51,7 +51,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { prettyCONSTName } from '@finos/legend-shared';
-import type { DSLData_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSLData_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 
 export const ConnectionTestDataEditor = observer(
@@ -283,7 +283,7 @@ export const NewConnectionDataModal = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLData_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Data_LegendStudioApplicationPlugin_Extension
           ).getExtraEmbeddedDataTypeOptions?.() ?? [],
       );
     const embeddedOptions = [

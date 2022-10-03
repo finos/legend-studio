@@ -86,13 +86,13 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import {
   fileGeneration_addScopeElement,
   fileGeneration_changeScopeElement,
   fileGeneration_deleteScopeElement,
   fileGeneration_setGenerationOutputPath,
-} from '../../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../../../../stores/graphModifier/DSL_Generation_GraphModifierHelper.js';
 
 export const FileGenerationTreeNodeContainer: React.FC<
   TreeNodeContainerProps<
@@ -241,7 +241,7 @@ export const GenerationResultViewer = observer(
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLGeneration_LegendStudioApplicationPlugin_Extension
+                  plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
                 ).getExtraFileGenerationResultViewerActionConfigurations?.() ??
                 [],
             )

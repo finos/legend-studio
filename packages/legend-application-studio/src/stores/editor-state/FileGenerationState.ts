@@ -54,7 +54,7 @@ import {
   fileGeneration_addConfigurationProperty,
   fileGeneration_addScopeElement,
   fileGeneration_deleteScopeElement,
-} from '../graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../graphModifier/DSL_Generation_GraphModifierHelper.js';
 
 export class FileGenerationState {
   editorStore: EditorStore;

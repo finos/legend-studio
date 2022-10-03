@@ -20,7 +20,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
   type EngineError,
-  type DSLMapping_PureGraphManagerPlugin_Extension,
+  type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
   Class,
@@ -139,7 +139,7 @@ export class GrammarTextEditorState {
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_PureGraphManagerPlugin_Extension
+              plugin as DSL_Mapping_PureGraphManagerPlugin_Extension
             ).getExtraPureGrammarConnectionLabelers?.() ?? [],
         );
       for (const labeler of extraPureGrammarConnectionLabelers) {

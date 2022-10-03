@@ -50,7 +50,7 @@
       "path": "packages/legend-extension-dsl-mastery/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-store-service/tsconfig.build.json"
+      "path": "packages/legend-extension-store-service-store/tsconfig.build.json"
     },
     {
       "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"
@@ -59,10 +59,10 @@
       "path": "packages/legend-extension-store-relational/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-format-json-schema/tsconfig.build.json"
+      "path": "packages/legend-extension-format-json-schema/tsconfig.build.json"
     },
     {
-      "path": "packages/legend-extension-external-language-morphir/tsconfig.build.json"
+      "path": "packages/legend-extension-format-morphir/tsconfig.build.json"
     },
     // fixtures
     {
