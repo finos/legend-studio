@@ -34,7 +34,7 @@ import {
   assertErrorThrown,
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
-import { getDSLDataSpaceGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
+import { DSL_DataSpace_getGraphManagerExtension } from '../../graphManager/protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { DataSpaceViewerState } from '../DSL_DataSpace_DataSpaceViewerState.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
@@ -147,7 +147,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
       // analyze data space
       this.loadDataSpaceState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.setupStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,

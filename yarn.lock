@@ -2297,7 +2297,7 @@ __metadata:
     rimraf: 3.0.2
     sass: 1.55.0
     serializr: 2.0.5
-    sql-formatter: 10.7.2
+    sql-formatter: 11.0.1
     typescript: 4.8.4
   peerDependencies:
     react: ^18.0.0
@@ -2954,7 +2954,7 @@ __metadata:
     jest: 29.1.2
     lodash: 4.17.21
     lodash-es: 4.17.21
-    lossless-json: 2.0.0
+    lossless-json: 2.0.1
     mobx: 6.6.2
     npm-run-all: 4.1.5
     object-hash: 3.0.0
@@ -10240,10 +10240,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lossless-json@npm:2.0.0":
-  version: 2.0.0
-  resolution: "lossless-json@npm:2.0.0"
-  checksum: 8c4f8657181cff2f29735f483b29760e60d36f6386ddde0d8141375c0157a3a40b0f63bca97f1d79c02ca85e9c0d9fd77811edea9d7223f02808adaf85fcfa8e
+"lossless-json@npm:2.0.1":
+  version: 2.0.1
+  resolution: "lossless-json@npm:2.0.1"
+  checksum: 13b9d92ae4759523f953e8c9ca9ec91092f85223597522cb6c5685898c5a35b6d2eff724ba11005d4aa9875b119a95a5146636ca60cc41a988db7730f8146223
   languageName: node
   linkType: hard
 
@@ -14326,15 +14326,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:10.7.2":
-  version: 10.7.2
-  resolution: "sql-formatter@npm:10.7.2"
+"sql-formatter@npm:11.0.1":
+  version: 11.0.1
+  resolution: "sql-formatter@npm:11.0.1"
   dependencies:
     argparse: ^2.0.1
     nearley: ^2.20.1
   bin:
-    sql-formatter: bin/sql-formatter-cli.js
-  checksum: 90cbc29e9d2c0722b6bd67e30c7556f7af945da7550e9d2d6eec4afc857a76578b881fbb7778451d8f98860f24eca4f15ec4863c291941b6b57e1cccaef9f3dc
+    sql-formatter: bin/sql-formatter-cli.cjs
+  checksum: 5a3db3ba02c46b827330c0ff1f145c0ffa2584eab8bef6b6ae10c9a7ee661671ade7b14939baef8f2f16457c9d663af641063fcef59010eeb5038bc0957cf998
   languageName: node
   linkType: hard
 

@@ -17,7 +17,7 @@
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
-  getDSLDataSpaceGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
@@ -141,7 +141,7 @@ export class TaxonomyNodeViewerState {
 
       // analyze data space
       this.initDataSpaceViewerState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.explorerStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpaceTaxonomyContext.path,

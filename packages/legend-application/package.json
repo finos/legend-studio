@@ -65,7 +65,7 @@
     "react-resize-detector": "7.1.2",
     "react-router": "5.3.4",
     "serializr": "2.0.5",
-    "sql-formatter": "10.7.2"
+    "sql-formatter": "11.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",

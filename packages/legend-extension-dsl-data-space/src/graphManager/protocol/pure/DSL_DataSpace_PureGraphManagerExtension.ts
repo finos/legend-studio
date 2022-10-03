@@ -31,7 +31,7 @@ export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPu
   ): Promise<DataSpaceAnalysisResult>;
 }
 
-export const getDSLDataSpaceGraphManagerExtension = (
+export const DSL_DataSpace_getGraphManagerExtension = (
   graphManager: AbstractPureGraphManager,
 ): DSL_DataSpace_PureGraphManagerExtension =>
   guaranteeNonNullable(

@@ -28,9 +28,6 @@ const baseConfig = getBaseConfig({
     'react-dnd',
     'dnd-core',
     '@react-dnd',
-    // lossless-json also went full ESM since version 2.0 so we would need to transpile them
-    // See https://github.com/josdejong/lossless-json/pull/243
-    'lossless-json',
   ],
 });
 
