@@ -17,7 +17,10 @@
 import packageJson from '../../package.json';
 import { Persistence } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
 import { PersistenceContext } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
-import { observe_Persistence } from './action/changeDetection/DSL_Persistence_ObserverHelper.js';
+import {
+  observe_Persistence,
+  observe_PersistenceTest,
+} from './action/changeDetection/DSL_Persistence_ObserverHelper.js';
 import { observe_PersistenceContext } from './action/changeDetection/DSL_PersistenceContext_ObserverHelper.js';
 import {
   PureGraphManagerPlugin,
@@ -25,7 +28,13 @@ import {
   type PureGrammarElementLabeler,
   type ElementObserver,
   type ObserverContext,
+  TestAssertion,
+  V1_AssertionStatus,
+  AtomicTest,
+  AtomicTestObserver,
 } from '@finos/legend-graph';
+import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import type { TestableAssertion } from '../../../legend-graph/src/graphManager/PureGraphManagerPlugin.js';
 
 export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
@@ -68,9 +77,43 @@ export class DSL_Persistence_PureGraphManagerPlugin extends PureGraphManagerPlug
         context: ObserverContext,
       ): PackageableElement | undefined => {
         if (element instanceof Persistence) {
-          return observe_Persistence(element);
+          return observe_Persistence(element, context);
         } else if (element instanceof PersistenceContext) {
           return observe_PersistenceContext(element);
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraTestableAssertionBuilders(): TestableAssertion[] {
+    return [
+      (
+        atomicTest: AtomicTest,
+        element: V1_AssertionStatus,
+      ): TestAssertion | undefined => {
+        if (atomicTest instanceof PersistenceTest) {
+          for (const testBatch of atomicTest.testBatches) {
+            for (const assertion of testBatch.assertions) {
+              if (assertion.id === element.id) {
+                return assertion;
+              }
+            }
+          }
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override getExtraAtomicTestObservers(): AtomicTestObserver[] {
+    return [
+      (
+        element: AtomicTest,
+        context: ObserverContext,
+      ): AtomicTest | undefined => {
+        if (element instanceof PersistenceTest) {
+          return observe_PersistenceTest(element, context);
         }
         return undefined;
       },

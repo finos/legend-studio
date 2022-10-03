@@ -37,13 +37,7 @@ export class DSL_Persistence_PureGraphPlugin extends PureGraphPlugin {
   override getExtraTestablesCollectors(): TestablesCollector[] {
     return [
       (graph: PureModel): Testable[] => {
-        const testables: Testable[] = [];
-        graph.allElements.forEach((element) => {
-          if (element instanceof Persistence) {
-            testables.push(element);
-          }
-        });
-        return testables;
+        return graph.allElements.forEach(filterByType(Persistence));
       },
     ];
   }

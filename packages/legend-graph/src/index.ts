@@ -181,7 +181,6 @@ export * from './graph/helpers/ArtifactGenerationExtensionHelper.js';
 
 export * from './graphManager/helpers/DSLData_GraphManagerHelper.js';
 export * from './graphManager/helpers/ValueSpecificationGraphManagerHelper.js';
-export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_TestBuilderHelper.js';
 
 // --------------------------------------------- GRAPH --------------------------------------------------
 
@@ -292,6 +291,7 @@ export {
   V1_buildGenericFunctionExpression,
   V1_buildBaseSimpleFunctionExpression,
 } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ValueSpecificationBuilderHelper.js';
+export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_TestBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureGraph/to/V1_DSLExternalFormat_GraphBuilderHelper.js';
 export * from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_ServiceSerializationHelper.js';
