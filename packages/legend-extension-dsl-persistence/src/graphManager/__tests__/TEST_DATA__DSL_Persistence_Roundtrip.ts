@@ -101,6 +101,33 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    path: 'org::legend::ServiceResult',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'ServiceResult',
+      package: 'org::legend',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'deleted',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'dateTimeIn',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
     path: 'org::dxl::Animal',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
@@ -145,6 +172,68 @@ export const TEST_DATA__roundtrip = [
       joins: [],
       name: 'ZooDb',
       package: 'org::dxl',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'personTable',
+              primaryKey: [],
+            },
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'personTable_staging',
+              primaryKey: [],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+  },
+  {
+    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'org::legend::TestDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'TestDatabase',
+      package: 'org::legend',
       schemas: [],
     },
   },
@@ -351,7 +440,7 @@ export const TEST_DATA__roundtrip = [
         },
         sink: {
           _type: 'relationalSink',
-          binding: 'org::legend::TestDatabase',
+          database: 'org::legend::TestDatabase',
         },
         targetShape: {
           _type: 'flatTarget',
