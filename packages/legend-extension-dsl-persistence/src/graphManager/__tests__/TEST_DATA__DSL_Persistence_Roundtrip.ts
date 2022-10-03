@@ -332,6 +332,99 @@ export const TEST_DATA__roundtrip = [
     },
   },
   {
+    path: 'org::dxl::PersistenceWithTest',
+    classifierPath: 'meta::pure::persistence::metamodel::Persistence',
+    content: {
+      _type: 'persistence',
+      documentation: 'A persistence specification for Zoos with test.',
+      name: 'PersistenceWithTest',
+      notifier: {},
+      package: 'org::dxl',
+      persister: {
+        _type: 'batchPersister',
+        ingestMode: {
+          _type: 'appendOnly',
+          auditing: {
+            _type: 'NoAuditing',
+          },
+          filterDuplicates: false,
+        },
+        sink: {
+          _type: 'relationalSink',
+          binding: 'org::legend::TestDatabase',
+        },
+        targetShape: {
+          _type: 'flatTarget',
+          deduplicationStrategy: {
+            _type: 'noDeduplicationStrategy',
+          },
+          modelClass: 'org::legend::ServiceResult',
+          partitionFields: [],
+          targetName: 'personTable',
+        },
+      },
+      service: 'org::dxl::ZooService',
+      trigger: {
+        _type: 'manualTrigger',
+      },
+      tests: [
+        {
+          _type: 'test',
+          id: 'success_test',
+          testBatches: [
+            {
+              testData: {
+                connection: {
+                  data: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]',
+                  },
+                },
+              },
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'testBatch1',
+            },
+            {
+              testData: {
+                connection: {
+                  data: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]',
+                  },
+                },
+              },
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'testBatch2',
+            },
+          ],
+          isTestDataFromServiceOutput: true,
+        },
+      ],
+    },
+  },
+  {
     path: 'org::dxl::ZooPersistenceContext',
     classifierPath: 'meta::pure::persistence::metamodel::PersistenceContext',
     content: {

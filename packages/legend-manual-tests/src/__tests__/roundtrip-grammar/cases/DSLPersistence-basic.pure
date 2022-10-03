@@ -24,6 +24,12 @@ Class org::legend::Animal
   name: String[1];
 }
 
+Class org::legend::ServiceResult
+{
+  deleted: String[1];
+  dateTimeIn: String[1];
+}
+
 Association org::legend::ZooAnimal
 {
   zoo: org::legend::Zoo[1];
@@ -172,6 +178,109 @@ Persistence org::legend::ZooPersistence
       }
     ];
   }
+}
+
+###Relational
+Database org::legend::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER,
+    NAME VARCHAR(100)
+  )
+  Table personTable_staging
+  (
+    ID INTEGER,
+    NAME VARCHAR(100)
+  )
+)
+
+###Persistence
+Persistence org::legend::PersistenceWithTest
+{
+  doc: 'A persistence specification for Zoos with test.';
+  trigger: Manual;
+  service: org::legend::ZooService;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: org::legend::TestDatabase;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+    targetShape: Flat
+    {
+      modelClass: org::legend::ServiceResult;
+      targetName: 'personTable';
+    }
+  }
+  tests:
+  [
+    success_test:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat:
+              #{
+                contentType: 'application/json';
+                data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]'
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat:
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]'
+                  }#;
+              }#
+          ]
+        },
+        testBatch2:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat:
+              #{
+                contentType: 'application/json';
+                data: '[{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]'
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat:
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]'
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
 }
 
 PersistenceContext org::legend::ZooPersistenceContext
