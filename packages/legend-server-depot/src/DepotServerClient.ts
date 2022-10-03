@@ -15,7 +15,12 @@
  */
 
 import type { Entity } from '@finos/legend-storage';
-import { type PlainObject, AbstractServerClient } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  AbstractServerClient,
+  HttpHeader,
+  ContentType,
+} from '@finos/legend-shared';
 import {
   LATEST_VERSION_ALIAS,
   SNAPSHOT_VERSION_ALIAS,
@@ -305,12 +310,14 @@ export class DepotServerClient extends AbstractServerClient {
     artifactId: string,
     versionId: string,
     filePath: string,
-  ): Promise<string | undefined> =>
+  ): Promise<string> =>
     this.get(
       `${this._generationContentByGAV(
         groupId,
         artifactId,
         versionId,
       )}/file/${encodeURIComponent(filePath)}`,
+      {},
+      { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
     );
 }

@@ -71,9 +71,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     dataSpacePath: string,
     entities: Entity[],
     dependencyEntitiesIndex: Map<string, Entity[]>,
-    cacheRetriever?: () => Promise<
-      PlainObject<DataSpaceAnalysisResult> | undefined
-    >,
+    cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
   ): Promise<DataSpaceAnalysisResult> {
     let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     if (cacheRetriever) {
