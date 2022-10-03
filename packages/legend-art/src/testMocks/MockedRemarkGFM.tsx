@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import ReactMarkdown from 'react-markdown';
-import remarkGFM from 'remark-gfm';
-import type { MarkdownText } from '@finos/legend-shared';
-import { clsx } from 'clsx';
+/**
+ * Simple mock for `react-markdown` to help with running Jest in non-ESM mode.
+ * See Jest config for more details
+ */
+const ReactGFM = (): void => {
+  // do nothing
+};
 
-export const MarkdownTextViewer: React.FC<{
-  value: MarkdownText;
-  className?: string | undefined;
-}> = (props) => (
-  <ReactMarkdown
-    className={clsx('markdown-content', props.className)}
-    remarkPlugins={[remarkGFM]}
-  >
-    {props.value.value}
-  </ReactMarkdown>
-);
+// eslint-disable-next-line import/no-default-export
+export default ReactGFM;

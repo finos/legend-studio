@@ -24,8 +24,9 @@
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./lib/testMocks/ReactMarkdownMocker.js": "./jest/ReactMarkdownMocker.jsx",
     "./lib/testMocks/MockedMonacoEditor.js": "./lib/testMocks/MockedMonacoEditor.js",
+    "./lib/testMocks/MockedReactMarkdown.js": "./lib/testMocks/MockedReactMarkdown.js",
+    "./lib/testMocks/MockedRemarkGFM.js": "./lib/testMocks/MockedRemarkGFM.js",
     "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
