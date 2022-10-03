@@ -43,10 +43,10 @@ import {
   Dialog,
   Panel,
   PanelForm,
-  PanelFormToogleEditor,
   PanelSection,
   PanelFormTextEditorWithValidation,
   PanelFormTextEditor,
+  PanelFormBooleanEditor,
 } from '@finos/legend-art';
 import { action, flowResult } from 'mobx';
 import {
@@ -440,10 +440,6 @@ const PlatformBasicEditor = observer(
       projectConfig.changePlatformVersion(platform, val ? val : '');
     });
 
-    const changeValue = action((val: string | undefined): void => {
-      changeVersion(val);
-    });
-
     const isNotValidPlatformVersion = action(
       (val: string): boolean => val === '',
     );
@@ -453,7 +449,7 @@ const PlatformBasicEditor = observer(
         isReadOnly={isReadOnly}
         value={platform.platformVersion}
         name={platform.name}
-        update={changeValue}
+        update={changeVersion}
         validationErrorMessage={
           isNotValidPlatformVersion(platform.platformVersion)
             ? 'Version cannot be empty'
@@ -520,9 +516,11 @@ const ProjectPlatformVersionEditor = observer(
       <Panel>
         <PanelForm>
           <PanelSection>
-            <PanelFormToogleEditor
-              isToogled={isEditingPlatformConfigs}
-              prompt="Override default platform configurations"
+            <PanelFormBooleanEditor
+              value={isEditingPlatformConfigs}
+              name=""
+              description="Override default platform configurations"
+              isReadOnly={isReadOnly}
               update={overridePlatforms}
             />
 
@@ -721,7 +719,6 @@ export const ProjectConfigurationEditor = observer(() => {
             </div>
           </div>
           <button
-            id="project_config_update_button"
             // TODO: remove this ugly button when we integrate project configuration into change detection flow
             className="project-configuration-editor__update-btn"
             disabled={

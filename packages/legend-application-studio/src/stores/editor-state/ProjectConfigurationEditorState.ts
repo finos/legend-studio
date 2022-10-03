@@ -386,9 +386,7 @@ export class ProjectConfigurationEditorState extends EditorState {
           new PlatformConfigurationUpdate(
             this.currentProjectConfiguration.platformConfigurations,
           );
-      }
-
-      if (!this.currentProjectConfiguration.platformConfigurations) {
+      } else {
         updateProjectConfigurationCommand.platformConfigurations =
           new PlatformConfigurationUpdate(null);
       }
