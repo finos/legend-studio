@@ -178,7 +178,6 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -207,7 +206,6 @@ export class PureInstanceSetImplementationFilterState extends LambdaEditorState 
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       }
     } else {
       this.clearErrors();
@@ -315,7 +313,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
@@ -340,7 +337,6 @@ export class PureInstanceSetImplementationState extends InstanceSetImplementatio
           LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
           error,
         );
-        GRAPH_MANAGER_EVENT;
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }

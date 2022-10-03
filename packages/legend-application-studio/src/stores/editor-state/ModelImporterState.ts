@@ -152,7 +152,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         return JSON.parse(this.modelText) as Entity[];
       }
       case MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR: {
-        return await this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
+        return this.editorStore.graphManagerState.graphManager.pureCodeToEntities(
           this.modelText,
         );
       }

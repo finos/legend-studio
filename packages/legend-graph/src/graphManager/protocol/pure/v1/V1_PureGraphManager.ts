@@ -186,6 +186,7 @@ import { V1_buildExecutionPlan } from './transformation/pureGraph/to/V1_Executio
 import type {
   LightQuery,
   Query,
+  QueryInfo,
 } from '../../../../graphManager/action/query/Query.js';
 import {
   V1_buildQuery,
@@ -1485,6 +1486,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   // ------------------------------------------- Compile -------------------------------------------
 
+  async compileEntities(entities: Entity[]): Promise<void> {
+    await this.engine.compilePureModelContextData(
+      await this.entitiesToPureModelContextData(entities),
+    );
+  }
+
   async compileGraph(
     graph: PureModel,
     options?:
@@ -2013,7 +2020,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       testDataGenerationExecuteInput,
     );
     testDataGenerationExecuteInput.parameters = parameters;
-    testDataGenerationExecuteInput.hashValues = Boolean(
+    testDataGenerationExecuteInput.hashStrings = Boolean(
       options?.anonymizeGeneratedData,
     );
     return this.engine.generateExecuteTestData(testDataGenerationExecuteInput);
@@ -2254,8 +2261,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async getQueryContent(queryId: string): Promise<string> {
-    return (await this.engine.getQuery(queryId)).content;
+  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+    const query = await this.engine.getQuery(queryId);
+    return {
+      name: query.name,
+      id: query.id,
+      versionId: query.versionId,
+      groupId: query.groupId,
+      artifactId: query.artifactId,
+      mapping: query.mapping,
+      runtime: query.runtime,
+      content: query.content,
+    };
   }
 
   async createQuery(query: Query, graph: PureModel): Promise<Query> {

@@ -26,7 +26,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import { UnsupportedEditorPanel } from '../../../editor/edit-panel/UnsupportedElementEditor.js';
 import type { Class } from '@finos/legend-graph';
-import { CustomSelectorInput, LockIcon } from '@finos/legend-art';
+import { CustomSelectorInput, LockIcon, PanelContent } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSLMapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -171,7 +171,7 @@ export const ConnectionEditor = observer(
             </div>
           </div>
         </div>
-        <div className="panel__content">{renderConnectionValueEditor()}</div>
+        <PanelContent>{renderConnectionValueEditor()}</PanelContent>
       </div>
     );
   },

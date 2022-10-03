@@ -41,6 +41,7 @@ import {
   ExternalLinkSquareIcon,
   ArchiveIcon,
   Dialog,
+  Panel,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -604,7 +605,7 @@ export const ProjectConfigurationEditor = observer(() => {
   }
   return (
     <div className="project-configuration-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             <div className="panel__header__title__label">
@@ -689,7 +690,7 @@ export const ProjectConfigurationEditor = observer(() => {
               />
             )}
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

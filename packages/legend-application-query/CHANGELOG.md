@@ -1,5 +1,38 @@
 # @finos/legend-application-query
 
+## 8.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `Legend Query` application config now requires `SDLC` entries configuration to enable the app to reason about the `SLDC` and `Studio` project/instance corresponding to a versioned project from the `Depot` server, this enables more seamless integration between `Legend Query` and `Legend Studio`, opening up avenues for new query edition modes. The new config looks like this:
+
+  ```jsonc
+  {
+    ... // existing config content
+    "studio": {
+      "url": "http://localhost:8080/studio",
+      "instances": [
+        {
+          "sdlcProjectIDPrefix": "PROD",
+          "url": "http://localhost:8080/studio"
+        }
+      ]
+    }
+  }
+  ```
+
+### Minor Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Add a new query setup mode `Edit existing service query` which will allow editing query of a service which is currently in `SDLC` via `Legend Studio`. Improve existing `Load query service` mode to allow loading a service in `Legend Studio`
+
+### Patch Changes
+
+- [#1497](https://github.com/finos/legend-studio/pull/1497) [`f10a68e`](https://github.com/finos/legend-studio/commit/f10a68e15185b58fc9d90fb55ad2a83263aa13b7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Correct the generated `url` and the `mine-only` filter of query editor's query loader.
+
+- [#1497](https://github.com/finos/legend-studio/pull/1497) [`f10a68e1`](https://github.com/finos/legend-studio/commit/f10a68e15185b58fc9d90fb55ad2a83263aa13b7) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Minor Query Loader improvements: Correct the url for loading a new query and improve the logic for searching `mine` queries.
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Remove `depot.TEMPORARY__useLegacyDepotServerAPIRoutes` config flag.
+
 ## 7.0.1
 
 ## 7.0.0

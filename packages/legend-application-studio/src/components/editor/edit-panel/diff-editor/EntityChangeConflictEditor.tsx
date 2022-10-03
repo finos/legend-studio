@@ -161,7 +161,7 @@ const MergeConflictEditor = observer(
       ? normalizeLineEnding(conflictEditorState.mergedText)
       : '';
     const error = conflictEditorState.mergeEditorParserError;
-    const decorations = useRef<string[]>([]);
+    const decorations = useRef<monacoEditorAPI.IEditorDecorationsCollection>();
     const mergeConflictResolutionCodeLensDisposer = useRef<
       IDisposable | undefined
     >(undefined);
@@ -390,8 +390,7 @@ const MergeConflictEditor = observer(
       }
 
       // decoration/highlighting for merge conflicts
-      decorations.current = editor.deltaDecorations(
-        decorations.current,
+      decorations.current = editor.createDecorationsCollection(
         conflictEditorState.mergeConflicts.flatMap((conflict) => {
           const currentChangeContentStartLine = conflict.startHeader + 1;
           const currentChangeContentEndLine =

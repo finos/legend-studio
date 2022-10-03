@@ -33,6 +33,7 @@ import {
   ChevronRightIcon,
   CheckCircleIcon,
   EmptyCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -336,13 +337,13 @@ export const DatabaseBuilder = observer(
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <PanelContent>
                     <StudioTextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}
                     />
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>

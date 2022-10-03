@@ -15,6 +15,8 @@
  */
 
 export const TAB_SIZE = 2;
+export const DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH = 2;
+export const DEFAULT_TYPEAHEAD_SEARCH_LIMIT = 10;
 
 export const MONOSPACED_FONT_FAMILY = 'Roboto Mono';
 

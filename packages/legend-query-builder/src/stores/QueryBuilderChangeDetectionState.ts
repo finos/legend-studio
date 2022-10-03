@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 import type { RawLambda } from '@finos/legend-graph';
 import {
   ActionState,
@@ -135,5 +139,32 @@ export class QueryBuilderChangeDetectionState {
     this.initialHashCode = this.querybuilderState.hashCode;
     this.initialQuery = initialQuery;
     this.initState.complete();
+  }
+
+  alertUnsavedChanges(onProceed: () => void): void {
+    if (this.hasChanged) {
+      this.querybuilderState.applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler:
+              this.querybuilderState.applicationStore.guardUnhandledError(
+                async () => onProceed(),
+              ),
+          },
+          {
+            label: 'Cancel',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onProceed();
+    }
   }
 }

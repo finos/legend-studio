@@ -48,7 +48,7 @@ fix: correct minor typos in code
 
 A `changeset` is used to express the intent to release a set of packages at particular [semver bump types](https://semver.org/) with a summary of the changes made. Therefore, we expect the author to create `changeset` files to indicate which packages should be re-released due to their changes and a brief summary of the changes to be added to release note/changelog.
 
-> No matter how big is your change, you should **always at least bump a `patch` release for the packages being modified**. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reivewers. If your change is not substantial (for example, you are fixing code format, bumping low-risk dependencies or adding tests), you can leave the summary blank. Sometimes, you would make changes in core packages, leading to further modifications in other packages, in these cases, what we find to be the most common workflow is to create an empty changeset listing out all changed packages, and then to create a seaprate changeset targetting just the modified core packages with detailed changelogs.
+> No matter how big is your change, you should **always at least bump a `patch` release for the packages being modified**. We enforce this to avoid missing changes during release and also to lessen the cognitive load for reviewers. If your change is not substantial (for example, you are fixing code format, bumping low-risk dependencies or adding tests), you can leave the summary blank. Sometimes, you would make changes in core packages, leading to further modifications in other packages, in these cases, what we find to be the most common workflow is to create an empty changeset listing out all changed packages, and then to create a separate changeset targeting just the modified core packages with detailed changelogs.
 
 We use [changesets](https://github.com/atlassian/changesets) to manage this process. See below for the format of the changeset.
 
@@ -60,7 +60,7 @@ We use [changesets](https://github.com/atlassian/changesets) to manage this proc
 
 <!--
 Capitalize the first character of your message and end it with a period.
-To document breaking chnages, prefix the message with `**BREAKING CHANGE:**`
+To document breaking changes, prefix the message with `**BREAKING CHANGE:**`
 -->
 
 An example description of the major changes.
@@ -89,7 +89,7 @@ yarn changeset -m "e.g. some message ..."
 yarn changeset:cli
 ```
 
-> Note that changeset is generated using the command above uses **local default branch** as the reference point. This aligns with our [recommended Git workflow](./docs/workflow/working-with-github.md) where contributors work on feature branch rather than directly on default branch. Also remember to keep your origin and local default branch in sync, this will help ensure the generated changeset is more accurate and compact, as well as avoid getting your PR blocked by the changeset validation gate.
+> Note that the changeset generated using the command above uses **local default branch** as the reference point. This aligns with our [recommended Git workflow](./docs/workflow/working-with-github.md) where contributors work on feature branch rather than directly on default branch. Also remember to keep your origin and local default branch in sync; this will help ensure the generated changeset is more accurate and compact, as well as avoid getting your PR blocked by the changeset validation gate.
 
 > Also, if you made a mistake in a changeset and want to create a PR to rectify that, to avoid the changeset being attributed to the wrong PR or author, you can add `pr` and `author` fields to the [front-matter part of the changelog](https://github.com/atlassian/changesets/blob/main/packages/changelog-github/CHANGELOG.md#030).
 
@@ -195,6 +195,10 @@ yarn changeset
 If you make change to the interface, please kindly include the screenshots, screen captures or `GIFs` in the description of the PR to make it easier for us to review this change :pray:
 
 Also please try to commit your code with messages following our [convention](#commit-convention) where possible. And last but not least, open a PR and follow up on the reviews.
+
+#### :scroll: Writing application documentation/guide/contextual-support
+
+In many occasions, you would like to provide users with help/guidance (even contextual support) as they are using the application. Follow this [guide](./docs/workflow/writing-application-documentation.md) to learn how to do so.
 
 #### :package: Releasing
 

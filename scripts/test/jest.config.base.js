@@ -22,9 +22,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const baseConfig = getBaseConfig({
   babelConfigPath: resolve(__dirname, '../../babel.config.cjs'),
-  // `react-dnd` went full ESM so we would need to transpile them
-  // https://github.com/react-dnd/react-dnd/issues/3443
-  TEMPORARY__esmPackagesToTransform: ['react-dnd', 'dnd-core', '@react-dnd'],
+  TEMPORARY__esmPackagesToTransform: [
+    // `react-dnd` went full ESM so we would need to transpile them
+    // https://github.com/react-dnd/react-dnd/issues/3443
+    'react-dnd',
+    'dnd-core',
+    '@react-dnd',
+    // lossless-json also went full ESM since version 2.0 so we would need to transpile them
+    'lossless-json',
+  ],
 });
 
 export const baseJestConfig = {

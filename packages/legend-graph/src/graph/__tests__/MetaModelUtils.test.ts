@@ -26,8 +26,8 @@ import {
   pruneSourceInformation,
 } from '../MetaModelUtils.js';
 import {
-  losslessParse,
-  losslessStringify,
+  parseLosslessJSON,
+  stringifyLosslessJSON,
   unitTest,
 } from '@finos/legend-shared';
 import {
@@ -76,9 +76,9 @@ test(unitTest('JSON Object input data should be minified'), () => {
     '{\n  "a":1, \n "b" : {\n  "b1":"hello"\n} \n}',
   );
 
-  expect(test1.data === losslessStringify(losslessParse(test1.data)));
-  expect(test2.data === losslessStringify(losslessParse(test2.data)));
-  expect(test3.data === losslessStringify(losslessParse(test3.data)));
+  expect(test1.data === stringifyLosslessJSON(parseLosslessJSON(test1.data)));
+  expect(test2.data === stringifyLosslessJSON(parseLosslessJSON(test2.data)));
+  expect(test3.data === stringifyLosslessJSON(parseLosslessJSON(test3.data)));
 });
 
 test(unitTest('Resolve package path and element name'), () => {

@@ -34,6 +34,7 @@ import {
   useDragPreviewLayer,
   OptionsIcon,
   PlusIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -583,7 +584,7 @@ export const QueryBuilderProjectionPanel = observer(
     }, [applicationStore, projectionState]);
 
     return (
-      <div className="panel__content">
+      <PanelContent>
         <div className="query-builder__projection__toolbar">
           <button
             className="panel__header__action"
@@ -639,7 +640,7 @@ export const QueryBuilderProjectionPanel = observer(
             <QueryResultModifierModal projectionState={projectionState} />
           </PanelDropZone>
         </div>
-      </div>
+      </PanelContent>
     );
   },
 );

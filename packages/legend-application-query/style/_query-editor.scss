@@ -264,8 +264,9 @@
         background: var(--color-dark-grey-350);
       }
 
+      &__table__row--selected:hover,
       &__table__row--selected {
-        background: var(--color-dark-grey-200);
+        background: var(--color-blue-500);
       }
     }
   }

@@ -34,6 +34,7 @@ import {
   WarningIcon,
   CircleNotchIcon,
   EmptyCircleIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -464,7 +465,7 @@ export const GlobalTestRunner = observer(
                 }
               ></div>
             </div>
-            <div className="panel__content">{renderTestables()}</div>
+            <PanelContent>{renderTestables()}</PanelContent>
             {globalTestRunnerState.failureViewing && (
               <TestFailViewer
                 globalTestRunnerState={globalTestRunnerState}

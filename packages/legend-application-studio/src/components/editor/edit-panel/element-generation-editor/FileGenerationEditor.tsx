@@ -56,6 +56,8 @@ import {
   LockIcon,
   SaveIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
@@ -276,7 +278,7 @@ export const GenerationResultViewer = observer(
                   </button>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 <PanelLoadingIndicator
                   isLoading={fileGenerationState.isGenerating}
                 />
@@ -290,7 +292,7 @@ export const GenerationResultViewer = observer(
                     Generation result not available
                   </BlankPanelContent>
                 )}
-              </div>
+              </PanelContent>
             </div>
           </div>
         </ResizablePanel>
@@ -312,7 +314,7 @@ export const GenerationResultViewer = observer(
                 {extraFileGenerationResultViewerActions}
               </div>
             </div>
-            <div className="panel__content">
+            <PanelContent>
               {fileNode instanceof GenerationFile && (
                 <StudioTextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
@@ -323,7 +325,7 @@ export const GenerationResultViewer = observer(
               {!(fileNode instanceof GenerationFile) && (
                 <BlankPanelContent>No file selected</BlankPanelContent>
               )}
-            </div>
+            </PanelContent>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -1387,7 +1389,7 @@ export const FileGenerationConfigurationEditor = observer(
             )}
           </div>
         </div>
-        <div className="panel__content">
+        <PanelContent>
           <PanelDropZone
             dropTargetConnector={scopeElementDropRef}
             isDragOver={
@@ -1430,7 +1432,7 @@ export const FileGenerationConfigurationEditor = observer(
               ))}
             </div>
           </PanelDropZone>
-        </div>
+        </PanelContent>
       </div>
     );
   },
@@ -1446,7 +1448,7 @@ export const FileGenerationEditor = observer(() => {
 
   return (
     <div className="file-generation-editor">
-      <div className="panel">
+      <Panel>
         <div className="panel__header">
           <div className="panel__header__title">
             {isReadOnly && (
@@ -1483,7 +1485,7 @@ export const FileGenerationEditor = observer(() => {
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 });

@@ -24,6 +24,7 @@ import {
   TimesIcon,
   InfoCircleIcon,
   BanIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { EntityChangeConflictSideBarItem } from '../edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
@@ -156,7 +157,7 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
                   : conflicts.length)}
             </div>
           </div>
-          <div className="panel__content">
+          <PanelContent>
             {!conflictResolutionState.hasResolvedAllConflicts && (
               <>
                 {conflicts
@@ -198,7 +199,7 @@ export const WorkspaceUpdateConflictResolver = observer(() => {
                     openDiff={openChange(diff)}
                   />
                 ))}
-          </div>
+          </PanelContent>
         </div>
       </div>
     </div>

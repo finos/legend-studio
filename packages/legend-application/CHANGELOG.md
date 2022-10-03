@@ -1,5 +1,22 @@
 # @finos/legend-application
 
+## 8.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `ApplicationStore` typings has been updated to genericize on the type of the plugin manager instead of the plugin, i.e. class
+
+  ```ts
+  class ApplicationStore<
+    T extends LegendApplicationConfig,
+    V extends LegendApplicationPluginManager<LegendApplicationPlugin>,
+  >
+  ```
+
+### Patch Changes
+
+- [#1486](https://github.com/finos/legend-studio/pull/1486) [`4eb73868`](https://github.com/finos/legend-studio/commit/4eb73868a6f6041967252ec27b65ec15cdcc7edf) ([@xannem](https://github.com/xannem)) - Improve search algorithm for virtual assistant to enhance user experience [#1294](https://github.com/finos/legend-studio/issues/1294)
+
 ## 7.2.1
 
 ## 7.2.0

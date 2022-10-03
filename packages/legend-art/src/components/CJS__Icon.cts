@@ -53,7 +53,6 @@ export {
   FaInfoCircle as InfoCircleIcon,
   FaCompress as CompressIcon,
   FaMap as MapIcon,
-  FaFlask as FlaskIcon,
   FaPlay as PlayIcon,
   FaGripVertical as VerticalDragHandleIcon,
   FaRobot as RobotIcon,
@@ -104,6 +103,7 @@ export {
   FaFolder as FolderIcon,
   FaFileCode as FileCodeIcon,
   FaCodeBranch as CodeBranchIcon,
+  FaArrowAltCircleUp as ArrowCirceUpIcon,
   FaArrowAltCircleLeft as ArrowCircleLeftIcon,
   FaRegStopCircle as EmptyStopCircleIcon,
   FaAsterisk as AsteriskIcon,
@@ -189,7 +189,6 @@ export {
   GoCloudDownload as CloudDownloadIcon,
   GoCloudUpload as CloudUploadIcon,
   GoSync as SyncIcon,
-  GoRepo as RepoIcon,
   GoGitBranch as GitBranchIcon,
   GoX as XIcon,
   GoPlug as PluginIcon,
@@ -200,6 +199,7 @@ export {
   IoFileTrayFullOutline as FileTrayIcon,
   IoMenuOutline as MenuIcon,
   IoBeaker as BeakerIcon,
+  IoFlaskSharp as FlaskIcon,
 } from 'react-icons/io5';
 export {
   BsFillTriangleFill as FilledTriangleIcon,
@@ -237,4 +237,6 @@ export {
 export {
   TbArrowsJoin2 as ArrowsJoinIcon,
   TbArrowsSplit2 as ArrowsSplitIcon,
+  TbMathFunction as FunctionIcon,
+  TbBook as RepoIcon,
 } from 'react-icons/tb';

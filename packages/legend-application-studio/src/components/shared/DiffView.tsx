@@ -31,7 +31,7 @@ import {
 } from '@finos/legend-art';
 import {
   isString,
-  losslessStringify,
+  stringifyLosslessJSON,
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
@@ -125,7 +125,7 @@ const formatJSONLikeValue = (value: unknown, lossless: boolean): string =>
         ? tryToFormatLosslessJSONString(value)
         : tryToFormatJSONString(value)
       : lossless
-      ? losslessStringify(value, undefined, TAB_SIZE)
+      ? stringifyLosslessJSON(value, undefined, TAB_SIZE)
       : JSON.stringify(value, undefined, TAB_SIZE)
     : '';
 

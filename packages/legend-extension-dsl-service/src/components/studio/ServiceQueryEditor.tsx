@@ -19,7 +19,11 @@ import { flushSync } from 'react-dom';
 import { useParams } from 'react-router';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useApplicationStore } from '@finos/legend-application';
+import {
+  ActionAlertActionType,
+  ActionAlertType,
+  useApplicationStore,
+} from '@finos/legend-application';
 import {
   type SelectComponent,
   BlankPanelContent,
@@ -109,13 +113,27 @@ const NewServiceModal = observer(() => {
 
       flowResult(
         editorStore.saveWorkspace(serviceEntity, true, (): void => {
-          applicationStore.navigator.jumpTo(
-            generateProjectServiceQueryUpdaterRoute(
-              editorStore.sdlcState.activeProject.projectId,
-              editorStore.sdlcState.activeWorkspace.workspaceId,
-              servicePath,
-            ),
-          );
+          applicationStore.setActionAlertInfo({
+            message: `Successfully created service '${serviceName}'. Now your service can be found in workspace '${editorStore.sdlcState.activeWorkspace.workspaceId}' of project '${editorStore.sdlcState.activeProject.name}' (${editorStore.sdlcState.activeProject.projectId})`,
+            prompt: `Please make sure to review the service and submit a review to officially make the service part of the project`,
+            type: ActionAlertType.STANDARD,
+            actions: [
+              {
+                label: 'Open Service',
+                type: ActionAlertActionType.PROCEED,
+                handler: (): void => {
+                  applicationStore.navigator.jumpTo(
+                    generateProjectServiceQueryUpdaterRoute(
+                      editorStore.sdlcState.activeProject.projectId,
+                      editorStore.sdlcState.activeWorkspace.workspaceId,
+                      servicePath,
+                    ),
+                  );
+                },
+                default: true,
+              },
+            ],
+          });
         }),
       ).catch(applicationStore.alertUnhandledError);
     }

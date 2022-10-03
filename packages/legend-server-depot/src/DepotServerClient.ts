@@ -283,4 +283,34 @@ export class DepotServerClient extends AbstractServerClient {
     dependencies: PlainObject<ProjectDependencyCoordinates>[],
   ): Promise<PlainObject<ProjectDependencyInfo>> =>
     this.post(`${this._projects()}/analyzeDependencyTree`, dependencies);
+
+  // ------------------------------------------- File Generation -------------------------------------------
+
+  private _generationContent = (): string =>
+    `${this.baseUrl}/generationFileContent`;
+
+  private _generationContentByGAV = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+  ): string =>
+    `${this._generationContent()}/${encodeURIComponent(
+      groupId,
+    )}/${encodeURIComponent(artifactId)}/versions/${encodeURIComponent(
+      versionId,
+    )}`;
+
+  getGenerationContentByPath = (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    filePath: string,
+  ): Promise<string | undefined> =>
+    this.get(
+      `${this._generationContentByGAV(
+        groupId,
+        artifactId,
+        versionId,
+      )}/file/${encodeURIComponent(filePath)}`,
+    );
 }

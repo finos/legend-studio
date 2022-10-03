@@ -1,5 +1,15 @@
 # @finos/legend-server-depot
 
+## 4.0.0
+
+### Major Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Moved `Depot Server` utilities to `@finos/legend-storage`.
+
+### Patch Changes
+
+- [#1488](https://github.com/finos/legend-studio/pull/1488) [`a90b4698`](https://github.com/finos/legend-studio/commit/a90b469846363058ac7efffcbfb8cf0070582609) ([@akphi](https://github.com/akphi)) - Remove `TEMPORARY__useLegacyDepotServerAPIRoutes` client config.
+
 ## 3.0.12
 
 ## 3.0.11

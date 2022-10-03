@@ -361,13 +361,13 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
         this.newConnectionValueDriver = new NewPureModelConnectionDriver(
           this.editorStore,
         );
-        break;
+        return;
       case CONNECTION_TYPE.RELATIONAL:
         this.newConnectionValueDriver =
           new NewRelationalDatabaseConnectionDriver(this.editorStore);
-        break;
+        return;
       default:
-        null;
+        return;
     }
   }
 

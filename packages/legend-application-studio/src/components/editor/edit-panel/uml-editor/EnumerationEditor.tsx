@@ -47,6 +47,8 @@ import {
   DragPreviewLayer,
   useDragPreviewLayer,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import {
@@ -345,7 +347,7 @@ const EnumEditor = observer(
               </button>
             </div>
           </div>
-          <div className="panel__content">
+          <PanelContent>
             {selectedTab === UML_EDITOR_TAB.TAGGED_VALUES && (
               <PanelDropZone
                 isDragOver={isTaggedValueDragOver && !isReadOnly}
@@ -384,7 +386,7 @@ const EnumEditor = observer(
                 </div>
               </PanelDropZone>
             )}
-          </div>
+          </PanelContent>
         </div>
       </div>
     );
@@ -546,7 +548,7 @@ export const EnumerationEditor = observer(
       >
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel minSize={56}>
-            <div className="panel">
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   <div className="panel__header__title__label">enumeration</div>
@@ -605,7 +607,7 @@ export const EnumerationEditor = observer(
                   </button>
                 </div>
               </div>
-              <div className="panel__content">
+              <PanelContent>
                 {selectedTab === UML_EDITOR_TAB.ENUM_VALUES && (
                   <div className="panel__content__lists">
                     <DragPreviewLayer
@@ -665,8 +667,8 @@ export const EnumerationEditor = observer(
                     </div>
                   </PanelDropZone>
                 )}
-              </div>
-            </div>
+              </PanelContent>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />

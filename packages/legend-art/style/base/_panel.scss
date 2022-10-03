@@ -237,13 +237,7 @@
   }
 
   &__section {
-    cursor: default;
-    margin: 0.5rem 0 3rem;
-
-    //TODO: create component for panel section paddings
-    &--padding {
-      padding: 0 0.5rem;
-    }
+    padding: 0 1rem;
   }
 
   &__section__header__label {
@@ -251,6 +245,7 @@
 
     font-weight: 500;
     color: var(--color-light-grey-50);
+    margin-top: 1rem;
     margin-bottom: 0.5rem;
     line-height: 2rem;
     cursor: default;
@@ -277,6 +272,7 @@
     width: 100%;
     min-width: 5rem;
     max-width: 45rem;
+    margin: 0 0 2rem;
     background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
     padding: 1rem;
@@ -380,6 +376,7 @@
     margin-left: 0.8rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
+    user-select: none;
     cursor: pointer;
   }
 

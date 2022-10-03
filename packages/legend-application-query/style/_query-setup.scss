@@ -27,7 +27,7 @@
   @include flexCenter;
 
   flex-direction: column;
-  height: 35rem;
+  height: 40rem;
   width: 32rem;
   background: var(--color-dark-grey-80);
   border-radius: 0.2rem;
@@ -334,7 +334,9 @@
     @include flexVCenter;
 
     &__label {
-      width: calc(100% - 5rem);
+      @include ellipsisTextOverflow;
+
+      width: calc(100% - 6rem);
     }
 
     &__action {
@@ -347,6 +349,7 @@
       font-weight: 500;
       background: var(--color-dark-grey-250);
       color: var(--color-dark-grey-500);
+      margin-left: 1rem;
 
       &:hover {
         background: var(--color-magenta-50);
@@ -364,12 +367,78 @@
       font-weight: 500;
       background: var(--color-dark-grey-250);
       color: var(--color-dark-grey-500);
+      margin-left: 1rem;
 
       &--mine {
         background: var(--color-magenta-50);
         color: var(--color-dark-shade-800);
       }
     }
+  }
+
+  &__preview {
+    width: 53.3rem;
+    height: 30rem;
+    margin-top: 0.5rem;
+    position: relative;
+    border: 0.1rem solid var(--color-dark-grey-200);
+  }
+
+  &__btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-250);
+    margin-left: 0.5rem;
+    border-radius: 0.2rem;
+
+    svg {
+      color: var(--color-dark-grey-500);
+    }
+
+    &--active {
+      background: var(--color-magenta-50);
+      border: none;
+
+      svg {
+        color: var(--color-dark-shade-300);
+      }
+    }
+  }
+}
+
+.query-setup__productionize-query {
+  &__header {
+    background: var(--color-magenta-50);
+  }
+
+  .query-setup__wizard__content {
+    padding: 3rem;
+  }
+
+  .query-setup__wizard__selector {
+    width: 50rem;
+  }
+
+  &__query-option {
+    @include flexVCenter;
+
+    &__label {
+      @include ellipsisTextOverflow;
+
+      width: 100%;
+    }
+  }
+
+  &__preview {
+    width: 53.3rem;
+    height: 30rem;
+    margin-top: 0.5rem;
+    position: relative;
+    border: 0.1rem solid var(--color-dark-grey-200);
   }
 
   &__btn {

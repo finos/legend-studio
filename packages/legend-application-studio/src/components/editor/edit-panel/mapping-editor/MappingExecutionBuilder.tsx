@@ -39,6 +39,7 @@ import {
   RobotIcon,
   PanelDropZone,
   PencilIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -382,7 +383,7 @@ const MappingExecutionQueryEditor = observer(
           </div>
         </div>
         {!isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <div className="mapping-execution-builder__query-panel__query">
               <StudioTextInputEditor
                 inputValue={queryState.lambdaString}
@@ -391,10 +392,10 @@ const MappingExecutionQueryEditor = observer(
                 showMiniMap={false}
               />
             </div>
-          </div>
+          </PanelContent>
         )}
         {isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <PanelDropZone
               dropTargetConnector={dropRef}
               isDragOver={isDragOver}
@@ -407,7 +408,7 @@ const MappingExecutionQueryEditor = observer(
                 isDropZoneActive={canDrop}
               />
             </PanelDropZone>
-          </div>
+          </PanelContent>
         )}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal

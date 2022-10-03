@@ -34,7 +34,7 @@ import {
 } from '@finos/legend-art';
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import {
   type MappingQueryCreatorPathParams,
@@ -54,10 +54,7 @@ import {
   QueryExportState,
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import {
-  type ApplicationStore,
-  useApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
@@ -70,12 +67,10 @@ import {
 } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
-import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import {
   QueryBuilder,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
-import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 
 const QueryExportDialogContent = observer(
   (props: { exportState: QueryExportState }) => {
@@ -205,12 +200,10 @@ const renderQueryEditorHeaderLabel = (
 const QueryLoader = observer(
   (props: {
     editorStore: QueryEditorStore;
-    applicationStore: ApplicationStore<
-      LegendQueryApplicationConfig,
-      LegendQueryPluginManager
-    >;
+    queryBuilderState: QueryBuilderState;
   }) => {
-    const { editorStore, applicationStore } = props;
+    const { editorStore, queryBuilderState } = props;
+    const applicationStore = useApplicationStore();
     const queryFinderRef = useRef<SelectComponent>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [selectedQueryID, setSelectedQueryID] = useState('');
@@ -259,12 +252,16 @@ const QueryLoader = observer(
     // actions
     const loadQuery = (): void => {
       if (selectedQueryID) {
-        editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-        applicationStore.navigator.jumpTo(
-          applicationStore.navigator.generateLocation(
-            generateExistingQueryEditorRoute(selectedQueryID),
-          ),
-        );
+        if (queryBuilderState.changeDetectionState.hasChanged) {
+          queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+            editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+            applicationStore.navigator.jumpTo(
+              applicationStore.navigator.generateLocation(
+                generateExistingQueryEditorRoute(selectedQueryID),
+              ),
+            );
+          });
+        }
       }
     };
 
@@ -462,18 +459,31 @@ const QueryEditorHeaderContent = observer(
           {renderQueryEditorHeaderLabel(editorStore)}
         </div>
         <div className="query-editor__header__actions">
+          {editorStore instanceof ExistingQueryEditorStore &&
+            applicationStore.pluginManager
+              .getApplicationPlugins()
+              .flatMap(
+                (plugin) =>
+                  plugin.getExtraExistingQueryActionRendererConfiguration?.() ??
+                  [],
+              )
+              .map((actionConfig) => (
+                <Fragment key={actionConfig.key}>
+                  {actionConfig.renderer(editorStore, queryBuilderState)}
+                </Fragment>
+              ))}
           <button
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
             onClick={openQueryLoader}
-            title="Load query"
+            title="Load query..."
           >
             <ManageSearchIcon className="query-editor__header__action__icon--loader" />
           </button>
           {editorStore.queryLoaderState.isQueryLoaderOpen && (
             <QueryLoader
               editorStore={editorStore}
-              applicationStore={applicationStore}
+              queryBuilderState={queryBuilderState}
             />
           )}
           <button

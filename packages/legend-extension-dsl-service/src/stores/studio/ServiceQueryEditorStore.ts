@@ -32,7 +32,6 @@ import {
   type ServiceRegistrationResult,
   GraphManagerState,
   PureExecution,
-  CORE_PURE_PATH,
   ServiceExecutionMode,
 } from '@finos/legend-graph';
 import {
@@ -200,8 +199,8 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
 
       // leverage initialization of query builder state to ensure we handle unsupported queries
-      queryBuilderState.initializeWithQuery(this.service.execution.func),
-        (this.queryBuilderState = queryBuilderState);
+      queryBuilderState.initializeWithQuery(this.service.execution.func);
+      this.queryBuilderState = queryBuilderState;
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.log.error(
@@ -247,7 +246,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       // NOTE: change detection in query-builder should be enough
       // to make sure that this change is valid
       const entityChange = {
-        classifierPath: CORE_PURE_PATH.SERVICE,
+        classifierPath: serviceEntity.classifierPath,
         entityPath: serviceEntity.path,
         content: serviceEntity.content,
         type: createNew ? EntityChangeType.CREATE : EntityChangeType.MODIFY,

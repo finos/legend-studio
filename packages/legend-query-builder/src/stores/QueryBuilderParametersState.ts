@@ -33,11 +33,13 @@ export class QueryBuilderParametersState
   extends LambdaParametersState
   implements Hashable
 {
+  readonly queryBuilderState: QueryBuilderState;
+
   selectedParameter: LambdaParameterState | undefined;
-  queryBuilderState: QueryBuilderState;
 
   constructor(queryBuilderState: QueryBuilderState) {
     super();
+
     makeObservable(this, {
       parameterValuesEditorState: observable,
       parameterStates: observable,

@@ -46,6 +46,7 @@ import {
   PauseCircleIcon,
   PanelDropZone,
   PencilIcon,
+  PanelContent,
 } from '@finos/legend-art';
 import { useDrop } from 'react-dnd';
 import {
@@ -273,7 +274,7 @@ const MappingTestQueryEditor = observer(
           </div>
         </div>
         {!isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <div className="mapping-test-editor__query-panel__query">
               <StudioTextInputEditor
                 inputValue={queryState.lambdaString}
@@ -282,10 +283,10 @@ const MappingTestQueryEditor = observer(
                 showMiniMap={false}
               />
             </div>
-          </div>
+          </PanelContent>
         )}
         {isStubbed_RawLambda(queryState.query) && (
-          <div className="panel__content">
+          <PanelContent>
             <PanelDropZone
               dropTargetConnector={dropRef}
               isDragOver={isDragOver}
@@ -299,7 +300,7 @@ const MappingTestQueryEditor = observer(
                 disabled={isReadOnly}
               />
             </PanelDropZone>
-          </div>
+          </PanelContent>
         )}
         {openClassMappingSelectorModal && (
           <ClassMappingSelectorModal

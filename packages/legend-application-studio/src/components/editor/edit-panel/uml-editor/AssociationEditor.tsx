@@ -42,6 +42,7 @@ import {
   ArrowCircleRightIcon,
   LongArrowRightIcon,
   PanelDropZone,
+  Panel,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../../shared/ElementIconUtils.js';
 import { prettyCONSTName, guaranteeType } from '@finos/legend-shared';
@@ -444,7 +445,7 @@ export const AssociationEditor = observer(
       >
         <ResizablePanelGroup orientation="horizontal">
           <ResizablePanel minSize={56}>
-            <div className="panel">
+            <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
                   {isReadOnly && (
@@ -552,7 +553,7 @@ export const AssociationEditor = observer(
                   </PanelDropZone>
                 )}
               </div>
-            </div>
+            </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter>
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />

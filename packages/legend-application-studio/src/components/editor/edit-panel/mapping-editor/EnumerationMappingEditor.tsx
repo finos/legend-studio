@@ -31,6 +31,8 @@ import {
   TimesIcon,
   PlusIcon,
   PanelDropZone,
+  Panel,
+  PanelContent,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
@@ -471,7 +473,7 @@ export const EnumerationMappingEditor = observer(
           <div className="mapping-element-editor__content">
             <ResizablePanelGroup orientation="vertical">
               <ResizablePanel minSize={300}>
-                <div className="panel">
+                <Panel>
                   <div className="panel__header">
                     <div className="panel__header__title">
                       <div className="panel__header__title__content">ENUMS</div>
@@ -488,7 +490,7 @@ export const EnumerationMappingEditor = observer(
                       />
                     ))}
                   </div>
-                </div>
+                </Panel>
               </ResizablePanel>
               <ResizablePanelSplitter />
               <ResizablePanel size={300} minSize={300}>
@@ -515,7 +517,7 @@ export const EnumerationMappingEditor = observer(
                       </button>
                     </div>
                   </div>
-                  <div className="panel__content">
+                  <PanelContent>
                     <PanelDropZone
                       dropTargetConnector={dropRef}
                       isDragOver={
@@ -547,7 +549,7 @@ export const EnumerationMappingEditor = observer(
                         closeModal={hideSourceSelectorModal}
                       />
                     </PanelDropZone>
-                  </div>
+                  </PanelContent>
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
