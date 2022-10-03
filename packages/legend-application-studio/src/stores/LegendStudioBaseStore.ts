@@ -188,7 +188,7 @@ export class LegendStudioBaseStore {
           });
         }
 
-        // fetch server features platform and config
+        // fetch server features config and platforms
         yield this.sdlcServerClient.fetchServerPlatforms();
         yield this.sdlcServerClient.fetchServerFeaturesConfiguration();
       }

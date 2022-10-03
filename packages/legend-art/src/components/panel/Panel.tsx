@@ -309,34 +309,3 @@ export const PanelFormBooleanEditor = observer(
     );
   },
 );
-
-export const PanelFormToogleEditor = observer(
-  (props: {
-    isToogled: boolean;
-    prompt: string;
-    update: (value: boolean | undefined) => void;
-  }) => {
-    const { isToogled, prompt, update } = props;
-    const toggleValue: React.MouseEventHandler<HTMLInputElement> = () => {
-      update(!isToogled);
-    };
-
-    return (
-      <div
-        className={clsx('panel__content__form__section__toggler')}
-        onClick={toggleValue}
-      >
-        <button
-          className={clsx('panel__content__form__section__toggler__btn', {
-            'panel__content__form__section__toggler__btn--toggled': isToogled,
-          })}
-        >
-          {!isToogled ? <SquareIcon /> : <CheckSquareIcon />}
-        </button>
-        <div className="panel__content__form__section__toggler__prompt">
-          {prompt}
-        </div>
-      </div>
-    );
-  },
-);
