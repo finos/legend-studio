@@ -16,8 +16,8 @@
 
 import {} from '@finos/legend-graph';
 import { Hashable, hashArray } from '@finos/legend-shared';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSLPersistence_HashUtils.js';
-import type { V1_ConnectionTestData } from './V1_DSLPersistence_ConnectionTestData.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import type { V1_ConnectionTestData } from './V1_DSL_Persistence_ConnectionTestData.js';
 
 export class V1_PersistenceTestData implements Hashable {
   connection!: V1_ConnectionTestData;

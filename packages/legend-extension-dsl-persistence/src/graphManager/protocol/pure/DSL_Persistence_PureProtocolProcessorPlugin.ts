@@ -76,9 +76,9 @@ import {
 } from '@finos/legend-graph';
 import { assertType, PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
-import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSLPersistence_PersistenceTest.js';
-import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTest.js';
-import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestBatch.js';
+import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
+import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::Persistence';

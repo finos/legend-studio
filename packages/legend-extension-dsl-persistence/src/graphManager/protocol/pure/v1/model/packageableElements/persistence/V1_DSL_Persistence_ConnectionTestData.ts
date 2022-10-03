@@ -16,7 +16,7 @@
 
 import { Hashable, hashArray } from '@finos/legend-shared';
 import type { V1_EmbeddedData } from '@finos/legend-graph';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSLPersistence_HashUtils.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
 
 export class V1_ConnectionTestData implements Hashable {
   data!: V1_EmbeddedData;

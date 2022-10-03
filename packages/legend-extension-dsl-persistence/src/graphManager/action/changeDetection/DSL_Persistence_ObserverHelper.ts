@@ -25,10 +25,10 @@ import {
   TestBatch,
 } from '@finos/legend-graph';
 import { makeObservable, observable, override, computed } from 'mobx';
-import type { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTest.js';
-import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestBatch.js';
-import type { PersistenceTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_PersistenceTestData.js';
-import type { ConnectionTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSLPersistence_ConnectionTestData.js';
+import type { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
+import type { PersistenceTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestData.js';
+import type { ConnectionTestData } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ConnectionTestData.js';
 
 export const observe_Persistence = skipObservedWithContext(
   (metamodel: Persistence, context: ObserverContext): Persistence => {

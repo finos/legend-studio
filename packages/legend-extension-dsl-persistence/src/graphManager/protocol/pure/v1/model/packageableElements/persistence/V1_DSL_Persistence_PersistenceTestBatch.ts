@@ -16,8 +16,8 @@
 
 import { Hashable, hashArray } from '@finos/legend-shared';
 import { V1_TestBatch } from '@finos/legend-graph';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSLPersistence_HashUtils.js';
-import type { V1_PersistenceTestData } from './V1_DSLPersistence_PersistenceTestData.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import type { V1_PersistenceTestData } from './V1_DSL_Persistence_PersistenceTestData.js';
 
 export class V1_PersistenceTestBatch extends V1_TestBatch implements Hashable {
   testData!: V1_PersistenceTestData;

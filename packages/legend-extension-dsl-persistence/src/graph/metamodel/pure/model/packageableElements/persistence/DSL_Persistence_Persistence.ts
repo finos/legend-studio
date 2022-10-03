@@ -26,7 +26,7 @@ import {
   Testable,
 } from '@finos/legend-graph';
 import { Hashable, hashArray } from '@finos/legend-shared';
-import type { PersistenceTest } from './DSLPersistence_PersistenceTest.js';
+import type { PersistenceTest } from './DSL_Persistence_PersistenceTest.js';
 
 export class Persistence
   extends PackageableElement

@@ -15,8 +15,8 @@
  */
 
 import { hashArray, Hashable } from '@finos/legend-shared';
-import type { ConnectionTestData } from './DSLPersistence_ConnectionTestData.js';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
+import type { ConnectionTestData } from './DSL_Persistence_ConnectionTestData.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
 
 export class PersistenceTestData implements Hashable {
   connection!: ConnectionTestData;

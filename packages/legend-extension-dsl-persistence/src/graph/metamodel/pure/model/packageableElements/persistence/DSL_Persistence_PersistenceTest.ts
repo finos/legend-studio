@@ -16,8 +16,8 @@
 
 import { Hashable, hashArray } from '@finos/legend-shared';
 import { AtomicTest } from '@finos/legend-graph';
-import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSLPersistence_HashUtils.js';
-import type { PersistenceTestBatch } from './DSLPersistence_PersistenceTestBatch.js';
+import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../DSL_Persistence_HashUtils.js';
+import type { PersistenceTestBatch } from './DSL_Persistence_PersistenceTestBatch.js';
 
 export class PersistenceTest extends AtomicTest implements Hashable {
   testBatches: PersistenceTestBatch[] = [];
