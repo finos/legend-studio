@@ -38,6 +38,7 @@ import {
   TableExplicitReference,
   ViewExplicitReference,
   getAllRecordTypes,
+  PackageableElement,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -66,6 +67,28 @@ export interface MappingElementSourceSelectOption {
   label: string;
   value: unknown;
 }
+
+export const getMappingSourcePackageableElementOptionFormatter = (props: {
+  darkMode?: boolean;
+}): ((option: {
+  value: MappingElementSourceSelectOption;
+}) => React.ReactNode) =>
+  function RuntimeOptionLabel(option: {
+    value: MappingElementSourceSelectOption;
+  }): React.ReactNode {
+    if (option.value instanceof PackageableElement) {
+      return getPackageableElementOptionFormatter(props)(
+        buildElementOption(option.value),
+      );
+    } else if (option.value instanceof TableAlias) {
+      const tableOwner = option.value.relation.ownerReference;
+      return getPackageableElementOptionFormatter(props)(
+        buildElementOption(tableOwner.value),
+      );
+    } else {
+      return <> </>;
+    }
+  };
 
 export const getSourceElementLabel = (
   srcElement: unknown | undefined,
@@ -206,7 +229,9 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             placeholder={`Select a source...`}
             isClearable={true}
             filterOption={filterOption}
-            formatOptionLabel={getPackageableElementOptionFormatter({})}
+            formatOptionLabel={getMappingSourcePackageableElementOptionFormatter(
+              {},
+            )}
           />
         </div>
       </Dialog>
