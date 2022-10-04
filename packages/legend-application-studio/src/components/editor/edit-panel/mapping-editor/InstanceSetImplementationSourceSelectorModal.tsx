@@ -70,12 +70,10 @@ export interface MappingElementSourceSelectOption {
 
 const getMappingSourcePackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
-}): ((option: {
-  value: MappingElementSourceSelectOption;
-}) => React.ReactNode) =>
-  function RuntimeOptionLabel(option: {
-    value: MappingElementSourceSelectOption;
-  }): React.ReactNode {
+}): ((option: MappingElementSourceSelectOption) => React.ReactNode) =>
+  function MappingSourceOptionLabel(
+    option: MappingElementSourceSelectOption,
+  ): React.ReactNode {
     if (option.value instanceof PackageableElement) {
       return getPackageableElementOptionFormatter(props)(
         buildElementOption(option.value),
@@ -92,9 +90,7 @@ const getMappingSourcePackageableElementOptionFormatter = (props: {
       return (
         <div className={className}>
           <div className="packageable-element-format-option-label-type"></div>
-          <div className={`${className}__name`}>
-            {(option as MappingElementSourceSelectOption).label}
-          </div>
+          <div className={`${className}__name`}>{option.label}</div>
         </div>
       );
     }
