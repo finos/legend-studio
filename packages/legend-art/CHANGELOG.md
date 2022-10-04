@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 3.3.0
+
+### Minor Changes
+
+- [#1502](https://github.com/finos/legend-studio/pull/1502) [`81757c5c`](https://github.com/finos/legend-studio/commit/81757c5c3ff514adcc532d118ec58e830938109b) ([@xannem](https://github.com/xannem)) - Add `PanelSection` and `PanelFormBooleanEditor` components
+
 ## 3.2.2
 
 ### Patch Changes

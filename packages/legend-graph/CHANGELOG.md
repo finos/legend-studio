@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 17.0.0
+
+### Major Changes
+
+- [#1521](https://github.com/finos/legend-studio/pull/1521) [`e29ca75c`](https://github.com/finos/legend-studio/commit/e29ca75c04e7bce509fd24086998aa4bc95c4ec5) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Renamed `Relational store` plugins and presets to use prefix `STO_Relational` instead of `StoreRelational`
+
+- [#1521](https://github.com/finos/legend-studio/pull/1521) [`e29ca75c`](https://github.com/finos/legend-studio/commit/e29ca75c04e7bce509fd24086998aa4bc95c4ec5) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Rename DSL plugins and presets to use prefix `DSL_` instead of `DSL`
+
+- [#1521](https://github.com/finos/legend-studio/pull/1521) [`e29ca75c`](https://github.com/finos/legend-studio/commit/e29ca75c04e7bce509fd24086998aa4bc95c4ec5) ([@gayathrir11](https://github.com/gayathrir11)) - **BREAKING CHANGE:** Renamed `FlataData store` plugins and presets to use the prefix `STO_FlatData` instead of `StoreFlatData`
+
+### Minor Changes
+
+- [#1508](https://github.com/finos/legend-studio/pull/1508) [`10b9bc4e`](https://github.com/finos/legend-studio/commit/10b9bc4e617e1f48dfad7571523394b9103dc7f6) ([@chloeminkyung](https://github.com/chloeminkyung)) - Add `TestBatch` to Testable model and incorporate into GlobalTestRunner.
+
 ## 16.0.0
 
 ### Major Changes
