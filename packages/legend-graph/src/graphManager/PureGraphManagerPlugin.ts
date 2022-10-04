@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin } from '@finos/legend-shared';
+import { AbstractPlugin, type Hashable } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -25,7 +25,6 @@ import type {
 } from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
 import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
-import type { V1_AssertionStatus } from './protocol/pure/v1/model/test/assertion/status/V1_AssertionStatus.js';
 import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 
 export type PureGraphManagerExtensionBuilder = (
@@ -63,7 +62,7 @@ export type TestableFinder = (
 
 export type TestableAssertion = (
   testable: AtomicTest,
-  element: V1_AssertionStatus,
+  element: Hashable,
 ) => TestAssertion | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
