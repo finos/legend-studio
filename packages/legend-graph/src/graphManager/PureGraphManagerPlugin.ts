@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AbstractPlugin, type Hashable } from '@finos/legend-shared';
+import { AbstractPlugin } from '@finos/legend-shared';
 import type { PureModel } from '../graph/PureModel.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
@@ -24,7 +24,6 @@ import type {
   AbstractPureGraphManagerExtension,
 } from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
-import type { TestAssertion } from '../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 
 export type PureGraphManagerExtensionBuilder = (
@@ -59,11 +58,6 @@ export type TestableFinder = (
   id: string,
   graph: PureModel,
 ) => Testable | undefined;
-
-export type TestableAssertion = (
-  testable: AtomicTest,
-  element: Hashable,
-) => TestAssertion | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
@@ -118,11 +112,6 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of testable finders.
    */
   getExtraTestableFinders?(): TestableFinder[];
-
-  /**
-   * Get the list of testable assertion builders.
-   */
-  getExtraTestableAssertionBuilders?(): TestableAssertion[];
 
   /**
    * Get the list of atomic test observers.

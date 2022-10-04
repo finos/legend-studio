@@ -25,7 +25,7 @@ import type { Testable } from '../../../../../../graph/metamodel/pure/test/Testa
 import type { V1_TestResult } from '../../model/test/result/V1_TestResult.js';
 import { V1_buildTestResult } from '../../transformation/pureGraph/to/helpers/V1_TestResultBuilderHelper.js';
 import { V1_deserializeTestResult } from '../../transformation/pureProtocol/serializationHelpers/V1_TestSerializationHelper.js';
-import type { PureGraphManagerPlugin } from '../../../../../PureGraphManagerPlugin.js';
+import type { PureProtocolProcessorPlugin } from '../../../PureProtocolProcessorPlugin.js';
 
 export class V1_RunTestsResult {
   results: V1_TestResult[] = [];
@@ -40,7 +40,7 @@ export class V1_RunTestsResult {
 export const V1_buildTestsResult = (
   results: V1_RunTestsResult,
   testableFinder: (id: string) => Testable | undefined,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): TestResult[] =>
   results.results
     .map((r) =>

@@ -32,6 +32,8 @@ import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.
 import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import type { V1_AtomicTest } from './v1/model/test/V1_AtomicTest.js';
 import type { AtomicTest } from '../../../graph/metamodel/pure/test/Test.js';
+import type { V1_AssertionStatus } from './v1/model/test/assertion/status/V1_AssertionStatus.js';
+import type { TestAssertion } from '../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 
 export type V1_ElementProtocolClassifierPathGetter = (
   protocol: V1_PackageableElement,
@@ -85,6 +87,11 @@ export type V1_AtomicTestBuilder = (
   protocol: V1_AtomicTest,
   context: V1_GraphBuilderContext,
 ) => AtomicTest | undefined;
+
+export type V1_TestableAssertion = (
+  testable: AtomicTest,
+  element: V1_AssertionStatus,
+) => TestAssertion | undefined;
 
 export type V1_AtomicTestTransformer = (
   metamodel: AtomicTest,
@@ -174,7 +181,18 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    */
   V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
 
+  /**
+   * Get the list of Atomic test builders.
+   */
   V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[];
 
+  /**
+   * Get the list of Atomic test transformers.
+   */
   V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[];
+
+  /**
+   * Get the list of Testable assertion builders.
+   */
+  V1_getExtraTestableAssertionBuilders?(): V1_TestableAssertion[];
 }

@@ -49,7 +49,7 @@ import {
   V1_TestError,
 } from '../../../../model/test/result/V1_TestResult.js';
 import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId.js';
-import type { PureGraphManagerPlugin } from '../../../../../../../PureGraphManagerPlugin.js';
+import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 
 const buildAtomicTestId = (
   element: V1_AtomicTestId,
@@ -75,11 +75,11 @@ const buildAtomicTestId = (
 const buildAssertFail = (
   element: V1_AssertFail,
   atomicTest: AtomicTest,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): AssertFail => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -101,11 +101,11 @@ const buildAssertFail = (
 const buildAssertPass = (
   element: V1_AssertPass,
   atomicTest: AtomicTest,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): AssertPass => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -127,11 +127,11 @@ const buildAssertPass = (
 const buildEqualToJsonAssertFail = (
   element: V1_EqualToJsonAssertFail,
   atomicTest: AtomicTest,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): EqualToJsonAssertFail => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -159,7 +159,7 @@ const buildEqualToJsonAssertFail = (
 const buildAssertionStatus = (
   value: V1_AssertionStatus,
   atomicTest: AtomicTest,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): AssertionStatus => {
   if (value instanceof V1_EqualToJsonAssertFail) {
     return buildEqualToJsonAssertFail(value, atomicTest, plugins);
@@ -183,7 +183,7 @@ export const V1_buildTestError = (
 export const V1_buildTestFailed = (
   element: V1_TestFailed,
   testable: Testable,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): TestFailed => {
   const testFailed = new TestFailed();
   testFailed.atomicTestId = buildAtomicTestId(element.atomicTestId, testable);
@@ -207,7 +207,7 @@ export const V1_buildTestPassed = (
 export const V1_buildMultiExecutionServiceTestResult = (
   element: V1_MultiExecutionServiceTestResult,
   testable: Testable,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): MultiExecutionServiceTestResult => {
   const multi = new MultiExecutionServiceTestResult();
   multi.testable = testable;
@@ -225,7 +225,7 @@ export const V1_buildMultiExecutionServiceTestResult = (
 export function V1_buildTestResult(
   element: V1_TestResult,
   testable: Testable,
-  plugins: PureGraphManagerPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): TestResult {
   if (element instanceof V1_TestPassed) {
     return V1_buildTestPassed(element, testable);

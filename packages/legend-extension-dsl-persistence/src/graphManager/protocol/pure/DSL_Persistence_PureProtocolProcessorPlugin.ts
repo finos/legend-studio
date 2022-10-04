@@ -73,6 +73,9 @@ import {
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
   V1_buildFullPath,
+  V1_TestableAssertion,
+  V1_AssertionStatus,
+  TestAssertion,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
@@ -337,6 +340,26 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
           default:
             return undefined;
         }
+      },
+    ];
+  }
+
+  override V1_getExtraTestableAssertionBuilders(): V1_TestableAssertion[] {
+    return [
+      (
+        atomicTest: AtomicTest,
+        element: V1_AssertionStatus,
+      ): TestAssertion | undefined => {
+        if (atomicTest instanceof PersistenceTest) {
+          for (const testBatch of atomicTest.testBatches) {
+            for (const assertion of testBatch.assertions) {
+              if (assertion.id === element.id) {
+                return assertion;
+              }
+            }
+          }
+        }
+        return undefined;
       },
     ];
   }

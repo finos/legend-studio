@@ -30,11 +30,8 @@ import {
   type PackageableElement,
   type PureGrammarElementLabeler,
   PureGraphManagerPlugin,
-  type TestAssertion,
-  type V1_AssertionStatus,
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
-import type { TestableAssertion } from '../../../legend-graph/src/graphManager/PureGraphManagerPlugin.js';
 
 export const PURE_GRAMMAR_PERSISTENCE_PARSER_NAME = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
@@ -80,26 +77,6 @@ export class DSL_Persistence_PureGraphManagerPlugin extends PureGraphManagerPlug
           return observe_Persistence(element, context);
         } else if (element instanceof PersistenceContext) {
           return observe_PersistenceContext(element);
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  override getExtraTestableAssertionBuilders(): TestableAssertion[] {
-    return [
-      (
-        atomicTest: AtomicTest,
-        element: V1_AssertionStatus,
-      ): TestAssertion | undefined => {
-        if (atomicTest instanceof PersistenceTest) {
-          for (const testBatch of atomicTest.testBatches) {
-            for (const assertion of testBatch.assertions) {
-              if (assertion.id === element.id) {
-                return assertion;
-              }
-            }
-          }
         }
         return undefined;
       },
