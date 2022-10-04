@@ -38,6 +38,7 @@ import {
   TableExplicitReference,
   ViewExplicitReference,
   getAllRecordTypes,
+  PackageableElement,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -45,6 +46,7 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   useApplicationStore,
   buildElementOption,
+  getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
 
 export const getMappingElementSourceFilterText = (
@@ -65,6 +67,34 @@ export interface MappingElementSourceSelectOption {
   label: string;
   value: unknown;
 }
+
+const getMappingSourcePackageableElementOptionFormatter = (props: {
+  darkMode?: boolean;
+}): ((option: MappingElementSourceSelectOption) => React.ReactNode) =>
+  function MappingSourceOptionLabel(
+    option: MappingElementSourceSelectOption,
+  ): React.ReactNode {
+    if (option.value instanceof PackageableElement) {
+      return getPackageableElementOptionFormatter(props)(
+        buildElementOption(option.value),
+      );
+    } else if (option.value instanceof TableAlias) {
+      const tableOwner = option.value.relation.ownerReference;
+      return getPackageableElementOptionFormatter(props)(
+        buildElementOption(tableOwner.value),
+      );
+    } else {
+      const className = props.darkMode
+        ? 'packageable-element-format-option-label--dark'
+        : 'packageable-element-format-option-label';
+      return (
+        <div className={className}>
+          <div className="packageable-element-format-option-label-type"></div>
+          <div className={`${className}__name`}>{option.label}</div>
+        </div>
+      );
+    }
+  };
 
 export const getSourceElementLabel = (
   srcElement: unknown | undefined,
@@ -205,6 +235,9 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             placeholder={`Select a source...`}
             isClearable={true}
             filterOption={filterOption}
+            formatOptionLabel={getMappingSourcePackageableElementOptionFormatter(
+              {},
+            )}
           />
         </div>
       </Dialog>
