@@ -24,6 +24,7 @@ import type {
   AbstractPureGraphManagerExtension,
 } from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
+import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 
 export type PureGraphManagerExtensionBuilder = (
   graphManager: AbstractPureGraphManager,
@@ -33,6 +34,11 @@ export type ElementObserver = (
   metamodel: PackageableElement,
   context: ObserverContext,
 ) => PackageableElement | undefined;
+
+export type AtomicTestObserver = (
+  metamodel: AtomicTest,
+  context: ObserverContext,
+) => AtomicTest | undefined;
 
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
@@ -106,4 +112,9 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of testable finders.
    */
   getExtraTestableFinders?(): TestableFinder[];
+
+  /**
+   * Get the list of atomic test observers.
+   */
+  getExtraAtomicTestObservers?(): AtomicTestObserver[];
 }

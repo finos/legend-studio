@@ -40,9 +40,15 @@ import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceContextModelSchema,
 } from './v1/transformation/pureProtocol/V1_DSL_PersistenceContext_ProtocolHelper.js';
-import { V1_buildPersistence } from './v1/transformation/pureGraph/to/V1_DSL_Persistence_BuilderHelper.js';
+import {
+  V1_buildPersistence,
+  V1_buildTestBatch,
+} from './v1/transformation/pureGraph/to/V1_DSL_Persistence_BuilderHelper.js';
 import { V1_buildPersistenceContext } from './v1/transformation/pureGraph/to/V1_DSL_Persistence_ContextBuilder.js';
-import { V1_transformPersistence } from './v1/transformation/pureGraph/from/V1_DSL_Persistence_TransformerHelper.js';
+import {
+  V1_transformPersistence,
+  V1_transformPersistenceTestBatch,
+} from './v1/transformation/pureGraph/from/V1_DSL_Persistence_TransformerHelper.js';
 import { V1_transformPersistenceContext } from './v1/transformation/pureGraph/from/V1_DSL_Persistence_ContextTransformer.js';
 import type {
   DSL_Persistence_PureProtocolProcessorPlugin_Extension,
@@ -52,8 +58,15 @@ import type {
   V1_TriggerTransformer,
 } from './DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type AtomicTest,
   type PackageableElement,
   PureProtocolProcessorPlugin,
+  type TestAssertion,
+  type V1_AssertionStatus,
+  type V1_AtomicTest,
+  type V1_AtomicTestBuilder,
+  type V1_AtomicTestTransformer,
+  V1_buildFullPath,
   V1_ElementBuilder,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -62,10 +75,13 @@ import {
   type V1_GraphBuilderContext,
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
-  V1_buildFullPath,
+  type V1_TestableAssertion,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
+import { V1_PersistenceTest } from './v1/model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
+import { PersistenceTest } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import type { PersistenceTestBatch } from '../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
 
 export const PERSISTENCE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::persistence::metamodel::Persistence';
@@ -255,6 +271,51 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
     ];
   }
 
+  override V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[] {
+    return [
+      (
+        protocol: V1_AtomicTest,
+        context: V1_GraphBuilderContext,
+      ): AtomicTest | undefined => {
+        if (protocol instanceof V1_PersistenceTest) {
+          const test = new PersistenceTest();
+          test.id = protocol.id;
+          test.isTestDataFromServiceOutput =
+            protocol.isTestDataFromServiceOutput;
+          test.testBatches = V1_buildTestBatch(
+            protocol.testBatches,
+            test,
+            context,
+          );
+          return test;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  override V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[] {
+    return [
+      (
+        metamodel: AtomicTest,
+        context: V1_GraphTransformerContext,
+      ): V1_AtomicTest | undefined => {
+        if (metamodel instanceof PersistenceTest) {
+          const persistenceTest = new V1_PersistenceTest();
+          persistenceTest.id = metamodel.id;
+          persistenceTest.isTestDataFromServiceOutput =
+            metamodel.isTestDataFromServiceOutput;
+          persistenceTest.testBatches = metamodel.testBatches.map(
+            (testBatch: PersistenceTestBatch) =>
+              V1_transformPersistenceTestBatch(testBatch, context),
+          );
+          return persistenceTest;
+        }
+        return undefined;
+      },
+    ];
+  }
+
   V1_getExtraTriggerProtocolSerializers?(): V1_TriggerProtocolSerializer[] {
     return [
       (protocol: V1_Trigger): PlainObject<V1_Trigger> | undefined => {
@@ -279,6 +340,26 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
           default:
             return undefined;
         }
+      },
+    ];
+  }
+
+  override V1_getExtraTestableAssertionBuilders(): V1_TestableAssertion[] {
+    return [
+      (
+        atomicTest: AtomicTest,
+        element: V1_AssertionStatus,
+      ): TestAssertion | undefined => {
+        if (atomicTest instanceof PersistenceTest) {
+          for (const testBatch of atomicTest.testBatches) {
+            for (const assertion of testBatch.assertions) {
+              if (assertion.id === element.id) {
+                return assertion;
+              }
+            }
+          }
+        }
+        return undefined;
       },
     ];
   }

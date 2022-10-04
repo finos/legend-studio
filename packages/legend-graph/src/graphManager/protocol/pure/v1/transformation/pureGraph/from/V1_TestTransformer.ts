@@ -59,11 +59,31 @@ const transformEqualToTDS = (element: EqualToTDS): V1_EqualToTDS => {
   return equalToTDS;
 };
 
-export const V1_transformAtomicTest = (value: AtomicTest): V1_AtomicTest => {
+export const V1_transformAtomicTest = (
+  value: AtomicTest,
+  context: V1_GraphTransformerContext,
+): V1_AtomicTest => {
   if (value instanceof ServiceTest) {
     return V1_transformServiceTest(value);
   }
-  throw new UnsupportedOperationError(`Can't transform atomic test`, value);
+
+  const extraAtomicTestTransformers = context.plugins.flatMap(
+    (plugin) => plugin.V1_getExtraAtomicTestTransformers?.() ?? [],
+  );
+
+  for (const transformer of extraAtomicTestTransformers) {
+    const atomicTestTransformer: V1_AtomicTest | undefined = transformer(
+      value,
+      context,
+    );
+    if (atomicTestTransformer) {
+      return atomicTestTransformer;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform atomic test: no compatible transformer available from plugins `,
+    value,
+  );
 };
 
 export const V1_transformTestAssertion = (

@@ -23,6 +23,7 @@ import {
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { PERSISTENCE_HASH_STRUCTURE } from '../../../../../../../graph/DSL_Persistence_HashUtils.js';
+import type { V1_PersistenceTest } from './V1_DSL_Persistence_PersistenceTest.js';
 
 export class V1_Persistence extends V1_PackageableElement implements Hashable {
   documentation!: string;
@@ -30,6 +31,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
   service!: string;
   persister!: V1_Persister;
   notifier!: V1_Notifier;
+  tests: V1_PersistenceTest[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -39,6 +41,7 @@ export class V1_Persistence extends V1_PackageableElement implements Hashable {
       this.service,
       this.persister,
       this.notifier,
+      hashArray(this.tests),
     ]);
   }
 

@@ -148,16 +148,31 @@ import type { Trigger } from '../../../../../../../graph/metamodel/pure/model/pa
 import { getOwnPersistence } from '../../../../../../DSL_Persistence_GraphManagerHelper.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
 import {
+  type AtomicTest,
   type Binding,
   type Database,
   type PackageableElementImplicitReference,
-  type V1_GraphBuilderContext,
+  type TestAssertion,
+  V1_buildAtomicTest,
+  V1_buildEmbeddedData,
+  V1_buildEqualToJson,
   V1_buildFullPath,
+  V1_EqualToJson,
+  type V1_GraphBuilderContext,
+  type V1_TestAssertion,
 } from '@finos/legend-graph';
 import {
   guaranteeNonEmptyString,
+  guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
+import { PersistenceTest } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
+import type { V1_PersistenceTestBatch } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
+import { PersistenceTestBatch } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestBatch.js';
+import type { V1_PersistenceTestData } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
+import { PersistenceTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTestData.js';
+import type { V1_ConnectionTestData } from '../../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
+import { ConnectionTestData } from '../../../../../../../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_ConnectionTestData.js';
 
 /**********
  * trigger
@@ -622,6 +637,62 @@ export const V1_buildNotifier = (
 };
 
 /**********
+ * test
+ **********/
+
+export const V1_buildPersistenceTestAssertions = (
+  value: V1_TestAssertion[],
+  parentTest: AtomicTest | undefined,
+  context: V1_GraphBuilderContext,
+): TestAssertion[] =>
+  value.map((assertion) => {
+    if (assertion instanceof V1_EqualToJson) {
+      return V1_buildEqualToJson(assertion, parentTest, context);
+    } else {
+      throw new UnsupportedOperationError(`Can't build test assertion`, value);
+    }
+  });
+
+const V1_buildConnectionTestData = (
+  element: V1_ConnectionTestData,
+  context: V1_GraphBuilderContext,
+): ConnectionTestData => {
+  const connectionTestData = new ConnectionTestData();
+  connectionTestData.data = V1_buildEmbeddedData(element.data, context);
+  return connectionTestData;
+};
+
+const V1_buildTestData = (
+  element: V1_PersistenceTestData,
+  context: V1_GraphBuilderContext,
+): PersistenceTestData => {
+  const testData = new PersistenceTestData();
+  testData.connection = V1_buildConnectionTestData(element.connection, context);
+  return testData;
+};
+
+export const V1_buildTestBatch = (
+  protocol: V1_PersistenceTestBatch[],
+  parentTest: PersistenceTest | undefined,
+  context: V1_GraphBuilderContext,
+): PersistenceTestBatch[] =>
+  protocol.map((persistenceTestBatch) => {
+    const testBatch = new PersistenceTestBatch();
+    testBatch.id = persistenceTestBatch.id;
+    testBatch.batchId = persistenceTestBatch.batchId;
+    testBatch.assertions = V1_buildPersistenceTestAssertions(
+      persistenceTestBatch.assertions,
+      parentTest,
+      context,
+    );
+    testBatch.testData = V1_buildTestData(
+      persistenceTestBatch.testData,
+      context,
+    );
+    return testBatch;
+  });
+
+/**********
  * persistence
  **********/
 
@@ -639,4 +710,7 @@ export const V1_buildPersistence = (
   persistence.service = context.resolveService(protocol.service);
   persistence.persister = V1_buildPersister(protocol.persister, context);
   persistence.notifier = V1_buildNotifier(protocol.notifier, context);
+  persistence.tests = protocol.tests
+    .map((test) => V1_buildAtomicTest(test, context))
+    .map((e) => guaranteeType(e, PersistenceTest));
 };

@@ -123,7 +123,7 @@ export const V1_transformServiceTestSuite = (
   serviceTestSuite.id = element.id;
   serviceTestSuite.testData = transformTestData(element.testData, context);
   serviceTestSuite.tests = element.tests.map((test) =>
-    V1_transformAtomicTest(test),
+    V1_transformAtomicTest(test, context),
   );
   return serviceTestSuite;
 };

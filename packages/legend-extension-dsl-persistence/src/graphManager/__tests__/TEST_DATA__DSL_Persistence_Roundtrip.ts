@@ -411,3 +411,278 @@ export const TEST_DATA__roundtrip = [
     },
   },
 ];
+
+export const TEST_DATA__roundtrip_test = [
+  {
+    path: 'org::dxl::Zoo',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Zoo',
+      package: 'org::dxl',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
+    path: 'org::legend::ServiceResult',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'ServiceResult',
+      package: 'org::legend',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'deleted',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'dateTimeIn',
+          type: 'String',
+        },
+      ],
+    },
+  },
+  {
+    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'org::legend::TestDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      includedStores: [],
+      joins: [],
+      name: 'TestDatabase',
+      package: 'org::legend',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'personTable',
+              primaryKey: [],
+            },
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: true,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: 'firstName',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 100,
+                  },
+                },
+              ],
+              name: 'personTable_staging',
+              primaryKey: [],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+  },
+  {
+    path: 'org::dxl::Mapping',
+    classifierPath: 'meta::pure::mapping::Mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'Mapping',
+      package: 'org::dxl',
+      tests: [],
+    },
+  },
+  {
+    path: 'org::dxl::ZooService',
+    classifierPath: 'meta::legend::service::metamodel::Service',
+    content: {
+      _type: 'service',
+      autoActivateUpdates: true,
+      documentation: 'test',
+      execution: {
+        _type: 'pureSingleExecution',
+        func: {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'property',
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'src',
+                },
+              ],
+              property: 'name',
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              class: 'org::dxl::Zoo',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              name: 'src',
+            },
+          ],
+        },
+        mapping: 'org::dxl::Mapping',
+        runtime: {
+          _type: 'engineRuntime',
+          connections: [],
+          mappings: [
+            {
+              path: 'org::dxl::Mapping',
+              type: 'MAPPING',
+            },
+          ],
+        },
+      },
+      name: 'ZooService',
+      owners: [],
+      package: 'org::dxl',
+      pattern: 'test',
+      test: {
+        _type: 'singleExecutionTest',
+        asserts: [],
+        data: 'test',
+      },
+    },
+  },
+  {
+    path: 'org::dxl::PersistenceWithTest',
+    classifierPath: 'meta::pure::persistence::metamodel::Persistence',
+    content: {
+      _type: 'persistence',
+      documentation: 'A persistence specification for Zoos with test.',
+      name: 'PersistenceWithTest',
+      notifier: {},
+      package: 'org::dxl',
+      persister: {
+        _type: 'batchPersister',
+        ingestMode: {
+          _type: 'appendOnly',
+          auditing: {
+            _type: 'noAuditing',
+          },
+          filterDuplicates: false,
+        },
+        sink: {
+          _type: 'relationalSink',
+          database: 'org::legend::TestDatabase',
+        },
+        targetShape: {
+          _type: 'flatTarget',
+          deduplicationStrategy: {
+            _type: 'noDeduplicationStrategy',
+          },
+          modelClass: 'org::legend::ServiceResult',
+          partitionFields: [],
+          targetName: 'personTable',
+        },
+      },
+      service: 'org::dxl::ZooService',
+      trigger: {
+        _type: 'manualTrigger',
+      },
+      tests: [
+        {
+          _type: 'test',
+          id: 'success_test',
+          testBatches: [
+            {
+              testData: {
+                connection: {
+                  data: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]',
+                  },
+                },
+              },
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'testBatch1',
+            },
+            {
+              testData: {
+                connection: {
+                  data: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]',
+                  },
+                },
+              },
+              assertions: [
+                {
+                  _type: 'equalToJson',
+                  expected: {
+                    _type: 'externalFormat',
+                    contentType: 'application/json',
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]',
+                  },
+                  id: 'assert1',
+                },
+              ],
+              id: 'testBatch2',
+            },
+          ],
+          isTestDataFromServiceOutput: true,
+        },
+      ],
+    },
+  },
+];

@@ -32,7 +32,7 @@ import {
   observe_ServiceTestSuite,
 } from './DSL_Service_ObserverHelper.js';
 
-const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
+export const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   makeObservable(metamodel, {
     id: observable,
     expected: observable,
@@ -42,17 +42,19 @@ const observe_EqualTo = skipObserved((metamodel: EqualTo): EqualTo => {
   return metamodel;
 });
 
-const observe_EqualToTDS = skipObserved((metamodel: EqualToTDS): EqualToTDS => {
-  makeObservable(metamodel, {
-    id: observable,
-    expected: observable,
-    hashCode: computed,
-  });
-  observe_ExternalFormatData(metamodel.expected);
-  return metamodel;
-});
+export const observe_EqualToTDS = skipObserved(
+  (metamodel: EqualToTDS): EqualToTDS => {
+    makeObservable(metamodel, {
+      id: observable,
+      expected: observable,
+      hashCode: computed,
+    });
+    observe_ExternalFormatData(metamodel.expected);
+    return metamodel;
+  },
+);
 
-const observe_EqualToJson = skipObserved(
+export const observe_EqualToJson = skipObserved(
   (metamodel: EqualToJson): EqualToJson => {
     makeObservable(metamodel, {
       id: observable,
@@ -66,10 +68,24 @@ const observe_EqualToJson = skipObserved(
   },
 );
 
-export function observe_AtomicTest(metamodel: AtomicTest): AtomicTest {
+export function observe_AtomicTest(
+  metamodel: AtomicTest,
+  context: ObserverContext,
+): AtomicTest {
   if (metamodel instanceof ServiceTest) {
     return observe_ServiceTest(metamodel);
   }
+  const extraAtomicTestBuilder = context.plugins.flatMap(
+    (plugin) => plugin.getExtraAtomicTestObservers?.() ?? [],
+  );
+
+  for (const builder of extraAtomicTestBuilder) {
+    const atomicTestBuilder = builder(metamodel, context);
+    if (atomicTestBuilder) {
+      return atomicTestBuilder;
+    }
+  }
+
   return metamodel;
 }
 

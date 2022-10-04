@@ -15,10 +15,16 @@
  */
 
 import packageJson from '../../package.json';
-import { Persistence } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
-import { PersistenceContext } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
-import type { Clazz } from '@finos/legend-shared';
-import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
+import { Persistence } from './metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
+import { PersistenceContext } from './metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
+import {
+  type PackageableElement,
+  PureGraphPlugin,
+  type PureModel,
+  type TestablesCollector,
+  type Testable,
+} from '@finos/legend-graph';
+import { type Clazz, filterByType } from '@finos/legend-shared';
 
 export class DSL_Persistence_PureGraphPlugin extends PureGraphPlugin {
   constructor() {
@@ -27,5 +33,12 @@ export class DSL_Persistence_PureGraphPlugin extends PureGraphPlugin {
 
   override getExtraPureGraphExtensionClasses(): Clazz<PackageableElement>[] {
     return [Persistence, PersistenceContext];
+  }
+
+  override getExtraTestablesCollectors(): TestablesCollector[] {
+    return [
+      (graph: PureModel): Testable[] =>
+        graph.allElements.filter(filterByType(Persistence)),
+    ];
   }
 }

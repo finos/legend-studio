@@ -67,7 +67,7 @@ export enum V1_AtomicTestType {
   SERVICE_TEST = 'serviceTest',
 }
 
-enum V1_TestAssertionType {
+export enum V1_TestAssertionType {
   EQUAL_TO = 'equalTo',
   EQUAL_TO_JSON = 'equalToJson',
   EQUAL_TO_TDS = 'equalToTDS',

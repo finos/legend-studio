@@ -84,13 +84,23 @@ import {
   V1_StreamingPersister,
 } from '../../model/packageableElements/persistence/V1_DSL_Persistence_Persister.js';
 import type { DSL_Persistence_PureProtocolProcessorPlugin_Extension } from '../../../DSL_Persistence_PureProtocolProcessorPlugin_Extension.js';
-import type { PureProtocolProcessorPlugin } from '@finos/legend-graph';
+import {
+  type PureProtocolProcessorPlugin,
+  type V1_AtomicTest,
+  V1_serializeTestAssertion,
+  V1_deserializeTestAssertion,
+  V1_externalFormatDataModelSchema,
+  type V1_TestAssertion,
+  type V1_TestBatch,
+} from '@finos/legend-graph';
 import {
   deserializeArray,
+  optionalCustom,
   type PlainObject,
   serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
+  usingModelSchema,
 } from '@finos/legend-shared';
 import {
   createModelSchema,
@@ -103,6 +113,10 @@ import {
   serialize,
   SKIP,
 } from 'serializr';
+import { V1_PersistenceTest } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTest.js';
+import { V1_PersistenceTestBatch } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestBatch.js';
+import { V1_ConnectionTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_ConnectionTestData.js';
+import { V1_PersistenceTestData } from '../../model/packageableElements/persistence/V1_DSL_Persistence_PersistenceTestData.js';
 
 /**********
  * notifier
@@ -1033,6 +1047,98 @@ export const V1_deserializeTrigger = (
 };
 
 /**********
+ * test
+ **********/
+
+enum V1_AtomicTestType {
+  PERSISTENCE_TEST = 'test',
+}
+
+export const V1_persistenceConnectionTestDataModelSchema = createModelSchema(
+  V1_ConnectionTestData,
+  {
+    data: usingModelSchema(V1_externalFormatDataModelSchema),
+  },
+);
+
+export const V1_persistenceTestDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTestData> =>
+  createModelSchema(V1_PersistenceTestData, {
+    connection: usingModelSchema(V1_persistenceConnectionTestDataModelSchema),
+  });
+
+export const V1_persistenceTestBatchModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTestBatch> =>
+  createModelSchema(V1_PersistenceTestBatch, {
+    assertions: custom(
+      (values) =>
+        serializeArray(values, (value: V1_TestAssertion) =>
+          V1_serializeTestAssertion(value),
+        ),
+      (values) =>
+        deserializeArray(values, (v) => V1_deserializeTestAssertion(v), {
+          skipIfEmpty: false,
+        }),
+    ),
+    batchId: primitive(),
+    id: primitive(),
+    testData: usingModelSchema(V1_persistenceTestDataModelSchema(plugins)),
+  });
+
+export const V1_serializePersistenceTestBatch = (
+  protocol: V1_TestBatch,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_TestBatch> => {
+  if (protocol instanceof V1_PersistenceTestBatch) {
+    return serialize(V1_persistenceTestBatchModelSchema(plugins), protocol);
+  }
+  throw new UnsupportedOperationError(`Can't serialize test batch `, protocol);
+};
+
+export const V1_deserializePersistenceTestBatch = (
+  json: PlainObject<V1_TestBatch>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_TestBatch =>
+  deserialize(V1_persistenceTestBatchModelSchema(plugins), json);
+
+export const V1_persistenceTestModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PersistenceTest> =>
+  createModelSchema(V1_PersistenceTest, {
+    _type: usingConstantValueSchema(V1_AtomicTestType.PERSISTENCE_TEST),
+    id: primitive(),
+    isTestDataFromServiceOutput: primitive(),
+    testBatches: custom(
+      (values) =>
+        serializeArray(
+          values,
+          (value: V1_TestBatch) =>
+            V1_serializePersistenceTestBatch(value, plugins),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v) => V1_deserializePersistenceTestBatch(v, plugins),
+          {
+            skipIfEmpty: false,
+          },
+        ),
+    ),
+  });
+
+export const V1_serializePersistenceTest = (
+  protocol: V1_AtomicTest,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_AtomicTest> =>
+  serialize(V1_persistenceTestModelSchema(plugins), protocol);
+
+/**********
  * persistence
  **********/
 
@@ -1055,6 +1161,28 @@ export const V1_persistenceModelSchema = (
       (val) => V1_deserializePersister(val, plugins),
     ),
     service: primitive(),
+    tests: optionalCustom(
+      (values) =>
+        serializeArray(
+          values,
+          (value: V1_AtomicTest) => V1_serializePersistenceTest(value, plugins),
+          {
+            skipIfEmpty: true,
+            INTERNAL__forceReturnEmptyInTest: true,
+          },
+        ),
+      (values) =>
+        deserializeArray(
+          values,
+          (v) =>
+            v._type === V1_AtomicTestType.PERSISTENCE_TEST
+              ? deserialize(V1_persistenceTestModelSchema(plugins), v)
+              : undefined,
+          {
+            skipIfEmpty: true,
+          },
+        ),
+    ),
     trigger: custom(
       (val) => V1_serializeTrigger(val, plugins),
       (val) => V1_deserializeTrigger(val, plugins),

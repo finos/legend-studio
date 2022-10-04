@@ -21,6 +21,7 @@ export { DSL_Persistence_LegendStudioApplicationPlugin } from './components/stud
 
 // metamodels
 export { Persistence } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Persistence.js';
+export { PersistenceTest } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
 export { PersistenceContext } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceContext.js';
 export { PersistencePlatform } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistencePlatform.js';
 export { Trigger } from './graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_Trigger.js';

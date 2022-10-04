@@ -23,15 +23,21 @@ import {
   type PackageableElementReference,
   type PackageableElementVisitor,
   type Service,
+  type Testable,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
+import type { PersistenceTest } from './DSL_Persistence_PersistenceTest.js';
 
-export class Persistence extends PackageableElement implements Hashable {
+export class Persistence
+  extends PackageableElement
+  implements Hashable, Testable
+{
   documentation!: string;
   trigger!: Trigger;
   service!: PackageableElementReference<Service>;
   persister!: Persister;
   notifier!: Notifier;
+  tests: PersistenceTest[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -41,6 +47,7 @@ export class Persistence extends PackageableElement implements Hashable {
       this.service.valueForSerialization ?? '',
       this.persister,
       this.notifier,
+      hashArray(this.tests),
     ]);
   }
 
