@@ -71,6 +71,7 @@ import {
 } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
+  getPackageableElementOptionFormatter,
   type PackageableElementOption,
 } from '@finos/legend-application';
 
@@ -151,6 +152,7 @@ const EnumerationMappingSourceSelectorModal = observer(
             placeholder={'Choose a data type or an enumeration...'}
             isClearable={true}
             filterOption={filterOption}
+            formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
         </div>
       </Dialog>
