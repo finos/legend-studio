@@ -45,6 +45,7 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   useApplicationStore,
   buildElementOption,
+  getPackageableElementOptionFormatter,
 } from '@finos/legend-application';
 
 export const getMappingElementSourceFilterText = (
@@ -205,6 +206,7 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             placeholder={`Select a source...`}
             isClearable={true}
             filterOption={filterOption}
+            formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
         </div>
       </Dialog>
