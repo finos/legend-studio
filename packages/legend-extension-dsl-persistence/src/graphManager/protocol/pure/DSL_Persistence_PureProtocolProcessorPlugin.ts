@@ -61,9 +61,12 @@ import {
   type AtomicTest,
   type PackageableElement,
   PureProtocolProcessorPlugin,
+  type TestAssertion,
+  type V1_AssertionStatus,
   type V1_AtomicTest,
   type V1_AtomicTestBuilder,
   type V1_AtomicTestTransformer,
+  V1_buildFullPath,
   V1_ElementBuilder,
   type V1_ElementProtocolClassifierPathGetter,
   type V1_ElementProtocolDeserializer,
@@ -72,10 +75,7 @@ import {
   type V1_GraphBuilderContext,
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
-  V1_buildFullPath,
-  V1_TestableAssertion,
-  V1_AssertionStatus,
-  TestAssertion,
+  type V1_TestableAssertion,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
