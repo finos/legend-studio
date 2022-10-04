@@ -34,7 +34,8 @@ import {
   ArrowsAltHIcon,
   useResizeDetector,
   useDragPreviewLayer,
-  PanelEntryDropZonePlaceholderWithoutBorder,
+  PanelEntryDropZonePlaceholder,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -194,7 +195,6 @@ const EditPanelHeaderTabContextMenu = observer(
     const closeOthers = (): void =>
       editorStore.closeAllOtherStates(editorState);
     const closeAll = (): void => editorStore.closeAllStates();
-    const openLastClosedTab = (): void => editorStore.openLastClosedTab();
 
     return (
       <div ref={ref} className="edit-panel__header__tab__context-menu">
@@ -216,13 +216,6 @@ const EditPanelHeaderTabContextMenu = observer(
           onClick={closeAll}
         >
           Close All
-        </button>
-        <button
-          className="edit-panel__header__tab__context-menu__item"
-          disabled={editorStore.tabHistory.size() < 1}
-          onClick={openLastClosedTab}
-        >
-          Open Last Closed Tab
         </button>
       </div>
     );
@@ -337,9 +330,14 @@ export const EditorMainTabEditor = observer(
         })}
         onMouseUp={closeTabOnMiddleClick(editorState)}
       >
-        <PanelEntryDropZonePlaceholderWithoutBorder
+        <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
-          label={editorState.headerName}
+          placeholderContent={
+            <PanelEntryDropZonePlaceholderContent
+              label={editorState.headerName}
+              className="dnd__entry-dropzone__placeholder__content--borderless"
+            />
+          }
           className="edit-panel__header__dnd__placeholder"
         >
           <ContextMenu
@@ -371,7 +369,7 @@ export const EditorMainTabEditor = observer(
               <TimesIcon />
             </button>
           </ContextMenu>
-        </PanelEntryDropZonePlaceholderWithoutBorder>
+        </PanelEntryDropZonePlaceholder>
       </div>
     );
   },

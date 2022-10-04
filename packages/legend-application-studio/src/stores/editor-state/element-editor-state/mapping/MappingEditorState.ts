@@ -50,6 +50,7 @@ import {
   assertTrue,
   addUniqueEntry,
   filterByType,
+  swapEntry,
 } from '@finos/legend-shared';
 import { MappingExecutionState } from './MappingExecutionState.js';
 import { RootFlatDataInstanceSetImplementationState } from './FlatDataInstanceSetImplementationState.js';
@@ -623,6 +624,7 @@ export class MappingEditorState extends ElementEditorState {
       changeClassMappingSourceDriver: flow,
       closeMappingElementTabState: flow,
       deleteMappingElement: flow,
+      swapMappingTabs: action,
     });
 
     this.editorStore = editorStore;
@@ -674,6 +676,13 @@ export class MappingEditorState extends ElementEditorState {
   setNewMappingElementSpec(spec: MappingElementSpec | undefined): void {
     this.newMappingElementSpec = spec;
   }
+
+  swapMappingTabs = (
+    sourceEditorState: MappingEditorTabState,
+    targetEditorState: MappingEditorTabState,
+  ): void => {
+    swapEntry(this.openedTabStates, sourceEditorState, targetEditorState);
+  };
 
   // -------------------------------------- Tabs ---------------------------------------
 

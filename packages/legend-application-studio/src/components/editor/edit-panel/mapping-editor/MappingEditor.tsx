@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toSentenceCase } from '@finos/legend-shared';
 import {
@@ -34,6 +34,9 @@ import {
   PURE_AssociationIcon,
   Panel,
   useResizeDetector,
+  PanelEntryDropZonePlaceholder,
+  useDragPreviewLayer,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
@@ -68,6 +71,25 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
+import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+
+type MappingPanelDragSource = {
+  panel: MappingEditorTabState;
+};
+
+const getMappingElementTargetIcon = (
+  mappingElement: MappingElement,
+): React.ReactNode => {
+  const target = getMappingElementTarget(mappingElement);
+  if (target instanceof Class) {
+    return <PURE_ClassIcon />;
+  } else if (target instanceof Enumeration) {
+    return <PURE_EnumerationIcon />;
+  } else if (target instanceof Association) {
+    return <PURE_AssociationIcon />;
+  }
+  return <PURE_UnknownElementTypeIcon />;
+};
 
 export const MappingEditorSplashScreen: React.FC = () => {
   const logoWidth = 280;
@@ -138,26 +160,217 @@ const MappingEditorHeaderTabContextMenu = observer(
   }),
 );
 
-const getMappingElementTargetIcon = (
-  mappingElement: MappingElement,
-): React.ReactNode => {
-  const target = getMappingElementTarget(mappingElement);
-  if (target instanceof Class) {
-    return <PURE_ClassIcon />;
-  } else if (target instanceof Enumeration) {
-    return <PURE_EnumerationIcon />;
-  } else if (target instanceof Association) {
-    return <PURE_AssociationIcon />;
-  }
-  return <PURE_UnknownElementTypeIcon />;
-};
+const MAPPING_EDITOR_DND_TYPE = 'MAPPING_EDITOR_STATE';
+
+export const MappingMainTabEditor = observer(
+  (props: {
+    tabState: MappingEditorTabState;
+    mappingEditorState: MappingEditorState;
+  }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const { tabState, mappingEditorState } = props;
+
+    const editorStore = useEditorStore();
+
+    const applicationStore = useApplicationStore();
+
+    // actions
+    const closeTab = (currTabState: MappingEditorTabState) => (): void => {
+      flowResult(mappingEditorState.closeTab(currTabState)).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+
+    const closeTabOnMiddleClick =
+      (currTabState: MappingEditorTabState): React.MouseEventHandler =>
+      (event): void => {
+        if (event.nativeEvent.button === 1) {
+          flowResult(mappingEditorState.closeTab(currTabState)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        }
+      };
+    const openTab = (currTabState: MappingEditorTabState): (() => void) =>
+      applicationStore.guardUnhandledError(() =>
+        flowResult(mappingEditorState.openTab(currTabState)),
+      );
+
+    // Drag and Drop
+    const handleHover = useCallback(
+      (item: MappingPanelDragSource, monitor: DropTargetMonitor): void => {
+        const draggingTab = item.panel;
+        const hoveredTab = tabState;
+
+        const dragIndex = mappingEditorState.openedTabStates.findIndex(
+          (e) => e === draggingTab,
+        );
+        const hoverIndex = mappingEditorState.openedTabStates.findIndex(
+          (e) => e === hoveredTab,
+        );
+
+        const hoverBoundingReact = ref.current?.getBoundingClientRect();
+        const distanceThreshold =
+          ((hoverBoundingReact?.left ?? 0) - (hoverBoundingReact?.right ?? 0)) /
+          2;
+        const dragDistance =
+          (monitor.getClientOffset()?.x ?? 0) -
+          (hoverBoundingReact?.right ?? 0);
+        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
+          return;
+        }
+        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
+          return;
+        }
+
+        mappingEditorState.swapMappingTabs(draggingTab, hoveredTab);
+      },
+      [mappingEditorState, tabState],
+    );
+
+    const [{ isBeingDraggedMapperEditorPanel }, dropConnector] = useDrop<
+      MappingPanelDragSource,
+      void,
+      { isBeingDraggedMapperEditorPanel: MappingEditorTabState | undefined }
+    >(
+      () => ({
+        accept: [MAPPING_EDITOR_DND_TYPE],
+        hover: (item, monitor) => handleHover(item, monitor),
+        collect: (
+          monitor,
+        ): {
+          isBeingDraggedMapperEditorPanel: MappingEditorTabState | undefined;
+        } => ({
+          isBeingDraggedMapperEditorPanel:
+            monitor.getItem<MappingPanelDragSource | null>()?.panel,
+        }),
+      }),
+      [handleHover],
+    );
+
+    const isBeingDragged = tabState === isBeingDraggedMapperEditorPanel;
+
+    const getTabStateName = (currTabState: MappingEditorTabState): string => {
+      if (currTabState instanceof MappingTestState) {
+        return currTabState.test.name;
+      } else if (currTabState instanceof MappingExecutionState) {
+        return currTabState.name;
+      } else if (currTabState instanceof MappingElementState) {
+        return getMappingElementLabel(currTabState.mappingElement, editorStore)
+          .value;
+      }
+      return '';
+    };
+
+    const [, dragConnector, mapperDragPreviewConnector] =
+      useDrag<MappingPanelDragSource>(
+        () => ({
+          type: MAPPING_EDITOR_DND_TYPE,
+          item: () => ({
+            panel: tabState,
+          }),
+        }),
+        [tabState],
+      );
+    dragConnector(dropConnector(ref));
+    useDragPreviewLayer(mapperDragPreviewConnector);
+    return (
+      <div
+        ref={ref}
+        key={tabState.uuid}
+        onMouseUp={closeTabOnMiddleClick(tabState)}
+        className={clsx('mapping-editor__header__tab', {
+          'mapping-editor__header__tab--active':
+            tabState === mappingEditorState.currentTabState,
+        })}
+      >
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          borderless={true}
+          className="mapping-editor__header__dnd__placeholder"
+          placeholderContent={
+            <PanelEntryDropZonePlaceholderContent
+              className="dnd__entry-dropzone__placeholder__content--borderless"
+              label={getTabStateName(tabState)}
+            />
+          }
+        >
+          <ContextMenu
+            className="mapping-editor__header__tab__content"
+            content={<MappingEditorHeaderTabContextMenu tabState={tabState} />}
+          >
+            {tabState instanceof MappingTestState && (
+              <>
+                <FlaskIcon className="mapping-editor__header__tab__icon--test" />
+                <button
+                  className="mapping-editor__header__tab__element__name"
+                  tabIndex={-1}
+                  onClick={openTab(tabState)}
+                >
+                  {tabState.test.name}
+                </button>
+              </>
+            )}
+            {tabState instanceof MappingElementState && (
+              <>
+                <div
+                  className={`mapping-editor__header__tab__element__type icon color--${getMappingElementType(
+                    tabState.mappingElement,
+                  ).toLowerCase()}`}
+                >
+                  {getMappingElementTargetIcon(tabState.mappingElement)}
+                </div>
+                <button
+                  className="mapping-editor__header__tab__element__name"
+                  tabIndex={-1}
+                  onClick={openTab(tabState)}
+                  title={`${toSentenceCase(
+                    getMappingElementType(tabState.mappingElement),
+                  ).toLowerCase()} mapping '${
+                    tabState.mappingElement.id.value
+                  }' for '${
+                    getMappingElementTarget(tabState.mappingElement).name
+                  }'`}
+                >
+                  {
+                    getMappingElementLabel(tabState.mappingElement, editorStore)
+                      .value
+                  }
+                </button>
+              </>
+            )}
+            {tabState instanceof MappingExecutionState && (
+              <>
+                <PlayIcon className="mapping-editor__header__tab__icon--execution" />
+                <button
+                  className="mapping-editor__header__tab__element__name"
+                  tabIndex={-1}
+                  onClick={openTab(tabState)}
+                >
+                  {tabState.name}
+                </button>
+              </>
+            )}
+            <button
+              className="mapping-editor__header__tab__close-btn"
+              onClick={closeTab(tabState)}
+              tabIndex={-1}
+              title={'Close'}
+            >
+              <TimesIcon />
+            </button>
+          </ContextMenu>
+        </PanelEntryDropZonePlaceholder>
+      </div>
+    );
+  },
+);
 
 export const MappingEditor = observer(() => {
   const editorStore = useEditorStore();
-  const applicationStore = useApplicationStore();
   const mappingEditorState =
     editorStore.getCurrentEditorState(MappingEditorState);
   const isReadOnly = mappingEditorState.isReadOnly;
+
   const currentTabState = mappingEditorState.currentTabState;
   const renderActiveMappingElementTab = (): React.ReactNode => {
     if (currentTabState instanceof MappingTestState) {
@@ -199,24 +412,6 @@ export const MappingEditor = observer(() => {
     }
     return <MappingEditorSplashScreen />;
   };
-  const closeTab = (tabState: MappingEditorTabState) => (): void => {
-    flowResult(mappingEditorState.closeTab(tabState)).catch(
-      applicationStore.alertUnhandledError,
-    );
-  };
-  const closeTabOnMiddleClick =
-    (tabState: MappingEditorTabState): React.MouseEventHandler =>
-    (event): void => {
-      if (event.nativeEvent.button === 1) {
-        flowResult(mappingEditorState.closeTab(tabState)).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }
-    };
-  const openTab = (tabState: MappingEditorTabState): (() => void) =>
-    applicationStore.guardUnhandledError(() =>
-      flowResult(mappingEditorState.openTab(tabState)),
-    );
 
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MAPPING_EDITOR,
@@ -252,89 +447,11 @@ export const MappingEditor = observer(() => {
                 className="mapping-editor__header__tabs"
               >
                 {mappingEditorState.openedTabStates.map((tabState) => (
-                  <div
+                  <MappingMainTabEditor
                     key={tabState.uuid}
-                    onMouseUp={closeTabOnMiddleClick(tabState)}
-                    className={clsx('mapping-editor__header__tab', {
-                      'mapping-editor__header__tab--active':
-                        tabState === mappingEditorState.currentTabState,
-                    })}
-                  >
-                    <ContextMenu
-                      className="mapping-editor__header__tab__content"
-                      content={
-                        <MappingEditorHeaderTabContextMenu
-                          tabState={tabState}
-                        />
-                      }
-                    >
-                      {tabState instanceof MappingTestState && (
-                        <>
-                          <FlaskIcon className="mapping-editor__header__tab__icon--test" />
-                          <button
-                            className="mapping-editor__header__tab__element__name"
-                            tabIndex={-1}
-                            onClick={openTab(tabState)}
-                          >
-                            {tabState.test.name}
-                          </button>
-                        </>
-                      )}
-                      {tabState instanceof MappingElementState && (
-                        <>
-                          <div
-                            className={`mapping-editor__header__tab__element__type icon color--${getMappingElementType(
-                              tabState.mappingElement,
-                            ).toLowerCase()}`}
-                          >
-                            {getMappingElementTargetIcon(
-                              tabState.mappingElement,
-                            )}
-                          </div>
-                          <button
-                            className="mapping-editor__header__tab__element__name"
-                            tabIndex={-1}
-                            onClick={openTab(tabState)}
-                            title={`${toSentenceCase(
-                              getMappingElementType(tabState.mappingElement),
-                            ).toLowerCase()} mapping '${
-                              tabState.mappingElement.id.value
-                            }' for '${
-                              getMappingElementTarget(tabState.mappingElement)
-                                .name
-                            }'`}
-                          >
-                            {
-                              getMappingElementLabel(
-                                tabState.mappingElement,
-                                editorStore,
-                              ).value
-                            }
-                          </button>
-                        </>
-                      )}
-                      {tabState instanceof MappingExecutionState && (
-                        <>
-                          <PlayIcon className="mapping-editor__header__tab__icon--execution" />
-                          <button
-                            className="mapping-editor__header__tab__element__name"
-                            tabIndex={-1}
-                            onClick={openTab(tabState)}
-                          >
-                            {tabState.name}
-                          </button>
-                        </>
-                      )}
-                      <button
-                        className="mapping-editor__header__tab__close-btn"
-                        onClick={closeTab(tabState)}
-                        tabIndex={-1}
-                        title="Close"
-                      >
-                        <TimesIcon />
-                      </button>
-                    </ContextMenu>
-                  </div>
+                    tabState={tabState}
+                    mappingEditorState={mappingEditorState}
+                  />
                 ))}
               </div>
             </ContextMenu>

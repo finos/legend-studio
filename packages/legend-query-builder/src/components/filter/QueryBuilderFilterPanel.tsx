@@ -43,6 +43,7 @@ import {
   PanelEntryDropZonePlaceholder,
   useDragPreviewLayer,
   PanelContent,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import {
   type QueryBuilderFilterConditionDragSource,
@@ -105,8 +106,10 @@ const QueryBuilderFilterGroupConditionEditor = observer(
       <div className="query-builder-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
-          label="Add to Logical Group"
           className="query-builder__dnd__placeholder"
+          placeholderContent={
+            <PanelEntryDropZonePlaceholderContent label="Add to Logical Group" />
+          }
         >
           <div
             className={clsx('query-builder-filter-tree__group-node', {
@@ -216,8 +219,10 @@ const QueryBuilderFilterConditionEditor = observer(
       <div className="query-builder-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
-          label="Add New Logical Group"
           className="query-builder__dnd__placeholder"
+          placeholderContent={
+            <PanelEntryDropZonePlaceholderContent label="Add New Logical Group" />
+          }
         >
           <div className="query-builder-filter-tree__condition-node">
             <div className="query-builder-filter-tree__condition-node__property">
@@ -262,8 +267,10 @@ const QueryBuilderFilterConditionEditor = observer(
               >
                 <PanelEntryDropZonePlaceholder
                   showPlaceholder={isFilterValueDragOver}
-                  label="Change Filter Value"
                   className="query-builder__dnd__placeholder"
+                  placeholderContent={
+                    <PanelEntryDropZonePlaceholderContent label="Change Filter Value" />
+                  }
                 >
                   <BasicValueSpecificationEditor
                     valueSpecification={node.condition.value}
@@ -302,8 +309,10 @@ const QueryBuilderFilterBlankConditionEditor = observer(
       <div className="query-builder-filter-tree__node__label__content">
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isDragOver}
-          label="Create Condition"
           className="query-builder__dnd__placeholder"
+          placeholderContent={
+            <PanelEntryDropZonePlaceholderContent label="Create Condition" />
+          }
         >
           <div className="query-builder-filter-tree__blank-node">blank</div>
         </PanelEntryDropZonePlaceholder>

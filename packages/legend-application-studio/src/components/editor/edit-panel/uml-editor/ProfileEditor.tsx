@@ -32,6 +32,7 @@ import {
   useDragPreviewLayer,
   Panel,
   PanelContent,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -117,7 +118,10 @@ const TagBasicEditor = observer(
 
     return (
       <div ref={ref} className="tag-basic-editor__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
+        >
           <div className="tag-basic-editor">
             <PanelEntryDragHandle />
             <InputWithInlineValidation
@@ -213,7 +217,10 @@ const StereotypeBasicEditor = observer(
 
     return (
       <div ref={ref} className="stereotype-basic-editor__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
+        >
           <div className="stereotype-basic-editor">
             <PanelEntryDragHandle />
             <InputWithInlineValidation

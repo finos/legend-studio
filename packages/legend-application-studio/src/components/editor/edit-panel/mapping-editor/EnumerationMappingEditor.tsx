@@ -198,7 +198,7 @@ export const SourceValueInput = observer(
     const handleDrop = useCallback(
       (item: TransformDropTarget): void => {
         if (!isReadOnly) {
-          if (item instanceof TypeDragSource) {
+          if (item instanceof TypeDragSource && item.data?.label) {
             updateSourceValue(value + item.data.label);
           }
         }

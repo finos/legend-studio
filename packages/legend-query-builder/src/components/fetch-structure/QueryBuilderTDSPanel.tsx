@@ -35,6 +35,7 @@ import {
   OptionsIcon,
   PlusIcon,
   PanelContent,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -336,6 +337,7 @@ const QueryBuilderProjectionColumnEditor = observer(
         <PanelEntryDropZonePlaceholder
           showPlaceholder={isBeingDragged}
           className="query-builder__dnd__placeholder"
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
         >
           <ContextMenu
             content={

@@ -25,6 +25,7 @@ import {
   PanelEntryDropZonePlaceholder,
   DragPreviewLayer,
   useDragPreviewLayer,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
@@ -171,7 +172,10 @@ export const StereotypeSelector = observer(
 
     return (
       <div ref={ref} className="stereotype-selector__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
+        >
           <div className="stereotype-selector">
             <PanelEntryDragHandle />
             <div

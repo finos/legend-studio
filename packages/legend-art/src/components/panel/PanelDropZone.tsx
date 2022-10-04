@@ -46,38 +46,35 @@ export const PanelEntryDragHandle: React.FC = () => (
 
 export const PanelEntryDropZonePlaceholder: React.FC<{
   children: React.ReactNode;
-  showPlaceholder: boolean;
   className?: string;
-  label?: string;
+  showPlaceholder?: boolean;
+  placeholderContent?: React.ReactNode;
+  borderless?: boolean;
 }> = (props) => {
-  const { children, showPlaceholder, className, label } = props;
+  const { children, placeholderContent, showPlaceholder, className } = props;
   if (!showPlaceholder) {
     return <>{children}</>;
   }
   return (
     <div className={clsx(['dnd__entry-dropzone__placeholder', className])}>
-      <div className="dnd__entry-dropzone__placeholder__content">
-        {label && <div> {label}</div>}
-      </div>
+      {placeholderContent}
     </div>
   );
 };
 
-export const PanelEntryDropZonePlaceholderWithoutBorder: React.FC<{
-  children: React.ReactNode;
-  showPlaceholder: boolean;
+export const PanelEntryDropZonePlaceholderContent: React.FC<{
+  children?: React.ReactNode;
   className?: string;
   label?: string;
+  placeholderContent?: React.ReactNode;
+  borderless?: boolean;
 }> = (props) => {
-  const { children, showPlaceholder, className, label } = props;
-  if (!showPlaceholder) {
-    return <>{children}</>;
-  }
+  const { className, label } = props;
   return (
-    <div className={clsx(['dnd__entry-dropzone__placeholder', className])}>
-      <div className="dnd__entry-dropzone__placeholder__content--borderless">
-        {label && <div> {label}</div>}
-      </div>
+    <div
+      className={clsx(['dnd__entry-dropzone__placeholder__content', className])}
+    >
+      {label && <div> {label}</div>}
     </div>
   );
 };

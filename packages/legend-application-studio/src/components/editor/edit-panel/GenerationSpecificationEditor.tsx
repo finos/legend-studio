@@ -44,6 +44,7 @@ import {
   PanelEntryDropZonePlaceholder,
   Panel,
   PanelContent,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import {
   CORE_DND_TYPE,
@@ -179,7 +180,10 @@ const ModelGenerationItem = observer(
 
     return (
       <div ref={ref} className="generation-spec-model-generation-editor__item">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
+        >
           <div className="btn--sm generation-spec-model-generation-editor__item__label">
             {getElementIcon(editorStore, modelGeneration)}
           </div>

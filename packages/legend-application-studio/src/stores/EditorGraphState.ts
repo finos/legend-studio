@@ -880,7 +880,7 @@ export class EditorGraphState {
    *    so far it is tempting to refer to elements in the graph from various editor state. On top of that, change detection
    *    sometimes obfuscate the investigation but we have cleared it out with explicit disposing of reaction
    * 2. Reusable models, at this point in time, we haven't completed stabilize the logic for handling generated models, as well
-   *    as depdendencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
+   *    as dependencies, we intended to save computation time by reusing these while updating the graph. This can pose potential
    *    danger as well. Beware the way when we start to make system/project dependencies references elements of current graph
    *    e.g. when we have a computed value in a immutable class that get all subclasses, etc.
    * 3. We reprocess editor states to ensure good UX, e.g. find tabs to keep open, find tree nodes to expand, etc.

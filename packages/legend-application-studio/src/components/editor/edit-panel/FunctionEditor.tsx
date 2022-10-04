@@ -45,6 +45,7 @@ import {
   useDragPreviewLayer,
   Panel,
   PanelContent,
+  PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import {
@@ -291,7 +292,10 @@ const ParameterBasicEditor = observer(
 
     return (
       <div ref={ref} className="property-basic-editor__container">
-        <PanelEntryDropZonePlaceholder showPlaceholder={isBeingDragged}>
+        <PanelEntryDropZonePlaceholder
+          showPlaceholder={isBeingDragged}
+          placeholderContent={<PanelEntryDropZonePlaceholderContent />}
+        >
           <div className="property-basic-editor">
             {isReadOnly && (
               <div className="property-basic-editor__lock">
