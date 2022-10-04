@@ -61,6 +61,10 @@ Service org::legend::ZooService
       ];
     }#;
   }
+  testSuites:
+  [
+
+  ]
   test: Single
   {
     data: 'test';
@@ -68,10 +72,6 @@ Service org::legend::ZooService
     [
     ];
   }
-  testSuites:
-  [
-
-  ]
 }
 
 
