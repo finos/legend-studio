@@ -108,7 +108,7 @@ export const SchemaSetModelGenerationEditor = observer(
                     tabIndex={-1}
                     disabled={isReadOnly || !properties.length}
                     onClick={regenerate}
-                    title={'Reset to default configuration'}
+                    title="Reset to default configuration"
                   >
                     <RefreshIcon />
                   </button>
@@ -130,7 +130,7 @@ export const SchemaSetModelGenerationEditor = observer(
                       spellCheck={false}
                       value={modelGenerationState.targetBinding}
                       onChange={changeTargetBindingPath}
-                      placeholder={`Target binding path`}
+                      placeholder="Target binding path"
                       validationErrorMessage={
                         targetBindingPathValidationMessage
                       }
@@ -187,7 +187,7 @@ export const SchemaSetModelGenerationEditor = observer(
                         .isInProgress
                     }
                     onClick={regenerate}
-                    title={'Re-generate'}
+                    title="Regenerate"
                   >
                     <RefreshIcon />
                   </button>

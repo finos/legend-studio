@@ -267,7 +267,7 @@ const MappingTestQueryEditor = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={clearQuery}
-              title={'Clear query'}
+              title="Clear query"
             >
               <TimesIcon />
             </button>
@@ -520,7 +520,7 @@ export const MappingTestInputDataBuilder = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
-              title={'Regenerate...'}
+              title="Regenerate..."
             >
               <RefreshIcon className="mapping-test-editor__icon--refresh" />
             </button>
@@ -578,7 +578,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={testState.isExecutingTest || isReadOnly}
               onClick={regenerateExpectedResult}
               tabIndex={-1}
-              title={'Regenerate Result'}
+              title="Regenerate Result"
             >
               <RefreshIcon className="mapping-test-editor__icon__regenerate-result" />
             </button>
@@ -587,7 +587,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={isReadOnly}
               tabIndex={-1}
               onClick={formatExpectedResultJSONString}
-              title={'Format JSON'}
+              title="Format JSON"
             >
               <WrenchIcon />
             </button>

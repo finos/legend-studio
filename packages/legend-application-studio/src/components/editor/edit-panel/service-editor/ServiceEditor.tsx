@@ -218,7 +218,7 @@ const ServiceGeneralEditor = observer(() => {
                     className="service-editor__pattern__parameter__action"
                     disabled={isReadOnly}
                     onClick={removePatternParameter(parameter)}
-                    title={'Remove parameter'}
+                    title="Remove parameter"
                     tabIndex={-1}
                   >
                     <TimesIcon />

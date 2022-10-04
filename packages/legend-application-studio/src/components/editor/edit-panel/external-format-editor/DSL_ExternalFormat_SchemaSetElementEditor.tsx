@@ -166,7 +166,7 @@ const SchemaBasicEditor = observer(
           value={schema.id}
           spellCheck={false}
           onChange={changeId}
-          placeholder={`Id`}
+          placeholder="Id"
         />
         <input
           className="schema-editor__location"
@@ -174,7 +174,7 @@ const SchemaBasicEditor = observer(
           value={schema.location}
           spellCheck={false}
           onChange={changeLocation}
-          placeholder={`Location`}
+          placeholder="Location"
         />
         <div className={clsx('schema-editor__content')}>
           <div className="schema-editor__content__input">
@@ -268,7 +268,7 @@ export const SchemaSetGeneralEditor = observer(
                   onClick={openSchemaLoader}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Import Schemas'}
+                  title="Import Schemas"
                 >
                   <UploadIcon />
                 </button>
@@ -277,7 +277,7 @@ export const SchemaSetGeneralEditor = observer(
                   onClick={addSchema}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Schema'}
+                  title="Add Schema"
                 >
                   <PlusIcon />
                 </button>

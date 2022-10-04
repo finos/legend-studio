@@ -1093,7 +1093,7 @@ const DiagramEditorInlinePropertyEditorContent = observer(
             options={propertyTypeOptions}
             onChange={changePropertyType}
             value={selectedPropertyType}
-            placeholder="Choose a data type or enumeration"
+            placeholder="Choose a type..."
             darkMode={true}
             filterOption={propertyTypeFilterOption}
           />

@@ -607,7 +607,7 @@ const IdentifiedConnectionEditor = observer(
                   className="btn--dark btn--sm runtime-connection-editor__connection-option__visit-btn"
                   onClick={visitConnection}
                   tabIndex={-1}
-                  title={'See connection'}
+                  title="See connection"
                 >
                   <LongArrowRightIcon />
                 </button>

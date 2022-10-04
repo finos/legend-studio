@@ -329,7 +329,7 @@ export const MappingEditor = observer(() => {
                         className="mapping-editor__header__tab__close-btn"
                         onClick={closeTab(tabState)}
                         tabIndex={-1}
-                        title={'Close'}
+                        title="Close"
                       >
                         <TimesIcon />
                       </button>

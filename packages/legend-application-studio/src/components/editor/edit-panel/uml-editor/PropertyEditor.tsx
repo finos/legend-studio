@@ -184,7 +184,7 @@ export const PropertyEditor = observer(
                 className="panel__header__action"
                 onClick={deselectProperty}
                 tabIndex={-1}
-                title={'Close'}
+                title="Close"
               >
                 <TimesIcon />
               </button>

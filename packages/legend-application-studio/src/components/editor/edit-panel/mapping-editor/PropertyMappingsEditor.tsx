@@ -259,7 +259,7 @@ export const PropertyMappingsEditor = observer(
                   className="property-mapping-editor__type__visit-btn"
                   onClick={visitOrCreateMappingElement}
                   tabIndex={-1}
-                  title={'Visit mapping element'}
+                  title="Visit mapping element"
                 >
                   <ArrowCircleRightIcon />
                 </button>
@@ -425,7 +425,7 @@ export const PropertyMappingsEditor = observer(
                         className="property-mapping-editor__entry--empty__visit-btn"
                         onClick={visitOrCreateMappingElement}
                         tabIndex={-1}
-                        title={'Create mapping element'}
+                        title="Create mapping element"
                       >
                         <ArrowCircleRightIcon />
                       </button>
@@ -439,7 +439,7 @@ export const PropertyMappingsEditor = observer(
                         className="property-mapping-editor__entry--empty__visit-btn"
                         onClick={visitOrCreateMappingElement}
                         tabIndex={-1}
-                        title={'Create mapping element'}
+                        title="Create mapping element"
                       >
                         <ArrowCircleRightIcon />
                       </button>

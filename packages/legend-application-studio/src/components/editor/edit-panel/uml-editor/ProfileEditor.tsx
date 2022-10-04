@@ -126,7 +126,7 @@ const TagBasicEditor = observer(
               disabled={isReadOnly}
               value={tag.value}
               onChange={changeValue}
-              placeholder={`Tag value`}
+              placeholder="Tag value"
               validationErrorMessage={
                 isTagDuplicated(tag) ? 'Duplicated tag' : undefined
               }
@@ -137,7 +137,7 @@ const TagBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteValue}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -222,7 +222,7 @@ const StereotypeBasicEditor = observer(
               disabled={isReadOnly}
               value={stereotype.value}
               onChange={changeValue}
-              placeholder={`Stereotype value`}
+              placeholder="Stereotype value"
               validationErrorMessage={
                 isStereotypeDuplicated(stereotype)
                   ? 'Duplicated stereotype'
@@ -235,7 +235,7 @@ const StereotypeBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteStereotype}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

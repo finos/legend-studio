@@ -194,13 +194,13 @@ const EnumerationPropertyMappingEditor = observer(
               options={options}
               onChange={handleSelectionChange}
               value={{ value: transformerLabel, label: transformerLabel }}
-              placeholder={`Select an existing enumeration mapping`}
+              placeholder="Select an existing enumeration mapping"
             />
             <button
               className="property-mapping-editor__entry__visit-btn"
               onClick={visit}
               tabIndex={-1}
-              title={'Visit enumeration mapping'}
+              title="Visit enumeration mapping"
             >
               <ArrowCircleRightIcon />
             </button>
@@ -312,7 +312,7 @@ export const FlatDataPropertyMappingEditor = observer(
         //       className="property-mapping-editor__entry--embedded__visit-btn"
         //       onClick={visitEmbeddedPropertyMapping}
         //       tabIndex={-1}
-        //       title={'Create mapping element'}
+        //       title="Create mapping element"
         //     ><ArrowCircleRightIcon /></button>
         //     {`to visit the embedded class mapping for property '${flatDataPropertyMappingState.propertyMapping.property.name}'.`}
         //   </div>

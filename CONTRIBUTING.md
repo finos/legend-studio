@@ -148,7 +148,7 @@ Read our [guide on testing](./docs/technical/test-strategy.md) to understand our
 # and integration test suites.
 yarn test
 
-# Re-run tests on changes.
+# Rerun tests on changes.
 # NOTE: you can also install `watchman` if the startup time seems slow.
 yarn test:watch
 

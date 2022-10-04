@@ -258,7 +258,7 @@ export const WorkspaceUpdater = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(review.projectId, review.id)}
-                    title={'See review detail'}
+                    title="See review detail"
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">

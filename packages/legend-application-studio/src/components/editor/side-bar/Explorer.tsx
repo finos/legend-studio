@@ -343,7 +343,7 @@ const ProjectConfig = observer(() => {
       <button
         className="tree-view__node__label explorer__package-tree__node__label"
         tabIndex={-1}
-        title={'Project configuration'}
+        title="Project configuration"
       >
         config
       </button>

@@ -22,3 +22,7 @@ Understand the differences between `ALL CAPS CASE`, `Title Case`, and `Sentence 
 ## Tooltip on flip-flop button/toggler
 
 When we have a button that toggles a state, e.g. `Show/Hide username`, `Toggle flag`, but does not come with a label to describe its current state, it's helpful to add a tooltip, but what should we say in the tooltip? Should we try to describe the result action, e.g. `Mark as Favourite / Remove Favourite`, or should we describe the current state `Not saved as Favourite / Saved as Favourited`? We think it's clearest in these situation to do something like this `[on|off] Toggle mark as Favourite`.
+
+## Button label
+
+_TBD_ (what kind of label should we use for toggler?)

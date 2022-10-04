@@ -198,7 +198,7 @@ export const TaggedValueEditor = observer(
                 options={profileOptions}
                 onChange={changeProfile}
                 value={selectedProfile}
-                placeholder={'Choose a profile'}
+                placeholder="Choose a profile"
                 filterOption={profileFilterOption}
                 darkMode={darkTheme ?? false}
               />
@@ -211,7 +211,7 @@ export const TaggedValueEditor = observer(
                 )}
                 onClick={visitProfile}
                 tabIndex={-1}
-                title={'Visit profile'}
+                title="Visit profile"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -222,7 +222,7 @@ export const TaggedValueEditor = observer(
               options={tagOptions}
               onChange={changeTag}
               value={selectedTag}
-              placeholder={'Choose a tag'}
+              placeholder="Choose a tag"
               filterOption={tagFilterOption}
               darkMode={Boolean(darkTheme)}
             />
@@ -232,7 +232,7 @@ export const TaggedValueEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteValue}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -251,7 +251,7 @@ export const TaggedValueEditor = observer(
                   disabled={isReadOnly}
                   value={taggedValue.value}
                   onChange={changeValue}
-                  placeholder={`Value`}
+                  placeholder="Value"
                 />
               )}
               {!isExpanded && (
@@ -263,7 +263,7 @@ export const TaggedValueEditor = observer(
                   disabled={isReadOnly}
                   value={taggedValue.value}
                   onChange={changeValue}
-                  placeholder={`Value`}
+                  placeholder="Value"
                 />
               )}
               <button
@@ -272,7 +272,7 @@ export const TaggedValueEditor = observer(
                 }`}
                 onClick={toggleExpandedMode}
                 tabIndex={-1}
-                title={'Expand/Collapse'}
+                title="Expand/Collapse"
               >
                 {isExpanded ? <LongArrowAltUpIcon /> : <MoreVerticalIcon />}
               </button>

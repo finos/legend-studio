@@ -419,7 +419,7 @@ const ProjectDependencyEditor = observer(
           }
           onClick={openProject}
           tabIndex={-1}
-          title={'Open Project'}
+          title="Open Project"
         >
           <ExternalLinkSquareIcon />
         </button>
@@ -432,7 +432,7 @@ const ProjectDependencyEditor = observer(
           }
           onClick={openProjectinArchive}
           tabIndex={-1}
-          title={'Open Project in archive'}
+          title="Open Project in archive"
         >
           <ArchiveIcon />
         </button>
@@ -441,7 +441,7 @@ const ProjectDependencyEditor = observer(
           disabled={isReadOnly}
           onClick={deleteValue}
           tabIndex={-1}
-          title={'Close'}
+          title="Close"
         >
           <TimesIcon />
         </button>
@@ -471,7 +471,7 @@ const ProjectDependencyActions = observer(
           tabIndex={-1}
           onClick={viewTree}
           disabled={!config.dependencyInfo}
-          title={`View dependency tree`}
+          title="View dependency tree"
         >
           View Dependency Tree
         </button>
@@ -484,7 +484,7 @@ const ProjectDependencyActions = observer(
             disabled={
               !config.dependencyInfo || !config.dependencyInfo.conflicts.length
             }
-            title={`View any conflcits in your dependencies`}
+            title="View any conflcits in your dependencies"
           >
             View Conflicts
           </button>

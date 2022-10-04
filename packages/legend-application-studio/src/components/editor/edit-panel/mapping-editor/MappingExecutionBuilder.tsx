@@ -153,7 +153,7 @@ export const ClassMappingSelectorModal = observer(
             options={classMappingOptions}
             onChange={changeClassMappingOption}
             value={null}
-            placeholder={'Choose a class mapping...'}
+            placeholder="Choose a class mapping..."
             filterOption={filterOption}
             isClearable={true}
           />
@@ -376,7 +376,7 @@ const MappingExecutionQueryEditor = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={clearQuery}
-              title={'Clear query'}
+              title="Clear query"
             >
               <TimesIcon />
             </button>
@@ -681,7 +681,7 @@ export const MappingExecutionInputDataBuilder = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={showClassMappingSelectorModal}
-              title={'Regenerate...'}
+              title="Regenerate..."
             >
               <RefreshIcon className="mapping-execution-builder__icon--refresh" />
             </button>
@@ -689,7 +689,7 @@ export const MappingExecutionInputDataBuilder = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={clearInputData}
-              title={'Clear input data'}
+              title="Clear input data"
             >
               <TimesIcon />
             </button>

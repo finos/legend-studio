@@ -299,7 +299,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
   *recreateWorkspace(): GeneratorFn<void> {
     try {
       this.setBlockingAlert({
-        message: 'Re-creating workspace...',
+        message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });

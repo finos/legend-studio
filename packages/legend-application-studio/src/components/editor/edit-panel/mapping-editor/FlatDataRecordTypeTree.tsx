@@ -112,7 +112,7 @@ const RecordFieldTreeNodeContainer: React.FC<
                   primitiveType && primitiveType === selectedType,
               })}
               tabIndex={-1}
-              title={'Column Type'}
+              title="Column Type"
             >
               {primitiveType?.path ?? 'RecordType'}
             </button>

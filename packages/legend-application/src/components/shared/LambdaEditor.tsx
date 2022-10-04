@@ -387,7 +387,7 @@ const LambdaEditorInline = observer(
                   )}
                   onClick={selectTypeLabel}
                   tabIndex={-1}
-                  title={'Toggle highlight expected type'}
+                  title="Toggle highlight expected type"
                 >
                   {expectedType?.name ?? 'unknown'}
                 </button>

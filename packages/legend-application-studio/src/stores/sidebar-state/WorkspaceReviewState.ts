@@ -207,7 +207,7 @@ export class WorkspaceReviewState {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
       this.editorStore.setBlockingAlert({
-        message: 'Re-creating workspace...',
+        message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });

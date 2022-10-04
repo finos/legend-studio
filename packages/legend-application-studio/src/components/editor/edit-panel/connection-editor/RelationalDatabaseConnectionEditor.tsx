@@ -186,7 +186,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.host}
-          name={'host'}
+          name="host"
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
@@ -203,7 +203,7 @@ const StaticDatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name={'database'}
+          name="database"
           update={(value: string | undefined): void =>
             staticDatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -227,7 +227,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
-          name={'database'}
+          name="database"
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDatabaseName(
               sourceSpec,
@@ -238,7 +238,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.directory}
-          name={'directory'}
+          name="directory"
           update={(value: string | undefined): void =>
             embeddedH2DatasourceSpecification_setDirectory(
               sourceSpec,
@@ -249,7 +249,7 @@ const EmbeddedH2DatasourceSpecificationEditor = observer(
         <PanelFormBooleanEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.autoServerMode}
-          name={'auto server mode'}
+          name="auto server mode"
           update={(value?: boolean): void =>
             embeddedH2DatasourceSpecification_setAutoServerMode(
               sourceSpec,
@@ -521,7 +521,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.projectId}
-          name={'project id'}
+          name="project id"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProjectId(
               sourceSpec,
@@ -532,7 +532,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={sourceSpec.defaultDataset}
-          name={'default dataset'}
+          name="default dataset"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setDefaultDataset(
               sourceSpec,
@@ -582,7 +582,7 @@ const DelegatedKerberosAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serverPrincipal}
-          name={'server principal'}
+          name="server principal"
           update={(value: string | undefined): void =>
             delegatedKerberosAuthenticationStrategy_setServerPrincipal(
               authSpec,
@@ -606,7 +606,7 @@ const ApiTokenAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.apiToken}
-          name={'apiTokenRef'}
+          name="apiTokenRef"
           update={(value: string | undefined): void =>
             apiTokenAuthenticationStrategy_setApiToken(authSpec, value ?? '')
           }
@@ -627,7 +627,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.privateKeyVaultReference}
-          name={'private key vault reference'}
+          name="private key vault reference"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPrivateKeyVaultReference(
               authSpec,
@@ -638,7 +638,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passPhraseVaultReference}
-          name={'pass phrase vault reference'}
+          name="pass phrase vault reference"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPassPhraseVaultReference(
               authSpec,
@@ -649,7 +649,7 @@ const SnowflakePublicAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.publicUserName}
-          name={'public user name'}
+          name="public user name"
           update={(value: string | undefined): void =>
             snowflakePublicAuthenticationStrategy_setPublicUserName(
               authSpec,
@@ -670,7 +670,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.oauthKey}
-          name={'oauth key'}
+          name="oauth key"
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setOauthKey(authSpec, value ?? '')
           }
@@ -678,7 +678,7 @@ const OAuthAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.scopeName}
-          name={'scope name'}
+          name="scope name"
           update={(value: string | undefined): void =>
             oAuthAuthenticationStrategy_setScopeName(authSpec, value ?? '')
           }
@@ -699,7 +699,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.baseVaultReference}
-          name={'base vault reference'}
+          name="base vault reference"
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setBaseVaultReference(
               authSpec,
@@ -710,7 +710,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.userNameVaultReference}
-          name={'user name vault reference'}
+          name="user name vault reference"
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setUserNameVaultReference(
               authSpec,
@@ -721,7 +721,7 @@ const UsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.passwordVaultReference}
-          name={'password vault reference'}
+          name="password vault reference"
           update={(value: string | undefined): void =>
             usernamePasswordAuthenticationStrategy_setPasswordVaultReference(
               authSpec,
@@ -745,7 +745,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
-          name={'vault reference'}
+          name="vault reference"
           description="Specifies the cred vault reference containing connection credentials"
           update={(value: string | undefined): void =>
             middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
@@ -771,7 +771,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={authSpec.serviceAccountEmail}
-          name={'Service Account Email'}
+          name="Service Account Email"
           update={(value: string | undefined): void =>
             gcpWorkloadIdentityFederationAuthenticationStrategy_setServiceAccountEmail(
               authSpec,
@@ -782,7 +782,7 @@ const GCPWorkloadIdentityFederationAuthenticationStrategyEditor = observer(
         <PanelFormTextEditor
           isReadOnly={isReadOnly}
           value={GCPScopes}
-          name={'Additional GCP Scopes'}
+          name="Additional GCP Scopes"
           update={(value: string | undefined): void =>
             gcpWorkloadIdentityFederationAuthenticationStrategy_setAdditionalGcpScopes(
               authSpec,

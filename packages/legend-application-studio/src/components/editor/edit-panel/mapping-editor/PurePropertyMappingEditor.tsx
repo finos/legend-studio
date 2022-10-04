@@ -196,13 +196,13 @@ const EnumerationPropertyMappingEditor = observer(
               options={options}
               onChange={handleSelectionChange}
               value={{ value: transformerLabel, label: transformerLabel }}
-              placeholder={`Select an existing enumeration mapping`}
+              placeholder="Select an existing enumeration mapping"
             />
             <button
               className="property-mapping-editor__entry__visit-btn"
               onClick={visit}
               tabIndex={-1}
-              title={'Visit enumeration mapping'}
+              title="Visit enumeration mapping"
             >
               <ArrowCircleRightIcon />
             </button>
@@ -289,7 +289,7 @@ const ClassPropertyMappingEditor = observer(
               className="property-mapping-editor__entry__visit-btn"
               onClick={visit}
               tabIndex={-1}
-              title={'Visit class mapping'}
+              title="Visit class mapping"
             >
               <ArrowCircleRightIcon />
             </button>

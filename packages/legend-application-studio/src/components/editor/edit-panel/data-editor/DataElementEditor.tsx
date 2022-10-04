@@ -315,7 +315,7 @@ export const DataElementEditor = observer(() => {
                   onClick={addStereotype}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Stereotype'}
+                  title="Add Stereotype"
                 >
                   <PlusIcon />
                 </button>
@@ -364,7 +364,7 @@ export const DataElementEditor = observer(() => {
                   onClick={addTaggedValue}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Tagged value'}
+                  title="Add Tagged value"
                 >
                   <PlusIcon />
                 </button>

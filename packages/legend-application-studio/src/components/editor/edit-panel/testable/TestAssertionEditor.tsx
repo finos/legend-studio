@@ -72,7 +72,7 @@ const EqualToJsonAsssertionEditor = observer(
               disabled={testAssertionEditorState.testState.isReadOnly}
               tabIndex={-1}
               onClick={formatExpectedResultJSONString}
-              title={'Format JSON (Alt + Shift + F)'}
+              title="Format JSON (Alt + Shift + F)"
             >
               <WrenchIcon />
             </button>

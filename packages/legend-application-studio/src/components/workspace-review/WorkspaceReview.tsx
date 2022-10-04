@@ -214,7 +214,7 @@ export const WorkspaceReview = withEditorStore(
                         key={ACTIVITY_MODE.REVIEW}
                         className="activity-bar__item activity-bar__item--active workspace-review__activity-bar__review-icon"
                         tabIndex={-1}
-                        title={'Review'}
+                        title="Review"
                         onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                       >
                         <CheckListIcon />
@@ -224,7 +224,7 @@ export const WorkspaceReview = withEditorStore(
                       <button
                         className="activity-bar__item"
                         tabIndex={-1}
-                        title={'Settings...'}
+                        title="Settings..."
                       >
                         <CogIcon />
                       </button>

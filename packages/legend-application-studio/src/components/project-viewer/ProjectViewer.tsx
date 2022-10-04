@@ -137,7 +137,7 @@ const ProjectViewerStatusBar = observer(() => {
           )}
           onClick={handleTextModeClick}
           tabIndex={-1}
-          title={'Toggle text mode (F8)'}
+          title="Toggle text mode (F8)"
         >
           <HackerIcon />
         </button>

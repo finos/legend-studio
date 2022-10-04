@@ -16,7 +16,7 @@
 
 @use 'mixins' as *;
 
-.packageable-element-format-option-label {
+.packageable-element-option-label {
   @include flexVCenter;
 
   display: flex;
@@ -42,10 +42,10 @@
   }
 }
 
-.packageable-element-format-option-label-type {
+.packageable-element-option-label__type {
   margin: -1rem 0.8rem -1rem -1.2rem;
   height: 3.2rem;
-  padding: 0 0 0 0.5rem;
+  padding-left: 0.5rem;
   background: transparent;
 
   &--system {
@@ -61,7 +61,7 @@
   }
 }
 
-.packageable-element-format-option-label--dark {
+.packageable-element-option-label--dark {
   @include flexVCenter;
 
   display: flex;

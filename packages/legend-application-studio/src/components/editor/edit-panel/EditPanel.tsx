@@ -429,7 +429,7 @@ export const EditPanel = observer(() => {
                   className="edit-panel__header__tab__close-btn"
                   onClick={closeTab(editorState)}
                   tabIndex={-1}
-                  title={'Close'}
+                  title="Close"
                 >
                   <TimesIcon />
                 </button>

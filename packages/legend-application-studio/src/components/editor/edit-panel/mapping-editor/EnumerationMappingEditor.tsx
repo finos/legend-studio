@@ -149,7 +149,7 @@ const EnumerationMappingSourceSelectorModal = observer(
             options={options}
             onChange={changeSourceType}
             value={selectedSourceType}
-            placeholder={'Choose a data type or an enumeration...'}
+            placeholder="Choose a type..."
             isClearable={true}
             filterOption={filterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({})}
@@ -245,7 +245,7 @@ export const SourceValueInput = observer(
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          placeholder={`Source value`}
+          placeholder="Source value"
           type={inputType}
         />
         <div className="enumeration-mapping-editor__enum-value__source-value__info">
@@ -259,7 +259,7 @@ export const SourceValueInput = observer(
             disabled={isReadOnly}
             onClick={deleteSourceValue}
             tabIndex={-1}
-            title={'Remove'}
+            title="Remove"
           >
             <TimesIcon />
           </button>
@@ -297,7 +297,7 @@ const EnumValueMappingEditor = observer(
               disabled={isReadOnly}
               onClick={addSourceValue}
               tabIndex={-1}
-              title={'Add enum value'}
+              title="Add enum value"
             >
               <PlusIcon />
             </button>
@@ -513,7 +513,7 @@ export const EnumerationMappingEditor = observer(
                         onClick={showSourceSelectorModal}
                         disabled={isReadOnly}
                         tabIndex={-1}
-                        title={'Select Source...'}
+                        title="Select a source..."
                       >
                         <PencilIcon />
                       </button>

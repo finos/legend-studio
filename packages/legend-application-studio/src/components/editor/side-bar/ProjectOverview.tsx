@@ -209,7 +209,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
           workspace.workspaceId,
           workspace.workspaceType,
         )}
-        title={'Go to workspace detail'}
+        title="Go to workspace detail"
       >
         <div className="project-overview__item__link__content project-overview__workspace__viewer">
           <div className="project-overview__workspace__viewer-icon">
@@ -337,7 +337,7 @@ const ReleaseEditor = observer(() => {
             disabled={!canCreateVersion}
             value={revisionInput.notes}
             onChange={changeNotes}
-            placeholder={'Release notes'}
+            placeholder="Release notes"
           />
           <div className="project-overview__release__editor__actions">
             <button
@@ -444,7 +444,7 @@ const ReleaseEditor = observer(() => {
                     rel="noopener noreferrer"
                     target="_blank"
                     to={generateReviewRoute(review.projectId, review.id)}
-                    title={'See review detail'}
+                    title="See review detail"
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">
@@ -505,7 +505,7 @@ const VersionsViewer = observer(() => {
               rel="noopener noreferrer"
               target="_blank"
               to={generateViewVersionRoute(version.projectId, version.id.id)}
-              title={'See version detail'}
+              title="See version detail"
             >
               <div className="project-overview__item__link__content">
                 <span className="project-overview__item__link__content__name">

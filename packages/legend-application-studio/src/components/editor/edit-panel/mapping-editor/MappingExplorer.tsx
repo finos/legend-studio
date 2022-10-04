@@ -524,7 +524,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               onClick={openNewMapingModal}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Create new mapping element'}
+              title="Create new mapping element"
             >
               <PlusIcon />
             </button>

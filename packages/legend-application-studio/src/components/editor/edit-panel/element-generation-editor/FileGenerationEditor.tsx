@@ -272,7 +272,7 @@ export const GenerationResultViewer = observer(
                     tabIndex={-1}
                     disabled={fileGenerationState.isGenerating}
                     onClick={regenerate}
-                    title={'Re-generate'}
+                    title="Regenerate"
                   >
                     <RefreshIcon />
                   </button>
@@ -1372,7 +1372,7 @@ export const FileGenerationConfigurationEditor = observer(
                 isReadOnly || !fileGeneration.configurationProperties.length
               }
               onClick={resetDefaultConfiguration}
-              title={'Reset to default configuration'}
+              title="Reset to default configuration"
             >
               <RefreshIcon />
             </button>
@@ -1382,7 +1382,7 @@ export const FileGenerationConfigurationEditor = observer(
                 tabIndex={-1}
                 disabled={isReadOnly}
                 onClick={showFileGenerationModal}
-                title={'Promote File Generation Specification...'}
+                title="Promote to file generation specification..."
               >
                 <SaveIcon />
               </button>

@@ -221,7 +221,7 @@ export const WorkspaceSyncConflictResolver = observer(() => {
                             className="workspace-sync-conflict-resolver__header__tab__close-btn"
                             onClick={closeTab(mergedState)}
                             tabIndex={-1}
-                            title={'Close'}
+                            title="Close"
                           >
                             <TimesIcon />
                           </button>

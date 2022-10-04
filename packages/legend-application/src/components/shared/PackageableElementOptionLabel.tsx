@@ -51,17 +51,17 @@ export const getPackageableElementOptionFormatter = (props: {
     option: PackageableElementOption<PackageableElement>,
   ): React.ReactNode {
     const className = props.darkMode
-      ? 'packageable-element-format-option-label--dark'
-      : 'packageable-element-format-option-label';
+      ? 'packageable-element-option-label--dark'
+      : 'packageable-element-option-label';
     const colorCode = getElementColorCode(option.value);
 
     return (
       <div className={className}>
         <div
           title={generateOptionTooltipText(option.value)}
-          className={`packageable-element-format-option-label-type ${
+          className={`packageable-element-option-label__type ${
             colorCode
-              ? `packageable-element-format-option-label-type--${colorCode}`
+              ? `packageable-element-option-label__type--${colorCode}`
               : ''
           } `}
         ></div>

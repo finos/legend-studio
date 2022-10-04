@@ -207,7 +207,7 @@ const ModelGenerationItem = observer(
             className="btn--dark btn--sm"
             onClick={visitModelGeneration}
             tabIndex={-1}
-            title={'See mapping'}
+            title="See mapping"
           >
             <LongArrowRightIcon />
           </button>
@@ -215,7 +215,7 @@ const ModelGenerationItem = observer(
             className="generation-spec-model-generation-editor__item__remove-btn"
             onClick={deleteNode}
             tabIndex={-1}
-            title={'Remove'}
+            title="Remove"
           >
             <TimesIcon />
           </button>
@@ -384,7 +384,7 @@ const FileGenerationItem = observer(
           className="btn--dark btn--sm"
           onClick={visitFileGen}
           tabIndex={-1}
-          title={'See mapping'}
+          title="See mapping"
         >
           <LongArrowRightIcon />
         </button>
@@ -392,7 +392,7 @@ const FileGenerationItem = observer(
           className="generation-spec-file-generation-editor__item__remove-btn"
           onClick={deleteColumnSort}
           tabIndex={-1}
-          title={'Remove'}
+          title="Remove"
         >
           <TimesIcon />
         </button>
@@ -542,7 +542,7 @@ export const GenerationSpecificationEditor = observer(() => {
               )}
               tabIndex={-1}
               onClick={generate}
-              title={'Generate'}
+              title="Generate"
             >
               <FireIcon />
             </button>

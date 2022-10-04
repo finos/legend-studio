@@ -75,7 +75,7 @@ export const OperatorSelector = observer(
         options={operationsOptions}
         onChange={changeSourceType}
         value={selectedSourceType}
-        placeholder={`Select operation ID`}
+        placeholder="Select operation ID"
       />
     );
   },
@@ -275,7 +275,7 @@ export const ClassMappingEditor = observer(
                 onClick={toggleRoot}
                 disabled={isReadOnly}
                 tabIndex={-1}
-                title={'Set/Unset root class mapping'}
+                title="Toggle set class mapping as root"
               >
                 {setImplementation.root.value ? (
                   <CheckSquareIcon />

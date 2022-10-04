@@ -718,7 +718,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.previousConflict}
               onClick={goToPreviousConflict}
-              title={'Previous conflict'}
+              title="Previous conflict"
             >
               <ArrowUpIcon />
             </button>
@@ -726,7 +726,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.nextConflict}
               onClick={goToNextConflict}
-              title={'Next conflict'}
+              title="Next conflict"
             >
               <ArrowDownIcon />
             </button>

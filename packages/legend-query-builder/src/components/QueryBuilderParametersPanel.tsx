@@ -182,7 +182,7 @@ const VariableExpressionEditor = observer(
                   spellCheck={false}
                   value={varState.name}
                   onChange={changeVariableName}
-                  placeholder={`Parameter name`}
+                  placeholder="Parameter name"
                   validationErrorMessage={validationMessage}
                 />
               </div>

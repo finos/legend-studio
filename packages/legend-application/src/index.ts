@@ -51,7 +51,7 @@ export * from './components/shared/TextInputEditor.js';
 export * from './components/shared/LambdaEditor.js';
 export * from './components/shared/BasicValueSpecificationEditor.js';
 export * from './components/shared/LambdaParameterValuesEditor.js';
-export * from './components/shared/PackageableElementOptionRenderer.js';
+export * from './components/shared/PackageableElementOptionLabel.js';
 export * from './components/shared/execution-plan-viewer/ExecutionPlanViewer.js';
 
 export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';

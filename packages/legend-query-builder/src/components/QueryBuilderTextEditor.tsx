@@ -83,7 +83,7 @@ export const QueryBuilderTextEditor = observer(
             >
               {mode === QueryBuilderTextEditorMode.TEXT && (
                 <QueryBuilderLambdaEditor
-                  className={'query-builder-text-mode__lambda-editor'}
+                  className="query-builder-text-mode__lambda-editor"
                   disabled={queryTextEditorState.isConvertingLambdaToString}
                   queryBuilderState={queryBuilderState}
                   lambdaEditorState={queryTextEditorState}

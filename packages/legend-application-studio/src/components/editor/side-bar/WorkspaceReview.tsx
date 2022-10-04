@@ -284,7 +284,7 @@ export const WorkspaceReview = observer(() => {
                 <div className="workspace-review__title__content">
                   <div
                     className="workspace-review__title__content__input workspace-review__title__content__input--with-link"
-                    title={'See review detail'}
+                    title="See review detail"
                   >
                     <Link
                       className="workspace-review__title__content__input__link"

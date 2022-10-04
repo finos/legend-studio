@@ -99,7 +99,7 @@ export const ExternalFormatDataEditor = observer(
               }
               tabIndex={-1}
               onClick={format}
-              title={'Format External Format'}
+              title="Format External Format"
             >
               <WrenchIcon />
             </button>
@@ -201,7 +201,7 @@ export const DataElementReferenceDataEditor = observer(
               className="btn--dark btn--sm data-element-reference-editor__value-btn"
               onClick={visitData}
               tabIndex={-1}
-              title={'See data element'}
+              title="See data element"
             >
               <LongArrowRightIcon />
             </button>
