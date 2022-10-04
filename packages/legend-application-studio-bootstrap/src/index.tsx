@@ -16,7 +16,7 @@
 
 import {
   LegendStudio,
-  DSLExternalFormat_LegendStudioApplicationPlugin,
+  DSL_ExternalFormat_LegendStudioApplicationPlugin,
 } from '@finos/legend-application-studio';
 import {
   type AbstractPreset,
@@ -44,13 +44,13 @@ import {
   DSL_Mastery_LegendStudioApplicationPlugin,
 } from '@finos/legend-extension-dsl-mastery';
 import {
-  ESService_GraphManagerPreset,
-  ESService_LegendStudioApplicationPlugin,
-} from '@finos/legend-extension-external-store-service';
-import { ELMorphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-external-language-morphir';
-import { DSLExternalFormat_GraphPreset } from '@finos/legend-graph';
+  STO_ServiceStore_GraphManagerPreset,
+  STO_ServiceStore_LegendStudioApplicationPlugin,
+} from '@finos/legend-extension-store-service-store';
+import { FMT_Morphir_LegendStudioApplicationPlugin } from '@finos/legend-extension-format-morphir';
+import { DSL_ExternalFormat_GraphPreset } from '@finos/legend-graph';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { EFJSONSchema_GraphManagerPreset } from '@finos/legend-extension-external-format-json-schema';
+import { FMT_JSONSchema_GraphManagerPreset } from '@finos/legend-extension-format-json-schema';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service';
 
 export class LegendStudioWebApplication {
@@ -60,12 +60,12 @@ export class LegendStudioWebApplication {
       new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
-      new DSLExternalFormat_GraphPreset(),
+      new DSL_ExternalFormat_GraphPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
       new DSL_PersistenceCloud_GraphManagerPreset(),
-      new EFJSONSchema_GraphManagerPreset(),
-      new ESService_GraphManagerPreset(),
+      new FMT_JSONSchema_GraphManagerPreset(),
+      new STO_ServiceStore_GraphManagerPreset(),
     ];
   }
 
@@ -76,11 +76,11 @@ export class LegendStudioWebApplication {
       new DSL_Diagram_LegendStudioApplicationPlugin(),
       new DSL_DataSpace_LegendStudioApplicationPlugin(),
       new DSL_Service_LegendStudioApplicationPlugin(),
-      new DSLExternalFormat_LegendStudioApplicationPlugin(),
+      new DSL_ExternalFormat_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new DSL_Mastery_LegendStudioApplicationPlugin(),
-      new ESService_LegendStudioApplicationPlugin(),
-      new ELMorphir_LegendStudioApplicationPlugin(),
+      new STO_ServiceStore_LegendStudioApplicationPlugin(),
+      new FMT_Morphir_LegendStudioApplicationPlugin(),
 
       // loggers
       new WebConsole(),

@@ -101,11 +101,11 @@ import {
 } from '@finos/legend-graph';
 import { LambdaEditorState } from '@finos/legend-application';
 import type {
-  DSLMapping_LegendStudioApplicationPlugin_Extension,
+  DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
-} from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { flatData_setSourceRootRecordType } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -117,9 +117,9 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
-import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;
@@ -227,7 +227,7 @@ export const getMappingElementLabel = (
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationMappingElementLabelInfoBuilders?.() ??
             [],
         );
@@ -297,7 +297,7 @@ export const getMappingElementSource = (
   const extraMappingElementSourceExtractors = plugins.flatMap(
     (plugin) =>
       (
-        plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+        plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
       ).getExtraMappingElementSourceExtractors?.() ?? [],
   );
   for (const extractor of extraMappingElementSourceExtractors) {
@@ -943,7 +943,7 @@ export class MappingEditorState extends ElementEditorState {
             .flatMap(
               (plugin) =>
                 (
-                  plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+                  plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
                 ).getExtraInstanceSetImplementationSourceUpdaters?.() ?? [],
             );
         for (const updater of extraInstanceSetImplementationSourceUpdaters) {
@@ -1160,7 +1160,7 @@ export class MappingEditorState extends ElementEditorState {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraMappingElementStateCreators?.() ?? [],
       );
     for (const elementStateCreator of extraMappingElementStateCreators) {

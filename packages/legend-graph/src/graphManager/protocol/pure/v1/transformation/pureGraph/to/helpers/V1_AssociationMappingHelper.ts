@@ -30,7 +30,7 @@ import { XStoreAssociationImplementation } from '../../../../../../../../graph/m
 import {
   getAllEnumerationMappings,
   getAllIncludedMappings,
-} from '../../../../../../../../graph/helpers/DSLMapping_Helper.js';
+} from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 
 const getInferredAssociationMappingId = (
   _association: Association,

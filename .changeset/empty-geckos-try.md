@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-text': major
 ---
 
-Rename files prefix from `DSLText` to `DSL_Text`.
+**BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_Text` instead of `DSLText`

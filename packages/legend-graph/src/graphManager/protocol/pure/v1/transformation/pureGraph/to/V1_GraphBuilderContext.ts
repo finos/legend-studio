@@ -79,7 +79,7 @@ import type { V1_GraphBuilderExtensions } from './V1_GraphBuilderExtensions.js';
 import type { GraphBuilderOptions } from '../../../../../../../graphManager/AbstractPureGraphManager.js';
 import { DataType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/DataType.js';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
-import type { DataElement } from '../../../../../../../DSLData_Exports.js';
+import type { DataElement } from '../../../../../../../DSL_Data_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
@@ -90,11 +90,11 @@ import {
 import {
   getFilter,
   getJoin,
-} from '../../../../../../../graph/helpers/StoreRelational_Helper.js';
+} from '../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import {
   getRootRecordType,
   getSection,
-} from '../../../../../../../graph/helpers/StoreFlatData_Helper.js';
+} from '../../../../../../../graph/helpers/STO_FlatData_Helper.js';
 
 export const V1_buildFullPath = (
   packagePath: string | undefined,

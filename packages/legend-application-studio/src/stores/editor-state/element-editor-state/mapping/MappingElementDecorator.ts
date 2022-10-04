@@ -74,9 +74,9 @@ import {
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
-import type { DSLMapping_LegendStudioApplicationPlugin_Extension } from '../../../DSLMapping_LegendStudioApplicationPlugin_Extension.js';
+} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**
  * Iterate through all properties (including supertypes' properties) of the set implementation
@@ -637,7 +637,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
           ).getExtraSetImplementationDecorators?.() ?? [],
       );
     for (const decorator of extraSetImplementationDecorators) {
@@ -778,7 +778,7 @@ export class MappingElementDecorationCleaner
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLMapping_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
             ).getExtraSetImplementationDecorationCleaners?.() ?? [],
         );
     for (const decorationCleaner of extraSetImplementationDecorationCleaners) {

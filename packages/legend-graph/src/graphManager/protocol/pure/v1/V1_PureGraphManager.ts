@@ -163,7 +163,7 @@ import {
   V1_setupEngineRuntimeSerialization,
   V1_setupLegacyRuntimeSerialization,
 } from './transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
-import type { DSLGeneration_PureProtocolProcessorPlugin_Extension } from '../DSLGeneration_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Generation_PureProtocolProcessorPlugin_Extension } from '../DSL_Generation_PureProtocolProcessorPlugin_Extension.js';
 import type { RawRelationalOperationElement } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from './transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type {
@@ -228,12 +228,12 @@ import {
 import {
   type Service,
   MultiExecutionServiceTestResult,
-} from '../../../../DSLService_Exports.js';
+} from '../../../../DSL_Service_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
 import {
   getNullableIDFromTestable,
   getNullableTestable,
-} from '../../../helpers/DSLData_GraphManagerHelper.js';
+} from '../../../helpers/DSL_Data_GraphManagerHelper.js';
 import type { TestAssertion } from '../../../../graph/metamodel/pure/test/assertion/TestAssertion.js';
 import { AssertFail } from '../../../../graph/metamodel/pure/test/assertion/status/AssertFail.js';
 import {
@@ -252,7 +252,7 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
-import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSLExternalFormat_SchemaSet.js';
+import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1589,7 +1589,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGeneration_PureProtocolProcessorPlugin_Extension
+            plugin as DSL_Generation_PureProtocolProcessorPlugin_Extension
           ).V1_getExtraModelGenerators?.() ?? [],
       );
     for (const generator of extraModelGenerators) {

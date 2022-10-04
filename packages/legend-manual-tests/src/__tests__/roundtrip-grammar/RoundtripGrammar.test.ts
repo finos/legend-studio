@@ -45,7 +45,7 @@ import {
   TEST__checkGraphHashUnchanged,
   TEST__getTestGraphManagerState,
   GRAPH_MANAGER_EVENT,
-  DSLExternalFormat_GraphPreset,
+  DSL_ExternalFormat_GraphPreset,
 } from '@finos/legend-graph';
 import { DSL_Text_GraphManagerPreset } from '@finos/legend-extension-dsl-text';
 import { DSL_Diagram_GraphManagerPreset as DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
@@ -53,7 +53,7 @@ import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-da
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence';
 import { DSL_Mastery_GraphManagerPreset } from '@finos/legend-extension-dsl-mastery';
 import { DSL_PersistenceCloud_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence-cloud';
-import { ESService_GraphManagerPreset } from '@finos/legend-extension-external-store-service';
+import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store';
 
 const engineConfig = JSON.parse(
   fs.readFileSync(resolve(__dirname, '../../../engine-config.json'), {
@@ -131,11 +131,11 @@ const checkGrammarRoundtrip = async (
       new DSL_Text_GraphManagerPreset(),
       new DSL_Diagram_GraphManagerPreset(),
       new DSL_DataSpace_GraphManagerPreset(),
-      new DSLExternalFormat_GraphPreset(),
+      new DSL_ExternalFormat_GraphPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new DSL_Mastery_GraphManagerPreset(),
       new DSL_PersistenceCloud_GraphManagerPreset(),
-      new ESService_GraphManagerPreset(),
+      new STO_ServiceStore_GraphManagerPreset(),
     ])
     .usePlugins([new WebConsole()]);
   pluginManager.install();

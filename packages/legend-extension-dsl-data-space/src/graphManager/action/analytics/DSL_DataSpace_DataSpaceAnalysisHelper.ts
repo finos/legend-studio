@@ -28,16 +28,16 @@ export const retrieveAnalyticsResultCache = async (
   versionId: string,
   dataSpacePath: string,
   depotServerClient: DepotServerClient,
-): Promise<PlainObject<DataSpaceAnalysisResult> | undefined> => {
-  const result = await depotServerClient.getGenerationContentByPath(
-    groupId,
-    artifactId,
-    versionId,
-    getExpectedArtifactGenerationExtensionOutputPath(
-      dataSpacePath,
-      V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY,
-      DATASPACE_ANALYTICS_FILE_NAME,
+): Promise<PlainObject<DataSpaceAnalysisResult>> =>
+  JSON.parse(
+    await depotServerClient.getGenerationContentByPath(
+      groupId,
+      artifactId,
+      versionId,
+      getExpectedArtifactGenerationExtensionOutputPath(
+        dataSpacePath,
+        V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY,
+        DATASPACE_ANALYTICS_FILE_NAME,
+      ),
     ),
   );
-  return result ? JSON.parse(result) : undefined;
-};

@@ -89,7 +89,7 @@ import {
   LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
-import { flatData_setData } from '../../../graphModifier/StoreFlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -97,12 +97,12 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSLMapping_GraphModifierHelper.js';
+} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/StoreRelational_GraphModifierHelper.js';
+} from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

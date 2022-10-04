@@ -30,7 +30,7 @@ import {
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../../graph/helpers/DSLMapping_Helper.js';
+} from '../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import { OtherwiseEmbeddedRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/OtherwiseEmbeddedRelationalInstanceSetImplementation.js';
 import { RelationalPropertyMapping } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RelationalPropertyMapping.js';

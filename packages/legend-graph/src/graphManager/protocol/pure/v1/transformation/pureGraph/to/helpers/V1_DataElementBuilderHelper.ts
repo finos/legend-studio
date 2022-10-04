@@ -26,7 +26,7 @@ import {
   RelationalCSVDataTable,
 } from '../../../../../../../../graph/metamodel/pure/data/RelationalCSVData.js';
 import type { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
-import type { DSLData_PureProtocolProcessorPlugin_Extension } from '../../../../../DSLData_PureProtocolProcessorPlugin_Extension.js';
+import type { DSL_Data_PureProtocolProcessorPlugin_Extension } from '../../../../../DSL_Data_PureProtocolProcessorPlugin_Extension.js';
 import type {
   V1_DataElementReference,
   V1_EmbeddedData,
@@ -48,7 +48,7 @@ class V1_EmbeddedDataBuilder implements V1_EmbeddedDataVisitor<EmbeddedData> {
     const extraEmbeddedDataBuilders = this.context.extensions.plugins.flatMap(
       (plugin) =>
         (
-          plugin as DSLData_PureProtocolProcessorPlugin_Extension
+          plugin as DSL_Data_PureProtocolProcessorPlugin_Extension
         ).V1_getExtraEmbeddedDataBuilders?.() ?? [],
     );
     for (const builder of extraEmbeddedDataBuilders) {

@@ -30,7 +30,7 @@ import type { GraphManagerState } from '../../../GraphManagerState.js';
 import {
   findPropertyMapping,
   getOwnClassMappingsByClass,
-} from '../../../../graph/helpers/DSLMapping_Helper.js';
+} from '../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { RootRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/RootRelationalInstanceSetImplementation.js';
 import { EmbeddedRelationalInstanceSetImplementation } from '../../../../graph/metamodel/pure/packageableElements/store/relational/mapping/EmbeddedRelationalInstanceSetImplementation.js';
 import { getClassProperty } from '../../../../graph/helpers/DomainHelper.js';

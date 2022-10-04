@@ -51,13 +51,13 @@ import {
   type FileGenerationSourceDropTarget,
 } from '../../../stores/shared/DnDUtils.js';
 import { getNullableFirstElement } from '@finos/legend-shared';
-import type { DSLGeneration_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSLGeneration_LegendStudioApplicationPlugin_Extension.js';
+import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElement,
   type PackageableElementReference,
-  type DSLGeneration_PureGraphManagerPlugin_Extension,
+  type DSL_Generation_PureGraphManagerPlugin_Extension,
   FileGenerationSpecification,
   PackageableElementExplicitReference,
   GenerationTreeNode,
@@ -72,7 +72,7 @@ import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/graphModifier/DSLGeneration_GraphModifierHelper.js';
+} from '../../../stores/graphModifier/DSL_Generation_GraphModifierHelper.js';
 
 const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 
@@ -235,7 +235,7 @@ const ModelGenerationSpecifications = observer(
       .flatMap(
         (plugin) =>
           (
-            plugin as DSLGeneration_PureGraphManagerPlugin_Extension
+            plugin as DSL_Generation_PureGraphManagerPlugin_Extension
           ).getExtraModelGenerationElementGetters?.() ?? [],
       )
       .flatMap((getter) => getter(editorStore.graphManagerState.graph));
@@ -245,7 +245,7 @@ const ModelGenerationSpecifications = observer(
         .flatMap(
           (plugin) =>
             (
-              plugin as DSLGeneration_LegendStudioApplicationPlugin_Extension
+              plugin as DSL_Generation_LegendStudioApplicationPlugin_Extension
             ).getExtraModelGenerationSpecificationElementDnDTypes?.() ?? [],
         );
     const modelGenerationElementOptions =

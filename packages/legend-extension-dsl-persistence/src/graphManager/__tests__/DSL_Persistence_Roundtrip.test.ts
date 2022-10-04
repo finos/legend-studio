@@ -18,7 +18,7 @@ import { test } from '@jest/globals';
 import { DSL_Persistence_GraphManagerPreset } from '../../DSL_Persistence_Extension.js';
 import { TEST_DATA__roundtrip } from './TEST_DATA__DSL_Persistence_Roundtrip.js';
 import {
-  DSLExternalFormat_GraphPreset,
+  DSL_ExternalFormat_GraphPreset,
   TEST__checkBuildingElementsRoundtrip,
   TEST__GraphManagerPluginManager,
 } from '@finos/legend-graph';
@@ -29,7 +29,7 @@ const pluginManager = new TEST__GraphManagerPluginManager();
 pluginManager
   .usePresets([
     new DSL_Persistence_GraphManagerPreset(),
-    new DSLExternalFormat_GraphPreset(),
+    new DSL_ExternalFormat_GraphPreset(),
   ])
   .install();
 

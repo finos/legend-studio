@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-persistence': major
 ---
 
-Rename files prefix from `DSLPersistence` to `DSL_Persistence`.
+**BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_Persistence` instead of `DSLPersistence`

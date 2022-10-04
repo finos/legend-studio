@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-persistence-cloud': major
 ---
 
-Rename files prefix from `DSLPersistenceCloud` to `DSL_PersistenceCloud`.
+**BREAKING CHANGE:** Renamed plugins and presets to use the prefix `DSL_PersistenceCloud` instead of `DSLPersistenceCloud`
