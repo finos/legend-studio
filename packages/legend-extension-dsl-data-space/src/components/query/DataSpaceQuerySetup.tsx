@@ -33,9 +33,9 @@ import { debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { DataSpaceQuerySetupState } from '../../stores/query/DSL_DataSpace_DataSpaceQuerySetupState.js';
-import { DataSpaceViewer } from '../DSL_DataSpace_DataSpaceViewer.js';
-import type { DataSpaceInfo } from '../../stores/query/DSL_DataSpace_DataSpaceInfo.js';
+import type { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
+import { DataSpaceViewer } from '../DataSpaceViewer.js';
+import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 
 type DataSpaceOption = { label: string; value: DataSpaceInfo };
 const buildDataSpaceOption = (value: DataSpaceInfo): DataSpaceOption => ({

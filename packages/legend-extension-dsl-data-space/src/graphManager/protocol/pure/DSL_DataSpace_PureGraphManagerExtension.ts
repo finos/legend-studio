@@ -20,7 +20,7 @@ import {
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
-import type { DataSpaceAnalysisResult } from '../../action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAnalysis.js';
 
 export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(

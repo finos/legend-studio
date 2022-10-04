@@ -28,6 +28,7 @@ import {
   type V1_ValueSpecification,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  type Type,
   V1_buildBaseSimpleFunctionExpression,
   V1_buildGenericFunctionExpression,
   extractElementNameFromPath,
@@ -568,3 +569,10 @@ export const V1_buildGroupByFunctionExpression = (
   );
   return [expression, processedParams];
 };
+
+export const V1_buildSubTypePropertyExpressionTypeInference = (
+  inferredVariable: SimpleFunctionExpression,
+): Type | undefined =>
+  inferredVariable.parametersValues.filter(
+    (param) => param instanceof InstanceValue,
+  )[0]?.genericType?.value.rawType;

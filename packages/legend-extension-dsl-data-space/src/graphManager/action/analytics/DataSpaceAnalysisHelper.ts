@@ -17,7 +17,7 @@
 import { getExpectedArtifactGenerationExtensionOutputPath } from '@finos/legend-graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { PlainObject } from '@finos/legend-shared';
-import type { DataSpaceAnalysisResult } from './DSL_DataSpace_DataSpaceAnalysis.js';
+import type { DataSpaceAnalysisResult } from './DataSpaceAnalysis.js';
 
 const DATASPACE_ANALYTICS_FILE_NAME = 'AnalyticsResult.json';
 const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';

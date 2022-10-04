@@ -29,7 +29,7 @@ import { action, computed, makeObservable, observable } from 'mobx';
 import type {
   DataSpaceAnalysisResult,
   DataSpaceExecutionContextAnalysisResult,
-} from '../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+} from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   MODELS_OVERVIEW = 'MODELS_OVERVIEW',

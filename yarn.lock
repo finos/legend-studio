@@ -2279,7 +2279,6 @@ __metadata:
     cross-env: 7.0.3
     date-fns: 2.29.3
     eslint: 8.24.0
-    fuse.js: 6.6.2
     history: 5.3.0
     jest: 29.1.2
     mobx: 6.6.2
@@ -2324,6 +2323,7 @@ __metadata:
     clsx: 1.2.1
     cross-env: 7.0.3
     eslint: 8.24.0
+    fuse.js: 6.6.2
     jest: 29.1.2
     mobx: 6.6.2
     mobx-react-lite: 3.4.0

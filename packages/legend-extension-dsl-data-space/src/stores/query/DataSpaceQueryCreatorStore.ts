@@ -39,8 +39,8 @@ import {
   QUERY_PROFILE_TAG_DATA_SPACE,
 } from '../../DSL_DataSpace_Const.js';
 import { getDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
-import { DataSpaceQueryBuilderState } from './DSL_DataSpace_DataSpaceQueryBuilderState.js';
-import type { DataSpaceInfo } from './DSL_DataSpace_DataSpaceInfo.js';
+import { DataSpaceQueryBuilderState } from './DataSpaceQueryBuilderState.js';
+import type { DataSpaceInfo } from './DataSpaceInfo.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';

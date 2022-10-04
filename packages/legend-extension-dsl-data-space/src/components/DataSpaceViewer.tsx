@@ -48,8 +48,8 @@ import {
 import {
   type DataSpaceViewerState,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
-} from '../stores/DSL_DataSpace_DataSpaceViewerState.js';
-import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+} from '../stores/DataSpaceViewerState.js';
+import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
 interface DataSpaceViewerActivityConfig {

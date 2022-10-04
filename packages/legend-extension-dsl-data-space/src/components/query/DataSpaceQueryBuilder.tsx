@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
-import type { DataSpaceQueryBuilderState } from '../../stores/query/DSL_DataSpace_DataSpaceQueryBuilderState.js';
+import type { DataSpaceQueryBuilderState } from '../../stores/query/DataSpaceQueryBuilderState.js';
 import {
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
@@ -42,7 +42,7 @@ import {
   PackageableElementExplicitReference,
   RuntimePointer,
 } from '@finos/legend-graph';
-import type { DataSpaceInfo } from '../../stores/query/DSL_DataSpace_DataSpaceInfo.js';
+import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { useEffect, useMemo, useState } from 'react';
 import { debounce, guaranteeType } from '@finos/legend-shared';

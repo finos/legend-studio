@@ -21,7 +21,7 @@ import {
   StudioTextInputEditor,
   useEditorStore,
 } from '@finos/legend-application-studio';
-import { TextEditorState } from '../../stores/studio/DSL_Text_TextEditorState.js';
+import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
   OpenPreviewIcon,
   LockIcon,

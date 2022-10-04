@@ -32,7 +32,7 @@ import {
   DIAGRAM_EDITOR_SIDE_PANEL_TAB,
   DiagramEditorClassViewEditorSidePanelState,
   DiagramEditorState,
-} from '../../stores/studio/DSL_Diagram_DiagramEditorState.js';
+} from '../../stores/studio/DiagramEditorState.js';
 import {
   type ResizablePanelHandlerProps,
   ContextMenu,

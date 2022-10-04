@@ -25,7 +25,7 @@ import {
   useLegendQueryApplicationStore,
 } from '@finos/legend-application-query';
 import { useParams } from 'react-router';
-import { DataSpaceQueryCreatorStore } from '../../stores/query/DSL_DataSpace_DataSpaceQueryCreatorStore.js';
+import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
   type DataSpaceQueryCreatorPathParams,
   type DataSpaceQueryEditorQueryParams,

@@ -6,7 +6,7 @@
     "rootDir": "src",
     "jsx": "react-jsxdev"
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json", "src/**/*.cts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
   "references": [
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph" },
