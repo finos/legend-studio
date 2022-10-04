@@ -27,6 +27,7 @@ export class V1_PersistenceTest extends V1_AtomicTest implements Hashable {
     return hashArray([
       PERSISTENCE_HASH_STRUCTURE.PERSISTENCE_TEST,
       this.id,
+      this.isTestDataFromServiceOutput,
       hashArray(this.testBatches),
     ]);
   }
