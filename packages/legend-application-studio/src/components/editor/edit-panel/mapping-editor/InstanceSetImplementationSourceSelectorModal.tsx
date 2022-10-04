@@ -68,7 +68,7 @@ export interface MappingElementSourceSelectOption {
   value: unknown;
 }
 
-export const getMappingSourcePackageableElementOptionFormatter = (props: {
+const getMappingSourcePackageableElementOptionFormatter = (props: {
   darkMode?: boolean;
 }): ((option: {
   value: MappingElementSourceSelectOption;
@@ -86,7 +86,17 @@ export const getMappingSourcePackageableElementOptionFormatter = (props: {
         buildElementOption(tableOwner.value),
       );
     } else {
-      return <> </>;
+      const className = props.darkMode
+        ? 'packageable-element-format-option-label--dark'
+        : 'packageable-element-format-option-label';
+      return (
+        <div className={className}>
+          <div className="packageable-element-format-option-label-type"></div>
+          <div className={`${className}__name`}>
+            {(option as MappingElementSourceSelectOption).label}
+          </div>
+        </div>
+      );
     }
   };
 
