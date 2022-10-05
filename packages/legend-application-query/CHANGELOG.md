@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 8.1.0
+
+### Minor Changes
+
+- [#1509](https://github.com/finos/legend-studio/pull/1509) [`8cbd17f0`](https://github.com/finos/legend-studio/commit/8cbd17f0d6b4854525adcdbb974d0c7a0fe4a564) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Use data space analytics result cached in `Depot` server whenever possible to speed up loading of data spaces
+
 ## 8.0.0
 
 ### Major Changes

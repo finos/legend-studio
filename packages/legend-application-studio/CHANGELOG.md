@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 18.0.0
+
+### Major Changes
+
+- [#1502](https://github.com/finos/legend-studio/pull/1502) [`81757c5c`](https://github.com/finos/legend-studio/commit/81757c5c3ff514adcc532d118ec58e830938109b) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Renamed `ConnectionEditor_BooleanEditor` to `PanelFormBooleanEditor`, `PanelTextEditor` to `PanelFormTextEditor`
+
+### Minor Changes
+
+- [#1508](https://github.com/finos/legend-studio/pull/1508) [`10b9bc4e`](https://github.com/finos/legend-studio/commit/10b9bc4e617e1f48dfad7571523394b9103dc7f6) ([@chloeminkyung](https://github.com/chloeminkyung)) - Add `TestBatch` to Testable model and incorporate into GlobalTestRunner.
+
+- [#1506](https://github.com/finos/legend-studio/pull/1506) [`6b299d55`](https://github.com/finos/legend-studio/commit/6b299d55c603521ffdd61d9bd17d6fa58589beb7) ([@akphi](https://github.com/akphi)) - Add a new screen to support productionizing `query` into `service`.
+
 ## 17.0.0
 
 ### Major Changes
