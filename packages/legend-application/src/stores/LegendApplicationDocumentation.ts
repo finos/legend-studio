@@ -16,4 +16,5 @@
 
 export enum LEGEND_APPLICATION_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX = 'question.how-to-use-advanced-search-syntax',
+  QUESTION_WHAT_IS_CHANGE_PLATFORM_VERSION = 'question.what-is-platform-version',
 }

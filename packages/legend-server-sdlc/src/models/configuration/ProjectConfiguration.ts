@@ -18,7 +18,6 @@ import {
   list,
   createModelSchema,
   primitive,
-  custom,
   serialize,
   deserialize,
 } from 'serializr';
@@ -34,9 +33,10 @@ import {
   usingModelSchema,
   serializeArray,
   deserializeArray,
+  optionalCustom,
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
-import { ProjectServerPlatform } from './ProjectServerPlatform.js';
+import { PlatformConfiguration } from './PlatformConfiguration.js';
 
 const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
 
@@ -45,7 +45,7 @@ export class ProjectConfiguration implements Hashable {
   groupId!: string;
   artifactId!: string;
   projectStructureVersion!: ProjectStructureVersion;
-  platformConfigurations: ProjectServerPlatform[] | null = null;
+  platformConfigurations?: PlatformConfiguration[] | undefined;
   projectDependencies: ProjectDependency[] = [];
 
   constructor() {
@@ -56,13 +56,13 @@ export class ProjectConfiguration implements Hashable {
       platformConfigurations: observable,
       projectDependencies: observable,
       setGroupId: action,
-      changePlatformVersion: action,
       setPlatformConfigurations: action,
       setArtifactId: action,
       deleteProjectDependency: action,
       addProjectDependency: action,
       dependencyKey: computed,
       hashCode: computed,
+      hasEmptyPlatformVersion: computed,
     });
   }
 
@@ -70,12 +70,12 @@ export class ProjectConfiguration implements Hashable {
     createModelSchema(ProjectConfiguration, {
       artifactId: primitive(),
       groupId: primitive(),
-      platformConfigurations: custom(
+      platformConfigurations: optionalCustom(
         (values) =>
           serializeArray(
             values,
             (value) =>
-              serialize(ProjectServerPlatform.serialization.schema, value),
+              serialize(PlatformConfiguration.serialization.schema, value),
             {
               skipIfEmpty: true,
               INTERNAL__forceReturnEmptyInTest: true,
@@ -84,7 +84,7 @@ export class ProjectConfiguration implements Hashable {
         (values) =>
           deserializeArray(
             values,
-            (v) => deserialize(ProjectServerPlatform.serialization.schema, v),
+            (v) => deserialize(PlatformConfiguration.serialization.schema, v),
             {
               skipIfEmpty: true,
             },
@@ -100,31 +100,27 @@ export class ProjectConfiguration implements Hashable {
     }),
   );
 
-  changePlatformVersion(platform: ProjectServerPlatform, val: string): void {
-    const newPlatformConfigs = this.platformConfigurations?.find(
-      (p) => p === platform,
-    );
-    const ind = this.platformConfigurations?.findIndex((p) => p === platform);
-    if (
-      newPlatformConfigs &&
-      this.platformConfigurations &&
-      ind !== undefined
-    ) {
-      newPlatformConfigs.platformVersion = val;
-      this.platformConfigurations[ind] = newPlatformConfigs;
-    }
-  }
-
   setGroupId(val: string): void {
     this.groupId = val;
   }
 
-  setPlatformConfigurations(val: ProjectServerPlatform[] | null): void {
+  setPlatformConfigurations(val: PlatformConfiguration[] | undefined): void {
     this.platformConfigurations = val;
   }
 
   setArtifactId(val: string): void {
     this.artifactId = val;
+  }
+
+  get hasEmptyPlatformVersion(): boolean {
+    if (this.platformConfigurations) {
+      for (const platform of this.platformConfigurations) {
+        if (!platform.version) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   deleteProjectDependency(val: ProjectDependency): void {
@@ -143,7 +139,7 @@ export class ProjectConfiguration implements Hashable {
   }
 
   get hashCode(): string {
-    if (this.platformConfigurations !== null) {
+    if (this.platformConfigurations !== undefined) {
       return hashArray([
         PROJECT_CONFIGURATION_HASH_STRUCTURE,
         this.groupId,

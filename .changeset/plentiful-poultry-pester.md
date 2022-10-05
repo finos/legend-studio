@@ -2,4 +2,4 @@
 '@finos/legend-art': patch
 ---
 
-add panel component for toogle and text editor with validation
+Support displaying (validation) error message with `PanelFormTextEditor`

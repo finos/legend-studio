@@ -36,7 +36,7 @@ import {
   type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
-  PlatformConfigurationUpdate,
+  UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
@@ -124,7 +124,6 @@ export class ProjectConfigurationEditorState extends EditorState {
   dependencyInfoModalType: DEPENDENCY_INFO_TYPE | undefined;
   isUpdatingConfiguration = false;
   isQueryingProjects = false;
-  overridesDefaultPlatform = false;
   associatedProjectsAndVersionsFetched = false;
   isFetchingAssociatedProjectsAndVersions = false;
 
@@ -145,10 +144,8 @@ export class ProjectConfigurationEditorState extends EditorState {
       latestProjectStructureVersion: observable,
       dependencyInfo: observable,
       dependencyInfoModalType: observable,
-      overridesDefaultPlatform: observable,
       originalConfig: computed,
       setOriginalProjectConfiguration: action,
-      setOverrideDefaultPlatform: action,
       setProjectConfiguration: action,
       setDependencyInfoModal: action,
       setSelectedTab: action,
@@ -181,25 +178,6 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   setDependencyInfoModal(type: DEPENDENCY_INFO_TYPE | undefined): void {
     this.dependencyInfoModalType = type;
-  }
-
-  setOverrideDefaultPlatform(value: boolean): void {
-    this.overridesDefaultPlatform = value;
-
-    if (this.projectConfiguration) {
-      if (value === false) {
-        this.projectConfiguration.setPlatformConfigurations(null);
-      } else {
-        if (
-          !this.projectConfiguration.platformConfigurations &&
-          this.editorStore.sdlcServerClient.platforms
-        ) {
-          this.projectConfiguration.setPlatformConfigurations(
-            this.editorStore.sdlcServerClient.platforms,
-          );
-        }
-      }
-    }
   }
 
   get headerName(): string {
@@ -383,12 +361,9 @@ export class ProjectConfigurationEditorState extends EditorState {
 
       if (this.currentProjectConfiguration.platformConfigurations) {
         updateProjectConfigurationCommand.platformConfigurations =
-          new PlatformConfigurationUpdate(
+          new UpdatePlatformConfigurationsCommand(
             this.currentProjectConfiguration.platformConfigurations,
           );
-      } else {
-        updateProjectConfigurationCommand.platformConfigurations =
-          new PlatformConfigurationUpdate(null);
       }
 
       updateProjectConfigurationCommand.projectDependenciesToAdd =

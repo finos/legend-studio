@@ -237,7 +237,7 @@
   }
 
   &__section {
-    padding: 0 1rem;
+    padding: 1rem;
   }
 
   &__section__header__label {
@@ -272,7 +272,7 @@
     width: 100%;
     min-width: 5rem;
     max-width: 45rem;
-    margin: 0 0 2rem;
+    margin: 0;
     background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
     padding: 1rem;
@@ -387,12 +387,18 @@
   }
 
   &__section__toggler__prompt {
+    @include flexCenter;
+
     word-break: break-word;
     margin-left: 0.8rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
     user-select: none;
     cursor: pointer;
+
+    svg {
+      margin-left: 0.5rem;
+    }
   }
 
   &__section__dropdown {
@@ -531,6 +537,14 @@
     &[disabled] {
       cursor: not-allowed;
     }
+  }
+
+  &__hint {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    padding: 0 0.5rem;
+    color: var(--color-light-grey-300);
   }
 
   &__section__list__item__edit-btn,
