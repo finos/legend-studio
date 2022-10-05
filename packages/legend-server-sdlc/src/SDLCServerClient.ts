@@ -52,7 +52,7 @@ import type {
 } from './models/review/ReviewCommands.js';
 import type { WorkflowJob } from './models/workflow/WorkflowJob.js';
 import type { SDLCServerFeaturesConfiguration } from './models/server/SDLCServerFeaturesConfiguration.js';
-import type { ProjectServerPlatform } from './models/configuration/ProjectServerPlatform.js';
+import type { Platform } from './models/configuration/Platform.js';
 
 enum SDLC_ACTIVITY_TRACE {
   IMPORT_PROJECT = 'import project',
@@ -78,7 +78,7 @@ export interface SDLCServerClientConfig {
 export class SDLCServerClient extends AbstractServerClient {
   currentUser?: User;
   private _features: SDLCServerFeaturesConfiguration | undefined;
-  private _platforms?: ProjectServerPlatform[] | undefined;
+  private _platformDependencyConfiguration?: Platform[] | undefined;
 
   private env: string;
 
@@ -108,9 +108,9 @@ export class SDLCServerClient extends AbstractServerClient {
     );
   }
 
-  get platforms(): ProjectServerPlatform[] | undefined {
+  get platforms(): Platform[] | undefined {
     return guaranteeNonNullable(
-      this._platforms,
+      this._platformDependencyConfiguration,
       `SDLC server client platforms configuration has not been fetched`,
     );
   }
@@ -134,7 +134,9 @@ export class SDLCServerClient extends AbstractServerClient {
     this._features = await this.get(`${this._server()}/features`);
   };
   fetchServerPlatforms = async (): Promise<void> => {
-    this._platforms = await this.get(`${this._server()}/platforms`);
+    this._platformDependencyConfiguration = await this.get(
+      `${this._server()}/platforms`,
+    );
   };
 
   // ------------------------------------------- Authorization -------------------------------------------

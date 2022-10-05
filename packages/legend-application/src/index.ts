@@ -41,6 +41,7 @@ export * from './stores/LegendApplicationPlugin.js';
 
 export * from './components/shared/TextSearchAdvancedConfigMenu.js';
 export * from './stores/shared/TextSearchAdvancedConfigState.js';
+export * from './stores/LegendApplicationDocumentation.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
 export * from './stores/WebApplicationRouter.js';

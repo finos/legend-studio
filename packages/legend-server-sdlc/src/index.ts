@@ -45,7 +45,9 @@ export * from './models/configuration/ProjectDependency.js';
 export * from './models/configuration/ProjectConfiguration.js';
 export * from './models/configuration/ProjectStructureVersion.js';
 export * from './models/configuration/ProjectConfigurationCommands.js';
-export * from './models/configuration/ProjectServerPlatform.js';
+export * from './models/configuration/Platform.js';
+export * from './models/configuration/UpdatePlatformConfigurationsCommands.js';
+export * from './models/configuration/PlatformConfiguration.js';
 
 export * from './models/User.js';
 

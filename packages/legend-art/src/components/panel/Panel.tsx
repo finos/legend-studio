@@ -174,52 +174,18 @@ export const PanelFormTextEditor = observer(
   (props: {
     name: string;
     description?: string;
+    preserveCasing?: boolean;
     value: string | undefined;
     isReadOnly: boolean;
-    update: (value: string | undefined) => void;
-  }) => {
-    const { value, name, description, isReadOnly, update } = props;
-    const displayValue = value ?? '';
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const stringValue = event.target.value;
-      const updatedValue = stringValue ? stringValue : undefined;
-      update(updatedValue);
-    };
-
-    return (
-      <>
-        <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          {description}
-        </div>
-        <input
-          className="panel__content__form__section__input"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={displayValue}
-          onChange={changeValue}
-        />
-      </>
-    );
-  },
-);
-
-export const PanelFormTextEditorWithValidation = observer(
-  (props: {
-    name: string;
-    description?: string;
-    value: string | undefined;
-    isReadOnly: boolean;
-    validationErrorMessage?: string | undefined;
+    errorMessage?: string | undefined;
     update: (value: string | undefined) => void;
   }) => {
     const {
-      validationErrorMessage,
+      errorMessage,
       value,
       name,
       description,
+      preserveCasing,
       isReadOnly,
       update,
     } = props;
@@ -233,7 +199,7 @@ export const PanelFormTextEditorWithValidation = observer(
     return (
       <>
         <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
+          {!preserveCasing ? capitalize(name) : name}
         </div>
         <div className="panel__content__form__section__header__prompt">
           {description}
@@ -241,21 +207,76 @@ export const PanelFormTextEditorWithValidation = observer(
         <div className="panel__content__form__section__input--with-validation">
           <input
             className={clsx('panel__content__form__section__input', {
-              'input--with-validation--error': Boolean(validationErrorMessage),
+              'input--with-validation--error': Boolean(errorMessage),
             })}
             spellCheck={false}
             disabled={isReadOnly}
             value={displayValue}
             onChange={changeValue}
           />
-          {validationErrorMessage && (
+          {errorMessage && (
             <div
               className="panel__content__form__section__input--with-validation__error"
-              title={validationErrorMessage}
+              title={errorMessage}
             >
               <TimesCircleIcon className="panel__content__form__section__input--with-validation__error__indicator" />
             </div>
           )}
+        </div>
+      </>
+    );
+  },
+);
+
+export const PanelFormTextEditorWithErrorLabel = observer(
+  (props: {
+    name: string;
+    description?: string;
+    preserveCasing?: boolean;
+    value: string | undefined;
+    isReadOnly: boolean;
+    errorMessage?: string | undefined;
+    update: (value: string | undefined) => void;
+  }) => {
+    const {
+      errorMessage,
+      value,
+      name,
+      description,
+      preserveCasing,
+      isReadOnly,
+      update,
+    } = props;
+    const displayValue = value ?? '';
+    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+      const stringValue = event.target.value;
+      const updatedValue = stringValue ? stringValue : undefined;
+      update(updatedValue);
+    };
+
+    return (
+      <>
+        <div className="panel__content__form__section__header__label">
+          {!preserveCasing ? capitalize(name) : name}
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          {description}
+        </div>
+        <div className="input-group">
+          <div className="panel__content__form__section__input--with-validation">
+            <input
+              className={clsx(
+                'input input--dark input-group__input panel__content__form__section__input',
+              )}
+              spellCheck={false}
+              disabled={isReadOnly}
+              value={displayValue}
+              onChange={changeValue}
+            />
+            {errorMessage && (
+              <div className="input-group__error-message">{errorMessage}</div>
+            )}
+          </div>
         </div>
       </>
     );
@@ -271,10 +292,11 @@ export const PanelFormBooleanEditor = observer(
     name: string;
     description?: string;
     value: boolean | undefined;
+    children?: React.ReactNode;
     isReadOnly: boolean;
     update: (value: boolean | undefined) => void;
   }) => {
-    const { value, name, description, isReadOnly, update } = props;
+    const { value, name, description, children, isReadOnly, update } = props;
     const toggle = (): void => {
       if (!isReadOnly) {
         update(!value);
@@ -302,7 +324,7 @@ export const PanelFormBooleanEditor = observer(
             {value ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
-            {description}
+            {description} {children}
           </div>
         </div>
       </>

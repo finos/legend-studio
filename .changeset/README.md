@@ -6,3 +6,13 @@ find the full documentation for it [in our repository](https://github.com/change
 
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/master/docs/common-questions.md)
+
+---
+
+svp test:
+
+override default platform dependencies' versions i at end of toggle
+
+This is a feature that mainly serves as a way for users to change the configuration of their project and switch the platform versions that their project depends on. This is really only for specific cases where say something in the current version is deprecated and the developer would like to revert back to a previous version temporarily. It provides an escape hatch in a way in case developers would like to experiment, but should only be used with caution since we will not be able to determine whether the versions are valid or not.
+
+This

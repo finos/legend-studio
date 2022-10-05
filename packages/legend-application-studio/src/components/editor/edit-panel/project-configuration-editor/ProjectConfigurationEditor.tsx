@@ -44,14 +44,18 @@ import {
   Panel,
   PanelForm,
   PanelSection,
-  PanelFormTextEditorWithValidation,
   PanelFormTextEditor,
   PanelFormBooleanEditor,
+  InfoCircleIcon,
+  PanelFormTextEditorWithErrorLabel,
+  PanelList,
+  PanelListItem,
 } from '@finos/legend-art';
 import { action, flowResult } from 'mobx';
 import {
+  type Platform,
+  PlatformConfiguration,
   ProjectDependency,
-  type ProjectServerPlatform,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -59,6 +63,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   EDITOR_LANGUAGE,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -428,30 +433,44 @@ const ProjectDependencyEditor = observer(
   },
 );
 
-const PlatformBasicEditor = observer(
+const PlatformConfigurationEditor = observer(
   (props: {
-    platform: ProjectServerPlatform;
+    platform: PlatformConfiguration;
     projectConfig: ProjectConfiguration;
     isReadOnly: boolean;
   }) => {
     const { platform, projectConfig, isReadOnly } = props;
 
     const changeVersion = action((val: string | undefined): void => {
-      projectConfig.changePlatformVersion(platform, val ? val : '');
+      const newPlatformConfigs = projectConfig.platformConfigurations?.find(
+        (p) => p === platform,
+      );
+      const ind = projectConfig.platformConfigurations?.findIndex(
+        (p) => p === platform,
+      );
+      if (
+        newPlatformConfigs &&
+        projectConfig.platformConfigurations &&
+        ind !== undefined
+      ) {
+        newPlatformConfigs.version = val;
+        projectConfig.platformConfigurations[ind] = newPlatformConfigs;
+      }
     });
 
     const isNotValidPlatformVersion = action(
-      (val: string): boolean => val === '',
+      (val: string | undefined): boolean => val === '' || !val,
     );
 
     return (
-      <PanelFormTextEditorWithValidation
+      <PanelFormTextEditorWithErrorLabel
         isReadOnly={isReadOnly}
-        value={platform.platformVersion}
+        value={platform.version}
         name={platform.name}
+        preserveCasing={true}
         update={changeVersion}
-        validationErrorMessage={
-          isNotValidPlatformVersion(platform.platformVersion)
+        errorMessage={
+          isNotValidPlatformVersion(platform.version)
             ? 'Version cannot be empty'
             : undefined
         }
@@ -464,27 +483,36 @@ const ProjectPlatformVersionEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
     const { projectConfig, isReadOnly } = props;
     const editorStore = useEditorStore();
+    const applicationStore = useApplicationStore();
 
     const platformConfigurations = projectConfig.platformConfigurations;
-
-    if (platformConfigurations) {
-      editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
-        true,
-      );
-    }
-
-    const isEditingPlatformConfigs =
-      editorStore.projectConfigurationEditorState.overridesDefaultPlatform;
-
     const defaultPlatforms = editorStore.sdlcServerClient.platforms;
 
-    const overridePlatforms = (): void => {
-      if (isEditingPlatformConfigs !== true) {
+    const convertPlatformtoPlatformConfiguration = (
+      platforms: Platform[] | undefined,
+    ): PlatformConfiguration[] | undefined => {
+      if (platforms) {
+        return platforms.map(
+          (platform) =>
+            new PlatformConfiguration(platform.name, platform.platformVersion),
+        );
+      } else {
+        return undefined;
+      }
+    };
+
+    const seeDocumentation = (): void => {
+      applicationStore.assistantService.openDocumentationEntry(
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHAT_IS_CHANGE_PLATFORM_VERSION,
+      );
+    };
+
+    const toggleOverridePlatformConfigurations = (): void => {
+      if (!platformConfigurations) {
         editorStore.setActionAlertInfo({
           message:
             'This is an advanced configuration option meant for users who already have in mind the platform version they would like to input.',
-          prompt:
-            'Do you still want to proceed to override default project configurations?',
+          prompt: 'Do you still want to proceed?',
           type: ActionAlertType.CAUTION,
           onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
           onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
@@ -493,8 +521,8 @@ const ProjectPlatformVersionEditor = observer(
               label: 'Proceed',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
-                editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
-                  !isEditingPlatformConfigs,
+                projectConfig.setPlatformConfigurations(
+                  convertPlatformtoPlatformConfiguration(defaultPlatforms),
                 );
               },
             },
@@ -506,38 +534,49 @@ const ProjectPlatformVersionEditor = observer(
           ],
         });
       } else {
-        editorStore.projectConfigurationEditorState.setOverrideDefaultPlatform(
-          !isEditingPlatformConfigs,
-        );
+        projectConfig.setPlatformConfigurations(undefined);
       }
     };
 
     return (
       <Panel>
         <PanelForm>
+          <PanelList>
+            <PanelListItem>
+              <PanelFormBooleanEditor
+                value={Boolean(platformConfigurations)}
+                name=""
+                description="Override default platform dependencies' versions"
+                isReadOnly={isReadOnly}
+                update={toggleOverridePlatformConfigurations}
+              ></PanelFormBooleanEditor>
+              <button
+                className="panel__content__form__hint"
+                tabIndex={-1}
+                onClick={seeDocumentation}
+                title="Click to see more details on platform versions"
+              >
+                <InfoCircleIcon />
+              </button>
+            </PanelListItem>
+          </PanelList>
           <PanelSection>
-            <PanelFormBooleanEditor
-              value={isEditingPlatformConfigs}
-              name=""
-              description="Override default platform configurations"
-              isReadOnly={isReadOnly}
-              update={overridePlatforms}
-            />
-
             {defaultPlatforms &&
-              !isEditingPlatformConfigs &&
-              defaultPlatforms.map((p) => (
-                <PlatformBasicEditor
-                  key={p.name}
-                  platform={p}
-                  projectConfig={projectConfig}
-                  isReadOnly={true}
-                />
-              ))}
-            {isEditingPlatformConfigs && (
+              !platformConfigurations &&
+              convertPlatformtoPlatformConfiguration(defaultPlatforms)?.map(
+                (p) => (
+                  <PlatformConfigurationEditor
+                    key={p.name}
+                    platform={p}
+                    projectConfig={projectConfig}
+                    isReadOnly={true}
+                  />
+                ),
+              )}
+            {platformConfigurations && (
               <div>
-                {platformConfigurations?.map((p) => (
-                  <PlatformBasicEditor
+                {platformConfigurations.map((p) => (
+                  <PlatformConfigurationEditor
                     key={p.name}
                     platform={p}
                     projectConfig={projectConfig}
@@ -724,6 +763,7 @@ export const ProjectConfigurationEditor = observer(() => {
             disabled={
               isReadOnly ||
               configState.isUpdatingConfiguration ||
+              currentProjectConfiguration.hasEmptyPlatformVersion ||
               currentProjectConfiguration.hashCode ===
                 configState.originalConfig.hashCode
             }
