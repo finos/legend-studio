@@ -25,9 +25,9 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
   yarn dev
 ```
 
-After setting up, visit http://localhost:8080/studio and the application should be up :tada:
+After setting up, visit http://localhost:9000/studio and the application should be up :tada:
 
-> If you get `Unauthorized` error, visit `SDLC` server at http://localhost:7070/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
+> If you get `Unauthorized` error, visit `SDLC` server at http://localhost:6100/api/auth/authorize in your browser, you will get redirected to the Gitlab login page or a Gitlab page asking you to authorize Legend OAuth application. After you completing these steps, you will be redirected back to SDLC. Now refresh Studio and the problem should be gone.
 
 ## Documentation
 
