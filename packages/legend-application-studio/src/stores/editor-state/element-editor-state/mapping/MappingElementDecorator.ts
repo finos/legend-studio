@@ -208,14 +208,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as PurePropertyMapping]
+          ? existingPropertyMappings
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -226,14 +220,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               ),
             ];
       } else if (propertyType instanceof Enumeration) {
-        // only allow one property mapping per enumeration property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per enumeration type property',
-        );
         const enumerationPropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as PurePropertyMapping]
+          ? existingPropertyMappings
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -323,10 +311,15 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     pureInstanceSetImpl_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              !isStubbed_RawLambda(propertyMapping.transform),
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -355,14 +348,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
+          ? existingPropertyMappings
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -442,10 +429,16 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     mapping_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              propertyMapping instanceof FlatDataPropertyMapping &&
+              !isStubbed_RawLambda(propertyMapping.transform),
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -486,15 +479,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          return [existingPropertyMappings[0] as PropertyMapping];
+          return existingPropertyMappings;
         }
         const newPropertyMapping = new RelationalPropertyMapping(
           setImplementation,
@@ -506,16 +493,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           stub_RawRelationalOperationElement();
         return [newPropertyMapping];
       } else if (propertyType instanceof Enumeration) {
-        // only allow one property mapping per enumeration property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per enumeration type property',
-        );
         let ePropertyMapping: PropertyMapping[] = [];
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          ePropertyMapping = [existingPropertyMappings[0] as PropertyMapping];
+          ePropertyMapping = existingPropertyMappings;
         } else {
           const newPropertyMapping = new RelationalPropertyMapping(
             setImplementation,
@@ -616,10 +597,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     mapping_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              propertyMapping instanceof RelationalPropertyMapping &&
+              !isStubbed_RawRelationalOperationElement(
+                propertyMapping.relationalOperation,
+              ),
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );

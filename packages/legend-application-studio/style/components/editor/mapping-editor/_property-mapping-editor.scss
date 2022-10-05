@@ -42,9 +42,25 @@
 
     height: 2.8rem;
     background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
     padding: 0 1rem;
     border-radius: 0.2rem;
+
+    &__label {
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
+      color: var(--color-light-grey-100);
+    }
+  }
+
+  &__name--with-validation {
+    background: var(--color-red-500);
+
+    &__indicator {
+      @include flexVCenter;
+
+      margin-left: 0.5rem;
+      color: var(--color-red-180);
+    }
   }
 
   &__type {
@@ -94,6 +110,28 @@
   &__type__visit-btn svg {
     font-size: 2rem;
     color: var(--color-light-grey-100);
+  }
+
+  &__entries {
+    &__entry {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+
+      &__remove-btn {
+        flex: 2.8rem 0 0;
+        height: 2.8rem;
+        color: var(--color-light-grey-0);
+        background: var(--color-dark-grey-250);
+        border-left: 0.1rem solid var(--color-dark-shade-300);
+        margin-bottom: -0.5rem;
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__entry__container {
+    width: 100%;
   }
 
   &__entry {
