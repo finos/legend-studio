@@ -83,7 +83,7 @@ export const DataSpaceQueryCreator = observer(() => {
     params[DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
   const classPath = getQueryParameters<DataSpaceQueryEditorQueryParams>(
-    applicationStore.navigator.getCurrentLocation(),
+    applicationStore.navigator.getCurrentAddress(),
     true,
   )[DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH];
 

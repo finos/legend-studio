@@ -87,15 +87,13 @@ export const ActivityBarMenu: React.FC = () => {
   // documentation
   const goToDocumentation = (): void => {
     if (appDocUrl) {
-      applicationStore.navigator.openNewWindow(appDocUrl);
+      applicationStore.navigator.visitAddress(appDocUrl);
     }
   };
   // go to setup page
   const goToSetupPage = (): void =>
-    applicationStore.navigator.openNewWindow(
-      applicationStore.navigator.generateLocation(
-        generateSetupRoute(undefined),
-      ),
+    applicationStore.navigator.visitAddress(
+      applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
     );
   // help
   const openHelp = (): void => {

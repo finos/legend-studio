@@ -115,10 +115,8 @@ const TaxonomyExplorerSideBar = observer(() => {
     (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
       explorerStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.jumpTo(
-        applicationStore.navigator.generateLocation(
-          generateExploreTaxonomyTreeRoute(option.key),
-        ),
+      applicationStore.navigator.reloadToLocation(
+        generateExploreTaxonomyTreeRoute(option.key),
       );
     };
 
@@ -412,7 +410,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           applicationStore.notifyWarning(
             `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
           );
-          applicationStore.navigator.goTo(
+          applicationStore.navigator.goToLocation(
             generateExploreTaxonomyTreeRoute(
               applicationStore.config.defaultTaxonomyTreeOption.key,
             ),

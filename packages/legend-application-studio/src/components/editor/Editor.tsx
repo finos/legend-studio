@@ -159,7 +159,7 @@ export const Editor = withEditorStore(
     const retryBlockedLocation = useCallback(
       (allowedNavigation: boolean): void => {
         if (allowedNavigation && blockedLocation) {
-          applicationStore.navigator.goTo(blockedLocation.pathname);
+          applicationStore.navigator.goToLocation(blockedLocation.pathname);
         }
       },
       [blockedLocation, applicationStore],

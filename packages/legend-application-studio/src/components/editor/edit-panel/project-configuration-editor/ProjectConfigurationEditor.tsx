@@ -350,7 +350,7 @@ const ProjectDependencyEditor = observer(
           projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
             ? SNAPSHOT_VERSION_ALIAS
             : projectDependency.versionId;
-        applicationStore.navigator.openNewWindow(
+        applicationStore.navigator.visitAddress(
           `${
             applicationStore.config.baseUrl
           }view/archive/${generateGAVCoordinates(
@@ -365,8 +365,8 @@ const ProjectDependencyEditor = observer(
     // In the future, the studio instance may be part of the project data
     const openProject = (): void => {
       if (projectDependencyData) {
-        applicationStore.navigator.openNewWindow(
-          applicationStore.navigator.generateLocation(
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
             generateViewProjectRoute(projectDependencyData.projectId),
           ),
         );

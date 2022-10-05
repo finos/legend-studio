@@ -112,7 +112,7 @@ export class ProjectViewerStore {
     if (entityPath) {
       this.elementPath = entityPath;
       if (projectId) {
-        this.editorStore.applicationStore.navigator.goTo(
+        this.editorStore.applicationStore.navigator.goToLocation(
           versionId
             ? generateViewVersionRoute(projectId, versionId)
             : revisionId
@@ -125,7 +125,7 @@ export class ProjectViewerStore {
           artifactId,
           versionId: _versionId,
         } = parseGAVCoordinates(gav);
-        this.editorStore.applicationStore.navigator.goTo(
+        this.editorStore.applicationStore.navigator.goToLocation(
           generateViewProjectByGAVRoute(groupId, artifactId, _versionId),
         );
       }

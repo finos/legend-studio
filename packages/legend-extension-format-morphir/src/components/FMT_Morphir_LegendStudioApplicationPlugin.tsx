@@ -116,7 +116,7 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                   this.morphirVisualizerUrl,
                   file.content,
                 );
-                applicationStore.navigator.openNewWindow(
+                applicationStore.navigator.visitAddress(
                   this.morphirVisualizerUrl,
                 );
               } catch (error) {
@@ -167,7 +167,7 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
                   ir: file.content,
                   src: await code,
                 });
-                applicationStore.navigator.openNewWindow(this.linterAppUrl);
+                applicationStore.navigator.visitAddress(this.linterAppUrl);
               } catch (error) {
                 assertErrorThrown(error);
                 applicationStore.notifyError(error);

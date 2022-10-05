@@ -255,10 +255,8 @@ const QueryLoader = observer(
         if (queryBuilderState.changeDetectionState.hasChanged) {
           queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
             editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-            applicationStore.navigator.jumpTo(
-              applicationStore.navigator.generateLocation(
-                generateExistingQueryEditorRoute(selectedQueryID),
-              ),
+            applicationStore.navigator.reloadToLocation(
+              generateExistingQueryEditorRoute(selectedQueryID),
             );
           });
         }
@@ -424,7 +422,7 @@ const QueryEditorHeaderContent = observer(
     };
     const viewQueryProject = (): void => {
       const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
-      applicationStore.navigator.openNewWindow(
+      applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
           applicationStore.config.studioUrl,
           groupId,
@@ -528,7 +526,7 @@ export const QueryEditor = observer(() => {
   const editorStore = useQueryEditorStore();
   const isLoadingEditor = !editorStore.initState.hasCompleted;
   const backToMainMenu = (): void =>
-    applicationStore.navigator.goTo(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+    applicationStore.navigator.goToLocation(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
 
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
@@ -603,7 +601,7 @@ export const ServiceQueryCreator = observer(() => {
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
   const executionKey = getQueryParameters<ServiceQueryCreatorQueryParams>(
-    applicationStore.navigator.getCurrentLocation(),
+    applicationStore.navigator.getCurrentAddress(),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 

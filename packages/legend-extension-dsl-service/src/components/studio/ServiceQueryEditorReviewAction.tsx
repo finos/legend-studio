@@ -129,8 +129,8 @@ export const ServiceQueryEditorReviewAction = observer(() => {
     editorStore.setShowSubmitReviewModal(true);
   const visitReview = (): void => {
     if (currentReview) {
-      applicationStore.navigator.openNewWindow(
-        applicationStore.navigator.generateLocation(
+      applicationStore.navigator.visitAddress(
+        applicationStore.navigator.generateAddress(
           generateReviewRoute(currentReview.projectId, currentReview.id),
         ),
       );

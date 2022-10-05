@@ -140,7 +140,7 @@ export class StandaloneDataSpaceViewerStore {
             _versionId: string,
             entityPath: string | undefined,
           ): void =>
-            this.applicationStore.navigator.openNewWindow(
+            this.applicationStore.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.applicationStore.config.studioUrl,
                 _groupId,
@@ -165,7 +165,7 @@ export class StandaloneDataSpaceViewerStore {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
-      this.applicationStore.navigator.openNewWindow(
+      this.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,

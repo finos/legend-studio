@@ -633,7 +633,7 @@ export class EditorStore {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(undefined),
               );
             },
@@ -697,7 +697,7 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateViewProjectRoute(projectId),
               );
             },
@@ -715,7 +715,7 @@ export class EditorStore {
             label: 'Back to setup page',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },

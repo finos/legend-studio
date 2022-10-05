@@ -109,7 +109,9 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     );
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation(noop);
+  const navigationActionSpy = jest
+    .spyOn(navigator, 'reloadToLocation')
+    .mockImplementation(noop);
   jest
     .spyOn(navigator, 'getCurrentLocation')
     .mockImplementationOnce(() => stubURL);
@@ -136,7 +138,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   await waitFor(() =>
-    expect(jumpToSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
+    expect(navigationActionSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
         applicationStore.config.sdlcServerUrl,
         stubURL,

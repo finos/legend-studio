@@ -171,7 +171,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             versionId: string,
             entityPath: string | undefined,
           ): void =>
-            this.setupStore.applicationStore.navigator.openNewWindow(
+            this.setupStore.applicationStore.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.setupStore.applicationStore.config.studioUrl,
                 groupId,
@@ -197,7 +197,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      this.setupStore.applicationStore.navigator.goTo(
+      this.setupStore.applicationStore.navigator.goToLocation(
         generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,

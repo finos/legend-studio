@@ -66,10 +66,10 @@ const ShareProjectModal = observer(
     >();
     const projectId = editorStore.sdlcState.activeProject.projectId;
     const projectLink = selectedVersion
-      ? applicationStore.navigator.generateLocation(
+      ? applicationStore.navigator.generateAddress(
           generateViewVersionRoute(projectId, selectedVersion.id.id),
         )
-      : applicationStore.navigator.generateLocation(
+      : applicationStore.navigator.generateAddress(
           generateViewProjectRoute(projectId),
         );
     const copyProjectLink = (): void => {
@@ -829,7 +829,7 @@ export const ProjectOverview = observer(() => {
   const hideShareModal = (): void => setOpenShareModal(false);
   const projectOverviewState = editorStore.projectOverviewState;
   const openProjectWebUrl = (): void =>
-    applicationStore.navigator.openNewWindow(
+    applicationStore.navigator.visitAddress(
       editorStore.sdlcState.activeProject.webUrl,
     );
   const renderOverview = (): React.ReactNode => {

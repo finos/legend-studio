@@ -167,7 +167,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
 
     const handleProceed = (): void => {
       if (setupStore.currentProject && setupStore.currentWorkspace) {
-        applicationStore.navigator.goTo(
+        applicationStore.navigator.goToLocation(
           generateEditorRoute(
             setupStore.currentProject.projectId,
             setupStore.currentWorkspace.workspaceId,

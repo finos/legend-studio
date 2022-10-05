@@ -96,7 +96,7 @@ export class UpdateProjectServiceQuerySetupStore {
     this.currentProject = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateProjectServiceQueryUpdaterSetupRoute(undefined),
     );
   }
@@ -127,7 +127,7 @@ export class UpdateProjectServiceQuerySetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigator.goTo(
+          this.applicationStore.navigator.goToLocation(
             generateProjectServiceQueryUpdaterSetupRoute(undefined),
           );
           this.initState.pass();
@@ -171,7 +171,7 @@ export class UpdateProjectServiceQuerySetupStore {
 
   *changeProject(project: Project): GeneratorFn<void> {
     this.currentProject = project;
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateProjectServiceQueryUpdaterSetupRoute(project.projectId),
     );
 

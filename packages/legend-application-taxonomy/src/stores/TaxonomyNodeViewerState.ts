@@ -168,7 +168,7 @@ export class TaxonomyNodeViewerState {
             _versionId: string,
             entityPath: string | undefined,
           ): void => {
-            this.explorerStore.applicationStore.navigator.openNewWindow(
+            this.explorerStore.applicationStore.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.explorerStore.applicationStore.config.studioUrl,
                 _groupId,
@@ -195,7 +195,7 @@ export class TaxonomyNodeViewerState {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
-      this.explorerStore.applicationStore.navigator.openNewWindow(
+      this.explorerStore.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,
