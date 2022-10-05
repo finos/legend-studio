@@ -16,11 +16,11 @@
   {
     ... // existing config content
     "studio": {
-      "url": "http://localhost:8080/studio",
+      "url": "http://localhost:9000/studio",
       "instances": [
         {
           "sdlcProjectIDPrefix": "PROD",
-          "url": "http://localhost:8080/studio"
+          "url": "http://localhost:9000/studio"
         }
       ]
     }

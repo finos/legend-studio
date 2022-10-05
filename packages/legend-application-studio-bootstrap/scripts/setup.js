@@ -42,13 +42,13 @@ export const setup = (outputDir) => {
         appName: 'studio',
         env: 'local',
         sdlc: {
-          url: 'http://localhost:7070/api',
+          url: 'http://localhost:6100/api',
         },
         engine: {
-          url: 'http://localhost:6060/api',
+          url: 'http://localhost:6000/api',
         },
         depot: {
-          url: 'http://localhost:9090/depot/api',
+          url: 'http://localhost:6200/depot/api',
         },
         documentation: {
           url: 'https://legend.finos.org',

@@ -50,16 +50,16 @@ export const setup = (outputDir) => {
           },
         ],
         engine: {
-          url: 'http://localhost:6060/api',
+          url: 'http://localhost:6000/api',
         },
         depot: {
-          url: 'http://localhost:9090/depot/api',
+          url: 'http://localhost:6200/depot/api',
         },
         query: {
-          url: 'http://localhost:8081/query',
+          url: 'http://localhost:9001/query',
         },
         studio: {
-          url: 'http://localhost:8080/studio',
+          url: 'http://localhost:9000/studio',
         },
         documentation: {
           url: 'https://legend.finos.org',

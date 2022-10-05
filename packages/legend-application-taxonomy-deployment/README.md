@@ -23,4 +23,4 @@ Last but not least, make sure you have `Yarn` installed. Run the following comma
   yarn dev:taxonomy
 ```
 
-After setting up, visit http://localhost:8082/taxonomy and the application should be up and running.
+After setting up, visit http://localhost:9002/taxonomy and the application should be up and running.
