@@ -236,6 +236,25 @@
     }
   }
 
+  &__description {
+    @include flexVCenter;
+
+    background: var(--color-dark-grey-100);
+    padding: 1rem 2rem;
+    color: var(--color-light-grey-400);
+    width: 80%;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 3rem;
+    line-height: 1.8rem;
+
+    svg {
+      margin-left: 0.5rem;
+      font-size: 1.2rem;
+      color: green;
+    }
+  }
+
   &__section {
     padding: 1rem;
   }
