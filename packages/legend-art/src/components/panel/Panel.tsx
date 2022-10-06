@@ -92,8 +92,18 @@ export const PanelForm: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = (props) => {
+  const { className, children } = props;
+  return (
+    <div className={clsx('panel__content__form', className)}>{children}</div>
+  );
+};
+
+export const PanelFormDescription: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+}> = (props) => {
   const { children } = props;
-  return <div className="panel__content__form">{children}</div>;
+  return <div className="panel__content__form__description">{children}</div>;
 };
 
 export const PanelSection: React.FC<{
