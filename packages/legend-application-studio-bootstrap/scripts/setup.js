@@ -45,7 +45,7 @@ export const setup = (outputDir) => {
           url: 'http://localhost:6100/api',
         },
         engine: {
-          url: 'http://localhost:6000/api',
+          url: 'http://localhost:6300/api',
         },
         depot: {
           url: 'http://localhost:6200/depot/api',
@@ -66,7 +66,7 @@ export const setup = (outputDir) => {
             /**
              * Use this end-point when developing documentation locally
              */
-            // { url: 'http://localhost:60001/studio/documentation.json' },
+            // { url: 'http://localhost:9999/studio/documentation.json' },
             {
               url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
               simple: true,

@@ -30,7 +30,7 @@ import { default as FastifyCORS } from '@fastify/cors';
 import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
 import DOCUMENTATION_DATA from './DummyDocumentationData.json' assert { type: 'json' };
 
-const PORT = 60001;
+const PORT = 9999;
 const API_BASE_URL = '/api';
 const STUDIO_BASE_URL = '/studio';
 

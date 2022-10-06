@@ -45,12 +45,12 @@ export const setup = (outputDir) => {
           {
             label: 'Enterprise',
             key: 'example',
-            url: 'http://localhost:60001/api/taxonomy/taxonomy-tree',
+            url: 'http://localhost:9999/api/taxonomy/taxonomy-tree',
             default: true,
           },
         ],
         engine: {
-          url: 'http://localhost:6000/api',
+          url: 'http://localhost:6300/api',
         },
         depot: {
           url: 'http://localhost:6200/depot/api',
@@ -77,7 +77,7 @@ export const setup = (outputDir) => {
             /**
              * Use this end-point when developing documentation locally
              */
-            // { url: 'http://localhost:60001/studio/documentation.json' },
+            // { url: 'http://localhost:9999/studio/documentation.json' },
             {
               url: 'https://legend.finos.org/resource/studio/documentation/shared.json',
               simple: true,
