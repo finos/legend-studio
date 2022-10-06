@@ -277,7 +277,7 @@ export class QueryProductionizerStore {
         return;
       }
       this.applicationStore.notifyIllegalState(
-        `Query setup store is already initialized`,
+        `Query productionizer store is already initialized`,
       );
       return;
     }

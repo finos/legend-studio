@@ -20,7 +20,6 @@ import { useResizeDetector } from 'react-resize-detector';
 import type { Location } from 'history';
 import {
   type ResizablePanelHandlerProps,
-  Backdrop,
   buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
   ResizablePanel,
@@ -241,7 +240,6 @@ export const Editor = withEditorStore(
           >
             <div className="editor__body">
               <ActivityBar />
-              <Backdrop className="backdrop" open={editorStore.backdrop} />
               <div ref={ref} className="editor__content-container">
                 <div className="editor__content">
                   <ResizablePanelGroup orientation="vertical">

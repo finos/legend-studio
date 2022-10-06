@@ -136,6 +136,9 @@ export class ApplicationStore<
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
+  // misc
+  showBackdrop = false;
+
   // theme
   /**
    * NOTE: this is the poor man way of doing theming
@@ -150,6 +153,8 @@ export class ApplicationStore<
       blockingAlertInfo: observable,
       actionAlertInfo: observable,
       TEMPORARY__isLightThemeEnabled: observable,
+      showBackdrop: observable,
+      setShowBackdrop: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
       setNotification: action,
@@ -183,6 +188,10 @@ export class ApplicationStore<
 
   TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
     this.TEMPORARY__isLightThemeEnabled = val;
+  }
+
+  setShowBackdrop(val: boolean): void {
+    this.showBackdrop = val;
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {

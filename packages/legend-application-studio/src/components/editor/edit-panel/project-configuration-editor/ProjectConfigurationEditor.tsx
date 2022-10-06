@@ -168,8 +168,6 @@ const ProjectStructureEditor = observer(
               onChange={changeGroupId}
             />
           </div>
-        </div>
-        <div className="panel__content__form">
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
               Artifact ID
@@ -228,32 +226,29 @@ const ProjectDependencyInfoModal = observer(
             <div className="modal__title">{prettyCONSTName(type)}</div>
           </div>
           <div className="modal__body">
-            <div className="panel__content">
-              {type === DEPENDENCY_INFO_TYPE.TREE ? (
-                <TextInputEditor
-                  inputValue={getDependencyTreeStringFromInfo(info)}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.TEXT}
-                  showMiniMap={true}
-                />
-              ) : (
-                <TextInputEditor
-                  inputValue={getConflictsString(info)}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.TEXT}
-                  showMiniMap={true}
-                />
-              )}
-            </div>
-
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={closeModal}
-              >
-                Close
-              </button>
-            </div>
+            {type === DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE ? (
+              <TextInputEditor
+                inputValue={getDependencyTreeStringFromInfo(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            ) : (
+              <TextInputEditor
+                inputValue={getConflictsString(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            )}
+          </div>
+          <div className="modal__footer">
+            <button
+              className="btn modal__footer__close-btn"
+              onClick={closeModal}
+            >
+              Close
+            </button>
           </div>
         </div>
       </Dialog>
@@ -456,7 +451,7 @@ const ProjectDependencyActions = observer(
     const hasConflicts = config.dependencyInfo?.conflicts.length;
     const viewTree = (): void => {
       if (config.dependencyInfo) {
-        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.TREE);
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE);
       }
     };
     const viewConflict = (): void => {
@@ -467,7 +462,7 @@ const ProjectDependencyActions = observer(
     return (
       <div className="project-dependency-editor__info">
         <button
-          className="project-dependency-editor__tree-btn"
+          className="btn btn--dark"
           tabIndex={-1}
           onClick={viewTree}
           disabled={!config.dependencyInfo}

@@ -67,7 +67,7 @@ export const QueryBuilderLambdaEditor = observer(
     } = props;
     const applicationStore = useApplicationStore();
     const backdropSetter = useCallback(
-      (val: boolean) => queryBuilderState.setBackdrop(val),
+      (val: boolean) => queryBuilderState.setShowBackdrop(val),
       [queryBuilderState],
     );
     const onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[] = useMemo(

@@ -67,8 +67,8 @@ export const StudioLambdaEditor = observer(
     const editorStore = useEditorStore();
 
     const backdropSetter = useCallback(
-      (val: boolean) => editorStore.setBackdrop(val),
-      [editorStore],
+      (val: boolean) => applicationStore.setShowBackdrop(val),
+      [applicationStore],
     );
     const onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[] = useMemo(
       () => [

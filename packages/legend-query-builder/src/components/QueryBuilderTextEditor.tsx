@@ -38,7 +38,7 @@ export const QueryBuilderTextEditor = observer(
     const discardChanges = (): void => {
       queryBuilderState.textEditorState.setMode(undefined);
       // force close the backdrop just in case changes are discarded when there are grammar issues
-      queryBuilderState.setBackdrop(false);
+      queryBuilderState.setShowBackdrop(false);
     };
     const mode = queryTextEditorState.mode;
     useEffect(() => {

@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-import { LegendStyleProvider } from '@finos/legend-art';
+import { Backdrop, LegendStyleProvider } from '@finos/legend-art';
+import { observer } from 'mobx-react-lite';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ActionAlert } from './ActionAlert.js';
+import { useApplicationStore } from './ApplicationStoreProvider.js';
 import { BlockingAlert } from './BlockingAlert.js';
 import { NotificationManager } from './NotificationManager.js';
 
-export const LegendApplicationComponentFrameworkProvider: React.FC<{
-  children: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
+export const LegendApplicationComponentFrameworkProvider = observer(
+  (props: { children: React.ReactNode }) => {
+    const { children } = props;
+    const applicationStore = useApplicationStore();
 
-  return (
-    <LegendStyleProvider>
-      <BlockingAlert />
-      <ActionAlert />
-      <NotificationManager />
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    </LegendStyleProvider>
-  );
-};
+    return (
+      <LegendStyleProvider>
+        <BlockingAlert />
+        <ActionAlert />
+        <NotificationManager />
+        <Backdrop className="backdrop" open={applicationStore.showBackdrop} />
+        <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+      </LegendStyleProvider>
+    );
+  },
+);

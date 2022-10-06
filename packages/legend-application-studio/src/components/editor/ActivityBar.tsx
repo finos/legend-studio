@@ -91,7 +91,7 @@ export const ActivityBarMenu: React.FC = () => {
     }
   };
   // go to setup page
-  const goToSetupPage = (): void =>
+  const goToWorkspaceSetup = (): void =>
     applicationStore.navigator.visitAddress(
       applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
     );
@@ -140,9 +140,9 @@ export const ActivityBarMenu: React.FC = () => {
             <MenuContentDivider />
             <MenuContentItem
               className="app__header__menu__item"
-              onClick={goToSetupPage}
+              onClick={goToWorkspaceSetup}
             >
-              Back to Setup
+              Back to workspace setup
             </MenuContentItem>
           </MenuContent>
         }

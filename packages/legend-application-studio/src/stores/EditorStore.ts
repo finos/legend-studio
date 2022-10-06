@@ -235,7 +235,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  backdrop = false;
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
 
@@ -259,7 +258,6 @@ export class EditorStore {
       hotkeys: observable,
       currentEditorState: observable,
       openedEditorStates: observable,
-      backdrop: observable,
       ignoreNavigationBlocking: observable,
       isDevToolEnabled: observable,
 
@@ -283,7 +281,6 @@ export class EditorStore {
       resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
-      setBackdrop: action,
       setActiveAuxPanelMode: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
@@ -486,10 +483,6 @@ export class EditorStore {
     );
   }
 
-  setDevTool(val: boolean): void {
-    this.isDevToolEnabled = val;
-  }
-
   setHotkeys(val: HotkeyConfiguration[]): void {
     this.hotkeys = val;
   }
@@ -506,12 +499,12 @@ export class EditorStore {
     this.blockGlobalHotkeys = val;
   }
 
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
+  setDevTool(val: boolean): void {
+    this.isDevToolEnabled = val;
   }
 
-  setBackdrop(val: boolean): void {
-    this.backdrop = val;
+  setCurrentEditorState(val: EditorState | undefined): void {
+    this.currentEditorState = val;
   }
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
@@ -630,7 +623,7 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goToLocation(
@@ -712,7 +705,7 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
               this.applicationStore.navigator.goToLocation(
