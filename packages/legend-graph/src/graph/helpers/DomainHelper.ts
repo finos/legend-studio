@@ -553,6 +553,12 @@ export const getMultiplicityDescription = (
   }`;
 };
 
+export const multiplicityComparator = (
+  mul1: Multiplicity,
+  mul2: Multiplicity,
+): boolean =>
+  mul1.upperBound === mul2.upperBound && mul1.lowerBound === mul2.lowerBound;
+
 export const isElementDeprecated = (
   element: AnnotatedElement | Class,
   graph: PureModel,
