@@ -166,6 +166,7 @@ export {
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
   MdWarning as WarningIcon,
+  MdOutlineWarningAmber as WarningOutlineIcon,
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,

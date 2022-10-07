@@ -67,8 +67,40 @@
   }
 
   &__header__tab__title {
+    @include flexVCenter;
+
     font-size: 1.2rem;
     font-weight: 500;
+  }
+
+  &__header__tab__title__warning__count {
+    border-radius: 0.8rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  &__warning__list__item {
+    width: 100%;
+  }
+
+  &__warning__btn,
+  &__warning__label {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    margin: 0;
+  }
+
+  &__warning__btn:hover {
+    background: var(--color-dark-grey-200);
+  }
+
+  &__warning__label--message {
+    color: var(--color-white);
+  }
+
+  &__warning__label--source {
+    color: var(--color-light-grey-400);
+    margin-left: 0.5rem;
   }
 
   &__content__tab {

@@ -22,12 +22,14 @@ import {
   ChevronDownIcon,
   XIcon,
   PanelContent,
+  Badge,
 } from '@finos/legend-art';
 import { Console } from './Console.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { DevTool } from './DevTool.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { Problems } from './Problems.js';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -45,6 +47,7 @@ export const AuxiliaryPanel = observer(() => {
       name: string;
       icon?: React.ReactNode;
       isVisible: boolean;
+      badge?: string;
     };
   } = {
     [AUX_PANEL_MODE.CONSOLE]: {
@@ -58,6 +61,15 @@ export const AuxiliaryPanel = observer(() => {
       name: 'DEVELOPER TOOLS',
       icon: undefined,
       isVisible: true,
+    },
+    [AUX_PANEL_MODE.PROBLEMS]: {
+      mode: AUX_PANEL_MODE.PROBLEMS,
+      name: 'PROBLEMS',
+      icon: undefined,
+      isVisible: true,
+      ...(editorStore.grammarTextEditorState.warnings?.length && {
+        badge: editorStore.grammarTextEditorState.warnings.length.toString(),
+      }),
     },
   };
 
@@ -97,6 +109,12 @@ export const AuxiliaryPanel = observer(() => {
                 )}
                 <div className="auxiliary-panel__header__tab__title">
                   {tab.name}
+                  {tab.badge && (
+                    <Badge
+                      title={tab.badge}
+                      className="auxiliary-panel__header__tab__title__warning__count"
+                    />
+                  )}
                 </div>
               </button>
             ))}
@@ -125,6 +143,11 @@ export const AuxiliaryPanel = observer(() => {
         </div>
       </div>
       <PanelContent>
+        {isTabVisible(AUX_PANEL_MODE.PROBLEMS) && (
+          <div className="auxiliary-panel__content__tab">
+            <Problems />
+          </div>
+        )}
         {isTabVisible(AUX_PANEL_MODE.CONSOLE) && (
           <div className="auxiliary-panel__content__tab">
             <Console />

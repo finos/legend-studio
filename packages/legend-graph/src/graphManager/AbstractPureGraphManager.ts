@@ -238,12 +238,16 @@ export abstract class AbstractPureGraphManager {
   abstract compileEntities(entities: Entity[]): Promise<void>;
   abstract compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void; keepSourceInformation?: boolean },
+    options?: {
+      onError?: () => void;
+      keepSourceInformation?: boolean;
+      getErrorWarnings?: boolean;
+    },
   ): Promise<void>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; getErrorWarnings?: boolean },
   ): Promise<Entity[]>;
   abstract getLambdaReturnType(
     lambda: RawLambda,

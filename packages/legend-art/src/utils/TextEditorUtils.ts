@@ -118,6 +118,27 @@ export const setErrorMarkers = (
   ]);
 };
 
+export const setWarningMarkers = (
+  editorModel: monacoEditorAPI.ITextModel,
+  message: string,
+  startLine: number,
+  startColumn: number,
+  endLine: number,
+  endColumn: number,
+): void => {
+  monacoEditorAPI.setModelMarkers(editorModel, 'Error', [
+    {
+      startLineNumber: startLine,
+      startColumn,
+      endColumn: endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
+      endLineNumber: endLine,
+      // NOTE: when the message is empty, no error tooltip is shown, we want to avoid this
+      message: message === '' ? '(no warning message)' : message,
+      severity: MarkerSeverity.Warning,
+    },
+  ]);
+};
+
 // We need to dynamically adjust the width of the line number gutter, otherwise as the document gets
 // larger, the left margin will start to shrink
 // See https://github.com/microsoft/monaco-editor/issues/2206

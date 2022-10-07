@@ -26,9 +26,10 @@ import {
   BrushIcon,
   CloudUploadIcon,
   AssistantIcon,
+  WarningOutlineIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
@@ -62,12 +63,14 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         ? ACTIVITY_MODE.CONFLICT_RESOLUTION
         : ACTIVITY_MODE.WORKSPACE_UPDATER,
     );
+
   const goToLocalChanges = (): void =>
     editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
   // Change Detection
   const changes =
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
+
   const configurationState = editorStore.projectConfigurationEditorState;
   const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.localChangesState.pushLocalChanges()),
@@ -92,6 +95,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : 'no changes detected';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
+
+  //Warnings
+  const warnings = editorStore.grammarTextEditorState.warnings;
+
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guardUnhandledError(() =>
@@ -118,6 +125,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   // Other actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
+
+  const showAuxPanelProblems = (): void => {
+    editorStore.auxPanelDisplayState.open();
+    editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.PROBLEMS);
+  };
+
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
@@ -180,7 +193,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           </button>
           {workspaceOutOfSync && (
             <button
-              className="editor__status-bar__workspace__status"
+              className="editor__status-bar__workspace__status__btn"
               tabIndex={-1}
               onClick={goToLocalChanges}
               title={
@@ -192,7 +205,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           {editorStore.sdlcState.isWorkspaceOutdated && !workspaceOutOfSync && (
             <button
-              className="editor__status-bar__workspace__status"
+              className="editor__status-bar__workspace__status__btn"
               tabIndex={-1}
               onClick={goToWorkspaceUpdater}
               title={
@@ -200,6 +213,21 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               }
             >
               OUTDATED
+            </button>
+          )}
+          {warnings && (
+            <button
+              className="editor__status-bar__workspace__warning__btn"
+              tabIndex={-1}
+              onClick={showAuxPanelProblems}
+              title={`Warnings: ${warnings.length}`}
+            >
+              <div className="editor__status-bar__workspace__icon">
+                <WarningOutlineIcon />
+              </div>
+              <div className="editor__status-bar__workspace__warning__btn__label">
+                {warnings.length}
+              </div>
             </button>
           )}
         </div>

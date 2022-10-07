@@ -1497,10 +1497,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | {
           onError?: (() => void) | undefined;
           keepSourceInformation?: boolean | undefined;
+          getErrorWarnings?: boolean;
         }
       | undefined,
-  ): Promise<void> {
-    await this.engine.compilePureModelContextData(
+  ): Promise<any> {
+    // TODO: change ): Promise<void> {
+
+    if (options?.getErrorWarnings) {
+      return this.engine.compilePureModelContextData(
+        this.getFullGraphModelData(graph, {
+          keepSourceInformation: options.keepSourceInformation,
+        }),
+        {
+          onError: options.onError,
+          getErrorWarnings: options.getErrorWarnings,
+        },
+      );
+    }
+    return this.engine.compilePureModelContextData(
       this.getFullGraphModelData(graph, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
@@ -1513,8 +1527,15 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async compileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void },
+    options?: { onError?: () => void; getErrorWarnings?: boolean },
   ): Promise<Entity[]> {
+    if (options?.getErrorWarnings) {
+      return this.engine.compileText(
+        graphGrammar,
+        this.getGraphCompileContext(graph),
+        options,
+      );
+    }
     return this.pureModelContextDataToEntities(
       await this.engine.compileText(
         graphGrammar,
@@ -2576,10 +2597,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   pureModelContextDataToEntities = (
     graphProtocol: V1_PureModelContextData,
-  ): Entity[] =>
-    graphProtocol.elements.map((element) =>
+  ): Entity[] => {
+    return graphProtocol.elements.map((element) =>
       this.elementProtocolToEntity(element),
     );
+  };
 
   private async entitiesToPureModelContextData(
     entities: Entity[],

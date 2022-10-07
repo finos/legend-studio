@@ -156,6 +156,33 @@ export const PanelSection: React.FC<{
   return <> {addElementSections(children)} </>;
 };
 
+export const PanelDivider: React.FC<{
+  children: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  const addElementSections = (
+    sectionChildren: React.ReactNode,
+  ): JSX.Element[] | JSX.Element => {
+    const section = React.Children.map(sectionChildren, (child) => {
+      if (React.isValidElement(child)) {
+        const elementChild: React.ReactElement = child;
+        return (
+          <div className="panel__content__form__divider">{elementChild}</div>
+        );
+      } else {
+        return <></>;
+      }
+    });
+    if (section) {
+      return section;
+    } else {
+      return <></>;
+    }
+  };
+
+  return <> {addElementSections(children)} </>;
+};
+
 export const PanelContent: React.FC<{
   children?: React.ReactNode;
   className?: string;
@@ -229,6 +256,15 @@ export const PanelFormTextEditor = observer(
               {errorMessage}
             </div>
           )}
+        </div>
+        <div className="input-group">
+          <input
+            className="panel__content__form__section__input"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={displayValue}
+            onChange={changeValue}
+          />
         </div>
       </>
     );

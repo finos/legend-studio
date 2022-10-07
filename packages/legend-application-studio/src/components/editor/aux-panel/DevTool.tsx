@@ -15,7 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, CheckSquareIcon, SquareIcon } from '@finos/legend-art';
+import {
+  PanelForm,
+  PanelSection,
+  PanelFormBooleanEditor,
+} from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { observe_TEMPORARY__AbstractEngineConfig } from '@finos/legend-graph';
@@ -44,33 +48,16 @@ export const DevTool = observer(() => {
   return (
     <div className="console-panel">
       <div className="console-panel__content">
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Engine client request payload compression
-            </div>
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleEngineClientRequestPayloadCompression}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    engineConfig.useClientRequestPayloadCompression,
-                })}
-              >
-                {engineConfig.useClientRequestPayloadCompression ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Specifies if request payload should be compressed
-              </div>
-            </div>
-          </div>
-          <div className="panel__content__form__section">
+        <PanelForm>
+          <PanelSection>
+            <PanelFormBooleanEditor
+              name="Engine client request payload compression"
+              description="Specifies if request payload should be compressed"
+              value={engineConfig.useClientRequestPayloadCompression}
+              isReadOnly={false}
+              update={toggleEngineClientRequestPayloadCompression}
+            />
+            {/* TODO: switch out with panel text group after merge  */}
             <div className="panel__content__form__section__header__label">
               Engine client base URL
             </div>
@@ -85,33 +72,15 @@ export const DevTool = observer(() => {
                 <div className="input-group__error-message">Invalid URL</div>
               )}
             </div>
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Engine execution runner
-            </div>
-            <div
-              className={clsx('panel__content__form__section__toggler')}
-              onClick={toggleDataUrlEncoding}
-            >
-              <button
-                className={clsx('panel__content__form__section__toggler__btn', {
-                  'panel__content__form__section__toggler__btn--toggled':
-                    engineConfig.useBase64ForAdhocConnectionDataUrls,
-                })}
-              >
-                {engineConfig.useBase64ForAdhocConnectionDataUrls ? (
-                  <CheckSquareIcon />
-                ) : (
-                  <SquareIcon />
-                )}
-              </button>
-              <div className="panel__content__form__section__toggler__prompt">
-                Use Base64 encoding for adhoc connection data URLs
-              </div>
-            </div>
-          </div>
-        </div>
+            <PanelFormBooleanEditor
+              name="Engine execution runner"
+              description="  Use Base64 encoding for adhoc connection data URLs"
+              value={engineConfig.useClientRequestPayloadCompression}
+              isReadOnly={false}
+              update={toggleDataUrlEncoding}
+            />
+          </PanelSection>
+        </PanelForm>
       </div>
     </div>
   );

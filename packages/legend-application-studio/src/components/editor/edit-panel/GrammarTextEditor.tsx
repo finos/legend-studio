@@ -36,6 +36,7 @@ import {
   HackerIcon,
   PanelContent,
   useResizeDetector,
+  setWarningMarkers,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -780,6 +781,7 @@ export const GrammarTextEditor = observer(() => {
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
   const error = grammarTextEditorState.error;
+  const warning = grammarTextEditorState.warning;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
@@ -893,6 +895,18 @@ export const GrammarTextEditor = observer(() => {
         );
       } else {
         monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+      }
+      if (warning?.sourceInformation) {
+        setWarningMarkers(
+          editorModel,
+          warning.message,
+          warning.sourceInformation.startLine,
+          warning.sourceInformation.startColumn,
+          warning.sourceInformation.endLine,
+          warning.sourceInformation.endColumn,
+        );
+      } else {
+        monacoEditorAPI.setModelMarkers(editorModel, 'Warning', []);
       }
     }
     // Disable editing if user is in viewer mode
@@ -1146,6 +1160,18 @@ export const GrammarTextEditor = observer(() => {
       }
     }
   }, [editor, error, error?.sourceInformation]);
+
+  useEffect(() => {
+    if (editor) {
+      if (warning?.sourceInformation) {
+        revealError(
+          editor,
+          warning.sourceInformation.startLine,
+          warning.sourceInformation.startColumn,
+        );
+      }
+    }
+  }, [editor, warning, warning?.sourceInformation]);
 
   /**
    * This effect helps to navigate to the currently selected element in the explorer tree

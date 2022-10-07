@@ -88,6 +88,7 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   DataElement,
+  type EngineWarning,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -142,6 +143,7 @@ export class EditorGraphState {
       isUpdatingGraph: observable,
       isUpdatingApplication: observable,
       hasCompilationError: computed,
+      hasEngineWarnings: computed,
       isApplicationUpdateOperationIsRunning: computed,
       clearCompilationError: action,
       buildGraph: flow,
@@ -161,6 +163,15 @@ export class EditorGraphState {
   get hasCompilationError(): boolean {
     return (
       Boolean(this.editorStore.grammarTextEditorState.error) ||
+      this.editorStore.openedEditorStates
+        .filter(filterByType(ElementEditorState))
+        .some((editorState) => editorState.hasCompilationError)
+    );
+  }
+
+  get hasEngineWarnings(): boolean {
+    return (
+      Boolean(this.editorStore.grammarTextEditorState.warning) ||
       this.editorStore.openedEditorStates
         .filter(filterByType(ElementEditorState))
         .some((editorState) => editorState.hasCompilationError)
@@ -504,6 +515,23 @@ export class EditorGraphState {
           keepSourceInformation: true,
         },
       );
+
+      const errorWarnings =
+        yield this.editorStore.graphManagerState.graphManager.compileGraph(
+          this.editorStore.graphManagerState.graph,
+          { keepSourceInformation: true, getErrorWarnings: true },
+        );
+
+      this.editorStore.grammarTextEditorState.setWarnings(
+        errorWarnings as EngineWarning[],
+      );
+
+      if (!options?.disableNotificationOnSuccess) {
+        this.editorStore.applicationStore.notifySuccess(
+          'Compiled successfully',
+        );
+      }
+
       if (!options?.disableNotificationOnSuccess) {
         this.editorStore.applicationStore.notifySuccess(
           'Compiled successfully',
@@ -595,6 +623,7 @@ export class EditorGraphState {
   *globalCompileInTextMode(options?: {
     ignoreBlocking?: boolean | undefined;
     suppressCompilationFailureMessage?: boolean | undefined;
+    suppressEngineDiscrepancyFailureMessage?: boolean | undefined;
     disableNotificationOnSuccess?: boolean | undefined;
     openConsole?: boolean;
   }): GeneratorFn<void> {
@@ -620,11 +649,37 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
         )) as Entity[];
 
-      if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess(
-          'Compiled successfully',
-        );
+      //TODO: -change
+      const errorWarnings =
+        (yield this.editorStore.graphManagerState.graphManager.compileText(
+          this.editorStore.grammarTextEditorState.graphGrammarText,
+          this.editorStore.graphManagerState.graph,
+          { getErrorWarnings: true },
+        )) as EngineWarning[];
+
+      const errorWarning = errorWarnings[0];
+
+      if (errorWarning) {
+        this.editorStore.grammarTextEditorState.setWarning(errorWarning),
+          this.editorStore.applicationStore.log.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+            'Compilation failed:',
+            errorWarning,
+          );
+        if (!options?.suppressEngineDiscrepancyFailureMessage) {
+          this.editorStore.applicationStore.notifyWarning(
+            `Compilation failed: ${errorWarning.message}`,
+          );
+        }
+      } else {
+        if (!options?.disableNotificationOnSuccess) {
+          this.editorStore.applicationStore.notifySuccess(
+            'Compiled successfully',
+          );
+        }
       }
+
+      this.editorStore.grammarTextEditorState.setWarnings(errorWarnings);
 
       yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error) {

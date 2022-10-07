@@ -20,6 +20,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
   type EngineError,
+  type EngineWarning,
   type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
@@ -65,6 +66,8 @@ export class GrammarTextEditorState {
   currentElementLabelRegexString?: string | undefined;
   wrapText = false;
   error?: EngineError | undefined;
+  warning?: EngineWarning | undefined;
+  warnings?: EngineWarning[] | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
@@ -73,6 +76,9 @@ export class GrammarTextEditorState {
       wrapText: observable,
       error: observable,
       setError: action,
+      setWarning: action,
+      setWarnings: action,
+      clearConsoleProblems: action,
       setGraphGrammarText: action,
       setWrapText: action,
       resetCurrentElementLabelRegexString: action,
@@ -84,6 +90,19 @@ export class GrammarTextEditorState {
 
   setError(error: EngineError | undefined): void {
     this.error = error;
+  }
+
+  setWarning(warning: EngineWarning | undefined): void {
+    this.warning = warning;
+  }
+
+  setWarnings(warnings: EngineWarning[] | undefined): void {
+    this.warnings = warnings;
+  }
+
+  clearConsoleProblems(): void {
+    this.warnings = undefined;
+    this.warning = undefined;
   }
 
   setGraphGrammarText(code: string): void {

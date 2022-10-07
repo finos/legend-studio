@@ -129,6 +129,12 @@ class RevisionChangeDetectionState {
       );
     }
     this.changes = changes;
+
+    if (this.changes.length > 0 && this.editorStore.isInFormMode === true) {
+      // removing all the warnings on any key change in editor
+      // since we do not know the changes until they hit compile again
+      this.editorStore.grammarTextEditorState.clearConsoleProblems();
+    }
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(

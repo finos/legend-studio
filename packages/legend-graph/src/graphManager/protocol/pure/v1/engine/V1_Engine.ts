@@ -92,6 +92,7 @@ import {
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import type { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
+import type { EngineWarning } from '../../../../action/EngineWarning.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -364,12 +365,22 @@ export class V1_Engine {
 
   async compilePureModelContextData(
     model: V1_PureModelContextData,
-    options?: { onError?: (() => void) | undefined } | undefined,
-  ): Promise<void> {
+    options?:
+      | { onError?: (() => void) | undefined; getErrorWarnings?: boolean }
+      | undefined,
+  ): Promise<any> {
     try {
-      await this.engineServerClient.compile(
+      const compileResponse = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
+
+      if (compileResponse.warnings && options?.getErrorWarnings === true) {
+        const warnings = compileResponse.warnings as EngineWarning[];
+
+        return warnings;
+      } else {
+        return '';
+      }
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();
@@ -390,8 +401,9 @@ export class V1_Engine {
   async compileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
-    options?: { onError?: () => void },
-  ): Promise<V1_PureModelContextData> {
+    options?: { onError?: () => void; getErrorWarnings?: boolean },
+  ): Promise<any> {
+    // todo: separate sections ): Promise<V1_PureModelContextData> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
       // NOTE: we need to return source information here so we can locate the compilation
@@ -406,8 +418,15 @@ export class V1_Engine {
         )
       : mainGraph;
     try {
-      await this.engineServerClient.compile(pureModelContextDataJson);
-      return V1_deserializePureModelContextData(mainGraph);
+      const compileResponse = await this.engineServerClient.compile(
+        pureModelContextDataJson,
+      );
+
+      if (compileResponse.warnings && options?.getErrorWarnings === true) {
+        return compileResponse.warnings as EngineWarning[];
+      } else {
+        return V1_deserializePureModelContextData(mainGraph);
+      }
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();

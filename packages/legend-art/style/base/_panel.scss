@@ -254,6 +254,18 @@
     padding: 0 1rem;
   }
 
+  &__divider {
+    padding: 0.5rem 0;
+  }
+
+  &__icon {
+    margin-right: 0.5rem;
+
+    &--warning {
+      color: var(--color-yellow-200);
+    }
+  }
+
   &__section__header__label {
     @include flexVCenter;
 

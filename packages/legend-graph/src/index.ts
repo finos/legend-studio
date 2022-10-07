@@ -237,6 +237,8 @@ export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecu
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
+export { EngineWarning } from './graphManager/action/EngineWarning.js';
+
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graphManager/protocol/pure/Testable_PureProtocolProcessorPlugin_Extension.js';
 
