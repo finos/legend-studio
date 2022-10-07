@@ -258,7 +258,7 @@ export class STO_ServiceStore_PureProtocolProcessorPlugin
               const mappingProperty = new LocalMappingProperty();
               mappingProperty.type = localMappingProperty.type;
               mappingProperty.name = localMappingProperty.name;
-              const multiplicity = new Multiplicity(
+              const multiplicity = context.graph.getMultiplicity(
                 localMappingProperty.multiplicity.lowerBound,
                 localMappingProperty.multiplicity.upperBound,
               );

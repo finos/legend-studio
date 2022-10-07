@@ -83,7 +83,7 @@ export const V1_buildMilestoningProperties = (
           ];
           const milestonedAllVersions = new Property(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
-            new Multiplicity(property.multiplicity.lowerBound, undefined),
+            graph.getMultiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
@@ -126,7 +126,7 @@ export const V1_buildMilestoningProperties = (
           ];
           const milestonedAllVersions = new Property(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
-            new Multiplicity(property.multiplicity.lowerBound, undefined),
+            graph.getMultiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),
@@ -172,7 +172,7 @@ export const V1_buildMilestoningProperties = (
           ];
           const milestonedAllVersions = new Property(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
-            new Multiplicity(property.multiplicity.lowerBound, undefined),
+            graph.getMultiplicity(property.multiplicity.lowerBound, undefined),
             GenericTypeExplicitReference.create(
               new GenericType(property.genericType.value.rawType),
             ),

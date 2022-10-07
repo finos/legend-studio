@@ -63,7 +63,7 @@ import {
   PureListInstanceValue,
   CollectionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
-import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import type { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { Type } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { PropertyExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
 import { PackageableElementExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -168,7 +168,7 @@ export class V1_ValueSpecificationBuilder
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
     if (variable.class && variable.multiplicity) {
-      const multiplicity = new Multiplicity(
+      const multiplicity = this.context.graph.getMultiplicity(
         variable.multiplicity.lowerBound,
         variable.multiplicity.upperBound,
       );
@@ -264,7 +264,7 @@ export class V1_ValueSpecificationBuilder
       ),
     );
     const instance = new CollectionInstanceValue(
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -380,7 +380,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.INTEGER,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -392,7 +392,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.DECIMAL,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -404,7 +404,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRING,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -416,7 +416,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.BOOLEAN,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -428,7 +428,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.FLOAT,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -440,7 +440,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.DATETIME,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -452,7 +452,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRICTDATE,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -464,7 +464,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRICTTIME,
       valueSpecification.values,
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
@@ -476,7 +476,7 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.LATESTDATE,
       [],
       this.context,
-      new Multiplicity(
+      this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),

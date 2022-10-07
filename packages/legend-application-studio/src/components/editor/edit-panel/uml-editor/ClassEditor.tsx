@@ -208,7 +208,10 @@ const PropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
+        property_setMultiplicity(
+          property,
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
@@ -538,7 +541,7 @@ const DerivedPropertyBasicEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         property_setMultiplicity(
           derivedProperty,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
       }
     };
