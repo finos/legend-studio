@@ -132,68 +132,65 @@
   }
 
   &__platform__configuration {
-    &__box {
-      display: flex;
-      padding-top: 2rem;
-      background: var(--color-dark-grey-50);
+    display: flex;
+    padding-top: 2rem;
+    background: var(--color-dark-grey-50);
 
-      &__label {
+    &__label {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-300);
+
+      &--text {
+        min-width: 10rem;
+      }
+
+      &__version {
         @include flexVCenter;
 
-        color: var(--color-light-grey-300);
+        width: 100%;
+        margin: 0;
+        background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-200);
+        padding: 1rem;
+        border-radius: 0.1rem;
+        height: 2.8rem;
+        border: 0.1rem solid var(--color-dark-grey-100);
 
-        &--text {
-          min-width: 10rem;
+        &--up-to-date {
+          background: var(--color-green-100);
+          color: var(--color-dark-grey-100);
         }
 
-        &__version {
-          @include flexVCenter;
-
-          width: 100%;
-          margin: 0;
-          background: var(--color-dark-grey-100);
-          color: var(--color-light-grey-200);
-          padding: 1rem;
-          border-radius: 0.1rem;
-          height: 2.8rem;
-          border: 0.1rem solid var(--color-dark-grey-100);
-
-          &--up-to-date {
-            background: var(--color-green-100);
-            color: var(--color-dark-grey-100);
-          }
-
-          &--outdated {
-            background: var(--color-orange-100);
-            color: var(--color-dark-grey-100);
-          }
-
-          &__update-btn {
-            @include flexCenter;
-
-            margin-left: 1rem;
-            background: var(--color-blue-150);
-            padding: 0 1rem;
-            border-radius: 0.2rem;
-            font-weight: 500;
-            color: var(--color-light-grey-50);
-          }
+        &--outdated {
+          background: var(--color-orange-100);
+          color: var(--color-dark-grey-100);
         }
 
-        &__status {
+        &__update-btn {
+          @include flexCenter;
+
+          margin-left: 1rem;
+          background: var(--color-blue-150);
+          padding: 0 1rem;
+          border-radius: 0.2rem;
+          font-weight: 500;
+          color: var(--color-light-grey-50);
+        }
+      }
+
+      &__status {
+        svg {
+          font-size: 1.2rem;
           margin-right: 1rem;
+        }
 
-          svg {
-            font-size: 1.2rem;
-          }
+        &--up-to-date {
+          color: var(--color-green-100);
+        }
 
-          &--up-to-date {
-            color: var(--color-green-100);
-          }
-
-          &--outdated {
-            color: var(--color-orange-100);
-          }
+        &--outdated {
+          color: var(--color-orange-100);
         }
       }
     }

@@ -62,7 +62,6 @@ export class ProjectConfiguration implements Hashable {
       addProjectDependency: action,
       dependencyKey: computed,
       hashCode: computed,
-      hasEmptyPlatformVersion: computed,
     });
   }
 
@@ -112,13 +111,11 @@ export class ProjectConfiguration implements Hashable {
     this.artifactId = val;
   }
 
-  get hasEmptyPlatformVersion(): boolean {
+  isNotEmptyPlatforms(): boolean {
     if (this.platformConfigurations) {
-      for (const platform of this.platformConfigurations) {
-        if (!platform.version) {
-          return true;
-        }
-      }
+      return this.platformConfigurations.every(
+        (p) => p.name !== undefined && p.version !== undefined,
+      );
     }
     return false;
   }

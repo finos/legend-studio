@@ -43,8 +43,18 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
   static readonly serialization = new SerializationFactory(
     createModelSchema(PlatformConfiguration, {
       platformConfigurations: optionalCustom(
-        (values) =>
-          serializeArray(
+        (values) => {
+          //to update SDLC and remove platform configs if user has previously set them,
+          //one must make a nested null update like (platformConfigurations: platformConfigurations: [null])
+          if (
+            (values as PlatformConfiguration[]).every(
+              (p) => p.name === undefined && p.version === undefined,
+            )
+          ) {
+            return null;
+          }
+
+          return serializeArray(
             values,
             (value) =>
               serialize(PlatformConfiguration.serialization.schema, value),
@@ -52,7 +62,8 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
               skipIfEmpty: true,
               INTERNAL__forceReturnEmptyInTest: true,
             },
-          ),
+          );
+        },
         (values) =>
           deserializeArray(
             values,
