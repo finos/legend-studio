@@ -100,6 +100,7 @@ import {
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 import {
   observe_EmbeddedFlatDataPropertyMapping,
+  observe_FlatDataAssociationPropertyMapping,
   observe_FlatDataConnection,
   observe_FlatDataInputData,
   observe_FlatDataInstanceSetImplementation,
@@ -115,6 +116,7 @@ import {
   observe_RelationalPropertyMapping,
   observe_RootRelationalInstanceSetImplementation,
 } from './STO_Relational_ObserverHelper.js';
+import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -258,6 +260,15 @@ class PropertyMappingObserver implements PropertyMappingVisitor<void> {
     propertyMapping: RelationalPropertyMapping,
   ): void {
     observe_RelationalPropertyMapping(propertyMapping, this.observerContext);
+  }
+
+  visit_FlatDataAssociationPropertyMapping(
+    propertyMapping: FlatDataAssociationPropertyMapping,
+  ): void {
+    observe_FlatDataAssociationPropertyMapping(
+      propertyMapping,
+      this.observerContext,
+    );
   }
 
   visit_EmbeddedRelationalPropertyMapping(

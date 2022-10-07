@@ -47,6 +47,7 @@ import {
   observe_Abstract_PropertyMapping,
 } from './DSL_Mapping_ObserverHelper.js';
 import { observe_RawLambda } from './RawValueSpecificationObserver.js';
+import type { FlatDataAssociationPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -77,6 +78,24 @@ export const observe_FlatDataDataType = (
   }
   return metamodel;
 };
+
+export const observe_FlatDataAssociationPropertyMapping =
+  skipObservedWithContext(
+    (
+      metamodel: FlatDataAssociationPropertyMapping,
+      context,
+    ): FlatDataAssociationPropertyMapping => {
+      observe_Abstract_PropertyMapping(metamodel, context);
+
+      makeObservable(metamodel, {
+        flatData: observable,
+        sectionName: observable,
+        hashCode: computed,
+      });
+
+      return metamodel;
+    },
+  );
 
 export const observe_FlatDataRecordField = skipObserved(
   (metamodel: FlatDataRecordField): FlatDataRecordField => {

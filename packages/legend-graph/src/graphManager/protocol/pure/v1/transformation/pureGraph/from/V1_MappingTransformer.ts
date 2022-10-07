@@ -148,6 +148,10 @@ import { isStubbed_EnumValueMapping } from '../../../../../../../graph/helpers/c
 import { isStubbed_RawLambda } from '../../../../../../../graph/helpers/creator/RawValueSpecificationCreatorHelper.js';
 import { isStubbed_RawRelationalOperationElement } from '../../../../../../../graph/helpers/creator/STO_Relational_ModelCreatorHelper.js';
 import { pruneSourceInformation } from '../../../../../../../graph/MetaModelUtils.js';
+import { FlatDataAssociationImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationImplementation.js';
+import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
+import type { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
+import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 
 export const V1_transformPropertyReference = (
   element: PropertyReference,
@@ -397,6 +401,28 @@ const transformSimpleFlatDataPropertyMapping = (
       ) as V1_RawLambda;
   }
   return flatDataPropertyMapping;
+};
+
+const transformFlatDataAssociationPropertyMapping = (
+  element: FlatDataAssociationPropertyMapping,
+  context: V1_GraphTransformerContext,
+): V1_FlatDataAssociationPropertyMapping => {
+  const flatDataAssociationPropertyMapping =
+    new V1_FlatDataAssociationPropertyMapping();
+
+  flatDataAssociationPropertyMapping.property = V1_transformPropertyReference(
+    element.property,
+  );
+  flatDataAssociationPropertyMapping.source =
+    element.sourceSetImplementation.valueForSerialization;
+  flatDataAssociationPropertyMapping.target =
+    element.targetSetImplementation?.valueForSerialization;
+
+  flatDataAssociationPropertyMapping.flatData = element.flatData;
+
+  flatDataAssociationPropertyMapping.sectionName = element.sectionName;
+
+  return flatDataAssociationPropertyMapping;
 };
 
 const transformEmbeddedFlatDataPropertyMapping = (
@@ -687,6 +713,14 @@ class PropertyMappingTransformer
     propertyMapping: FlatDataPropertyMapping,
   ): V1_PropertyMapping {
     return transformSimpleFlatDataPropertyMapping(
+      propertyMapping,
+      this.context,
+    );
+  }
+  visit_FlatDataAssociationPropertyMapping(
+    propertyMapping: FlatDataAssociationPropertyMapping,
+  ): V1_PropertyMapping {
+    return transformFlatDataAssociationPropertyMapping(
       propertyMapping,
       this.context,
     );
@@ -1165,6 +1199,26 @@ const transformRelationalAssociationImplementation = (
   return relationalMapping;
 };
 
+const transformFlatDataAssociationImplementation = (
+  element: FlatDataAssociationImplementation,
+  context: V1_GraphTransformerContext,
+): V1_FlatDataAssociationMapping => {
+  const flatDataAssociationMapping = new V1_FlatDataAssociationMapping();
+  flatDataAssociationMapping.stores = element.stores.map(
+    (store) => store.valueForSerialization ?? '',
+  );
+  flatDataAssociationMapping.association =
+    element.association.valueForSerialization ?? '';
+  flatDataAssociationMapping.propertyMappings =
+    transformClassMappingPropertyMappings(
+      element.propertyMappings,
+      true,
+      context,
+    );
+  flatDataAssociationMapping.id = mappingElementIdSerializer(element.id);
+  return flatDataAssociationMapping;
+};
+
 const transformXStorelAssociationImplementation = (
   element: XStoreAssociationImplementation,
   context: V1_GraphTransformerContext,
@@ -1191,6 +1245,8 @@ const transformAssociationImplementation = (
     return transformRelationalAssociationImplementation(element, context);
   } else if (element instanceof XStoreAssociationImplementation) {
     return transformXStorelAssociationImplementation(element, context);
+  } else if (element instanceof FlatDataAssociationImplementation) {
+    return transformFlatDataAssociationImplementation(element, context);
   }
   throw new UnsupportedOperationError(
     `Can't transform association implementation`,

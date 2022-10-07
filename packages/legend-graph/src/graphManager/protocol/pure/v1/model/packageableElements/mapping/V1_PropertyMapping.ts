@@ -27,6 +27,7 @@ import type { V1_PurePropertyMapping } from '../../../model/packageableElements/
 import type { V1_FlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataPropertyMapping.js';
 import type { V1_EmbeddedFlatDataPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_EmbeddedFlatDataPropertyMapping.js';
 import type { V1_XStorePropertyMapping } from './xStore/V1_XStorePropertyMapping.js';
+import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 
 export interface V1_PropertyMappingVisitor<T> {
   visit_PropertyMapping(propertyMapping: V1_PropertyMapping): T;
@@ -51,6 +52,9 @@ export interface V1_PropertyMappingVisitor<T> {
     propertyMapping: V1_AggregationAwarePropertyMapping,
   ): T;
   visit_XStorePropertyMapping(propertyMapping: V1_XStorePropertyMapping): T;
+  visit_FlatDataAssociationPropertyMapping(
+    propertyMapping: V1_FlatDataAssociationPropertyMapping,
+  ): T;
 }
 
 export abstract class V1_PropertyMapping implements Hashable {

@@ -31,6 +31,8 @@ import {
   getAllEnumerationMappings,
   getAllIncludedMappings,
 } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
+import { FlatDataAssociationImplementation } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationImplementation.js';
+import { V1_FlatDataAssociationMapping } from '../../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 
 const getInferredAssociationMappingId = (
   _association: Association,
@@ -77,6 +79,43 @@ const buildRelationalAssociationMapping = (
       ),
     );
   return relationalAssociationImplementation;
+};
+
+const buildFlatDataAssociationMapping = (
+  element: V1_FlatDataAssociationMapping,
+  parentMapping: Mapping,
+  context: V1_GraphBuilderContext,
+): FlatDataAssociationImplementation => {
+  const allClassMappings = [
+    parentMapping,
+    ...getAllIncludedMappings(parentMapping),
+  ]
+    .map((m) => m.classMappings)
+    .flat();
+  const association = context.resolveAssociation(element.association);
+  const flatDataAssociationImplementation =
+    new FlatDataAssociationImplementation(
+      getInferredAssociationMappingId(association.value, element),
+      parentMapping,
+      association,
+    );
+  flatDataAssociationImplementation.stores = element.stores.map(
+    context.resolveStore,
+  );
+  flatDataAssociationImplementation.propertyMappings =
+    element.propertyMappings.map((propertyMapping) =>
+      propertyMapping.accept_PropertyMappingVisitor(
+        new V1_PropertyMappingBuilder(
+          context,
+          flatDataAssociationImplementation,
+          undefined,
+          getAllEnumerationMappings(parentMapping),
+          undefined,
+          allClassMappings,
+        ),
+      ),
+    );
+  return flatDataAssociationImplementation;
 };
 
 const buildXStoreAssociationMapping = (
@@ -126,6 +165,8 @@ export const V1_buildAssociationMapping = (
     return buildRelationalAssociationMapping(element, parentMapping, context);
   } else if (element instanceof V1_XStoreAssociationMapping) {
     return buildXStoreAssociationMapping(element, parentMapping, context);
+  } else if (element instanceof V1_FlatDataAssociationMapping) {
+    return buildFlatDataAssociationMapping(element, parentMapping, context);
   }
   throw new UnsupportedOperationError(
     `Can't build association mapping`,
