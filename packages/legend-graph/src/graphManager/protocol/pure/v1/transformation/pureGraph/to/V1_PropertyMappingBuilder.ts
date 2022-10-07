@@ -736,7 +736,13 @@ export class V1_PropertyMappingBuilder
         )[0];
       }
     }
-    const sourceSetImplementation = guaranteeNonNullable(this.topParent);
+    const sourceSetImplementation = guaranteeNonNullable(
+      resolveRelationalPropertyMappingSource(
+        this.immediateParent,
+        protocol,
+        this.topParent,
+      ),
+    );
     const flatDataAssociationPropertyMapping =
       new FlatDataAssociationPropertyMapping(
         this.topParent ?? this.immediateParent,
