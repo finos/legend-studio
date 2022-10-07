@@ -125,6 +125,7 @@
         background: var(--color-dark-grey-250);
         border-left: 0.1rem solid var(--color-dark-shade-300);
         margin-bottom: -0.5rem;
+        margin-left: 0.5rem;
         cursor: pointer;
       }
     }
@@ -228,6 +229,7 @@
     margin-top: 0.5rem;
     padding: 0 0.5rem;
     color: var(--color-dark-grey-500);
+    width: 100%;
     cursor: help;
 
     @include ellipsisTextOverflow;
