@@ -86,7 +86,7 @@ import {
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 
-export const mapping_setPropertyMappings = action(
+export const instanceSetImpl_setPropertyMappings = action(
   (
     si: InstanceSetImplementation,
     pm: PropertyMapping[],
@@ -98,7 +98,7 @@ export const mapping_setPropertyMappings = action(
   },
 );
 
-export const mapping_deletePropertyMappings = action(
+export const instanceSetImpl_deletePropertyMapping = action(
   (si: InstanceSetImplementation, pm: PropertyMapping): void => {
     deleteEntry(
       si.propertyMappings,

@@ -62,7 +62,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
-  mapping_deletePropertyMappings,
+  instanceSetImpl_deletePropertyMapping,
   setImpl_nominateRoot,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
@@ -72,7 +72,6 @@ import {
   SET_IMPLEMENTATION_TYPE,
 } from '../../../../stores/shared/ModelClassifierUtils.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { useMemo } from 'react';
 
 export const getExpectedReturnType = (
   targetSetImplementation: SetImplementation | undefined,
@@ -112,13 +111,10 @@ export const PropertyMappingsEditor = observer(
     const isEmbedded =
       instanceSetImplementationState.mappingElement._isEmbedded;
     // Parser Error
-    const propertyMappingStates: PropertyMappingState[] = useMemo(
-      () =>
-        instanceSetImplementationState.propertyMappingStates.filter(
-          (pm) => pm.propertyMapping.property.value === property,
-        ),
-      [instanceSetImplementationState.propertyMappingStates, property],
-    );
+    const propertyMappingStates: PropertyMappingState[] =
+      instanceSetImplementationState.propertyMappingStates.filter(
+        (pm) => pm.propertyMapping.property.value === property,
+      );
     const propertyHasParserError = Boolean(
       propertyMappingStates.find((pm) => pm.parserError),
     );
@@ -128,7 +124,7 @@ export const PropertyMappingsEditor = observer(
       ),
     );
     const removePropertyMapping = (pm: PropertyMapping): void => {
-      mapping_deletePropertyMappings(
+      instanceSetImpl_deletePropertyMapping(
         instanceSetImplementationState.mappingElement,
         pm,
       );
@@ -298,19 +294,22 @@ export const PropertyMappingsEditor = observer(
                           setImplementationHasParserError
                         }
                       />
-                      <button
-                        className="property-mapping-editor__entries__entry__remove-btn"
-                        onClick={() =>
-                          removePropertyMapping(
-                            propertyMappingState.propertyMapping,
-                          )
-                        }
-                        tabIndex={-1}
-                        title="Remove"
-                        disabled={propertyMappingState.lambdaString === ''}
-                      >
-                        <TimesIcon />
-                      </button>
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
                     </div>
                   );
                 }
@@ -333,20 +332,23 @@ export const PropertyMappingsEditor = observer(
                           setImplementationHasParserError
                         }
                       />
-                      <button
-                        key={propertyMappingState.uuid}
-                        className="property-mapping-editor__entries__entry__remove-btn"
-                        onClick={() =>
-                          removePropertyMapping(
-                            propertyMappingState.propertyMapping,
-                          )
-                        }
-                        tabIndex={-1}
-                        title="Remove"
-                        disabled={propertyMappingState.lambdaString === ''}
-                      >
-                        <TimesIcon />
-                      </button>
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            key={propertyMappingState.uuid}
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
                     </div>
                   );
                 }
@@ -368,20 +370,23 @@ export const PropertyMappingsEditor = observer(
                           setImplementationHasParserError
                         }
                       />
-                      <button
-                        className="property-mapping-editor__entries__entry__remove-btn"
-                        key={propertyMappingState.uuid}
-                        onClick={() =>
-                          removePropertyMapping(
-                            propertyMappingState.propertyMapping,
-                          )
-                        }
-                        tabIndex={-1}
-                        title="Remove"
-                        disabled={propertyMappingState.lambdaString === ''}
-                      >
-                        <TimesIcon />
-                      </button>
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            key={propertyMappingState.uuid}
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
                     </div>
                   );
                 }

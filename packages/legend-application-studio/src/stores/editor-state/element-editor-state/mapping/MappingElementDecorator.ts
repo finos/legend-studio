@@ -70,7 +70,7 @@ import {
   enumMapping_setEnumValueMappings,
   enumValueMapping_addSourceValue,
   enumValueMapping_setSourceValues,
-  mapping_setPropertyMappings,
+  instanceSetImpl_setPropertyMappings,
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
@@ -426,14 +426,15 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    mapping_setPropertyMappings(
+    instanceSetImpl_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
-              propertyMapping instanceof FlatDataPropertyMapping &&
-              !isStubbed_RawLambda(propertyMapping.transform),
+              (propertyMapping instanceof FlatDataPropertyMapping &&
+                !isStubbed_RawLambda(propertyMapping.transform)) ||
+              propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
           )
           .filter(
             (propertyMapping) =>
@@ -594,16 +595,18 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    mapping_setPropertyMappings(
+    instanceSetImpl_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
-              propertyMapping instanceof RelationalPropertyMapping &&
-              !isStubbed_RawRelationalOperationElement(
-                propertyMapping.relationalOperation,
-              ),
+              (propertyMapping instanceof RelationalPropertyMapping &&
+                !isStubbed_RawRelationalOperationElement(
+                  propertyMapping.relationalOperation,
+                )) ||
+              propertyMapping instanceof
+                EmbeddedRelationalInstanceSetImplementation,
           )
           .filter(
             (propertyMapping) =>
@@ -697,7 +700,7 @@ export class MappingElementDecorationCleaner
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): void {
-    mapping_setPropertyMappings(
+    instanceSetImpl_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !isStubbed_RawLambda(propertyMapping.transform),
@@ -711,7 +714,7 @@ export class MappingElementDecorationCleaner
       | FlatDataInstanceSetImplementation
       | EmbeddedFlatDataPropertyMapping,
   ): void {
-    mapping_setPropertyMappings(
+    instanceSetImpl_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>
