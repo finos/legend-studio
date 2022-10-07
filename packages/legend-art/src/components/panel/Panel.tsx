@@ -20,6 +20,21 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { CheckSquareIcon, SquareIcon, TimesCircleIcon } from '../CJS__Icon.cjs';
 
+export const Panel: React.FC<{
+  children?: React.ReactNode;
+  className?: string;
+}> = (props) => {
+  const { children, className } = props;
+  return <div className={clsx('panel', className)}>{children}</div>;
+};
+
+export const PanelFullContent: React.FC<{
+  children?: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  return <div className="panel__content--full">{children}</div>;
+};
+
 export const PanelHeaderActionItem: React.FC<{
   title: string;
   className?: string;
@@ -98,6 +113,24 @@ export const PanelForm: React.FC<{
   );
 };
 
+export const PanelFormHeader: React.FC<{
+  name: string;
+  className?: string;
+  preserveCasing?: boolean;
+}> = (props) => {
+  const { name, className, preserveCasing } = props;
+  return (
+    <div
+      className={clsx(
+        'panel__content__form__section__header__label',
+        className,
+      )}
+    >
+      {!preserveCasing ? capitalize(name) : name}
+    </div>
+  );
+};
+
 export const PanelFormDescription: React.FC<{
   children: React.ReactNode;
   className?: string;
@@ -165,21 +198,6 @@ export const PanelListItem: React.FC<{
   );
 };
 
-export const Panel: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return <div className={clsx('panel', className)}>{children}</div>;
-};
-
-export const PanelFullContent: React.FC<{
-  children?: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-  return <div className="panel__content--full">{children}</div>;
-};
-
 export const PanelFormTextEditor = observer(
   (props: {
     name: string;
@@ -208,9 +226,7 @@ export const PanelFormTextEditor = observer(
 
     return (
       <>
-        <div className="panel__content__form__section__header__label">
-          {!preserveCasing ? capitalize(name) : name}
-        </div>
+        <PanelFormHeader name={!preserveCasing ? capitalize(name) : name} />
         <div className="panel__content__form__section__header__prompt">
           {description}
         </div>

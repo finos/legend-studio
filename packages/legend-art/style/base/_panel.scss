@@ -240,23 +240,17 @@
     @include flexVCenter;
 
     background: var(--color-dark-grey-100);
-    padding: 1rem 2rem;
     color: var(--color-light-grey-400);
-    width: 80%;
+    padding: 1rem;
+    width: 60%;
     font-size: 1.2rem;
     font-weight: 400;
     margin-bottom: 3rem;
-    line-height: 1.8rem;
-
-    svg {
-      margin-left: 0.5rem;
-      font-size: 1.2rem;
-      color: green;
-    }
+    line-height: 1.9rem;
   }
 
   &__section {
-    padding: 1rem;
+    padding: 0 1rem;
   }
 
   &__section__header__label {
@@ -561,8 +555,10 @@
   &__hint {
     @include flexCenter;
 
+    justify-content: center;
+    align-self: flex-start;
     border-radius: 0.2rem;
-    padding: 0 0.5rem;
+    margin-right: 1rem;
     color: var(--color-light-grey-300);
   }
 

@@ -29,10 +29,10 @@ const PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE =
 export class PlatformConfiguration implements Hashable {
   readonly _UUID = uuid();
 
-  name: string;
+  name: string | undefined;
   version: string | undefined;
 
-  constructor(name: string, version: string) {
+  constructor(name: string | undefined, version: string | undefined) {
     makeObservable(this, {
       name: observable,
       version: observable,
@@ -56,17 +56,10 @@ export class PlatformConfiguration implements Hashable {
   }
 
   get hashCode(): string {
-    if (this.version) {
-      return hashArray([
-        PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE,
-        this.name,
-        this.version,
-      ]);
-    } else {
-      return hashArray([
-        PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE,
-        this.name,
-      ]);
-    }
+    return hashArray([
+      PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE,
+      this.name ?? '',
+      this.version ?? '',
+    ]);
   }
 }
