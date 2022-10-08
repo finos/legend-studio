@@ -86,7 +86,7 @@ import {
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 
-export const mapping_setPropertyMappings = action(
+export const instanceSetImpl_setPropertyMappings = action(
   (
     si: InstanceSetImplementation,
     pm: PropertyMapping[],
@@ -97,6 +97,17 @@ export const mapping_setPropertyMappings = action(
     );
   },
 );
+
+export const instanceSetImpl_deletePropertyMapping = action(
+  (si: InstanceSetImplementation, pm: PropertyMapping): void => {
+    deleteEntry(
+      si.propertyMappings,
+      pm,
+      (p1, p2) => p1.property._UUID === p2.property._UUID,
+    );
+  },
+);
+
 export const setImpl_setRoot = action(
   (owner: SetImplementation, val: boolean): void => {
     owner.root.value = val;

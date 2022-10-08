@@ -22,12 +22,20 @@ import {
   type MappingElement,
   MappingEditorState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
-import type { InstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
+import type {
+  InstanceSetImplementationState,
+  PropertyMappingState,
+} from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementState.js';
 import {
   PurePropertyMappingState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
-import { clsx, ArrowCircleRightIcon } from '@finos/legend-art';
+import {
+  clsx,
+  ArrowCircleRightIcon,
+  TimesCircleIcon,
+  TimesIcon,
+} from '@finos/legend-art';
 import { guaranteeType, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type FlatDataPropertyMappingState,
@@ -42,6 +50,7 @@ import type {
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type Property,
+  type PropertyMapping,
   type Type,
   getRootSetImplementation,
   Class,
@@ -53,6 +62,7 @@ import {
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import {
+  instanceSetImpl_deletePropertyMapping,
   setImpl_nominateRoot,
   setImpl_setRoot,
 } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
@@ -82,6 +92,12 @@ export const PropertyMappingsEditor = observer(
     isReadOnly: boolean;
   }) => {
     const { instanceSetImplementationState, property, isReadOnly } = props;
+    const validationErrorMessage =
+      instanceSetImplementationState.mappingElement.propertyMappings.filter(
+        (pm) => pm.property.value === property,
+      ).length > 1 && !(property.genericType.value.rawType instanceof Class)
+        ? 'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) or enumeration type property'
+        : undefined;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const mappingEditorState =
@@ -95,7 +111,7 @@ export const PropertyMappingsEditor = observer(
     const isEmbedded =
       instanceSetImplementationState.mappingElement._isEmbedded;
     // Parser Error
-    const propertyMappingStates =
+    const propertyMappingStates: PropertyMappingState[] =
       instanceSetImplementationState.propertyMappingStates.filter(
         (pm) => pm.propertyMapping.property.value === property,
       );
@@ -107,6 +123,13 @@ export const PropertyMappingsEditor = observer(
         (pm) => pm.parserError,
       ),
     );
+    const removePropertyMapping = (pm: PropertyMapping): void => {
+      instanceSetImpl_deletePropertyMapping(
+        instanceSetImplementationState.mappingElement,
+        pm,
+      );
+      instanceSetImplementationState.decorate();
+    };
     // Walker
     // TODO: revisit this behavior now that we have more types of property mapping to support
     // e.g. embedded, target set implementation, etc.
@@ -188,7 +211,25 @@ export const PropertyMappingsEditor = observer(
         })}
       >
         <div className="property-mapping-editor__metadata">
-          <div className="property-mapping-editor__name">{property.name}</div>
+          <div
+            className={clsx('property-mapping-editor__name', {
+              'property-mapping-editor__name--with-validation': Boolean(
+                validationErrorMessage,
+              ),
+            })}
+          >
+            <div className={'property-mapping-editor__name__label'}>
+              {property.name}
+            </div>
+            {validationErrorMessage && (
+              <div
+                className="property-mapping-editor__name--with-validation__indicator"
+                title={validationErrorMessage}
+              >
+                <TimesCircleIcon />
+              </div>
+            )}
+          </div>
           <div className="property-mapping-editor__info">
             <div
               className={clsx(
@@ -230,120 +271,184 @@ export const PropertyMappingsEditor = observer(
           </div>
         </div>
         <div className="property-mapping-editor__content">
-          {propertyMappingStates.map((propertyMappingState) => {
-            switch (instanceSetImplementationType) {
-              case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
-                return (
-                  <PurePropertyMappingEditor
-                    key={propertyMappingState.uuid}
-                    isReadOnly={isReadOnly}
-                    pureInstanceSetImplementationState={guaranteeType(
-                      instanceSetImplementationState,
-                      PureInstanceSetImplementationState,
-                    )}
-                    purePropertyMappingState={guaranteeType(
-                      propertyMappingState,
-                      PurePropertyMappingState,
-                    )}
-                    setImplementationHasParserError={
-                      setImplementationHasParserError
-                    }
-                  />
-                );
-              }
-              case SET_IMPLEMENTATION_TYPE.FLAT_DATA:
-              case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
-                return (
-                  <FlatDataPropertyMappingEditor
-                    key={propertyMappingState.uuid}
-                    isReadOnly={isReadOnly}
-                    flatDataInstanceSetImplementationState={
-                      instanceSetImplementationState as FlatDataInstanceSetImplementationState
-                    }
-                    flatDataPropertyMappingState={
-                      propertyMappingState as FlatDataPropertyMappingState
-                    }
-                    setImplementationHasParserError={
-                      setImplementationHasParserError
-                    }
-                  />
-                );
-              }
-              case SET_IMPLEMENTATION_TYPE.RELATIONAL: {
-                return (
-                  <RelationalPropertyMappingEditor
-                    key={propertyMappingState.uuid}
-                    isReadOnly={isReadOnly}
-                    relationalInstanceSetImplementationState={
-                      instanceSetImplementationState as RootRelationalInstanceSetImplementationState
-                    }
-                    relationalPropertyMappingState={
-                      propertyMappingState as RelationalPropertyMappingState
-                    }
-                    setImplementationHasParserError={
-                      setImplementationHasParserError
-                    }
-                  />
-                );
-              }
-              default: {
-                const extraPropertyMappingEditorRenderers =
-                  editorStore.pluginManager
-                    .getApplicationPlugins()
-                    .flatMap(
-                      (plugin) =>
-                        (
-                          plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
-                        ).getExtraPropertyMappingEditorRenderers?.() ?? [],
-                    );
-                for (const renderer of extraPropertyMappingEditorRenderers) {
-                  const renderedPropertyMappingEditor = renderer(
-                    instanceSetImplementationState,
-                    propertyMappingState,
+          <div className="property-mapping-editor__entries">
+            {propertyMappingStates.map((propertyMappingState) => {
+              switch (instanceSetImplementationType) {
+                case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
+                  return (
+                    <div
+                      className="property-mapping-editor__entries__entry"
+                      key={propertyMappingState.uuid}
+                    >
+                      <PurePropertyMappingEditor
+                        isReadOnly={isReadOnly}
+                        pureInstanceSetImplementationState={guaranteeType(
+                          instanceSetImplementationState,
+                          PureInstanceSetImplementationState,
+                        )}
+                        purePropertyMappingState={guaranteeType(
+                          propertyMappingState,
+                          PurePropertyMappingState,
+                        )}
+                        setImplementationHasParserError={
+                          setImplementationHasParserError
+                        }
+                      />
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
+                    </div>
                   );
-                  if (renderedPropertyMappingEditor) {
-                    return renderedPropertyMappingEditor;
-                  }
                 }
-                throw new UnsupportedOperationError(
-                  `Can't render property mapping editor: no compatible renderer available from plugins`,
-                );
+                case SET_IMPLEMENTATION_TYPE.FLAT_DATA:
+                case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
+                  return (
+                    <div
+                      className="property-mapping-editor__entries__entry"
+                      key={propertyMappingState.uuid}
+                    >
+                      <FlatDataPropertyMappingEditor
+                        isReadOnly={isReadOnly}
+                        flatDataInstanceSetImplementationState={
+                          instanceSetImplementationState as FlatDataInstanceSetImplementationState
+                        }
+                        flatDataPropertyMappingState={
+                          propertyMappingState as FlatDataPropertyMappingState
+                        }
+                        setImplementationHasParserError={
+                          setImplementationHasParserError
+                        }
+                      />
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            key={propertyMappingState.uuid}
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
+                    </div>
+                  );
+                }
+                case SET_IMPLEMENTATION_TYPE.RELATIONAL: {
+                  return (
+                    <div
+                      className="property-mapping-editor__entries__entry"
+                      key={propertyMappingState.uuid}
+                    >
+                      <RelationalPropertyMappingEditor
+                        isReadOnly={isReadOnly}
+                        relationalInstanceSetImplementationState={
+                          instanceSetImplementationState as RootRelationalInstanceSetImplementationState
+                        }
+                        relationalPropertyMappingState={
+                          propertyMappingState as RelationalPropertyMappingState
+                        }
+                        setImplementationHasParserError={
+                          setImplementationHasParserError
+                        }
+                      />
+                      {propertyMappingStates.length > 1 &&
+                        propertyBasicType !== CLASS_PROPERTY_TYPE.CLASS && (
+                          <button
+                            className="property-mapping-editor__entries__entry__remove-btn"
+                            key={propertyMappingState.uuid}
+                            onClick={() =>
+                              removePropertyMapping(
+                                propertyMappingState.propertyMapping,
+                              )
+                            }
+                            tabIndex={-1}
+                            title="Remove"
+                            disabled={propertyMappingState.lambdaString === ''}
+                          >
+                            <TimesIcon />
+                          </button>
+                        )}
+                    </div>
+                  );
+                }
+                default: {
+                  const extraPropertyMappingEditorRenderers =
+                    editorStore.pluginManager
+                      .getApplicationPlugins()
+                      .flatMap(
+                        (plugin) =>
+                          (
+                            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
+                          ).getExtraPropertyMappingEditorRenderers?.() ?? [],
+                      );
+                  for (const renderer of extraPropertyMappingEditorRenderers) {
+                    const renderedPropertyMappingEditor = renderer(
+                      instanceSetImplementationState,
+                      propertyMappingState,
+                    );
+                    if (renderedPropertyMappingEditor) {
+                      return renderedPropertyMappingEditor;
+                    }
+                  }
+                  throw new UnsupportedOperationError(
+                    `Can't render property mapping editor: no compatible renderer available from plugins`,
+                  );
+                }
               }
-            }
-          })}
-          {propertyBasicType === CLASS_PROPERTY_TYPE.CLASS &&
-            !propertyMappingStates.length && (
-              <>
-                {isEmbedded && (
-                  <div className="property-mapping-editor__entry--empty">
-                    Click
-                    <button
-                      className="property-mapping-editor__entry--empty__visit-btn"
-                      onClick={visitOrCreateMappingElement}
-                      tabIndex={-1}
-                      title={'Create mapping element'}
-                    >
-                      <ArrowCircleRightIcon />
-                    </button>
-                    {`to create an embedded class mapping for property '${property.name}'.`}
-                  </div>
-                )}
-                {!isEmbedded && (
-                  <div className="property-mapping-editor__entry--empty">
-                    No set implementation found. Click
-                    <button
-                      className="property-mapping-editor__entry--empty__visit-btn"
-                      onClick={visitOrCreateMappingElement}
-                      tabIndex={-1}
-                      title={'Create mapping element'}
-                    >
-                      <ArrowCircleRightIcon />
-                    </button>
-                    {`to create a root class mapping for '${propertyRawType.name}'.`}
-                  </div>
-                )}
-              </>
-            )}
+            })}
+            {propertyBasicType === CLASS_PROPERTY_TYPE.CLASS &&
+              !propertyMappingStates.length && (
+                <>
+                  {isEmbedded && (
+                    <div className="property-mapping-editor__entry--empty">
+                      Click
+                      <button
+                        className="property-mapping-editor__entry--empty__visit-btn"
+                        onClick={visitOrCreateMappingElement}
+                        tabIndex={-1}
+                        title={'Create mapping element'}
+                      >
+                        <ArrowCircleRightIcon />
+                      </button>
+                      {`to create an embedded class mapping for property '${property.name}'.`}
+                    </div>
+                  )}
+                  {!isEmbedded && (
+                    <div className="property-mapping-editor__entry--empty">
+                      No set implementation found. Click
+                      <button
+                        className="property-mapping-editor__entry--empty__visit-btn"
+                        onClick={visitOrCreateMappingElement}
+                        tabIndex={-1}
+                        title={'Create mapping element'}
+                      >
+                        <ArrowCircleRightIcon />
+                      </button>
+                      {`to create a root class mapping for '${propertyRawType.name}'.`}
+                    </div>
+                  )}
+                </>
+              )}
+          </div>
         </div>
       </div>
     );
