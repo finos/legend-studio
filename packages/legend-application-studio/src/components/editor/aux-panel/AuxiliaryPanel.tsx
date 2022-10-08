@@ -67,9 +67,12 @@ export const AuxiliaryPanel = observer(() => {
       name: 'PROBLEMS',
       icon: undefined,
       isVisible: true,
-      ...(editorStore.grammarTextEditorState.warnings?.length && {
-        badge: editorStore.grammarTextEditorState.warnings.length.toString(),
-      }),
+      ...(editorStore.grammarTextEditorState.warnings?.length
+        ? {
+            badge:
+              editorStore.grammarTextEditorState.warnings.length.toString(),
+          }
+        : { badge: '0' }),
     },
   };
 

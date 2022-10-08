@@ -509,12 +509,6 @@ export class EditorGraphState {
       // so that the form parts where the user interacted with (i.e. where the lamdbas source
       // information are populated), can reveal compilation error. If compilation errors
       // show up in other parts, the user will get redirected to text-mode
-      yield this.editorStore.graphManagerState.graphManager.compileGraph(
-        this.editorStore.graphManagerState.graph,
-        {
-          keepSourceInformation: true,
-        },
-      );
 
       const errorWarnings =
         yield this.editorStore.graphManagerState.graphManager.compileGraph(
@@ -649,9 +643,8 @@ export class EditorGraphState {
           this.editorStore.graphManagerState.graph,
         )) as Entity[];
 
-      //TODO: -change
       const errorWarnings =
-        (yield this.editorStore.graphManagerState.graphManager.compileText(
+        (yield this.editorStore.graphManagerState.graphManager.getWarningsFromCompileText(
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
           { getErrorWarnings: true },

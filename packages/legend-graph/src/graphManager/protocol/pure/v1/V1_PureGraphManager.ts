@@ -252,6 +252,7 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import type { EngineWarning } from '../../../action/EngineWarning.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1500,11 +1501,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           getErrorWarnings?: boolean;
         }
       | undefined,
-  ): Promise<any> {
-    // TODO: change ): Promise<void> {
-
+  ): Promise<EngineWarning[] | void> {
     if (options?.getErrorWarnings) {
-      return this.engine.compilePureModelContextData(
+      return this.engine.getWarningsFromCompilePureModelContextData(
         this.getFullGraphModelData(graph, {
           keepSourceInformation: options.keepSourceInformation,
         }),
@@ -1513,15 +1512,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           getErrorWarnings: options.getErrorWarnings,
         },
       );
+    } else {
+      return this.engine.compilePureModelContextData(
+        this.getFullGraphModelData(graph, {
+          keepSourceInformation: options?.keepSourceInformation,
+        }),
+        {
+          onError: options?.onError,
+        },
+      );
     }
-    return this.engine.compilePureModelContextData(
-      this.getFullGraphModelData(graph, {
-        keepSourceInformation: options?.keepSourceInformation,
-      }),
-      {
-        onError: options?.onError,
-      },
-    );
   }
 
   async compileText(
@@ -1529,13 +1529,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     options?: { onError?: () => void; getErrorWarnings?: boolean },
   ): Promise<Entity[]> {
-    if (options?.getErrorWarnings) {
-      return this.engine.compileText(
-        graphGrammar,
-        this.getGraphCompileContext(graph),
-        options,
-      );
-    }
     return this.pureModelContextDataToEntities(
       await this.engine.compileText(
         graphGrammar,
@@ -1545,6 +1538,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  async getWarningsFromCompileText(
+    graphGrammar: string,
+    graph: PureModel,
+    options?: { onError?: () => void; getErrorWarnings?: boolean },
+  ): Promise<EngineWarning[] | undefined> {
+    return this.engine.getWarningsFromCompileText(
+      graphGrammar,
+      this.getGraphCompileContext(graph),
+      options,
+    );
+  }
   getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,
@@ -2597,11 +2601,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   pureModelContextDataToEntities = (
     graphProtocol: V1_PureModelContextData,
-  ): Entity[] => {
-    return graphProtocol.elements.map((element) =>
+  ): Entity[] =>
+    graphProtocol.elements.map((element) =>
       this.elementProtocolToEntity(element),
     );
-  };
 
   private async entitiesToPureModelContextData(
     entities: Entity[],

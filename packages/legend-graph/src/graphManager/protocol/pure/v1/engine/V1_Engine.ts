@@ -368,18 +368,43 @@ export class V1_Engine {
     options?:
       | { onError?: (() => void) | undefined; getErrorWarnings?: boolean }
       | undefined,
-  ): Promise<any> {
+  ): Promise<void> {
+    try {
+      await this.engineServerClient.compile(
+        this.serializePureModelContextData(model),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  async getWarningsFromCompilePureModelContextData(
+    model: V1_PureModelContextData,
+    options?:
+      | { onError?: (() => void) | undefined; getErrorWarnings?: boolean }
+      | undefined,
+  ): Promise<EngineWarning[] | undefined> {
     try {
       const compileResponse = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-
       if (compileResponse.warnings && options?.getErrorWarnings === true) {
         const warnings = compileResponse.warnings as EngineWarning[];
-
         return warnings;
       } else {
-        return '';
+        return undefined;
       }
     } catch (error) {
       assertErrorThrown(error);
@@ -402,8 +427,45 @@ export class V1_Engine {
     graphText: string,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void; getErrorWarnings?: boolean },
-  ): Promise<any> {
-    // todo: separate sections ): Promise<V1_PureModelContextData> {
+  ): Promise<V1_PureModelContextData> {
+    const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
+      ...options,
+      // NOTE: we need to return source information here so we can locate the compilation
+      // errors/warnings
+      returnSourceInformation: true,
+    });
+    const pureModelContextDataJson = compileContext
+      ? mergeObjects(
+          this.serializePureModelContextData(compileContext),
+          mainGraph,
+          false,
+        )
+      : mainGraph;
+    try {
+      await this.engineServerClient.compile(pureModelContextDataJson);
+      return V1_deserializePureModelContextData(mainGraph);
+    } catch (error) {
+      assertErrorThrown(error);
+      options?.onError?.();
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  async getWarningsFromCompileText(
+    graphText: string,
+    compileContext?: V1_PureModelContextData,
+    options?: { onError?: () => void; getErrorWarnings?: boolean },
+  ): Promise<EngineWarning[] | undefined> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
       // NOTE: we need to return source information here so we can locate the compilation
@@ -425,7 +487,7 @@ export class V1_Engine {
       if (compileResponse.warnings && options?.getErrorWarnings === true) {
         return compileResponse.warnings as EngineWarning[];
       } else {
-        return V1_deserializePureModelContextData(mainGraph);
+        return undefined;
       }
     } catch (error) {
       assertErrorThrown(error);
