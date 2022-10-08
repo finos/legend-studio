@@ -64,7 +64,6 @@ import {
   type TaggedValue,
   MULTIPLICITY_INFINITE,
   Profile,
-  Multiplicity,
   Class,
   PrimitiveType,
   Unit,

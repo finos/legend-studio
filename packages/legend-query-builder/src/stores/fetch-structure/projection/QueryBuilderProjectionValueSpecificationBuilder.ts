@@ -20,7 +20,6 @@ import {
   extractElementNameFromPath,
   GenericType,
   GenericTypeExplicitReference,
-  Multiplicity,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,

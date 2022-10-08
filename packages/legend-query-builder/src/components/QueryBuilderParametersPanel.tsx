@@ -39,7 +39,6 @@ import {
   MULTIPLICITY_INFINITE,
   PRIMITIVE_TYPE,
   VariableExpression,
-  Multiplicity,
   GenericTypeExplicitReference,
   GenericType,
 } from '@finos/legend-graph';

@@ -66,7 +66,6 @@ import {
   MULTIPLICITY_INFINITE,
   Unit,
   Type,
-  Multiplicity,
   Enumeration,
   Class,
   PrimitiveType,

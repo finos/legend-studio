@@ -72,7 +72,6 @@ import {
   fromElementPathToMappingElementId,
   InferableMappingElementIdImplicitValue,
   InferableMappingElementRootExplicitValue,
-  Multiplicity,
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_buildFullPath,

@@ -75,10 +75,10 @@ import {
 } from '@finos/legend-art';
 import {
   type Type,
+  type Multiplicity,
   Class,
   DerivedProperty,
   Property,
-  Multiplicity,
   ELEMENT_PATH_DELIMITER,
   MULTIPLICITY_INFINITE,
   GenericType,

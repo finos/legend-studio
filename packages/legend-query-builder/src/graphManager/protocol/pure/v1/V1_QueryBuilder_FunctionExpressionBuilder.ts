@@ -33,7 +33,6 @@ import {
   extractElementNameFromPath,
   V1_AppliedProperty,
   CollectionInstanceValue,
-  Multiplicity,
   INTERNAL__UnknownValueSpecification,
   V1_Variable,
   V1_serializeValueSpecification,

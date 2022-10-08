@@ -74,7 +74,6 @@ import {
   Class,
   GenericType,
   Profile,
-  Multiplicity,
   Type,
   PrimitiveType,
   Unit,

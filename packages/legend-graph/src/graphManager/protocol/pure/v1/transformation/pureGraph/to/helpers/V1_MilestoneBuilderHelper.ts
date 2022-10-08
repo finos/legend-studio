@@ -31,7 +31,6 @@ import { Class } from '../../../../../../../../graph/metamodel/pure/packageableE
 import { DerivedProperty } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';
 import { GenericType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import { GenericTypeExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
-import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { Property } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Property.js';
 import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity.js';
 import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
