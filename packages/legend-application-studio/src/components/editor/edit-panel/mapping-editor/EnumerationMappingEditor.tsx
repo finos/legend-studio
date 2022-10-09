@@ -64,7 +64,7 @@ import {
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
-  enumMapping_updateSourceType,
+  enumerationMapping_updateSourceType,
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
@@ -115,7 +115,7 @@ const EnumerationMappingSourceSelectorModal = observer(
     ): void => {
       const value = val?.value;
       if (!value || value instanceof Type) {
-        enumMapping_updateSourceType(
+        enumerationMapping_updateSourceType(
           enumerationMapping,
           value ? PackageableElementExplicitReference.create(value) : undefined,
         );
@@ -368,7 +368,7 @@ export const EnumerationMappingEditor = observer(
     const handleDrop = useCallback(
       (item: MappingElementSourceDropTarget): void => {
         if (!isReadOnly && item.data.packageableElement instanceof Type) {
-          enumMapping_updateSourceType(
+          enumerationMapping_updateSourceType(
             enumerationMapping,
             PackageableElementExplicitReference.create(
               item.data.packageableElement,

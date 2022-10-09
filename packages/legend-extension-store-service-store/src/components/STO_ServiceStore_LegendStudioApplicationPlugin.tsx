@@ -28,7 +28,6 @@ import {
   type DragElementClassifier,
   type NewElementState,
   type DSL_Mapping_LegendStudioApplicationPlugin_Extension,
-  type SetImplemtationClassifier,
   type MappingElementStateCreator,
   type MappingElement,
   type MappingElementState,
@@ -53,7 +52,6 @@ import type {
   Connection,
   EmbeddedData,
   PackageableElement,
-  SetImplementation,
 } from '@finos/legend-graph';
 import { ServiceStore } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/model/STO_ServiceStore_ServiceStore.js';
 import { RootServiceInstanceSetImplementation } from '../graph/metamodel/pure/model/packageableElements/store/serviceStore/mapping/STO_ServiceStore_RootServiceInstanceSetImplementation.js';
@@ -78,7 +76,6 @@ import type { DocumentationEntry } from '@finos/legend-application';
 const SERVICE_STORE_ELEMENT_TYPE = 'SERVICE_STORE';
 const SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_SERVICE_STORE';
-const SERVICE_STORE_MAPPING_TYPE = 'serviceStore';
 const SERVICE_STORE_EMBEDDED_DATA_TYPE = 'ServiceStore';
 
 export class STO_ServiceStore_LegendStudioApplicationPlugin
@@ -175,17 +172,6 @@ export class STO_ServiceStore_LegendStudioApplicationPlugin
 
   getExtraPureGrammarTextEditorDragElementTypes(): string[] {
     return [SERVICE_STORE_ELEMENT_PROJECT_EXPLORER_DND_TYPE];
-  }
-
-  getExtraSetImplementationClassifiers(): SetImplemtationClassifier[] {
-    return [
-      (setImplementation: SetImplementation): string | undefined => {
-        if (setImplementation instanceof RootServiceInstanceSetImplementation) {
-          return SERVICE_STORE_MAPPING_TYPE;
-        }
-        return undefined;
-      },
-    ];
   }
 
   getExtraMappingElementStateCreators(): MappingElementStateCreator[] {

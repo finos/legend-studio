@@ -86,7 +86,7 @@ import {
 } from '@finos/legend-shared';
 import { action } from 'mobx';
 
-export const instanceSetImpl_setPropertyMappings = action(
+export const instanceSetImplementation_setPropertyMappings = action(
   (
     si: InstanceSetImplementation,
     pm: PropertyMapping[],
@@ -98,23 +98,18 @@ export const instanceSetImpl_setPropertyMappings = action(
   },
 );
 
-export const instanceSetImpl_deletePropertyMapping = action(
+export const instanceSetImplementation_deletePropertyMapping = action(
   (si: InstanceSetImplementation, pm: PropertyMapping): void => {
-    deleteEntry(
-      si.propertyMappings,
-      pm,
-      (p1, p2) => p1.property._UUID === p2.property._UUID,
-    );
+    deleteEntry(si.propertyMappings, pm);
   },
 );
 
-export const setImpl_setRoot = action(
+export const setImplementation_setRoot = action(
   (owner: SetImplementation, val: boolean): void => {
     owner.root.value = val;
   },
 );
 
-//
 export const mapping_addClassMapping = action(
   (
     mapping: Mapping,
@@ -179,13 +174,13 @@ export const mapping_addTest = action(
 
 // --------------------------------------------- Enumeration Mapping -------------------------------------
 
-export const enumMapping_setId = action(
+export const enumerationMapping_setId = action(
   (eM: EnumerationMapping, val: string): void => {
     eM.id.value = val;
   },
 );
 
-export const enumMapping_setSourceType = action(
+export const enumerationMapping_setSourceType = action(
   (
     eM: EnumerationMapping,
     value: PackageableElementReference<Type> | undefined,
@@ -196,18 +191,18 @@ export const enumMapping_setSourceType = action(
   },
 );
 
-export const enumMapping_setEnumValueMappings = action(
+export const enumerationMapping_setEnumValueMappings = action(
   (eM: EnumerationMapping, value: EnumValueMapping[]): void => {
     eM.enumValueMappings = value.map(observe_EnumValueMapping);
   },
 );
-export const enumMapping_updateSourceType = action(
+export const enumerationMapping_updateSourceType = action(
   (
     eM: EnumerationMapping,
     value: PackageableElementReference<Type> | undefined,
   ): void => {
     if (eM.sourceType?.value !== value?.value) {
-      enumMapping_setSourceType(eM, value);
+      enumerationMapping_setSourceType(eM, value);
       eM.enumValueMappings = eM.enumValueMappings.map((enumValueMapping) => {
         enumValueMapping.sourceValues = [];
         enumValueMapping.sourceValues.push(
@@ -362,15 +357,15 @@ export const setImpl_updateRootOnCreate = action(
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length) {
-      setImpl_setRoot(setImp, false);
+      setImplementation_setRoot(setImp, false);
       if (classMappingsWithSimilarTarget.length === 1) {
-        setImpl_setRoot(
+        setImplementation_setRoot(
           classMappingsWithSimilarTarget[0] as SetImplementation,
           false,
         );
       }
     } else {
-      setImpl_setRoot(setImp, true);
+      setImplementation_setRoot(setImp, true);
     }
   },
 );
@@ -387,7 +382,7 @@ export const setImpl_updateRootOnDelete = action(
       setImp.class.value,
     ).filter((si) => si !== setImp);
     if (classMappingsWithSimilarTarget.length === 1) {
-      setImpl_setRoot(
+      setImplementation_setRoot(
         classMappingsWithSimilarTarget[0] as SetImplementation,
         false,
       );
@@ -409,10 +404,10 @@ export const setImpl_nominateRoot = action(
     );
     classMappingsWithSimilarTarget.forEach((si) => {
       if (si !== setImp) {
-        setImpl_setRoot(si, false);
+        setImplementation_setRoot(si, false);
       }
     });
-    setImpl_setRoot(setImp, true);
+    setImplementation_setRoot(setImp, true);
   },
 );
 
