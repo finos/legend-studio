@@ -23,8 +23,7 @@ import {
 } from '@finos/legend-shared';
 import { observable, action, computed, makeObservable } from 'mobx';
 import { GAV_DELIMITER } from '@finos/legend-storage';
-
-const PROJECT_DEPENDENCY_HASH_STRUCTURE = 'PROJECT_DEPENDENCY';
+import { PROJECT_DEPENDENCY_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class ProjectDependency implements Hashable {
   readonly _UUID = uuid();

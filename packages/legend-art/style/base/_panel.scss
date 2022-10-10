@@ -281,6 +281,10 @@
     cursor: default;
   }
 
+  &__section__input-group__error-message {
+    max-width: 45rem;
+  }
+
   &__section__input {
     width: 100%;
     min-width: 5rem;
@@ -306,16 +310,6 @@
     &--with-validation {
       position: relative;
       max-width: 20rem;
-
-      &__error {
-        position: absolute;
-        right: 0.5rem;
-        top: 0.7rem;
-      }
-
-      &__error__indicator {
-        color: var(--color-red-180);
-      }
     }
   }
 
@@ -558,7 +552,7 @@
     justify-content: center;
     align-self: flex-start;
     border-radius: 0.2rem;
-    margin-right: 1rem;
+    margin: 0.5rem 1rem 0 0;
     color: var(--color-light-grey-300);
   }
 

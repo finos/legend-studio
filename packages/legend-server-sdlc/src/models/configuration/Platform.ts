@@ -16,9 +16,7 @@
 
 import { observable, computed, makeObservable } from 'mobx';
 import { type Hashable, hashArray } from '@finos/legend-shared';
-
-const PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE =
-  'PROJECT_SERVER_PLATFORM_CONFIGURATION';
+import { PROJECT_SERVER_PLATFORM_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class Platform implements Hashable {
   name: string;
@@ -40,7 +38,7 @@ export class Platform implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE,
+      PROJECT_SERVER_PLATFORM_HASH_STRUCTURE,
       this.name,
       this.groupId,
       this.platformVersion,
