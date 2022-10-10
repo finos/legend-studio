@@ -45,7 +45,7 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
       platformConfigurations: optionalCustom(
         (values) => {
           //to update SDLC and remove platform configs if user has previously set them,
-          //one must make a nested null update like (platformConfigurations: platformConfigurations: [null])
+          //one must make a nested null update like (platformConfigurations: platformConfigurations: null)
           if (
             (values as PlatformConfiguration[]).every(
               (p) => p.name === undefined && p.version === undefined,
@@ -54,36 +54,22 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
             return null;
           }
 
-          return serializeArray(
-            values,
-            (value) =>
-              serialize(PlatformConfiguration.serialization.schema, value),
-            {
-              skipIfEmpty: true,
-              INTERNAL__forceReturnEmptyInTest: true,
-            },
+          return serializeArray(values, (value) =>
+            serialize(PlatformConfiguration.serialization.schema, value),
           );
         },
         (values) =>
-          deserializeArray(
-            values,
-            (v) => deserialize(PlatformConfiguration.serialization.schema, v),
-            {
-              skipIfEmpty: true,
-            },
+          deserializeArray(values, (v) =>
+            deserialize(PlatformConfiguration.serialization.schema, v),
           ),
       ),
     }),
   );
 
   get hashCode(): string {
-    if (this.platformConfigurations) {
-      return hashArray([
-        PROJECT_PLATFORM_CONFIG_STRUCTURE,
-        hashArray(this.platformConfigurations),
-      ]);
-    } else {
-      return '';
-    }
+    return hashArray([
+      PROJECT_PLATFORM_CONFIG_STRUCTURE,
+      hashArray(this.platformConfigurations ?? []),
+    ]);
   }
 }

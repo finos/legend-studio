@@ -22,9 +22,7 @@ import {
   SerializationFactory,
   uuid,
 } from '@finos/legend-shared';
-
-const PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE =
-  'PROJECT_SERVER_PLATFORM_CONFIGURATION';
+import { PROJECT_SERVER_PLATFORM_CONFIGURATION_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class PlatformConfiguration implements Hashable {
   readonly _UUID = uuid();

@@ -50,7 +50,6 @@ import {
   PanelList,
   PanelListItem,
   PanelFormDescription,
-  PanelFormHeader,
 } from '@finos/legend-art';
 import { action, flowResult } from 'mobx';
 import {
@@ -156,7 +155,7 @@ const ProjectStructureEditor = observer(
               isReadOnly={isReadOnly}
               value={projectConfig.groupId}
               name="Group ID"
-              description="The domain for artifacts generated as part of the project build
+              prompt="The domain for artifacts generated as part of the project build
               pipeline and published to an artifact repository"
               update={(value: string | undefined): void =>
                 projectConfig.setGroupId(value ?? '')
@@ -166,7 +165,7 @@ const ProjectStructureEditor = observer(
               isReadOnly={isReadOnly}
               value={projectConfig.artifactId}
               name="Artifact ID"
-              description="The identifier (within the domain specified by group ID) for
+              prompt="The identifier (within the domain specified by group ID) for
               artifacts generated as part of the project build pipeline and
               published to an artifact repository"
               update={(value: string | undefined): void =>
@@ -517,6 +516,17 @@ const ProjectPlatformVersionEditor = observer(
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
 
+    const isNotEmptyPlatforms = (
+      platformConfigurations: PlatformConfiguration[] | undefined,
+    ): boolean => {
+      if (platformConfigurations) {
+        return platformConfigurations.every(
+          (p) => p.name !== undefined && p.version !== undefined,
+        );
+      }
+      return false;
+    };
+
     const convertPlatformtoPlatformConfiguration = (
       platforms: Platform[] | undefined,
     ): PlatformConfiguration[] | undefined => {
@@ -542,12 +552,12 @@ const ProjectPlatformVersionEditor = observer(
 
     const seeDocumentation = (): void => {
       applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHAT_IS_CHANGE_PLATFORM_VERSION,
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PROJECT_PLATFORM_CONFIGURATIONS,
       );
     };
 
     const toggleOverridePlatformConfigurations = (): void => {
-      if (!projectConfig.isNotEmptyPlatforms()) {
+      if (!isNotEmptyPlatforms(projectConfig.platformConfigurations)) {
         editorStore.setActionAlertInfo({
           message:
             "This is an advanced configuration option that means you will no longer be relying on the latest platform versions but fixing your platform dependencies' versions to the ones you are using at this point in time. ",
@@ -581,7 +591,9 @@ const ProjectPlatformVersionEditor = observer(
       <Panel>
         {defaultPlatforms && (
           <PanelForm>
-            <PanelFormHeader name="Latest Platform Versions" />
+            <div className="panel__content__form__section__header__label">
+              Latest Platform Versions
+            </div>
             {defaultPlatforms.map((p) => (
               <PlatformConfigurationEditor
                 key={p.name}
@@ -597,10 +609,13 @@ const ProjectPlatformVersionEditor = observer(
           <PanelList>
             <PanelListItem>
               <PanelFormBooleanEditor
-                value={projectConfig.isNotEmptyPlatforms()}
+                value={isNotEmptyPlatforms(
+                  projectConfig.platformConfigurations,
+                )}
                 name=""
-                description={
-                  platformConfigurations && projectConfig.isNotEmptyPlatforms()
+                prompt={
+                  platformConfigurations &&
+                  isNotEmptyPlatforms(projectConfig.platformConfigurations)
                     ? "Unfix platform dependencies' versions"
                     : "Fix platform dependencies' versions"
                 }
@@ -626,20 +641,23 @@ const ProjectPlatformVersionEditor = observer(
             compilation results from here and the pipeline.
           </PanelFormDescription>
 
-          {platformConfigurations && projectConfig.isNotEmptyPlatforms() && (
-            <>
-              <PanelFormHeader name="Fixed Platform Versions" />
-              {platformConfigurations.map((p) => (
-                <PlatformConfigurationEditor
-                  key={p.name}
-                  platform={p}
-                  defaultPlatforms={defaultPlatforms}
-                  projectConfig={projectConfig}
-                  isLatestVersion={isLatestVersion(p)}
-                />
-              ))}
-            </>
-          )}
+          {platformConfigurations &&
+            isNotEmptyPlatforms(projectConfig.platformConfigurations) && (
+              <>
+                <div className="panel__content__form__section__header__label">
+                  Fixed Platform Versions
+                </div>
+                {platformConfigurations.map((p) => (
+                  <PlatformConfigurationEditor
+                    key={p.name}
+                    platform={p}
+                    defaultPlatforms={defaultPlatforms}
+                    projectConfig={projectConfig}
+                    isLatestVersion={isLatestVersion(p)}
+                  />
+                ))}
+              </>
+            )}
         </PanelForm>
       </Panel>
     );

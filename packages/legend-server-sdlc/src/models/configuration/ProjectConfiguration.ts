@@ -37,8 +37,7 @@ import {
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
-
-const PROJECT_CONFIGURATION_HASH_STRUCTURE = 'PROJECT_CONFIGURATION';
+import { PROJECT_CONFIGURATION_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
@@ -71,22 +70,12 @@ export class ProjectConfiguration implements Hashable {
       groupId: primitive(),
       platformConfigurations: optionalCustom(
         (values) =>
-          serializeArray(
-            values,
-            (value) =>
-              serialize(PlatformConfiguration.serialization.schema, value),
-            {
-              skipIfEmpty: true,
-              INTERNAL__forceReturnEmptyInTest: true,
-            },
+          serializeArray(values, (value) =>
+            serialize(PlatformConfiguration.serialization.schema, value),
           ),
         (values) =>
-          deserializeArray(
-            values,
-            (v) => deserialize(PlatformConfiguration.serialization.schema, v),
-            {
-              skipIfEmpty: true,
-            },
+          deserializeArray(values, (v) =>
+            deserialize(PlatformConfiguration.serialization.schema, v),
           ),
       ),
       projectDependencies: list(
@@ -111,15 +100,6 @@ export class ProjectConfiguration implements Hashable {
     this.artifactId = val;
   }
 
-  isNotEmptyPlatforms(): boolean {
-    if (this.platformConfigurations) {
-      return this.platformConfigurations.every(
-        (p) => p.name !== undefined && p.version !== undefined,
-      );
-    }
-    return false;
-  }
-
   deleteProjectDependency(val: ProjectDependency): void {
     deleteEntry(this.projectDependencies, val);
   }
@@ -136,25 +116,14 @@ export class ProjectConfiguration implements Hashable {
   }
 
   get hashCode(): string {
-    if (this.platformConfigurations !== undefined) {
-      return hashArray([
-        PROJECT_CONFIGURATION_HASH_STRUCTURE,
-        this.groupId,
-        this.artifactId,
-        hashArray(this.platformConfigurations),
-        this.projectStructureVersion.version.toString(),
-        this.projectStructureVersion.extensionVersion?.toString() ?? '',
-        hashArray(this.projectDependencies),
-      ]);
-    } else {
-      return hashArray([
-        PROJECT_CONFIGURATION_HASH_STRUCTURE,
-        this.groupId,
-        this.artifactId,
-        this.projectStructureVersion.version.toString(),
-        this.projectStructureVersion.extensionVersion?.toString() ?? '',
-        hashArray(this.projectDependencies),
-      ]);
-    }
+    return hashArray([
+      PROJECT_CONFIGURATION_HASH_STRUCTURE,
+      this.groupId,
+      this.artifactId,
+      hashArray(this.platformConfigurations ?? []),
+      this.projectStructureVersion.version.toString(),
+      this.projectStructureVersion.extensionVersion?.toString() ?? '',
+      hashArray(this.projectDependencies),
+    ]);
   }
 }
