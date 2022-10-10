@@ -306,11 +306,6 @@
       color: var(--color-dark-grey-500);
       cursor: not-allowed;
     }
-
-    &--with-validation {
-      position: relative;
-      max-width: 20rem;
-    }
   }
 
   &__section__textarea {
@@ -549,7 +544,6 @@
   &__hint {
     @include flexCenter;
 
-    justify-content: center;
     align-self: flex-start;
     border-radius: 0.2rem;
     margin: 0.5rem 1rem 0 0;
