@@ -99,6 +99,8 @@ import {
 import { SetImplementationImplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';
 import type { DSL_Mapping_PureProtocolProcessorPlugin_Extension } from '../../../../DSL_Mapping_PureProtocolProcessorPlugin_Extension.js';
 import { EnumerationMappingExplicitReference } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMappingReference.js';
+import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
+import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 
 /**
  * This test is skipped because we want to temporarily relax graph building algorithm
@@ -114,7 +116,7 @@ const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   returnUndefOnError(() => getClassMappingById(mapping, id)) ??
   new TEMPORARY__UnresolvedSetImplementation(id, mapping);
 
-const resolveRelationalPropertyMappingSource = (
+const resolvePropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
   value: V1_PropertyMapping,
   topParent: InstanceSetImplementation | undefined,
@@ -597,7 +599,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
-      resolveRelationalPropertyMappingSource(
+      resolvePropertyMappingSource(
         this.immediateParent,
         protocol,
         this.topParent,
@@ -682,6 +684,89 @@ export class V1_PropertyMappingBuilder
     }
     relationalPropertyMapping.localMappingProperty = localMapping;
     return relationalPropertyMapping;
+  }
+
+  visit_FlatDataAssociationPropertyMapping(
+    protocol: V1_FlatDataAssociationPropertyMapping,
+  ): PropertyMapping {
+    assertNonNullable(
+      protocol.property,
+      `FlatData property mapping 'property' field is missing`,
+    );
+    assertNonEmptyString(
+      protocol.property.property,
+      `FlatData property mapping 'property.property' field is missing or empty`,
+    );
+    assertNonNullable(
+      protocol.flatData,
+      `FlatData property mapping 'flatdata' field is missing`,
+    );
+    assertNonNullable(
+      protocol.sectionName,
+      `FlatData property mapping 'sectionName' field is missing`,
+    );
+    // NOTE: mapping for derived property is not supported
+    let propertyOwner: Association;
+    if (this.immediateParent instanceof AssociationImplementation) {
+      propertyOwner = this.immediateParent.association.value;
+    } else {
+      throw new GraphBuilderError(
+        `Can't find property owner class for property '${protocol.property.property}'`,
+      );
+    }
+    const property = getOwnProperty(propertyOwner, protocol.property.property);
+
+    // NOTE: mapping for derived property is not supported
+    // since we are not doing embedded property mappings yet, the target must have already been added to the mapping
+    const propertyType = property.genericType.value.rawType;
+    let targetSetImplementation: SetImplementation | undefined;
+    if (propertyType instanceof Class) {
+      const parentMapping = this.immediateParent._PARENT;
+
+      if (protocol.target) {
+        targetSetImplementation =
+          TEMPORARY__getClassMappingByIdOrReturnUnresolved(
+            parentMapping,
+            protocol.target,
+          );
+      } else {
+        targetSetImplementation = getClassMappingsByClass(
+          parentMapping,
+          guaranteeType(propertyType, Class),
+        )[0];
+      }
+    }
+    const sourceSetImplementation = guaranteeNonNullable(
+      resolvePropertyMappingSource(
+        this.immediateParent,
+        protocol,
+        this.topParent,
+      ),
+    );
+    const flatDataAssociationPropertyMapping =
+      new FlatDataAssociationPropertyMapping(
+        this.topParent ?? this.immediateParent,
+        PropertyImplicitReference.create(
+          PackageableElementImplicitReference.create(
+            propertyOwner,
+            protocol.property.class ?? '',
+          ),
+          property,
+        ),
+        SetImplementationImplicitReference.create(
+          sourceSetImplementation,
+          protocol.source,
+        ),
+        targetSetImplementation
+          ? SetImplementationImplicitReference.create(
+              targetSetImplementation,
+              protocol.target,
+            )
+          : undefined,
+      );
+    flatDataAssociationPropertyMapping.flatData = protocol.flatData;
+    flatDataAssociationPropertyMapping.sectionName = protocol.sectionName;
+    return flatDataAssociationPropertyMapping;
   }
 
   visit_InlineEmbeddedPropertyMapping(
