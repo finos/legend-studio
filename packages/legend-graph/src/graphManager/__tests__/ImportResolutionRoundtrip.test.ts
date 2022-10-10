@@ -45,6 +45,7 @@ import {
   TEST_DATA__FlatDataInputDataRoundtrip,
   TEST_DATA__FlatDataRoundtrip2,
   TEST_DATA__EmbeddedFlatDataMappingRoundtrip,
+  TEST_DATA__FlatDataAssociationMapping,
 } from './roundtripTestData/TEST_DATA__FlatDataRoundtrip.js';
 import { TEST_DATA__GenerationSpecificationRoundtrip } from './roundtripTestData/TEST_DATA__GenerationSpecification.js';
 import {
@@ -137,6 +138,7 @@ describe(unitTest('Flat-data import resolution roundtrip'), () => {
     ['Simple flat-data store', TEST_DATA__FlatDataRoundtrip],
     ['Complex flat-data store', TEST_DATA__FlatDataRoundtrip2],
     ['Flat-data mapping', TEST_DATA__FlatDataMappingRoundtrip],
+    ['Flat-data association mapping', TEST_DATA__FlatDataAssociationMapping],
     ['Flat-data embedded mapping', TEST_DATA__EmbeddedFlatDataMappingRoundtrip],
     ['Flat-data connection', TEST_DATA__FlatDataConnectionRoundtrip],
     [
