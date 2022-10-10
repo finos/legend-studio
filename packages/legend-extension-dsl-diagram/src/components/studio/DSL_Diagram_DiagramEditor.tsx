@@ -75,10 +75,10 @@ import {
 } from '@finos/legend-art';
 import {
   type Type,
+  type Multiplicity,
   Class,
   DerivedProperty,
   Property,
-  Multiplicity,
   ELEMENT_PATH_DELIMITER,
   MULTIPLICITY_INFINITE,
   GenericType,
@@ -960,6 +960,7 @@ const DiagramEditorInlinePropertyMultiplicityEditor = observer(
     const [upperBound, setUpperBound] = useState<string | number>(
       value.upperBound ?? MULTIPLICITY_INFINITE,
     );
+    const editorStore = useEditorStore();
     const updateMultiplicity = (
       lower: number | string,
       upper: number | string,
@@ -972,7 +973,9 @@ const DiagramEditorInlinePropertyMultiplicityEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        updateValue(new Multiplicity(lBound, uBound));
+        updateValue(
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+        );
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (

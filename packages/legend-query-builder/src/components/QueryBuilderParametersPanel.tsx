@@ -39,7 +39,6 @@ import {
   MULTIPLICITY_INFINITE,
   PRIMITIVE_TYPE,
   VariableExpression,
-  Multiplicity,
   GenericTypeExplicitReference,
   GenericType,
 } from '@finos/legend-graph';
@@ -347,7 +346,7 @@ export const QueryBuilderParametersPanel = observer(
         const parmaterState = new LambdaParameterState(
           new VariableExpression(
             generateEnumerableNameFromToken(varNames, DEFAULT_VARIABLE_NAME),
-            new Multiplicity(1, 1),
+            queryBuilderState.graphManagerState.graph.getMultiplicity(1, 1),
             GenericTypeExplicitReference.create(
               new GenericType(
                 queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
