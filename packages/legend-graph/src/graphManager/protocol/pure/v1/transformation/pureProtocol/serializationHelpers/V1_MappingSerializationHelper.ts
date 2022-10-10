@@ -324,15 +324,8 @@ const flatDataAssociationPropertyMappingModelSchema = createModelSchema(
     _type: usingConstantValueSchema(
       V1_PropertyMappingType.ASSOCIATION_FLAT_DATA,
     ),
-    bindingTransformer: optionalCustom(
-      (val) => serialize(bindingTransformerModelSchema, val),
-      (val) => deserialize(bindingTransformerModelSchema, val),
-    ),
-    localMappingProperty: usingModelSchema(
-      V1_localMappingPropertyInfoModelSchema,
-    ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
     flatData: primitive(),
+    property: usingModelSchema(V1_propertyPointerModelSchema),
     sectionName: primitive(),
     source: optional(primitive()),
     target: optional(primitive()),
