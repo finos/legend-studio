@@ -25,11 +25,7 @@ export class FlatDataAssociationPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
-  /**
-   * Studio does not process value specification, they are left in raw JSON form
-   *
-   * @discrepancy model
-   */
+  
   flatData!: string;
   sectionName!: string;
 
