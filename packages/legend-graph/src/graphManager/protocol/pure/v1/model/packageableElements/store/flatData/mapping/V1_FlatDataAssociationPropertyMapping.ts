@@ -25,7 +25,6 @@ export class V1_FlatDataAssociationPropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
- 
   flatData!: string;
   sectionName!: string;
 
