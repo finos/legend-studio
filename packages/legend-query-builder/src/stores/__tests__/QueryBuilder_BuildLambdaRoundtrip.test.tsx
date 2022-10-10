@@ -362,6 +362,7 @@ describe(
         queryBuilderState.initializeWithQuery(
           new RawLambda(rawLambda.parameters, rawLambda.body),
         );
+        expect(queryBuilderState.isQuerySupported).toBe(true);
         const jsonQuery =
           graphManagerState.graphManager.serializeRawValueSpecification(
             queryBuilderState.buildQuery(),
