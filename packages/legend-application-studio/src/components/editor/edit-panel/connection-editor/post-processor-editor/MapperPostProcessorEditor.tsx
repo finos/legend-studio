@@ -181,7 +181,7 @@ export const MapperPostProcessorEditor = observer(
                       menuProps={{ elevation: 7 }}
                     >
                       <PanelListSelectorItem
-                        validationError={true}
+                        validationError={isMapperDuplicated(mapper)}
                         isSelected={
                           mapper === postProcessorState.selectedMapper
                         }
