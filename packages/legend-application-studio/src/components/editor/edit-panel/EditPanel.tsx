@@ -25,6 +25,7 @@ import {
   TimesIcon,
   PlusIcon,
   ArrowsAltHIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
 import { UMLEditor } from './uml-editor/UMLEditor.js';
@@ -33,7 +34,6 @@ import { UMLEditorState } from '../../../stores/editor-state/element-editor-stat
 import { ElementEditorState } from '../../../stores/editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ELEMENT_NATIVE_VIEW_MODE } from '../../../stores/EditorConfig.js';
-import { useResizeDetector } from 'react-resize-detector';
 import type { EditorState } from '../../../stores/editor-state/EditorState.js';
 import {
   DIFF_VIEW_MODE,

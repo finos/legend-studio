@@ -67,7 +67,7 @@ export enum MODEL_IMPORT_TYPE {
 export abstract class ModelImporterEditorState {
   readonly editorStore: EditorStore;
   readonly modelImporterState: ModelImporterState;
-  loadModelActionState = ActionState.create();
+  readonly loadModelActionState = ActionState.create();
 
   constructor(modelImporterState: ModelImporterState) {
     this.editorStore = modelImporterState.editorStore;
@@ -254,6 +254,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
+      this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
@@ -425,6 +426,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
+      this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);

@@ -38,11 +38,6 @@ type Address = string;
  */
 interface ApplicationNavigator {
   /**
-   * Reload the application using the same address
-   */
-  reload(): void;
-
-  /**
    * Navigate to the specified location
    */
   goToLocation(location: Location): void;
@@ -50,7 +45,15 @@ interface ApplicationNavigator {
   /**
    * Navigate to the specified location and reload the application
    */
-  reloadToLocation(location: Location): void;
+  reloadToLocation(
+    location: Location,
+    options?: { ignoreBlocking?: boolean | undefined },
+  ): void;
+
+  /**
+   * Reload the application using the same address
+   */
+  reload(): void;
 
   /**
    * Visit the specified address
@@ -73,7 +76,7 @@ interface ApplicationNavigator {
    *
    * e.g. in web browser, we will block back/forward buttons
    */
-  blockPlatformNavigation(): void;
+  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void;
   unblockPlatformNavigation(): void;
   get isPlatformNavigationBlocked(): boolean;
 }
@@ -81,6 +84,20 @@ interface ApplicationNavigator {
 export class WebApplicationNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
   private _isPlatformNavigationBlocked = false;
+  private _forceBypassPlatformNavigationBlocking = false;
+  private _blockCheckers: (() => boolean)[] = [];
+  private _beforeUnloadListener = (event: BeforeUnloadEvent): void => {
+    if (this._forceBypassPlatformNavigationBlocking) {
+      return;
+    }
+    if (this._blockCheckers.some((checker) => checker())) {
+      // NOTE: there is no way to customize the alert message for now since Chrome removed support for it due to security concerns
+      // See https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#Browser_compatibility
+      event.returnValue = '';
+    }
+  };
+
+  notifier?: ((message: string) => void) | undefined;
 
   constructor(historyApiClient: History) {
     makeObservable<WebApplicationNavigator, '_isPlatformNavigationBlocked'>(
@@ -103,16 +120,32 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     );
   }
 
-  reload(): void {
-    this.window.location.reload();
-  }
-
   goToLocation(location: Location): void {
     this.historyAPI.push(location);
   }
 
-  reloadToLocation(location: Location): void {
+  reloadToLocation(
+    location: Location,
+    options?: { ignoreBlocking?: boolean | undefined },
+  ): void {
+    if (options?.ignoreBlocking) {
+      this._forceBypassPlatformNavigationBlocking = true;
+    }
+    // if (
+    //   this._isPlatformNavigationBlocked &&
+    //   !this._forceBypassPlatformNavigationBlocking
+    // ) {
+    //   this.notifier
+    //   return;
+    // }
     this.window.location.href = this.generateAddress(location);
+  }
+
+  reload(options?: { ignoreBlocking?: boolean | undefined }): void {
+    if (options?.ignoreBlocking) {
+      this._forceBypassPlatformNavigationBlocking = true;
+    }
+    this.window.location.reload();
   }
 
   visitAddress(
@@ -143,8 +176,9 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     );
   }
 
-  blockPlatformNavigation(): void {
+  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void {
     this._isPlatformNavigationBlocked = true;
+
     // Here we attempt to cancel the effect of the back button
     // See https://medium.com/codex/angular-guards-disabling-browsers-back-button-for-specific-url-fdf05d9fe155#4f13
     // This makes the current location the last entry in the browser history and clears any forward history
@@ -155,11 +189,18 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     this.window.onpopstate = () => {
       window.history.forward();
     };
+
+    // Block browser navigation: e.g. reload, setting `window.href` directly, etc.
+    this._blockCheckers = blockCheckers;
+    this.window.removeEventListener('beforeunload', this._beforeUnloadListener);
+    this.window.addEventListener('beforeunload', this._beforeUnloadListener);
   }
 
   unblockPlatformNavigation(): void {
     this._isPlatformNavigationBlocked = false;
     this.window.onpopstate = null;
+    this._blockCheckers = [];
+    this.window.removeEventListener('beforeunload', this._beforeUnloadListener);
   }
 
   get isPlatformNavigationBlocked(): boolean {

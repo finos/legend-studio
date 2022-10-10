@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { generatePath } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { generatePath } from 'react-router';
 
 export enum LEGEND_TAXONOMY_PARAM_TOKEN {
   TAXONOMY_TREE_KEY = 'taxonomyTreeKey',

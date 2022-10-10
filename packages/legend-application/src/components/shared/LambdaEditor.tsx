@@ -21,7 +21,6 @@ import {
   type IKeyboardEvent,
 } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   clsx,
   setErrorMarkers,
@@ -34,6 +33,7 @@ import {
   LongArrowAltDownIcon,
   LongArrowAltUpIcon,
   Dialog,
+  useResizeDetector,
 } from '@finos/legend-art';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {

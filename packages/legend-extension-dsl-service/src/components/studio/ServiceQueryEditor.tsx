@@ -16,13 +16,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { useParams } from 'react-router';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
+  useParams,
 } from '@finos/legend-application';
 import {
   type SelectComponent,

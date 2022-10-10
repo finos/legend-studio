@@ -37,7 +37,6 @@ import {
   type ProjectData,
   useDepotServerClient,
 } from '@finos/legend-server-depot';
-import { useParams } from 'react-router';
 import {
   type ServiceQueryUpdaterSetupPathParams,
   generateServiceQueryUpdaterRoute,
@@ -65,6 +64,7 @@ import {
   UserIcon,
   UsersIcon,
 } from '@finos/legend-art';
+import { useParams } from '@finos/legend-application';
 
 const UpdateServiceQuerySetupStoreContext = createContext<
   UpdateServiceQuerySetupStore | undefined

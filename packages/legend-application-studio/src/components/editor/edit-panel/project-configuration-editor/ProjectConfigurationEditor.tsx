@@ -548,7 +548,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const disableAddButton =
     selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
   const updateConfigs = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (editorStore.localChangesState.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -561,7 +561,6 @@ export const ProjectConfigurationEditor = observer(() => {
             label: 'Proceed to update project dependencies',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
               flowResult(configState.updateConfigs()).catch(
                 applicationStore.alertUnhandledError,
               );

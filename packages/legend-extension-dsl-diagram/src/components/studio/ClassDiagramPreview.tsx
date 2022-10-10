@@ -15,12 +15,12 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
 import { type Class, isElementReadOnly } from '@finos/legend-graph';
 import { InheritanceDiagramRenderer } from './InheritanceDiagramRenderer.js';
 import { DSL_DIAGRAM_TEST_ID } from './DSL_Diagram_TestID.js';
+import { useResizeDetector } from '@finos/legend-art';
 
 export const ClassDiagramPreview = observer((props: { _class: Class }) => {
   const { _class } = props;

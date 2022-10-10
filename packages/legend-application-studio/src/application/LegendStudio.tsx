@@ -15,7 +15,6 @@
  */
 
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication.js';
 import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
@@ -27,6 +26,7 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
+  BrowserRouter,
 } from '@finos/legend-application';
 import { Core_PureGraphManagerPlugin } from '@finos/legend-graph';
 import { getRootElement } from '@finos/legend-art';

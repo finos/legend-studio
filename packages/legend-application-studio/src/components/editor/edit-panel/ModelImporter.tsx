@@ -151,7 +151,7 @@ export const ModelImporter = observer(() => {
   const label = modelImporterState.modelImportEditorState.label;
   const modelImportEditorState = modelImporterState.modelImportEditorState;
   const loadModel = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (editorStore.localChangesState.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:

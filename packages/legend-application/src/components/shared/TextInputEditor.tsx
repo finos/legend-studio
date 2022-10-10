@@ -20,7 +20,6 @@ import {
   type IKeyboardEvent,
   editor as monacoEditorAPI,
 } from 'monaco-editor';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   disposeEditor,
   disableEditorHotKeys,
@@ -28,6 +27,7 @@ import {
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { type EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../../const.js';
 import { useApplicationStore } from '../ApplicationStoreProvider.js';
@@ -78,7 +78,6 @@ export const TextInputEditor: React.FC<{
    */
   const value = normalizeLineEnding(inputValue);
   const textInputRef = useRef<HTMLDivElement>(null);
-
   const { ref, width, height } = useResizeDetector<HTMLDivElement>();
 
   useEffect(() => {

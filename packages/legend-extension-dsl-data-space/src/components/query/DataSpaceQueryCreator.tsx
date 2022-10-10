@@ -16,7 +16,7 @@
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import { getQueryParameters } from '@finos/legend-shared';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
   LEGEND_QUERY_PATH_PARAM_TOKEN,
@@ -24,7 +24,6 @@ import {
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
 } from '@finos/legend-application-query';
-import { useParams } from 'react-router';
 import { DataSpaceQueryCreatorStore } from '../../stores/query/DataSpaceQueryCreatorStore.js';
 import {
   type DataSpaceQueryCreatorPathParams,

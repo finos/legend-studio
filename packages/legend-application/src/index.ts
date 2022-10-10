@@ -43,6 +43,7 @@ export * from './components/shared/TextSearchAdvancedConfigMenu.js';
 export * from './stores/shared/TextSearchAdvancedConfigState.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
+export * from './stores/WebApplicationRouter.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 

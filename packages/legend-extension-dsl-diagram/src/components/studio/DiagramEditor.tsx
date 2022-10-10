@@ -15,7 +15,6 @@
  */
 
 import { useRef, useState, useEffect, useCallback, forwardRef } from 'react';
-import { useResizeDetector } from 'react-resize-detector';
 import { type DropTargetMonitor, useDrop } from 'react-dnd';
 import { observer } from 'mobx-react-lite';
 import {
@@ -72,6 +71,7 @@ import {
   AlignTopIcon,
   AlignMiddleIcon,
   AlignBottomIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import {
   type Type,

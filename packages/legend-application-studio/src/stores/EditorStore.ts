@@ -266,7 +266,6 @@ export class EditorStore {
       isInitialized: computed,
       isInGrammarTextMode: computed,
       isInFormMode: computed,
-      hasUnpushedChanges: computed,
 
       applicationStore: false,
       sdlcServerClient: false,
@@ -470,17 +469,13 @@ export class EditorStore {
       ) && this.graphManagerState.systemBuildState.hasSucceeded
     );
   }
+
   get isInGrammarTextMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   }
+
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
-  }
-  get hasUnpushedChanges(): boolean {
-    return Boolean(
-      this.changeDetectionState.workspaceLocalLatestRevisionState.changes
-        .length,
-    );
   }
 
   setHotkeys(val: HotkeyConfiguration[]): void {

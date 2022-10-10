@@ -27,11 +27,11 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
+  MemoryRouter,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import { TEST__LegendStudioBaseStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { createMemoryHistory } from 'history';
 import {
   SDLCServerClient,
   TEST__provideMockedSDLCServerClient,

@@ -37,6 +37,7 @@ import {
   MoreHorizontalIcon,
   HackerIcon,
   PanelContent,
+  useResizeDetector,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -46,7 +47,6 @@ import {
   type DocumentationEntry,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type ElementDragSource,
   CORE_DND_TYPE,

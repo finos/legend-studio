@@ -92,9 +92,11 @@ export const ActivityBarMenu: React.FC = () => {
   };
   // go to setup page
   const goToWorkspaceSetup = (): void =>
-    applicationStore.navigator.visitAddress(
-      applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
-    );
+    // applicationStore.navigator.goToLocation(generateSetupRoute(undefined));
+    applicationStore.navigator.reload();
+  // applicationStore.navigator.visitAddress(
+  //   applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
+  // );
   // help
   const openHelp = (): void => {
     applicationStore.assistantService.setIsHidden(false);

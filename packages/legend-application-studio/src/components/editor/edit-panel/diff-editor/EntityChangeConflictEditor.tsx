@@ -28,7 +28,6 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type MergeEditorComparisonViewInfo,
   type MergeConflict,
@@ -57,6 +56,7 @@ import {
   CompareIcon,
   ArrowDownIcon,
   ArrowUpIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';

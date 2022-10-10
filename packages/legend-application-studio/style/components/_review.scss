@@ -261,12 +261,6 @@
   &__workspace__project,
   &__workspace__workspace {
     padding: 0 0.5rem;
-    cursor: default;
-  }
-
-  &__workspace__project a,
-  &__workspace__workspace a {
-    text-decoration: none;
     color: var(--color-light-grey-0);
   }
 

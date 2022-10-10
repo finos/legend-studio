@@ -16,7 +16,6 @@
 
 import { useRef, useEffect, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   BlankPanelContent,
   ShapesIcon,
@@ -35,6 +34,7 @@ import {
   LightBulbIcon,
   InfoCircleIcon,
   ExternalLinkIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import {
   type Diagram,

@@ -115,10 +115,10 @@ export class ProjectOverviewState {
         )
       ) {
         this.editorStore.applicationStore.notifyWarning(
-          'Current workspace is deleted. Redirecting to home page',
+          'Current workspace is deleted. Redirecting to workspace setup',
         );
         this.editorStore.setIgnoreNavigationBlocking(true);
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigator.reloadToLocation(
           generateSetupRoute(
             this.editorStore.sdlcState.activeProject.projectId,
           ),

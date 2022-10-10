@@ -22,8 +22,6 @@ import {
   waitFor,
   getByText,
 } from '@testing-library/react';
-import { Router } from 'react-router';
-import { createMemoryHistory } from 'history';
 import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
 import { EditorStore } from '../stores/EditorStore.js';
 import { Editor } from './editor/Editor.js';
@@ -67,6 +65,8 @@ import {
   TEST__getTestApplicationStore,
   LegendApplicationComponentFrameworkProvider,
   WebApplicationNavigator,
+  Router,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';

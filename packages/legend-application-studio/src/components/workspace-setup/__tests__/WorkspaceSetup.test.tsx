@@ -19,13 +19,13 @@ import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
 import { integrationTest } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
-import { MemoryRouter } from 'react-router';
 import {
   type SDLCServerClient,
   TEST__SDLCServerClientProvider,
   TEST__provideMockedSDLCServerClient,
 } from '@finos/legend-server-sdlc';
 import {
+  MemoryRouter,
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
 } from '@finos/legend-application';

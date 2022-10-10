@@ -20,13 +20,13 @@ import {
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   baseTextEditorSettings,
   clsx,
   Dialog,
   disableEditorHotKeys,
   disposeDiffEditor,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI } from 'monaco-editor';

@@ -30,7 +30,6 @@ import {
   InfoCircleIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { Link } from 'react-router-dom';
 import { EntityChangeConflictSideBarItem } from '../../editor/edit-panel/diff-editor/EntityChangeConflictEditor.js';
 import { EntityChangeConflictEditorState } from '../../../stores/editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
@@ -56,7 +55,7 @@ export const WorkspaceUpdater = observer(() => {
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (editorStore.localChangesState.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -69,7 +68,6 @@ export const WorkspaceUpdater = observer(() => {
             label: 'Proceed to update workspace',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
               flowResult(workspaceUpdaterState.updateWorkspace()).catch(
                 applicationStore.alertUnhandledError,
               );
@@ -252,13 +250,18 @@ export const WorkspaceUpdater = observer(() => {
               </div>
               <PanelContent>
                 {commitedReviews.map((review) => (
-                  <Link
+                  <button
                     key={review.id}
                     className="side-bar__panel__item workspace-updater__review__link"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    to={generateReviewRoute(review.projectId, review.id)}
-                    title="See review detail"
+                    title="See review"
+                    tabIndex={-1}
+                    onClick={(): void =>
+                      applicationStore.navigator.visitAddress(
+                        applicationStore.navigator.generateAddress(
+                          generateReviewRoute(review.projectId, review.id),
+                        ),
+                      )
+                    }
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">
@@ -268,7 +271,7 @@ export const WorkspaceUpdater = observer(() => {
                         {review.author.name}
                       </span>
                     </div>
-                  </Link>
+                  </button>
                 ))}
               </PanelContent>
             </div>

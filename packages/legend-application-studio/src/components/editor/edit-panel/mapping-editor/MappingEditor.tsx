@@ -33,10 +33,10 @@ import {
   PURE_EnumerationIcon,
   PURE_AssociationIcon,
   Panel,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { ClassMappingEditor } from './ClassMappingEditor.js';
 import { EnumerationMappingEditor } from './EnumerationMappingEditor.js';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type MappingEditorTabState,
   type MappingElement,

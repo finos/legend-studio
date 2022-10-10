@@ -16,11 +16,8 @@
 
 import { useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useResizeDetector } from 'react-resize-detector';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
-import { useParams } from 'react-router';
-import { Link } from 'react-router-dom';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   ACTIVITY_MODE,
@@ -40,6 +37,7 @@ import {
   WrenchIcon,
   FileTrayIcon,
   AssistantIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -57,7 +55,7 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 import {
   ActivityBarMenu,
   type ActivityDisplay,
@@ -110,9 +108,18 @@ const ProjectViewerStatusBar = observer(() => {
               <CodeBranchIcon />
             </div>
             <div className="editor__status-bar__workspace__project">
-              <Link to={generateSetupRoute(projectId)}>
+              <button
+                className="editor__status-bar__workspace__project"
+                title="Go back to workspace setup using the specified project"
+                tabIndex={-1}
+                onClick={(): void =>
+                  applicationStore.navigator.goToLocation(
+                    generateSetupRoute(projectId),
+                  )
+                }
+              >
                 {currentProject.name}
-              </Link>
+              </button>
             </div>
             /
             <div className="editor__status-bar__workspace__workspace">

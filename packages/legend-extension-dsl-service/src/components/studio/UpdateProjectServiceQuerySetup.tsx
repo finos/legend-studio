@@ -37,7 +37,6 @@ import {
   getProjectOptionLabelFormatter,
 } from '@finos/legend-application-studio';
 import { UpdateProjectServiceQuerySetupStore } from '../../stores/studio/UpdateProjectServiceQuerySetupStore.js';
-import { useParams } from 'react-router';
 import {
   type ProjectServiceQueryUpdaterSetupPathParams,
   generateProjectServiceQueryUpdaterRoute,
@@ -57,6 +56,7 @@ import {
 } from '@finos/legend-art';
 import type { Entity } from '@finos/legend-storage';
 import { extractElementNameFromPath } from '@finos/legend-graph';
+import { useParams } from '@finos/legend-application';
 
 const UpdateProjectServiceQuerySetupStoreContext = createContext<
   UpdateProjectServiceQuerySetupStore | undefined

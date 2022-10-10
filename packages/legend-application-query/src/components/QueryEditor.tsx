@@ -35,7 +35,6 @@ import {
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router';
 import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
@@ -54,7 +53,7 @@ import {
   QueryExportState,
   ServiceQueryCreatorStore,
 } from '../stores/QueryEditorStore.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 import {
   MappingQueryCreatorStoreProvider,
   ExistingQueryEditorStoreProvider,
@@ -252,14 +251,12 @@ const QueryLoader = observer(
     // actions
     const loadQuery = (): void => {
       if (selectedQueryID) {
-        if (queryBuilderState.changeDetectionState.hasChanged) {
-          queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
-            editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-            applicationStore.navigator.reloadToLocation(
-              generateExistingQueryEditorRoute(selectedQueryID),
-            );
-          });
-        }
+        queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
+          editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+          applicationStore.navigator.reloadToLocation(
+            generateExistingQueryEditorRoute(selectedQueryID),
+          );
+        });
       }
     };
 

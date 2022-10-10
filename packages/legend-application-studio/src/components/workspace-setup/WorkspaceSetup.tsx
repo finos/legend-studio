@@ -26,7 +26,6 @@ import {
   CustomSelectorInput,
   RepoIcon,
 } from '@finos/legend-art';
-import { useParams } from 'react-router';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import {
   type SetupPathParams,
@@ -37,6 +36,7 @@ import { flowResult } from 'mobx';
 import {
   DocumentationLink,
   useApplicationNavigationContext,
+  useParams,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';

@@ -22,9 +22,9 @@ import {
   setupLegendApplicationUILibrary,
   WebApplicationNavigatorProvider,
   type LegendApplicationConfigurationInput,
+  BrowserRouter,
 } from '@finos/legend-application';
 import { configure as configureReactHotkeys } from 'react-hotkeys';
-import { BrowserRouter } from 'react-router-dom';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';

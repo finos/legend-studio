@@ -15,7 +15,6 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
@@ -41,6 +40,8 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
+  Route,
+  Switch,
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';

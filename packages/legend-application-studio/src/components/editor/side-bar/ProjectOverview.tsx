@@ -17,7 +17,6 @@
 import { forwardRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
-import { Link } from 'react-router-dom';
 import {
   clsx,
   CustomSelectorInput,
@@ -178,6 +177,7 @@ const WorkspaceViewerContextMenu = observer(
 const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
   const { workspace } = props;
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const isActive = areWorkspacesEquivalent(
     editorStore.sdlcState.activeWorkspace,
     workspace,
@@ -193,7 +193,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
       onOpen={onContextMenuOpen}
       onClose={onContextMenuClose}
     >
-      <Link
+      <button
         className={clsx(
           'side-bar__panel__item project-overview__item__link',
           {
@@ -202,14 +202,19 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
           },
           { 'project-overview__item__link--active': isActive },
         )}
-        rel="noopener noreferrer"
-        target="_blank"
-        to={generateEditorRoute(
-          workspace.projectId,
-          workspace.workspaceId,
-          workspace.workspaceType,
-        )}
-        title="Go to workspace detail"
+        tabIndex={-1}
+        onClick={(): void =>
+          applicationStore.navigator.visitAddress(
+            applicationStore.navigator.generateAddress(
+              generateEditorRoute(
+                workspace.projectId,
+                workspace.workspaceId,
+                workspace.workspaceType,
+              ),
+            ),
+          )
+        }
+        title="See workspace"
       >
         <div className="project-overview__item__link__content project-overview__workspace__viewer">
           <div className="project-overview__workspace__viewer-icon">
@@ -223,7 +228,7 @@ const WorkspaceViewer = observer((props: { workspace: Workspace }) => {
             {workspace.workspaceId}
           </div>
         </div>
-      </Link>
+      </button>
     </ContextMenu>
   );
 });
@@ -385,14 +390,20 @@ const ReleaseEditor = observer(() => {
               <PanelContent>
                 {latestProjectVersion && (
                   <div className="project-overview__release__info__current-version">
-                    <Link
+                    <button
                       className="project-overview__release__info__current-version__link"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      to={generateViewVersionRoute(
-                        latestProjectVersion.projectId,
-                        latestProjectVersion.id.id,
-                      )}
+                      tabIndex={-1}
+                      onClick={(): void =>
+                        applicationStore.navigator.visitAddress(
+                          applicationStore.navigator.generateAddress(
+                            generateViewVersionRoute(
+                              latestProjectVersion.projectId,
+                              latestProjectVersion.id.id,
+                            ),
+                          ),
+                        )
+                      }
+                      title="See version"
                     >
                       <div className="project-overview__release__info__current-version__link__content">
                         <span className="project-overview__release__info__current-version__link__content__name">
@@ -402,7 +413,7 @@ const ReleaseEditor = observer(() => {
                           {latestProjectVersion.notes}
                         </span>
                       </div>
-                    </Link>
+                    </button>
                   </div>
                 )}
                 {!latestProjectVersion && (
@@ -438,13 +449,18 @@ const ReleaseEditor = observer(() => {
               </div>
               <PanelContent>
                 {commitedReviews.map((review) => (
-                  <Link
+                  <button
                     key={review.id}
                     className="side-bar__panel__item workspace-updater__review__link"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    to={generateReviewRoute(review.projectId, review.id)}
-                    title="See review detail"
+                    tabIndex={-1}
+                    onClick={(): void =>
+                      applicationStore.navigator.visitAddress(
+                        applicationStore.navigator.generateAddress(
+                          generateReviewRoute(review.projectId, review.id),
+                        ),
+                      )
+                    }
+                    title="See review"
                   >
                     <div className="workspace-updater__review">
                       <span className="workspace-updater__review__name">
@@ -454,7 +470,7 @@ const ReleaseEditor = observer(() => {
                         {review.author.name}
                       </span>
                     </div>
-                  </Link>
+                  </button>
                 ))}
               </PanelContent>
             </div>
@@ -499,13 +515,18 @@ const VersionsViewer = observer(() => {
         <PanelLoadingIndicator isLoading={isDispatchingAction} />
         <div className="panel__content__list">
           {versions.map((version) => (
-            <Link
+            <button
               key={version.id.id}
               className="side-bar__panel__item project-overview__item__link"
-              rel="noopener noreferrer"
-              target="_blank"
-              to={generateViewVersionRoute(version.projectId, version.id.id)}
-              title="See version detail"
+              tabIndex={-1}
+              onClick={(): void =>
+                applicationStore.navigator.visitAddress(
+                  applicationStore.navigator.generateAddress(
+                    generateViewVersionRoute(version.projectId, version.id.id),
+                  ),
+                )
+              }
+              title="See version"
             >
               <div className="project-overview__item__link__content">
                 <span className="project-overview__item__link__content__name">
@@ -515,7 +536,7 @@ const VersionsViewer = observer(() => {
                   {version.notes}
                 </span>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
       </div>
