@@ -116,7 +116,7 @@ const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   returnUndefOnError(() => getClassMappingById(mapping, id)) ??
   new TEMPORARY__UnresolvedSetImplementation(id, mapping);
 
-const resolveRelationalPropertyMappingSource = (
+const resolvePropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
   value: V1_PropertyMapping,
   topParent: InstanceSetImplementation | undefined,
@@ -271,9 +271,9 @@ export class V1_PropertyMappingBuilder
     }
     const sourceSetImplementation = protocol.source
       ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-          topParent._PARENT,
-          protocol.source,
-        )
+        topParent._PARENT,
+        protocol.source,
+      )
       : undefined;
     const purePropertyMapping = new PurePropertyMapping(
       topParent,
@@ -289,9 +289,9 @@ export class V1_PropertyMappingBuilder
       ),
       targetSetImplementation
         ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
+        targetSetImplementation,
+        protocol.target,
+        )
         : undefined,
       protocol.explodeProperty,
     );
@@ -362,9 +362,9 @@ export class V1_PropertyMappingBuilder
     if (propertyType instanceof Class && protocol.target) {
       targetSetImplementation = this.topParent
         ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-            this.topParent._PARENT,
-            protocol.target,
-          )
+          this.topParent._PARENT,
+          protocol.target,
+        )
         : undefined;
     }
     const flatDataPropertyMapping = new FlatDataPropertyMapping(
@@ -387,9 +387,9 @@ export class V1_PropertyMappingBuilder
       ),
       targetSetImplementation
         ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
+        targetSetImplementation,
+        protocol.target,
+        )
         : undefined,
     );
     if (protocol.enumMappingId) {
@@ -482,9 +482,9 @@ export class V1_PropertyMappingBuilder
     );
     embeddedPropertyMapping.targetSetImplementation = protocol.target
       ? SetImplementationImplicitReference.create(
-          embeddedPropertyMapping,
-          protocol.target,
-        )
+        embeddedPropertyMapping,
+        protocol.target,
+      )
       : undefined;
     embeddedPropertyMapping.propertyMappings = protocol.propertyMappings.map(
       (propertyMapping) =>
@@ -585,21 +585,21 @@ export class V1_PropertyMappingBuilder
       if (protocol.target) {
         targetSetImplementation = parentMapping
           ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
-              parentMapping,
-              protocol.target,
-            )
+            parentMapping,
+            protocol.target,
+          )
           : undefined;
       } else {
         targetSetImplementation = parentMapping
           ? getClassMappingsByClass(
-              parentMapping,
-              guaranteeType(propertyType, Class),
-            )[0]
+            parentMapping,
+            guaranteeType(propertyType, Class),
+          )[0]
           : undefined;
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
-      resolveRelationalPropertyMappingSource(
+      resolvePropertyMappingSource(
         this.immediateParent,
         protocol,
         this.topParent,
@@ -620,9 +620,9 @@ export class V1_PropertyMappingBuilder
       ),
       targetSetImplementation
         ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
+        targetSetImplementation,
+        protocol.target,
+        )
         : undefined,
     );
     if (protocol.bindingTransformer?.binding) {
@@ -737,7 +737,7 @@ export class V1_PropertyMappingBuilder
       }
     }
     const sourceSetImplementation = guaranteeNonNullable(
-      resolveRelationalPropertyMappingSource(
+      resolvePropertyMappingSource(
         this.immediateParent,
         protocol,
         this.topParent,
@@ -759,9 +759,9 @@ export class V1_PropertyMappingBuilder
         ),
         targetSetImplementation
           ? SetImplementationImplicitReference.create(
-              targetSetImplementation,
-              protocol.target,
-            )
+          targetSetImplementation,
+          protocol.target,
+          )
           : undefined,
       );
     flatDataAssociationPropertyMapping.flatData = protocol.flatData;
@@ -788,7 +788,7 @@ export class V1_PropertyMappingBuilder
     } else if (
       this.immediateParent instanceof RootRelationalInstanceSetImplementation ||
       this.immediateParent instanceof
-        EmbeddedRelationalInstanceSetImplementation
+      EmbeddedRelationalInstanceSetImplementation
     ) {
       propertyOwnerClass = this.immediateParent.class.value;
     } else {
@@ -1028,9 +1028,9 @@ export class V1_PropertyMappingBuilder
       ),
       targetSetImplementation
         ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
+        targetSetImplementation,
+        protocol.target,
+        )
         : undefined,
     );
     xStorePropertyMapping.crossExpression = V1_buildRawLambdaWithResolvedPaths(
@@ -1086,9 +1086,9 @@ export class V1_PropertyMappingBuilder
       ),
       targetSetImplementation
         ? SetImplementationImplicitReference.create(
-            targetSetImplementation,
-            protocol.target,
-          )
+        targetSetImplementation,
+        protocol.target,
+        )
         : undefined,
     );
 
