@@ -72,6 +72,7 @@ import {
   fromElementPathToMappingElementId,
   InferableMappingElementIdImplicitValue,
   InferableMappingElementRootExplicitValue,
+  Multiplicity,
   V1_ElementBuilder,
   V1_initPackageableElement,
   V1_buildFullPath,
@@ -257,7 +258,7 @@ export class STO_ServiceStore_PureProtocolProcessorPlugin
               const mappingProperty = new LocalMappingProperty();
               mappingProperty.type = localMappingProperty.type;
               mappingProperty.name = localMappingProperty.name;
-              const multiplicity = context.graph.getMultiplicity(
+              const multiplicity = new Multiplicity(
                 localMappingProperty.multiplicity.lowerBound,
                 localMappingProperty.multiplicity.upperBound,
               );

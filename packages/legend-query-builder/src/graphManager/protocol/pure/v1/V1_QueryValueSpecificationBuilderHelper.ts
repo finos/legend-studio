@@ -34,6 +34,7 @@ import {
   extractElementNameFromPath,
   V1_AppliedProperty,
   CollectionInstanceValue,
+  Multiplicity,
   INTERNAL__UnknownValueSpecification,
   V1_Variable,
   V1_serializeValueSpecification,
@@ -390,7 +391,7 @@ export const V1_buildProjectFunctionExpression = (
 
   // build column expressions taking into account of derivation
   const processedColumnExpressions = new CollectionInstanceValue(
-    compileContext.graph.getMultiplicity(
+    new Multiplicity(
       columnExpressions.multiplicity.lowerBound,
       columnExpressions.multiplicity.upperBound,
     ),
@@ -510,7 +511,7 @@ export const V1_buildGroupByFunctionExpression = (
 
   // build column expressions taking into account of derivation
   const processedColumnExpressions = new CollectionInstanceValue(
-    compileContext.graph.getMultiplicity(
+    new Multiplicity(
       columnExpressions.multiplicity.lowerBound,
       columnExpressions.multiplicity.upperBound,
     ),
@@ -532,7 +533,7 @@ export const V1_buildGroupByFunctionExpression = (
 
   // build aggregation expressions taking into account of derivation
   const processedAggregationExpressions = new CollectionInstanceValue(
-    compileContext.graph.getMultiplicity(
+    new Multiplicity(
       aggregationExpressions.multiplicity.lowerBound,
       aggregationExpressions.multiplicity.upperBound,
     ),

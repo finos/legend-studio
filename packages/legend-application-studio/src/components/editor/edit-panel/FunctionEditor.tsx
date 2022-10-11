@@ -66,6 +66,7 @@ import {
   MULTIPLICITY_INFINITE,
   Unit,
   Type,
+  Multiplicity,
   Enumeration,
   Class,
   PrimitiveType,
@@ -190,7 +191,7 @@ const ParameterBasicEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         rawVariableExpression_setMultiplicity(
           parameter,
-          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+          new Multiplicity(lBound, uBound),
         );
       }
     };
@@ -444,7 +445,7 @@ const ReturnTypeEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         function_setReturnMultiplicity(
           functionElement,
-          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
+          new Multiplicity(lBound, uBound),
         );
       }
     };

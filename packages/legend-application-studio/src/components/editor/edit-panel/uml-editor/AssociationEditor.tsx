@@ -64,6 +64,7 @@ import {
   type TaggedValue,
   MULTIPLICITY_INFINITE,
   Profile,
+  Multiplicity,
   Class,
   PrimitiveType,
   Unit,
@@ -165,10 +166,7 @@ const AssociationPropertyBasicEditor = observer(
           ? upper
           : parseInt(upper, 10);
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
-        property_setMultiplicity(
-          property,
-          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
-        );
+        property_setMultiplicity(property, new Multiplicity(lBound, uBound));
       }
     };
     const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (

@@ -20,6 +20,7 @@ import {
   extractElementNameFromPath,
   GenericType,
   GenericTypeExplicitReference,
+  Multiplicity,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
@@ -125,11 +126,10 @@ const appendResultSetModifier = (
             ),
             multiplicityOne,
           );
-          const multiplicity =
-            resultModifierState.projectionState.queryBuilderState.graphManagerState.graph.getMultiplicity(
-              resultModifierState.sortColumns.length,
-              resultModifierState.sortColumns.length,
-            );
+          const multiplicity = new Multiplicity(
+            resultModifierState.sortColumns.length,
+            resultModifierState.sortColumns.length,
+          );
           const collection = new CollectionInstanceValue(
             multiplicity,
             undefined,
@@ -213,7 +213,7 @@ export const appendProjection = (
     );
 
     const colLambdas = new CollectionInstanceValue(
-      queryBuilderState.graphManagerState.graph.getMultiplicity(
+      new Multiplicity(
         projectionState.columns.length -
           projectionState.aggregationState.columns.length,
         projectionState.columns.length -
@@ -221,13 +221,13 @@ export const appendProjection = (
       ),
     );
     const aggregateLambdas = new CollectionInstanceValue(
-      queryBuilderState.graphManagerState.graph.getMultiplicity(
+      new Multiplicity(
         projectionState.aggregationState.columns.length,
         projectionState.aggregationState.columns.length,
       ),
     );
     const colAliases = new CollectionInstanceValue(
-      queryBuilderState.graphManagerState.graph.getMultiplicity(
+      new Multiplicity(
         projectionState.columns.length,
         projectionState.columns.length,
       ),
@@ -327,13 +327,13 @@ export const appendProjection = (
       multiplicityOne,
     );
     const colLambdas = new CollectionInstanceValue(
-      queryBuilderState.graphManagerState.graph.getMultiplicity(
+      new Multiplicity(
         projectionState.columns.length,
         projectionState.columns.length,
       ),
     );
     const colAliases = new CollectionInstanceValue(
-      queryBuilderState.graphManagerState.graph.getMultiplicity(
+      new Multiplicity(
         projectionState.columns.length,
         projectionState.columns.length,
       ),
