@@ -76,6 +76,7 @@ import {
   isDependencyElement,
   isElementReadOnly,
   Class,
+  isMainGraphElement,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
@@ -98,8 +99,16 @@ const ElementRenamer = observer(() => {
     element instanceof Package || path.includes(ELEMENT_PATH_DELIMITER);
   const isValidElementPath =
     (element instanceof Package && isValidPath(path)) || isValidFullPath(path);
-  const existingElement =
-    editorStore.graphManagerState.graph.getNullableElement(path, true);
+  let existingElement = editorStore.graphManagerState.graph.getNullableElement(
+    path,
+    true,
+  );
+  existingElement =
+    existingElement instanceof Package
+      ? isMainGraphElement(existingElement)
+        ? existingElement
+        : undefined
+      : existingElement;
   const isElementUnique = !existingElement || existingElement === element;
   const elementRenameValidationErrorMessage = !isElementPathNonEmpty
     ? `Element path cannot be empty`
