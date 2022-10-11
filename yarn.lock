@@ -2768,7 +2768,7 @@ __metadata:
     "@finos/legend-dev-utils": "workspace:*"
     cross-env: 7.0.3
     eslint: 8.24.0
-    fastify: 4.7.0
+    fastify: 4.8.1
     nodemon: 2.0.20
     npm-run-all: 4.1.5
     rimraf: 3.0.2
@@ -7660,16 +7660,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:4.7.0":
-  version: 4.7.0
-  resolution: "fastify@npm:4.7.0"
+"fastify@npm:4.8.1":
+  version: 4.8.1
+  resolution: "fastify@npm:4.8.1"
   dependencies:
     "@fastify/ajv-compiler": ^3.3.1
     "@fastify/error": ^3.0.0
     "@fastify/fast-json-stringify-compiler": ^4.1.0
     abstract-logging: ^2.0.1
     avvio: ^8.2.0
-    find-my-way: ^7.2.0
+    find-my-way: ^7.3.0
     light-my-request: ^5.6.1
     pino: ^8.5.0
     process-warning: ^2.0.0
@@ -7678,7 +7678,7 @@ __metadata:
     secure-json-parse: ^2.5.0
     semver: ^7.3.7
     tiny-lru: ^9.0.2
-  checksum: 76bc9fb37a36623468d99d9bba2b7166199e663d1f9d0b44b731a6c84c6aa298b6c0d29c6e935c5c0cce18df6d60e48a29dca468f7a155caca05d861a875f80f
+  checksum: ff26d77a9b01001afe5c2db0f0ecd2625c85e12bc9c5b42ead87fd6f3a530a9aa9ab21dbd5949b6ff0f7d52ef77ee451f6391bdfb5006d84120046a5e9e95252
   languageName: node
   linkType: hard
 
@@ -7770,14 +7770,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-my-way@npm:^7.2.0":
-  version: 7.2.1
-  resolution: "find-my-way@npm:7.2.1"
+"find-my-way@npm:^7.3.0":
+  version: 7.3.1
+  resolution: "find-my-way@npm:7.3.1"
   dependencies:
     fast-deep-equal: ^3.1.3
     fast-querystring: ^1.0.0
     safe-regex2: ^2.0.0
-  checksum: b14dac5a086eeea074d02f16e502b48fd9d118a0f00b6745f1c1bb4a5577b082f7be408eace7df366e7d73d54db6d98165d9a4854c2fb8d9d27c6a8d0d8802bc
+  checksum: eec65665c34fbfeb323a52989de51b106485ec0d6182996fc70d42570a73f88b9637572bb8ae89332532da9ca856615e195768116aeede75d73b929b9534bf7a
   languageName: node
   linkType: hard
 
