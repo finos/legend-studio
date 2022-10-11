@@ -60,7 +60,7 @@ export class QueryBuilderAggregateOperator_JoinString
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       // NOTE: Engine does not support Enumerations at the moment.
       return PRIMITIVE_TYPE.STRING === propertyType.path;
     }

@@ -53,7 +53,7 @@ export class QueryBuilderAggregateOperator_StdDev_Population
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       return (
         [
           PRIMITIVE_TYPE.NUMBER,

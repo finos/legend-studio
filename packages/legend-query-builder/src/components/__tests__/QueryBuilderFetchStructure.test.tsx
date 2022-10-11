@@ -141,7 +141,7 @@ test(
     const firstNameProperty = guaranteeType(
       fistNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyExpressionState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func.value;
     expect(firstNameProperty).toBe(getClassProperty(_personClass, 'firstName'));
     const lastNameCol = guaranteeNonNullable(
       projectionState.columns.find((e) => e.columnName === LAST_NAME_ALIAS),
@@ -149,7 +149,7 @@ test(
     const lastNameProperty = guaranteeType(
       lastNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyExpressionState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func.value;
     expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
     expect(projectionState.resultSetModifierState.limit).toBeUndefined();
 
@@ -186,7 +186,7 @@ test(
     const legalNameColProperty = guaranteeType(
       legalNameCol,
       QueryBuilderSimpleProjectionColumnState,
-    ).propertyExpressionState.propertyExpression.func;
+    ).propertyExpressionState.propertyExpression.func.value;
     expect(legalNameColProperty).toBe(
       getClassProperty(_firmClass, 'legalName'),
     );
@@ -195,7 +195,7 @@ test(
         .propertyExpressionState.propertyExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
-    expect(_firmPropertyExpression.func).toBe(
+    expect(_firmPropertyExpression.func.value).toBe(
       getClassProperty(_personClass, 'firm'),
     );
     expect(projectionState.resultSetModifierState.limit).toBeUndefined();

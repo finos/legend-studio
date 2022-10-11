@@ -159,7 +159,7 @@ export class QueryBuilderProjectionState
         let currentExpression: ValueSpecification =
           column.propertyExpressionState.propertyExpression;
         while (currentExpression instanceof AbstractPropertyExpression) {
-          chunks.push(currentExpression.func.name);
+          chunks.push(currentExpression.func.value.name);
           currentExpression = guaranteeNonNullable(
             currentExpression.parametersValues[0],
           );

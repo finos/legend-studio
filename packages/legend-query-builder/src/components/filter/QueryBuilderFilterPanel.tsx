@@ -157,7 +157,7 @@ const QueryBuilderFilterConditionEditor = observer(
         const parameterType =
           item.variable.parameter.genericType?.value.rawType;
         const conditionValueType =
-          node.condition.propertyExpressionState.propertyExpression.func
+          node.condition.propertyExpressionState.propertyExpression.func.value
             .genericType.value.rawType;
         if (isTypeCompatibleForAssignment(parameterType, conditionValueType)) {
           node.condition.setValue(item.variable.parameter);
@@ -280,7 +280,8 @@ const QueryBuilderFilterConditionEditor = observer(
                     typeCheckOption={{
                       expectedType:
                         node.condition.propertyExpressionState
-                          .propertyExpression.func.genericType.value.rawType,
+                          .propertyExpression.func.value.genericType.value
+                          .rawType,
                     }}
                     resetValue={resetNode}
                     selectorConfig={selectorConfig}

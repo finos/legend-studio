@@ -22,13 +22,13 @@ import {
   ValueSpecification,
 } from './ValueSpecification.js';
 import type { Function } from '../packageableElements/domain/Function.js';
-import type { AbstractProperty } from '../packageableElements/domain/AbstractProperty.js';
 import {
   type Hashable,
   hashArray,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
+import type { PropertyReference } from '../packageableElements/domain/PropertyReference.js';
 
 export class Expression extends ValueSpecification implements Hashable {
   classifierGenericType?: GenericTypeReference | undefined;
@@ -112,7 +112,7 @@ export class AbstractPropertyExpression
   extends FunctionExpression
   implements Hashable
 {
-  declare func: AbstractProperty;
+  declare func: PropertyReference;
 
   override get hashCode(): string {
     return hashArray([
@@ -122,7 +122,7 @@ export class AbstractPropertyExpression
       this.multiplicity,
       this.functionName,
       hashArray(this.parametersValues),
-      this.func,
+      this.func.pointerHashCode,
     ]);
   }
 

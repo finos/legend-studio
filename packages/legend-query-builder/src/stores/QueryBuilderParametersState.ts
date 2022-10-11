@@ -19,8 +19,8 @@ import { observable, makeObservable, action, override } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
+  type LambdaParameterState,
   LambdaParametersState,
-  LambdaParameterState,
 } from './shared/LambdaParameterState.js';
 
 export const QUERY_BUILDER_PARAMETER_DND_TYPE = 'PARAMETER';

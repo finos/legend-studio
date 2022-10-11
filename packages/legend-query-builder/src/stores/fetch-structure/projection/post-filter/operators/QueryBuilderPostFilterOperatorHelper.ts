@@ -35,7 +35,7 @@ export const getColumnMultiplicity = (
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   } else if (columnState instanceof QueryBuilderSimpleProjectionColumnState) {
-    return columnState.propertyExpressionState.propertyExpression.func
+    return columnState.propertyExpressionState.propertyExpression.func.value
       .multiplicity;
   }
   throw new UnsupportedOperationError(

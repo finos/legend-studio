@@ -147,8 +147,8 @@ export class QueryBuilderSimpleProjectionColumnState
   }
 
   override getReturnType(): Type | undefined {
-    return this.propertyExpressionState.propertyExpression.func.genericType
-      .value.rawType;
+    return this.propertyExpressionState.propertyExpression.func.value
+      .genericType.value.rawType;
   }
 
   get hashCode(): string {

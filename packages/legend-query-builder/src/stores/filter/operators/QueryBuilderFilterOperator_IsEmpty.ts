@@ -50,7 +50,7 @@ export class QueryBuilderFilterOperator_IsEmpty
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     // First check if property is optional
     if (

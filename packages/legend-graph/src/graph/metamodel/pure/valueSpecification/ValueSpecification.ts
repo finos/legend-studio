@@ -36,7 +36,7 @@ import type {
   FunctionExpression,
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from './SimpleFunctionExpression.js';
+} from './Expression.js';
 import type { INTERNAL__UnknownValueSpecification } from './INTERNAL__UnknownValueSpecification.js';
 import type { VariableExpression } from './VariableExpression.js';
 import type { INTERNAL__PropagatedValue } from './INTERNAL__PropagatedValue.js';

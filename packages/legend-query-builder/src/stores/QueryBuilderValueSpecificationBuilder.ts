@@ -82,7 +82,10 @@ export const buildLambdaFunction = (
     CORE_PURE_PATH.ANY,
   );
   const lambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
+    new FunctionType(
+      PackageableElementExplicitReference.create(typeAny),
+      multiplicityOne,
+    ),
   );
 
   // build getAll()

@@ -55,7 +55,7 @@ export class QueryBuilderFilterOperator_In
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return (
       (
@@ -76,7 +76,7 @@ export class QueryBuilderFilterOperator_In
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     const valueSpec = filterConditionState.value;
     if (valueSpec instanceof CollectionInstanceValue) {
@@ -129,7 +129,7 @@ export class QueryBuilderFilterOperator_In
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return new CollectionInstanceValue(
       multiplicityOne,

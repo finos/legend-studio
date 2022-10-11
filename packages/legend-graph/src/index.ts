@@ -104,7 +104,7 @@ export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,
-} from './graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from './graph/metamodel/pure/valueSpecification/Expression.js';
 export {
   FunctionType,
   LambdaFunction,

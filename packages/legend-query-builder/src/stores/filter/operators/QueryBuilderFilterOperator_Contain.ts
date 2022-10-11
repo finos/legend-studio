@@ -55,7 +55,7 @@ export class QueryBuilderFilterOperator_Contain
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return PRIMITIVE_TYPE.STRING === propertyType.path;
   }
@@ -73,7 +73,7 @@ export class QueryBuilderFilterOperator_Contain
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {

@@ -27,6 +27,7 @@ import {
   VariableExpression,
   getAllClassDerivedProperties,
   CORE_PURE_PATH,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -69,9 +70,11 @@ export const buildPostFilterConditionExpression = (
     const type = guaranteeNonNullable(colState.getReturnType());
     tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);
   }
-  tdsPropertyExpression.func = guaranteeNonNullable(
-    getAllClassDerivedProperties(graph.getClass(CORE_PURE_PATH.TDS_ROW)).find(
-      (p) => p.name === tdsDerivedPropertyName,
+  tdsPropertyExpression.func = PropertyExplicitReference.create(
+    guaranteeNonNullable(
+      getAllClassDerivedProperties(graph.getClass(CORE_PURE_PATH.TDS_ROW)).find(
+        (p) => p.name === tdsDerivedPropertyName,
+      ),
     ),
   );
   const variableName = new VariableExpression(

@@ -240,7 +240,7 @@ export const V1_buildExistsFunctionExpression = (
   precedingExpression.genericType = guaranteeType(
     precedingExpression,
     AbstractPropertyExpression,
-  ).func.genericType;
+  ).func.value.genericType;
   const lambda = parameters[1];
   if (lambda instanceof V1_Lambda) {
     lambda.parameters.forEach((variable): void => {

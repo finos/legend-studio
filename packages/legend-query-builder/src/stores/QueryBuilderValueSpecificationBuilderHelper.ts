@@ -74,14 +74,14 @@ const isDefaultDatePropagationSupported = (
   queryBuilderState: QueryBuilderState,
   prevPropertyExpression?: AbstractPropertyExpression | undefined,
 ): boolean => {
-  const property = currentPropertyExpression.func;
+  const property = currentPropertyExpression.func.value;
   const graph = queryBuilderState.graphManagerState.graph;
   // Default date propagation is not supported for current expression when the previous property expression is a derived property.
   if (
     prevPropertyExpression &&
-    prevPropertyExpression.func instanceof DerivedProperty &&
-    prevPropertyExpression.func._OWNER.derivedProperties.includes(
-      prevPropertyExpression.func,
+    prevPropertyExpression.func.value instanceof DerivedProperty &&
+    prevPropertyExpression.func.value._OWNER.derivedProperties.includes(
+      prevPropertyExpression.func.value,
     )
   ) {
     return false;
@@ -90,10 +90,10 @@ const isDefaultDatePropagationSupported = (
   // the previous property expression doesn't match with the global milestonedParameterValues
   if (
     prevPropertyExpression &&
-    prevPropertyExpression.func.genericType.value.rawType instanceof Class
+    prevPropertyExpression.func.value.genericType.value.rawType instanceof Class
   ) {
     const milestoningStereotype = getMilestoneTemporalStereotype(
-      prevPropertyExpression.func.genericType.value.rawType,
+      prevPropertyExpression.func.value.genericType.value.rawType,
       graph,
     );
     if (
@@ -170,7 +170,7 @@ export const buildPropertyExpressionChain = (
     }
     if (
       currentExpression instanceof AbstractPropertyExpression &&
-      currentExpression.func instanceof DerivedProperty
+      currentExpression.func.value instanceof DerivedProperty
     ) {
       const currentPropertyExpression = currentExpression;
       const parameterValues = currentExpression.parametersValues.slice(1);

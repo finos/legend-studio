@@ -138,8 +138,8 @@ const buildFilterConditionExpressionWithExists = (
     // ... but if the property is of multiplicity multiple, start a new property chain
     if (
       exp instanceof AbstractPropertyExpression &&
-      (exp.func.multiplicity.upperBound === undefined ||
-        exp.func.multiplicity.upperBound > 1)
+      (exp.func.value.multiplicity.upperBound === undefined ||
+        exp.func.value.multiplicity.upperBound > 1)
     ) {
       // NOTE: we need to find/generate the property chain variable name
       // here, by doing this, we try our best to respect original/user-input variable name

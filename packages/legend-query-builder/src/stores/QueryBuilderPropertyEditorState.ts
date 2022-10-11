@@ -55,6 +55,7 @@ import {
   INTERNAL__PropagatedValue,
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -172,13 +173,13 @@ export const generateMilestonedPropertyParameterValue = (
     derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph,
   );
   const temporalTarget =
-    derivedPropertyExpressionState.propertyExpression.func.genericType.value
-      .rawType instanceof Class &&
-    derivedPropertyExpressionState.propertyExpression.func._OWNER
+    derivedPropertyExpressionState.propertyExpression.func.value.genericType
+      .value.rawType instanceof Class &&
+    derivedPropertyExpressionState.propertyExpression.func.value._OWNER
       ._generatedMilestonedProperties.length !== 0
       ? getMilestoneTemporalStereotype(
-          derivedPropertyExpressionState.propertyExpression.func.genericType
-            .value.rawType,
+          derivedPropertyExpressionState.propertyExpression.func.value
+            .genericType.value.rawType,
           derivedPropertyExpressionState.queryBuilderState.graphManagerState
             .graph,
         )
@@ -303,7 +304,7 @@ export const getPropertyChainName = (
   const propertyNameDecorator = humanizePropertyName
     ? prettyPropertyName
     : (val: string): string => val;
-  const chunks = [propertyNameDecorator(propertyExpression.func.name)];
+  const chunks = [propertyNameDecorator(propertyExpression.func.value.name)];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
     currentExpression = getNullableFirstElement(
@@ -329,7 +330,7 @@ export const getPropertyChainName = (
       );
     }
     if (currentExpression instanceof AbstractPropertyExpression) {
-      chunks.unshift(propertyNameDecorator(currentExpression.func.name));
+      chunks.unshift(propertyNameDecorator(currentExpression.func.value.name));
     }
   }
   const processedChunks: string[] = [];
@@ -355,14 +356,14 @@ export const getPropertyChainName = (
 export const getPropertyPath = (
   propertyExpression: AbstractPropertyExpression,
 ): string => {
-  const propertyNameChain = [propertyExpression.func.name];
+  const propertyNameChain = [propertyExpression.func.value.name];
   let currentExpression: ValueSpecification | undefined = propertyExpression;
   while (currentExpression instanceof AbstractPropertyExpression) {
     currentExpression = getNullableFirstElement(
       currentExpression.parametersValues,
     );
     if (currentExpression instanceof AbstractPropertyExpression) {
-      propertyNameChain.unshift(currentExpression.func.name);
+      propertyNameChain.unshift(currentExpression.func.value.name);
     }
   }
   return propertyNameChain.join('.');
@@ -494,7 +495,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
     );
     this.queryBuilderState = queryBuilderState;
     this.derivedProperty = guaranteeType(
-      propertyExpression.func,
+      propertyExpression.func.value,
       DerivedProperty,
     );
     // build the parameters of the derived properties
@@ -513,7 +514,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
   }
 
   get property(): AbstractProperty {
-    return this.propertyExpression.func;
+    return this.propertyExpression.func.value;
   }
 
   get parameterValues(): ValueSpecification[] {
@@ -608,29 +609,33 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
     while (currentExpression instanceof AbstractPropertyExpression) {
       // Check if the property chain can results in column that have multiple values
       if (
-        currentExpression.func.multiplicity.upperBound === undefined ||
-        currentExpression.func.multiplicity.upperBound > 1
+        currentExpression.func.value.multiplicity.upperBound === undefined ||
+        currentExpression.func.value.multiplicity.upperBound > 1
       ) {
         requiresExistsHandling = true;
       }
       // check if the property is milestoned
       if (
-        currentExpression.func.genericType.value.rawType instanceof Class &&
-        currentExpression.func._OWNER._generatedMilestonedProperties.length !==
-          0
+        currentExpression.func.value.genericType.value.rawType instanceof
+          Class &&
+        currentExpression.func.value._OWNER._generatedMilestonedProperties
+          .length !== 0
       ) {
-        const name = currentExpression.func.name;
-        const func =
-          currentExpression.func._OWNER._generatedMilestonedProperties.find(
+        const name = currentExpression.func.value.name;
+        const property =
+          currentExpression.func.value._OWNER._generatedMilestonedProperties.find(
             (e) => e.name === name,
           );
-        if (func) {
-          propertyExpression_setFunc(currentExpression, func);
+        if (property) {
+          propertyExpression_setFunc(
+            currentExpression,
+            PropertyExplicitReference.create(property),
+          );
         }
       }
 
       // Create states to hold derived properties' parameters and arguments for editing
-      if (currentExpression.func instanceof DerivedProperty) {
+      if (currentExpression.func.value instanceof DerivedProperty) {
         const derivedPropertyExpressionState =
           new QueryBuilderDerivedPropertyExpressionState(
             this.queryBuilderState,

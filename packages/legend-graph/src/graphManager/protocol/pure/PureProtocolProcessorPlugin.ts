@@ -26,7 +26,7 @@ import type { V1_GraphTransformerContext } from './v1/transformation/pureGraph/f
 import type { V1_ValueSpecification } from './v1/model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GraphBuilderContext } from './v1/transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import type { V1_ProcessingContext } from './v1/transformation/pureGraph/to/helpers/V1_ProcessingContext.js';
-import type { SimpleFunctionExpression } from '../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+import type { SimpleFunctionExpression } from '../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import type { ValueSpecification } from '../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import type { GraphManagerPluginManager } from '../../GraphManagerPluginManager.js';
 import type { Type } from '../../../graph/metamodel/pure/packageableElements/domain/Type.js';

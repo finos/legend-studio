@@ -63,8 +63,8 @@ export class QueryBuilderPostFilterOperator_LessThanEqual
       postFilterState,
       expression,
       expression.parametersValues[0] instanceof AbstractPropertyExpression &&
-        expression.parametersValues[0].func.genericType.value.rawType.path ===
-          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[0].func.value.genericType.value.rawType
+          .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_ON_OR_BEFORE_DAY

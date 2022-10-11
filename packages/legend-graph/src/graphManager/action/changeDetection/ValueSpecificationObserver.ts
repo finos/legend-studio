@@ -50,7 +50,7 @@ import type {
   FunctionExpression,
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from '../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from '../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,

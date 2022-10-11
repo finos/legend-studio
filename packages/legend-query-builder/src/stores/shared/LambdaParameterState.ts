@@ -33,6 +33,7 @@ import {
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
   extractElementNameFromPath,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -71,7 +72,10 @@ export const buildParametersLetLambdaFunc = (
   const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
   const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const letlambdaFunction = new LambdaFunction(
-    new FunctionType(typeAny, multiplicityOne),
+    new FunctionType(
+      PackageableElementExplicitReference.create(typeAny),
+      multiplicityOne,
+    ),
   );
   letlambdaFunction.expressionSequence = lambdaParametersStates
     .map((queryParamState) => {

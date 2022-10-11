@@ -25,12 +25,12 @@ import {
   type AbstractPropertyExpression,
   type GenericTypeReference,
   type SimpleFunctionExpression,
-  type AbstractProperty,
   type PackageableElementReference,
   type Function,
   type LambdaFunction,
   type FunctionType,
   type CollectionInstanceValue,
+  type PropertyReference,
   observe_ValueSpecification,
   observe_GenericTypeReference,
   observe_PackageableElementReference,
@@ -101,7 +101,7 @@ export const functionExpression_addParameterValue = action(
 );
 
 export const propertyExpression_setFunc = action(
-  (target: AbstractPropertyExpression, val: AbstractProperty): void => {
+  (target: AbstractPropertyExpression, val: PropertyReference): void => {
     target.func = val;
   },
 );

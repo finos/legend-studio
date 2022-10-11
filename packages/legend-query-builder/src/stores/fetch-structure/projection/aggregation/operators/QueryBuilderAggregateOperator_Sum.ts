@@ -52,7 +52,7 @@ export class QueryBuilderAggregateOperator_Sum
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       return (
         [
           PRIMITIVE_TYPE.NUMBER,

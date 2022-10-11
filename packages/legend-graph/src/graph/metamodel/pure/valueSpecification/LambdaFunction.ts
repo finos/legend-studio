@@ -24,6 +24,7 @@ import type {
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
+import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 
 export class FunctionType implements Hashable {
   /**
@@ -31,11 +32,14 @@ export class FunctionType implements Hashable {
    *
    * @discrepancy model
    */
-  returnType?: Type | undefined;
+  returnType?: PackageableElementReference<Type> | undefined;
   parameters: VariableExpression[] = [];
   returnMultiplicity: Multiplicity;
 
-  constructor(returnType: Type | undefined, returnMultiplicity: Multiplicity) {
+  constructor(
+    returnType: PackageableElementReference<Type> | undefined,
+    returnMultiplicity: Multiplicity,
+  ) {
     this.returnType = returnType;
     this.returnMultiplicity = returnMultiplicity;
   }
@@ -43,7 +47,7 @@ export class FunctionType implements Hashable {
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.FUNCTION_TYPE,
-      this.returnType ?? '',
+      this.returnType?.valueForSerialization ?? '',
       hashArray(this.parameters),
       this.returnMultiplicity,
     ]);

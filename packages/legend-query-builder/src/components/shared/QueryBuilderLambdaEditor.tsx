@@ -23,8 +23,8 @@ import type { Type } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
+  type LambdaEditorOnKeyDownEventHandler,
   LambdaEditor,
-  LambdaEditorOnKeyDownEventHandler,
 } from './LambdaEditor.js';
 
 export const QueryBuilderLambdaEditor = observer(

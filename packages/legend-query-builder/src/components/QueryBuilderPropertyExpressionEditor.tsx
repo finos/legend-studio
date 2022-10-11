@@ -275,7 +275,8 @@ export const QueryBuilderPropertyExpressionBadge = observer(
   }) => {
     const { propertyExpressionState, onPropertyExpressionChange } = props;
     const type =
-      propertyExpressionState.propertyExpression.func.genericType.value.rawType;
+      propertyExpressionState.propertyExpression.func.value.genericType.value
+        .rawType;
     const hasDerivedPropertyInExpression = Boolean(
       propertyExpressionState.derivedPropertyExpressionStates.length,
     );
@@ -361,7 +362,7 @@ export const QueryBuilderPropertyExpressionBadge = observer(
               propertyExpressionState={propertyExpressionState}
             />
             <QueryBuilderPropertyInfoTooltip
-              property={propertyExpressionState.propertyExpression.func}
+              property={propertyExpressionState.propertyExpression.func.value}
               path={getPropertyPath(propertyExpressionState.propertyExpression)}
               isMapped={true}
               placement="bottom-end"

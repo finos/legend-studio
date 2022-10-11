@@ -66,7 +66,7 @@ export class QueryBuilderFilterOperator_Equal
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return (
       (
@@ -94,7 +94,7 @@ export class QueryBuilderFilterOperator_Equal
       filterConditionState.value
         ? getNonCollectionValueSpecificationType(filterConditionState.value)
         : undefined,
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType,
     );
   }
@@ -103,7 +103,7 @@ export class QueryBuilderFilterOperator_Equal
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
@@ -166,7 +166,7 @@ export class QueryBuilderFilterOperator_Equal
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
@@ -182,7 +182,7 @@ export class QueryBuilderFilterOperator_Equal
     return buildFilterConditionState(
       filterState,
       expression,
-      (expression.parametersValues[0] as AbstractPropertyExpression).func
+      (expression.parametersValues[0] as AbstractPropertyExpression).func.value
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME

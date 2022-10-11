@@ -57,6 +57,7 @@ import {
   TdsExecutionResult,
   type ExecutionResult,
   getAllSubclasses,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
@@ -212,7 +213,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   );
   propertyExpression_setFunc(
     propertyExpression,
-    guaranteeNonNullable(node.property),
+    PropertyExplicitReference.create(guaranteeNonNullable(node.property)),
   );
   let currentExpression: AbstractPropertyExpression | SimpleFunctionExpression =
     propertyExpression;
@@ -247,7 +248,9 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       );
       propertyExpression_setFunc(
         parentPropertyExpression,
-        guaranteeNonNullable(parentNode.property),
+        PropertyExplicitReference.create(
+          guaranteeNonNullable(parentNode.property),
+        ),
       );
     }
     currentExpression.parametersValues.push(parentPropertyExpression);
