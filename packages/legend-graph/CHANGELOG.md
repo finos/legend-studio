@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 17.0.1
+
+### Patch Changes
+
+- [#1547](https://github.com/finos/legend-studio/pull/1547) [`971a3cf5`](https://github.com/finos/legend-studio/commit/971a3cf52687e1307fabae973e967fb419dad3bc) ([@gayathrir11](https://github.com/gayathrir11)) - Add extension mechanism for `Testable`
+
+- [#1541](https://github.com/finos/legend-studio/pull/1541) [`5d3eebc1`](https://github.com/finos/legend-studio/commit/5d3eebc1e89d87d8cdc161fd3a5adfceab477f5b) ([@PoojaParlapalli](https://github.com/PoojaParlapalli)) - Add support for Flatdata association mapping.
+
 ## 17.0.0
 
 ### Major Changes
