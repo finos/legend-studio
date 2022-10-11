@@ -35,6 +35,8 @@ import {
   V1_PERSISTENCE_ELEMENT_PROTOCOL_TYPE,
   V1_persistenceModelSchema,
   V1_TriggerType,
+  V1_persistenceTestModelSchema,
+  V1_AtomicTestType,
 } from './v1/transformation/pureProtocol/V1_DSL_Persistence_ProtocolHelper.js';
 import {
   V1_PERSISTENCE_CONTEXT_ELEMENT_PROTOCOL_TYPE,
@@ -76,6 +78,9 @@ import {
   type V1_GraphTransformerContext,
   type V1_PackageableElement,
   type V1_TestableAssertion,
+  type Testable_PureProtocolProcessorPlugin_Extension,
+  type V1_AtomicTestProtocolSerializer,
+  type V1_AtomicTestProtocolDeserializer,
 } from '@finos/legend-graph';
 import { assertType, type PlainObject } from '@finos/legend-shared';
 import { deserialize, serialize } from 'serializr';
@@ -91,7 +96,9 @@ export const PERSISTENCE_CONTEXT_ELEMENT_CLASSIFIER_PATH =
 
 export class DSL_Persistence_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
-  implements DSL_Persistence_PureProtocolProcessorPlugin_Extension
+  implements
+    DSL_Persistence_PureProtocolProcessorPlugin_Extension,
+    Testable_PureProtocolProcessorPlugin_Extension
 {
   constructor() {
     super(
@@ -271,7 +278,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[] {
+  V1_getExtraAtomicTestBuilders?(): V1_AtomicTestBuilder[] {
     return [
       (
         protocol: V1_AtomicTest,
@@ -294,7 +301,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[] {
+  V1_getExtraAtomicTestTransformers?(): V1_AtomicTestTransformer[] {
     return [
       (
         metamodel: AtomicTest,
@@ -310,6 +317,37 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
               V1_transformPersistenceTestBatch(testBatch, context),
           );
           return persistenceTest;
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraAtomicTestProtocolSerializers(): V1_AtomicTestProtocolSerializer[] {
+    return [
+      (
+        atomicTestProtocol: V1_AtomicTest,
+        plugins: PureProtocolProcessorPlugin[],
+      ): PlainObject<V1_AtomicTest> | undefined => {
+        if (atomicTestProtocol instanceof V1_PersistenceTest) {
+          return serialize(
+            V1_persistenceTestModelSchema(plugins),
+            atomicTestProtocol,
+          );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  V1_getExtraAtomicTestProtocolDeserializers(): V1_AtomicTestProtocolDeserializer[] {
+    return [
+      (
+        json: PlainObject<V1_AtomicTest>,
+        plugins: PureProtocolProcessorPlugin[],
+      ): V1_AtomicTest | undefined => {
+        if (json._type === V1_AtomicTestType.PERSISTENCE_TEST) {
+          return deserialize(V1_persistenceTestModelSchema(plugins), json);
         }
         return undefined;
       },
@@ -344,7 +382,7 @@ export class DSL_Persistence_PureProtocolProcessorPlugin
     ];
   }
 
-  override V1_getExtraTestableAssertionBuilders(): V1_TestableAssertion[] {
+  V1_getExtraTestableAssertionBuilders(): V1_TestableAssertion[] {
     return [
       (
         atomicTest: AtomicTest,

@@ -164,8 +164,8 @@ export const V1_serviceTestSuiteModelSchema = (
     testData: usingModelSchema(V1_testDataModelSchema(plugins)),
     tests: list(
       custom(
-        (val) => V1_serializeAtomicTest(val),
-        (val) => V1_deserializeAtomicTest(val),
+        (val) => V1_serializeAtomicTest(val, plugins),
+        (val) => V1_deserializeAtomicTest(val, plugins),
       ),
     ),
   });

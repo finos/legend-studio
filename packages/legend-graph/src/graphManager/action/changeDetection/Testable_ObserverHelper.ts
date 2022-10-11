@@ -25,6 +25,7 @@ import type {
   AtomicTest,
   TestSuite,
 } from '../../../graph/metamodel/pure/test/Test.js';
+import type { Testable_PureGraphManagerPlugin_Extension } from '../../Testable_PureGraphManagerPlugin_Extension.js';
 import { type ObserverContext, skipObserved } from './CoreObserverHelper.js';
 import { observe_ExternalFormatData } from './DSL_Data_ObserverHelper.js';
 import {
@@ -76,7 +77,10 @@ export function observe_AtomicTest(
     return observe_ServiceTest(metamodel);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
-    (plugin) => plugin.getExtraAtomicTestObservers?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureGraphManagerPlugin_Extension
+      ).getExtraAtomicTestObservers?.() ?? [],
   );
 
   for (const builder of extraAtomicTestBuilder) {

@@ -19,6 +19,7 @@ import type { PureModel } from '../../graph/PureModel.js';
 import type { PureGraphManagerPlugin } from '../PureGraphManagerPlugin.js';
 import { PackageableElement } from '../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { Testable } from '../../graph/metamodel/pure/test/Testable.js';
+import type { Testable_PureGraphManagerPlugin_Extension } from '../Testable_PureGraphManagerPlugin_Extension.js';
 
 export const DEFAULT_TEST_SUITE_PREFIX = 'testSuite';
 export const DEFAULT_TEST_PREFIX = 'test';
@@ -33,7 +34,12 @@ export const getNullableTestable = (
     (e) => e instanceof PackageableElement && e.path === id,
   ) ??
   plugins
-    .flatMap((plugin) => plugin.getExtraTestableFinders?.() ?? [])
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as Testable_PureGraphManagerPlugin_Extension
+        ).getExtraTestableFinders?.() ?? [],
+    )
     .map((getter) => getter(id, graph))
     .filter(isNonNullable)[0];
 
@@ -46,7 +52,12 @@ export const getNullableIDFromTestable = (
     return testable.path;
   }
   return plugins
-    .flatMap((plugin) => plugin.getExtraTestableIDBuilders?.() ?? [])
+    .flatMap(
+      (plugin) =>
+        (
+          plugin as Testable_PureGraphManagerPlugin_Extension
+        ).getExtraTestableIDBuilders?.() ?? [],
+    )
     .map((getter) => getter(testable, graph))
     .filter(isNonNullable)[0];
 };
