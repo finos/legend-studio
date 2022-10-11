@@ -216,6 +216,7 @@ export * from './graphManager/GraphManagerUtils.js';
 export * from './graphManager/GraphManagerEvent.js';
 export * from './graphManager/DSL_Mapping_PureGraphManagerPlugin_Extension.js';
 export * from './graphManager/DSL_Generation_PureGraphManagerPlugin_Extension.js';
+export * from './graphManager/Testable_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
   TdsExecutionResult,
@@ -237,6 +238,7 @@ export { ServiceRegistrationResult } from './graphManager/action/service/Service
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
+export * from './graphManager/protocol/pure/Testable_PureProtocolProcessorPlugin_Extension.js';
 
 // --------------------------------------------- TRANSFORMATION --------------------------------------------------
 

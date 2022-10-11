@@ -92,6 +92,8 @@ import {
   V1_externalFormatDataModelSchema,
   type V1_TestAssertion,
   type V1_TestBatch,
+  V1_serializeAtomicTest,
+  V1_deserializeAtomicTest,
 } from '@finos/legend-graph';
 import {
   deserializeArray,
@@ -1050,7 +1052,7 @@ export const V1_deserializeTrigger = (
  * test
  **********/
 
-enum V1_AtomicTestType {
+export enum V1_AtomicTestType {
   PERSISTENCE_TEST = 'test',
 }
 
@@ -1132,12 +1134,6 @@ export const V1_persistenceTestModelSchema = (
     ),
   });
 
-export const V1_serializePersistenceTest = (
-  protocol: V1_AtomicTest,
-  plugins: PureProtocolProcessorPlugin[],
-): PlainObject<V1_AtomicTest> =>
-  serialize(V1_persistenceTestModelSchema(plugins), protocol);
-
 /**********
  * persistence
  **********/
@@ -1165,23 +1161,16 @@ export const V1_persistenceModelSchema = (
       (values) =>
         serializeArray(
           values,
-          (value: V1_AtomicTest) => V1_serializePersistenceTest(value, plugins),
+          (value: V1_AtomicTest) => V1_serializeAtomicTest(value, plugins),
           {
             skipIfEmpty: true,
             INTERNAL__forceReturnEmptyInTest: true,
           },
         ),
       (values) =>
-        deserializeArray(
-          values,
-          (v) =>
-            v._type === V1_AtomicTestType.PERSISTENCE_TEST
-              ? deserialize(V1_persistenceTestModelSchema(plugins), v)
-              : undefined,
-          {
-            skipIfEmpty: true,
-          },
-        ),
+        deserializeArray(values, (v) => V1_deserializeAtomicTest(v, plugins), {
+          skipIfEmpty: true,
+        }),
     ),
     trigger: custom(
       (val) => V1_serializeTrigger(val, plugins),
