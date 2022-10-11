@@ -234,6 +234,9 @@ const ServiceTestParameterEditor = observer(
               paramState.updateValueSpecification(val);
             }}
             graph={setupState.editorStore.graphManagerState.graph}
+            obseverContext={
+              setupState.editorStore.changeDetectionState.observerContext
+            }
             typeCheckOption={{
               expectedType:
                 paramState.varExpression.genericType?.value.rawType ??

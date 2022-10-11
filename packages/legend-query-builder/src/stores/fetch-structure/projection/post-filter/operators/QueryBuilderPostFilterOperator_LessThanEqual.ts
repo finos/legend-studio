@@ -26,7 +26,7 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QueryBuilderPostFilterOperator_LessThan } from './QueryBuilderPostFilterOperator_LessThan.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';

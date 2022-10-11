@@ -29,7 +29,6 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -50,9 +49,11 @@ import {
   isTypeCompatibleForAssignment,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
+import { instanceValue_setValues } from '../../../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderPostFilterOperator_Equal
   extends QueryBuilderPostFilterOperator
@@ -140,9 +141,9 @@ export class QueryBuilderPostFilterOperator_Equal
               ),
               multiplicityOne,
             );
-            enumValueInstanceValue.values = [
+            instanceValue_setValues(enumValueInstanceValue, [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
-            ];
+            ]);
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
@@ -209,9 +210,9 @@ export class QueryBuilderPostFilterOperator_NotEqual extends QueryBuilderPostFil
     );
     return expression
       ? buildNotExpression(
+          expression,
           postFilterConditionState.postFilterState.projectionState
             .queryBuilderState.graphManagerState.graph,
-          expression,
         )
       : undefined;
   }

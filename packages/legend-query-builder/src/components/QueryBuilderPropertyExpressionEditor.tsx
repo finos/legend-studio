@@ -53,7 +53,7 @@ import {
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
-import { propertyExpression_setParametersValue } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { functionExpression_setParameterValue } from '../stores/shared/ValueSpecificationModifierHelper.js';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -69,10 +69,10 @@ const DerivedPropertyParameterValueEditor = observer(
     ).value.rawType;
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
-        propertyExpression_setParametersValue(
+        functionExpression_setParameterValue(
           derivedPropertyExpressionState.propertyExpression,
-          idx + 1,
           item.variable.parameter,
+          idx + 1,
           derivedPropertyExpressionState.queryBuilderState.observableContext,
         );
       },
@@ -106,9 +106,8 @@ const DerivedPropertyParameterValueEditor = observer(
       [handleDrop],
     );
     const resetParameterValue = (): void => {
-      propertyExpression_setParametersValue(
+      functionExpression_setParameterValue(
         derivedPropertyExpressionState.propertyExpression,
-        idx + 1,
         generateMilestonedPropertyParameterValue(
           derivedPropertyExpressionState,
           idx,
@@ -118,6 +117,7 @@ const DerivedPropertyParameterValueEditor = observer(
             derivedPropertyExpressionState.queryBuilderState.graphManagerState
               .graph,
           ),
+        idx + 1,
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
     };
@@ -140,15 +140,19 @@ const DerivedPropertyParameterValueEditor = observer(
                 derivedPropertyExpressionState.parameterValues[idx],
               )}
               setValueSpecification={(val: ValueSpecification): void => {
-                propertyExpression_setParametersValue(
+                functionExpression_setParameterValue(
                   derivedPropertyExpressionState.propertyExpression,
-                  idx + 1,
                   val,
+                  idx + 1,
                   derivedPropertyExpressionState.queryBuilderState
                     .observableContext,
                 );
               }}
               graph={graph}
+              obseverContext={
+                derivedPropertyExpressionState.queryBuilderState
+                  .observableContext
+              }
               typeCheckOption={{
                 expectedType: parameterType,
                 match:

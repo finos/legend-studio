@@ -37,6 +37,7 @@ import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
 import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 const MilestoningParameterEditor = observer(
   (props: {
@@ -106,9 +107,9 @@ const MilestoningParameterEditor = observer(
         ),
         queryBuilderState.observableContext,
       );
-      parameter.values = [
+      instanceValue_setValues(parameter, [
         generateDefaultValueForPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-      ];
+      ]);
       if (stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
         queryBuilderState.milestoningState.setBusinessDate(parameter);
       } else {
@@ -126,6 +127,7 @@ const MilestoningParameterEditor = observer(
           <BasicValueSpecificationEditor
             valueSpecification={milestoningParameter}
             graph={queryBuilderState.graphManagerState.graph}
+            obseverContext={queryBuilderState.observableContext}
             setValueSpecification={(val: ValueSpecification): void =>
               stereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL
                 ? queryBuilderState.milestoningState.setBusinessDate(val)

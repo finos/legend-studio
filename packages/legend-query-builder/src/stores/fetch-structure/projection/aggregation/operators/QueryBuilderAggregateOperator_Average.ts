@@ -32,7 +32,7 @@ import {
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper.js';
+} from './QueryBuilderAggregateOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
@@ -73,8 +73,8 @@ export class QueryBuilderAggregateOperator_Average
   ): ValueSpecification {
     return buildAggregateExpression(
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE,
-      graph,
       variableName,
+      graph,
     );
   }
 

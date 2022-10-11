@@ -504,6 +504,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
+                    obseverContext={
+                      node.condition.postFilterState.projectionState
+                        .queryBuilderState.observableContext
+                    }
                     typeCheckOption={{
                       expectedType: guaranteeNonNullable(
                         node.condition.columnState.getReturnType(),

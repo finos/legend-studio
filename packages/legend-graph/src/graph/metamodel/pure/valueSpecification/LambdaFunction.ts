@@ -26,6 +26,11 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 
 export class FunctionType implements Hashable {
+  /**
+   * Currently, we don't do type-inferencing
+   *
+   * @discrepancy model
+   */
   returnType?: Type | undefined;
   parameters: VariableExpression[] = [];
   returnMultiplicity: Multiplicity;

@@ -418,9 +418,8 @@ export const QueryBuilderParametersPanel = observer(
         )}
         {queryParameterState.parameterValuesEditorState.showModal && (
           <LambdaParameterValuesEditor
-            graph={
-              queryParameterState.queryBuilderState.graphManagerState.graph
-            }
+            graph={queryBuilderState.graphManagerState.graph}
+            observerContext={queryBuilderState.observableContext}
             lambdaParametersState={queryParameterState}
           />
         )}

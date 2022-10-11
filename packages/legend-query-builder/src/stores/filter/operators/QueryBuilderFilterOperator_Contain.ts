@@ -23,7 +23,6 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -33,7 +32,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import {
   buildNotExpression,
   generateDefaultValueForPrimitiveType,
@@ -42,6 +41,7 @@ import {
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_Contain
   extends QueryBuilderFilterOperator
@@ -128,9 +128,9 @@ export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOpe
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
+      super.buildFilterConditionExpression(filterConditionState),
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
-      super.buildFilterConditionExpression(filterConditionState),
     );
   }
 

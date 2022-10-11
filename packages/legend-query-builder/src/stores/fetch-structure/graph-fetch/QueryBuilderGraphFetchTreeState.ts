@@ -44,7 +44,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { appendGraphFetch } from './QueryBuilderGraphFetchValueSpecificationBuilder.js';
+import { appendGraphFetch } from './QueryBuilderGraphFetchTreeValueSpecificationBuilder.js';
 import {
   guaranteeNonNullable,
   hashArray,

@@ -30,8 +30,8 @@ import type { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOper
 
 export const buildAggregateExpression = (
   operatorFunctionFullPath: string,
-  graph: PureModel,
   variableName: string,
+  graph: PureModel,
 ): ValueSpecification => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,

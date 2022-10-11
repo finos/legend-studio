@@ -32,7 +32,6 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -42,7 +41,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import {
   buildNotExpression,
@@ -52,6 +51,8 @@ import {
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
+import { instanceValue_setValues } from '../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderFilterOperator_Equal
   extends QueryBuilderFilterOperator
@@ -141,9 +142,9 @@ export class QueryBuilderFilterOperator_Equal
               ),
               multiplicityOne,
             );
-            enumValueInstanceValue.values = [
+            instanceValue_setValues(enumValueInstanceValue, [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
-            ];
+            ]);
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
@@ -205,9 +206,9 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
+      super.buildFilterConditionExpression(filterConditionState),
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
-      super.buildFilterConditionExpression(filterConditionState),
     );
   }
 

@@ -52,6 +52,7 @@ export class Expression extends ValueSpecification implements Hashable {
 export class FunctionExpression extends Expression implements Hashable {
   functionName: string;
   parametersValues: ValueSpecification[] = [];
+  func?: unknown | undefined;
 
   constructor(functionName: string, multiplicity: Multiplicity) {
     super(multiplicity, undefined);
@@ -80,8 +81,13 @@ export class SimpleFunctionExpression
   extends FunctionExpression
   implements Hashable
 {
+  /**
+   * Currently, we don't do function matching
+   *
+   * @discrepancy model
+   */
   // eslint-disable-next-line @typescript-eslint/ban-types
-  func?: PackageableElementReference<Function> | undefined;
+  declare func?: PackageableElementReference<Function> | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -106,7 +112,7 @@ export class AbstractPropertyExpression
   extends FunctionExpression
   implements Hashable
 {
-  func!: AbstractProperty;
+  declare func: AbstractProperty;
 
   override get hashCode(): string {
     return hashArray([

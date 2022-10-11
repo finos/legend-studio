@@ -61,7 +61,11 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
-import { functionExpression_setParametersValues } from './shared/ValueSpecificationModifierHelper.js';
+import {
+  propertyExpression_setFunc,
+  functionExpression_setParametersValues,
+  instanceValue_setValues,
+} from './shared/ValueSpecificationModifierHelper.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,
@@ -217,13 +221,9 @@ export const generateMilestonedPropertyParameterValue = (
           ),
         );
       }
-      const parameter = new INTERNAL__PropagatedValue(
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+      const parameter = new INTERNAL__PropagatedValue(() =>
+        guaranteeNonNullable(milestoningState.businessDate),
       );
-      parameter.getValue = (): ValueSpecification =>
-        guaranteeNonNullable(milestoningState.businessDate);
       return parameter;
     }
     case MILESTONING_STEREOTYPE.BITEMPORAL: {
@@ -252,13 +252,9 @@ export const generateMilestonedPropertyParameterValue = (
             AbstractPropertyExpression,
           ).parametersValues[1];
         }
-        const parameter = new INTERNAL__PropagatedValue(
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+        const parameter = new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(milestoningState.processingDate),
         );
-        parameter.getValue = (): ValueSpecification =>
-          guaranteeNonNullable(milestoningState.processingDate);
         return parameter;
       } else {
         if (
@@ -276,13 +272,9 @@ export const generateMilestonedPropertyParameterValue = (
             AbstractPropertyExpression,
           ).parametersValues[1];
         }
-        const parameter = new INTERNAL__PropagatedValue(
-          derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+        const parameter = new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(milestoningState.businessDate),
         );
-        parameter.getValue = (): ValueSpecification =>
-          guaranteeNonNullable(milestoningState.businessDate);
         return parameter;
       }
     }
@@ -294,13 +286,9 @@ export const generateMilestonedPropertyParameterValue = (
           ),
         );
       }
-      const parameter = new INTERNAL__PropagatedValue(
-        derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
+      const parameter = new INTERNAL__PropagatedValue(() =>
+        guaranteeNonNullable(milestoningState.processingDate),
       );
-      parameter.getValue = (): ValueSpecification =>
-        guaranteeNonNullable(milestoningState.processingDate);
       return parameter;
     }
     default:
@@ -416,9 +404,9 @@ export const generateValueSpecificationForParameter = (
         parameter.multiplicity,
       );
       if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
-        primitiveInstanceValue.values = [
+        instanceValue_setValues(primitiveInstanceValue, [
           generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
-        ];
+        ]);
       }
       return primitiveInstanceValue;
     } else if (type instanceof Enumeration) {
@@ -430,7 +418,7 @@ export const generateValueSpecificationForParameter = (
         const enumValueRef = EnumValueExplicitReference.create(
           type.values[0] as Enum,
         );
-        enumValueInstanceValue.values = [enumValueRef];
+        instanceValue_setValues(enumValueInstanceValue, [enumValueRef]);
       }
       return enumValueInstanceValue;
     }
@@ -637,7 +625,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
             (e) => e.name === name,
           );
         if (func) {
-          currentExpression.func = func;
+          propertyExpression_setFunc(currentExpression, func);
         }
       }
 

@@ -135,8 +135,8 @@ export const unwrapNotExpression = (
 };
 
 export const buildNotExpression = (
-  graph: PureModel,
   expression: ValueSpecification,
+  graph: PureModel,
 ): ValueSpecification => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,

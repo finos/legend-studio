@@ -46,6 +46,8 @@ export * from './components/QuerySetupUtils.js';
 export * from './components/shared/LambdaEditor.js';
 export * from './components/shared/BasicValueSpecificationEditor.js';
 export * from './components/shared/LambdaParameterValuesEditor.js';
+
 export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
 export * from './stores/shared/LambdaParameterState.js';
 export * from './stores/shared/ValueSpecificationModifierHelper.js';
+export * from './stores/shared/ValueSpecificationEditorHelper.js';

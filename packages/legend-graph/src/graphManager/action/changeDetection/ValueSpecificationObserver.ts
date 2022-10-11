@@ -105,11 +105,6 @@ export const observe_SimpleFunctionExpression = skipObservedWithContext(
   (metamodel: SimpleFunctionExpression, context): SimpleFunctionExpression => {
     observe_Abstract_FunctionExpression(metamodel, context);
 
-    makeObservable(metamodel, {
-      func: observable,
-      hashCode: override,
-    });
-
     if (metamodel.func) {
       observe_PackageableElementReference(metamodel.func);
     }
@@ -124,11 +119,6 @@ export const observe_AbstractPropertyExpression = skipObservedWithContext(
     context,
   ): AbstractPropertyExpression => {
     observe_Abstract_FunctionExpression(metamodel, context);
-
-    makeObservable(metamodel, {
-      func: observable,
-      hashCode: override,
-    });
 
     return metamodel;
   },
@@ -498,6 +488,7 @@ function observe_Abstract_FunctionExpression(
     functionName: observable,
     parametersValues: observable,
     classifierGenericType: observable,
+    func: observable,
     hashCode: override,
   });
 

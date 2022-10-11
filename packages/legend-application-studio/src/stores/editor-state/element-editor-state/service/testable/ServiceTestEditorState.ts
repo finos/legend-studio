@@ -23,7 +23,6 @@ import {
   ParameterValue,
   buildLambdaVariableExpressions,
   VariableExpression,
-  generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import { action, flow, makeObservable, observable } from 'mobx';
 import { TestableTestEditorState } from '../../testable/TestableEditorState.js';
@@ -46,6 +45,7 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
+import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
 
 export enum SERIALIZATION_FORMAT {
   PURE = 'PURE',

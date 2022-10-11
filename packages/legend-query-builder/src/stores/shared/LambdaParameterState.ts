@@ -33,7 +33,6 @@ import {
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
   extractElementNameFromPath,
-  generateVariableExpressionMockValue,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -45,10 +44,11 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
+import { generateVariableExpressionMockValue } from './ValueSpecificationEditorHelper.js';
 import {
-  genericType_setRawType,
   multiplicity_setLowerBound,
   multiplicity_setUpperBound,
+  valueSpecification_setGenericType,
 } from './ValueSpecificationModifierHelper.js';
 
 export enum PARAMETER_SUBMIT_ACTION {
@@ -145,10 +145,10 @@ export class LambdaParameterState implements Hashable {
 
   changeVariableType(type: Type): void {
     if (type !== this.variableType) {
-      const genricType = this.parameter.genericType?.value;
-      if (genricType) {
-        genericType_setRawType(genricType, type);
-      }
+      valueSpecification_setGenericType(
+        this.parameter,
+        GenericTypeExplicitReference.create(new GenericType(type)),
+      );
       this.mockParameterValue();
     }
   }
@@ -222,7 +222,7 @@ export class ParameterInstanceValuesEditorState {
   }
 }
 
-export class LambdaParametersState implements Hashable {
+export abstract class LambdaParametersState implements Hashable {
   parameterStates: LambdaParameterState[] = [];
   parameterValuesEditorState = new ParameterInstanceValuesEditorState();
 

@@ -381,13 +381,11 @@ const buildFilterConditionStateWithExists = (
             multiplicityOne,
           );
           propertyExpression.func = currentExpression.func;
-          if (currentExpression.parametersValues.length > 1) {
-            // NOTE: we must retain the rest of the parameters as those are derived property parameters
-            propertyExpression.parametersValues =
-              currentExpression.parametersValues.slice(1);
-          } else {
-            propertyExpression.parametersValues = [];
-          }
+          // NOTE: we must retain the rest of the parameters as those are derived property parameters
+          propertyExpression.parametersValues =
+            currentExpression.parametersValues.length > 1
+              ? currentExpression.parametersValues.slice(1)
+              : [];
           expressions.push(propertyExpression);
         }
         currentExpression = guaranteeNonNullable(

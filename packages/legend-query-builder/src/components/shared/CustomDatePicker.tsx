@@ -37,8 +37,8 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
   DAY_OF_WEEK,
-  buildPrimitiveInstanceValue,
   DURATION_UNIT,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -47,9 +47,12 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { useEffect, useRef, useState } from 'react';
+import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import {
-  genericType_setRawType,
-  instanceValue_changeValue,
+  functionExpression_addParameterValue,
+  instanceValue_setValue,
+  instanceValue_setValues,
+  valueSpecification_setGenericType,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 
 enum CUSTOM_DATE_PICKER_OPTION {
@@ -236,6 +239,7 @@ const reservedCustomDateOptions: CustomDateOption[] = [
 const buildPureDateFunctionExpression = (
   datePickerOption: DatePickerOption,
   graph: PureModel,
+  observerContext: ObserverContext,
 ): SimpleFunctionExpression => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -248,8 +252,9 @@ const buildPureDateFunctionExpression = (
       SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
       multiplicityOne,
     );
-    previousFridaySFE.genericType = GenericTypeExplicitReference.create(
-      new GenericType(date),
+    valueSpecification_setGenericType(
+      previousFridaySFE,
+      GenericTypeExplicitReference.create(new GenericType(date)),
     );
     const dayOfWeekEnumIntanceValue = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(
@@ -257,7 +262,8 @@ const buildPureDateFunctionExpression = (
       ),
       multiplicityOne,
     );
-    dayOfWeekEnumIntanceValue.values.push(
+    instanceValue_setValues(dayOfWeekEnumIntanceValue, [
+      ...dayOfWeekEnumIntanceValue.values,
       EnumValueExplicitReference.create(
         guaranteeNonNullable(
           graph
@@ -265,8 +271,12 @@ const buildPureDateFunctionExpression = (
             .values.filter((e) => e.name === datePickerOption.day)[0],
         ),
       ),
+    ]);
+    functionExpression_addParameterValue(
+      previousFridaySFE,
+      dayOfWeekEnumIntanceValue,
+      observerContext,
     );
-    previousFridaySFE.parametersValues.push(dayOfWeekEnumIntanceValue);
     return previousFridaySFE;
   } else if (datePickerOption instanceof CustomFirstDayOfOption) {
     switch (datePickerOption.unit) {
@@ -275,8 +285,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
           multiplicityOne,
         );
-        firstDayOfYearSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfYearSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfYearSFE;
       }
@@ -285,8 +296,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           multiplicityOne,
         );
-        firstDayOfQuarterSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(strictDate),
+        valueSpecification_setGenericType(
+          firstDayOfQuarterSFE,
+          GenericTypeExplicitReference.create(new GenericType(strictDate)),
         );
         return firstDayOfQuarterSFE;
       }
@@ -295,8 +307,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
           multiplicityOne,
         );
-        firstDayOfMonthSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfMonthSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfMonthSFE;
       }
@@ -305,8 +318,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           multiplicityOne,
         );
-        firstDayOfWeekSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfWeekSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfWeekSFE;
       }
@@ -322,8 +336,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.TODAY,
           multiplicityOne,
         );
-        todaySFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(strictDate),
+        valueSpecification_setGenericType(
+          todaySFE,
+          GenericTypeExplicitReference.create(new GenericType(strictDate)),
         );
         return todaySFE;
       }
@@ -332,8 +347,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.NOW,
           multiplicityOne,
         );
-        nowSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(dateTime),
+        valueSpecification_setGenericType(
+          nowSFE,
+          GenericTypeExplicitReference.create(new GenericType(dateTime)),
         );
         return nowSFE;
       }
@@ -342,8 +358,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
           multiplicityOne,
         );
-        firstDayOfYearSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfYearSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfYearSFE;
       }
@@ -352,8 +369,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
           multiplicityOne,
         );
-        firstDayOfQuarterSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(strictDate),
+        valueSpecification_setGenericType(
+          firstDayOfQuarterSFE,
+          GenericTypeExplicitReference.create(new GenericType(strictDate)),
         );
         return firstDayOfQuarterSFE;
       }
@@ -362,8 +380,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
           multiplicityOne,
         );
-        firstDayOfMonthSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfMonthSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfMonthSFE;
       }
@@ -372,8 +391,9 @@ const buildPureDateFunctionExpression = (
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
           multiplicityOne,
         );
-        firstDayOfWeekSFE.genericType = GenericTypeExplicitReference.create(
-          new GenericType(date),
+        valueSpecification_setGenericType(
+          firstDayOfWeekSFE,
+          GenericTypeExplicitReference.create(new GenericType(date)),
         );
         return firstDayOfWeekSFE;
       }
@@ -415,6 +435,7 @@ const buildPureDurationEnumValue = (
 const buildPureAdjustDateFunction = (
   customDateOption: CustomDateOption,
   graph: PureModel,
+  observerContext: ObserverContext,
 ): SimpleFunctionExpression => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -423,36 +444,47 @@ const buildPureAdjustDateFunction = (
     SUPPORTED_FUNCTIONS.ADJUST,
     multiplicityOne,
   );
-  dateAdjustSimpleFunctionExpression.parametersValues.push(
+  functionExpression_addParameterValue(
+    dateAdjustSimpleFunctionExpression,
     buildPureDateFunctionExpression(
       new DatePickerOption(
         guaranteeNonNullable(customDateOption.referenceMoment),
         guaranteeNonNullable(customDateOption.referenceMoment),
       ),
       graph,
+      observerContext,
     ),
+    observerContext,
   );
   if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
     const minusFunc = new SimpleFunctionExpression(
       SUPPORTED_FUNCTIONS.MINUS,
       multiplicityOne,
     );
-    minusFunc.parametersValues.push(
+    functionExpression_addParameterValue(
+      minusFunc,
       buildPrimitiveInstanceValue(
         graph,
         PRIMITIVE_TYPE.INTEGER,
         customDateOption.duration,
       ),
+      observerContext,
     );
-    dateAdjustSimpleFunctionExpression.parametersValues.push(minusFunc);
+    functionExpression_addParameterValue(
+      dateAdjustSimpleFunctionExpression,
+      minusFunc,
+      observerContext,
+    );
   } else {
     const adjustmentInstanceValue = buildPrimitiveInstanceValue(
       graph,
       PRIMITIVE_TYPE.INTEGER,
       customDateOption.duration,
     );
-    dateAdjustSimpleFunctionExpression.parametersValues.push(
+    functionExpression_addParameterValue(
+      dateAdjustSimpleFunctionExpression,
       adjustmentInstanceValue,
+      observerContext,
     );
   }
   const durationUnitEnumIntanceValue = new EnumValueInstanceValue(
@@ -461,7 +493,8 @@ const buildPureAdjustDateFunction = (
     ),
     multiplicityOne,
   );
-  durationUnitEnumIntanceValue.values.push(
+  instanceValue_setValues(durationUnitEnumIntanceValue, [
+    ...durationUnitEnumIntanceValue.values,
     EnumValueExplicitReference.create(
       guaranteeNonNullable(
         buildPureDurationEnumValue(
@@ -470,14 +503,18 @@ const buildPureAdjustDateFunction = (
         ),
       ),
     ),
-  );
-  dateAdjustSimpleFunctionExpression.parametersValues.push(
+  ]);
+  functionExpression_addParameterValue(
+    dateAdjustSimpleFunctionExpression,
     durationUnitEnumIntanceValue,
+    observerContext,
   );
-  dateAdjustSimpleFunctionExpression.genericType =
+  valueSpecification_setGenericType(
+    dateAdjustSimpleFunctionExpression,
     GenericTypeExplicitReference.create(
       new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATE)),
-    );
+    ),
+  );
   return dateAdjustSimpleFunctionExpression;
 };
 
@@ -702,14 +739,16 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
         ),
       );
     } else if (valueSpecification instanceof InstanceValue) {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
+      instanceValue_setValue(valueSpecification, event.target.value, 0);
       if (
         valueSpecification.genericType.value.rawType.path !==
         PRIMITIVE_TYPE.STRICTDATE
       ) {
-        genericType_setRawType(
-          valueSpecification.genericType.value,
-          graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
+        valueSpecification_setGenericType(
+          valueSpecification,
+          GenericTypeExplicitReference.create(
+            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)),
+          ),
         );
       }
       setValueSpecification(valueSpecification);
@@ -769,14 +808,16 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
         ),
       );
     } else {
-      instanceValue_changeValue(valueSpecification, event.target.value, 0);
+      instanceValue_setValue(valueSpecification, event.target.value, 0);
       if (
         valueSpecification.genericType.value.rawType.path !==
         PRIMITIVE_TYPE.DATETIME
       ) {
-        genericType_setRawType(
-          valueSpecification.genericType.value,
-          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+        valueSpecification_setGenericType(
+          valueSpecification,
+          GenericTypeExplicitReference.create(
+            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME)),
+          ),
         );
       }
       setValueSpecification(valueSpecification);
@@ -812,6 +853,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
 const CustomDateInstanceValueEditor: React.FC<{
   customDateOptionValue: CustomDateOption;
   graph: PureModel;
+  observerContext: ObserverContext;
   setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
@@ -820,6 +862,7 @@ const CustomDateInstanceValueEditor: React.FC<{
     graph,
     setValueSpecification,
     setDatePickerOption,
+    observerContext,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
   const [durationValue, setDurationValue] = useState(
@@ -855,7 +898,9 @@ const CustomDateInstanceValueEditor: React.FC<{
         latestDirectionValue as CUSTOM_DATE_OPTION_DIRECTION,
         latestReferenceMomentValue as CUSTOM_DATE_OPTION_REFERENCE_MOMENT,
       );
-      setValueSpecification(buildPureAdjustDateFunction(dateOption, graph));
+      setValueSpecification(
+        buildPureAdjustDateFunction(dateOption, graph, observerContext),
+      );
       const matchedPreservedCustomAdjustDates =
         reservedCustomDateOptions.filter(
           (t) => t.generateDisplayLabel() === dateOption.generateDisplayLabel(),
@@ -974,12 +1019,14 @@ const CustomDateInstanceValueEditor: React.FC<{
 const CustomFirstDayOfValueSpecificationEditor: React.FC<{
   customDateAdjustOptionValue: DatePickerOption;
   graph: PureModel;
+  observerContext: ObserverContext;
   setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
   const {
     customDateAdjustOptionValue,
     graph,
+    observerContext,
     setValueSpecification,
     setDatePickerOption,
   } = props;
@@ -1002,7 +1049,11 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
             )
           : new CustomFirstDayOfOption('', undefined);
       setValueSpecification(
-        buildPureDateFunctionExpression(startDayOfDateOption, graph),
+        buildPureDateFunctionExpression(
+          startDayOfDateOption,
+          graph,
+          observerContext,
+        ),
       );
       setDatePickerOption(startDayOfDateOption);
     }
@@ -1040,12 +1091,14 @@ const CustomFirstDayOfValueSpecificationEditor: React.FC<{
 const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
   customDateAdjustOptionValue: DatePickerOption;
   graph: PureModel;
+  observerContext: ObserverContext;
   setValueSpecification: (val: ValueSpecification) => void;
   setDatePickerOption: (datePickerOption: DatePickerOption) => void;
 }> = (props) => {
   const {
     customDateAdjustOptionValue,
     graph,
+    observerContext,
     setValueSpecification,
     setDatePickerOption,
   } = props;
@@ -1062,7 +1115,11 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
         latestDurationUnitValue as CUSTOM_DATE_DAY_OF_WEEK,
       );
       setValueSpecification(
-        buildPureDateFunctionExpression(previousDayOfWeekDateOption, graph),
+        buildPureDateFunctionExpression(
+          previousDayOfWeekDateOption,
+          graph,
+          observerContext,
+        ),
       );
       setDatePickerOption(previousDayOfWeekDateOption);
     }
@@ -1104,6 +1161,7 @@ const CustomPreviousDayOfWeekValueSpecificationEditor: React.FC<{
 export const CustomDatePicker: React.FC<{
   valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
   graph: PureModel;
+  observerContext: ObserverContext;
   typeCheckOption: {
     expectedType: Type;
     /**
@@ -1121,8 +1179,13 @@ export const CustomDatePicker: React.FC<{
   };
   setValueSpecification: (val: ValueSpecification) => void;
 }> = (props) => {
-  const { valueSpecification, setValueSpecification, graph, typeCheckOption } =
-    props;
+  const {
+    valueSpecification,
+    setValueSpecification,
+    graph,
+    observerContext,
+    typeCheckOption,
+  } = props;
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
   const targetDateOptionsEnum = typeCheckOption.match
@@ -1183,10 +1246,15 @@ export const CustomDatePicker: React.FC<{
             buildPureAdjustDateFunction(
               guaranteeNonNullable(theReservedCustomDateOption[0]),
               graph,
+              observerContext,
             ),
           )
         : setValueSpecification(
-            buildPureDateFunctionExpression(chosenDatePickerOption, graph),
+            buildPureDateFunctionExpression(
+              chosenDatePickerOption,
+              graph,
+              observerContext,
+            ),
           );
     }
     setDatePickerOption(chosenDatePickerOption);
@@ -1215,6 +1283,7 @@ export const CustomDatePicker: React.FC<{
         return (
           <CustomDateInstanceValueEditor
             graph={graph}
+            observerContext={observerContext}
             customDateOptionValue={buildCustomDateOption(valueSpecification)}
             setValueSpecification={setValueSpecification}
             setDatePickerOption={setDatePickerOption}
@@ -1224,6 +1293,7 @@ export const CustomDatePicker: React.FC<{
         return (
           <CustomFirstDayOfValueSpecificationEditor
             graph={graph}
+            observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
             )}
@@ -1235,6 +1305,7 @@ export const CustomDatePicker: React.FC<{
         return (
           <CustomPreviousDayOfWeekValueSpecificationEditor
             graph={graph}
+            observerContext={observerContext}
             customDateAdjustOptionValue={buildDatePickerOption(
               valueSpecification,
             )}

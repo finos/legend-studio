@@ -20,7 +20,6 @@ import {
   type ValueSpecification,
   type FunctionExpression,
   PRIMITIVE_TYPE,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -40,9 +39,10 @@ import {
   getNonCollectionValueSpecificationType,
   unwrapNotExpression,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_Contain
   extends QueryBuilderPostFilterOperator
@@ -133,9 +133,9 @@ export class QueryBuilderPostFilterOperator_NotContain extends QueryBuilderPostF
     );
     return expression
       ? buildNotExpression(
+          expression,
           postFilterConditionState.postFilterState.projectionState
             .queryBuilderState.graphManagerState.graph,
-          expression,
         )
       : undefined;
   }

@@ -31,7 +31,7 @@ import {
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper.js';
+} from './QueryBuilderAggregateOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
@@ -72,8 +72,8 @@ export class QueryBuilderAggregateOperator_Sum
   ): ValueSpecification {
     return buildAggregateExpression(
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUM,
-      graph,
       variableName,
+      graph,
     );
   }
 

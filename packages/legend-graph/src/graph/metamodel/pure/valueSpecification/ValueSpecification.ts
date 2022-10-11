@@ -81,6 +81,11 @@ export interface ValueSpecificationVisitor<T> {
 }
 
 export abstract class ValueSpecification implements Hashable {
+  /**
+   * Currently, we don't do type-inferencing
+   *
+   * @discrepancy model
+   */
   genericType?: GenericTypeReference | undefined;
   multiplicity!: Multiplicity;
 

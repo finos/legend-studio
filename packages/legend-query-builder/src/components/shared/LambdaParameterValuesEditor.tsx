@@ -20,6 +20,7 @@ import {
   type PureModel,
   type ValueSpecification,
   PRIMITIVE_TYPE,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -30,9 +31,10 @@ import { BasicValueSpecificationEditor } from './BasicValueSpecificationEditor.j
 export const LambdaParameterValuesEditor = observer(
   (props: {
     graph: PureModel;
+    observerContext: ObserverContext;
     lambdaParametersState: LambdaParametersState;
   }) => {
-    const { lambdaParametersState, graph } = props;
+    const { lambdaParametersState, graph, observerContext } = props;
     const valuesEdtiorState = lambdaParametersState.parameterValuesEditorState;
     const close = (): void => valuesEdtiorState.close();
     const applicationStore = useApplicationStore();
@@ -83,6 +85,7 @@ export const LambdaParameterValuesEditor = observer(
                         paramState.setValue(val);
                       }}
                       graph={graph}
+                      obseverContext={observerContext}
                       typeCheckOption={{
                         expectedType: variableType,
                         match:

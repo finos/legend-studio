@@ -34,10 +34,6 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import {
-  functionExpression_setParametersValues,
-  propertyExpression_setParametersValue,
-} from './shared/ValueSpecificationModifierHelper.js';
 
 /**
  * Checks if the provided property expression match the criteria for default
@@ -170,7 +166,11 @@ export const buildPropertyExpressionChain = (
       nextExpression = parameterValue;
       currentExpression.parametersValues[0] = parameterValue;
     }
-    if (currentExpression.func instanceof DerivedProperty) {
+    if (
+      currentExpression instanceof AbstractPropertyExpression &&
+      currentExpression.func instanceof DerivedProperty
+    ) {
+      const currentPropertyExpression = currentExpression;
       const parameterValues = currentExpression.parametersValues.slice(1);
       parameterValues.forEach((parameterValue, index) => {
         if (parameterValue instanceof INTERNAL__PropagatedValue) {
@@ -178,7 +178,7 @@ export const buildPropertyExpressionChain = (
           if (
             !TEMPORARY__disableDatePropagation &&
             isDefaultDatePropagationSupported(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
+              currentPropertyExpression,
               queryBuilderState,
               nextExpression instanceof AbstractPropertyExpression
                 ? nextExpression
@@ -189,41 +189,27 @@ export const buildPropertyExpressionChain = (
             // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
             if (
               (index === 1 &&
-                guaranteeType(currentExpression, AbstractPropertyExpression)
-                  .parametersValues.length === 3) ||
+                currentPropertyExpression.parametersValues.length === 3) ||
               (index === 0 &&
-                guaranteeType(currentExpression, AbstractPropertyExpression)
-                  .parametersValues.length === 3 &&
+                currentPropertyExpression.parametersValues.length === 3 &&
                 !(
-                  guaranteeType(currentExpression, AbstractPropertyExpression)
-                    .parametersValues[2] instanceof INTERNAL__PropagatedValue
+                  currentPropertyExpression.parametersValues[2] instanceof
+                  INTERNAL__PropagatedValue
                 ))
             ) {
-              propertyExpression_setParametersValue(
-                guaranteeType(currentExpression, AbstractPropertyExpression),
-                index + 1,
-                parameterValue.getValue(),
-                queryBuilderState.observableContext,
-              );
+              currentPropertyExpression.parametersValues[index + 1] =
+                parameterValue.getValue();
             } else {
-              functionExpression_setParametersValues(
-                guaranteeType(currentExpression, AbstractPropertyExpression),
-                [
-                  guaranteeNonNullable(
-                    guaranteeType(currentExpression, AbstractPropertyExpression)
-                      .parametersValues[0],
-                  ),
-                ],
-                queryBuilderState.observableContext,
-              );
+              currentPropertyExpression.parametersValues = [
+                guaranteeNonNullable(
+                  guaranteeType(currentExpression, AbstractPropertyExpression)
+                    .parametersValues[0],
+                ),
+              ];
             }
           } else {
-            propertyExpression_setParametersValue(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
-              index + 1,
-              parameterValue.getValue(),
-              queryBuilderState.observableContext,
-            );
+            currentPropertyExpression.parametersValues[index + 1] =
+              parameterValue.getValue();
           }
         }
       });

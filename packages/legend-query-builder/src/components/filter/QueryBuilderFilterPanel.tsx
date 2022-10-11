@@ -273,6 +273,10 @@ const QueryBuilderFilterConditionEditor = observer(
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
+                    obseverContext={
+                      node.condition.filterState.queryBuilderState
+                        .observableContext
+                    }
                     typeCheckOption={{
                       expectedType:
                         node.condition.propertyExpressionState

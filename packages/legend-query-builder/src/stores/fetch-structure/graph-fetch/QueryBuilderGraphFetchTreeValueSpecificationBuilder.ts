@@ -137,7 +137,6 @@ export const appendGraphFetch = (
           ),
       multiplicityOne,
     );
-
     graphFetchFunc.parametersValues = [precedingExpression, graphFetchInstance];
     serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];
     lambdaFunction.expressionSequence[0] = serializeFunction;

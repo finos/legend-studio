@@ -25,7 +25,6 @@ import {
   type SimpleFunctionExpression,
   type AbstractPropertyExpression,
   SUPPORTED_FUNCTIONS,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -35,7 +34,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import {
   generateDefaultValueForPrimitiveType,
@@ -43,6 +42,7 @@ import {
   isTypeCompatibleForAssignment,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderFilterOperator_LessThanEqual
   extends QueryBuilderFilterOperator

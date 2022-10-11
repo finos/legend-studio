@@ -49,6 +49,7 @@ import {
   Enumeration,
   getEnumValue,
   getMultiplicityDescription,
+  type ObserverContext,
 } from '@finos/legend-graph';
 import {
   type DebouncedFunc,
@@ -63,8 +64,8 @@ import { observer } from 'mobx-react-lite';
 import CSVParser from 'papaparse';
 import { useEffect, useRef, useState } from 'react';
 import {
-  instanceValue_changeValue,
-  instanceValue_changeValues,
+  instanceValue_setValue,
+  instanceValue_setValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 
@@ -197,7 +198,7 @@ const StringPrimitiveInstanceValueEditor = observer(
     const applicationStore = useApplicationStore();
     const value = valueSpecification.values[0] as string;
     const updateValueSpec = (val: string): void => {
-      instanceValue_changeValue(valueSpecification, val, 0);
+      instanceValue_setValue(valueSpecification, val, 0);
       setValueSpecification(valueSpecification);
     };
     const changeInputValue: React.ChangeEventHandler<HTMLInputElement> = (
@@ -292,7 +293,7 @@ const BooleanPrimitiveInstanceValueEditor = observer(
       props;
     const value = valueSpecification.values[0] as boolean;
     const toggleValue = (): void => {
-      instanceValue_changeValue(valueSpecification, !value, 0);
+      instanceValue_setValue(valueSpecification, !value, 0);
       setValueSpecification(valueSpecification);
     };
 
@@ -339,7 +340,7 @@ const NumberPrimitiveInstanceValueEditor = observer(
         ? parseInt(event.target.value, 10)
         : parseFloat(event.target.value);
       inputVal = isNaN(inputVal) ? 0 : inputVal;
-      instanceValue_changeValue(valueSpecification, inputVal, 0);
+      instanceValue_setValue(valueSpecification, inputVal, 0);
       setValueSpecification(valueSpecification);
     };
 
@@ -380,7 +381,7 @@ const EnumValueInstanceValueEditor = observer(
       value: value,
     }));
     const changeValue = (val: { value: Enum; label: string }): void => {
-      instanceValue_changeValue(
+      instanceValue_setValue(
         valueSpecification,
         EnumValueExplicitReference.create(val.value),
         0,
@@ -440,7 +441,7 @@ const setCollectionValue = (
   value: string,
 ): void => {
   if (value.trim().length === 0) {
-    instanceValue_changeValues(valueSpecification, []);
+    instanceValue_setValues(valueSpecification, []);
     return;
   }
   const multiplicityOne = graph.getTypicalMultiplicity(
@@ -477,7 +478,7 @@ const setCollectionValue = (
               ),
               multiplicityOne,
             );
-            primitiveInstanceValue.values = [item.toString()];
+            instanceValue_setValues(primitiveInstanceValue, [item.toString()]);
             return primitiveInstanceValue;
           })
           .filter(isNonNullable);
@@ -499,7 +500,7 @@ const setCollectionValue = (
               ),
               multiplicityOne,
             );
-            primitiveInstanceValue.values = [item];
+            instanceValue_setValues(primitiveInstanceValue, [item]);
             return primitiveInstanceValue;
           })
           .filter(isNonNullable);
@@ -522,14 +523,14 @@ const setCollectionValue = (
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
           multiplicityOne,
         );
-        enumValueInstanceValue.values = [
+        instanceValue_setValues(enumValueInstanceValue, [
           EnumValueExplicitReference.create(_enum),
-        ];
+        ]);
         return enumValueInstanceValue;
       })
       .filter(isNonNullable);
   }
-  instanceValue_changeValues(valueSpecification, result);
+  instanceValue_setValues(valueSpecification, result);
 };
 
 const COLLECTION_PREVIEW_CHAR_LIMIT = 50;
@@ -640,6 +641,7 @@ const DateInstanceValueEditor = observer(
   (props: {
     valueSpecification: PrimitiveInstanceValue | SimpleFunctionExpression;
     graph: PureModel;
+    obseverContext: ObserverContext;
     typeCheckOption: TypeCheckOption;
     className?: string | undefined;
     setValueSpecification: (val: ValueSpecification) => void;
@@ -649,6 +651,7 @@ const DateInstanceValueEditor = observer(
       valueSpecification,
       setValueSpecification,
       graph,
+      obseverContext,
       typeCheckOption,
       resetValue,
     } = props;
@@ -658,6 +661,7 @@ const DateInstanceValueEditor = observer(
         <CustomDatePicker
           valueSpecification={valueSpecification}
           graph={graph}
+          observerContext={obseverContext}
           typeCheckOption={typeCheckOption}
           setValueSpecification={setValueSpecification}
         />
@@ -682,6 +686,7 @@ const DateInstanceValueEditor = observer(
 export const BasicValueSpecificationEditor: React.FC<{
   valueSpecification: ValueSpecification;
   graph: PureModel;
+  obseverContext: ObserverContext;
   typeCheckOption: TypeCheckOption;
   className?: string | undefined;
   setValueSpecification: (val: ValueSpecification) => void;
@@ -701,6 +706,7 @@ export const BasicValueSpecificationEditor: React.FC<{
     className,
     valueSpecification,
     graph,
+    obseverContext,
     typeCheckOption,
     setValueSpecification,
     resetValue,
@@ -749,6 +755,7 @@ export const BasicValueSpecificationEditor: React.FC<{
           <DateInstanceValueEditor
             valueSpecification={valueSpecification}
             graph={graph}
+            obseverContext={obseverContext}
             typeCheckOption={typeCheckOption}
             className={className}
             setValueSpecification={setValueSpecification}
@@ -799,6 +806,7 @@ export const BasicValueSpecificationEditor: React.FC<{
       <BasicValueSpecificationEditor
         valueSpecification={valueSpecification.getValue()}
         graph={graph}
+        obseverContext={obseverContext}
         typeCheckOption={typeCheckOption}
         setValueSpecification={setValueSpecification}
         resetValue={resetValue}
@@ -817,6 +825,7 @@ export const BasicValueSpecificationEditor: React.FC<{
       <DateInstanceValueEditor
         valueSpecification={valueSpecification}
         graph={graph}
+        obseverContext={obseverContext}
         typeCheckOption={typeCheckOption}
         className={className}
         setValueSpecification={setValueSpecification}

@@ -33,7 +33,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import {
   buildNotExpression,
@@ -172,9 +172,9 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
+      super.buildFilterConditionExpression(filterConditionState),
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
-      super.buildFilterConditionExpression(filterConditionState),
     );
   }
 

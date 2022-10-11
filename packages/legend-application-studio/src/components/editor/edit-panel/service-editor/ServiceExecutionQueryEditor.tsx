@@ -466,6 +466,9 @@ export const ServiceExecutionQueryEditor = observer(
             .showModal && (
             <LambdaParameterValuesEditor
               graph={executionState.editorStore.graphManagerState.graph}
+              observerContext={
+                executionState.editorStore.changeDetectionState.observerContext
+              }
               lambdaParametersState={executionState.parameterState}
             />
           )}

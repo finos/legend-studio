@@ -38,7 +38,7 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import {
   buildNotExpression,
   getCollectionValueSpecificationType,
@@ -176,9 +176,9 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
     );
     return expression
       ? buildNotExpression(
+          expression,
           postFilterConditionState.postFilterState.projectionState
             .queryBuilderState.graphManagerState.graph,
-          expression,
         )
       : undefined;
   }

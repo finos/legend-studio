@@ -14,46 +14,27 @@
  * limitations under the License.
  */
 
-import { Randomizer } from '@finos/legend-shared';
-import type { PureModel } from '../PureModel.js';
 import {
+  type PureModel,
+  type InstanceValue,
+  type VariableExpression,
+  CollectionInstanceValue,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
+  Enumeration,
+  EnumValueExplicitReference,
+  EnumValueInstanceValue,
+  GenericType,
+  GenericTypeExplicitReference,
+  getEnumValue,
+  PrimitiveInstanceValue,
+  PrimitiveType,
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
-} from '../MetaModelConst.js';
-import { Enumeration } from '../metamodel/pure/packageableElements/domain/Enumeration.js';
-import { EnumValueExplicitReference } from '../metamodel/pure/packageableElements/domain/EnumValueReference.js';
-import { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
-import { GenericTypeExplicitReference } from '../metamodel/pure/packageableElements/domain/GenericTypeReference.js';
-import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
-import {
-  type InstanceValue,
-  CollectionInstanceValue,
-  EnumValueInstanceValue,
-  PrimitiveInstanceValue,
-} from '../metamodel/pure/valueSpecification/InstanceValue.js';
-import type { VariableExpression } from '../metamodel/pure/valueSpecification/VariableExpression.js';
-import { getEnumValue } from './DomainHelper.js';
-import { format, addDays } from 'date-fns';
-
-export const buildPrimitiveInstanceValue = (
-  graph: PureModel,
-  type: PRIMITIVE_TYPE,
-  value: unknown,
-): PrimitiveInstanceValue => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const instance = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(type)),
-    ),
-    multiplicityOne,
-  );
-  instance.values = [value];
-  return instance;
-};
+} from '@finos/legend-graph';
+import { Randomizer } from '@finos/legend-shared';
+import { addDays, format } from 'date-fns';
+import { instanceValue_setValues } from './ValueSpecificationModifierHelper.js';
 
 const createMockPrimitiveProperty = (
   primitiveType: PrimitiveType,
@@ -99,6 +80,24 @@ export const createMockEnumerationProperty = (
 ): string =>
   new Randomizer().getRandomItemInCollection(enumeration.values)?.name ?? '';
 
+export const buildPrimitiveInstanceValue = (
+  graph: PureModel,
+  type: PRIMITIVE_TYPE,
+  value: unknown,
+): PrimitiveInstanceValue => {
+  const multiplicityOne = graph.getTypicalMultiplicity(
+    TYPICAL_MULTIPLICITY_TYPE.ONE,
+  );
+  const instance = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(
+      new GenericType(graph.getPrimitiveType(type)),
+    ),
+    multiplicityOne,
+  );
+  instanceValue_setValues(instance, [value]);
+  return instance;
+};
+
 export const generateVariableExpressionMockValue = (
   parameter: VariableExpression,
   graph: PureModel,
@@ -120,12 +119,12 @@ export const generateVariableExpressionMockValue = (
       ),
       multiplicity,
     );
-    primitiveInstanceValue.values = [
+    instanceValue_setValues(primitiveInstanceValue, [
       createMockPrimitiveProperty(
         varType,
         parameter.name === '' ? 'myVar' : parameter.name,
       ),
-    ];
+    ]);
     return primitiveInstanceValue;
   } else if (varType instanceof Enumeration) {
     const enumValueInstance = new EnumValueInstanceValue(
@@ -134,9 +133,9 @@ export const generateVariableExpressionMockValue = (
     );
     const mock = createMockEnumerationProperty(varType);
     if (mock !== '') {
-      enumValueInstance.values = [
+      instanceValue_setValues(enumValueInstance, [
         EnumValueExplicitReference.create(getEnumValue(varType, mock)),
-      ];
+      ]);
     }
     return enumValueInstance;
   }
