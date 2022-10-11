@@ -272,7 +272,7 @@ const PureExecutionContextConfigurationEditor = observer(
                 className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
                 onClick={visitMapping}
                 tabIndex={-1}
-                title={'See mapping'}
+                title="See mapping"
               >
                 <LongArrowRightIcon />
               </button>
@@ -307,7 +307,7 @@ const PureExecutionContextConfigurationEditor = observer(
                   className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
                   onClick={visitRuntime}
                   tabIndex={-1}
-                  title={'See runtime'}
+                  title="See runtime"
                 >
                   <LongArrowRightIcon />
                 </button>
@@ -355,7 +355,7 @@ export const ChangeExecutionModal = observer(
             spellCheck={false}
             value={keyValue}
             onChange={onChange}
-            placeholder={`Multi Execution Key Name`}
+            placeholder="Multi Execution Key Name"
             validationErrorMessage={validationMessage}
           />
         );
@@ -579,7 +579,7 @@ export const NewExecutionParameterModal = observer(
               spellCheck={false}
               value={keyValue}
               onChange={onChange}
-              placeholder={`Key execution name`}
+              placeholder="Key execution name"
               validationErrorMessage={validationMessage}
             />
           </div>

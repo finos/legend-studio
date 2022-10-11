@@ -300,7 +300,7 @@ const RelationalOperationElementTreeNodeContainer: React.FC<
               //     primitiveType && primitiveType === selectedType,
               // })}
               tabIndex={-1}
-              title={'Column Type'}
+              title="Column Type"
             >
               {generateColumnTypeLabel(guaranteeType(node.column, Column).type)}
             </button>

@@ -201,7 +201,7 @@ export class TaxonomyExplorerStore {
       if (gav && dataSpacePath) {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
-      this.applicationStore.navigator.goTo(
+      this.applicationStore.navigator.goToLocation(
         generateExploreTaxonomyTreeRoute(
           this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),

@@ -16,13 +16,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { useParams } from 'react-router';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import {
   ActionAlertActionType,
   ActionAlertType,
   useApplicationStore,
+  useParams,
 } from '@finos/legend-application';
 import {
   type SelectComponent,
@@ -122,7 +122,7 @@ const NewServiceModal = observer(() => {
                 label: 'Open Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  applicationStore.navigator.jumpTo(
+                  applicationStore.navigator.reloadToLocation(
                     generateProjectServiceQueryUpdaterRoute(
                       editorStore.sdlcState.activeProject.projectId,
                       editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -395,8 +395,8 @@ const ServiceQueryEditorHeaderContent = observer(() => {
   const editorStore = useServiceQueryEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const viewProject = (): void =>
-    applicationStore.navigator.openNewWindow(
-      applicationStore.navigator.generateLocation(
+    applicationStore.navigator.visitAddress(
+      applicationStore.navigator.generateAddress(
         generateEditorRoute(
           editorStore.sdlcState.activeProject.projectId,
           editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -417,7 +417,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
       );
     flowResult(
       editorStore.saveWorkspace(serviceEntity, false, (): void => {
-        applicationStore.navigator.jumpTo(
+        applicationStore.navigator.reloadToLocation(
           generateServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.groupId,

@@ -28,7 +28,6 @@ import {
 } from '@finos/legend-application-studio';
 import { QueryProductionizerStore } from '../../stores/studio/QueryProductionizerStore.js';
 import { useDepotServerClient } from '@finos/legend-server-depot';
-import { useParams } from 'react-router';
 import type { QueryProductionizerPathParams } from '../../stores/studio/DSL_Service_LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
@@ -55,6 +54,7 @@ import {
   DocumentationLink,
   EDITOR_LANGUAGE,
   TextInputEditor,
+  useParams,
 } from '@finos/legend-application';
 import { DSL_SERVICE_LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../stores/studio/DSL_Service_LegendStudioDocumentation.js';
 

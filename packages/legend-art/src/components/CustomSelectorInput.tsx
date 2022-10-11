@@ -79,7 +79,7 @@ const CustomMenuList: React.FC<{
       <FixedSizeList
         className={selectProps.darkMode ? 'selector-menu--dark' : ''}
         ref={listRef}
-        width={'100%'}
+        width="100%"
         height={Math.min(children.length, MAX_OPTIONS_LENGTH) * ROW_HEIGHT}
         itemCount={children.length}
         itemSize={ROW_HEIGHT}

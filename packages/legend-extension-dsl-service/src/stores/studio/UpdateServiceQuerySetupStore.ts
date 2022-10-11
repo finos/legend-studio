@@ -110,7 +110,7 @@ export class UpdateServiceQuerySetupStore {
     this.currentSnapshotService = undefined;
     this.groupWorkspaces = [];
     this.resetCurrentGroupWorkspace();
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateServiceQueryUpdaterSetupRoute(undefined, undefined, undefined),
     );
   }
@@ -198,7 +198,7 @@ export class UpdateServiceQuerySetupStore {
       }
 
       if (!project || !serviceEntity) {
-        this.applicationStore.navigator.goTo(
+        this.applicationStore.navigator.goToLocation(
           generateServiceQueryUpdaterSetupRoute(
             undefined,
             undefined,
@@ -222,7 +222,7 @@ export class UpdateServiceQuerySetupStore {
         entity: serviceEntity,
       });
 
-      this.applicationStore.navigator.goTo(
+      this.applicationStore.navigator.goToLocation(
         generateServiceQueryUpdaterSetupRoute(
           project.groupId,
           project.artifactId,

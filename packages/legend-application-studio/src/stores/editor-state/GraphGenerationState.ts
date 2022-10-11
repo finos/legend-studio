@@ -66,7 +66,7 @@ import { ExternalFormatState } from './ExternalFormatState.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/DSL_Generation_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export const DEFAULT_GENERATION_SPECIFICATION_NAME =
   'MyGenerationSpecification';

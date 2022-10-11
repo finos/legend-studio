@@ -128,7 +128,7 @@ import {
   class_swapConstraints,
   class_swapSuperTypes,
   setGenericTypeReferenceValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
@@ -305,7 +305,7 @@ const PropertyBasicEditor = observer(
                   value={property.name}
                   spellCheck={false}
                   onChange={changeValue}
-                  placeholder={`Property name`}
+                  placeholder="Property name"
                   validationErrorMessage={
                     isPropertyDuplicated(property)
                       ? 'Duplicated property'
@@ -320,7 +320,7 @@ const PropertyBasicEditor = observer(
                 options={propertyTypeOptions}
                 onChange={changePropertyType}
                 value={selectedPropertyType}
-                placeholder={'Choose a data type or enumeration'}
+                placeholder="Choose a type..."
                 filterOption={filterOption}
                 formatOptionLabel={getPackageableElementOptionFormatter({})}
               />
@@ -360,7 +360,7 @@ const PropertyBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -392,7 +392,7 @@ const PropertyBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -423,7 +423,7 @@ const PropertyBasicEditor = observer(
                 className="uml-element-editor__basic__detail-btn"
                 onClick={selectProperty}
                 tabIndex={-1}
-                title={'See detail'}
+                title="See detail"
               >
                 <LongArrowRightIcon />
               </button>
@@ -450,7 +450,7 @@ const PropertyBasicEditor = observer(
                 })}
                 onClick={deleteProperty}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -679,7 +679,7 @@ const DerivedPropertyBasicEditor = observer(
                   options={propertyTypeOptions}
                   onChange={changePropertyType}
                   value={selectedPropertyType}
-                  placeholder="Choose a data type or enumeration"
+                  placeholder="Choose a type..."
                   filterOption={filterOption}
                   formatOptionLabel={getPackageableElementOptionFormatter({})}
                 />
@@ -1084,7 +1084,7 @@ const SuperTypeEditor = observer(
               options={superTypeOptions}
               onChange={changeType}
               value={selectedType}
-              placeholder={'Choose a class'}
+              placeholder="Choose a class"
               filterOption={filterOption}
               formatOptionLabel={getPackageableElementOptionFormatter({})}
             />
@@ -1092,7 +1092,7 @@ const SuperTypeEditor = observer(
               className="uml-element-editor__basic__detail-btn"
               onClick={visitDerivationSource}
               tabIndex={-1}
-              title={'Visit super type'}
+              title="Visit super type"
             >
               <LongArrowRightIcon />
             </button>
@@ -1102,7 +1102,7 @@ const SuperTypeEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteSuperType}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

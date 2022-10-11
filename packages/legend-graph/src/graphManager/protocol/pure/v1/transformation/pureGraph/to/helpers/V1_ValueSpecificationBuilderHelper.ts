@@ -52,7 +52,7 @@ import { ValueSpecification } from '../../../../../../../../graph/metamodel/pure
 import {
   SimpleFunctionExpression,
   AbstractPropertyExpression,
-} from '../../../../../../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from '../../../../../../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import { GenericType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import { GenericTypeExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import {
@@ -595,16 +595,6 @@ export class V1_ValueSpecificationBuilder
   }
 }
 
-const buildFunctionType = (
-  parameters: VariableExpression[],
-  returnType: Type | undefined,
-  returnMultiplicity: Multiplicity,
-): FunctionType => {
-  const _funcType = new FunctionType(returnType, returnMultiplicity);
-  _funcType.parameters = parameters;
-  return _funcType;
-};
-
 export function V1_buildLambdaBody(
   expressions: V1_ValueSpecification[],
   parameters: V1_Variable[],
@@ -630,11 +620,15 @@ export function V1_buildLambdaBody(
   );
   // Remove let variables
   const firstExpression = guaranteeNonNullable(_expressions[0]);
-  const functionType = buildFunctionType(
-    pureParameters,
-    firstExpression.genericType?.value.rawType,
+  const functionType = new FunctionType(
+    firstExpression.genericType
+      ? PackageableElementExplicitReference.create(
+          firstExpression.genericType.value.rawType,
+        )
+      : undefined,
     firstExpression.multiplicity,
   );
+  functionType.parameters = pureParameters;
   processingContext.pop();
   const _lambda = new LambdaFunction(functionType);
   _lambda.openVariables = [];
@@ -869,17 +863,15 @@ export function V1_processProperty(
   }
   const inferredType =
     inferredVariable instanceof AbstractPropertyExpression
-      ? inferredVariable.func.genericType.value.rawType
+      ? inferredVariable.func.value.genericType.value.rawType
       : V1_resolvePropertyExpressionTypeInference(inferredVariable, context);
   if (inferredType instanceof Class) {
     const processedProperty = new AbstractPropertyExpression(
       '',
       context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
-    processedProperty.func = V1_getAppliedProperty(
-      inferredType,
-      undefined,
-      property,
+    processedProperty.func = PropertyExplicitReference.create(
+      V1_getAppliedProperty(inferredType, undefined, property),
     );
     processedProperty.parametersValues = processedParameters;
     return processedProperty;

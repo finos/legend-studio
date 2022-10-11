@@ -114,24 +114,9 @@
     font-weight: 500;
   }
 
-  &__metadata__driver-chunk {
-    display: flex;
-    background: var(--color-magenta-50);
-    color: var(--color-light-grey-50);
-  }
-
-  &__metadata__driver__type {
-    height: 2.4rem;
-    line-height: 2.4rem;
-    padding: 0 1rem;
-    border-radius: 0.2rem;
-    background: var(--color-dark-shade-100);
-    cursor: default;
-    font-size: 1.5rem;
-  }
-
   &__metadata__source-chunk {
     color: var(--color-light-grey-50);
+    background: var(--color-blue-150);
 
     &--none {
       padding: 0 1rem;

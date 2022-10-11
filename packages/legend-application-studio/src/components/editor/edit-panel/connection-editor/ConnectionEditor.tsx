@@ -32,7 +32,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   modelConnection_setClass,
   modelConnection_setUrl,
-} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   useApplicationNavigationContext,

@@ -35,7 +35,7 @@ import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
@@ -99,7 +99,7 @@ export const ExternalFormatDataEditor = observer(
               }
               tabIndex={-1}
               onClick={format}
-              title={'Format External Format'}
+              title="Format External Format"
             >
               <WrenchIcon />
             </button>
@@ -201,7 +201,7 @@ export const DataElementReferenceDataEditor = observer(
               className="btn--dark btn--sm data-element-reference-editor__value-btn"
               onClick={visitData}
               tabIndex={-1}
-              title={'See data element'}
+              title="See data element"
             >
               <LongArrowRightIcon />
             </button>

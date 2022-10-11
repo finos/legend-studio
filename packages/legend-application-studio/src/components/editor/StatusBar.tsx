@@ -15,8 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useParams } from 'react-router';
-import { Link } from 'react-router-dom';
 import {
   clsx,
   HammerIcon,
@@ -40,6 +38,7 @@ import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import { useParams } from '@finos/legend-application';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
@@ -151,19 +150,31 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           <div className="editor__status-bar__workspace__icon">
             <CodeBranchIcon />
           </div>
-          <div className="editor__status-bar__workspace__project">
-            <Link to={generateSetupRoute(projectId)}>
-              {currentProject?.name ?? 'unknown'}
-            </Link>
-          </div>
+          <button
+            className="editor__status-bar__workspace__project"
+            title="Go back to workspace setup using the specified project"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.goToLocation(
+                generateSetupRoute(projectId),
+              )
+            }
+          >
+            {currentProject?.name ?? 'unknown'}
+          </button>
           /
-          <div className="editor__status-bar__workspace__workspace">
-            <Link
-              to={generateSetupRoute(projectId, workspaceId, workspaceType)}
-            >
-              {workspaceId}
-            </Link>
-          </div>
+          <button
+            className="editor__status-bar__workspace__workspace"
+            title="Go back to workspace setup using the specified workspace"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.goToLocation(
+                generateSetupRoute(projectId, workspaceId, workspaceType),
+              )
+            }
+          >
+            {workspaceId}
+          </button>
           {workspaceOutOfSync && (
             <button
               className="editor__status-bar__workspace__status"

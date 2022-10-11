@@ -233,8 +233,8 @@ const ExplorerContextMenu = observer(
     };
     const openElementInViewerMode = (): void => {
       if (node && projectId) {
-        applicationStore.navigator.openNewWindow(
-          applicationStore.navigator.generateLocation(
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
             generateViewEntityRoute(projectId, node.packageableElement.path),
           ),
         );
@@ -244,7 +244,7 @@ const ExplorerContextMenu = observer(
       if (node) {
         applicationStore
           .copyTextToClipboard(
-            applicationStore.navigator.generateLocation(
+            applicationStore.navigator.generateAddress(
               editorStore.editorMode.generateElementLink(
                 node.packageableElement.path,
               ),
@@ -343,7 +343,7 @@ const ProjectConfig = observer(() => {
       <button
         className="tree-view__node__label explorer__package-tree__node__label"
         tabIndex={-1}
-        title={'Project configuration'}
+        title="Project configuration"
       >
         config
       </button>

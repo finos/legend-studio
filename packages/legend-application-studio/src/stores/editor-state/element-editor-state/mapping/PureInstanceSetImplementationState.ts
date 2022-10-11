@@ -39,8 +39,8 @@ import {
   stub_RawLambda,
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class PurePropertyMappingState extends PropertyMappingState {
   editorStore: EditorStore;

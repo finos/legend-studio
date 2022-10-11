@@ -29,10 +29,10 @@ import {
 } from '../EditorComponentTestUtils.js';
 import { FormModeCompilationOutcome } from '../../stores/EditorGraphState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import { TEST__buildQueryBuilderMockedEditorStore } from './EmbeddedQueryBuilder.test.js';
 import { queryClass } from '../editor/edit-panel/uml-editor/ClassQueryBuilder.js';
 import { extractElementNameFromPath } from '@finos/legend-graph';
 import TEST_DATA__ClassQueryBuilder from './TEST_DATA__ClassQueryBuilderModel.json';
+import { TEST__buildQueryBuilderMockedEditorStore } from './EmbeddedQueryBuilderTestUtils.js';
 
 type TestCase = [
   string,

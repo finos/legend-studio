@@ -24,7 +24,7 @@ import type {
   SetImplementation,
   Type,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class MappingElementState {
   readonly uuid = uuid();

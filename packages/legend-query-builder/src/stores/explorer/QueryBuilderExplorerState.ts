@@ -57,6 +57,7 @@ import {
   TdsExecutionResult,
   type ExecutionResult,
   getAllSubclasses,
+  PropertyExplicitReference,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
@@ -68,6 +69,7 @@ import {
 } from '../QueryBuilderPreviewDataHelper.js';
 import { QueryBuilderPropertySearchState } from './QueryBuilderPropertySearchState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
+import { propertyExpression_setFunc } from '../shared/ValueSpecificationModifierHelper.js';
 
 export enum QUERY_BUILDER_EXPLORER_TREE_DND_TYPE {
   ROOT = 'ROOT',
@@ -209,7 +211,10 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     '',
     multiplicityOne,
   );
-  propertyExpression.func = guaranteeNonNullable(node.property);
+  propertyExpression_setFunc(
+    propertyExpression,
+    PropertyExplicitReference.create(guaranteeNonNullable(node.property)),
+  );
   let currentExpression: AbstractPropertyExpression | SimpleFunctionExpression =
     propertyExpression;
   let parentNode =
@@ -241,7 +246,12 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
         '',
         multiplicityOne,
       );
-      parentPropertyExpression.func = guaranteeNonNullable(parentNode.property);
+      propertyExpression_setFunc(
+        parentPropertyExpression,
+        PropertyExplicitReference.create(
+          guaranteeNonNullable(parentNode.property),
+        ),
+      );
     }
     currentExpression.parametersValues.push(parentPropertyExpression);
     if (

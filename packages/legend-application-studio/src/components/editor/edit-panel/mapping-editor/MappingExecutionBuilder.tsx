@@ -80,12 +80,12 @@ import {
   isStubbed_RawLambda,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { objectInputData_setData } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../../stores/graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { objectInputData_setData } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 
@@ -153,7 +153,7 @@ export const ClassMappingSelectorModal = observer(
             options={classMappingOptions}
             onChange={changeClassMappingOption}
             value={null}
-            placeholder={'Choose a class mapping...'}
+            placeholder="Choose a class mapping..."
             filterOption={filterOption}
             isClearable={true}
           />
@@ -376,7 +376,7 @@ const MappingExecutionQueryEditor = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={clearQuery}
-              title={'Clear query'}
+              title="Clear query"
             >
               <TimesIcon />
             </button>
@@ -681,7 +681,7 @@ export const MappingExecutionInputDataBuilder = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={showClassMappingSelectorModal}
-              title={'Regenerate...'}
+              title="Regenerate..."
             >
               <RefreshIcon className="mapping-execution-builder__icon--refresh" />
             </button>
@@ -689,7 +689,7 @@ export const MappingExecutionInputDataBuilder = observer(
               className="panel__header__action"
               tabIndex={-1}
               onClick={clearInputData}
-              title={'Clear input data'}
+              title="Clear input data"
             >
               <TimesIcon />
             </button>

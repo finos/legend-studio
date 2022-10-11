@@ -28,7 +28,6 @@ import {
   EDITOR_LANGUAGE,
   useApplicationStore,
 } from '@finos/legend-application';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   type MergeEditorComparisonViewInfo,
   type MergeConflict,
@@ -57,6 +56,7 @@ import {
   CompareIcon,
   ArrowDownIcon,
   ArrowUpIcon,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
@@ -718,7 +718,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.previousConflict}
               onClick={goToPreviousConflict}
-              title={'Previous conflict'}
+              title="Previous conflict"
             >
               <ArrowUpIcon />
             </button>
@@ -726,7 +726,7 @@ export const EntityChangeConflictEditor = observer(
               className="btn--dark btn--sm entity-change-conflict-editor__header__action"
               disabled={!conflictEditorState.nextConflict}
               onClick={goToNextConflict}
-              title={'Next conflict'}
+              title="Next conflict"
             >
               <ArrowDownIcon />
             </button>

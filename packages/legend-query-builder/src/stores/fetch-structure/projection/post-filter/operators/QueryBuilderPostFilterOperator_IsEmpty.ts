@@ -29,7 +29,7 @@ import {
   TDS_COLUMN_GETTER,
 } from '../QueryBuilderPostFilterState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../QueryBuilderProjectionColumnState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { isPropertyExpressionChainOptional } from '../../../../QueryBuilderValueSpecificationHelper.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';

@@ -82,7 +82,7 @@ const buildSortExpression = (
 
 const appendResultSetModifier = (
   resultModifierState: QueryResultSetModifierState,
-  lambda: LambdaFunction,
+  lambdaFunction: LambdaFunction,
   options?:
     | {
         overridingLimit?: number | undefined;
@@ -93,8 +93,8 @@ const appendResultSetModifier = (
     resultModifierState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
-  if (lambda.expressionSequence.length === 1) {
-    const func = lambda.expressionSequence[0];
+  if (lambdaFunction.expressionSequence.length === 1) {
+    const func = lambdaFunction.expressionSequence[0];
     if (func instanceof SimpleFunctionExpression) {
       if (
         matchFunctionName(func.functionName, [
@@ -165,18 +165,16 @@ const appendResultSetModifier = (
             ),
             multiplicityOne,
           );
-
           takeFunction.parametersValues[0] = currentExpression;
           takeFunction.parametersValues[1] = limit;
           currentExpression = takeFunction;
         }
-
-        lambda.expressionSequence[0] = currentExpression;
-        return lambda;
+        lambdaFunction.expressionSequence[0] = currentExpression;
+        return lambdaFunction;
       }
     }
   }
-  return lambda;
+  return lambdaFunction;
 };
 
 export const appendProjection = (
@@ -310,7 +308,6 @@ export const appendProjection = (
           columnLambda,
           aggregateLambda,
         ];
-
         aggregateLambdas.values.push(aggregateFunctionExpression);
       } else {
         colLambdas.values.push(columnLambda);

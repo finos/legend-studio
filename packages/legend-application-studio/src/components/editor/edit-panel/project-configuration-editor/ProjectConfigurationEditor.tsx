@@ -168,8 +168,6 @@ const ProjectStructureEditor = observer(
               onChange={changeGroupId}
             />
           </div>
-        </div>
-        <div className="panel__content__form">
           <div className="panel__content__form__section">
             <div className="panel__content__form__section__header__label">
               Artifact ID
@@ -228,32 +226,29 @@ const ProjectDependencyInfoModal = observer(
             <div className="modal__title">{prettyCONSTName(type)}</div>
           </div>
           <div className="modal__body">
-            <div className="panel__content">
-              {type === DEPENDENCY_INFO_TYPE.TREE ? (
-                <TextInputEditor
-                  inputValue={getDependencyTreeStringFromInfo(info)}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.TEXT}
-                  showMiniMap={true}
-                />
-              ) : (
-                <TextInputEditor
-                  inputValue={getConflictsString(info)}
-                  isReadOnly={true}
-                  language={EDITOR_LANGUAGE.TEXT}
-                  showMiniMap={true}
-                />
-              )}
-            </div>
-
-            <div className="modal__footer">
-              <button
-                className="btn modal__footer__close-btn"
-                onClick={closeModal}
-              >
-                Close
-              </button>
-            </div>
+            {type === DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE ? (
+              <TextInputEditor
+                inputValue={getDependencyTreeStringFromInfo(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            ) : (
+              <TextInputEditor
+                inputValue={getConflictsString(info)}
+                isReadOnly={true}
+                language={EDITOR_LANGUAGE.TEXT}
+                showMiniMap={true}
+              />
+            )}
+          </div>
+          <div className="modal__footer">
+            <button
+              className="btn modal__footer__close-btn"
+              onClick={closeModal}
+            >
+              Close
+            </button>
           </div>
         </div>
       </Dialog>
@@ -350,7 +345,7 @@ const ProjectDependencyEditor = observer(
           projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
             ? SNAPSHOT_VERSION_ALIAS
             : projectDependency.versionId;
-        applicationStore.navigator.openNewWindow(
+        applicationStore.navigator.visitAddress(
           `${
             applicationStore.config.baseUrl
           }view/archive/${generateGAVCoordinates(
@@ -365,8 +360,8 @@ const ProjectDependencyEditor = observer(
     // In the future, the studio instance may be part of the project data
     const openProject = (): void => {
       if (projectDependencyData) {
-        applicationStore.navigator.openNewWindow(
-          applicationStore.navigator.generateLocation(
+        applicationStore.navigator.visitAddress(
+          applicationStore.navigator.generateAddress(
             generateViewProjectRoute(projectDependencyData.projectId),
           ),
         );
@@ -419,7 +414,7 @@ const ProjectDependencyEditor = observer(
           }
           onClick={openProject}
           tabIndex={-1}
-          title={'Open Project'}
+          title="Open Project"
         >
           <ExternalLinkSquareIcon />
         </button>
@@ -432,7 +427,7 @@ const ProjectDependencyEditor = observer(
           }
           onClick={openProjectinArchive}
           tabIndex={-1}
-          title={'Open Project in archive'}
+          title="Open Project in archive"
         >
           <ArchiveIcon />
         </button>
@@ -441,7 +436,7 @@ const ProjectDependencyEditor = observer(
           disabled={isReadOnly}
           onClick={deleteValue}
           tabIndex={-1}
-          title={'Close'}
+          title="Close"
         >
           <TimesIcon />
         </button>
@@ -456,7 +451,7 @@ const ProjectDependencyActions = observer(
     const hasConflicts = config.dependencyInfo?.conflicts.length;
     const viewTree = (): void => {
       if (config.dependencyInfo) {
-        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.TREE);
+        config.setDependencyInfoModal(DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE);
       }
     };
     const viewConflict = (): void => {
@@ -467,11 +462,11 @@ const ProjectDependencyActions = observer(
     return (
       <div className="project-dependency-editor__info">
         <button
-          className="project-dependency-editor__tree-btn"
+          className="btn btn--dark"
           tabIndex={-1}
           onClick={viewTree}
           disabled={!config.dependencyInfo}
-          title={`View dependency tree`}
+          title="View dependency tree"
         >
           View Dependency Tree
         </button>
@@ -484,7 +479,7 @@ const ProjectDependencyActions = observer(
             disabled={
               !config.dependencyInfo || !config.dependencyInfo.conflicts.length
             }
-            title={`View any conflcits in your dependencies`}
+            title="View any conflcits in your dependencies"
           >
             View Conflicts
           </button>
@@ -553,7 +548,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const disableAddButton =
     selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
   const updateConfigs = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (editorStore.localChangesState.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -566,7 +561,6 @@ export const ProjectConfigurationEditor = observer(() => {
             label: 'Proceed to update project dependencies',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
               flowResult(configState.updateConfigs()).catch(
                 applicationStore.alertUnhandledError,
               );

@@ -1,0 +1,403 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.value-spec-editor {
+  @include flexVCenter;
+
+  height: 100%;
+  width: 100%;
+
+  &__reset-btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    height: 2.8rem;
+    width: 2.8rem;
+    background: var(--color-dark-grey-200);
+    border-radius: 0 50% 50% 0;
+
+    svg {
+      font-size: 1.8rem;
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover svg {
+      color: var(--color-light-grey-200);
+    }
+  }
+
+  &__enum-selector {
+    width: 100%;
+  }
+
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+  }
+
+  &--unsupported {
+    @include flexCenter;
+
+    width: 100%;
+    height: 2.2rem;
+    background: var(--color-dark-grey-280);
+    border-radius: 0.2rem;
+    font-size: 1.1rem;
+  }
+
+  &__date-picker {
+    &__trigger {
+      @include flexCenter;
+
+      width: 100%;
+      height: 2.8rem;
+      color: var(--color-light-grey-400);
+      background: var(--color-dark-grey-100);
+      font-size: 1.2rem;
+    }
+
+    &__options {
+      min-width: 29rem;
+    }
+
+    &__absolute-date {
+      padding: 1rem;
+      border-top: 0.1rem solid var(--color-dark-grey-50);
+
+      &__input {
+        height: 2.8rem;
+        border: 0.1rem solid var(--color-dark-grey-300);
+        color-scheme: dark;
+        font-size: 1.2rem;
+      }
+    }
+
+    &__custom-date {
+      @include flexCenter;
+
+      padding: 1rem;
+      border-top: 0.1rem solid var(--color-dark-grey-50);
+
+      &__input {
+        width: 100%;
+      }
+
+      &__input-label {
+        color: var(--color-light-grey-200);
+        margin-bottom: 1rem;
+      }
+
+      &__input-text-editor {
+        @include flexVCenter;
+
+        height: 2.8rem;
+        width: 6rem;
+        border: 0.1rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+        background: var(--color-dark-grey-100);
+        text-align: center;
+        padding: 0;
+      }
+
+      &__input-dropdown {
+        // border: 0.1rem solid var(--color-dark-grey-300);
+        color: var(--color-light-grey-200);
+        width: 10rem;
+        font-size: 0.2rem;
+        margin-left: 0.5rem;
+      }
+
+      &__input-dropdown--full {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  }
+
+  &__dropdown {
+    margin-top: 0.5rem;
+  }
+
+  &__parameter {
+    display: flex;
+    height: 2.2rem;
+    border-radius: 0.2rem;
+    margin: 0;
+    color: var(--color-light-grey-150);
+    background: var(--color-pink-400);
+    width: 100%;
+
+    &__icon {
+      @include flexCenter;
+
+      width: 2rem;
+      min-width: 2rem;
+      background: var(--color-dark-shade-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+    }
+
+    &__label {
+      @include flexVCenter;
+
+      user-select: none;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    &__text {
+      @include ellipsisTextOverflow;
+
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    &__info {
+      @include flexVCenter;
+
+      cursor: help;
+      height: 2rem;
+      width: 2rem;
+    }
+
+    &__reset-btn {
+      @include flexCenter;
+
+      height: 2rem;
+      width: 2rem;
+      margin-right: 0.5rem;
+
+      svg {
+        font-size: 1.8rem;
+        color: var(--color-light-grey-200);
+      }
+    }
+  }
+
+  &__input {
+    height: 100%;
+    max-width: 100%;
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-dark-grey-200);
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+
+  &__toggler__btn {
+    @include flexVCenter;
+
+    width: 100%;
+    padding: 0.5rem;
+    height: 100%;
+    border: 0.1rem solid var(--color-dark-grey-200);
+
+    svg {
+      font-size: 2rem;
+      color: var(--color-dark-grey-250);
+    }
+
+    &:hover svg {
+      font-size: 2rem;
+      color: var(--color-dark-grey-280);
+    }
+
+    &[disabled] svg,
+    &[disabled]:hover svg {
+      cursor: not-allowed;
+      color: var(--color-dark-grey-250);
+    }
+  }
+
+  &__toggler__btn--toggled {
+    svg {
+      font-size: 2rem;
+      color: var(--color-blue-150);
+    }
+
+    &:hover svg {
+      font-size: 2rem;
+      color: var(--color-blue-100);
+    }
+
+    &[disabled] svg,
+    &[disabled]:hover svg {
+      cursor: not-allowed;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__list-editor__preview {
+    @include ellipsisTextOverflow;
+
+    line-height: 2.2rem;
+    width: calc(100% - 1.8rem);
+    height: 2.2rem;
+    font-size: 1.1rem;
+    font-family: 'Roboto Mono', monospace;
+    background: var(--color-dark-grey-250);
+    padding-left: 0.5rem;
+    color: var(--color-light-grey-300);
+    cursor: pointer;
+  }
+
+  &__list-editor__save-button {
+    @include flexCenter;
+
+    height: 2.8rem;
+    width: 2.8rem;
+    min-width: 2.8rem;
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__list-editor__edit-icon {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2.7rem;
+    min-width: 2.7rem;
+    background: var(--color-dark-grey-250);
+    border-radius: 0 0.9rem 0.9rem 0;
+
+    svg {
+      font-size: 1.2rem;
+      color: var(--color-light-grey-250);
+    }
+  }
+
+  &:hover &__list-editor__preview,
+  &:hover &__list-editor__edit-icon {
+    background: var(--color-dark-grey-300);
+  }
+
+  .selector-input__indicators,
+  .selector-input__value-container {
+    height: 2.8rem;
+  }
+
+  .selector-input__indicator-separator,
+  .selector-input--dark__loading-indicator,
+  .selector-menu--dark .selector-input--dark__loading-indicator,
+  .selector-input--dark .selector-input--dark__loading-indicator {
+    height: 2.6rem;
+  }
+
+  .selector-input__single-value,
+  .selector-input--dark__single-value {
+    height: 2.8rem;
+    top: 1.7rem;
+
+    & + div {
+      height: 2.8rem;
+    }
+  }
+
+  .selector-input--dark__input,
+  .selector-input__input {
+    height: 2.8rem;
+
+    & input {
+      height: 2.8rem;
+      line-height: 2.8rem;
+    }
+  }
+}
+
+.value-spec-paramater__tooltip {
+  border-radius: 0.2rem !important;
+  background: var(--color-dark-grey-200) !important;
+  opacity: 0.9 !important;
+  transition: none;
+
+  &--right {
+    margin: 0 0.5rem !important;
+  }
+
+  &__arrow {
+    color: var(--color-dark-grey-200) !important;
+    opacity: 0.9 !important;
+  }
+
+  &__content {
+    padding: 0.5rem;
+  }
+
+  &__item {
+    @include flexVCenter;
+  }
+
+  &__item__label {
+    font-size: 1.3rem;
+    user-select: none;
+    cursor: default;
+    color: var(--color-dark-grey-500);
+  }
+
+  &__item__value {
+    font-size: 1.3rem;
+    user-select: none;
+    cursor: default;
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+}
+
+.lambda-parameter-values {
+  padding: 2rem;
+  width: 100%;
+
+  &__modal {
+    height: 65vh;
+    width: 65vh;
+  }
+
+  &__modal__body {
+    overflow: auto;
+    padding: 2rem !important;
+    height: 60vh;
+  }
+
+  &__value {
+    &__label {
+      @include flexVCenter;
+
+      color: var(--color-light-grey-50);
+      margin-bottom: 0.5rem;
+      line-height: 2rem;
+      cursor: default;
+    }
+
+    &__label__type {
+      @include flexVCenter;
+
+      background: var(--color-dark-grey-250);
+      color: var(--color-light-grey-200);
+      margin-left: 0.5rem;
+      border-radius: 0.2rem;
+      font-size: 1rem;
+      padding: 0 0.5rem;
+      height: 1.6rem;
+      font-weight: 500;
+    }
+  }
+}

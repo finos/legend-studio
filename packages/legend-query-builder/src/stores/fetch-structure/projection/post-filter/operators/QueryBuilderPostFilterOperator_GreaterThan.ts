@@ -21,7 +21,6 @@ import {
   AbstractPropertyExpression,
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -40,9 +39,10 @@ import {
   getNonCollectionValueSpecificationType,
   isTypeCompatibleForAssignment,
 } from '../../../../QueryBuilderValueSpecificationHelper.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../../../shared/ValueSpecificationEditorHelper.js';
 
 export class QueryBuilderPostFilterOperator_GreaterThan
   extends QueryBuilderPostFilterOperator
@@ -137,8 +137,8 @@ export class QueryBuilderPostFilterOperator_GreaterThan
       postFilterState,
       expression,
       expression.parametersValues[0] instanceof AbstractPropertyExpression &&
-        expression.parametersValues[0].func.genericType.value.rawType.path ===
-          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[0].func.value.genericType.value.rawType
+          .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY

@@ -40,6 +40,7 @@ import {
   getMilestoneTemporalStereotype,
   DerivedProperty,
   MILESTONING_STEREOTYPE,
+  PackageableElementExplicitReference,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -135,8 +136,8 @@ export const unwrapNotExpression = (
 };
 
 export const buildNotExpression = (
-  graph: PureModel,
   expression: ValueSpecification,
+  graph: PureModel,
 ): ValueSpecification => {
   const multiplicityOne = graph.getTypicalMultiplicity(
     TYPICAL_MULTIPLICITY_TYPE.ONE,
@@ -158,7 +159,7 @@ export const isPropertyExpressionChainOptional = (
     propertyExpression &&
     propertyExpression instanceof AbstractPropertyExpression
   ) {
-    if (propertyExpression.func.multiplicity.lowerBound === 0) {
+    if (propertyExpression.func.value.multiplicity.lowerBound === 0) {
       isOptional = true;
       break;
     }
@@ -241,7 +242,10 @@ export const buildGenericLambdaFunctionInstanceValue = (
   const functionInstanceValue = new LambdaFunctionInstanceValue(
     multiplicityOne,
   );
-  const functionType = new FunctionType(typeAny, multiplicityOne);
+  const functionType = new FunctionType(
+    PackageableElementExplicitReference.create(typeAny),
+    multiplicityOne,
+  );
   functionType.parameters.push(
     new VariableExpression(lambdaParameterName, multiplicityOne),
   );
@@ -289,17 +293,18 @@ export const validatePropertyExpressionChain = (
   graph: PureModel,
 ): void => {
   if (
-    propertyExpression.func.genericType.value.rawType instanceof Class &&
-    propertyExpression.func._OWNER._generatedMilestonedProperties.length !== 0
+    propertyExpression.func.value.genericType.value.rawType instanceof Class &&
+    propertyExpression.func.value._OWNER._generatedMilestonedProperties
+      .length !== 0
   ) {
-    const name = propertyExpression.func.name;
+    const name = propertyExpression.func.value.name;
     const func =
-      propertyExpression.func._OWNER._generatedMilestonedProperties.find(
+      propertyExpression.func.value._OWNER._generatedMilestonedProperties.find(
         (e) => e.name === name,
       );
     if (func) {
       const targetStereotype = getMilestoneTemporalStereotype(
-        propertyExpression.func.genericType.value.rawType,
+        propertyExpression.func.value.genericType.value.rawType,
         graph,
       );
 

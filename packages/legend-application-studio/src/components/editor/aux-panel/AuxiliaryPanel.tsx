@@ -106,7 +106,7 @@ export const AuxiliaryPanel = observer(() => {
             className="auxiliary-panel__header__action"
             onClick={toggleExpandAuxPanel}
             tabIndex={-1}
-            title={'Toggle expand/collapse'}
+            title="Toggle expand/collapse"
           >
             {editorStore.auxPanelDisplayState.isMaximized ? (
               <ChevronDownIcon />
@@ -118,7 +118,7 @@ export const AuxiliaryPanel = observer(() => {
             className="auxiliary-panel__header__action"
             onClick={closePanel}
             tabIndex={-1}
-            title={'Close'}
+            title="Close"
           >
             <XIcon />
           </button>

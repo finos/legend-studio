@@ -57,7 +57,7 @@ const findProjectionColumnState = (
   postFilterState: QueryBuilderPostFilterState,
 ): QueryBuilderProjectionColumnState | QueryBuilderAggregateColumnState => {
   const projectionState = postFilterState.projectionState;
-  const properyExpressionName = propertyExpression.func.name;
+  const properyExpressionName = propertyExpression.func.value.name;
   assertTrue(
     Object.values(TDS_COLUMN_GETTER).includes(
       properyExpressionName as TDS_COLUMN_GETTER,
@@ -121,7 +121,7 @@ export const buildPostFilterConditionState = (
   if (
     tdsColumnGetter &&
     expression instanceof AbstractPropertyExpression &&
-    expression.func.name === tdsColumnGetter
+    expression.func.value.name === tdsColumnGetter
   ) {
     const columnState = findProjectionColumnState(expression, postFilterState);
     postConditionState = new PostFilterConditionState(

@@ -37,7 +37,7 @@ import {
 import {
   annotatedElement_swapStereotypes,
   stereotypeReference_setValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   buildElementOption,
   type PackageableElementOption,
@@ -185,7 +185,7 @@ export const StereotypeSelector = observer(
                 options={profileOptions}
                 onChange={changeProfile}
                 value={selectedProfile}
-                placeholder={'Choose a profile'}
+                placeholder="Choose a profile"
                 filterOption={filterOption}
                 darkMode={Boolean(darkTheme)}
               />
@@ -196,7 +196,7 @@ export const StereotypeSelector = observer(
                 disabled={isStubbed_PackageableElement(stereotype.value._OWNER)}
                 onClick={visitProfile}
                 tabIndex={-1}
-                title={'Visit profile'}
+                title="Visit profile"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -207,7 +207,7 @@ export const StereotypeSelector = observer(
               options={stereotypeOptions}
               onChange={updateStereotype}
               value={selectedStereotype}
-              placeholder={'Choose a stereotype'}
+              placeholder="Choose a stereotype"
               filterOption={stereotypeFilterOption}
               darkMode={darkTheme ?? false}
             />
@@ -217,7 +217,7 @@ export const StereotypeSelector = observer(
                 disabled={isReadOnly}
                 onClick={deleteStereotype}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>

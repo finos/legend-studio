@@ -17,7 +17,7 @@
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
-  getDSLDataSpaceGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
@@ -141,7 +141,7 @@ export class TaxonomyNodeViewerState {
 
       // analyze data space
       this.initDataSpaceViewerState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.explorerStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpaceTaxonomyContext.path,
@@ -168,7 +168,7 @@ export class TaxonomyNodeViewerState {
             _versionId: string,
             entityPath: string | undefined,
           ): void => {
-            this.explorerStore.applicationStore.navigator.openNewWindow(
+            this.explorerStore.applicationStore.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.explorerStore.applicationStore.config.studioUrl,
                 _groupId,
@@ -195,7 +195,7 @@ export class TaxonomyNodeViewerState {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.dataSpaceViewerState) {
-      this.explorerStore.applicationStore.navigator.openNewWindow(
+      this.explorerStore.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.explorerStore.applicationStore.config.queryUrl,
           this.dataSpaceViewerState.groupId,

@@ -24,7 +24,7 @@ import { computed, makeObservable } from 'mobx';
 import { ConnectionValueState } from '../../../../stores/editor-state/element-editor-state/connection/ConnectionEditorState.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import { NewConnectionValueDriver } from '../../../../stores/editor/NewElementState.js';
-import { externalFormat_urlStream_setUrl } from '../../../../stores/graphModifier/DSL_ExternalFormat_GraphModifierHelper.js';
+import { externalFormat_urlStream_setUrl } from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 
 export class ExternalFormatConnectionValueState extends ConnectionValueState {
   override connection: ExternalFormatConnection;

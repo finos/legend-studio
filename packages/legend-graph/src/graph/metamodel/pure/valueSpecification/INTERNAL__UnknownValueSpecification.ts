@@ -35,10 +35,11 @@ export class INTERNAL__UnknownValueSpecification
   extends ValueSpecification
   implements Hashable
 {
-  content: object;
+  readonly content: object;
 
   constructor(content: object) {
     super(new Multiplicity(0, 0));
+
     this.content = content;
   }
 

@@ -442,7 +442,7 @@ const ImportProjectTab = observer(() => {
   ): void => {
     event.preventDefault();
     if (importProjectSuccessReport) {
-      applicationStore.navigator.openNewWindow(
+      applicationStore.navigator.visitAddress(
         importProjectSuccessReport.reviewUrl,
       );
     } else {

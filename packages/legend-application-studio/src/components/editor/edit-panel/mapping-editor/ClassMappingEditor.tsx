@@ -29,10 +29,10 @@ import { MappingEditorState } from '../../../../stores/editor-state/element-edit
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type SetImplementation,
-  type PureInstanceSetImplementation,
-  type FlatDataInstanceSetImplementation,
-  type EmbeddedFlatDataPropertyMapping,
-  type RootRelationalInstanceSetImplementation,
+  PureInstanceSetImplementation,
+  FlatDataInstanceSetImplementation,
+  EmbeddedFlatDataPropertyMapping,
+  RootRelationalInstanceSetImplementation,
   fromElementPathToMappingElementId,
   OperationSetImplementation,
   OperationType,
@@ -41,9 +41,8 @@ import {
   setImpl_nominateRoot,
   operationMapping_setOperation,
   operationMapping_setParameters,
-  setImpl_setRoot,
-} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
-import { SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
+  setImplementation_setRoot,
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 export const OperatorSelector = observer(
@@ -75,7 +74,7 @@ export const OperatorSelector = observer(
         options={operationsOptions}
         onChange={changeSourceType}
         value={selectedSourceType}
-        placeholder={`Select operation ID`}
+        placeholder="Select operation ID"
       />
     );
   },
@@ -94,8 +93,6 @@ export const ClassMappingEditor = observer(
     const editorStore = useEditorStore();
     const mappingEditorState =
       editorStore.getCurrentEditorState(MappingEditorState);
-    const setImplementationType =
-      editorStore.graphState.getSetImplementationType(setImplementation);
     const _class = setImplementation.class;
     // ID
     const isDefaultId =
@@ -113,62 +110,47 @@ export const ClassMappingEditor = observer(
     let sourceType = '';
     let sourceName: string | undefined;
 
-    switch (setImplementationType) {
-      case SET_IMPLEMENTATION_TYPE.PUREINSTANCE: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.CLASS;
-        sourceName = (setImplementation as PureInstanceSetImplementation)
-          .srcClass?.value.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.FLAT_DATA: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
-        sourceName = (setImplementation as FlatDataInstanceSetImplementation)
-          .sourceRootRecordType.value._OWNER.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
-        const flatDataInstanceSetImpl =
-          setImplementation as EmbeddedFlatDataPropertyMapping;
-        sourceName = (
-          flatDataInstanceSetImpl.rootInstanceSetImplementation as FlatDataInstanceSetImplementation
-        ).sourceRootRecordType.value._OWNER.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.RELATIONAL: {
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
-        sourceName = (
-          setImplementation as RootRelationalInstanceSetImplementation
-        ).mainTableAlias?.relation.value.name;
-        break;
-      }
-      case SET_IMPLEMENTATION_TYPE.OPERATION:
-        sourceType = CLASS_MAPPING_SOURCE_TYPE.OPERATION;
-        break;
-      default: {
-        const extraMappingSourceTypeInfoGetters = editorStore.pluginManager
-          .getApplicationPlugins()
-          .flatMap(
-            (plugin) =>
-              (
-                plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
-              ).getExtraMappingSourceTypeInfoGetters?.() ?? [],
-          );
-        for (const sourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {
-          const mappingSourceTypeInfo = sourceTypeInfoGetter(setImplementation);
-          if (mappingSourceTypeInfo) {
-            sourceType = mappingSourceTypeInfo.sourceType;
-            sourceName = mappingSourceTypeInfo.sourceName;
-          }
+    if (setImplementation instanceof PureInstanceSetImplementation) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.CLASS;
+      sourceName = setImplementation.srcClass?.value.name;
+    } else if (setImplementation instanceof FlatDataInstanceSetImplementation) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
+      sourceName = setImplementation.sourceRootRecordType.value._OWNER.name;
+    } else if (setImplementation instanceof EmbeddedFlatDataPropertyMapping) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.FLAT_DATA;
+      sourceName = (
+        setImplementation.rootInstanceSetImplementation as FlatDataInstanceSetImplementation
+      ).sourceRootRecordType.value._OWNER.name;
+    } else if (
+      setImplementation instanceof RootRelationalInstanceSetImplementation
+    ) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.RELATIONAL;
+      sourceName = setImplementation.mainTableAlias?.relation.value.name;
+    } else if (setImplementation instanceof OperationSetImplementation) {
+      sourceType = CLASS_MAPPING_SOURCE_TYPE.OPERATION;
+    } else {
+      const extraMappingSourceTypeInfoGetters = editorStore.pluginManager
+        .getApplicationPlugins()
+        .flatMap(
+          (plugin) =>
+            (
+              plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
+            ).getExtraMappingSourceTypeInfoGetters?.() ?? [],
+        );
+      for (const sourceTypeInfoGetter of extraMappingSourceTypeInfoGetters) {
+        const mappingSourceTypeInfo = sourceTypeInfoGetter(setImplementation);
+        if (mappingSourceTypeInfo) {
+          sourceType = mappingSourceTypeInfo.sourceType;
+          sourceName = mappingSourceTypeInfo.sourceName;
+          break;
         }
-        break;
       }
     }
 
     const toggleRoot = (): void => {
       if (!isReadOnly) {
         const isRoot = setImplementation.root.value;
-        setImpl_setRoot(setImplementation, !isRoot);
+        setImplementation_setRoot(setImplementation, !isRoot);
         if (setImplementation.root.value) {
           setImpl_nominateRoot(setImplementation);
         }
@@ -201,31 +183,12 @@ export const ClassMappingEditor = observer(
                 </div>
               </div>
             </div>
-            {/* Driver */}
-            <div
-              className={clsx(
-                'mapping-element-editor__metadata__chunk',
-                'mapping-element-editor__metadata__driver-chunk',
-                `mapping-element-editor__metadata__driver--${setImplementationType.toLowerCase()}`,
-                {
-                  'mapping-element-editor__metadata__source--none': !sourceName,
-                },
-              )}
-            >
-              <div className="mapping-element-editor__metadata__sub-chunk">
-                using
-              </div>
-              <div className="mapping-element-editor__metadata__sub-chunk mapping-element-editor__metadata__driver__type">
-                {setImplementationType.toUpperCase()}
-              </div>
-            </div>
             {/* Instance Set Implementation Source */}
-            {setImplementationType !== SET_IMPLEMENTATION_TYPE.OPERATION && (
+            {!(setImplementation instanceof OperationSetImplementation) && (
               <div
                 className={clsx(
                   'mapping-element-editor__metadata__chunk',
                   'mapping-element-editor__metadata__source-chunk',
-                  `background--${setImplementationType.toLowerCase()}`,
                   {
                     'mapping-element-editor__metadata__source-chunk--none':
                       !sourceName,
@@ -251,12 +214,10 @@ export const ClassMappingEditor = observer(
               </div>
             )}
             {/* Operation Set Implementation Operator */}
-            {setImplementationType === SET_IMPLEMENTATION_TYPE.OPERATION && (
+            {setImplementation instanceof OperationSetImplementation && (
               <div className="mapping-element-editor__metadata__operator-selector">
                 <OperatorSelector
-                  setImplementation={
-                    setImplementation as OperationSetImplementation
-                  }
+                  setImplementation={setImplementation}
                   isReadOnly={isReadOnly}
                 />
               </div>
@@ -275,7 +236,7 @@ export const ClassMappingEditor = observer(
                 onClick={toggleRoot}
                 disabled={isReadOnly}
                 tabIndex={-1}
-                title={'Set/Unset root class mapping'}
+                title="Toggle set class mapping as root"
               >
                 {setImplementation.root.value ? (
                   <CheckSquareIcon />

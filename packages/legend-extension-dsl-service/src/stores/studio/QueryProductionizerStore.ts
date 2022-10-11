@@ -240,7 +240,7 @@ export class QueryProductionizerStore {
   resetCurrentQuery(): void {
     this.currentQuery = undefined;
     this.resetCurrentProject();
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateQueryProductionizerRoute(undefined),
     );
     this.setWorkspaceName('');
@@ -277,7 +277,7 @@ export class QueryProductionizerStore {
         return;
       }
       this.applicationStore.notifyIllegalState(
-        `Query setup store is already initialized`,
+        `Query productionizer store is already initialized`,
       );
       return;
     }
@@ -312,7 +312,7 @@ export class QueryProductionizerStore {
         if (query) {
           yield flowResult(this.changeQuery(query));
         } else {
-          this.applicationStore.navigator.goTo(
+          this.applicationStore.navigator.goToLocation(
             generateQueryProductionizerRoute(undefined),
           );
         }
@@ -349,7 +349,7 @@ export class QueryProductionizerStore {
       );
 
       this.setWorkspaceName(`${DEFAULT_WORKSPACE_NAME_PREFIX}-${query.id}`);
-      this.applicationStore.navigator.goTo(
+      this.applicationStore.navigator.goToLocation(
         generateQueryProductionizerRoute(query.id),
       );
 
@@ -656,13 +656,11 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.jumpTo(
-                        this.applicationStore.navigator.generateLocation(
-                          generateEditorRoute(
-                            project.projectId,
-                            this.workspaceName,
-                            WorkspaceType.GROUP,
-                          ),
+                      this.applicationStore.navigator.reloadToLocation(
+                        generateEditorRoute(
+                          project.projectId,
+                          this.workspaceName,
+                          WorkspaceType.GROUP,
                         ),
                       );
                     },
@@ -674,13 +672,11 @@ export class QueryProductionizerStore {
                     label: 'Open Service',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.jumpTo(
-                        this.applicationStore.navigator.generateLocation(
-                          generateProjectServiceQueryUpdaterRoute(
-                            project.projectId,
-                            this.workspaceName,
-                            this.servicePath,
-                          ),
+                      this.applicationStore.navigator.reloadToLocation(
+                        generateProjectServiceQueryUpdaterRoute(
+                          project.projectId,
+                          this.workspaceName,
+                          this.servicePath,
                         ),
                       );
                     },
@@ -690,13 +686,11 @@ export class QueryProductionizerStore {
                     label: 'Open Workspace',
                     type: ActionAlertActionType.PROCEED,
                     handler: (): void => {
-                      this.applicationStore.navigator.jumpTo(
-                        this.applicationStore.navigator.generateLocation(
-                          generateEditorRoute(
-                            project.projectId,
-                            this.workspaceName,
-                            WorkspaceType.GROUP,
-                          ),
+                      this.applicationStore.navigator.reloadToLocation(
+                        generateEditorRoute(
+                          project.projectId,
+                          this.workspaceName,
+                          WorkspaceType.GROUP,
                         ),
                       );
                     },

@@ -68,34 +68,6 @@ export interface MappingElementSourceSelectOption {
   value: unknown;
 }
 
-const getMappingSourcePackageableElementOptionFormatter = (props: {
-  darkMode?: boolean;
-}): ((option: MappingElementSourceSelectOption) => React.ReactNode) =>
-  function MappingSourceOptionLabel(
-    option: MappingElementSourceSelectOption,
-  ): React.ReactNode {
-    if (option.value instanceof PackageableElement) {
-      return getPackageableElementOptionFormatter(props)(
-        buildElementOption(option.value),
-      );
-    } else if (option.value instanceof TableAlias) {
-      const tableOwner = option.value.relation.ownerReference;
-      return getPackageableElementOptionFormatter(props)(
-        buildElementOption(tableOwner.value),
-      );
-    } else {
-      const className = props.darkMode
-        ? 'packageable-element-format-option-label--dark'
-        : 'packageable-element-format-option-label';
-      return (
-        <div className={className}>
-          <div className="packageable-element-format-option-label-type"></div>
-          <div className={`${className}__name`}>{option.label}</div>
-        </div>
-      );
-    }
-  };
-
 export const getSourceElementLabel = (
   srcElement: unknown | undefined,
 ): string => {
@@ -183,11 +155,21 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
           }),
       )
       .map(buildMappingElementSourceOption);
-    const filterOption = createFilter({
+    const sourceFilterOption = createFilter({
       ignoreCase: true,
       ignoreAccents: false,
       stringify: getMappingElementSourceFilterText,
     });
+    const formatSourceOptionLabel = (
+      option: MappingElementSourceSelectOption,
+    ): React.ReactNode => {
+      if (option.value instanceof PackageableElement) {
+        return getPackageableElementOptionFormatter({})(
+          buildElementOption(option.value),
+        );
+      }
+      return <div className="mapping-source-option-label">{option.label}</div>;
+    };
     const sourceSelectorRef = useRef<SelectComponent>(null);
     const selectedSourceType = buildMappingElementSourceOption(
       sourceElementToSelect ??
@@ -234,10 +216,8 @@ export const InstanceSetImplementationSourceSelectorModal = observer(
             value={selectedSourceType}
             placeholder={`Select a source...`}
             isClearable={true}
-            filterOption={filterOption}
-            formatOptionLabel={getMappingSourcePackageableElementOptionFormatter(
-              {},
-            )}
+            filterOption={sourceFilterOption}
+            formatOptionLabel={formatSourceOptionLabel}
           />
         </div>
       </Dialog>

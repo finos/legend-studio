@@ -43,19 +43,18 @@ export * from './components/shared/TextSearchAdvancedConfigMenu.js';
 export * from './stores/shared/TextSearchAdvancedConfigState.js';
 
 export * from './stores/ApplicationStoreTestUtils.js';
+export * from './stores/WebApplicationRouter.js';
 
 // ------------------------------------------- Shared components -------------------------------------------
 
 export * from './components/shared/DocumentationLink.js';
 export * from './components/shared/TextInputEditor.js';
-export * from './components/shared/LambdaEditor.js';
-export * from './components/shared/BasicValueSpecificationEditor.js';
-export * from './components/shared/LambdaParameterValuesEditor.js';
-export * from './components/shared/PackageableElementOptionRenderer.js';
-export * from './components/shared/execution-plan-viewer/ExecutionPlanViewer.js';
+export * from './components/shared/PackageableElementOptionLabel.js';
 
-export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
 export * from './stores/shared/PackageableElementOption.js';
-export * from './stores/shared/LambdaParameterState.js';
-export * from './stores/shared/ValueSpecificationModifierHelper.js';
-export * from './stores/shared/ExecutionPlanState.js';
+
+/**
+ * @modularize
+ */
+export * from './components/execution-plan-viewer/ExecutionPlanViewer.js';
+export * from './stores/ExecutionPlanState.js';

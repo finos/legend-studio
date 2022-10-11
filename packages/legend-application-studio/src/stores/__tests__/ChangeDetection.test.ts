@@ -20,11 +20,11 @@ import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
 import { Class, getClassProperty } from '@finos/legend-graph';
-import { property_setName } from '../graphModifier/DomainGraphModifierHelper.js';
+import { property_setName } from '../shared/modifier/DomainGraphModifierHelper.js';
 import {
   graph_addElement,
   graph_deleteElement,
-} from '../graphModifier/GraphModifierHelper.js';
+} from '../shared/modifier/GraphModifierHelper.js';
 
 const entities = [
   {

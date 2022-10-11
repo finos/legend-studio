@@ -157,7 +157,7 @@ export const QueryParamsEditor = observer(
               onClick={addQueryParam}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Add query param'}
+              title="Add query param"
             >
               <PlusIcon />
             </button>
@@ -180,7 +180,7 @@ export const QueryParamsEditor = observer(
                         serviceRequestPattern.queryParams?.keys() ?? [],
                       )[index]
                     }
-                    placeholder={`Parameter name`}
+                    placeholder="Parameter name"
                     onChange={(event): void =>
                       serviceStore_serviceRequestPattern_updateQueryParameterName(
                         serviceRequestPattern,
@@ -211,7 +211,7 @@ export const QueryParamsEditor = observer(
                         ? stringValuePatternOptions.at(0)
                         : stringValuePatternOptions.at(1)
                     }
-                    placeholder={'Choose a string value pattern type'}
+                    placeholder="Choose a string value pattern type"
                     darkMode={true}
                   />
                   <div className="query-params-editor__actions">
@@ -228,7 +228,7 @@ export const QueryParamsEditor = observer(
                         )
                       }
                       tabIndex={-1}
-                      title={'Remove'}
+                      title="Remove"
                     >
                       <TimesIcon />
                     </button>
@@ -327,7 +327,7 @@ export const HeaderParamsEditor = observer(
               onClick={addHeaderParam}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Add header param'}
+              title="Add header param"
             >
               <PlusIcon />
             </button>
@@ -350,7 +350,7 @@ export const HeaderParamsEditor = observer(
                         serviceRequestPattern.headerParams?.keys() ?? [],
                       )[index]
                     }
-                    placeholder={`Parameter name`}
+                    placeholder="Parameter name"
                     onChange={(event): void =>
                       serviceStore_serviceRequestPattern_updateHeaderParameterName(
                         serviceRequestPattern,
@@ -381,7 +381,7 @@ export const HeaderParamsEditor = observer(
                         ? stringValuePatternOptions.at(0)
                         : stringValuePatternOptions.at(1)
                     }
-                    placeholder={'Choose a string value pattern type'}
+                    placeholder="Choose a string value pattern type"
                     darkMode={true}
                   />
                   <div className="header-params-editor__actions">
@@ -398,7 +398,7 @@ export const HeaderParamsEditor = observer(
                         )
                       }
                       tabIndex={-1}
-                      title={'Remove'}
+                      title="Remove"
                     >
                       <TimesIcon />
                     </button>
@@ -496,7 +496,7 @@ export const BodyPatternsEditor = observer(
               onClick={addBodyPattern}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Add body pattern'}
+              title="Add body pattern"
             >
               <PlusIcon />
             </button>
@@ -521,7 +521,7 @@ export const BodyPatternsEditor = observer(
                         ? stringValuePatternOptions.at(0)
                         : stringValuePatternOptions.at(1)
                     }
-                    placeholder={'Choose a string value pattern type'}
+                    placeholder="Choose a string value pattern type"
                     darkMode={true}
                   />
                   <div className="body-patterns-editor__actions">
@@ -534,7 +534,7 @@ export const BodyPatternsEditor = observer(
                         )
                       }
                       tabIndex={-1}
-                      title={'Remove'}
+                      title="Remove"
                     >
                       <TimesIcon />
                     </button>
@@ -910,7 +910,7 @@ export const ServiceStoreEmbeddedDataEditor = observer(
                   onClick={addServiceStubMapping}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add ServiceStubMapping'}
+                  title="Add ServiceStubMapping"
                 >
                   <PlusIcon />
                 </button>

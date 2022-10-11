@@ -75,7 +75,7 @@ const RelationalTableIdentifierModal = observer(
               <input
                 className="panel__content__form__section__input"
                 disabled={isReadOnly}
-                placeholder={'schemaName'}
+                placeholder="schemaName"
                 value={tableIdentifierState.schemaName}
                 onChange={changeSchemaValue}
               />
@@ -84,7 +84,7 @@ const RelationalTableIdentifierModal = observer(
               <input
                 className="relational-data-editor__identifier__values panel__content__form__section__input"
                 disabled={isReadOnly}
-                placeholder={'tableName'}
+                placeholder="tableName"
                 value={tableIdentifierState.tableName}
                 onChange={changeTableValue}
               />
@@ -159,7 +159,7 @@ export const RelationalCSVDataEditor = observer(
                   onClick={openIdentifierModal}
                   disabled={isReadOnly}
                   tabIndex={-1}
-                  title={'Add Relational Table Data'}
+                  title="Add Relational Table Data"
                 >
                   <PlusIcon />
                 </button>
@@ -239,7 +239,7 @@ export const RelationalCSVDataEditor = observer(
                   onClick={(): void => openIdentifierModal()}
                   text="Add a relational data table"
                   clickActionType="add"
-                  tooltipText={'Click to add new relational data table'}
+                  tooltipText="Click to add new relational data table"
                 />
               )}
               {dataState.showTableIdentifierModal && (

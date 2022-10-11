@@ -149,11 +149,14 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.jumpTo(
+        this.applicationStore.navigator.visitAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
-            this.applicationStore.navigator.getCurrentLocation(),
+            this.applicationStore.navigator.getCurrentAddress(),
           ),
+          {
+            useSameWindow: true,
+          },
         );
       } else {
         // Only proceed intialization after passing authorization check
@@ -172,7 +175,7 @@ export class LegendStudioBaseStore {
                 default: true,
                 handler: (): void =>
                   this.SDLCServerTermsOfServicesUrlsToView.forEach((url) =>
-                    this.applicationStore.navigator.openNewWindow(url),
+                    this.applicationStore.navigator.visitAddress(url),
                   ),
                 type: ActionAlertActionType.PROCEED,
               },
@@ -209,7 +212,7 @@ export class LegendStudioBaseStore {
               type: ActionAlertActionType.PROCEED,
               default: true,
               handler: (): void => {
-                this.applicationStore.navigator.openNewWindow(
+                this.applicationStore.navigator.visitAddress(
                   this.sdlcServerClient.currentUserUrl,
                 );
                 this.applicationStore.setBlockingAlert({

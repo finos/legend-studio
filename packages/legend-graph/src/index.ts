@@ -34,6 +34,7 @@ export {
   GenericTypeExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 export { GenericType } from './graph/metamodel/pure/packageableElements/domain/GenericType.js';
+export type { Function } from './graph/metamodel/pure/packageableElements/domain/Function.js';
 export { Class } from './graph/metamodel/pure/packageableElements/domain/Class.js';
 export { type AnnotatedElement } from './graph/metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 export { Package } from './graph/metamodel/pure/packageableElements/domain/Package.js';
@@ -103,7 +104,7 @@ export {
   AbstractPropertyExpression,
   SimpleFunctionExpression,
   FunctionExpression,
-} from './graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from './graph/metamodel/pure/valueSpecification/Expression.js';
 export {
   FunctionType,
   LambdaFunction,
@@ -169,7 +170,6 @@ export * from './graph/helpers/DSL_Mapping_Helper.js';
 export * from './graph/helpers/STO_Relational_Helper.js';
 export * from './graph/helpers/STO_FlatData_Helper.js';
 export * from './graph/helpers/DSL_Generation_Helper.js';
-export * from './graph/helpers/ValueSpecificationHelper.js';
 
 export * from './graph/helpers/PureLanguageHelper.js';
 

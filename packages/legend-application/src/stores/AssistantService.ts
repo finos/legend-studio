@@ -17,7 +17,7 @@
 import { action, makeObservable, observable, computed } from 'mobx';
 import type { DocumentationEntry } from './DocumentationService.js';
 import type { GenericLegendApplicationStore } from './ApplicationStore.js';
-import { Fuse } from './CJS__Fuse.cjs';
+import { Fuse } from '@finos/legend-art';
 import {
   type MarkdownText,
   guaranteeNonEmptyString,

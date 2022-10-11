@@ -61,10 +61,6 @@ export type MappingElementSourceExtractor = (
   mappingElement: MappingElement,
 ) => MappingElementSource | undefined;
 
-export type SetImplemtationClassifier = (
-  setImplementation: SetImplementation,
-) => string | undefined;
-
 export type MappingElementStateCreator = (
   mappingElement: MappingElement | undefined,
   editorStore: EditorStore,
@@ -134,11 +130,6 @@ export interface DSL_Mapping_LegendStudioApplicationPlugin_Extension
    * Get the list of mapping element info builders for set implemenetation.
    */
   getExtraSetImplementationMappingElementLabelInfoBuilders?(): SetImplementationMappingElementLabelInfoBuilder[];
-
-  /**
-   * Get the list of set implementation classifiers.
-   */
-  getExtraSetImplementationClassifiers?(): SetImplemtationClassifier[];
 
   /**
    * Get the list of the mapping element state creators for the given class mapping.

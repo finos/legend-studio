@@ -157,7 +157,7 @@ export const ElementGenerationEditor = observer(
               className="panel__header__action element-generation-editor__leave-btn"
               tabIndex={-1}
               onClick={leaveElementGenerationView}
-              title={'Leave element generation view mode'}
+              title="Leave element generation view mode"
             >
               <ArrowCircleLeftIcon /> exit generation view
             </button>

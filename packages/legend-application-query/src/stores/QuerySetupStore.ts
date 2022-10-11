@@ -194,11 +194,12 @@ export class QueryProductionizationSetupState extends QuerySetupState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.setupStore.applicationStore.navigator.jumpTo(
+      this.setupStore.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
           matchingSDLCEntry.url,
           this.currentQuery.id,
         ),
+        { useSameWindow: true },
       );
     } else {
       this.setupStore.applicationStore.notifyWarning(
@@ -287,13 +288,14 @@ export class UpdateExistingServiceQuerySetupState extends QuerySetupState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.setupStore.applicationStore.navigator.jumpTo(
+      this.setupStore.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl(
           matchingSDLCEntry.url,
           serviceInfo.groupId,
           serviceInfo.artifactId,
           serviceInfo.path,
         ),
+        { useSameWindow: true },
       );
     } else {
       this.setupStore.applicationStore.notifyWarning(
@@ -478,11 +480,12 @@ export class LoadProjectServiceQuerySetupState extends QuerySetupState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      this.setupStore.applicationStore.navigator.jumpTo(
+      this.setupStore.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl(
           matchingSDLCEntry.url,
           project.projectId,
         ),
+        { useSameWindow: true },
       );
     } else {
       this.setupStore.applicationStore.notifyWarning(

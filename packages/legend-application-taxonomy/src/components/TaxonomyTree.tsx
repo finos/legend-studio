@@ -86,7 +86,7 @@ const TaxonomyTreeNodeContainer = observer(
     const copyLink = (): void => {
       applicationStore
         .copyTextToClipboard(
-          applicationStore.navigator.generateLocation(
+          applicationStore.navigator.generateAddress(
             generateExploreTaxonomyTreeNodeRoute(
               applicationStore.config.currentTaxonomyTreeOption.key,
               node.id,

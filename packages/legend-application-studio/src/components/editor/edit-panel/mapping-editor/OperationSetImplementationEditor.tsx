@@ -57,7 +57,7 @@ import {
   operationMapping_addParameter,
   operationMapping_changeParameter,
   operationMapping_deleteParameter,
-} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 interface SetImplementationOption {
   value: SetImplementation;
@@ -211,7 +211,7 @@ export const OperationSetImplementationEditor = observer(
                 }
                 onClick={addParameter}
                 tabIndex={-1}
-                title={'Add parameter'}
+                title="Add parameter"
               >
                 <PlusIcon />
               </button>
@@ -237,14 +237,14 @@ export const OperationSetImplementationEditor = observer(
                         value: param,
                         label: param.setImplementation.value.id.value,
                       }}
-                      placeholder={`Select parameter ID`}
+                      placeholder="Select parameter ID"
                     />
                   </div>
                   <button
                     className="operation-mapping-editor__parameter__visit-btn"
                     onClick={visit(param)}
                     tabIndex={-1}
-                    title={'Visit mapping element'}
+                    title="Visit mapping element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -254,7 +254,7 @@ export const OperationSetImplementationEditor = observer(
                       disabled={isReadOnly}
                       onClick={deleteParameter(param)}
                       tabIndex={-1}
-                      title={'Remove'}
+                      title="Remove"
                     >
                       <TimesIcon />
                     </button>

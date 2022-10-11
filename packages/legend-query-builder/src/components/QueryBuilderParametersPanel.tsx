@@ -45,15 +45,15 @@ import {
 import {
   type PackageableElementOption,
   buildElementOption,
-  variableExpression_setName,
-  LambdaParameterState,
-  LambdaParameterValuesEditor,
   getPackageableElementOptionFormatter,
   useApplicationStore,
 } from '@finos/legend-application';
 import { useDrag } from 'react-dnd';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
+import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
+import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 
 const VariableExpressionEditor = observer(
   (props: {
@@ -182,7 +182,7 @@ const VariableExpressionEditor = observer(
                   spellCheck={false}
                   value={varState.name}
                   onChange={changeVariableName}
-                  placeholder={`Parameter name`}
+                  placeholder="Parameter name"
                   validationErrorMessage={validationMessage}
                 />
               </div>
@@ -418,9 +418,8 @@ export const QueryBuilderParametersPanel = observer(
         )}
         {queryParameterState.parameterValuesEditorState.showModal && (
           <LambdaParameterValuesEditor
-            graph={
-              queryParameterState.queryBuilderState.graphManagerState.graph
-            }
+            graph={queryBuilderState.graphManagerState.graph}
+            observerContext={queryBuilderState.observableContext}
             lambdaParametersState={queryParameterState}
           />
         )}

@@ -58,7 +58,7 @@ export class QueryBuilderAggregateOperator_DistinctCount
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       return (
         (
           [

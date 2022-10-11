@@ -45,7 +45,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
@@ -218,7 +218,7 @@ const ServiceGeneralEditor = observer(() => {
                     className="service-editor__pattern__parameter__action"
                     disabled={isReadOnly}
                     onClick={removePatternParameter(parameter)}
-                    title={'Remove parameter'}
+                    title="Remove parameter"
                     tabIndex={-1}
                   >
                     <TimesIcon />

@@ -17,7 +17,7 @@
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { generatePath } from 'react-router';
+import { generatePath } from '@finos/legend-application';
 
 export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
   PROJECT_ID = 'projectId',

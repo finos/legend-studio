@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { LambdaParameterState } from '@finos/legend-application';
 import {
   DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
   DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
@@ -32,6 +31,7 @@ import { type Hashable, hashArray } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import { LambdaParameterState } from './shared/LambdaParameterState.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
   queryBuilderState: QueryBuilderState;

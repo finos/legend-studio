@@ -39,9 +39,9 @@ import {
 import { ShapesIcon } from '@finos/legend-art';
 import type { Class, PackageableElement } from '@finos/legend-graph';
 import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
-import { DiagramEditorState } from '../../stores/studio/DSL_Diagram_DiagramEditorState.js';
-import { DiagramEditor } from './DSL_Diagram_DiagramEditor.js';
-import { ClassDiagramPreview } from './DSL_Diagram_ClassDiagramPreview.js';
+import { DiagramEditorState } from '../../stores/studio/DiagramEditorState.js';
+import { DiagramEditor } from './DiagramEditor.js';
+import { ClassDiagramPreview } from './ClassDiagramPreview.js';
 import {
   PURE_GRAMMAR_DIAGRAM_ELEMENT_TYPE_LABEL,
   PURE_GRAMMAR_DIAGRAM_PARSER_NAME,

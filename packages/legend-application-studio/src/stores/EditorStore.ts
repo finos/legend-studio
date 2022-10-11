@@ -142,7 +142,7 @@ import {
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_renameElement,
-} from './graphModifier/GraphModifierHelper.js';
+} from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
@@ -235,7 +235,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  backdrop = false;
   ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
 
@@ -259,7 +258,6 @@ export class EditorStore {
       hotkeys: observable,
       currentEditorState: observable,
       openedEditorStates: observable,
-      backdrop: observable,
       ignoreNavigationBlocking: observable,
       isDevToolEnabled: observable,
 
@@ -268,7 +266,6 @@ export class EditorStore {
       isInitialized: computed,
       isInGrammarTextMode: computed,
       isInFormMode: computed,
-      hasUnpushedChanges: computed,
 
       applicationStore: false,
       sdlcServerClient: false,
@@ -283,7 +280,6 @@ export class EditorStore {
       resetHotkeys: action,
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
-      setBackdrop: action,
       setActiveAuxPanelMode: action,
       setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
@@ -473,21 +469,13 @@ export class EditorStore {
       ) && this.graphManagerState.systemBuildState.hasSucceeded
     );
   }
+
   get isInGrammarTextMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.GRAMMAR_TEXT;
   }
+
   get isInFormMode(): boolean {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
-  }
-  get hasUnpushedChanges(): boolean {
-    return Boolean(
-      this.changeDetectionState.workspaceLocalLatestRevisionState.changes
-        .length,
-    );
-  }
-
-  setDevTool(val: boolean): void {
-    this.isDevToolEnabled = val;
   }
 
   setHotkeys(val: HotkeyConfiguration[]): void {
@@ -506,12 +494,12 @@ export class EditorStore {
     this.blockGlobalHotkeys = val;
   }
 
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
+  setDevTool(val: boolean): void {
+    this.isDevToolEnabled = val;
   }
 
-  setBackdrop(val: boolean): void {
-    this.backdrop = val;
+  setCurrentEditorState(val: EditorState | undefined): void {
+    this.currentEditorState = val;
   }
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
@@ -630,10 +618,10 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(undefined),
               );
             },
@@ -697,7 +685,7 @@ export class EditorStore {
             default: true,
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateViewProjectRoute(projectId),
               );
             },
@@ -712,10 +700,10 @@ export class EditorStore {
             },
           },
           {
-            label: 'Back to setup page',
+            label: 'Back to workspace setup',
             type: ActionAlertActionType.STANDARD,
             handler: (): void => {
-              this.applicationStore.navigator.goTo(
+              this.applicationStore.navigator.goToLocation(
                 generateSetupRoute(projectId, workspaceId, workspaceType),
               );
             },

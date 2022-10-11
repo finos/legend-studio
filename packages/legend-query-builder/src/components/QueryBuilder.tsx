@@ -296,7 +296,10 @@ export const QueryBuilder = observer(
           </div>
         </div>
         <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <Backdrop className="backdrop" open={queryBuilderState.backdrop} />
+          <Backdrop
+            className="backdrop"
+            open={queryBuilderState.showBackdrop}
+          />
           <div className="query-builder__content">
             <div className="query-builder__activity-bar">
               <div className="query-builder__activity-bar__items"></div>

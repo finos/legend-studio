@@ -16,6 +16,7 @@
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import {
   ValueSpecification,
   type ValueSpecificationVisitor,
@@ -30,7 +31,13 @@ export class INTERNAL__PropagatedValue
   extends ValueSpecification
   implements Hashable
 {
-  getValue!: () => ValueSpecification;
+  readonly getValue!: () => ValueSpecification;
+
+  constructor(getValue: () => ValueSpecification) {
+    super(new Multiplicity(0, 0));
+
+    this.getValue = getValue;
+  }
 
   get hashCode(): string {
     return hashArray([

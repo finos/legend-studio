@@ -34,8 +34,8 @@ export const getProjectOptionLabelFormatter = (
 ): ((option: ProjectOption) => React.ReactNode) =>
   function ProjectOptionLabel(option: ProjectOption): React.ReactNode {
     const viewProject = (): void =>
-      applicationStore.navigator.openNewWindow(
-        applicationStore.navigator.generateLocation(
+      applicationStore.navigator.visitAddress(
+        applicationStore.navigator.generateAddress(
           generateViewProjectRoute(option.value.projectId),
         ),
       );

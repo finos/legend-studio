@@ -67,15 +67,15 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
-  enumMapping_setEnumValueMappings,
+  enumerationMapping_setEnumValueMappings,
   enumValueMapping_addSourceValue,
   enumValueMapping_setSourceValues,
-  instanceSetImpl_setPropertyMappings,
+  instanceSetImplementation_setPropertyMappings,
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**
@@ -157,7 +157,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
     });
     if (enumValueMappingsToAdd.length) {
-      enumMapping_setEnumValueMappings(
+      enumerationMapping_setEnumValueMappings(
         enumerationMapping,
         enumerationMapping.enumValueMappings.concat(enumValueMappingsToAdd),
       );
@@ -311,6 +311,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     pureInstanceSetImpl_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings from before adding new decorated property mappings
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
@@ -426,9 +428,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    instanceSetImpl_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings, incompatible property mappings
+        // from before adding new decorated property mappings
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
@@ -595,9 +600,12 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    instanceSetImpl_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings, incompatible property mappings
+        // from before adding new decorated property mappings
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
@@ -669,7 +677,7 @@ export class MappingElementDecorationCleaner
         enumValueMapping.sourceValues.filter(isNonNullable),
       );
     });
-    enumMapping_setEnumValueMappings(
+    enumerationMapping_setEnumValueMappings(
       enumerationMapping,
       nonEmptyEnumValueMappings,
     );
@@ -700,7 +708,7 @@ export class MappingElementDecorationCleaner
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): void {
-    instanceSetImpl_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !isStubbed_RawLambda(propertyMapping.transform),
@@ -714,7 +722,7 @@ export class MappingElementDecorationCleaner
       | FlatDataInstanceSetImplementation
       | EmbeddedFlatDataPropertyMapping,
   ): void {
-    instanceSetImpl_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>

@@ -111,7 +111,7 @@ export class WorkspaceSetupStore {
     this.currentProject = undefined;
     this.workspaces = [];
     this.currentWorkspace = undefined;
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateSetupRoute(undefined, undefined, undefined),
     );
   }
@@ -119,7 +119,7 @@ export class WorkspaceSetupStore {
   resetWorkspace(): void {
     this.currentWorkspace = undefined;
     if (this.currentProject) {
-      this.applicationStore.navigator.goTo(
+      this.applicationStore.navigator.goToLocation(
         generateSetupRoute(this.currentProject.projectId, undefined, undefined),
       );
     }
@@ -145,7 +145,9 @@ export class WorkspaceSetupStore {
             )) as PlainObject<Project>,
           );
         } catch {
-          this.applicationStore.navigator.goTo(generateSetupRoute(undefined));
+          this.applicationStore.navigator.goToLocation(
+            generateSetupRoute(undefined),
+          );
           this.initState.pass();
           return;
         }
@@ -239,13 +241,13 @@ export class WorkspaceSetupStore {
         if (matchingWorkspace) {
           this.changeWorkspace(matchingWorkspace);
         } else {
-          this.applicationStore.navigator.goTo(
+          this.applicationStore.navigator.goToLocation(
             generateSetupRoute(project.projectId),
           );
         }
       } else {
         this.currentWorkspace = undefined;
-        this.applicationStore.navigator.goTo(
+        this.applicationStore.navigator.goToLocation(
           generateSetupRoute(project.projectId),
         );
       }
@@ -269,7 +271,7 @@ export class WorkspaceSetupStore {
       );
     }
     this.currentWorkspace = workspace;
-    this.applicationStore.navigator.goTo(
+    this.applicationStore.navigator.goToLocation(
       generateSetupRoute(
         this.currentProject.projectId,
         workspace.workspaceId,

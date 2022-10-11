@@ -164,7 +164,7 @@ export const NotificationManager = observer(() => {
             key="close"
             onClick={handleClose}
             tabIndex={-1}
-            title={'Dismiss'}
+            title="Dismiss"
           >
             <TimesIcon />
           </button>,

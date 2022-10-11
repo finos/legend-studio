@@ -15,6 +15,10 @@
  */
 
 @forward 'deps';
+
+@forward 'shared/lambda-editor';
+@forward 'shared/value-spec-editor';
+
 @forward 'query-builder';
 @forward 'query-builder-setup';
 @forward 'query-builder-explorer';

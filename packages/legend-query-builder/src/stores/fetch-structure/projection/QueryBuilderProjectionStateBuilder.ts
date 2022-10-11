@@ -157,13 +157,13 @@ export const processTDSProjectionColumnPropertyExpression = (
       );
       // here we just do a simple check to ensure that if we encounter derived properties
       // the number of parameters and arguments provided match
-      if (propertyExpression.func instanceof DerivedProperty) {
+      if (propertyExpression.func.value instanceof DerivedProperty) {
         assertTrue(
-          (Array.isArray(propertyExpression.func.parameters)
-            ? propertyExpression.func.parameters.length
+          (Array.isArray(propertyExpression.func.value.parameters)
+            ? propertyExpression.func.value.parameters.length
             : 0) ===
             propertyExpression.parametersValues.length - 1,
-          `Can't process property expression: derived property '${propertyExpression.func.name}' expects number of provided arguments to match number of parameters`,
+          `Can't process property expression: derived property '${propertyExpression.func.value.name}' expects number of provided arguments to match number of parameters`,
         );
       }
       // Take care of chains of subtype (a pattern that is not useful, but we want to support and rectify)

@@ -69,10 +69,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import {
-  useApplicationStore,
-  BasicValueSpecificationEditor,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
@@ -86,6 +83,7 @@ import {
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
+import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
@@ -159,7 +157,7 @@ const QueryBuilderFilterConditionEditor = observer(
         const parameterType =
           item.variable.parameter.genericType?.value.rawType;
         const conditionValueType =
-          node.condition.propertyExpressionState.propertyExpression.func
+          node.condition.propertyExpressionState.propertyExpression.func.value
             .genericType.value.rawType;
         if (isTypeCompatibleForAssignment(parameterType, conditionValueType)) {
           node.condition.setValue(item.variable.parameter);
@@ -275,10 +273,15 @@ const QueryBuilderFilterConditionEditor = observer(
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
+                    obseverContext={
+                      node.condition.filterState.queryBuilderState
+                        .observableContext
+                    }
                     typeCheckOption={{
                       expectedType:
                         node.condition.propertyExpressionState
-                          .propertyExpression.func.genericType.value.rawType,
+                          .propertyExpression.func.value.genericType.value
+                          .rawType,
                     }}
                     resetValue={resetNode}
                     selectorConfig={selectorConfig}
