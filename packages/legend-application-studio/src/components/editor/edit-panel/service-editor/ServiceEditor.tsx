@@ -45,7 +45,7 @@ import {
   service_setDocumentation,
   service_setPattern,
   service_updateOwner,
-} from '../../../../stores/graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';

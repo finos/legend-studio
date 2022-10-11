@@ -81,7 +81,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { connection_setStore } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { connection_setStore } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
   bigQueryDatasourceSpecification_setDefaultDataset,
@@ -133,7 +133,7 @@ import {
   middleTierUsernamePasswordAuthenticationStrategy_setVaultReference,
   relationalDatabaseConnection_addPostProcessor,
   relationalDatabaseConnection_deletePostProcessor,
-} from '../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { MapperPostProcessorEditor } from './post-processor-editor/MapperPostProcessorEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 import type { MapperPostProcessorEditorState } from '../../../../stores/editor-state/element-editor-state/connection/PostProcessorEditorState.js';

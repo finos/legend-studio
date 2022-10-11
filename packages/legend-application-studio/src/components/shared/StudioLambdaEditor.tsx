@@ -17,15 +17,15 @@
 import { useMemo, useCallback } from 'react';
 import { type IKeyboardEvent, KeyCode } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
-import {
-  LambdaEditor,
-  useApplicationStore,
-  type LambdaEditorOnKeyDownEventHandler,
-  type LambdaEditorState,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import type { Type } from '@finos/legend-graph';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
+import {
+  type LambdaEditorState,
+  type LambdaEditorOnKeyDownEventHandler,
+  LambdaEditor,
+} from '@finos/legend-query-builder';
 
 export const StudioLambdaEditor = observer(
   (props: {

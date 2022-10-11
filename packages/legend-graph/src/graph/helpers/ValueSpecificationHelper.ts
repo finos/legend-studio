@@ -112,7 +112,7 @@ export const generateVariableExpressionMockValue = (
     );
   }
   if (varType instanceof PrimitiveType) {
-    const primitiveInst = new PrimitiveInstanceValue(
+    const primitiveInstanceValue = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         varType.name === PRIMITIVE_TYPE.DATE
           ? new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE))
@@ -120,13 +120,13 @@ export const generateVariableExpressionMockValue = (
       ),
       multiplicity,
     );
-    primitiveInst.values = [
+    primitiveInstanceValue.values = [
       createMockPrimitiveProperty(
         varType,
         parameter.name === '' ? 'myVar' : parameter.name,
       ),
     ];
-    return primitiveInst;
+    return primitiveInstanceValue;
   } else if (varType instanceof Enumeration) {
     const enumValueInstance = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(varType)),

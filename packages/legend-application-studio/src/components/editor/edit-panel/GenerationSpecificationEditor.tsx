@@ -67,12 +67,12 @@ import {
   useApplicationStore,
   type PackageableElementOption,
 } from '@finos/legend-application';
-import { packageableElementReference_setValue } from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
+import { packageableElementReference_setValue } from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   generationSpecification_addFileGeneration,
   generationSpecification_deleteFileGeneration,
   generationSpecification_setId,
-} from '../../../stores/graphModifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 const GENERATION_SPEC_NODE_DND_TYPE = 'GENERATION_SPEC_NODE';
 

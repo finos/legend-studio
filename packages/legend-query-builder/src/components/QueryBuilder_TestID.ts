@@ -15,6 +15,8 @@
  */
 
 export enum QUERY_BUILDER_TEST_ID {
+  LAMBDA_EDITOR__EDITOR_INPUT = 'lambda-editor__editor__input',
+
   QUERY_BUILDER = 'query__builder',
   QUERY_BUILDER_SETUP = 'query__builder__setup',
   QUERY_BUILDER_PROJECTION = 'query__builder__projection',

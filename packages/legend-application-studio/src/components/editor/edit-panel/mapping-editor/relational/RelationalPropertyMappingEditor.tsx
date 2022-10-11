@@ -46,7 +46,7 @@ import {
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor.js';
-import { relationalPropertyMapping_setTransformer } from '../../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
+import { relationalPropertyMapping_setTransformer } from '../../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,

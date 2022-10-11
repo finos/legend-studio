@@ -102,3 +102,10 @@ export const propertyExpression_setParametersValue = action(
     );
   },
 );
+
+export const instanceValue_updateValues = action(
+  (target: InstanceValue, values: unknown[]): void => {
+    // TODO?: do we have to observe the values here?
+    target.values = values;
+  },
+);

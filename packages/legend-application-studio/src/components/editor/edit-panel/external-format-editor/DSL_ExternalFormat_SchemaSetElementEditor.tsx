@@ -51,7 +51,7 @@ import {
   externalFormat_schema_setContent,
   externalFormat_schema_setId,
   externalFormat_schema_setLocation,
-} from '../../../../stores/graphModifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { SchemaSetModelGenerationEditor } from './DSL_ExternalFormat_SchemaSetModelGenerationEditor.js';
 
 const SchemaLoader = observer(

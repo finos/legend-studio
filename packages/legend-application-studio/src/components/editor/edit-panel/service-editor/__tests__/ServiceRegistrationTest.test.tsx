@@ -50,7 +50,7 @@ import {
 } from '@finos/legend-graph';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/EditorStoreTestUtils.js';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
-import { service_deleteOwner } from '../../../../../stores/graphModifier/DSL_Service_GraphModifierHelper.js';
+import { service_deleteOwner } from '../../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 
 let renderResult: RenderResult;
 

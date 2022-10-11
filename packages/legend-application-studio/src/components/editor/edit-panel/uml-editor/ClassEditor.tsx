@@ -128,7 +128,7 @@ import {
   class_swapConstraints,
   class_swapSuperTypes,
   setGenericTypeReferenceValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,

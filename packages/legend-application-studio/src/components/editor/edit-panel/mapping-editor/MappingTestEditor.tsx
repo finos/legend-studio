@@ -87,11 +87,11 @@ import {
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { flatData_setData } from '../../../../stores/graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 

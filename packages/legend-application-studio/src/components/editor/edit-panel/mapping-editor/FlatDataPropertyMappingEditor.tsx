@@ -46,7 +46,7 @@ import {
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
 import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
-import { flatDataPropertyMapping_setTransformer } from '../../../../stores/graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { flatDataPropertyMapping_setTransformer } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,

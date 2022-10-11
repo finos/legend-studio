@@ -55,7 +55,7 @@ import { type EntityChange, EntityChangeType } from '@finos/legend-server-sdlc';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
-import { configurationProperty_setValue } from '../../../graphModifier/DSL_Generation_GraphModifierHelper.js';
+import { configurationProperty_setValue } from '../../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export enum SCHEMA_SET_TAB_TYPE {
   SCHEMAS = 'SCHEMAS',

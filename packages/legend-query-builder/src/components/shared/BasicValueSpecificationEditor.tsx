@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type TooltipPlacement,
   type InputActionMeta,
@@ -65,7 +66,6 @@ import {
   instanceValue_changeValue,
   instanceValue_changeValues,
 } from '../../stores/shared/ValueSpecificationModifierHelper.js';
-import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { CustomDatePicker } from './CustomDatePicker.js';
 
 type TypeCheckOption = {

@@ -58,10 +58,10 @@ import {
 } from '@finos/legend-graph';
 import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { functionExpression_setParametersValues } from '@finos/legend-application';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { functionExpression_setParametersValues } from './shared/ValueSpecificationModifierHelper.js';
 
 export const getDerivedPropertyMilestoningSteoreotype = (
   property: DerivedProperty,

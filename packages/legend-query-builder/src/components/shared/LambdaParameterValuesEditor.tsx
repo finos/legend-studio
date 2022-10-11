@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useApplicationStore } from '@finos/legend-application';
 import { Dialog } from '@finos/legend-art';
 import {
   type PureModel,
@@ -23,7 +24,6 @@ import {
 import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import type { LambdaParametersState } from '../../stores/shared/LambdaParameterState.js';
-import { useApplicationStore } from '../ApplicationStoreProvider.js';
 import { BasicValueSpecificationEditor } from './BasicValueSpecificationEditor.js';
 
 // TODO we may want to further componentize this by removing the dialog wrapper

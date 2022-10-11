@@ -22,20 +22,18 @@ import {
 } from '@finos/legend-graph';
 import { action } from 'mobx';
 
-// --------------------------------------------- Raw Value Specification -------------------------------------
-
 export const rawVariableExpression_setName = action(
-  (rV: RawVariableExpression, value: string): void => {
-    rV.name = value;
+  (target: RawVariableExpression, value: string): void => {
+    target.name = value;
   },
 );
 export const rawVariableExpression_setType = action(
-  (rV: RawVariableExpression, value: Type): void => {
-    rV.type.value = observe_Type(value);
+  (target: RawVariableExpression, value: Type): void => {
+    target.type.value = observe_Type(value);
   },
 );
 export const rawVariableExpression_setMultiplicity = action(
-  (rV: RawVariableExpression, value: Multiplicity): void => {
-    rV.multiplicity = observe_Multiplicity(value);
+  (target: RawVariableExpression, value: Multiplicity): void => {
+    target.multiplicity = observe_Multiplicity(value);
   },
 );

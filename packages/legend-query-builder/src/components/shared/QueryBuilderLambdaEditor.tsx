@@ -20,12 +20,12 @@ import { type IKeyboardEvent, KeyCode } from 'monaco-editor';
 import { useCallback, useMemo } from 'react';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import type { Type } from '@finos/legend-graph';
+import { useApplicationStore } from '@finos/legend-application';
+import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
-  useApplicationStore,
   LambdaEditor,
-  type LambdaEditorState,
-  type LambdaEditorOnKeyDownEventHandler,
-} from '@finos/legend-application';
+  LambdaEditorOnKeyDownEventHandler,
+} from './LambdaEditor.js';
 
 export const QueryBuilderLambdaEditor = observer(
   (props: {

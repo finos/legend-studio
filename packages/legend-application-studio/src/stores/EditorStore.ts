@@ -142,7 +142,7 @@ import {
   graph_deleteElement,
   graph_deleteOwnElement,
   graph_renameElement,
-} from './graphModifier/GraphModifierHelper.js';
+} from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';

@@ -41,7 +41,7 @@ import {
   taggedValue_setValue,
   taggedValue_setTag,
   annotatedElement_swapTaggedValues,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   buildElementOption,
   type PackageableElementOption,

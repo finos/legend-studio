@@ -37,10 +37,8 @@ import {
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import {
-  buildParametersLetLambdaFunc,
-  ExecutionPlanState,
-} from '@finos/legend-application';
+import { ExecutionPlanState } from '@finos/legend-application';
+import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
 
 const DEFAULT_LIMIT = 1000;
 

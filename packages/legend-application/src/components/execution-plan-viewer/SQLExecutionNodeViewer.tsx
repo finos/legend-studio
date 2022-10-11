@@ -15,11 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import type { ExecutionPlanState } from '../../../stores/shared/ExecutionPlanState.js';
+import type { ExecutionPlanState } from '../../stores/ExecutionPlanState.js';
 import { format } from 'sql-formatter';
 import type { SQLResultColumn } from '@finos/legend-graph';
-import { TextInputEditor } from '../TextInputEditor.js';
-import { EDITOR_LANGUAGE } from '../../../const.js';
+import { TextInputEditor } from '../shared/TextInputEditor.js';
+import { EDITOR_LANGUAGE } from '../../const.js';
 
 /**
  * TODO: Create a new `AbstractPlugin` for this, called `ExecutionPlanViewerPlugin`

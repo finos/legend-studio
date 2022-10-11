@@ -44,9 +44,13 @@ import {
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
-import { APPLICATION_TEST_ID } from '../ApplicationTestID.js';
-import { useApplicationStore } from '../ApplicationStoreProvider.js';
-import { EDITOR_LANGUAGE, EDITOR_THEME, TAB_SIZE } from '../../const.js';
+import {
+  EDITOR_LANGUAGE,
+  EDITOR_THEME,
+  TAB_SIZE,
+  useApplicationStore,
+} from '@finos/legend-application';
+import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 
 export type LambdaEditorOnKeyDownEventHandler = {
   matcher: (event: IKeyboardEvent) => boolean;
@@ -369,7 +373,7 @@ const LambdaEditorInline = observer(
         >
           <div
             ref={ref}
-            data-testid={APPLICATION_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
+            data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
             className="lambda-editor__editor__input"
           >
             <div className="text-editor__body" ref={textInputRef} />
@@ -659,7 +663,7 @@ const LambdaEditorPopUp = observer(
             <div className={clsx('lambda-editor__popup__content', className)}>
               <div
                 ref={ref}
-                data-testid={APPLICATION_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
+                data-testid={QUERY_BUILDER_TEST_ID.LAMBDA_EDITOR__EDITOR_INPUT}
                 className="lambda-editor__editor__input"
               >
                 <div className="text-editor__body" ref={textInputRef} />

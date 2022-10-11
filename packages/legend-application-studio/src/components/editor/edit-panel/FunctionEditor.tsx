@@ -94,12 +94,12 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 enum FUNCTION_PARAMETER_TYPE {

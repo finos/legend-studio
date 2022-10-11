@@ -40,3 +40,12 @@ export type { MappingRuntimeCompatibilityAnalysisResult } from './graphManager/a
 export * from './stores/ServiceInfo.js';
 export * from './components/ServiceQuerySetupUtils.js';
 export * from './components/QuerySetupUtils.js';
+
+// ------------------------------------------- Shared components -------------------------------------------
+
+export * from './components/shared/LambdaEditor.js';
+export * from './components/shared/BasicValueSpecificationEditor.js';
+export * from './components/shared/LambdaParameterValuesEditor.js';
+export { LambdaEditorState } from './stores/shared/LambdaEditorState.js';
+export * from './stores/shared/LambdaParameterState.js';
+export * from './stores/shared/ValueSpecificationModifierHelper.js';

@@ -50,7 +50,7 @@ import {
   tagStereotype_setValue,
   profile_swapTags,
   profile_swapStereotypes,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 import { useRef, useCallback } from 'react';

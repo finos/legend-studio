@@ -32,11 +32,11 @@ import {
   MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { buildParametersLetLambdaFunc } from '@finos/legend-application';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
 
 const buildGetAllFunction = (
   _class: Class,

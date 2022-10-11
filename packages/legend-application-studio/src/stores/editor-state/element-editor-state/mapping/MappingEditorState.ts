@@ -99,13 +99,12 @@ import {
   stub_Class,
   findPropertyMapping,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
   MappingElementLabel,
 } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import type { LegendStudioApplicationPlugin } from '../../../LegendStudioApplicationPlugin.js';
-import { flatData_setSourceRootRecordType } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setSourceRootRecordType } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   pureInstanceSetImpl_setSrcClass,
   mapping_addClassMapping,
@@ -117,9 +116,10 @@ import {
   mapping_deleteTest,
   setImpl_updateRootOnCreate,
   setImpl_updateRootOnDelete,
-} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../shared/ModelClassifierUtils.js';
-import { rootRelationalSetImp_setMainTableAlias } from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+import { rootRelationalSetImp_setMainTableAlias } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export interface MappingExplorerTreeNodeData extends TreeNodeData {
   mappingElement: MappingElement;

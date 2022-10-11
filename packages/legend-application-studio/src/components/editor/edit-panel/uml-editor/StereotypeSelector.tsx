@@ -37,7 +37,7 @@ import {
 import {
   annotatedElement_swapStereotypes,
   stereotypeReference_setValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   buildElementOption,
   type PackageableElementOption,

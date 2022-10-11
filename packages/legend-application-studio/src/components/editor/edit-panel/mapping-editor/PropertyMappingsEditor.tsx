@@ -67,7 +67,7 @@ import {
   instanceSetImplementation_deletePropertyMapping,
   setImpl_nominateRoot,
   setImplementation_setRoot,
-} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,

@@ -43,7 +43,7 @@ import {
   ExecutionPlanViewTreeNodeData,
   EXECUTION_PLAN_VIEW_MODE,
   type ExecutionPlanState,
-} from '../../../stores/shared/ExecutionPlanState.js';
+} from '../../stores/ExecutionPlanState.js';
 import { observer } from 'mobx-react-lite';
 import {
   ExecutionPlan,
@@ -52,8 +52,8 @@ import {
   RelationalTDSInstantiationExecutionNode,
   type RawExecutionPlan,
 } from '@finos/legend-graph';
-import { EDITOR_LANGUAGE, TAB_SIZE } from '../../../const.js';
-import { TextInputEditor } from '../TextInputEditor.js';
+import { EDITOR_LANGUAGE, TAB_SIZE } from '../../const.js';
+import { TextInputEditor } from '../shared/TextInputEditor.js';
 import { SQLExecutionNodeViewer } from './SQLExecutionNodeViewer.js';
 
 /**

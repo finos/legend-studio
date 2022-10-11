@@ -40,7 +40,7 @@ import {
   type TestAssertionEditorState,
   type TestAssertionState,
 } from '../../../../stores/editor-state/element-editor-state/testable/TestAssertionState.js';
-import { externalFormatData_setData } from '../../../../stores/graphModifier/DSL_Data_GraphModifierHelper.js';
+import { externalFormatData_setData } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';

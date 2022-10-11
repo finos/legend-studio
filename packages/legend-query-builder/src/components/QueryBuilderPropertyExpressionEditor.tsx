@@ -52,10 +52,8 @@ import {
   isSuperType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import {
-  propertyExpression_setParametersValue,
-  BasicValueSpecificationEditor,
-} from '@finos/legend-application';
+import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
+import { propertyExpression_setParametersValue } from '../stores/shared/ValueSpecificationModifierHelper.js';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {

@@ -49,7 +49,7 @@ import {
 import {
   externalFormat_schemaSet_setFormat,
   externalFormat_schemaSet_setSchemas,
-} from '../graphModifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { InnerSchemaSetEditorState } from './element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 
 export enum MODEL_IMPORT_NATIVE_INPUT_TYPE {

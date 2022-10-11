@@ -83,7 +83,6 @@ import {
   DataElement,
 } from '@finos/legend-graph';
 import {
-  type LambdaEditorState,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -91,10 +90,11 @@ import {
   CONFIGURATION_EDITOR_TAB,
   getConflictsString,
 } from './editor-state/ProjectConfigurationEditorState.js';
-import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
+import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import type { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',

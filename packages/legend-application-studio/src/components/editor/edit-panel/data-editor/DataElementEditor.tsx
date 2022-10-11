@@ -47,7 +47,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useDrop } from 'react-dnd';
 import {
   CORE_DND_TYPE,
@@ -66,7 +66,7 @@ import {
 import {
   externalFormatData_setContentType,
   externalFormatData_setData,
-} from '../../../../stores/graphModifier/DSL_Data_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';

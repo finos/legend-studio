@@ -48,9 +48,6 @@ import {
   ActionAlertType,
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
-  instanceValue_changeValue,
-  instanceValue_changeValues,
-  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
@@ -81,6 +78,11 @@ import {
 } from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import {
+  instanceValue_changeValue,
+  instanceValue_changeValues,
+} from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<

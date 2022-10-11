@@ -84,12 +84,8 @@ import {
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
 } from '@finos/legend-graph';
-import {
-  ExecutionPlanState,
-  LambdaEditorState,
-  TAB_SIZE,
-} from '@finos/legend-application';
-import { flatData_setData } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
+import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   expectedOutputMappingTestAssert_setExpectedOutput,
   mappingTest_setAssert,
@@ -97,12 +93,13 @@ import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum TEST_RESULT {
   NONE = 'NONE', // test has not run yet

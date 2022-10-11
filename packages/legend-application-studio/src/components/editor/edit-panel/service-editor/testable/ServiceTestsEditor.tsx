@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BasicValueSpecificationEditor } from '@finos/legend-application';
+
 import {
   ContextMenu,
   PlusIcon,
@@ -36,6 +36,7 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import { type ValueSpecification, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 import {
   filterByType,
   guaranteeNonNullable,
@@ -55,7 +56,7 @@ import type { TestAssertionEditorState } from '../../../../../stores/editor-stat
 import {
   atomicTest_setId,
   testAssertion_setId,
-} from '../../../../../stores/graphModifier/Testable_GraphModifierHelper.js';
+} from '../../../../../stores/shared/modifier/Testable_GraphModifierHelper.js';
 import {
   getTestableResultFromTestResult,
   TESTABLE_RESULT,

@@ -30,14 +30,9 @@ import {
   RuntimeEditorState,
 } from '../../../editor-state/element-editor-state/RuntimeEditorState.js';
 import {
-  buildParametersLetLambdaFunc,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   ExecutionPlanState,
-  LambdaEditorState,
-  LambdaParametersState,
-  LambdaParameterState,
-  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
@@ -70,7 +65,7 @@ import {
   stub_Mapping,
 } from '@finos/legend-graph';
 import { type Entity, parseGACoordinates } from '@finos/legend-storage';
-import { runtime_addMapping } from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
   keyedExecutionParameter_setKey,
@@ -81,7 +76,14 @@ import {
   pureSingleExecution_setMapping,
   pureSingleExecution_setRuntime,
   service_setExecution,
-} from '../../../graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
+import {
+  buildParametersLetLambdaFunc,
+  LambdaEditorState,
+  LambdaParametersState,
+  LambdaParameterState,
+  PARAMETER_SUBMIT_ACTION,
+} from '@finos/legend-query-builder';
 
 export class ServiceExecutionParameterState extends LambdaParametersState {
   executionState: ServicePureExecutionState;

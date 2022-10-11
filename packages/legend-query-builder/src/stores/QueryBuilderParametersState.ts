@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  LambdaParametersState,
-  type LambdaParameterState,
-} from '@finos/legend-application';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { observable, makeObservable, action, override } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+import {
+  LambdaParametersState,
+  LambdaParameterState,
+} from './shared/LambdaParameterState.js';
 
 export const QUERY_BUILDER_PARAMETER_DND_TYPE = 'PARAMETER';
 

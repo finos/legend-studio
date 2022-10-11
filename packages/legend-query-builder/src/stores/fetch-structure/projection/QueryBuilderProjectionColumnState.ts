@@ -54,9 +54,9 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../../QueryBuilderConfig.js';
-import { LambdaEditorState } from '@finos/legend-application';
 import type { QueryBuilderProjectionState } from './QueryBuilderProjectionState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { LambdaEditorState } from '../../shared/LambdaEditorState.js';
 
 export const QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE = 'PROJECTION_COLUMN';
 

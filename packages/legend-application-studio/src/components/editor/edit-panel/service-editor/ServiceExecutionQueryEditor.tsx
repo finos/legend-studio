@@ -42,7 +42,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
-  LambdaParameterValuesEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
@@ -55,6 +54,7 @@ import {
 import {
   type QueryBuilderState,
   ServiceQueryBuilderState,
+  LambdaParameterValuesEditor,
 } from '@finos/legend-query-builder';
 
 const ServiceExecutionResultViewer = observer(

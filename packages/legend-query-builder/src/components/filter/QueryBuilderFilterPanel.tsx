@@ -69,10 +69,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import {
-  useApplicationStore,
-  BasicValueSpecificationEditor,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
@@ -86,6 +83,7 @@ import {
 import type { QueryBuilderFilterOperator } from '../../stores/filter/QueryBuilderFilterOperator.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
+import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {

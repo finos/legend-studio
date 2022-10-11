@@ -57,7 +57,7 @@ import {
   annotatedElement_addTaggedValue,
   annotatedElement_addStereotype,
   annotatedElement_deleteStereotype,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 
 export const PropertyEditor = observer(
   (props: {

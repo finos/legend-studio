@@ -35,7 +35,7 @@ import {
   service_setParameterValues,
   service_setParameterValueSpec,
   service_setSerializationFormat,
-} from '../../../../graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   assertErrorThrown,
   deleteEntry,

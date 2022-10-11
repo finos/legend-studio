@@ -68,7 +68,7 @@ import {
   enumValueMapping_addSourceValue,
   enumValueMapping_deleteSourceValue,
   enumValueMapping_updateSourceValue,
-} from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
   getPackageableElementOptionFormatter,
