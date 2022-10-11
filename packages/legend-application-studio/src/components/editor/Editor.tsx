@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState, useEffect, useCallback } from 'react';
+import { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type ResizablePanelHandlerProps,
@@ -24,7 +24,6 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
-  useStateWithCallback,
   useResizeDetector,
 } from '@finos/legend-art';
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
@@ -43,8 +42,6 @@ import { isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore, withEditorStore } from './EditorStoreProvider.js';
 import {
-  ActionAlertType,
-  ActionAlertActionType,
   useApplicationStore,
   useApplicationNavigationContext,
   useParams,
@@ -197,12 +194,6 @@ export const Editor = withEditorStore(
     const isResolvingConflicts =
       editorStore.isInConflictResolutionMode &&
       !editorStore.conflictResolutionState.hasResolvedAllConflicts;
-    // const promptComponent = (
-    //   <Prompt
-    //     when={onNavigationChangeIndicator}
-    //     message={handleRouteNavigationBlocking}
-    //   />
-    // );
 
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR,

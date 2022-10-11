@@ -2259,7 +2259,6 @@ __metadata:
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": 29.1.2
     "@types/css-font-loading-module": 0.0.7
-    "@types/papaparse": 5.3.5
     "@types/react": 18.0.21
     "@types/react-dom": 18.0.6
     "@types/react-router-dom": 5.3.3
@@ -2272,7 +2271,6 @@ __metadata:
     mobx-react-lite: 3.4.0
     monaco-editor: 0.34.0
     npm-run-all: 4.1.5
-    papaparse: 5.3.2
     react: 18.2.0
     react-dnd: 16.0.1
     react-dnd-html5-backend: 16.0.1
@@ -2849,6 +2847,7 @@ __metadata:
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": 29.1.2
     "@testing-library/react": 13.4.0
+    "@types/papaparse": 5.3.5
     "@types/react": 18.0.21
     "@types/react-dom": 18.0.6
     cross-env: 7.0.3
@@ -2859,6 +2858,7 @@ __metadata:
     mobx-react-lite: 3.4.0
     monaco-editor: 0.34.0
     npm-run-all: 4.1.5
+    papaparse: 5.3.2
     react: 18.2.0
     react-dnd: 16.0.1
     react-dom: 18.2.0
