@@ -148,7 +148,9 @@ export const buildPropertyExpressionChain = (
     graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
   );
   newPropertyExpression.func = propertyExpression.func;
-  newPropertyExpression.parametersValues = propertyExpression.parametersValues;
+  newPropertyExpression.parametersValues = [
+    ...propertyExpression.parametersValues,
+  ];
 
   let nextExpression: ValueSpecification | undefined;
   let currentExpression: ValueSpecification | undefined = newPropertyExpression;
@@ -162,7 +164,7 @@ export const buildPropertyExpressionChain = (
         graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
       );
       parameterValue.func = nextExpression.func;
-      parameterValue.parametersValues = nextExpression.parametersValues;
+      parameterValue.parametersValues = [...nextExpression.parametersValues];
       nextExpression = parameterValue;
       currentExpression.parametersValues[0] = parameterValue;
     }

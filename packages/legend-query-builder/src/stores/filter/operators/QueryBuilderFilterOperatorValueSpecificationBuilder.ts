@@ -346,8 +346,9 @@ const buildFilterConditionStateWithExists = (
       multiplicityOne,
     );
     flattenedPropertyExpressionChain.func = initialPropertyExpression.func;
-    flattenedPropertyExpressionChain.parametersValues =
-      initialPropertyExpression.parametersValues;
+    flattenedPropertyExpressionChain.parametersValues = [
+      ...initialPropertyExpression.parametersValues,
+    ];
 
     for (const expression of existsLambdaExpressions) {
       // when rebuilding the property expression chain, disregard the initial variable that starts the chain
