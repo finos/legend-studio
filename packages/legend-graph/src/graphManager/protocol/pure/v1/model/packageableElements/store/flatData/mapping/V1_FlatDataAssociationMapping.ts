@@ -24,7 +24,7 @@ export class V1_FlatDataAssociationMapping extends V1_AssociationMapping {
 
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_ASSOCIATION_IMPLEMENTATION,
+      CORE_HASH_STRUCTURE.FLAT_DATA_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,
       hashArray(this.propertyMappings),
     ]);

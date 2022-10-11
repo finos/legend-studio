@@ -21,7 +21,7 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../Core_HashUtils.js';
 export class FlatDataAssociationImplementation extends AssociationImplementation {
   override get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.RELATIONAL_ASSOCIATION_IMPLEMENTATION,
+      CORE_HASH_STRUCTURE.FLAT_DATA_ASSOCIATION_IMPLEMENTATION,
       super.hashCode,
       hashArray(this.propertyMappings),
     ]);
