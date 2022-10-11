@@ -419,6 +419,7 @@ export class EditorGraphState {
           this.globalCompileInTextMode({
             ignoreBlocking: true,
             suppressCompilationFailureMessage: true,
+            suppressEngineDiscrepancyFailureMessage: true,
           }),
         );
         return {
@@ -490,6 +491,7 @@ export class EditorGraphState {
   *globalCompileInFormMode(options?: {
     message?: string;
     disableNotificationOnSuccess?: boolean;
+    suppressEngineDiscrepancyFailureMessage?: boolean | undefined;
     openConsole?: boolean;
   }): GeneratorFn<FormModeCompilationOutcome> {
     assertTrue(
@@ -511,26 +513,36 @@ export class EditorGraphState {
       // show up in other parts, the user will get redirected to text-mode
 
       const errorWarnings =
-        yield this.editorStore.graphManagerState.graphManager.compileGraph(
+        (yield this.editorStore.graphManagerState.graphManager.compileGraph(
           this.editorStore.graphManagerState.graph,
           { keepSourceInformation: true, getErrorWarnings: true },
-        );
+        )) as EngineWarning[];
 
-      this.editorStore.grammarTextEditorState.setWarnings(
-        errorWarnings as EngineWarning[],
-      );
+      this.editorStore.grammarTextEditorState.setWarnings(errorWarnings);
 
-      if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess(
-          'Compiled successfully',
+      const errorWarning = errorWarnings[0];
+
+      if (errorWarning) {
+        this.editorStore.applicationStore.log.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+          'Compilation failed:',
+          errorWarning,
         );
+        if (options) {
+          if (!options.suppressEngineDiscrepancyFailureMessage) {
+            this.editorStore.applicationStore.notifyWarning(
+              `Compilation failed: ${errorWarning.message}`,
+            );
+          } else {
+            if (!options.disableNotificationOnSuccess) {
+              this.editorStore.applicationStore.notifySuccess(
+                'Compiled successfully',
+              );
+            }
+          }
+        }
       }
 
-      if (!options?.disableNotificationOnSuccess) {
-        this.editorStore.applicationStore.notifySuccess(
-          'Compiled successfully',
-        );
-      }
       return FormModeCompilationOutcome.SUCCEEDED;
     } catch (error) {
       assertErrorThrown(error);
@@ -647,7 +659,6 @@ export class EditorGraphState {
         (yield this.editorStore.graphManagerState.graphManager.getWarningsFromCompileText(
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
-          { getErrorWarnings: true },
         )) as EngineWarning[];
 
       const errorWarning = errorWarnings[0];

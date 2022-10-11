@@ -1,6 +1,5 @@
 ---
 '@finos/legend-application-studio': minor
-'@finos/legend-art': minor
 '@finos/legend-graph': minor
 ---
 

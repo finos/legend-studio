@@ -253,7 +253,7 @@ export abstract class AbstractPureGraphManager {
   abstract getWarningsFromCompileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void },
   ): Promise<EngineWarning[] | undefined>;
   abstract getLambdaReturnType(
     lambda: RawLambda,

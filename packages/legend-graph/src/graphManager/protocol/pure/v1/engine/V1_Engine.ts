@@ -464,7 +464,7 @@ export class V1_Engine {
   async getWarningsFromCompileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void },
   ): Promise<EngineWarning[] | undefined> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
@@ -483,8 +483,7 @@ export class V1_Engine {
       const compileResponse = await this.engineServerClient.compile(
         pureModelContextDataJson,
       );
-
-      if (compileResponse.warnings && options?.getErrorWarnings === true) {
+      if (compileResponse.warnings) {
         return compileResponse.warnings as EngineWarning[];
       } else {
         return undefined;
