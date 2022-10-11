@@ -46,7 +46,86 @@ import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projec
 import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 
-type TestCase = [
+type QueryComparisonTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    classPath: string;
+    entities: Entity[];
+    inputRawLambda: { parameters?: object; body?: object };
+    outputRawLambda: { parameters?: object; body?: object };
+  },
+];
+
+const QUERY_COMPARISON_CASES: QueryComparisonTestCase[] = [
+  [
+    'ValueSpecification is properly build after processing a lambda with Business Temporal source with Aggregation',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      inputRawLambda: TEST_DATA__simpleProjectionWithAggregationInput,
+      outputRawLambda: TEST_DATA__simpleProjectionWithAggregationOutput,
+    },
+  ],
+  [
+    'ValueSpecification is properly build after processing a lambda with Business Temporal source with hardcoded date in getAll()',
+    {
+      mappingPath: 'my::map',
+      runtimePath: 'my::runtime',
+      classPath: 'my::Person',
+      entities: TEST_MilestoningModel,
+      inputRawLambda: TEST_DATA__getAllWithHardcodedDateInput,
+      outputRawLambda: TEST_DATA__getAllWithHardcodedDateOutput,
+    },
+  ],
+];
+
+describe(integrationTest('Milestoning query is properly built'), () => {
+  test.each(QUERY_COMPARISON_CASES)(
+    '%s',
+    async (
+      testName: QueryComparisonTestCase[0],
+      testCase: QueryComparisonTestCase[1],
+    ) => {
+      const {
+        mappingPath,
+        runtimePath,
+        classPath,
+        entities,
+        inputRawLambda,
+        outputRawLambda,
+      } = testCase;
+      const { queryBuilderState } = await TEST__setUpQueryBuilder(
+        entities,
+        stub_RawLambda(),
+        mappingPath,
+        runtimePath,
+      );
+
+      const _personClass =
+        queryBuilderState.graphManagerState.graph.getClass(classPath);
+      await act(async () => {
+        queryBuilderState.changeClass(_personClass);
+      });
+
+      await act(async () => {
+        queryBuilderState.initializeWithQuery(
+          create_RawLambda(inputRawLambda.parameters, inputRawLambda.body),
+        );
+      });
+      const receivedOutput = queryBuilderState.buildQuery();
+
+      // Compare input JSON and output JSON for building a query
+      expect(receivedOutput.parameters).toEqual(outputRawLambda.parameters);
+      expect(receivedOutput.body).toEqual(outputRawLambda.body);
+    },
+  );
+});
+
+type QueryPropertyParameterTestCase = [
   string,
   {
     mappingPath: string;
@@ -60,19 +139,7 @@ type TestCase = [
   },
 ];
 
-type JSONComparisonTestCase = [
-  string,
-  {
-    mappingPath: string;
-    runtimePath: string;
-    classPath: string;
-    entities: Entity[];
-    inputRawLambda: { parameters?: object; body?: object };
-    outputRawLambda: { parameters?: object; body?: object };
-  },
-];
-
-const cases: TestCase[] = [
+const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
   [
     'Query builder state is properly set after processing a lambda with Business Temporal source Processing Temporal target',
     {
@@ -243,113 +310,26 @@ const cases: TestCase[] = [
   ],
 ];
 
-const JSONComparionCases: JSONComparisonTestCase[] = [
-  [
-    'ValueSpecification is properly build after processing a lambda with Business Temporal source with Aggregation',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      inputRawLambda: TEST_DATA__simpleProjectionWithAggregationInput,
-      outputRawLambda: TEST_DATA__simpleProjectionWithAggregationOutput,
-    },
-  ],
-  [
-    'ValueSpecification is properly build after processing a lambda with Business Temporal source with hardcoded date in getAll()',
-    {
-      mappingPath: 'my::map',
-      runtimePath: 'my::runtime',
-      classPath: 'my::Person',
-      entities: TEST_MilestoningModel,
-      inputRawLambda: TEST_DATA__getAllWithHardcodedDateInput,
-      outputRawLambda: TEST_DATA__getAllWithHardcodedDateOutput,
-    },
-  ],
-];
-
-describe(integrationTest('Query builder milestoning'), () => {
-  test.each(cases)(
-    '%s',
-    async (testName: TestCase[0], testCase: TestCase[1]) => {
-      const {
-        mappingPath,
-        runtimePath,
-        classPath,
-        entities,
-        rawLambda,
-        expectedNumberOfDerivedPropertyStates,
-        expectedNumberOfParameterValues,
-        expectedNumberOfPropertyParameterValues,
-      } = testCase;
-      const { queryBuilderState } = await TEST__setUpQueryBuilder(
-        entities,
-        stub_RawLambda(),
-        mappingPath,
-        runtimePath,
-      );
-
-      const _personClass =
-        queryBuilderState.graphManagerState.graph.getClass(classPath);
-      await act(async () => {
-        queryBuilderState.changeClass(_personClass);
-      });
-
-      await act(async () => {
-        queryBuilderState.initializeWithQuery(
-          create_RawLambda(rawLambda.parameters, rawLambda.body),
-        );
-      });
-
-      // check if the number of query parameters is as expected for a given milestoned stereotype
-      expect(queryBuilderState.parametersState.parameterStates.length).toBe(
-        expectedNumberOfParameterValues,
-      );
-
-      const projectionState = guaranteeType(
-        queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderProjectionState,
-      );
-      const projectionColumnState = guaranteeType(
-        projectionState.columns[0],
-        QueryBuilderSimpleProjectionColumnState,
-      );
-      const derivedPropertyExpressionStates =
-        projectionColumnState.propertyExpressionState
-          .derivedPropertyExpressionStates;
-
-      // property replaced with derived property as it is milestoned
-      expect(derivedPropertyExpressionStates.length).toBe(
-        expectedNumberOfDerivedPropertyStates,
-      );
-      const parameterValues = guaranteeNonNullable(
-        derivedPropertyExpressionStates[0]?.propertyExpression.parametersValues,
-      );
-
-      // default milestoning date is propagated as date propagation is not supported.
-      expect(parameterValues.length).toBe(
-        expectedNumberOfPropertyParameterValues,
-      );
-    },
-  );
-});
-
 describe(
-  integrationTest('Milestoning query is properly built after transformation'),
+  integrationTest(
+    `Milestoning query milestoning property expression is supplied with proper parameters`,
+  ),
   () => {
-    test.each(JSONComparionCases)(
+    test.each(QUERY_PROPERTY_PARAMETER_CASES)(
       '%s',
       async (
-        testName: JSONComparisonTestCase[0],
-        testCase: JSONComparisonTestCase[1],
+        testName: QueryPropertyParameterTestCase[0],
+        testCase: QueryPropertyParameterTestCase[1],
       ) => {
         const {
           mappingPath,
           runtimePath,
           classPath,
           entities,
-          inputRawLambda,
-          outputRawLambda,
+          rawLambda,
+          expectedNumberOfDerivedPropertyStates,
+          expectedNumberOfParameterValues,
+          expectedNumberOfPropertyParameterValues,
         } = testCase;
         const { queryBuilderState } = await TEST__setUpQueryBuilder(
           entities,
@@ -366,14 +346,40 @@ describe(
 
         await act(async () => {
           queryBuilderState.initializeWithQuery(
-            create_RawLambda(inputRawLambda.parameters, inputRawLambda.body),
+            create_RawLambda(rawLambda.parameters, rawLambda.body),
           );
         });
-        const receivedOutput = queryBuilderState.buildQuery();
 
-        // Compare input JSON and output JSON for building a query
-        expect(receivedOutput.parameters).toEqual(outputRawLambda.parameters);
-        expect(receivedOutput.body).toEqual(outputRawLambda.body);
+        // check if the number of query parameters is as expected for a given milestoned stereotype
+        expect(queryBuilderState.parametersState.parameterStates.length).toBe(
+          expectedNumberOfParameterValues,
+        );
+
+        const projectionState = guaranteeType(
+          queryBuilderState.fetchStructureState.implementation,
+          QueryBuilderProjectionState,
+        );
+        const projectionColumnState = guaranteeType(
+          projectionState.columns[0],
+          QueryBuilderSimpleProjectionColumnState,
+        );
+        const derivedPropertyExpressionStates =
+          projectionColumnState.propertyExpressionState
+            .derivedPropertyExpressionStates;
+
+        // property replaced with derived property as it is milestoned
+        expect(derivedPropertyExpressionStates.length).toBe(
+          expectedNumberOfDerivedPropertyStates,
+        );
+        const parameterValues = guaranteeNonNullable(
+          derivedPropertyExpressionStates[0]?.propertyExpression
+            .parametersValues,
+        );
+
+        // default milestoning date is propagated as date propagation is not supported.
+        expect(parameterValues.length).toBe(
+          expectedNumberOfPropertyParameterValues,
+        );
       },
     );
   },
