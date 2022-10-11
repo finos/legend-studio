@@ -17,17 +17,6 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve } from 'path';
 import fs from 'fs';
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/microsoft/TypeScript/issues/50690
- */
 import { default as axios, type AxiosResponse } from 'axios';
 import {
   WebConsole,
@@ -184,7 +173,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // TODO: refactor to use `StopWatch` instead
   let startTime = Date.now();
-  const transformGrammarToJsonResult = await axios.default.post<
+  const transformGrammarToJsonResult = await axios.post<
     unknown,
     AxiosResponse<PlainObject<V1_PureModelContextData>>
   >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
@@ -259,7 +248,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  await axios.default.post<unknown, AxiosResponse<string>>(
+  await axios.post<unknown, AxiosResponse<string>>(
     `${ENGINE_SERVER_URL}/pure/v1/grammar/jsonToGrammar/model`,
     modelDataContext,
     {
@@ -284,7 +273,7 @@ const runProfiling = async (config: ProfilingConfiguration): Promise<void> => {
 
   // Test successful compilation with graph from serialization
   startTime = Date.now();
-  const compileResult = await axios.default.post<
+  const compileResult = await axios.post<
     unknown,
     AxiosResponse<{ message: string }>
   >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);

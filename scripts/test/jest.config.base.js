@@ -28,6 +28,8 @@ const baseConfig = getBaseConfig({
     'react-dnd',
     'dnd-core',
     '@react-dnd',
+    // TEMP
+    'axios',
   ],
 });
 

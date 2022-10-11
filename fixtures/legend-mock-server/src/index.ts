@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/microsoft/TypeScript/issues/50690
- */
-import { default as Fastify } from 'fastify';
+import { fastify } from 'fastify';
 import { default as FastifyCORS } from '@fastify/cors';
 import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
 import DOCUMENTATION_DATA from './DummyDocumentationData.json' assert { type: 'json' };
@@ -34,29 +23,26 @@ const PORT = 9999;
 const API_BASE_URL = '/api';
 const STUDIO_BASE_URL = '/studio';
 
-const fastify = Fastify.default({
+const server = fastify({
   logger: true,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-fastify.register(FastifyCORS.default, {
+server.register(FastifyCORS.default, {
   methods: ['OPTIONS'],
   origin: [/localhost/],
   credentials: true,
 });
 
-fastify.get(
-  `${API_BASE_URL}/taxonomy/taxonomy-tree`,
-  async (request, reply) => {
-    await reply.send(TAXONOMY_TREE_DATA);
-  },
-);
+server.get(`${API_BASE_URL}/taxonomy/taxonomy-tree`, async (request, reply) => {
+  await reply.send(TAXONOMY_TREE_DATA);
+});
 
-fastify.get(`${STUDIO_BASE_URL}/documentation.json`, async (request, reply) => {
+server.get(`${STUDIO_BASE_URL}/documentation.json`, async (request, reply) => {
   await reply.send(DOCUMENTATION_DATA);
 });
 
-fastify.listen(PORT, (error, address) => {
+server.listen(PORT, (error, address) => {
   if (error) {
     throw error;
   }
