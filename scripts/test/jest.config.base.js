@@ -28,7 +28,9 @@ const baseConfig = getBaseConfig({
     'react-dnd',
     'dnd-core',
     '@react-dnd',
-    // TEMP
+    // Waiting for a fix in axios a problem with `axios` not properly
+    // resolving CommonJS bundle
+    // See https://github.com/axios/axios/pull/5104
     'axios',
   ],
 });
