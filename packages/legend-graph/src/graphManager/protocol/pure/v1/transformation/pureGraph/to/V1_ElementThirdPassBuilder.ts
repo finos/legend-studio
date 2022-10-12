@@ -58,6 +58,7 @@ import { V1_buildDatabaseSchemaViewsFirstPass } from './helpers/V1_DatabaseBuild
 import type { V1_SectionIndex } from '../../../model/packageableElements/section/V1_SectionIndex.js';
 import { GraphBuilderError } from '../../../../../../../graphManager/GraphManagerUtils.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
+import { V1_TEMPORARY_buildMilestoningClass } from './helpers/V1_MilestoneBuilderHelper.js';
 
 export class V1_ElementThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -133,6 +134,7 @@ export class V1_ElementThirdPassBuilder
       _class.properties.push(V1_buildProperty(property, this.context, _class));
       uniqueProperties.add(property.name);
     });
+    V1_TEMPORARY_buildMilestoningClass(_class, this.context.graph);
   }
 
   visit_Association(element: V1_Association): void {

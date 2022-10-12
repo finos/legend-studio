@@ -50,8 +50,8 @@ import {
   observe_AbstractPropertyExpression,
   GenericTypeExplicitReference,
   GenericType,
-  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
   INTERNAL__PropagatedValue,
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
@@ -218,7 +218,7 @@ export const generateMilestonedPropertyParameterValue = (
       if (!milestoningState.businessDate) {
         milestoningState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
       }
@@ -231,14 +231,14 @@ export const generateMilestonedPropertyParameterValue = (
       if (!milestoningState.processingDate) {
         milestoningState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
       }
       if (!milestoningState.businessDate) {
         milestoningState.setBusinessDate(
           derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
       }
@@ -283,7 +283,7 @@ export const generateMilestonedPropertyParameterValue = (
       if (!milestoningState.processingDate) {
         milestoningState.setProcessingDate(
           derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
       }

@@ -39,6 +39,7 @@ import {
   uniqBy,
   UnsupportedOperationError,
   returnUndefOnError,
+  filterByType,
 } from '@finos/legend-shared';
 import { createPath } from '../MetaModelUtils.js';
 import type { BasicModel } from '../BasicModel.js';
@@ -401,15 +402,26 @@ export const getAllSubclasses = (c: Class): Class[] => {
   return Array.from(visitedClasses);
 };
 
+export const getMilestoningGeneratedProperties = (_class: Class): Property[] =>
+  _class._generatedMilestonedProperties.filter(filterByType(Property));
+
 /**
  * Get class and its supertypes' properties recursively, duplications and loops are handled (Which should be caught by compiler)
  */
-export const getAllClassProperties = (_class: Class): Property[] =>
+export const getAllClassProperties = (
+  _class: Class,
+  includeGeneratedMilestoning?: boolean | undefined,
+): Property[] =>
   uniqBy(
     getAllSuperclasses(_class)
       .concat(_class)
       .map((c) => c.propertiesFromAssociations.concat(c.properties))
-      .flat(),
+      .flat()
+      .concat(
+        includeGeneratedMilestoning
+          ? getMilestoningGeneratedProperties(_class)
+          : [],
+      ),
     (property) => property.name,
   );
 
@@ -426,7 +438,9 @@ export const getAllClassDerivedProperties = (
 
 export const getClassProperty = (_class: Class, name: string): Property =>
   guaranteeNonNullable(
-    getAllClassProperties(_class).find((property) => property.name === name),
+    getAllClassProperties(_class, true).find(
+      (property) => property.name === name,
+    ),
     `Can't find property '${name}' in class '${_class.path}'`,
   );
 
