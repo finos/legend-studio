@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 8.1.2
+
+### Patch Changes
+
+- [#1554](https://github.com/finos/legend-studio/pull/1554) [`bbf54fb1`](https://github.com/finos/legend-studio/commit/bbf54fb13ff5957cf8f9a1391388782e1a308501) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Reset query loader state on closing.
+
 ## 8.1.1
 
 ## 8.1.0

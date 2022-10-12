@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 18.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `AbstractPropertyExpression.func` should now use `PropertyReference` and `FunctionType.returnType` should now use `PackageableElementReference<Type>`.
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Move `value specification` helpers from `@finos/legend-graph` to `@finos/legend-query-builder`
+
+- [#1553](https://github.com/finos/legend-studio/pull/1553) [`f8e745c1`](https://github.com/finos/legend-studio/commit/f8e745c11fe1708fea0f8f2f90a7d24fe8345ca5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - **BREAKING CHANGE:** Make multiplicity's upper bound and lower bound `readonly`.
+
+### Patch Changes
+
+- [#1555](https://github.com/finos/legend-studio/pull/1555) [`143434a9`](https://github.com/finos/legend-studio/commit/143434a91f3f4be689a59c4085edf91fdf9aee3d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Generate milestoning date properties for milestoned classes.
+
 ## 17.0.1
 
 ### Patch Changes
