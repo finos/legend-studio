@@ -17,7 +17,6 @@ import {
   type Multiplicity,
   type RawVariableExpression,
   type Type,
-  observe_Multiplicity,
   observe_Type,
 } from '@finos/legend-graph';
 import { action } from 'mobx';
@@ -34,6 +33,6 @@ export const rawVariableExpression_setType = action(
 );
 export const rawVariableExpression_setMultiplicity = action(
   (target: RawVariableExpression, value: Multiplicity): void => {
-    target.multiplicity = observe_Multiplicity(value);
+    target.multiplicity = value;
   },
 );

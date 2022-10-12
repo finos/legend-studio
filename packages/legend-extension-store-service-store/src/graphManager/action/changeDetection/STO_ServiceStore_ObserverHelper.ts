@@ -21,7 +21,6 @@ import {
   skipObservedWithContext,
   observe_PackageableElementReference,
   observe_Abstract_Connection,
-  observe_Multiplicity,
   observe_Abstract_InstanceSetImplementation,
   observe_RawLambda,
   observe_ExternalFormatData,
@@ -359,9 +358,6 @@ export const observe_LocalMappingProperty = skipObserved(
       multiplicity: observable,
       hashCode: computed,
     });
-
-    observe_Multiplicity(metamodel.multiplicity);
-
     return metamodel;
   },
 );

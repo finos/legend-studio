@@ -114,6 +114,7 @@ const VariableExpressionEditor = observer(
       event,
     ) => {
       lambdaParameterState.changeMultiplicity(
+        varState,
         parseInt(event.target.value),
         multiplity.upperBound,
       );
@@ -133,6 +134,7 @@ const VariableExpressionEditor = observer(
         !isNaN(parseInt(value, 10))
       ) {
         lambdaParameterState.changeMultiplicity(
+          varState,
           multiplity.lowerBound,
           value === MULTIPLICITY_INFINITE || value === ''
             ? undefined

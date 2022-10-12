@@ -45,15 +45,9 @@ export const valueSpecification_setGenericType = action(
   },
 );
 
-export const multiplicity_setLowerBound = action(
-  (target: Multiplicity, val: number): void => {
-    target.lowerBound = val;
-  },
-);
-
-export const multiplicity_setUpperBound = action(
-  (target: Multiplicity, val: number | undefined): void => {
-    target.upperBound = val;
+export const valueSpecification_setMultiplicity = action(
+  (target: ValueSpecification, val: Multiplicity): void => {
+    target.multiplicity = val;
   },
 );
 

@@ -23,7 +23,6 @@ import {
 } from 'mobx';
 import type { PackageableElement } from '../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { PackageableElementReference } from '../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
-import type { Multiplicity } from '../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { InferableValue } from '../../../graph/metamodel/pure/InferableValue.js';
 import type { PureGraphManagerPlugin } from '../../PureGraphManagerPlugin.js';
 
@@ -74,15 +73,6 @@ export const observe_PackageableElementReference = skipObserved(
     makeObservable(metamodel, {
       value: observable,
       valueForSerialization: computed,
-    }),
-);
-
-export const observe_Multiplicity = skipObserved(
-  (metamodel: Multiplicity): Multiplicity =>
-    makeObservable(metamodel, {
-      lowerBound: observable,
-      upperBound: observable,
-      hashCode: computed,
     }),
 );
 

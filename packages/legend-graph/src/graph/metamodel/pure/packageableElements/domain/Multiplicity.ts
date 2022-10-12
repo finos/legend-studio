@@ -18,8 +18,8 @@ import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class Multiplicity implements Hashable {
-  lowerBound: number;
-  upperBound?: number | undefined;
+  readonly lowerBound: number;
+  readonly upperBound?: number | undefined;
 
   constructor(lowerBound: number, upperBound: number | undefined) {
     this.lowerBound = lowerBound;
