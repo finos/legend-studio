@@ -14,7 +14,37 @@
  * limitations under the License.
  */
 
+@use 'mixins' as *;
+
 .documentation-link {
   color: var(--color-dark-grey-500);
   cursor: pointer;
+}
+
+.documentation-preview {
+  display: flex;
+  background: var(--color-dark-grey-85);
+  border: 0.1rem solid var(--color-dark-grey-280);
+  border-radius: 0.2rem;
+
+  &__text {
+    padding: 1rem;
+    width: calc(100% - 3rem);
+    color: var(--color-light-grey-400);
+    // font-family: 'Roboto Mono', monospace;
+    line-height: 2rem;
+  }
+
+  &__hint {
+    @include flexHCenter;
+
+    padding: 1rem 0;
+    width: 3rem;
+  }
+
+  // .panel__content__form__section__toggler__prompt {
+  //   font-family: 'Roboto Mono', monospace;
+  //   font-size: 1.3rem;
+  //   margin-left: 1rem;
+  // }
 }

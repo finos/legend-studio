@@ -45,11 +45,9 @@ import {
   PanelForm,
   PanelSection,
   PanelFormTextEditor,
-  PanelFormBooleanEditor,
-  InfoCircleIcon,
-  PanelList,
-  PanelListItem,
-  PanelFormDescription,
+  CheckSquareIcon,
+  SquareIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { action, flowResult } from 'mobx';
 import {
@@ -62,6 +60,7 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  DocumentationPreview,
   EDITOR_LANGUAGE,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
   TextInputEditor,
@@ -433,7 +432,7 @@ const ProjectDependencyEditor = observer(
   },
 );
 
-const PlatformConfigurationEditor = observer(
+const PlatformDependencyViewer = observer(
   (props: {
     platform: PlatformConfiguration;
     isDefault: boolean;
@@ -442,42 +441,34 @@ const PlatformConfigurationEditor = observer(
     const { platform, isDefault, isLatestVersion } = props;
 
     return (
-      <div className="project-configuration-editor__platform__configuration">
-        <div className="project-configuration-editor__platform__configuration__label">
-          <div className="project-configuration-editor__platform__configuration__label__status">
+      <div className="platform-configurations-editor__dependency">
+        <div className="platform-configurations-editor__dependency__label">
+          <div className="platform-configurations-editor__dependency__label__status">
             {isDefault && (
               <CheckCircleIcon
-                className="project-configuration-editor__platform__configuration__label__status--default"
-                title="Platform version is outdated"
+                className="platform-configurations-editor__dependency__label__status--default"
+                title="Platform version is up to date"
               />
             )}
             {isLatestVersion !== undefined &&
-              (isLatestVersion === false ? (
-                <ExclamationCircleIcon
-                  className="project-configuration-editor__platform__configuration__label__status--outdated"
-                  title="Platform version is outdated"
+              (isLatestVersion ? (
+                <CheckCircleIcon
+                  className="platform-configurations-editor__dependency__label__status--up-to-date"
+                  title="Platform version is up to date"
                 />
               ) : (
-                <CheckCircleIcon
-                  className="project-configuration-editor__platform__configuration__label__status--up-to-date"
-                  title="Platform version is up to date"
+                <ExclamationTriangleIcon
+                  className="platform-configurations-editor__dependency__label__status--outdated"
+                  title="Platform version is outdated"
                 />
               ))}
           </div>
-          <div className="project-configuration-editor__platform__configuration__label--text">
+          <div className="platform-configurations-editor__dependency__label__text">
             {platform.name}
           </div>
           <div
             className={clsx(
-              'project-configuration-editor__platform__configuration__label__version',
-              {
-                'project-configuration-editor__platform__configuration__label__version--up-to-date':
-                  isLatestVersion,
-              },
-              {
-                'project-configuration-editor__platform__configuration__label__version--outdated':
-                  isLatestVersion === false,
-              },
+              'platform-configurations-editor__dependency__label__version',
             )}
           >
             {platform.version}
@@ -492,18 +483,6 @@ const ProjectPlatformVersionEditor = observer(
   (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
     const { projectConfig, isReadOnly } = props;
     const editorStore = useEditorStore();
-    const applicationStore = useApplicationStore();
-
-    const isNotEmptyPlatforms = (
-      platformConfigurations: PlatformConfiguration[] | undefined,
-    ): boolean => {
-      if (platformConfigurations) {
-        return platformConfigurations.every(
-          (p) => p.name !== undefined && p.version !== undefined,
-        );
-      }
-      return false;
-    };
 
     const convertPlatformtoPlatformConfiguration = (
       platforms: Platform[] | undefined,
@@ -522,51 +501,33 @@ const ProjectPlatformVersionEditor = observer(
     const defaultPlatforms = convertPlatformtoPlatformConfiguration(
       editorStore.sdlcServerClient.platforms,
     );
-
-    const isLatestVersion = (): boolean => {
-      if (!projectConfig.platformConfigurations) {
-        return false;
-      } else {
-        for (let i = 0; i < projectConfig.platformConfigurations.length; i++) {
-          const currPlatform = projectConfig.platformConfigurations[i];
-          const defaultPlatformConfig = defaultPlatforms?.find(
-            (p) => p.name === currPlatform?.name,
-          );
-
-          if (defaultPlatformConfig?.version !== currPlatform?.version) {
-            return false;
-          }
-        }
-        return true;
-      }
-    };
-
-    const seeDocumentation = (): void => {
-      applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS,
-      );
-    };
+    const isUpToDate = Boolean(
+      platformConfigurations &&
+        platformConfigurations.every(
+          (conf) =>
+            defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
+            conf.version,
+        ),
+    );
 
     const updateLatest = action((): void => {
-      projectConfig.platformConfigurations?.forEach((platform) => {
+      platformConfigurations?.forEach((platform) => {
         const defaultPlatformConfig = defaultPlatforms?.find(
           (p) => p.name === platform.name,
         );
-        const ind = projectConfig.platformConfigurations?.findIndex(
-          (p) => p === platform,
-        );
+        const ind = platformConfigurations?.findIndex((p) => p === platform);
         if (
           defaultPlatformConfig &&
-          projectConfig.platformConfigurations &&
+          platformConfigurations &&
           ind !== undefined
         ) {
-          projectConfig.platformConfigurations[ind] = defaultPlatformConfig;
+          platformConfigurations[ind] = defaultPlatformConfig;
         }
       });
     });
 
     const toggleOverridePlatformConfigurations = (): void => {
-      if (!isNotEmptyPlatforms(projectConfig.platformConfigurations)) {
+      if (!projectConfig.platformConfigurations) {
         projectConfig.setPlatformConfigurations(defaultPlatforms);
       } else {
         projectConfig.setPlatformConfigurations(undefined);
@@ -576,89 +537,78 @@ const ProjectPlatformVersionEditor = observer(
     return (
       <Panel>
         <PanelForm>
-          <PanelFormDescription>
-            <button
-              className="panel__content__form__hint"
-              tabIndex={-1}
-              onClick={seeDocumentation}
-              title="Click to see more details on platform versions"
-            >
-              <InfoCircleIcon />
-            </button>
-            The toggle below is meant for users who would like stability on
-            their dependencies and want them unsync them from the latest
-            possible platform versions. Please note that having this option
-            checked means your platforms may eventually not be the latest
-            version and you may get differing compilation results from here and
-            the pipeline.
-          </PanelFormDescription>
-
-          <PanelList className="project-configuration-editor__platform__configuration__box">
-            <PanelListItem>
-              <PanelFormBooleanEditor
-                value={isNotEmptyPlatforms(
-                  projectConfig.platformConfigurations,
-                )}
-                name=""
-                prompt={
-                  platformConfigurations &&
-                  isNotEmptyPlatforms(projectConfig.platformConfigurations)
-                    ? "Sync platform dependencies' versions"
-                    : "Unsync platform dependencies' versions"
-                }
-                isReadOnly={isReadOnly}
-                update={toggleOverridePlatformConfigurations}
-              ></PanelFormBooleanEditor>
-            </PanelListItem>
-            {defaultPlatforms &&
-              !isNotEmptyPlatforms(projectConfig.platformConfigurations) && (
-                <div>
-                  <div className="panel__content__form__section__header__label">
-                    Latest Platform Versions
-                  </div>
-
-                  {defaultPlatforms.map((p) => (
-                    <PlatformConfigurationEditor
-                      key={p.name}
-                      isDefault={true}
-                      platform={p}
-                    />
-                  ))}
-                </div>
-              )}
-
-            {platformConfigurations &&
-              isNotEmptyPlatforms(projectConfig.platformConfigurations) && (
-                <>
+          <DocumentationPreview
+            text="By default, your project will use the latest platform
+              dependencies' versions (e.g. engine, sdlc, etc.) in the pipeline.
+              This might be undesirable when you want to produce stable
+              artifacts; in this case, you can freeze the platform dependencies'
+              versions"
+            documentationKey={
+              LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
+            }
+          />
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <div className="platform-configurations-editor__dependencies__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleOverridePlatformConfigurations}
+                >
                   <button
-                    className="project-configuration-editor__platform__configuration__label__version__update-btn"
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(platformConfigurations),
+                      },
+                    )}
+                    disabled={isReadOnly}
                     tabIndex={-1}
-                    title={
-                      !isLatestVersion()
-                        ? `Current platform configuration is outdated - click to update to the latest version`
-                        : 'Platform configs are at latest version'
-                    }
+                  >
+                    {platformConfigurations ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Override platform dependencies' versions`}
+                  </div>
+                </div>
+              </div>
+              {platformConfigurations && !isUpToDate && (
+                <div className="platform-configurations-editor__dependencies__header__right">
+                  <button
+                    className="btn btn--dark"
+                    tabIndex={-1}
                     onClick={updateLatest}
-                    disabled={isLatestVersion()}
                   >
                     Update to the current latest platform version
                   </button>
-
-                  <div className="panel__content__form__section__header__label">
-                    Fixed Platform Versions
-                  </div>
-
-                  {platformConfigurations.map((p) => (
-                    <PlatformConfigurationEditor
-                      key={p.name}
-                      platform={p}
-                      isDefault={false}
-                      isLatestVersion={isLatestVersion()}
-                    />
-                  ))}
-                </>
+                </div>
               )}
-          </PanelList>
+            </div>
+            <div className="platform-configurations-editor__dependencies__content">
+              {defaultPlatforms &&
+                !platformConfigurations &&
+                defaultPlatforms.map((p) => (
+                  <PlatformDependencyViewer
+                    key={p.name}
+                    isDefault={true}
+                    platform={p}
+                  />
+                ))}
+              {platformConfigurations &&
+                platformConfigurations.map((p) => (
+                  <PlatformDependencyViewer
+                    key={p.name}
+                    platform={p}
+                    isDefault={false}
+                    isLatestVersion={isUpToDate}
+                  />
+                ))}
+            </div>
+          </div>
         </PanelForm>
       </Panel>
     );
