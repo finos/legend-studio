@@ -38,13 +38,7 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
     createModelSchema(PlatformConfiguration, {
       platformConfigurations: optionalCustom(
         (values) => {
-          //to update SDLC and remove platform configs if user has previously set them,
-          //one must make a nested null update like (platformConfigurations: platformConfigurations: null)
-          if (
-            (values as PlatformConfiguration[]).every(
-              (p) => p.name === undefined && p.version === undefined,
-            )
-          ) {
+          if (values === undefined) {
             return null;
           }
 

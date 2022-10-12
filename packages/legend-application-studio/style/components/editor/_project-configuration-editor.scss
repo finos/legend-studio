@@ -184,6 +184,12 @@
           border-radius: 0.2rem;
           font-weight: 500;
           color: var(--color-light-grey-50);
+
+          &[disabled] {
+            background: var(--color-dark-grey-100);
+            color: var(--color-light-grey-400);
+            cursor: not-allowed;
+          }
         }
       }
 

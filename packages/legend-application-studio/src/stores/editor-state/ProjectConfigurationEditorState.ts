@@ -359,7 +359,14 @@ export class ProjectConfigurationEditorState extends EditorState {
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
 
-      if (this.currentProjectConfiguration.platformConfigurations) {
+      if (
+        this.originalConfig.platformConfigurations?.flatMap(
+          (p) => p.hashCode,
+        ) !==
+        this.currentProjectConfiguration.platformConfigurations?.flatMap(
+          (p) => p.hashCode,
+        )
+      ) {
         updateProjectConfigurationCommand.platformConfigurations =
           new UpdatePlatformConfigurationsCommand(
             this.currentProjectConfiguration.platformConfigurations,

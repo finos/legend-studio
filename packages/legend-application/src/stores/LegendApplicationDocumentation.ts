@@ -16,5 +16,5 @@
 
 export enum LEGEND_APPLICATION_DOCUMENTATION_KEY {
   QUESTION_HOW_TO_USE_ADVANCED_SEARCH_SYNTAX = 'question.how-to-use-advanced-search-syntax',
-  QUESTION_WHAT_IS_PROJECT_PLATFORM_CONFIGURATIONS = 'question.what-are-project-platform-configurations',
+  QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS = 'question.when-to-configure-project-platform-dependencies-versions',
 }

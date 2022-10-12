@@ -543,7 +543,7 @@ const ProjectPlatformVersionEditor = observer(
 
     const seeDocumentation = (): void => {
       applicationStore.assistantService.openDocumentationEntry(
-        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHAT_IS_PROJECT_PLATFORM_CONFIGURATIONS,
+        LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS,
       );
     };
 
@@ -569,9 +569,7 @@ const ProjectPlatformVersionEditor = observer(
       if (!isNotEmptyPlatforms(projectConfig.platformConfigurations)) {
         projectConfig.setPlatformConfigurations(defaultPlatforms);
       } else {
-        projectConfig.setPlatformConfigurations([
-          new PlatformConfiguration(undefined, undefined),
-        ]);
+        projectConfig.setPlatformConfigurations(undefined);
       }
     };
 
@@ -632,16 +630,20 @@ const ProjectPlatformVersionEditor = observer(
             {platformConfigurations &&
               isNotEmptyPlatforms(projectConfig.platformConfigurations) && (
                 <>
-                  {isLatestVersion() === false && (
-                    <button
-                      className="project-configuration-editor__platform__configuration__label__version__update-btn"
-                      tabIndex={-1}
-                      title={`Current platform configuration is outdated - click to update to the latest version`}
-                      onClick={updateLatest}
-                    >
-                      Update to the current latest platform version
-                    </button>
-                  )}
+                  <button
+                    className="project-configuration-editor__platform__configuration__label__version__update-btn"
+                    tabIndex={-1}
+                    title={
+                      !isLatestVersion()
+                        ? `Current platform configuration is outdated - click to update to the latest version`
+                        : 'Platform configs are at latest version'
+                    }
+                    onClick={updateLatest}
+                    disabled={isLatestVersion()}
+                  >
+                    Update to the current latest platform version
+                  </button>
+
                   <div className="panel__content__form__section__header__label">
                     Fixed Platform Versions
                   </div>
