@@ -257,6 +257,10 @@ export class QueryLoaderState {
       this.editorStore.applicationStore.notifyError(error);
     }
   }
+
+  reset(): void {
+    this.setShowCurrentUserQueriesOnly(false);
+  }
 }
 
 export abstract class QueryEditorStore {

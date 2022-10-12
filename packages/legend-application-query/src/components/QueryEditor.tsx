@@ -263,6 +263,7 @@ const QueryLoader = observer(
     // life-cycle
     const close = (): void => {
       editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
+      editorStore.queryLoaderState.reset();
     };
     const onEnter = (): void => queryFinderRef.current?.focus();
 
