@@ -263,11 +263,7 @@ const QueryLoader = observer(
     // life-cycle
     const close = (): void => {
       editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-      if (isMineOnly) {
-        editorStore.queryLoaderState.setShowCurrentUserQueriesOnly(
-          !editorStore.queryLoaderState.showCurrentUserQueriesOnly,
-        );
-      }
+      editorStore.queryLoaderState.reset();
     };
     const onEnter = (): void => queryFinderRef.current?.focus();
 
