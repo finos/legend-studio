@@ -149,14 +149,11 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.visitAddress(
+        this.applicationStore.navigator.goToAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
             this.applicationStore.navigator.getCurrentAddress(),
           ),
-          {
-            useSameWindow: true,
-          },
         );
       } else {
         // Only proceed intialization after passing authorization check

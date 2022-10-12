@@ -17,9 +17,10 @@
 export * from './stores/QueryBuilderBootstraper.js';
 export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_GraphManagerPreset.js';
 
-export { QUERY_BUILDER_TEST_ID } from './components//QueryBuilder_TestID.js';
-export { QueryBuilder } from './components//QueryBuilder.js';
-export { QueryBuilderState } from './stores//QueryBuilderState.js';
+export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
+export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
+export { QueryBuilder } from './components/QueryBuilder.js';
+export { QueryBuilderState } from './stores/QueryBuilderState.js';
 
 export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';
 export {
@@ -32,7 +33,7 @@ export { MappingQueryBuilderState } from './stores/workflows/MappingQueryBuilder
 export {
   type ServiceExecutionContext,
   ServiceQueryBuilderState,
-} from './stores//workflows/ServiceQueryBuilderState.js';
+} from './stores/workflows/ServiceQueryBuilderState.js';
 
 export { getQueryBuilderGraphManagerExtension } from './graphManager/protocol/pure/QueryBuilder_PureGraphManagerExtension.js';
 export type { ServiceExecutionAnalysisResult } from './graphManager/action/analytics/ServiceExecutionAnalysis.js';

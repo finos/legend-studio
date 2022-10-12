@@ -57,37 +57,41 @@ interface ApplicationNavigator {
 
   /**
    * Visit the specified address
-   *
-   * NOTE: unless specified, the visit will be done in a new window
    */
-  visitAddress(
+  goToAddress(
     address: Address,
-    options?: {
-      useSameWindow?: boolean | undefined;
-    },
+    options?: { ignoreBlocking?: boolean | undefined },
   ): void;
+
+  /**
+   * Visit the specified address in a new window
+   */
+  visitAddress(address: Address): void;
 
   getCurrentAddress(): Address;
   getCurrentLocation(): Location;
   generateAddress(location: Location): Address;
 
   /**
-   * Disable platform native navigation feature
-   *
-   * e.g. in web browser, we will block back/forward buttons
+   * Block all kinds of navigation, including going to another location,
+   * changing address, and native platform navigation (e.g. in web browser, we will
+   * block back/forward buttons), etc.
    */
-  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void;
-  unblockPlatformNavigation(): void;
-  get isPlatformNavigationBlocked(): boolean;
+  blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+  ): void;
+  unblockNavigation(): void;
+  get isNavigationBlocked(): boolean;
 }
 
 export class WebApplicationNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
-  private _isPlatformNavigationBlocked = false;
-  private _forceBypassPlatformNavigationBlocking = false;
+  private _isNavigationBlocked = false;
+  private _forceBypassNavigationBlocking = false;
   private _blockCheckers: (() => boolean)[] = [];
   private _beforeUnloadListener = (event: BeforeUnloadEvent): void => {
-    if (this._forceBypassPlatformNavigationBlocking) {
+    if (this._forceBypassNavigationBlocking) {
       return;
     }
     if (this._blockCheckers.some((checker) => checker())) {
@@ -97,18 +101,15 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     }
   };
 
-  notifier?: ((message: string) => void) | undefined;
+  onBlock?: ((onProceed: () => void) => void) | undefined;
 
   constructor(historyApiClient: History) {
-    makeObservable<WebApplicationNavigator, '_isPlatformNavigationBlocked'>(
-      this,
-      {
-        _isPlatformNavigationBlocked: observable,
-        isPlatformNavigationBlocked: computed,
-        blockPlatformNavigation: action,
-        unblockPlatformNavigation: action,
-      },
-    );
+    makeObservable<WebApplicationNavigator, '_isNavigationBlocked'>(this, {
+      _isNavigationBlocked: observable,
+      isNavigationBlocked: computed,
+      blockNavigation: action,
+      unblockNavigation: action,
+    });
 
     this.historyAPI = historyApiClient;
   }
@@ -121,7 +122,14 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   }
 
   goToLocation(location: Location): void {
-    this.historyAPI.push(location);
+    const onProceed = (): void => {
+      this.historyAPI.push(location);
+    };
+    if (this._blockCheckers.some((checker) => checker())) {
+      this.onBlock?.(onProceed);
+    } else {
+      onProceed();
+    }
   }
 
   reloadToLocation(
@@ -129,36 +137,63 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     options?: { ignoreBlocking?: boolean | undefined },
   ): void {
     if (options?.ignoreBlocking) {
-      this._forceBypassPlatformNavigationBlocking = true;
+      this._forceBypassNavigationBlocking = true;
     }
-    // if (
-    //   this._isPlatformNavigationBlocked &&
-    //   !this._forceBypassPlatformNavigationBlocking
-    // ) {
-    //   this.notifier
-    //   return;
-    // }
-    this.window.location.href = this.generateAddress(location);
+    const onProceed = (): void => {
+      this._forceBypassNavigationBlocking = true; // make sure to not trigger `BeforeUnloadEvent`
+      this.window.location.href = this.generateAddress(location);
+    };
+    if (
+      !this._forceBypassNavigationBlocking &&
+      this._blockCheckers.some((checker) => checker())
+    ) {
+      this.onBlock?.(onProceed);
+    } else {
+      onProceed();
+    }
   }
 
   reload(options?: { ignoreBlocking?: boolean | undefined }): void {
     if (options?.ignoreBlocking) {
-      this._forceBypassPlatformNavigationBlocking = true;
+      this._forceBypassNavigationBlocking = true;
     }
-    this.window.location.reload();
+    const onProceed = (): void => {
+      this._forceBypassNavigationBlocking = true; // make sure to not trigger `BeforeUnloadEvent`
+      this.window.location.reload();
+    };
+    if (
+      !this._forceBypassNavigationBlocking &&
+      this._blockCheckers.some((checker) => checker())
+    ) {
+      this.onBlock?.(onProceed);
+    } else {
+      onProceed();
+    }
   }
 
-  visitAddress(
+  goToAddress(
     address: Address,
-    options?: {
-      useSameWindow?: boolean | undefined;
-    },
+    options?: { ignoreBlocking?: boolean | undefined },
   ): void {
-    if (options?.useSameWindow) {
-      this.window.location.href = address;
-    } else {
-      this.window.open(address, '_blank');
+    if (options?.ignoreBlocking) {
+      this._forceBypassNavigationBlocking = true;
     }
+    const onProceed = (): void => {
+      this._forceBypassNavigationBlocking = true; // make sure to not trigger `BeforeUnloadEvent`
+      this.window.location.href = address;
+    };
+    if (
+      !this._forceBypassNavigationBlocking &&
+      this._blockCheckers.some((checker) => checker())
+    ) {
+      this.onBlock?.(onProceed);
+    } else {
+      onProceed();
+    }
+  }
+
+  visitAddress(address: Address): void {
+    this.window.open(address, '_blank');
   }
 
   getCurrentAddress(): Address {
@@ -176,8 +211,12 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     );
   }
 
-  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void {
-    this._isPlatformNavigationBlocked = true;
+  blockNavigation(
+    blockCheckers: (() => boolean)[],
+    onBlock?: ((onProceed: () => void) => void) | undefined,
+  ): void {
+    this._isNavigationBlocked = true;
+    this.onBlock = onBlock;
 
     // Here we attempt to cancel the effect of the back button
     // See https://medium.com/codex/angular-guards-disabling-browsers-back-button-for-specific-url-fdf05d9fe155#4f13
@@ -196,14 +235,15 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     this.window.addEventListener('beforeunload', this._beforeUnloadListener);
   }
 
-  unblockPlatformNavigation(): void {
-    this._isPlatformNavigationBlocked = false;
+  unblockNavigation(): void {
+    this._isNavigationBlocked = false;
+    this.onBlock = undefined;
     this.window.onpopstate = null;
     this._blockCheckers = [];
     this.window.removeEventListener('beforeunload', this._beforeUnloadListener);
   }
 
-  get isPlatformNavigationBlocked(): boolean {
-    return this._isPlatformNavigationBlocked;
+  get isNavigationBlocked(): boolean {
+    return this._isNavigationBlocked;
   }
 }

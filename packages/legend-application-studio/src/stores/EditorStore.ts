@@ -235,7 +235,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  ignoreNavigationBlocking = false;
   isDevToolEnabled = true;
 
   constructor(
@@ -258,7 +257,6 @@ export class EditorStore {
       hotkeys: observable,
       currentEditorState: observable,
       openedEditorStates: observable,
-      ignoreNavigationBlocking: observable,
       isDevToolEnabled: observable,
 
       isInViewerMode: computed,
@@ -281,7 +279,6 @@ export class EditorStore {
       setBlockGlobalHotkeys: action,
       setCurrentEditorState: action,
       setActiveAuxPanelMode: action,
-      setIgnoreNavigationBlocking: action,
       refreshCurrentEntityDiffEditorState: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
@@ -504,10 +501,6 @@ export class EditorStore {
 
   setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
     this.activeAuxPanelMode = val;
-  }
-
-  setIgnoreNavigationBlocking(val: boolean): void {
-    this.ignoreNavigationBlocking = val;
   }
 
   refreshCurrentEntityDiffEditorState(): void {

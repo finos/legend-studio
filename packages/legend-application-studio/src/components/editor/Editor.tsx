@@ -45,6 +45,8 @@ import {
   useApplicationStore,
   useApplicationNavigationContext,
   useParams,
+  ActionAlertType,
+  ActionAlertActionType,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
@@ -116,78 +118,41 @@ export const Editor = withEditorStore(
     }, [editorStore, applicationStore, projectId, workspaceId, workspaceType]);
 
     useEffect(() => {
-      applicationStore.navigator.blockPlatformNavigation([
-        (): boolean =>
-          editorStore.isInConflictResolutionMode ||
-          editorStore.localChangesState.hasUnpushedChanges,
-      ]);
+      applicationStore.navigator.blockNavigation(
+        [
+          (): boolean =>
+            editorStore.isInConflictResolutionMode ||
+            editorStore.localChangesState.hasUnpushedChanges,
+        ],
+        (onProceed: () => void): void => {
+          editorStore.setActionAlertInfo({
+            // TODO?: should we make this message generic like the `BeforeUnloadEvent` message?
+            message: editorStore.isInConflictResolutionMode
+              ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'
+              : 'You have unpushed changes. Leave anyway?',
+            type: ActionAlertType.CAUTION,
+            onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
+            onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
+            actions: [
+              {
+                label: 'Leave this page',
+                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+                handler: (): void => onProceed(),
+              },
+              {
+                label: 'Stay on this page',
+                type: ActionAlertActionType.PROCEED,
+                default: true,
+              },
+            ],
+          });
+        },
+      );
       return (): void => {
-        applicationStore.navigator.unblockPlatformNavigation();
+        applicationStore.navigator.unblockNavigation();
       };
     }, [editorStore, applicationStore]);
 
-    // Route Navigation Blocking
-    // See https://medium.com/@michaelchan_13570/using-react-router-v4-prompt-with-custom-modal-component-ca839f5faf39
-    // const [blockedLocation, setBlockedLocation] = useState<
-    //   Location | undefined
-    // >();
-    // const retryBlockedLocation = useCallback(
-    //   (allowedNavigation: boolean): void => {
-    //     if (allowedNavigation && blockedLocation) {
-    //       applicationStore.navigator.goToLocation(blockedLocation.pathname);
-    //     }
-    //   },
-    //   [blockedLocation, applicationStore],
-    // );
-    // // NOTE: we have to use `useStateWithCallback` here because we want to guarantee that we call `history.push(blockedLocation.pathname)`
-    // // after confirmedAllowNavigation is flipped, otherwise we would end up in the `false` case of handleBlockedNavigation again!
-    // // Another way to go about this is to use `setTimeout(() => history.push(...), 0)` but it can potentially be more error-prone
-    // // See https://www.robinwieruch.de/react-usestate-callback
-    // const [confirmedAllowNavigation, setConfirmedAllowNavigation] =
-    //   useStateWithCallback<boolean>(false, retryBlockedLocation);
-    // const onNavigationChangeIndicator = Boolean(
-    //   editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
-    //     .length,
-    // );
-    // const handleRouteNavigationBlocking = (nextLocation: Location): boolean => {
-    //   // NOTE: as long as we're in conflict resolution, we want this block to be present
-    //   const showAlert =
-    //     editorStore.isInConflictResolutionMode ||
-    //     editorStore.hasUnpushedChanges;
-    //   if (
-    //     !editorStore.ignoreNavigationBlocking &&
-    //     !confirmedAllowNavigation &&
-    //     showAlert
-    //   ) {
-    //     editorStore.setActionAlertInfo({
-    //       message: editorStore.isInConflictResolutionMode
-    //         ? 'You have not accepted the conflict resolution, the current resolution will be discarded. Leave anyway?'
-    //         : 'You have unpushed changes. Leave anyway?',
-    //       type: ActionAlertType.CAUTION,
-    //       onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-    //       onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-    //       actions: [
-    //         {
-    //           label: 'Leave this page',
-    //           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-    //           handler: (): void => setConfirmedAllowNavigation(true),
-    //         },
-    //         {
-    //           label: 'Stay on this page',
-    //           type: ActionAlertActionType.PROCEED,
-    //           default: true,
-    //           handler: (): void => setBlockedLocation(undefined),
-    //         },
-    //       ],
-    //     });
-    //     setBlockedLocation(nextLocation);
-    //     return false;
-    //   }
-    //   // Reset the confirm flag and the blocked location here
-    //   setBlockedLocation(undefined);
-    //   setConfirmedAllowNavigation(false);
-    //   return true;
-    // };
     const editable =
       editorStore.graphManagerState.graphBuildState.hasCompleted &&
       editorStore.isInitialized;

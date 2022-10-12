@@ -512,8 +512,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           revisionId: this.sdlcState.activeRevision.id,
         },
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -568,8 +569,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -624,8 +626,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(

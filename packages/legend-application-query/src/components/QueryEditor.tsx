@@ -68,6 +68,7 @@ import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import {
   QueryBuilder,
+  QueryBuilderNavigationBlocker,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 
@@ -255,6 +256,7 @@ const QueryLoader = observer(
           editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
           applicationStore.navigator.reloadToLocation(
             generateExistingQueryEditorRoute(selectedQueryID),
+            { ignoreBlocking: true },
           );
         });
       }
@@ -566,7 +568,12 @@ export const QueryEditor = observer(() => {
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && editorStore.queryBuilderState && (
-          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          <>
+            <QueryBuilderNavigationBlocker
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          </>
         )}
         {(isLoadingEditor || !editorStore.queryBuilderState) && (
           <BlankPanelContent>

@@ -284,8 +284,9 @@ export class WorkspaceUpdaterState {
         // TODO: we might want to handle the situation more gracefully rather than just reloading the page
         case WorkspaceUpdateReportStatus.CONFLICT:
         case WorkspaceUpdateReportStatus.UPDATED:
-          this.editorStore.setIgnoreNavigationBlocking(true);
-          this.editorStore.applicationStore.navigator.reload();
+          this.editorStore.applicationStore.navigator.reload({
+            ignoreBlocking: true,
+          });
           break;
         case WorkspaceUpdateReportStatus.NO_OP:
         default:

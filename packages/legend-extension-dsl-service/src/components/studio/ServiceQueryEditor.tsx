@@ -52,7 +52,10 @@ import {
   ServiceQueryUpdaterStoreProvider,
   useServiceQueryEditorStore,
 } from './ServiceQueryEditorStoreProvider.js';
-import { QueryBuilder } from '@finos/legend-query-builder';
+import {
+  QueryBuilder,
+  QueryBuilderNavigationBlocker,
+} from '@finos/legend-query-builder';
 import {
   ELEMENT_PATH_DELIMITER,
   extractElementNameFromPath,
@@ -517,7 +520,12 @@ export const ServiceQueryEditor = observer(() => {
       <div className="service-query-editor__content">
         <PanelLoadingIndicator isLoading={editorStore.initState.isInProgress} />
         {editorStore.queryBuilderState && (
-          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          <>
+            <QueryBuilderNavigationBlocker
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          </>
         )}
         {!editorStore.queryBuilderState && (
           <BlankPanelContent>

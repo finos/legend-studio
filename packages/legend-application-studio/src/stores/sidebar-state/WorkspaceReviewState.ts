@@ -216,8 +216,9 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -362,11 +363,13 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.setIgnoreNavigationBlocking(true);
               this.editorStore.applicationStore.navigator.reloadToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
+                {
+                  ignoreBlocking: true,
+                },
               );
             },
             default: true,

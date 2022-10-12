@@ -110,7 +110,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
   const navigationActionSpy = jest
-    .spyOn(navigator, 'visitAddress')
+    .spyOn(navigator, 'goToAddress')
     .mockImplementation(noop);
   jest
     .spyOn(navigator, 'getCurrentAddress')
@@ -143,7 +143,6 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
         applicationStore.config.sdlcServerUrl,
         stubURL,
       ),
-      expect.anything(),
     ),
   );
 });
