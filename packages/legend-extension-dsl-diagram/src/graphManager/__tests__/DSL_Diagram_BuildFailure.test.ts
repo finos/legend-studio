@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@jest/globals';
-import { unitTest } from '@finos/legend-shared';
+import { unitTest, ActionState } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import { DSL_Diagram_GraphManagerPreset } from '../../DSL_Diagram_Extension.js';
 import {
@@ -80,7 +80,11 @@ test(unitTest('Missing class in diagram class view'), async () => {
   const pluginManager = new TEST__GraphManagerPluginManager();
   pluginManager.usePresets([new DSL_Diagram_GraphManagerPreset()]).install();
   const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
-
+  await graphManagerState.graphManager.buildSystem(
+    graphManagerState.coreModel,
+    graphManagerState.systemModel,
+    ActionState.create(),
+  );
   await expect(() =>
     graphManagerState.graphManager.buildGraph(
       graphManagerState.graph,

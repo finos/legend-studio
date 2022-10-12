@@ -15,8 +15,8 @@
  */
 
 import {
-  DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
-  DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
   GenericType,
   GenericTypeExplicitReference,
   getMilestoneTemporalStereotype,
@@ -70,7 +70,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
         this.setBusinessDate(
           this.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
         break;
@@ -78,7 +78,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
         this.setProcessingDate(
           this.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
         break;
@@ -86,12 +86,12 @@ export class QueryBuilderMilestoningState implements Hashable {
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
         this.setProcessingDate(
           this.buildMilestoningParameter(
-            DEFAULT_PROCESSING_DATE_MILESTONING_PARAMETER_NAME,
+            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
         this.setBusinessDate(
           this.buildMilestoningParameter(
-            DEFAULT_BUSINESS_DATE_MILESTONING_PARAMETER_NAME,
+            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
           ),
         );
         break;

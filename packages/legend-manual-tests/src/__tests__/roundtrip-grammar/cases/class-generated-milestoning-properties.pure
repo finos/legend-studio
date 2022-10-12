@@ -1,0 +1,59 @@
+###Relational
+Database model::TestDatabase
+(
+  Schema TestSchema
+  (
+    Table TestTable
+    (
+      testDate DATE PRIMARY KEY
+    )
+  )
+)
+
+
+###Pure
+Class <<meta::pure::profiles::temporal.processingtemporal>> model::Processing
+{
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::Business
+{
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> model::BiTemporal
+{
+}
+
+
+###Mapping
+Mapping model::MilestoningMapping
+(
+  *model::Business: Relational
+  {
+    ~primaryKey
+    (
+      [model::TestDatabase]TestSchema.TestTable.testDate
+    )
+    ~mainTable [model::TestDatabase]TestSchema.TestTable
+    businessDate: [model::TestDatabase]TestSchema.TestTable.testDate
+  }
+  *model::Processing: Relational
+  {
+    ~primaryKey
+    (
+      [model::TestDatabase]TestSchema.TestTable.testDate
+    )
+    ~mainTable [model::TestDatabase]TestSchema.TestTable
+    processingDate: [model::TestDatabase]TestSchema.TestTable.testDate
+  }
+  *model::BiTemporal: Relational
+  {
+    ~primaryKey
+    (
+      [model::TestDatabase]TestSchema.TestTable.testDate
+    )
+    ~mainTable [model::TestDatabase]TestSchema.TestTable
+    businessDate: [model::TestDatabase]TestSchema.TestTable.testDate,
+    processingDate: [model::TestDatabase]TestSchema.TestTable.testDate
+  }
+)
