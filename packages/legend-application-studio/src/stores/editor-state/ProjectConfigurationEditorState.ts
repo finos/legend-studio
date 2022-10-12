@@ -30,6 +30,7 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  hashArray,
 } from '@finos/legend-shared';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
@@ -360,12 +361,8 @@ export class ProjectConfigurationEditorState extends EditorState {
         );
 
       if (
-        this.originalConfig.platformConfigurations?.flatMap(
-          (p) => p.hashCode,
-        ) !==
-        this.currentProjectConfiguration.platformConfigurations?.flatMap(
-          (p) => p.hashCode,
-        )
+        hashArray(this.originalConfig.platformConfigurations ?? []) !==
+        hashArray(this.currentProjectConfiguration.platformConfigurations ?? [])
       ) {
         updateProjectConfigurationCommand.platformConfigurations =
           new UpdatePlatformConfigurationsCommand(

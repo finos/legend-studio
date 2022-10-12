@@ -16,9 +16,46 @@
 
 import { ProjectDependency } from './ProjectDependency.js';
 import { ProjectStructureVersion } from './ProjectStructureVersion.js';
-import { createModelSchema, list, optional, primitive } from 'serializr';
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { UpdatePlatformConfigurationsCommand } from './UpdatePlatformConfigurationsCommands.js';
+import {
+  createModelSchema,
+  list,
+  optional,
+  primitive,
+  serialize,
+  SKIP,
+} from 'serializr';
+import {
+  optionalCustom,
+  SerializationFactory,
+  serializeArray,
+  usingModelSchema,
+} from '@finos/legend-shared';
+import { PlatformConfiguration } from './PlatformConfiguration.js';
+
+export class UpdatePlatformConfigurationsCommand {
+  platformConfigurations?: PlatformConfiguration[] | undefined;
+
+  constructor(platformConfigurations: PlatformConfiguration[] | undefined) {
+    this.platformConfigurations = platformConfigurations;
+  }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(PlatformConfiguration, {
+      platformConfigurations: optionalCustom(
+        (values) => {
+          if (values === undefined) {
+            return null;
+          }
+
+          return serializeArray(values, (value) =>
+            serialize(PlatformConfiguration.serialization.schema, value),
+          );
+        },
+        () => SKIP,
+      ),
+    }),
+  );
+}
 
 export class UpdateProjectConfigurationCommand {
   artifactId: string;

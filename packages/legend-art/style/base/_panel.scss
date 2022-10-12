@@ -221,6 +221,7 @@
 }
 
 .panel__content__form {
+  max-width: 80rem;
   padding: 2rem;
 
   & > div:last-child {
@@ -539,15 +540,6 @@
     &[disabled] {
       cursor: not-allowed;
     }
-  }
-
-  &__hint {
-    @include flexCenter;
-
-    align-self: flex-start;
-    border-radius: 0.2rem;
-    margin: 0.5rem 1rem 0 0;
-    color: var(--color-light-grey-300);
   }
 
   &__section__list__item__edit-btn,

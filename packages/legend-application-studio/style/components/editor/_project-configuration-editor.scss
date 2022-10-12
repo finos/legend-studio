@@ -131,95 +131,6 @@
     }
   }
 
-  &__platform__configuration {
-    display: flex;
-    padding: 1rem 0;
-
-    &__box {
-      max-width: 60%;
-      box-shadow: var(--color-dark-shade-280) 0 0.1rem 0.3rem 0.1rem;
-      padding: 1rem 2rem;
-      border: 0.1rem solid var(--color-dark-grey-100);
-    }
-
-    &__label {
-      @include flexVCenter;
-
-      color: var(--color-light-grey-300);
-      background: var(--color-dark-grey-200);
-      padding: 0 0 0 1rem;
-
-      &--text {
-        min-width: 10rem;
-      }
-
-      &__version {
-        @include flexVCenter;
-
-        width: 100%;
-        margin: 0;
-        background: var(--color-dark-grey-300);
-        color: var(--color-light-grey-200);
-        padding: 1rem;
-        border-radius: 0.1rem;
-        height: 2.8rem;
-        border: 0.1rem solid var(--color-dark-grey-100);
-
-        &--up-to-date {
-          background: var(--color-green-100);
-          color: var(--color-dark-grey-100);
-        }
-
-        &--outdated {
-          background: var(--color-orange-100);
-          color: var(--color-dark-grey-100);
-        }
-
-        &__update-btn {
-          @include flexCenter;
-
-          background: var(--color-blue-150);
-          padding: 0.5rem 1rem;
-          margin: 1rem 0;
-          border-radius: 0.2rem;
-          font-weight: 500;
-          color: var(--color-light-grey-50);
-
-          &[disabled] {
-            background: var(--color-dark-grey-100);
-            color: var(--color-light-grey-400);
-            cursor: not-allowed;
-          }
-        }
-      }
-
-      &__status {
-        svg {
-          font-size: 1.2rem;
-          margin-right: 1rem;
-        }
-
-        &--default {
-          color: var(--color-light-grey-300);
-        }
-
-        &--up-to-date {
-          color: var(--color-green-100);
-        }
-
-        &--outdated {
-          color: var(--color-orange-100);
-        }
-      }
-    }
-
-    &__latest__container {
-      background: var(--color-dark-grey-200);
-      margin: 1rem;
-      padding: 0;
-    }
-  }
-
   &__project__structure__version {
     display: flex;
     height: 3rem;
@@ -374,5 +285,147 @@
     border-radius: 0.2rem;
     font-weight: 500;
     color: var(--color-light-grey-50);
+  }
+}
+
+.platform-configurations-editor {
+  &__dependencies {
+    border: 0.1rem solid var(--color-dark-grey-100);
+    margin-top: 1rem;
+    border-radius: 0.2rem;
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: space-between;
+      height: 4.4rem;
+      padding: 0 0.5rem 0 1rem;
+      background: var(--color-dark-grey-100);
+    }
+
+    &__content {
+      padding: 1rem;
+    }
+  }
+
+  &__toggler {
+    @include flexVCenter;
+
+    cursor: pointer;
+    width: 100%;
+  }
+
+  &__toggler__btn {
+    align-self: flex-start;
+    padding-top: 0.2rem;
+
+    svg {
+      font-size: 2rem;
+      color: var(--color-dark-grey-250);
+    }
+
+    &:hover svg {
+      font-size: 2rem;
+      color: var(--color-dark-grey-280);
+    }
+
+    &[disabled] svg,
+    &[disabled]:hover svg {
+      cursor: not-allowed;
+      color: var(--color-dark-grey-250);
+    }
+  }
+
+  &__toggler__btn--toggled {
+    svg {
+      font-size: 2rem;
+      color: var(--color-blue-150);
+    }
+
+    &:hover svg {
+      font-size: 2rem;
+      color: var(--color-blue-100);
+    }
+
+    &[disabled] svg,
+    &[disabled]:hover svg {
+      cursor: not-allowed;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__toggler__prompt {
+    @include flexCenter;
+
+    word-break: break-word;
+    margin-left: 0.8rem;
+    color: var(--color-light-grey-400);
+    line-height: 2rem;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  &__dependency {
+    display: flex;
+
+    &__label {
+      @include flexVCenter;
+
+      width: 30rem;
+      height: 2.8rem;
+      border-radius: 0.2rem;
+      color: var(--color-light-grey-300);
+      background: var(--color-dark-grey-85);
+
+      &__status {
+        @include flexCenter;
+
+        width: 3rem;
+
+        svg {
+          font-size: 1.2rem;
+        }
+
+        &--default {
+          color: var(--color-dark-grey-280);
+        }
+
+        &--up-to-date {
+          color: var(--color-green-100);
+        }
+
+        &--outdated {
+          color: var(--color-orange-100);
+        }
+      }
+
+      &__text {
+        @include ellipsisTextOverflow;
+
+        width: calc(100% - 13rem);
+        padding: 0 0.5rem;
+        cursor: default;
+        user-select: none;
+      }
+
+      &__version {
+        @include flexVCenter;
+
+        width: 10rem;
+        height: 2.8rem;
+        background: var(--color-dark-grey-200);
+        color: var(--color-light-grey-200);
+        border-radius: 0 0.2rem 0.2rem 0;
+        padding: 0 1rem;
+        cursor: default;
+        user-select: none;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1.3rem;
+      }
+    }
+
+    & + & {
+      margin-top: 0.5rem;
+    }
   }
 }
