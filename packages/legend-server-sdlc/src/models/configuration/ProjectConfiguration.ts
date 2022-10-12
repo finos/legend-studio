@@ -37,7 +37,7 @@ import {
 } from '@finos/legend-shared';
 import { ENTITY_PATH_DELIMITER } from '@finos/legend-storage';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
-import { PROJECT_CONFIGURATION_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
+import { PROJECT_SERVER_HASH_STRUCTURE } from '../../SDLC_HashUtils.js';
 
 export class ProjectConfiguration implements Hashable {
   projectId!: string;
@@ -117,7 +117,7 @@ export class ProjectConfiguration implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      PROJECT_CONFIGURATION_HASH_STRUCTURE,
+      PROJECT_SERVER_HASH_STRUCTURE.PROJECT_CONFIGURATION,
       this.groupId,
       this.artifactId,
       hashArray(this.platformConfigurations ?? []),

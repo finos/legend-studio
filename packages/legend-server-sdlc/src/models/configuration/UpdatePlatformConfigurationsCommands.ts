@@ -22,7 +22,6 @@ import {
   hashArray,
   optionalCustom,
 } from '@finos/legend-shared';
-import { makeObservable, observable, computed } from 'mobx';
 import { createModelSchema, serialize, deserialize } from 'serializr';
 import { PlatformConfiguration } from './PlatformConfiguration.js';
 
@@ -32,12 +31,6 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
   platformConfigurations?: PlatformConfiguration[] | undefined;
 
   constructor(platformConfigurations: PlatformConfiguration[] | undefined) {
-    makeObservable(this, {
-      platformConfigurations: observable,
-      hashCode: computed,
-    });
-    //svp remove
-
     this.platformConfigurations = platformConfigurations;
   }
 
