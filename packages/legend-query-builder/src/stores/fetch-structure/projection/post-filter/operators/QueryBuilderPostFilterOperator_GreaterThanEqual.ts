@@ -26,7 +26,7 @@ import type {
   PostFilterConditionState,
   QueryBuilderPostFilterState,
 } from '../QueryBuilderPostFilterState.js';
-import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorHelper.js';
+import { buildPostFilterConditionExpression } from './QueryBuilderPostFilterOperatorValueSpecificationBuilder.js';
 import { QueryBuilderPostFilterOperator_GreaterThan } from './QueryBuilderPostFilterOperator_GreaterThan.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { hashArray } from '@finos/legend-shared';
@@ -60,8 +60,8 @@ export class QueryBuilderPostFilterOperator_GreaterThanEqual extends QueryBuilde
       postFilterState,
       expression,
       expression.parametersValues[0] instanceof AbstractPropertyExpression &&
-        expression.parametersValues[0].func.genericType.value.rawType.path ===
-          PRIMITIVE_TYPE.DATETIME &&
+        expression.parametersValues[0].func.value.genericType.value.rawType
+          .path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
         ? SUPPORTED_FUNCTIONS.IS_AFTER_DAY

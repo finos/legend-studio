@@ -67,15 +67,15 @@ import {
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
-  enumMapping_setEnumValueMappings,
+  enumerationMapping_setEnumValueMappings,
   enumValueMapping_addSourceValue,
   enumValueMapping_setSourceValues,
-  mapping_setPropertyMappings,
+  instanceSetImplementation_setPropertyMappings,
   operationMapping_setParameters,
   pureInstanceSetImpl_setPropertyMappings,
   purePropertyMapping_setTransformer,
-} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
-import { rootRelationalSetImp_setPropertyMappings } from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { rootRelationalSetImp_setPropertyMappings } from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 
 /**
@@ -157,7 +157,7 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
       }
     });
     if (enumValueMappingsToAdd.length) {
-      enumMapping_setEnumValueMappings(
+      enumerationMapping_setEnumValueMappings(
         enumerationMapping,
         enumerationMapping.enumValueMappings.concat(enumValueMappingsToAdd),
       );
@@ -208,14 +208,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as PurePropertyMapping]
+          ? existingPropertyMappings
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -226,14 +220,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
               ),
             ];
       } else if (propertyType instanceof Enumeration) {
-        // only allow one property mapping per enumeration property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per enumeration type property',
-        );
         const enumerationPropertyMapping = existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as PurePropertyMapping]
+          ? existingPropertyMappings
           : [
               new PurePropertyMapping(
                 setImplementation,
@@ -323,10 +311,17 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     pureInstanceSetImpl_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings from before adding new decorated property mappings
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              !isStubbed_RawLambda(propertyMapping.transform),
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -355,14 +350,8 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         return existingPropertyMappings.length
-          ? [existingPropertyMappings[0] as FlatDataPropertyMapping]
+          ? existingPropertyMappings
           : [
               new FlatDataPropertyMapping(
                 setImplementation,
@@ -439,13 +428,23 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    mapping_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings, incompatible property mappings
+        // from before adding new decorated property mappings
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              (propertyMapping instanceof FlatDataPropertyMapping &&
+                !isStubbed_RawLambda(propertyMapping.transform)) ||
+              propertyMapping instanceof EmbeddedFlatDataPropertyMapping,
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -486,15 +485,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyType instanceof Unit ||
         propertyType instanceof Measure
       ) {
-        // only allow one property mapping per primitive property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per simple type (e.g. primitive, measure, unit) property',
-        );
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          return [existingPropertyMappings[0] as PropertyMapping];
+          return existingPropertyMappings;
         }
         const newPropertyMapping = new RelationalPropertyMapping(
           setImplementation,
@@ -506,16 +499,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
           stub_RawRelationalOperationElement();
         return [newPropertyMapping];
       } else if (propertyType instanceof Enumeration) {
-        // only allow one property mapping per enumeration property
-        assertTrue(
-          !existingPropertyMappings.length ||
-            existingPropertyMappings.length === 1,
-          'Only one property mapping should exist per enumeration type property',
-        );
         let ePropertyMapping: PropertyMapping[] = [];
         if (existingPropertyMappings.length) {
           // TODO?: do we want to check the type of the property mapping here?
-          ePropertyMapping = [existingPropertyMappings[0] as PropertyMapping];
+          ePropertyMapping = existingPropertyMappings;
         } else {
           const newPropertyMapping = new RelationalPropertyMapping(
             setImplementation,
@@ -613,13 +600,26 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         setImplementation,
         decoratePropertyMapping,
       );
-    mapping_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       decoratedPropertyMappings.concat(
-        propertyMappingsBeforeDecoration.filter(
-          (propertyMapping) =>
-            !decoratedPropertyMappings.includes(propertyMapping),
-        ),
+        // NOTE: here, we remove some low-quality property mappings
+        // i.e. stubbed property mappings, incompatible property mappings
+        // from before adding new decorated property mappings
+        propertyMappingsBeforeDecoration
+          .filter(
+            (propertyMapping) =>
+              (propertyMapping instanceof RelationalPropertyMapping &&
+                !isStubbed_RawRelationalOperationElement(
+                  propertyMapping.relationalOperation,
+                )) ||
+              propertyMapping instanceof
+                EmbeddedRelationalInstanceSetImplementation,
+          )
+          .filter(
+            (propertyMapping) =>
+              !decoratedPropertyMappings.includes(propertyMapping),
+          ),
       ),
       this.editorStore.changeDetectionState.observerContext,
     );
@@ -677,7 +677,7 @@ export class MappingElementDecorationCleaner
         enumValueMapping.sourceValues.filter(isNonNullable),
       );
     });
-    enumMapping_setEnumValueMappings(
+    enumerationMapping_setEnumValueMappings(
       enumerationMapping,
       nonEmptyEnumValueMappings,
     );
@@ -708,7 +708,7 @@ export class MappingElementDecorationCleaner
   visit_PureInstanceSetImplementation(
     setImplementation: PureInstanceSetImplementation,
   ): void {
-    mapping_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) => !isStubbed_RawLambda(propertyMapping.transform),
@@ -722,7 +722,7 @@ export class MappingElementDecorationCleaner
       | FlatDataInstanceSetImplementation
       | EmbeddedFlatDataPropertyMapping,
   ): void {
-    mapping_setPropertyMappings(
+    instanceSetImplementation_setPropertyMappings(
       setImplementation,
       setImplementation.propertyMappings.filter(
         (propertyMapping) =>

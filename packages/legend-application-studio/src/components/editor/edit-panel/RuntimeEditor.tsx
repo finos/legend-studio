@@ -104,7 +104,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   runtime_addIdentifiedConnection,
   runtime_deleteIdentifiedConnection,
-} from '../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const getConnectionTooltipText = (
@@ -607,7 +607,7 @@ const IdentifiedConnectionEditor = observer(
                   className="btn--dark btn--sm runtime-connection-editor__connection-option__visit-btn"
                   onClick={visitConnection}
                   tabIndex={-1}
-                  title={'See connection'}
+                  title="See connection"
                 >
                   <LongArrowRightIcon />
                 </button>

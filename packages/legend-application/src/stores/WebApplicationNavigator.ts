@@ -16,44 +16,102 @@
 
 import type { History } from 'history';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
+
+type Location = string;
+type Address = string;
 
 /**
- * This is an initial attempt to try to generalize the application
- * to other platforms. But regardless, this is more convenient for testing.
+ * This is an initial attempt to generalize the application navigation to other platforms
  *
- * NOTE: this is **NOT** the right way to do this. Our intention here is to make
+ * NOTE: this might **NOT** be the right way to do this. Our intention here is to make
  * app navigator something generic enough so we are somewhat platform-agnostic
  * i.e. browser, electron, PC, UNIX, etc.
  *
- * Parameterize on the type of the location might not be the best thing to do.
- * Because typing wise, this forces us to also parameterize consumers of this,
- * which is `ApplicationStore`. It means that we must dictate in the source
- * code the platform the app depends on, clearly for web browser, `string` is the
- * easy option, but if we do so, it defeats the purpose of this abstraction in the
- * first place.
- *
- * As such, instead, we should design a more generic concept `Location` to pass around.
- * We would need to flesh out the details, but this is the rough idea.
- *
- * Another thought is that we should also generalize Router so it handles more than just
+ * We should design a more advanced concept `Location` to pass around.
+ * Also, we should also generalize Router so it handles more than just
  * URLs. If we make `router` and `navigator` work together, we can potentially generalize
  * application navigation
  *
  * However, this depends on how and when we move to another platform, like `electron` for example
  * See https://github.com/finos/legend-studio/issues/718
  */
-interface ApplicationNavigator<T> {
+interface ApplicationNavigator {
+  /**
+   * Navigate to the specified location
+   */
+  goToLocation(location: Location): void;
+
+  /**
+   * Navigate to the specified location and reload the application
+   */
+  reloadToLocation(
+    location: Location,
+    options?: { ignoreBlocking?: boolean | undefined },
+  ): void;
+
+  /**
+   * Reload the application using the same address
+   */
   reload(): void;
-  goTo(location: T): void;
-  jumpTo(location: T): void;
-  openNewWindow(location: T): void;
-  getCurrentLocation(): T;
-  getCurrentLocationPath(): T;
-  generateLocation(locationPath: T): T;
+
+  /**
+   * Visit the specified address
+   *
+   * NOTE: unless specified, the visit will be done in a new window
+   */
+  visitAddress(
+    address: Address,
+    options?: {
+      useSameWindow?: boolean | undefined;
+    },
+  ): void;
+
+  getCurrentAddress(): Address;
+  getCurrentLocation(): Location;
+  generateAddress(location: Location): Address;
+
+  /**
+   * Disable platform native navigation feature
+   *
+   * e.g. in web browser, we will block back/forward buttons
+   */
+  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void;
+  unblockPlatformNavigation(): void;
+  get isPlatformNavigationBlocked(): boolean;
 }
 
-export class WebApplicationNavigator implements ApplicationNavigator<string> {
+export class WebApplicationNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
+  private _isPlatformNavigationBlocked = false;
+  private _forceBypassPlatformNavigationBlocking = false;
+  private _blockCheckers: (() => boolean)[] = [];
+  private _beforeUnloadListener = (event: BeforeUnloadEvent): void => {
+    if (this._forceBypassPlatformNavigationBlocking) {
+      return;
+    }
+    if (this._blockCheckers.some((checker) => checker())) {
+      // NOTE: there is no way to customize the alert message for now since Chrome removed support for it due to security concerns
+      // See https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#Browser_compatibility
+      event.returnValue = '';
+    }
+  };
+
+  notifier?: ((message: string) => void) | undefined;
+
+  constructor(historyApiClient: History) {
+    makeObservable<WebApplicationNavigator, '_isPlatformNavigationBlocked'>(
+      this,
+      {
+        _isPlatformNavigationBlocked: observable,
+        isPlatformNavigationBlocked: computed,
+        blockPlatformNavigation: action,
+        unblockPlatformNavigation: action,
+      },
+    );
+
+    this.historyAPI = historyApiClient;
+  }
 
   private get window(): Window {
     return guaranteeNonNullable(
@@ -62,38 +120,90 @@ export class WebApplicationNavigator implements ApplicationNavigator<string> {
     );
   }
 
-  constructor(historyApiClient: History) {
-    this.historyAPI = historyApiClient;
-  }
-
-  reload(): void {
-    this.window.location.reload();
-  }
-
-  goTo(location: string): void {
+  goToLocation(location: Location): void {
     this.historyAPI.push(location);
   }
 
-  jumpTo(location: string): void {
-    this.window.location.href = location;
+  reloadToLocation(
+    location: Location,
+    options?: { ignoreBlocking?: boolean | undefined },
+  ): void {
+    if (options?.ignoreBlocking) {
+      this._forceBypassPlatformNavigationBlocking = true;
+    }
+    // if (
+    //   this._isPlatformNavigationBlocked &&
+    //   !this._forceBypassPlatformNavigationBlocking
+    // ) {
+    //   this.notifier
+    //   return;
+    // }
+    this.window.location.href = this.generateAddress(location);
   }
 
-  openNewWindow(location: string): void {
-    this.window.open(location, '_blank');
+  reload(options?: { ignoreBlocking?: boolean | undefined }): void {
+    if (options?.ignoreBlocking) {
+      this._forceBypassPlatformNavigationBlocking = true;
+    }
+    this.window.location.reload();
   }
 
-  getCurrentLocation(): string {
+  visitAddress(
+    address: Address,
+    options?: {
+      useSameWindow?: boolean | undefined;
+    },
+  ): void {
+    if (options?.useSameWindow) {
+      this.window.location.href = address;
+    } else {
+      this.window.open(address, '_blank');
+    }
+  }
+
+  getCurrentAddress(): Address {
     return this.window.location.href;
   }
 
-  getCurrentLocationPath(): string {
+  getCurrentLocation(): Location {
     return this.historyAPI.location.pathname;
   }
 
-  generateLocation(locationPath: string): string {
+  generateAddress(location: Location): string {
     return (
-      window.location.origin +
-      this.historyAPI.createHref({ pathname: locationPath })
+      this.window.location.origin +
+      this.historyAPI.createHref({ pathname: location })
     );
+  }
+
+  blockPlatformNavigation(blockCheckers: (() => boolean)[]): void {
+    this._isPlatformNavigationBlocked = true;
+
+    // Here we attempt to cancel the effect of the back button
+    // See https://medium.com/codex/angular-guards-disabling-browsers-back-button-for-specific-url-fdf05d9fe155#4f13
+    // This makes the current location the last entry in the browser history and clears any forward history
+    this.window.history.pushState(null, '', this.getCurrentAddress());
+    // The popstate event is triggered every time the user clicks back/forward button, but the forward history
+    // has been cleared, and now if we go back, we call `history.forward()`, which go 1 page forward,
+    // but there's no page forward, so effectively, the user remains on the same page
+    this.window.onpopstate = () => {
+      window.history.forward();
+    };
+
+    // Block browser navigation: e.g. reload, setting `window.href` directly, etc.
+    this._blockCheckers = blockCheckers;
+    this.window.removeEventListener('beforeunload', this._beforeUnloadListener);
+    this.window.addEventListener('beforeunload', this._beforeUnloadListener);
+  }
+
+  unblockPlatformNavigation(): void {
+    this._isPlatformNavigationBlocked = false;
+    this.window.onpopstate = null;
+    this._blockCheckers = [];
+    this.window.removeEventListener('beforeunload', this._beforeUnloadListener);
+  }
+
+  get isPlatformNavigationBlocked(): boolean {
+    return this._isPlatformNavigationBlocked;
   }
 }

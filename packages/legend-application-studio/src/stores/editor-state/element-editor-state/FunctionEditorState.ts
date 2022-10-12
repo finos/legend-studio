@@ -35,7 +35,7 @@ import {
   buildSourceInformationSourceId,
   isStubbed_PackageableElement,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum FUNCTION_SPEC_TAB {
   GENERAL = 'GENERAL',

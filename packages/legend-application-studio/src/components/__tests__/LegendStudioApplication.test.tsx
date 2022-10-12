@@ -27,11 +27,11 @@ import {
   TEST__ApplicationStoreProvider,
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
+  MemoryRouter,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import { TEST__LegendStudioBaseStoreProvider } from '../EditorComponentTestUtils.js';
 import { render, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
-import { createMemoryHistory } from 'history';
 import {
   SDLCServerClient,
   TEST__provideMockedSDLCServerClient,
@@ -109,9 +109,11 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
     );
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const jumpToSpy = jest.spyOn(navigator, 'jumpTo').mockImplementation(noop);
+  const navigationActionSpy = jest
+    .spyOn(navigator, 'visitAddress')
+    .mockImplementation(noop);
   jest
-    .spyOn(navigator, 'getCurrentLocation')
+    .spyOn(navigator, 'getCurrentAddress')
     .mockImplementationOnce(() => stubURL);
 
   TEST__provideMockedWebApplicationNavigator();
@@ -136,11 +138,12 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   await waitFor(() =>
-    expect(jumpToSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
+    expect(navigationActionSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
         applicationStore.config.sdlcServerUrl,
         stubURL,
       ),
+      expect.anything(),
     ),
   );
 });

@@ -32,7 +32,6 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
-  buildPrimitiveInstanceValue,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -42,7 +41,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import {
   buildNotExpression,
@@ -52,6 +51,8 @@ import {
   unwrapNotExpression,
 } from '../../QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { buildPrimitiveInstanceValue } from '../../shared/ValueSpecificationEditorHelper.js';
+import { instanceValue_setValues } from '../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderFilterOperator_Equal
   extends QueryBuilderFilterOperator
@@ -65,7 +66,7 @@ export class QueryBuilderFilterOperator_Equal
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return (
       (
@@ -93,7 +94,7 @@ export class QueryBuilderFilterOperator_Equal
       filterConditionState.value
         ? getNonCollectionValueSpecificationType(filterConditionState.value)
         : undefined,
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType,
     );
   }
@@ -102,7 +103,7 @@ export class QueryBuilderFilterOperator_Equal
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
@@ -141,9 +142,9 @@ export class QueryBuilderFilterOperator_Equal
               ),
               multiplicityOne,
             );
-            enumValueInstanceValue.values = [
+            instanceValue_setValues(enumValueInstanceValue, [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
-            ];
+            ]);
             return enumValueInstanceValue;
           }
           throw new UnsupportedOperationError(
@@ -165,7 +166,7 @@ export class QueryBuilderFilterOperator_Equal
   ): ValueSpecification {
     return buildFilterConditionExpression(
       filterConditionState,
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         filterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
@@ -181,7 +182,7 @@ export class QueryBuilderFilterOperator_Equal
     return buildFilterConditionState(
       filterState,
       expression,
-      (expression.parametersValues[0] as AbstractPropertyExpression).func
+      (expression.parametersValues[0] as AbstractPropertyExpression).func.value
         .genericType.value.rawType.path === PRIMITIVE_TYPE.DATETIME &&
         expression.parametersValues[1]?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME
@@ -205,9 +206,9 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
+      super.buildFilterConditionExpression(filterConditionState),
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
-      super.buildFilterConditionExpression(filterConditionState),
     );
   }
 

@@ -20,11 +20,9 @@ import {
   useWorkspaceReviewStore,
   withWorkspaceReviewStore,
 } from './WorkspaceReviewStoreProvider.js';
-import { useParams } from 'react-router';
 import { WorkspaceReviewSideBar } from './WorkspaceReviewSideBar.js';
 import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
-import { Link } from 'react-router-dom';
 import {
   type ResizablePanelHandlerProps,
   getControlledResizablePanelProps,
@@ -41,15 +39,14 @@ import {
 } from '@finos/legend-art';
 import {
   type ReviewPathParams,
-  generateViewProjectRoute,
-  generateEditorRoute,
+  generateSetupRoute,
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useParams } from '@finos/legend-application';
 
 const WorkspaceReviewStatusBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();
@@ -82,23 +79,35 @@ const WorkspaceReviewStatusBar = observer(() => {
           <div className="workspace-review__status-bar__workspace__icon">
             <CodeBranchIcon />
           </div>
-          <div className="workspace-review__status-bar__workspace__project">
-            <Link to={generateViewProjectRoute(reviewStore.projectId)}>
-              {currentProject}
-            </Link>
-          </div>
+          <button
+            className="workspace-review__status-bar__workspace__project"
+            title="Go back to workspace setup using the specified project"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.goToLocation(
+                generateSetupRoute(reviewStore.projectId),
+              )
+            }
+          >
+            {currentProject}
+          </button>
           /
-          <div className="workspace-review__status-bar__workspace__workspace">
-            <Link
-              to={generateEditorRoute(
-                reviewStore.projectId,
-                review.workspaceId,
-                review.workspaceType,
-              )}
-            >
-              {review.workspaceId}
-            </Link>
-          </div>
+          <button
+            className="workspace-review__status-bar__workspace__workspace"
+            title="Go back to workspace setup using the specified workspace"
+            tabIndex={-1}
+            onClick={(): void =>
+              applicationStore.navigator.goToLocation(
+                generateSetupRoute(
+                  reviewStore.projectId,
+                  review.workspaceId,
+                  review.workspaceType,
+                ),
+              )
+            }
+          >
+            {review.workspaceId}
+          </button>
           <div className="workspace-review__status-bar__review">
             <a target="_blank" rel="noopener noreferrer" href={review.webURL}>
               {review.title}
@@ -214,7 +223,7 @@ export const WorkspaceReview = withEditorStore(
                         key={ACTIVITY_MODE.REVIEW}
                         className="activity-bar__item activity-bar__item--active workspace-review__activity-bar__review-icon"
                         tabIndex={-1}
-                        title={'Review'}
+                        title="Review"
                         onClick={changeActivity(ACTIVITY_MODE.REVIEW)}
                       >
                         <CheckListIcon />
@@ -224,7 +233,7 @@ export const WorkspaceReview = withEditorStore(
                       <button
                         className="activity-bar__item"
                         tabIndex={-1}
-                        title={'Settings...'}
+                        title="Settings..."
                       >
                         <CogIcon />
                       </button>

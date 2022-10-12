@@ -183,6 +183,13 @@ export class LocalChangesState {
     this.workspaceSyncState = new WorkspaceSyncState(editorStore, sdlcState);
   }
 
+  get hasUnpushedChanges(): boolean {
+    return Boolean(
+      this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+        .changes.length,
+    );
+  }
+
   openLocalChange(diff: EntityDiff): void {
     const fromEntityGetter = (
       entityPath: string | undefined,

@@ -33,7 +33,7 @@ import {
 import {
   buildFilterConditionState,
   buildFilterConditionExpression,
-} from './QueryBuilderFilterOperatorHelper.js';
+} from './QueryBuilderFilterOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import {
   buildNotExpression,
@@ -55,7 +55,7 @@ export class QueryBuilderFilterOperator_In
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return (
       (
@@ -76,7 +76,7 @@ export class QueryBuilderFilterOperator_In
     filterConditionState: FilterConditionState,
   ): boolean {
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     const valueSpec = filterConditionState.value;
     if (valueSpec instanceof CollectionInstanceValue) {
@@ -129,7 +129,7 @@ export class QueryBuilderFilterOperator_In
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const propertyType =
-      filterConditionState.propertyExpressionState.propertyExpression.func
+      filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return new CollectionInstanceValue(
       multiplicityOne,
@@ -172,9 +172,9 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
     filterConditionState: FilterConditionState,
   ): ValueSpecification {
     return buildNotExpression(
+      super.buildFilterConditionExpression(filterConditionState),
       filterConditionState.filterState.queryBuilderState.graphManagerState
         .graph,
-      super.buildFilterConditionExpression(filterConditionState),
     );
   }
 

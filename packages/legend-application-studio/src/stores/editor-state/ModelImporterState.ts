@@ -49,7 +49,7 @@ import {
 import {
   externalFormat_schemaSet_setFormat,
   externalFormat_schemaSet_setSchemas,
-} from '../graphModifier/DSL_ExternalFormat_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_ExternalFormat_GraphModifierHelper.js';
 import { InnerSchemaSetEditorState } from './element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
 
 export enum MODEL_IMPORT_NATIVE_INPUT_TYPE {
@@ -67,7 +67,7 @@ export enum MODEL_IMPORT_TYPE {
 export abstract class ModelImporterEditorState {
   readonly editorStore: EditorStore;
   readonly modelImporterState: ModelImporterState;
-  loadModelActionState = ActionState.create();
+  readonly loadModelActionState = ActionState.create();
 
   constructor(modelImporterState: ModelImporterState) {
     this.editorStore = modelImporterState.editorStore;
@@ -80,7 +80,7 @@ export abstract class ModelImporterEditorState {
 
   abstract get isLoadingDisabled(): boolean;
 
-  abstract loadModel(): GeneratorFn<void>;
+  abstract loadModel(): Promise<void>;
 }
 
 export class NativeModelImporterEditorState extends ModelImporterEditorState {
@@ -235,7 +235,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
     return `###Pure\n Class model::A\n {\n\n}`;
   }
 
-  *loadModel(): GeneratorFn<void> {
+  async loadModel(): Promise<void> {
     try {
       this.loadModelActionState.inProgress();
       this.editorStore.setBlockingAlert({
@@ -243,17 +243,18 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
-      const entities = (yield this.loadEntites()) as Entity[];
+      const entities = await this.loadEntites();
       const message = `loading entities from ${
         this.editorStore.applicationStore.config.appName
       } [${this.modelImporterState.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.sdlcServerClient.updateEntities(
+      await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
+      this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
@@ -317,8 +318,8 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
     this.config = extensionConfiguration;
   }
 
-  *loadModel(): GeneratorFn<void> {
-    flowResult(this.config.loadModel(this.rendererState));
+  async loadModel(): Promise<void> {
+    await this.config.loadModel(this.rendererState);
   }
 }
 
@@ -393,7 +394,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     }
   }
 
-  *loadModel(): GeneratorFn<void> {
+  async loadModel(): Promise<void> {
     this.loadModelActionState.inProgress();
     try {
       this.loadModelActionState.inProgress();
@@ -404,15 +405,14 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       });
       const modelgenerationstate =
         this.schemaSetEditorState.schemaSetModelGenerationState;
-      const entities = (yield flowResult(
+      const entities = await flowResult(
         modelgenerationstate.getImportEntities(),
-      )) as Entity[];
+      );
       if (modelgenerationstate.targetBinding) {
-        const schemaEntity = (yield flowResult(
+        const schemaEntity =
           this.editorStore.graphManagerState.graphManager.elementToEntity(
             this.schemaSet,
-          ),
-        )) as Entity;
+          );
         entities.push(schemaEntity);
       }
       assertTrue(Boolean(entities.length), 'No entities to load');
@@ -421,11 +421,12 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       } [${this.modelImporterState.replace ? `potentially affected ` : ''} ${
         entities.length
       } entities]`;
-      yield this.editorStore.sdlcServerClient.updateEntities(
+      await this.editorStore.sdlcServerClient.updateEntities(
         this.editorStore.sdlcState.activeProject.projectId,
         this.editorStore.sdlcState.activeWorkspace,
         { replace: this.modelImporterState.replace, entities, message },
       );
+      this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);

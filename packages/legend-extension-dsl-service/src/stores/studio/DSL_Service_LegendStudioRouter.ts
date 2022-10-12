@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import { generateExtensionUrlPattern } from '@finos/legend-application';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+} from '@finos/legend-application';
 import { assertTrue, guaranteeNonEmptyString } from '@finos/legend-shared';
 import {
   generateGAVCoordinates,
   parseGACoordinates,
 } from '@finos/legend-storage';
-import { generatePath } from 'react-router';
 
 const SERVICE_COORDINATE_DELIMITER = '@';
 

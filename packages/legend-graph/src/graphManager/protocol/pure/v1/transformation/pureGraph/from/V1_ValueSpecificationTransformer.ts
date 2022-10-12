@@ -47,7 +47,7 @@ import type {
   AbstractPropertyExpression,
   FunctionExpression,
   SimpleFunctionExpression,
-} from '../../../../../../../graph/metamodel/pure/valueSpecification/SimpleFunctionExpression.js';
+} from '../../../../../../../graph/metamodel/pure/valueSpecification/Expression.js';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -373,7 +373,7 @@ class V1_ValueSpecificationTransformer
     valueSpecification: AbstractPropertyExpression,
   ): V1_ValueSpecification {
     const _property = new V1_AppliedProperty();
-    _property.property = valueSpecification.func.name;
+    _property.property = valueSpecification.func.value.name;
     _property.parameters = valueSpecification.parametersValues.map((value) =>
       value.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationTransformer(

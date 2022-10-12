@@ -104,30 +104,30 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanState,
-  LambdaEditorState,
   TAB_SIZE,
 } from '@finos/legend-application';
 import {
   objectInputData_setData,
   runtime_addIdentifiedConnection,
   runtime_addMapping,
-} from '../../../graphModifier/DSL_Mapping_GraphModifierHelper.js';
-import { flatData_setData } from '../../../graphModifier/STO_FlatData_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
+import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   service_addTestSuite,
   service_initNewService,
   service_setExecution,
-} from '../../../graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
   localH2DatasourceSpecification_setTestDataSetupCsv,
   localH2DatasourceSpecification_setTestDataSetupSqls,
   relationalInputData_setData,
-} from '../../../graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../shared/modifier/STO_Relational_GraphModifierHelper.js';
 import {
   createEmptyEqualToJsonAssertion,
   createBareExternalFormat,
 } from '../../../shared/testable/TestableUtils.js';
 import { SERIALIZATION_FORMAT } from '../service/testable/ServiceTestEditorState.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export class MappingExecutionQueryState extends LambdaEditorState {
   editorStore: EditorStore;

@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-persistence
 
+## 4.0.1
+
 ## 4.0.0
 
 ### Major Changes

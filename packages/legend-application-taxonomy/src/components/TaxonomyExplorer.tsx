@@ -17,7 +17,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
-import { useParams } from 'react-router';
 import {
   type LegendTaxonomyPathParams,
   generateExploreTaxonomyTreeRoute,
@@ -50,17 +49,18 @@ import {
   FileTrayIcon,
   MenuIcon,
   Panel,
+  useResizeDetector,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree.js';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
 import type { TaxonomyTreeOption } from '../application/LegendTaxonomyApplicationConfig.js';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   useTaxonomyExplorerStore,
   withTaxonomyExplorerStore,
 } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
 import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
+import { useParams } from '@finos/legend-application';
 
 const TaxonomyExplorerActivityBar = observer(() => (
   <div className="taxonomy-explorer__activity-bar">
@@ -115,10 +115,8 @@ const TaxonomyExplorerSideBar = observer(() => {
     (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
       explorerStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.jumpTo(
-        applicationStore.navigator.generateLocation(
-          generateExploreTaxonomyTreeRoute(option.key),
-        ),
+      applicationStore.navigator.reloadToLocation(
+        generateExploreTaxonomyTreeRoute(option.key),
       );
     };
 
@@ -412,7 +410,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           applicationStore.notifyWarning(
             `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
           );
-          applicationStore.navigator.goTo(
+          applicationStore.navigator.goToLocation(
             generateExploreTaxonomyTreeRoute(
               applicationStore.config.defaultTaxonomyTreeOption.key,
             ),

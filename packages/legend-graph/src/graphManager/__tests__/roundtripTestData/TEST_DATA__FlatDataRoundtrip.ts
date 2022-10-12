@@ -7570,6 +7570,440 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
   },
 ];
 
+export const TEST_DATA__FlatDataAssociationMapping = [
+  {
+    path: 'model::firm',
+    content: {
+      _type: 'class',
+      name: 'firm',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'fname',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::person',
+    content: {
+      _type: 'class',
+      name: 'person',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'name',
+          type: 'String',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'eid',
+          type: 'String',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::NewAssociation',
+    content: {
+      _type: 'association',
+      name: 'NewAssociation',
+      package: 'model',
+      properties: [
+        {
+          multiplicity: {
+            lowerBound: 0,
+          },
+          name: 'pid',
+          type: 'model::person',
+        },
+        {
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'fid',
+          type: 'model::firm',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::relationship::Association',
+  },
+  {
+    path: 'model::multiSection',
+    content: {
+      _type: 'flatData',
+      name: 'multiSection',
+      package: 'model',
+      sections: [
+        {
+          driverId: 'DelimitedWithoutHeadings',
+          name: 'header',
+          recordType: {
+            _type: 'rootRecordType',
+            fields: [
+              {
+                address: '1',
+                flatDataDataType: {
+                  _type: 'string',
+                },
+                label: 'fname',
+                optional: false,
+              },
+            ],
+          },
+          sectionProperties: [
+            {
+              name: 'scope.forNumberOfLines',
+              value: [1],
+            },
+            {
+              name: 'delimiter',
+              value: [','],
+            },
+            {
+              name: 'escapingChar',
+              value: ['\\\\'],
+            },
+            {
+              name: 'nullString',
+              value: ['None'],
+            },
+          ],
+        },
+        {
+          driverId: 'DelimitedWithoutHeadings',
+          name: 'default',
+          recordType: {
+            _type: 'rootRecordType',
+            fields: [
+              {
+                address: '1',
+                flatDataDataType: {
+                  _type: 'string',
+                },
+                label: 'name',
+                optional: false,
+              },
+              {
+                address: '2',
+                flatDataDataType: {
+                  _type: 'string',
+                },
+                label: 'eid',
+                optional: false,
+              },
+            ],
+          },
+          sectionProperties: [
+            {
+              name: 'scope.untilEof',
+              value: [true],
+            },
+            {
+              name: 'delimiter',
+              value: [','],
+            },
+            {
+              name: 'escapingChar',
+              value: ['\\\\'],
+            },
+            {
+              name: 'nullString',
+              value: ['None'],
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath: 'meta::flatData::metamodel::FlatData',
+  },
+  {
+    path: 'model::multiSectionAssociationMapping',
+    content: {
+      _type: 'mapping',
+      associationMappings: [
+        {
+          _type: 'flatData',
+          association: 'model::NewAssociation',
+          propertyMappings: [
+            {
+              _type: 'flatDataAssociationPropertyMapping',
+              property: {
+                class: '',
+                property: 'pid',
+              },
+              flatData: 'model::multiSection',
+              sectionName: 'default',
+              source: 'm_f',
+              target: 'm_p',
+            },
+            {
+              _type: 'flatDataAssociationPropertyMapping',
+              property: {
+                class: '',
+                property: 'fid',
+              },
+              flatData: 'model::multiSection',
+              sectionName: 'header',
+              source: 'm_p',
+              target: 'm_f',
+            },
+          ],
+          stores: [],
+        },
+      ],
+      classMappings: [
+        {
+          _type: 'flatData',
+          class: 'model::person',
+          flatData: 'model::multiSection',
+          id: 'm_p',
+          propertyMappings: [
+            {
+              _type: 'flatDataPropertyMapping',
+              property: {
+                class: 'model::person',
+                property: 'name',
+              },
+              source: 'm_p',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['name'],
+                      },
+                    ],
+                    property: 'oneString',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+            {
+              _type: 'flatDataPropertyMapping',
+              property: {
+                class: 'model::person',
+                property: 'eid',
+              },
+              source: 'm_p',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['eid'],
+                      },
+                    ],
+                    property: 'oneString',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+          sectionName: 'default',
+        },
+        {
+          _type: 'flatData',
+          class: 'model::firm',
+          flatData: 'model::multiSection',
+          id: 'm_f',
+          propertyMappings: [
+            {
+              _type: 'flatDataPropertyMapping',
+              property: {
+                class: 'model::firm',
+                property: 'fname',
+              },
+              source: 'm_f',
+              transform: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'var',
+                        name: 'src',
+                      },
+                      {
+                        _type: 'string',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: ['fname'],
+                      },
+                    ],
+                    property: 'oneString',
+                  },
+                ],
+                parameters: [],
+              },
+            },
+          ],
+          root: true,
+          sectionName: 'header',
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'multiSectionAssociationMapping',
+      package: 'model',
+      tests: [
+        {
+          assert: {
+            _type: 'expectedOutputMappingTestAssert',
+            expectedOutput:
+              '{"defects":[],"source":{"defects":[],"source":{"number":1,"lineNumber":2,"record":"pp,ab","recordValues":[{"address":1,"rawValue":"pp"},{"address":2,"rawValue":"ab"}]},"value":{"typeName":"model::multiSection.default.default","values":[{"label":"name","value":"pp"},{"label":"eid","value":"ab"}]}},"value":{"eid":"ab","name":"pp","fid":{"fname":"Goo"}}}',
+          },
+          inputData: [
+            {
+              _type: 'flatData',
+              data: 'Goo\npp,ab',
+              sourceFlatData: {
+                path: 'model::multiSection',
+                type: 'STORE',
+              },
+            },
+          ],
+          name: 'test_1',
+          query: {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'func',
+                function: 'serialize',
+                parameters: [
+                  {
+                    _type: 'func',
+                    function: 'graphFetchChecked',
+                    parameters: [
+                      {
+                        _type: 'func',
+                        function: 'getAll',
+                        parameters: [
+                          {
+                            _type: 'packageableElementPtr',
+                            fullPath: 'model::person',
+                          },
+                        ],
+                      },
+                      {
+                        _type: 'rootGraphFetchTree',
+                        class: 'model::person',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'eid',
+                            subTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'name',
+                            subTrees: [],
+                          },
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'fid',
+                            subTrees: [
+                              {
+                                _type: 'propertyGraphFetchTree',
+                                parameters: [],
+                                property: 'fname',
+                                subTrees: [],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'rootGraphFetchTree',
+                    class: 'model::person',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'eid',
+                        subTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'name',
+                        subTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'fid',
+                        subTrees: [
+                          {
+                            _type: 'propertyGraphFetchTree',
+                            parameters: [],
+                            property: 'fname',
+                            subTrees: [],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            parameters: [],
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
 export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
   {
     path: 'myFlatDataTest::Origination',

@@ -36,12 +36,12 @@ import {
   getAllClassConstraints,
   getAllClassDerivedProperties,
 } from '@finos/legend-graph';
-import { LambdaEditorState } from '@finos/legend-application';
 import {
   constraint_setFunctionDefinition,
   derivedProperty_setBody,
   derivedProperty_setParameters,
-} from '../../graphModifier/DomainGraphModifierHelper.js';
+} from '../../shared/modifier/DomainGraphModifierHelper.js';
+import { LambdaEditorState } from '@finos/legend-query-builder';
 
 export const CONSTRAINT_SOURCE_ID_LABEL = 'constraint';
 export const DERIVED_PROPERTY_SOURCE_ID_LABEL = 'derivedProperty';

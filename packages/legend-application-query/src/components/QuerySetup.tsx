@@ -95,7 +95,7 @@ const EditExistingQuerySetup = observer(
     };
     const next = (): void => {
       if (querySetupState.currentQuery) {
-        applicationStore.navigator.goTo(
+        applicationStore.navigator.goToLocation(
           generateExistingQueryEditorRoute(querySetupState.currentQuery.id),
         );
       }
@@ -605,7 +605,7 @@ const CloneServiceQuerySetup = observer(
         querySetupState.currentVersionId &&
         querySetupState.currentServiceExecutionOption
       ) {
-        applicationStore.navigator.goTo(
+        applicationStore.navigator.goToLocation(
           generateServiceQueryCreatorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,
@@ -842,7 +842,7 @@ const CreateMappingQuerySetup = observer(
         querySetupState.currentMapping &&
         querySetupState.currentRuntime
       ) {
-        applicationStore.navigator.goTo(
+        applicationStore.navigator.goToLocation(
           generateMappingQueryCreatorRoute(
             querySetupState.currentProject.groupId,
             querySetupState.currentProject.artifactId,

@@ -16,7 +16,6 @@
 
 import { useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
 import {
@@ -141,7 +140,7 @@ export const WorkspaceReview = observer(() => {
           workspaceReviewState.commitWorkspaceReview(workspaceReview),
         ).catch(applicationStore.alertUnhandledError);
       };
-      if (editorStore.hasUnpushedChanges) {
+      if (editorStore.localChangesState.hasUnpushedChanges) {
         editorStore.setActionAlertInfo({
           message: 'You have unpushed changes',
           prompt:
@@ -154,7 +153,6 @@ export const WorkspaceReview = observer(() => {
               label: 'Proceed to commit review',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
               handler: (): void => {
-                editorStore.setIgnoreNavigationBlocking(true);
                 commit();
               },
             },
@@ -284,16 +282,21 @@ export const WorkspaceReview = observer(() => {
                 <div className="workspace-review__title__content">
                   <div
                     className="workspace-review__title__content__input workspace-review__title__content__input--with-link"
-                    title={'See review detail'}
+                    title="See review detail"
                   >
-                    <Link
+                    <button
                       className="workspace-review__title__content__input__link"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      to={generateReviewRoute(
-                        workspaceReview.projectId,
-                        workspaceReview.id,
-                      )}
+                      tabIndex={-1}
+                      onClick={(): void =>
+                        applicationStore.navigator.visitAddress(
+                          applicationStore.navigator.generateAddress(
+                            generateReviewRoute(
+                              workspaceReview.projectId,
+                              workspaceReview.id,
+                            ),
+                          ),
+                        )
+                      }
                     >
                       <span className="workspace-review__title__content__input__link__review-name">
                         {workspaceReview.title}
@@ -301,7 +304,7 @@ export const WorkspaceReview = observer(() => {
                       <div className="workspace-review__title__content__input__link__btn">
                         <ExternalLinkSquareIcon />
                       </div>
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <button

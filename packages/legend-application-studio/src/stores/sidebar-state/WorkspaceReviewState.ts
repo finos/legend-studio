@@ -207,7 +207,7 @@ export class WorkspaceReviewState {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
       this.editorStore.setBlockingAlert({
-        message: 'Re-creating workspace...',
+        message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
@@ -216,6 +216,7 @@ export class WorkspaceReviewState {
         this.sdlcState.activeWorkspace.workspaceId,
         this.sdlcState.activeWorkspace.workspaceType,
       );
+      this.editorStore.setIgnoreNavigationBlocking(true);
       this.editorStore.applicationStore.navigator.reload();
     } catch (error) {
       assertErrorThrown(error);
@@ -360,12 +361,14 @@ export class WorkspaceReviewState {
           {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
-            handler: (): void =>
-              this.editorStore.applicationStore.navigator.goTo(
+            handler: (): void => {
+              this.editorStore.setIgnoreNavigationBlocking(true);
+              this.editorStore.applicationStore.navigator.reloadToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),
-              ),
+              );
+            },
             default: true,
           },
         ],

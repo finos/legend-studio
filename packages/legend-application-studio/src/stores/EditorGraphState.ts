@@ -52,16 +52,13 @@ import {
   ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
 import {
-  type SetImplementation,
   type PackageableElement,
   GRAPH_MANAGER_EVENT,
   CompilationError,
   EngineError,
   extractSourceInformationCoordinates,
   Package,
-  PureInstanceSetImplementation,
   Profile,
-  OperationSetImplementation,
   PrimitiveType,
   Enumeration,
   Class,
@@ -70,8 +67,6 @@ import {
   ConcreteFunctionDefinition,
   Service,
   FlatData,
-  FlatDataInstanceSetImplementation,
-  EmbeddedFlatDataPropertyMapping,
   PackageableConnection,
   PackageableRuntime,
   FileGenerationSpecification,
@@ -80,9 +75,6 @@ import {
   Unit,
   Database,
   SectionIndex,
-  RootRelationalInstanceSetImplementation,
-  EmbeddedRelationalInstanceSetImplementation,
-  AggregationAwareSetImplementation,
   DependencyGraphBuilderError,
   GraphDataDeserializationError,
   GraphBuilderError,
@@ -91,7 +83,6 @@ import {
   DataElement,
 } from '@finos/legend-graph';
 import {
-  type LambdaEditorState,
   ActionAlertActionType,
   ActionAlertType,
 } from '@finos/legend-application';
@@ -99,14 +90,11 @@ import {
   CONFIGURATION_EDITOR_TAB,
   getConflictsString,
 } from './editor-state/ProjectConfigurationEditorState.js';
-import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from './DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
-import { graph_dispose } from './graphModifier/GraphModifierHelper.js';
-import {
-  PACKAGEABLE_ELEMENT_TYPE,
-  SET_IMPLEMENTATION_TYPE,
-} from './shared/ModelClassifierUtils.js';
+import { graph_dispose } from './shared/modifier/GraphModifierHelper.js';
+import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import { LEGEND_STUDIO_APP_EVENT } from './LegendStudioAppEvent.js';
+import type { LambdaEditorState } from '@finos/legend-query-builder';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -142,7 +130,6 @@ export class EditorGraphState {
       editorStore: false,
       graphGenerationState: false,
       getPackageableElementType: false,
-      getSetImplementationType: false,
       hasCompilationError: computed,
       clearCompilationError: action,
     });
@@ -1194,17 +1181,6 @@ export class EditorGraphState {
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------
-  /**
-   * NOTE: Notice how this utility draws resources from all of metamodels and uses `instanceof` to classify behavior/response.
-   * As such, methods in this utility cannot be placed in place they should belong to.
-   *
-   * For example: `getSetImplemetnationType` cannot be placed in `SetImplementation` because of circular module dependency
-   * So this utility is born for such purpose, to avoid circular module dependency, and it should just be used for only that
-   * Other utilities that really should reside in the domain-specific meta model should be placed in the meta model module.
-   *
-   * NOTE: We expect the need for these methods will eventually go away as we complete modularization. But we need these
-   * methods here so that we can load plugins.
-   */
 
   getPackageableElementType(element: PackageableElement): string {
     if (element instanceof PrimitiveType) {
@@ -1262,46 +1238,6 @@ export class EditorGraphState {
     }
     throw new UnsupportedOperationError(
       `Can't get type label for element '${element.path}': no compatible label getter available from plugins`,
-    );
-  }
-
-  getSetImplementationType(setImplementation: SetImplementation): string {
-    if (setImplementation instanceof PureInstanceSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.PUREINSTANCE;
-    } else if (setImplementation instanceof OperationSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.OPERATION;
-    } else if (setImplementation instanceof FlatDataInstanceSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.FLAT_DATA;
-    } else if (setImplementation instanceof EmbeddedFlatDataPropertyMapping) {
-      return SET_IMPLEMENTATION_TYPE.EMBEDDED_FLAT_DATA;
-    } else if (
-      setImplementation instanceof RootRelationalInstanceSetImplementation
-    ) {
-      return SET_IMPLEMENTATION_TYPE.RELATIONAL;
-    } else if (
-      setImplementation instanceof EmbeddedRelationalInstanceSetImplementation
-    ) {
-      return SET_IMPLEMENTATION_TYPE.EMBEDDED_RELATIONAL;
-    } else if (setImplementation instanceof AggregationAwareSetImplementation) {
-      return SET_IMPLEMENTATION_TYPE.AGGREGATION_AWARE;
-    }
-    const extraSetImplementationClassifiers = this.editorStore.pluginManager
-      .getApplicationPlugins()
-      .flatMap(
-        (plugin) =>
-          (
-            plugin as DSL_Mapping_LegendStudioApplicationPlugin_Extension
-          ).getExtraSetImplementationClassifiers?.() ?? [],
-      );
-    for (const Classifier of extraSetImplementationClassifiers) {
-      const setImplementationClassifier = Classifier(setImplementation);
-      if (setImplementationClassifier) {
-        return setImplementationClassifier;
-      }
-    }
-    throw new UnsupportedOperationError(
-      `Can't classify set implementation: no compatible classifer available from plugins`,
-      setImplementation,
     );
   }
 }

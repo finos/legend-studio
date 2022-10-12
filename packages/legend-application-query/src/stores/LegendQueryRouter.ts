@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { generatePath } from '@finos/legend-application';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { generatePath } from 'react-router';
 
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   GAV = 'gav',

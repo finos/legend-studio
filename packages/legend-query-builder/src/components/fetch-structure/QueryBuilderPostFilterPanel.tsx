@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  useApplicationStore,
-  BasicValueSpecificationEditor,
-} from '@finos/legend-application';
+import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
@@ -101,6 +98,7 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -506,6 +504,10 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     valueSpecification={node.condition.value}
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
+                    obseverContext={
+                      node.condition.postFilterState.projectionState
+                        .queryBuilderState.observableContext
+                    }
                     typeCheckOption={{
                       expectedType: guaranteeNonNullable(
                         node.condition.columnState.getReturnType(),

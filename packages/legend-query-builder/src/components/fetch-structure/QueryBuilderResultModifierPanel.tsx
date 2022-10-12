@@ -99,7 +99,7 @@ const ColumnSortEditor = observer(
           className="query-builder__projection__options__sort__remove-btn btn--dark btn--caution"
           onClick={deleteColumnSort}
           tabIndex={-1}
-          title={'Remove'}
+          title="Remove"
         >
           <TimesIcon />
         </button>

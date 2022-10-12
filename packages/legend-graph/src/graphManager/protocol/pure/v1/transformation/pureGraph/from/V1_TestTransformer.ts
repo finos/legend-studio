@@ -37,6 +37,7 @@ import type {
 } from '../../../../../../../graph/metamodel/pure/test/Test.js';
 import { EqualToTDS } from '../../../../../../../graph/metamodel/pure/test/assertion/EqualToTDS.js';
 import { V1_EqualToTDS } from '../../../model/test/assertion/V1_EqualToTDS.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const transformEqualTo = (element: EqualTo): V1_EqualTo => {
   const equalTo = new V1_EqualTo();
@@ -68,14 +69,14 @@ export const V1_transformAtomicTest = (
   }
 
   const extraAtomicTestTransformers = context.plugins.flatMap(
-    (plugin) => plugin.V1_getExtraAtomicTestTransformers?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAtomicTestTransformers?.() ?? [],
   );
 
   for (const transformer of extraAtomicTestTransformers) {
-    const atomicTestTransformer: V1_AtomicTest | undefined = transformer(
-      value,
-      context,
-    );
+    const atomicTestTransformer = transformer(value, context);
     if (atomicTestTransformer) {
       return atomicTestTransformer;
     }

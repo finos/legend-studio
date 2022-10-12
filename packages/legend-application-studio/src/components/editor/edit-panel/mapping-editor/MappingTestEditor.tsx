@@ -87,11 +87,11 @@ import {
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
 import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { flatData_setData } from '../../../../stores/graphModifier/STO_FlatData_GraphModifierHelper.js';
+import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
   relationalInputData_setInputType,
-} from '../../../../stores/graphModifier/STO_Relational_GraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import { MappingExecutionQueryBuilderState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingExecutionQueryBuilderState.js';
 
@@ -267,7 +267,7 @@ const MappingTestQueryEditor = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={clearQuery}
-              title={'Clear query'}
+              title="Clear query"
             >
               <TimesIcon />
             </button>
@@ -520,7 +520,7 @@ export const MappingTestInputDataBuilder = observer(
               tabIndex={-1}
               disabled={isReadOnly}
               onClick={showClassMappingSelectorModal}
-              title={'Regenerate...'}
+              title="Regenerate..."
             >
               <RefreshIcon className="mapping-test-editor__icon--refresh" />
             </button>
@@ -578,7 +578,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={testState.isExecutingTest || isReadOnly}
               onClick={regenerateExpectedResult}
               tabIndex={-1}
-              title={'Regenerate Result'}
+              title="Regenerate Result"
             >
               <RefreshIcon className="mapping-test-editor__icon__regenerate-result" />
             </button>
@@ -587,7 +587,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               disabled={isReadOnly}
               tabIndex={-1}
               onClick={formatExpectedResultJSONString}
-              title={'Format JSON'}
+              title="Format JSON"
             >
               <WrenchIcon />
             </button>

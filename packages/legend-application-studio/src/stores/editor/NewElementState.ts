@@ -80,18 +80,18 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL
 import {
   packageableConnection_setConnectionValue,
   runtime_addMapping,
-} from '../graphModifier/DSL_Mapping_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   fileGeneration_setScopeElements,
   fileGeneration_setType,
   generationSpecification_addGenerationElement,
-} from '../graphModifier/DSL_Generation_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import {
   service_initNewService,
   service_setExecution,
-} from '../graphModifier/DSL_Service_GraphModifierHelper.js';
+} from '../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import type { EmbeddedDataTypeOption } from '../editor-state/element-editor-state/data/DataEditorState.js';
-import { dataElement_setEmbeddedData } from '../graphModifier/DSL_Data_GraphModifierHelper.js';
+import { dataElement_setEmbeddedData } from '../shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../shared/ModelClassifierUtils.js';
 import {
   buildElementOption,

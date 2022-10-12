@@ -17,7 +17,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
-import { useResizeDetector } from 'react-resize-detector';
 import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
@@ -28,6 +27,7 @@ import {
   disposeDiffEditor,
   disableEditorHotKeys,
   baseTextEditorSettings,
+  useResizeDetector,
 } from '@finos/legend-art';
 import {
   isString,

@@ -32,7 +32,7 @@ import {
 import {
   buildAggregateColumnState,
   buildAggregateExpression,
-} from './QueryBuilderAggregateOperatorHelper.js';
+} from './QueryBuilderAggregateOperatorValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
@@ -53,7 +53,7 @@ export class QueryBuilderAggregateOperator_Max
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       return (
         [
           PRIMITIVE_TYPE.NUMBER,
@@ -82,13 +82,13 @@ export class QueryBuilderAggregateOperator_Max
           PRIMITIVE_TYPE.DATETIME,
         ] as string[]
       ).includes(
-        propertyExpression?.func.genericType.value.rawType.path ??
+        propertyExpression?.func.value.genericType.value.rawType.path ??
           PRIMITIVE_TYPE.NUMBER, // this decision does not affect the output expression
       )
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATE_MAX
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX,
-      graph,
       variableName,
+      graph,
     );
   }
 
@@ -102,7 +102,7 @@ export class QueryBuilderAggregateOperator_Max
     ) {
       const propertyType =
         projectionColumnState.propertyExpressionState.propertyExpression.func
-          .genericType.value.rawType;
+          .value.genericType.value.rawType;
       switch (propertyType.path) {
         case PRIMITIVE_TYPE.NUMBER:
         case PRIMITIVE_TYPE.INTEGER:

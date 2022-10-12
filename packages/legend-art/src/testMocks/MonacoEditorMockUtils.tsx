@@ -65,7 +65,7 @@ export const MockedMonacoEditorInstance = {
   revealPosition: jest.fn(),
   setPosition: jest.fn(),
   onKeyDown: jest.fn(),
-  deltaDecorations: jest.fn(),
+  createDecorationsCollection: jest.fn(),
   onDidChangeModelContent: jest.fn(),
   onDidChangeCursorPosition: jest.fn(),
   onDidFocusEditorText: jest.fn(),

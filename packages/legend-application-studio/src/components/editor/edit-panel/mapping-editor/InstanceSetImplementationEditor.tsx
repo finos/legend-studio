@@ -51,7 +51,7 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
 import { FlatDataRecordTypeTree } from './FlatDataRecordTypeTree.js';
-import { PropertyMappingsEditor } from './PropertyMappingsEditor.js';
+import { PropertyMappingEditor } from './PropertyMappingsEditor.js';
 import { useDrop } from 'react-dnd';
 import { FlatDataInstanceSetImplementationState } from '../../../../stores/editor-state/element-editor-state/mapping/FlatDataInstanceSetImplementationState.js';
 import { MappingElementDecorationCleaner } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
@@ -540,7 +540,7 @@ export const InstanceSetImplementationEditor = observer(
                     {!isReadOnly &&
                       !isUnsupported &&
                       sortedProperties.map((property) => (
-                        <PropertyMappingsEditor
+                        <PropertyMappingEditor
                           key={property.name}
                           property={property}
                           instanceSetImplementationState={
@@ -562,7 +562,7 @@ export const InstanceSetImplementationEditor = observer(
                             ).length,
                         )
                         .map((property) => (
-                          <PropertyMappingsEditor
+                          <PropertyMappingEditor
                             key={property.name}
                             property={property}
                             instanceSetImplementationState={

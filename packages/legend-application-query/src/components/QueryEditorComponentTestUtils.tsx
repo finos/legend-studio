@@ -16,8 +16,6 @@
 
 import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { Router } from 'react-router';
-import { createMemoryHistory } from 'history';
 import {
   type TEMPORARY__JestMock,
   guaranteeNonNullable,
@@ -40,6 +38,8 @@ import {
   TEST__ApplicationStoreProvider,
   WebApplicationNavigator,
   TEST__getTestApplicationStore,
+  Router,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import { TEST__getTestLegendQueryApplicationConfig } from '../stores/QueryEditorStoreTestUtils.js';
 import { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';

@@ -318,7 +318,7 @@ export const DatabaseBuilder = observer(
                         disabled={isReadOnly || isExecutingAction}
                         tabIndex={-1}
                         onClick={buildDb}
-                        title={'Build Database...'}
+                        title="Build database..."
                       >
                         <FireIcon />
                       </button>

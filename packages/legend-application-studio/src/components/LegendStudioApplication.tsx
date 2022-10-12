@@ -15,7 +15,6 @@
  */
 
 import { useEffect } from 'react';
-import { Switch, Route } from 'react-router';
 import { WorkspaceSetup } from './workspace-setup/WorkspaceSetup.js';
 import { Editor } from './editor/Editor.js';
 import { WorkspaceReview } from './workspace-review/WorkspaceReview.js';
@@ -41,6 +40,8 @@ import { GraphManagerStateProvider } from '@finos/legend-graph';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
+  Route,
+  Switch,
   useApplicationStore,
   VirtualAssistant,
 } from '@finos/legend-application';
@@ -50,7 +51,7 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../stores/LegendStudioDocumenta
 const LegendStudioNotFoundRouteScreen = observer(() => {
   const applicationStore = useApplicationStore();
 
-  const currentPath = applicationStore.navigator.getCurrentLocationPath();
+  const currentPath = applicationStore.navigator.getCurrentLocation();
 
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
@@ -86,7 +87,7 @@ const LegendStudioNotFoundRouteScreen = observer(() => {
           <div className="not-found-screen__text-content__detail">
             The requested URL
             <span className="not-found-screen__text-content__detail__url">
-              {applicationStore.navigator.generateLocation(currentPath)}
+              {applicationStore.navigator.generateAddress(currentPath)}
             </span>
             was not found in the application
           </div>

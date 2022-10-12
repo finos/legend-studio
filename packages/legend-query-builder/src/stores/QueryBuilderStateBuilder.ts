@@ -50,7 +50,6 @@ import {
   type ValueSpecification,
 } from '@finos/legend-graph';
 import { processTDSPostFilterExpression } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterStateBuilder.js';
-import { LambdaParameterState } from '@finos/legend-application';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
 import {
   processTDSAggregateExpression,
@@ -70,6 +69,7 @@ import {
   processTDSTakeExpression,
 } from './fetch-structure/projection/QueryBuilderProjectionStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
+import { LambdaParameterState } from './shared/LambdaParameterState.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,

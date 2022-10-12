@@ -84,7 +84,7 @@ export abstract class QueryBuilderState {
   observableContext: ObserverContext;
 
   queryCompileState = ActionState.create();
-  backdrop = false;
+  showBackdrop = false;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
 
@@ -109,7 +109,7 @@ export abstract class QueryBuilderState {
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
-      backdrop: observable,
+      showBackdrop: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
       changeDetectionState: observable,
@@ -121,7 +121,7 @@ export abstract class QueryBuilderState {
       isQuerySupported: computed,
       validationIssues: computed,
 
-      setBackdrop: action,
+      setShowBackdrop: action,
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setClass: action,
@@ -185,8 +185,8 @@ export abstract class QueryBuilderState {
     return true;
   }
 
-  setBackdrop(val: boolean): void {
-    this.backdrop = val;
+  setShowBackdrop(val: boolean): void {
+    this.showBackdrop = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {
@@ -246,13 +246,14 @@ export abstract class QueryBuilderState {
     this.resetQueryContent();
     this.setClass(val);
     this.explorerState.refreshTreeData();
-    this.milestoningState.updateMilestoningConfiguration();
     this.fetchStructureState.implementation.onClassChange(val);
+    this.milestoningState.updateMilestoningConfiguration();
   }
 
   changeMapping(val: Mapping): void {
     this.resetQueryResult();
     this.resetQueryContent();
+    this.milestoningState.updateMilestoningConfiguration();
     this.setMapping(val);
   }
 

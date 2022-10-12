@@ -281,9 +281,9 @@ const WorkflowExplorerContextMenu = observer(
     };
     const visitWeburl = (): void => {
       if (node instanceof WorkflowJobTreeNodeData) {
-        applicationStore.navigator.openNewWindow(node.workflowJob.webURL);
+        applicationStore.navigator.visitAddress(node.workflowJob.webURL);
       } else if (node instanceof WorkflowTreeNodeData) {
-        applicationStore.navigator.openNewWindow(node.workflow.webURL);
+        applicationStore.navigator.visitAddress(node.workflow.webURL);
       }
     };
 
@@ -374,7 +374,7 @@ const WorkflowTreeNodeContainer: React.FC<
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflow.webURL}
-            title={'See workflow detail'}
+            title="See workflow detail"
           >
             <div className="workflow-manager__item__link__content">
               <span className="workflow-manager__item__link__content__id">
@@ -396,7 +396,7 @@ const WorkflowTreeNodeContainer: React.FC<
             rel="noopener noreferrer"
             target="_blank"
             href={node.workflowJob.webURL}
-            title={'See job detail'}
+            title="See job detail"
           >
             <div className="workflow-manager__item__link__content">
               <span className="workflow-manager__item__link__content__id">

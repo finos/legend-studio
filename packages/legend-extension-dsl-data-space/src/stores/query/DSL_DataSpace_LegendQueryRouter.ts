@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { generateExtensionUrlPattern } from '@finos/legend-application';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+} from '@finos/legend-application';
 import { LEGEND_QUERY_PATH_PARAM_TOKEN } from '@finos/legend-application-query';
 import { generateGAVCoordinates } from '@finos/legend-storage';
-import { generatePath } from 'react-router';
 
 export enum DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN {
   DATA_SPACE_PATH = 'dataSpacePath',

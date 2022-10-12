@@ -35,6 +35,7 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildServiceTestSuite } from './V1_ServiceBuilderHelper.js';
 import type { V1_AtomicTest } from '../../../../model/test/V1_AtomicTest.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const V1_buildEqualTo = (
   element: V1_EqualTo,
@@ -97,7 +98,10 @@ export const V1_buildAtomicTest = (
   context: V1_GraphBuilderContext,
 ): AtomicTest => {
   const extraAtomicTestBuilder = context.extensions.plugins.flatMap(
-    (plugin) => plugin.V1_getExtraAtomicTestBuilders?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraAtomicTestBuilders?.() ?? [],
   );
   for (const builder of extraAtomicTestBuilder) {
     const metamodel = builder(value, context);

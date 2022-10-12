@@ -30,6 +30,7 @@ import {
   type PackageableElement,
   type PureGrammarElementLabeler,
   PureGraphManagerPlugin,
+  type Testable_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import { PersistenceTest } from '../graph/metamodel/pure/model/packageableElements/persistence/DSL_Persistence_PersistenceTest.js';
 
@@ -38,7 +39,10 @@ export const PURE_GRAMMAR_PERSISTENCE_ELEMENT_TYPE_LABEL = 'Persistence';
 export const PURE_GRAMMAR_PERSISTENCE_CONTEXT_ELEMENT_TYPE_LABEL =
   'PersistenceContext';
 
-export class DSL_Persistence_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSL_Persistence_PureGraphManagerPlugin
+  extends PureGraphManagerPlugin
+  implements Testable_PureGraphManagerPlugin_Extension
+{
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
@@ -83,7 +87,7 @@ export class DSL_Persistence_PureGraphManagerPlugin extends PureGraphManagerPlug
     ];
   }
 
-  override getExtraAtomicTestObservers(): AtomicTestObserver[] {
+  getExtraAtomicTestObservers(): AtomicTestObserver[] {
     return [
       (
         element: AtomicTest,

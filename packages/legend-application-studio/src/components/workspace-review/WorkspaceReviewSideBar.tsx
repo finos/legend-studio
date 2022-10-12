@@ -163,7 +163,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                 onClick={reOpenReview}
                 disabled={isDispatchingAction}
                 tabIndex={-1}
-                title={'Re-open review'}
+                title="Reopen review"
               >
                 <ArrowUpIcon />
               </button>
@@ -179,7 +179,7 @@ export const WorkspaceReviewSideBar = observer(() => {
                     currentUser?.userId === review.author.name
                   }
                   tabIndex={-1}
-                  title={'Approve review'}
+                  title="Approve review"
                 >
                   <CheckIcon />
                 </button>

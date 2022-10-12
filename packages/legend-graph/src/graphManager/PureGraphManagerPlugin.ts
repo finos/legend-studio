@@ -15,16 +15,13 @@
  */
 
 import { AbstractPlugin } from '@finos/legend-shared';
-import type { PureModel } from '../graph/PureModel.js';
 import type { GraphManagerPluginManager } from './GraphManagerPluginManager.js';
 import type { PackageableElement } from '../graph/metamodel/pure/packageableElements/PackageableElement.js';
-import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
 import type {
   AbstractPureGraphManager,
   AbstractPureGraphManagerExtension,
 } from './AbstractPureGraphManager.js';
 import type { ObserverContext } from './action/changeDetection/CoreObserverHelper.js';
-import type { AtomicTest } from '../graph/metamodel/pure/test/Test.js';
 
 export type PureGraphManagerExtensionBuilder = (
   graphManager: AbstractPureGraphManager,
@@ -35,11 +32,6 @@ export type ElementObserver = (
   context: ObserverContext,
 ) => PackageableElement | undefined;
 
-export type AtomicTestObserver = (
-  metamodel: AtomicTest,
-  context: ObserverContext,
-) => AtomicTest | undefined;
-
 /**
  * Unlike `PureGraphPlugin`, this is for plugins of graph manager, i.e. operations acting
  * on the graph instead of within the graph. As such processes involving grammar, compilation,
@@ -48,16 +40,6 @@ export type AtomicTestObserver = (
 export type PureGrammarElementLabeler = (
   metamodel: PackageableElement,
 ) => string | undefined;
-
-export type TestableIDBuilder = (
-  testable: Testable,
-  graph: PureModel,
-) => string | undefined;
-
-export type TestableFinder = (
-  id: string,
-  graph: PureModel,
-) => Testable | undefined;
 
 export abstract class PureGraphManagerPlugin extends AbstractPlugin {
   /**
@@ -102,19 +84,4 @@ export abstract class PureGraphManagerPlugin extends AbstractPlugin {
    * Get the list of Pure grammar element labelers.
    */
   getExtraPureGrammarElementLabelers?(): PureGrammarElementLabeler[];
-
-  /**
-   * Get the list of testable ID builders.
-   */
-  getExtraTestableIDBuilders?(): TestableIDBuilder[];
-
-  /**
-   * Get the list of testable finders.
-   */
-  getExtraTestableFinders?(): TestableFinder[];
-
-  /**
-   * Get the list of atomic test observers.
-   */
-  getExtraAtomicTestObservers?(): AtomicTestObserver[];
 }

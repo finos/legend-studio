@@ -21,7 +21,8 @@ import {
   V1_buildGetAllFunctionExpression,
   V1_buildGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
-} from './v1/V1_QueryBuilder_FunctionExpressionBuilder.js';
+  V1_buildSubTypePropertyExpressionTypeInference,
+} from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,
   type V1_ProcessingContext,
@@ -36,7 +37,6 @@ import {
   extractElementNameFromPath,
   V1_buildGenericFunctionExpression,
 } from '@finos/legend-graph';
-import { V1_buildSubTypePropertyExpressionTypeInference } from './v1/V1_QueryBuilder_PropertyExpressionTypeInferenceBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../QueryBuilderSupportedFunctions.js';
 
 export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProcessorPlugin {

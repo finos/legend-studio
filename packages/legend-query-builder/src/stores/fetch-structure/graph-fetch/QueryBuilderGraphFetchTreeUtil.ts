@@ -39,12 +39,12 @@ import {
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from '../../explorer/QueryBuilderExplorerState.js';
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { computed, makeObservable } from 'mobx';
 import {
   graphFetchTree_addSubTree,
   graphFetchTree_removeSubTree,
-} from '@finos/legend-application';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { computed, makeObservable } from 'mobx';
+} from '../../shared/ValueSpecificationModifierHelper.js';
 
 export class QueryBuilderGraphFetchTreeNodeData
   implements TreeNodeData, Hashable

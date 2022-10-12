@@ -18,7 +18,7 @@ import { TAB_SIZE } from '@finos/legend-application';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceViewerState,
-  getDSLDataSpaceGraphManagerExtension,
+  DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
@@ -116,7 +116,7 @@ export class StandaloneDataSpaceViewerStore {
 
       // analyze data space
       this.initState.setMessage(`Analyzing data space...`);
-      const analysisResult = (yield getDSLDataSpaceGraphManagerExtension(
+      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(dataSpacePath, entities, dependencyEntitiesIndex, () =>
         retrieveAnalyticsResultCache(
@@ -140,7 +140,7 @@ export class StandaloneDataSpaceViewerStore {
             _versionId: string,
             entityPath: string | undefined,
           ): void =>
-            this.applicationStore.navigator.openNewWindow(
+            this.applicationStore.navigator.visitAddress(
               EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
                 this.applicationStore.config.studioUrl,
                 _groupId,
@@ -165,7 +165,7 @@ export class StandaloneDataSpaceViewerStore {
 
   queryDataSpace(classPath?: string | undefined): void {
     if (this.viewerState) {
-      this.applicationStore.navigator.openNewWindow(
+      this.applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
           this.applicationStore.config.queryUrl,
           this.viewerState.groupId,

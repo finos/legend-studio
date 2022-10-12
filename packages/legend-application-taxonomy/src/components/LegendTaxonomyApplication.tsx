@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-import { Switch, Route, Redirect } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import {
   generateExploreTaxonomyTreeRoute,
   LEGEND_TAXONOMY_ROUTE_PATTERN,
 } from '../stores/LegendTaxonomyRouter.js';
 import { DepotServerClientProvider } from '@finos/legend-server-depot';
-import { LegendApplicationComponentFrameworkProvider } from '@finos/legend-application';
+import {
+  LegendApplicationComponentFrameworkProvider,
+  Redirect,
+  Route,
+  Switch,
+} from '@finos/legend-application';
 import type { LegendTaxonomyApplicationConfig } from '../application/LegendTaxonomyApplicationConfig.js';
 import { TaxonomyExplorer } from './TaxonomyExplorer.js';
 import { StandaloneDataSpaceViewer } from './StandaloneDataSpaceViewer.js';

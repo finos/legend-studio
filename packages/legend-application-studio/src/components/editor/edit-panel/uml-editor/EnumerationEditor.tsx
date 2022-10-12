@@ -82,7 +82,7 @@ import {
   enum_deleteValue,
   enum_addValue,
   enum_swapValues,
-} from '../../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
@@ -162,7 +162,7 @@ const EnumBasicEditor = observer(
               disabled={isReadOnly}
               value={enumValue.name}
               onChange={changeValue}
-              placeholder={`Enum name`}
+              placeholder="Enum name"
               validationErrorMessage={
                 isEnumValueDuplicated(enumValue) ? 'Duplicated enum' : undefined
               }
@@ -171,7 +171,7 @@ const EnumBasicEditor = observer(
               className="uml-element-editor__basic__detail-btn"
               onClick={selectValue}
               tabIndex={-1}
-              title={'See detail'}
+              title="See detail"
             >
               <LongArrowRightIcon />
             </button>
@@ -181,7 +181,7 @@ const EnumBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteValue}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -312,7 +312,7 @@ const EnumEditor = observer(
                 className="panel__header__action"
                 onClick={deselectValue}
                 tabIndex={-1}
-                title={'Close'}
+                title="Close"
               >
                 <TimesIcon />
               </button>

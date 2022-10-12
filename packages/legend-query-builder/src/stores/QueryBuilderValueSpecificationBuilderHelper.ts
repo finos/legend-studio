@@ -15,10 +15,6 @@
  */
 
 import {
-  functionExpression_setParametersValues,
-  propertyExpression_setParametersValue,
-} from '@finos/legend-application';
-import {
   AbstractPropertyExpression,
   Class,
   DerivedProperty,
@@ -78,14 +74,14 @@ const isDefaultDatePropagationSupported = (
   queryBuilderState: QueryBuilderState,
   prevPropertyExpression?: AbstractPropertyExpression | undefined,
 ): boolean => {
-  const property = currentPropertyExpression.func;
+  const property = currentPropertyExpression.func.value;
   const graph = queryBuilderState.graphManagerState.graph;
   // Default date propagation is not supported for current expression when the previous property expression is a derived property.
   if (
     prevPropertyExpression &&
-    prevPropertyExpression.func instanceof DerivedProperty &&
-    prevPropertyExpression.func._OWNER.derivedProperties.includes(
-      prevPropertyExpression.func,
+    prevPropertyExpression.func.value instanceof DerivedProperty &&
+    prevPropertyExpression.func.value._OWNER.derivedProperties.includes(
+      prevPropertyExpression.func.value,
     )
   ) {
     return false;
@@ -94,10 +90,10 @@ const isDefaultDatePropagationSupported = (
   // the previous property expression doesn't match with the global milestonedParameterValues
   if (
     prevPropertyExpression &&
-    prevPropertyExpression.func.genericType.value.rawType instanceof Class
+    prevPropertyExpression.func.value.genericType.value.rawType instanceof Class
   ) {
     const milestoningStereotype = getMilestoneTemporalStereotype(
-      prevPropertyExpression.func.genericType.value.rawType,
+      prevPropertyExpression.func.value.genericType.value.rawType,
       graph,
     );
     if (
@@ -152,7 +148,9 @@ export const buildPropertyExpressionChain = (
     graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
   );
   newPropertyExpression.func = propertyExpression.func;
-  newPropertyExpression.parametersValues = propertyExpression.parametersValues;
+  newPropertyExpression.parametersValues = [
+    ...propertyExpression.parametersValues,
+  ];
 
   let nextExpression: ValueSpecification | undefined;
   let currentExpression: ValueSpecification | undefined = newPropertyExpression;
@@ -166,11 +164,15 @@ export const buildPropertyExpressionChain = (
         graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
       );
       parameterValue.func = nextExpression.func;
-      parameterValue.parametersValues = nextExpression.parametersValues;
+      parameterValue.parametersValues = [...nextExpression.parametersValues];
       nextExpression = parameterValue;
       currentExpression.parametersValues[0] = parameterValue;
     }
-    if (currentExpression.func instanceof DerivedProperty) {
+    if (
+      currentExpression instanceof AbstractPropertyExpression &&
+      currentExpression.func.value instanceof DerivedProperty
+    ) {
+      const currentPropertyExpression = currentExpression;
       const parameterValues = currentExpression.parametersValues.slice(1);
       parameterValues.forEach((parameterValue, index) => {
         if (parameterValue instanceof INTERNAL__PropagatedValue) {
@@ -178,7 +180,7 @@ export const buildPropertyExpressionChain = (
           if (
             !TEMPORARY__disableDatePropagation &&
             isDefaultDatePropagationSupported(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
+              currentPropertyExpression,
               queryBuilderState,
               nextExpression instanceof AbstractPropertyExpression
                 ? nextExpression
@@ -189,41 +191,27 @@ export const buildPropertyExpressionChain = (
             // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
             if (
               (index === 1 &&
-                guaranteeType(currentExpression, AbstractPropertyExpression)
-                  .parametersValues.length === 3) ||
+                currentPropertyExpression.parametersValues.length === 3) ||
               (index === 0 &&
-                guaranteeType(currentExpression, AbstractPropertyExpression)
-                  .parametersValues.length === 3 &&
+                currentPropertyExpression.parametersValues.length === 3 &&
                 !(
-                  guaranteeType(currentExpression, AbstractPropertyExpression)
-                    .parametersValues[2] instanceof INTERNAL__PropagatedValue
+                  currentPropertyExpression.parametersValues[2] instanceof
+                  INTERNAL__PropagatedValue
                 ))
             ) {
-              propertyExpression_setParametersValue(
-                guaranteeType(currentExpression, AbstractPropertyExpression),
-                index + 1,
-                parameterValue.getValue(),
-                queryBuilderState.observableContext,
-              );
+              currentPropertyExpression.parametersValues[index + 1] =
+                parameterValue.getValue();
             } else {
-              functionExpression_setParametersValues(
-                guaranteeType(currentExpression, AbstractPropertyExpression),
-                [
-                  guaranteeNonNullable(
-                    guaranteeType(currentExpression, AbstractPropertyExpression)
-                      .parametersValues[0],
-                  ),
-                ],
-                queryBuilderState.observableContext,
-              );
+              currentPropertyExpression.parametersValues = [
+                guaranteeNonNullable(
+                  guaranteeType(currentExpression, AbstractPropertyExpression)
+                    .parametersValues[0],
+                ),
+              ];
             }
           } else {
-            propertyExpression_setParametersValue(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
-              index + 1,
-              parameterValue.getValue(),
-              queryBuilderState.observableContext,
-            );
+            currentPropertyExpression.parametersValues[index + 1] =
+              parameterValue.getValue();
           }
         }
       });

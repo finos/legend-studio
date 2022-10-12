@@ -26,7 +26,7 @@ import {
 import {
   createObservableFileGeneration,
   fileGeneration_setType,
-} from '../../graphModifier/DSL_Generation_GraphModifierHelper.js';
+} from '../../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 import { handlePostCreateAction } from '../../editor/NewElementState.js';
 
 export class ElementFileGenerationState {

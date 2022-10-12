@@ -33,7 +33,7 @@ import {
 } from './QueryBuilderPostFilterState.js';
 
 const buildPostFilterExpression = (
-  filterState: QueryBuilderPostFilterState,
+  postFilterState: QueryBuilderPostFilterState,
   node: QueryBuilderPostFilterTreeNodeData,
 ): ValueSpecification | undefined => {
   if (node instanceof QueryBuilderPostFilterTreeConditionNodeData) {
@@ -42,7 +42,7 @@ const buildPostFilterExpression = (
     );
   } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
     const multiplicityOne =
-      filterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const func = new SimpleFunctionExpression(
@@ -50,9 +50,9 @@ const buildPostFilterExpression = (
       multiplicityOne,
     );
     const clauses = node.childrenIds
-      .map((e) => filterState.nodes.get(e))
+      .map((e) => postFilterState.nodes.get(e))
       .filter(isNonNullable)
-      .map((e) => buildPostFilterExpression(filterState, e))
+      .map((e) => buildPostFilterExpression(postFilterState, e))
       .filter(isNonNullable);
     /**
      * NOTE: Due to a limitation (or perhaps design decision) in the engine, group operations
@@ -88,7 +88,7 @@ const buildPostFilterExpression = (
 
 export const appendPostFilter = (
   postFilterState: QueryBuilderPostFilterState,
-  lambda: LambdaFunction,
+  lambdaFunction: LambdaFunction,
 ): LambdaFunction => {
   const postFilterConditionExpressions = postFilterState.rootIds
     .map((e) => guaranteeNonNullable(postFilterState.nodes.get(e)))
@@ -96,9 +96,9 @@ export const appendPostFilter = (
     .filter(isNonNullable);
   if (
     !postFilterConditionExpressions.length ||
-    lambda.expressionSequence.length !== 1
+    lambdaFunction.expressionSequence.length !== 1
   ) {
-    return lambda;
+    return lambdaFunction;
   }
   const multiplicityOne =
     postFilterState.projectionState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
@@ -114,8 +114,10 @@ export const appendPostFilter = (
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER),
     multiplicityOne,
   );
-  const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
+  const currentExpression = guaranteeNonNullable(
+    lambdaFunction.expressionSequence[0],
+  );
   filterExpression.parametersValues = [currentExpression, filterLambda];
-  lambda.expressionSequence[0] = filterExpression;
-  return lambda;
+  lambdaFunction.expressionSequence[0] = filterExpression;
+  return lambdaFunction;
 };

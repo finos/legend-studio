@@ -29,13 +29,20 @@ import {
   getNullableFirstElement,
   assertTrue,
   URL_SEPARATOR,
+  filterByType,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../LegendStudioAppEvent.js';
 import { Version } from '@finos/legend-server-sdlc';
 import {
   type Service,
   type ServiceRegistrationResult,
+  type PureExecution,
   ServiceExecutionMode,
+  buildLambdaVariableExpressions,
+  VariableExpression,
+  TYPICAL_MULTIPLICITY_TYPE,
+  generateMultiplicityString,
+  multiplicityComparator,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
@@ -261,7 +268,7 @@ export class ServiceRegistrationState {
             label: 'Launch Service',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.openNewWindow(
+              this.editorStore.applicationStore.navigator.visitAddress(
                 generateServiceManagementUrl(
                   config.managementUrl,
                   serviceRegistrationResult.pattern,
@@ -314,5 +321,37 @@ export class ServiceRegistrationState {
         'Service version can not be empty in Semi-interactive and Prod service type',
       );
     }
+
+    // validate service parameter multiplicities
+    const supportedServiceParamMultiplicties = [
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+      TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
+      TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
+    ].map((p) =>
+      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(p),
+    );
+    const invalidParams = buildLambdaVariableExpressions(
+      (this.service.execution as PureExecution).func,
+      this.editorStore.graphManagerState,
+    )
+      .filter(filterByType(VariableExpression))
+      .filter(
+        (p) =>
+          !supportedServiceParamMultiplicties.some((m) =>
+            multiplicityComparator(m, p.multiplicity),
+          ),
+      );
+    assertTrue(
+      invalidParams.length === 0,
+      `Parameter(s)${invalidParams.map(
+        (p) =>
+          ` ${p.name}: [${generateMultiplicityString(
+            p.multiplicity.lowerBound,
+            p.multiplicity.upperBound,
+          )}]`,
+      )} has/have unsupported multiplicity. Supported multiplicities include ${supportedServiceParamMultiplicties.map(
+        (m) => ` [${generateMultiplicityString(m.lowerBound, m.upperBound)}]`,
+      )}.`,
+    );
   }
 }

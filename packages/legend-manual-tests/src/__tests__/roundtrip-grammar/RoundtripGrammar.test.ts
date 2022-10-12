@@ -17,17 +17,6 @@
 import { test, describe, expect } from '@jest/globals';
 import { resolve, basename } from 'path';
 import fs from 'fs';
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/microsoft/TypeScript/issues/50690
- */
 import { default as axios, type AxiosResponse } from 'axios';
 import {
   type PlainObject,
@@ -157,7 +146,7 @@ const checkGrammarRoundtrip = async (
   logPhase(phase, excludes, log, options?.debug);
   const grammarText = fs.readFileSync(filePath, { encoding: 'utf-8' });
   let startTime = Date.now();
-  const transformGrammarToJsonResult = await axios.default.post<
+  const transformGrammarToJsonResult = await axios.post<
     unknown,
     AxiosResponse<{ elements: object[] }>
   >(`${ENGINE_SERVER_URL}/pure/v1/grammar/grammarToJson/model`, grammarText, {
@@ -255,7 +244,7 @@ const checkGrammarRoundtrip = async (
       .map((entity) => entity.content),
   };
   startTime = Date.now();
-  const transformJsonToGrammarResult = await axios.default.post<
+  const transformJsonToGrammarResult = await axios.post<
     unknown,
     AxiosResponse<string>
   >(
@@ -288,7 +277,7 @@ const checkGrammarRoundtrip = async (
   if (!excludes.includes(phase)) {
     // Test successful compilation with graph from serialization
     startTime = Date.now();
-    const compileResult = await axios.default.post<
+    const compileResult = await axios.post<
       unknown,
       AxiosResponse<{ message: string }>
     >(`${ENGINE_SERVER_URL}/pure/v1/compilation/compile`, modelDataContext);

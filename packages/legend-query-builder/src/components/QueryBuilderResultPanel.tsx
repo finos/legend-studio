@@ -48,9 +48,6 @@ import {
   ActionAlertType,
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
-  instanceValue_changeValue,
-  instanceValue_changeValues,
-  PARAMETER_SUBMIT_ACTION,
   TAB_SIZE,
   TextInputEditor,
   useApplicationStore,
@@ -81,6 +78,11 @@ import {
 } from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
 import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
 import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import {
+  instanceValue_setValue,
+  instanceValue_setValues,
+} from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { PARAMETER_SUBMIT_ACTION } from '../stores/shared/LambdaParameterState.js';
 
 const QueryBuilderGridResultContextMenu = observer(
   forwardRef<
@@ -135,7 +137,7 @@ const QueryBuilderGridResultContextMenu = observer(
       conditionValue: InstanceValue,
     ): void => {
       if (event?.value !== null) {
-        instanceValue_changeValue(
+        instanceValue_setValue(
           conditionValue,
           conditionValue instanceof EnumValueInstanceValue
             ? EnumValueExplicitReference.create(
@@ -223,7 +225,7 @@ const QueryBuilderGridResultContextMenu = observer(
           conditionState.changeOperator(
             isFilterBy ? postFilterInOperator : postFilterNotInOperator,
           );
-          instanceValue_changeValues(conditionState.value as InstanceValue, [
+          instanceValue_setValues(conditionState.value as InstanceValue, [
             currentValueSpecificaton,
             newValueSpecification,
           ]);
@@ -245,7 +247,7 @@ const QueryBuilderGridResultContextMenu = observer(
             isFilterBy ? postFilterEqualOperator : postFilterNotEqualOperator
           ).getDefaultFilterConditionValue(conditionState);
           updateFilterConditionValue(newValueSpecification as InstanceValue);
-          instanceValue_changeValues(conditionState.value as InstanceValue, [
+          instanceValue_setValues(conditionState.value as InstanceValue, [
             ...(conditionState.value as InstanceValue).values,
             newValueSpecification,
           ]);

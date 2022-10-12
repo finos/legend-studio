@@ -49,9 +49,9 @@ import {
   DataSpaceExecutionContextAnalysisResult,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
-} from '../../../action/analytics/DSL_DataSpace_DataSpaceAnalysis.js';
+} from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
-import { V1_DataSpaceAnalysisResult } from './engine/analytics/V1_DSL_DataSpace_DataSpaceAnalysis.js';
+import { V1_DataSpaceAnalysisResult } from './engine/analytics/V1_DataSpaceAnalysis.js';
 
 const ANALYZE_DATA_SPACE_TRACE = 'analyze data space';
 

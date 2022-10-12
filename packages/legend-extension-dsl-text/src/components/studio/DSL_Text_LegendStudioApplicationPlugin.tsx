@@ -34,8 +34,8 @@ import {
   type PureGrammarParserElementDocumentationGetter,
 } from '@finos/legend-application-studio';
 import { FileIcon } from '@finos/legend-art';
-import { TextEditorState } from '../../stores/studio/DSL_Text_TextEditorState.js';
-import { TextElementEditor } from './DSL_Text_TextElementEditor.js';
+import { TextEditorState } from '../../stores/studio/TextEditorState.js';
+import { TextElementEditor } from './TextElementEditor.js';
 import type { PackageableElement } from '@finos/legend-graph';
 import { Text } from '../../graph/metamodel/pure/model/packageableElements/text/DSL_Text_Text.js';
 import { DSL_TEXT_LEGEND_STUDIO_DOCUMENTATION_KEY } from './DSL_Text_LegendStudioDocumentation.js';

@@ -87,15 +87,13 @@ export const ActivityBarMenu: React.FC = () => {
   // documentation
   const goToDocumentation = (): void => {
     if (appDocUrl) {
-      applicationStore.navigator.openNewWindow(appDocUrl);
+      applicationStore.navigator.visitAddress(appDocUrl);
     }
   };
   // go to setup page
-  const goToSetupPage = (): void =>
-    applicationStore.navigator.openNewWindow(
-      applicationStore.navigator.generateLocation(
-        generateSetupRoute(undefined),
-      ),
+  const goToWorkspaceSetup = (): void =>
+    applicationStore.navigator.visitAddress(
+      applicationStore.navigator.generateAddress(generateSetupRoute(undefined)),
     );
   // help
   const openHelp = (): void => {
@@ -142,9 +140,9 @@ export const ActivityBarMenu: React.FC = () => {
             <MenuContentDivider />
             <MenuContentItem
               className="app__header__menu__item"
-              onClick={goToSetupPage}
+              onClick={goToWorkspaceSetup}
             >
-              Back to Setup
+              Back to workspace setup
             </MenuContentItem>
           </MenuContent>
         }

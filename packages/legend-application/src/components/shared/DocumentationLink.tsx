@@ -33,7 +33,7 @@ export const DocumentationLink: React.FC<{
           documentationKey,
         );
       } else if (documentationEntry.url) {
-        applicationStore.navigator.openNewWindow(documentationEntry.url);
+        applicationStore.navigator.visitAddress(documentationEntry.url);
       }
     }
   };

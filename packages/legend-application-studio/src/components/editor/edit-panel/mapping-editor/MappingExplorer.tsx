@@ -68,7 +68,7 @@ import {
   PureInstanceSetImplementationFilterState,
   PureInstanceSetImplementationState,
 } from '../../../../stores/editor-state/element-editor-state/mapping/PureInstanceSetImplementationState.js';
-import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/graphModifier/DSL_Mapping_GraphModifierHelper.js';
+import { pureInstanceSetImpl_setMappingFilter } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 
 export const MappingExplorerContextMenu = observer(
   forwardRef<
@@ -524,7 +524,7 @@ export const MappingExplorer = observer((props: { isReadOnly: boolean }) => {
               onClick={openNewMapingModal}
               disabled={isReadOnly}
               tabIndex={-1}
-              title={'Create new mapping element'}
+              title="Create new mapping element"
             >
               <PlusIcon />
             </button>

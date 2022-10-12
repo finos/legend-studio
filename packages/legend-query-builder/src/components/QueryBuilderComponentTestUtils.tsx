@@ -16,8 +16,6 @@
 
 import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { Router } from 'react-router';
-import { createMemoryHistory } from 'history';
 import { Log } from '@finos/legend-shared';
 import {
   type RawMappingModelCoverageAnalysisResult,
@@ -34,6 +32,8 @@ import {
   WebApplicationNavigator,
   TEST__provideMockedWebApplicationNavigator,
   LegendApplicationComponentFrameworkProvider,
+  Router,
+  createMemoryHistory,
 } from '@finos/legend-application';
 import type { Entity } from '@finos/legend-storage';
 import { QueryBuilder } from './QueryBuilder.js';

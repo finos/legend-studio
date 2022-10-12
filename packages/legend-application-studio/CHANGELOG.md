@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 18.0.1
+
+### Patch Changes
+
+- [#1504](https://github.com/finos/legend-studio/pull/1504) [`02703feb`](https://github.com/finos/legend-studio/commit/02703febd5f0f1f44174baf984162a305444c546) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support showing duplicated property mappings for properties of type other than `class` (i.e. `primitive`, `enumeration`, etc.) ([#1461](https://github.com/finos/legend-studio/issues/1461)).
+
+- [#1538](https://github.com/finos/legend-studio/pull/1538) [`34d6f9dd`](https://github.com/finos/legend-studio/commit/34d6f9dd933db20056f2e1b6ec483aafc13eb8aa) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add service parameter multiplicity validation during service registration ([#1539](https://github.com/finos/legend-studio/issues/1539)).
+
 ## 18.0.0
 
 ### Major Changes

@@ -66,7 +66,6 @@ import {
   MULTIPLICITY_INFINITE,
   Unit,
   Type,
-  Multiplicity,
   Enumeration,
   Class,
   PrimitiveType,
@@ -95,12 +94,12 @@ import {
   annotatedElement_deleteStereotype,
   annotatedElement_deleteTaggedValue,
   function_swapParameters,
-} from '../../../stores/graphModifier/DomainGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/DomainGraphModifierHelper.js';
 import {
   rawVariableExpression_setMultiplicity,
   rawVariableExpression_setName,
   rawVariableExpression_setType,
-} from '../../../stores/graphModifier/ValueSpecificationGraphModifierHelper.js';
+} from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 
 enum FUNCTION_PARAMETER_TYPE {
@@ -191,7 +190,7 @@ const ParameterBasicEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         rawVariableExpression_setMultiplicity(
           parameter,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
       }
     };
@@ -268,7 +267,7 @@ const ParameterBasicEditor = observer(
               value={parameter.name}
               spellCheck={false}
               onChange={changeValue}
-              placeholder={`Parameter name`}
+              placeholder="Parameter name"
             />
             {!isReadOnly && isEditingType && (
               <CustomSelectorInput
@@ -276,7 +275,7 @@ const ParameterBasicEditor = observer(
                 options={typeOptions}
                 onChange={changeType}
                 value={selectedType}
-                placeholder={'Choose a data type or enumeration'}
+                placeholder="Choose a type..."
                 filterOption={filterOption}
               />
             )}
@@ -312,7 +311,7 @@ const ParameterBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -344,7 +343,7 @@ const ParameterBasicEditor = observer(
                     className="property-basic-editor__type__visit-btn"
                     onClick={openElement}
                     tabIndex={-1}
-                    title={'Visit element'}
+                    title="Visit element"
                   >
                     <ArrowCircleRightIcon />
                   </button>
@@ -376,7 +375,7 @@ const ParameterBasicEditor = observer(
                 disabled={isReadOnly}
                 onClick={deleteParameter}
                 tabIndex={-1}
-                title={'Remove'}
+                title="Remove"
               >
                 <TimesIcon />
               </button>
@@ -445,7 +444,7 @@ const ReturnTypeEditor = observer(
       if (!isNaN(lBound) && (uBound === undefined || !isNaN(uBound))) {
         function_setReturnMultiplicity(
           functionElement,
-          new Multiplicity(lBound, uBound),
+          editorStore.graphManagerState.graph.getMultiplicity(lBound, uBound),
         );
       }
     };
@@ -470,7 +469,7 @@ const ReturnTypeEditor = observer(
             options={typeOptions}
             onChange={changeType}
             value={selectedType}
-            placeholder={'Choose a data type or enumeration'}
+            placeholder="Choose a type..."
             filterOption={filterOption}
           />
         )}
@@ -506,7 +505,7 @@ const ReturnTypeEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -538,7 +537,7 @@ const ReturnTypeEditor = observer(
                 className="property-basic-editor__type__visit-btn"
                 onClick={openElement}
                 tabIndex={-1}
-                title={'Visit element'}
+                title="Visit element"
               >
                 <ArrowCircleRightIcon />
               </button>
@@ -638,7 +637,7 @@ export const FunctionMainEditor = observer(
               disabled={isReadOnly}
               onClick={addParameter}
               tabIndex={-1}
-              title={'Add Parameter'}
+              title="Add Parameter"
             >
               <PlusIcon />
             </button>
@@ -687,7 +686,7 @@ export const FunctionMainEditor = observer(
             })}
           >
             <StudioLambdaEditor
-              className={'function-editor__element__lambda-editor'}
+              className="function-editor__element__lambda-editor"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly
               }

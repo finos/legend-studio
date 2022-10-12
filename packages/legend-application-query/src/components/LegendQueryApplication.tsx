@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Redirect, Route, Switch } from 'react-router';
 import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
 import { QuerySetup } from './QuerySetup.js';
@@ -27,6 +26,9 @@ import { DepotServerClientProvider } from '@finos/legend-server-depot';
 import {
   generateExtensionUrlPattern,
   LegendApplicationComponentFrameworkProvider,
+  Redirect,
+  Route,
+  Switch,
 } from '@finos/legend-application';
 import type { LegendQueryApplicationConfig } from '../application/LegendQueryApplicationConfig.js';
 import {

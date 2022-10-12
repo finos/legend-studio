@@ -102,6 +102,8 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
+import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping//V1_FlatDataAssociationMapping.js';
+import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -116,6 +118,7 @@ enum V1_ClassMappingType {
 enum V1_PropertyMappingType {
   PURE = 'purePropertyMapping',
   FLAT_DATA = 'flatDataPropertyMapping',
+  ASSOCIATION_FLAT_DATA = 'flatDataAssociationPropertyMapping',
   EMBEDDED_FLAT_DATA = 'embeddedFlatDataPropertyMapping',
   RELATIONAL = 'relationalPropertyMapping',
   EMBEDDED_RELATIONAL = 'embeddedPropertyMapping',
@@ -310,6 +313,20 @@ const relationalPropertyMappingModelSchema = createModelSchema(
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
     relationalOperation: raw(),
+    source: optional(primitive()),
+    target: optional(primitive()),
+  },
+);
+
+const flatDataAssociationPropertyMappingModelSchema = createModelSchema(
+  V1_FlatDataAssociationPropertyMapping,
+  {
+    _type: usingConstantValueSchema(
+      V1_PropertyMappingType.ASSOCIATION_FLAT_DATA,
+    ),
+    flatData: primitive(),
+    property: usingModelSchema(V1_propertyPointerModelSchema),
+    sectionName: primitive(),
     source: optional(primitive()),
     target: optional(primitive()),
   },
@@ -824,6 +841,7 @@ const V1_mappingTestModelSchema = createModelSchema(V1_MappingTest, {
 enum V1_AssociationMappingType {
   RELATIONAL = 'relational',
   XSTORE = 'xStore',
+  FLAT_DATA = 'flatData',
 }
 
 const V1_serializeAssociationPropertMapping = (
@@ -833,6 +851,8 @@ const V1_serializeAssociationPropertMapping = (
     return serialize(relationalPropertyMappingModelSchema, protocol);
   } else if (protocol instanceof V1_XStorePropertyMapping) {
     return serialize(xStorePropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_FlatDataAssociationPropertyMapping) {
+    return serialize(flatDataAssociationPropertyMappingModelSchema, protocol);
   }
   return SKIP;
 };
@@ -845,6 +865,8 @@ const V1_deserializeAssociationPropertMapping = (
       return deserialize(relationalPropertyMappingModelSchema, json);
     case V1_PropertyMappingType.XSTORE:
       return deserialize(xStorePropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.ASSOCIATION_FLAT_DATA:
+      return deserialize(flatDataAssociationPropertyMappingModelSchema, json);
     default:
       return SKIP;
   }
@@ -854,6 +876,22 @@ const relationalAssociationMappingModelschema = createModelSchema(
   V1_RelationalAssociationMapping,
   {
     _type: usingConstantValueSchema(V1_AssociationMappingType.RELATIONAL),
+    association: primitive(),
+    id: optional(primitive()),
+    propertyMappings: list(
+      custom(
+        (val) => V1_serializeAssociationPropertMapping(val),
+        (val) => V1_deserializeAssociationPropertMapping(val),
+      ),
+    ),
+    stores: list(primitive()),
+  },
+);
+
+const flatDataAssociationMappingModelschema = createModelSchema(
+  V1_FlatDataAssociationMapping,
+  {
+    _type: usingConstantValueSchema(V1_AssociationMappingType.FLAT_DATA),
     association: primitive(),
     id: optional(primitive()),
     propertyMappings: list(
@@ -889,6 +927,8 @@ const V1_serializeAssociationMapping = (
     return serialize(relationalAssociationMappingModelschema, protocol);
   } else if (protocol instanceof V1_XStoreAssociationMapping) {
     return serialize(xStoreAssociationMappingModelschema, protocol);
+  } else if (protocol instanceof V1_FlatDataAssociationMapping) {
+    return serialize(flatDataAssociationMappingModelschema, protocol);
   }
   throw new UnsupportedOperationError(
     `Can't serialize association mapping`,
@@ -904,6 +944,8 @@ const V1_deserializeAssociationMapping = (
       return deserialize(relationalAssociationMappingModelschema, json);
     case V1_AssociationMappingType.XSTORE:
       return deserialize(xStoreAssociationMappingModelschema, json);
+    case V1_AssociationMappingType.FLAT_DATA:
+      return deserialize(flatDataAssociationMappingModelschema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize association mapping of type '${json._type}'`,

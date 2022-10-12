@@ -151,7 +151,7 @@ export const ModelImporter = observer(() => {
   const label = modelImporterState.modelImportEditorState.label;
   const modelImportEditorState = modelImporterState.modelImportEditorState;
   const loadModel = (): void => {
-    if (editorStore.hasUnpushedChanges) {
+    if (editorStore.localChangesState.hasUnpushedChanges) {
       editorStore.setActionAlertInfo({
         message: 'You have unpushed changes',
         prompt:
@@ -164,10 +164,9 @@ export const ModelImporter = observer(() => {
             label: 'Proceed to load model',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              editorStore.setIgnoreNavigationBlocking(true);
-              flowResult(
-                modelImporterState.modelImportEditorState.loadModel(),
-              ).catch(applicationStore.alertUnhandledError);
+              modelImporterState.modelImportEditorState
+                .loadModel()
+                .catch(applicationStore.alertUnhandledError);
             },
           },
           {
@@ -178,9 +177,9 @@ export const ModelImporter = observer(() => {
         ],
       });
     } else {
-      flowResult(modelImporterState.modelImportEditorState.loadModel()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      modelImporterState.modelImportEditorState
+        .loadModel()
+        .catch(applicationStore.alertUnhandledError);
     }
   };
   useApplicationNavigationContext(

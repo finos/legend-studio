@@ -50,6 +50,7 @@ import {
 } from '../../../../model/test/result/V1_TestResult.js';
 import type { V1_AtomicTestId } from '../../../../model/test/V1_AtomicTestId.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
+import type { Testable_PureProtocolProcessorPlugin_Extension } from '../../../../../Testable_PureProtocolProcessorPlugin_Extension.js';
 
 const buildAtomicTestId = (
   element: V1_AtomicTestId,
@@ -79,7 +80,10 @@ const buildAssertFail = (
 ): AssertFail => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -93,7 +97,7 @@ const buildAssertFail = (
     return new AssertFail(assertion, element.message);
   }
   throw new UnsupportedOperationError(
-    "Can't build AssertFail: no compatible builder available from plugins ",
+    `Can't build AssertFail: no compatible builder available from plugins`,
     element,
   );
 };
@@ -105,7 +109,10 @@ const buildAssertPass = (
 ): AssertPass => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -119,7 +126,7 @@ const buildAssertPass = (
     return new AssertPass(assertion);
   }
   throw new UnsupportedOperationError(
-    "Can't build AssertPass: no compatible builder available from plugins ",
+    `Can't build AssertPass: no compatible builder available from plugins`,
     element,
   );
 };
@@ -131,7 +138,10 @@ const buildEqualToJsonAssertFail = (
 ): EqualToJsonAssertFail => {
   let assertion = atomicTest.assertions.find((a) => a.id === element.id);
   const extraAssertionBuilder = plugins.flatMap(
-    (plugin) => plugin.V1_getExtraTestableAssertionBuilders?.() ?? [],
+    (plugin) =>
+      (
+        plugin as Testable_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraTestableAssertionBuilders?.() ?? [],
   );
 
   for (const builder of extraAssertionBuilder) {
@@ -151,7 +161,7 @@ const buildEqualToJsonAssertFail = (
     return equalToJsonAssertFail;
   }
   throw new UnsupportedOperationError(
-    "Can't build EqualToJsonAssertFail: no compatible builder available from plugins ",
+    `Can't build EqualToJsonAssertFail: no compatible builder available from plugins`,
     element,
   );
 };

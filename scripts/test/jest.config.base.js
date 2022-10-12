@@ -28,26 +28,16 @@ const baseConfig = getBaseConfig({
     'react-dnd',
     'dnd-core',
     '@react-dnd',
-    // lossless-json also went full ESM since version 2.0 so we would need to transpile them
-    'lossless-json',
+    // Waiting for a fix in axios a problem with `axios` not properly
+    // resolving CommonJS bundle
+    // See https://github.com/axios/axios/pull/5104
+    'axios',
   ],
 });
 
 export const baseJestConfig = {
   ...baseConfig,
   setupFiles: [
-    /**
-     * TODO: problem with ESM - remove when we run Jest with ESM
-     * See https://github.com/finos/legend-studio/issues/502
-     *
-     * NOTE: we could do what we do with `react-dnd` which is to include `react-markdown` and `remark-gfm`
-     * and some of their dependencies to the list of packages to be transformed by `babel-jest`, but mocking
-     * them like this might just be faster. However, usage of `jest.mock` might not be fully supported by
-     * Jest ESM
-     * See https://github.com/facebook/jest/issues/9430
-     * See https://github.com/facebook/jest/pull/10976
-     */
-    '@finos/legend-art/lib/testMocks/ReactMarkdownMocker.js',
     '@finos/legend-dev-utils/jest/disallowConsoleError',
     '@finos/legend-dev-utils/jest/handleUnhandledRejection',
     // TODO: remove this when we no longer need to mock `Window.fetch()` for tests
@@ -125,6 +115,21 @@ export const getBaseJestDOMProjectConfig = (projectName, packageDir) => {
       ...base.moduleNameMapper,
       '^monaco-editor$':
         '@finos/legend-art/lib/testMocks/MockedMonacoEditor.js',
+      /**
+       * Here, we mock pure ESM modules so we don't have to transform them while running test
+       *
+       * NOTE: we could do what we do with `react-dnd` which is to include these packages
+       * (e.g. `react-markdown`, `remark-gfm`, etc.)
+       * and some of their dependencies to the list of packages to be transformed by `babel-jest`,
+       * but mocking them like this is much faster, more direct and improve test run time by skipping
+       * transform for these packages.
+       *
+       * We will remove these when we run test with ESM
+       * See https://github.com/finos/legend-studio/issues/502
+       */
+      '^react-markdown$':
+        '@finos/legend-art/lib/testMocks/MockedReactMarkdown.js',
+      '^remark-gfm$': '@finos/legend-art/lib/testMocks/MockedRemarkGFM.js',
     },
   };
 };

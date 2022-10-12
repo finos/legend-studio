@@ -56,7 +56,7 @@ export enum CONFIGURATION_EDITOR_TAB {
 }
 
 export enum DEPENDENCY_INFO_TYPE {
-  TREE = 'tree',
+  DEPENDENCY_TREE = 'dependency tree',
   CONFLICTS = 'conflicts',
 }
 

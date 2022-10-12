@@ -299,7 +299,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
   *recreateWorkspace(): GeneratorFn<void> {
     try {
       this.setBlockingAlert({
-        message: 'Re-creating workspace...',
+        message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
@@ -393,7 +393,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
               label: 'Launch Service',
               type: ActionAlertActionType.PROCEED,
               handler: (): void => {
-                this.applicationStore.navigator.openNewWindow(
+                this.applicationStore.navigator.visitAddress(
                   generateServiceManagementUrl(
                     registrationConfig.managementUrl,
                     serviceRegistrationResult.pattern,
