@@ -47,9 +47,8 @@ import {
 import { makeObservable, observable, action, computed } from 'mobx';
 import { generateVariableExpressionMockValue } from './ValueSpecificationEditorHelper.js';
 import {
-  multiplicity_setLowerBound,
-  multiplicity_setUpperBound,
   valueSpecification_setGenericType,
+  valueSpecification_setMultiplicity,
 } from './ValueSpecificationModifierHelper.js';
 
 export enum PARAMETER_SUBMIT_ACTION {
@@ -158,6 +157,7 @@ export class LambdaParameterState implements Hashable {
   }
 
   changeMultiplicity(
+    variableExpression: VariableExpression,
     lowerBound: number,
     uppderBound: number | undefined,
   ): void {
@@ -166,8 +166,10 @@ export class LambdaParameterState implements Hashable {
       current.lowerBound !== lowerBound ||
       current.upperBound !== uppderBound
     ) {
-      multiplicity_setLowerBound(current, lowerBound);
-      multiplicity_setUpperBound(current, uppderBound);
+      valueSpecification_setMultiplicity(
+        variableExpression,
+        this.graph.getMultiplicity(lowerBound, uppderBound),
+      );
       this.mockParameterValue();
     }
   }

@@ -24,7 +24,6 @@ import type {
 import type { RawVariableExpression } from '../../../graph/metamodel/pure/rawValueSpecification/RawVariableExpression.js';
 import {
   observe_PackageableElementReference,
-  observe_Multiplicity,
   skipObserved,
   skipObservedWithContext,
   type ObserverContext,
@@ -41,7 +40,6 @@ export const observe_RawPrimitiveInstanceValue = skipObserved(
     });
 
     observe_PackageableElementReference(metamodel.type);
-    observe_Multiplicity(metamodel.multiplicity);
 
     return metamodel;
   },
@@ -65,7 +63,6 @@ export const observe_RawVariableExpression = skipObserved(
     });
 
     observe_PackageableElementReference(metamodel.type);
-    observe_Multiplicity(metamodel.multiplicity);
 
     return metamodel;
   },

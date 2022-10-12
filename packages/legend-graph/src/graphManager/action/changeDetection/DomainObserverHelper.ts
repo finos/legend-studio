@@ -54,7 +54,6 @@ import {
 } from '../../../graph/metamodel/pure/packageableElements/section/Section.js';
 import type { SectionIndex } from '../../../graph/metamodel/pure/packageableElements/section/SectionIndex.js';
 import {
-  observe_Multiplicity,
   observe_Abstract_PackageableElement,
   observe_PackageableElementReference,
   skipObserved,
@@ -336,7 +335,6 @@ export const observe_Property = skipObserved(
     });
 
     observe_GenericTypeReference(metamodel.genericType);
-    observe_Multiplicity(metamodel.multiplicity);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
 
@@ -357,7 +355,6 @@ export const observe_DerivedProperty = skipObserved(
     });
 
     observe_GenericTypeReference(metamodel.genericType);
-    observe_Multiplicity(metamodel.multiplicity);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
 
@@ -466,7 +463,6 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
 
     metamodel.parameters.forEach(observe_RawVariableExpression);
     observe_PackageableElementReference(metamodel.returnType);
-    observe_Multiplicity(metamodel.returnMultiplicity);
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
 

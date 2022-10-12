@@ -91,7 +91,6 @@ import {
   observe_PackageableElementReference,
   skipObserved,
   skipObservedWithContext,
-  observe_Multiplicity,
 } from './CoreObserverHelper.js';
 import {
   observe_EnumValueReference,
@@ -167,7 +166,6 @@ export const observe_LocalMappingPropertyInfo = skipObserved(
     });
 
     observe_PackageableElementReference(metamodel.localMappingPropertyType);
-    observe_Multiplicity(metamodel.localMappingPropertyMultiplicity);
 
     return metamodel;
   },

@@ -60,7 +60,6 @@ import {
   type ObserverContext,
   skipObservedWithContext,
   skipObserved,
-  observe_Multiplicity,
   observe_PackageableElementReference,
 } from './CoreObserverHelper.js';
 import {
@@ -81,7 +80,6 @@ const observe_Abstract_ValueSpecification = (
   if (metamodel.genericType) {
     observe_GenericTypeReference(metamodel.genericType);
   }
-  observe_Multiplicity(metamodel.multiplicity);
 };
 
 export const observe_VariableExpression = skipObserved(
@@ -266,7 +264,6 @@ const observe_FunctionType = skipObserved(
     metamodel.parameters.forEach((parameter) =>
       observe_VariableExpression(parameter),
     );
-    observe_Multiplicity(metamodel.returnMultiplicity);
 
     return metamodel;
   },

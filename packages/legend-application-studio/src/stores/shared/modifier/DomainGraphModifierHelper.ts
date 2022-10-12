@@ -59,7 +59,6 @@ import {
   observe_TaggedValue,
   observe_Constraint,
   observe_GenericType,
-  observe_Multiplicity,
   observe_Type,
   observe_Unit,
   observe_RawLambda,
@@ -194,7 +193,7 @@ export const property_setGenericType = action(
 );
 export const property_setMultiplicity = action(
   (_property: Property | DerivedProperty, value: Multiplicity): void => {
-    _property.multiplicity = observe_Multiplicity(value);
+    _property.multiplicity = value;
   },
 );
 export const stereotypeReference_setValue = action(
@@ -356,7 +355,7 @@ export const function_setReturnType = action(
 );
 export const function_setReturnMultiplicity = action(
   (_func: ConcreteFunctionDefinition, val: Multiplicity): void => {
-    _func.returnMultiplicity = observe_Multiplicity(val);
+    _func.returnMultiplicity = val;
   },
 );
 
