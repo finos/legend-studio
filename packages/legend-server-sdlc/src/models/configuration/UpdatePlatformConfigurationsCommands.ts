@@ -36,6 +36,7 @@ export class UpdatePlatformConfigurationsCommand implements Hashable {
       platformConfigurations: observable,
       hashCode: computed,
     });
+    //svp remove
 
     this.platformConfigurations = platformConfigurations;
   }
