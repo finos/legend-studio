@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 8.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `getDSLDataSpaceGraphManagerExtension()` to `DSL_DataSpace_getGraphManagerExtension()`
+
 ## 7.0.1
 
 ## 7.0.0

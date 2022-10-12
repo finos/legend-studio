@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-data-space",
-  "version": "7.0.1",
+  "version": "8.0.0",
   "description": "Legend extension for Data Space DSL",
   "keywords": [
     "legend",

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 4.0.0
+
+### Major Changes
+
+- [#1520](https://github.com/finos/legend-studio/pull/1520) [`240875e8`](https://github.com/finos/legend-studio/commit/240875e869c95d7d228756a66eec1e82a45b8884) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `ReactMarkdownMocker.jsx` setup script, instead, add mocks `MockedReactMarkdown.js` and `MockedRemarkGFM.js` which can be use in `Jest` config `moduleNameMapper`.
+
 ## 3.3.0
 
 ### Minor Changes
