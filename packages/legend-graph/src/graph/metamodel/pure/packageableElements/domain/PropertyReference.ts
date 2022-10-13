@@ -22,19 +22,14 @@ import {
   type PackageableElementImplicitReference,
 } from '../PackageableElementReference.js';
 import { ReferenceWithOwner } from '../../Reference.js';
-import type { AbstractProperty } from './AbstractProperty.js';
-import type { Class } from './Class.js';
-import { Association } from './Association.js';
-import { getAssociatedPropertyClass } from '../../../../../graph/helpers/DomainHelper.js';
+import type { AbstractProperty, PropertyOwner } from './AbstractProperty.js';
 
 export abstract class PropertyReference extends ReferenceWithOwner {
-  override readonly ownerReference: PackageableElementReference<
-    Class | Association
-  >;
+  override readonly ownerReference: PackageableElementReference<PropertyOwner>;
   value: AbstractProperty;
 
   protected constructor(
-    ownerReference: PackageableElementReference<Class | Association>,
+    ownerReference: PackageableElementReference<PropertyOwner>,
     value: AbstractProperty,
   ) {
     super(ownerReference);
@@ -54,13 +49,11 @@ export abstract class PropertyReference extends ReferenceWithOwner {
 }
 
 export class PropertyExplicitReference extends PropertyReference {
-  override readonly ownerReference: PackageableElementExplicitReference<Class>;
+  override readonly ownerReference: PackageableElementExplicitReference<PropertyOwner>;
 
   private constructor(value: AbstractProperty) {
     const ownerReference = PackageableElementExplicitReference.create(
-      value._OWNER instanceof Association
-        ? getAssociatedPropertyClass(value._OWNER, value)
-        : value._OWNER,
+      value._OWNER,
     );
     super(ownerReference, value);
     this.ownerReference = ownerReference;
@@ -72,12 +65,10 @@ export class PropertyExplicitReference extends PropertyReference {
 }
 
 export class PropertyImplicitReference extends PropertyReference {
-  override readonly ownerReference: PackageableElementImplicitReference<
-    Class | Association
-  >;
+  override readonly ownerReference: PackageableElementImplicitReference<PropertyOwner>;
 
   private constructor(
-    ownerReference: PackageableElementImplicitReference<Class | Association>,
+    ownerReference: PackageableElementImplicitReference<PropertyOwner>,
     value: AbstractProperty,
   ) {
     super(ownerReference, value);
@@ -85,7 +76,7 @@ export class PropertyImplicitReference extends PropertyReference {
   }
 
   static create(
-    ownerReference: PackageableElementImplicitReference<Class | Association>,
+    ownerReference: PackageableElementImplicitReference<PropertyOwner>,
     value: AbstractProperty,
   ): PropertyImplicitReference {
     return new PropertyImplicitReference(ownerReference, value);
