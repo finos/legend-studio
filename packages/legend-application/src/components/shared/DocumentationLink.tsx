@@ -70,7 +70,7 @@ export const DocumentationPreview: React.FC<{
   return (
     <div className={clsx('documentation-preview', className)}>
       <div className="documentation-preview__text">
-        {text ?? documentationEntry?.text}
+        {text ?? documentationEntry.text}
       </div>
       <div className="documentation-preview__hint">
         <DocumentationLink documentationKey={documentationKey} />
