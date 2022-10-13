@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-space
 
+## 8.0.1
+
 ## 8.0.0
 
 ### Major Changes

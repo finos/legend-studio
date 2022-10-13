@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 18.0.1
+
+### Patch Changes
+
+- [#1560](https://github.com/finos/legend-studio/pull/1560) [`7b7d665d`](https://github.com/finos/legend-studio/commit/7b7d665d258f0a609bf25566585acea7b38ae6e4) ([@akphi](https://github.com/akphi)) - Fix a bug with `PropertyExplicitReference.create()` not working with derived properties coming from associations.
+
 ## 18.0.0
 
 ### Major Changes

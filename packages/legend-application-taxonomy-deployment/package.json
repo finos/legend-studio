@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-application-taxonomy-deployment",
-  "version": "7.20.0",
+  "version": "7.21.0",
   "private": true,
   "description": "Legend Taxonomy web application deployment",
   "keywords": [
