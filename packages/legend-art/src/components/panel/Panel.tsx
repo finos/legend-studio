@@ -20,6 +20,21 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { CheckSquareIcon, SquareIcon } from '../CJS__Icon.cjs';
 
+export const Panel: React.FC<{
+  children?: React.ReactNode;
+  className?: string;
+}> = (props) => {
+  const { children, className } = props;
+  return <div className={clsx('panel', className)}>{children}</div>;
+};
+
+export const PanelFullContent: React.FC<{
+  children?: React.ReactNode;
+}> = (props) => {
+  const { children } = props;
+  return <div className="panel__content--full">{children}</div>;
+};
+
 export const PanelHeaderActionItem: React.FC<{
   title: string;
   className?: string;
@@ -92,8 +107,18 @@ export const PanelForm: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = (props) => {
+  const { className, children } = props;
+  return (
+    <div className={clsx('panel__content__form', className)}>{children}</div>
+  );
+};
+
+export const PanelFormDescription: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+}> = (props) => {
   const { children } = props;
-  return <div className="panel__content__form">{children}</div>;
+  return <div className="panel__content__form__description">{children}</div>;
 };
 
 export const PanelSection: React.FC<{
@@ -155,30 +180,17 @@ export const PanelListItem: React.FC<{
   );
 };
 
-export const Panel: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return <div className={clsx('panel', className)}>{children}</div>;
-};
-
-export const PanelFullContent: React.FC<{
-  children?: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-  return <div className="panel__content--full">{children}</div>;
-};
-
 export const PanelFormTextEditor = observer(
   (props: {
     name: string;
-    description?: string;
+    prompt?: string;
     value: string | undefined;
     isReadOnly: boolean;
+    errorMessage?: string | undefined;
     update: (value: string | undefined) => void;
   }) => {
-    const { value, name, description, isReadOnly, update } = props;
+    const { errorMessage, value, name, prompt, isReadOnly, update } = props;
+
     const displayValue = value ?? '';
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       const stringValue = event.target.value;
@@ -192,15 +204,24 @@ export const PanelFormTextEditor = observer(
           {capitalize(name)}
         </div>
         <div className="panel__content__form__section__header__prompt">
-          {description}
+          {prompt}
         </div>
-        <input
-          className="panel__content__form__section__input"
-          spellCheck={false}
-          disabled={isReadOnly}
-          value={displayValue}
-          onChange={changeValue}
-        />
+        <div className="input-group">
+          <input
+            className={clsx(
+              'input input--dark input-group__input panel__content__form__section__input',
+            )}
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={displayValue}
+            onChange={changeValue}
+          />
+          {errorMessage && (
+            <div className="panel__content__form__section__input-group__error-message input-group__error-message">
+              {errorMessage}
+            </div>
+          )}
+        </div>
       </>
     );
   },
@@ -213,12 +234,13 @@ export const PanelFormTextEditor = observer(
 export const PanelFormBooleanEditor = observer(
   (props: {
     name: string;
-    description?: string;
+    prompt?: string;
     value: boolean | undefined;
+    children?: React.ReactNode;
     isReadOnly: boolean;
     update: (value: boolean | undefined) => void;
   }) => {
-    const { value, name, description, isReadOnly, update } = props;
+    const { value, name, prompt, children, isReadOnly, update } = props;
     const toggle = (): void => {
       if (!isReadOnly) {
         update(!value);
@@ -246,7 +268,7 @@ export const PanelFormBooleanEditor = observer(
             {value ? <CheckSquareIcon /> : <SquareIcon />}
           </button>
           <div className="panel__content__form__section__toggler__prompt">
-            {description}
+            {prompt} {children}
           </div>
         </div>
       </>

@@ -42,9 +42,17 @@ import {
   ArchiveIcon,
   Dialog,
   Panel,
+  PanelForm,
+  PanelSection,
+  PanelFormTextEditor,
+  CheckSquareIcon,
+  SquareIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
+  type Platform,
+  PlatformConfiguration,
   ProjectDependency,
   type ProjectConfiguration,
 } from '@finos/legend-server-sdlc';
@@ -52,7 +60,9 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
+  DocumentationPreview,
   EDITOR_LANGUAGE,
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
@@ -97,20 +107,6 @@ const ProjectStructureEditor = observer(
       latestVersion &&
       (latestVersion.version > projectConfig.projectStructureVersion.version ||
         latestProjectExtensionVersion > currentProjectExtensionVersion);
-    const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setGroupId(event.target.value);
-      }
-    };
-    const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      if (!isReadOnly) {
-        projectConfig.setArtifactId(event.target.value);
-      }
-    };
     const updateVersion = (): void => {
       flowResult(
         editorStore.projectConfigurationEditorState.updateToLatestStructure(),
@@ -151,41 +147,32 @@ const ProjectStructureEditor = observer(
             </button>
           )}
         </div>
-        <div className="panel__content__form">
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Group ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The domain for artifacts generated as part of the project build
-              pipeline and published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
+
+        <PanelForm>
+          <PanelSection>
+            <PanelFormTextEditor
+              isReadOnly={isReadOnly}
               value={projectConfig.groupId}
-              onChange={changeGroupId}
+              name="Group ID"
+              prompt="The domain for artifacts generated as part of the project build
+              pipeline and published to an artifact repository"
+              update={(value: string | undefined): void =>
+                projectConfig.setGroupId(value ?? '')
+              }
             />
-          </div>
-          <div className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              Artifact ID
-            </div>
-            <div className="panel__content__form__section__header__prompt">
-              The identifier (within the domain specified by group ID) for
-              artifacts generated as part of the project build pipeline and
-              published to an artifact repository
-            </div>
-            <input
-              className="panel__content__form__section__input"
-              spellCheck={false}
-              disabled={isReadOnly}
+            <PanelFormTextEditor
+              isReadOnly={isReadOnly}
               value={projectConfig.artifactId}
-              onChange={changeArtifactId}
+              name="Artifact ID"
+              prompt="The identifier (within the domain specified by group ID) for
+              artifacts generated as part of the project build pipeline and
+              published to an artifact repository"
+              update={(value: string | undefined): void =>
+                projectConfig.setArtifactId(value ?? '')
+              }
             />
-          </div>
-        </div>
+          </PanelSection>
+        </PanelForm>
       </div>
     );
   },
@@ -445,6 +432,183 @@ const ProjectDependencyEditor = observer(
   },
 );
 
+const PlatformDependencyViewer = observer(
+  (props: {
+    platform: PlatformConfiguration;
+    isDefault: boolean;
+    isLatestVersion?: boolean | undefined;
+  }) => {
+    const { platform, isDefault, isLatestVersion } = props;
+
+    return (
+      <div className="platform-configurations-editor__dependency">
+        <div className="platform-configurations-editor__dependency__label">
+          <div className="platform-configurations-editor__dependency__label__status">
+            {isDefault && (
+              <CheckCircleIcon
+                className="platform-configurations-editor__dependency__label__status--default"
+                title="Platform version is up to date"
+              />
+            )}
+            {isLatestVersion !== undefined &&
+              (isLatestVersion ? (
+                <CheckCircleIcon
+                  className="platform-configurations-editor__dependency__label__status--up-to-date"
+                  title="Platform version is up to date"
+                />
+              ) : (
+                <ExclamationTriangleIcon
+                  className="platform-configurations-editor__dependency__label__status--outdated"
+                  title="Platform version is outdated"
+                />
+              ))}
+          </div>
+          <div className="platform-configurations-editor__dependency__label__text">
+            {platform.name}
+          </div>
+          <div
+            className={clsx(
+              'platform-configurations-editor__dependency__label__version',
+            )}
+          >
+            {platform.version}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
+const ProjectPlatformVersionEditor = observer(
+  (props: { projectConfig: ProjectConfiguration; isReadOnly: boolean }) => {
+    const { projectConfig, isReadOnly } = props;
+    const editorStore = useEditorStore();
+
+    const convertPlatformtoPlatformConfiguration = (
+      platforms: Platform[] | undefined,
+    ): PlatformConfiguration[] | undefined => {
+      if (platforms) {
+        return platforms.map(
+          (platform) =>
+            new PlatformConfiguration(platform.name, platform.platformVersion),
+        );
+      } else {
+        return undefined;
+      }
+    };
+
+    const platformConfigurations = projectConfig.platformConfigurations;
+    const defaultPlatforms = convertPlatformtoPlatformConfiguration(
+      editorStore.sdlcServerClient.platforms,
+    );
+    const isUpToDate = platformConfigurations?.every(
+      (conf) =>
+        defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
+        conf.version,
+    );
+    const updateLatestToLatestVersion = (): void => {
+      if (platformConfigurations && defaultPlatforms) {
+        projectConfig.setPlatformConfigurations(
+          platformConfigurations.map((conf) => {
+            const matchingPlatformConfig = defaultPlatforms.find(
+              (p) => p.name === conf.name,
+            );
+            if (matchingPlatformConfig) {
+              return matchingPlatformConfig;
+            }
+            return conf;
+          }),
+        );
+      }
+    };
+
+    const toggleOverridePlatformConfigurations = (): void => {
+      if (!projectConfig.platformConfigurations) {
+        projectConfig.setPlatformConfigurations(defaultPlatforms);
+      } else {
+        projectConfig.setPlatformConfigurations(undefined);
+      }
+    };
+
+    return (
+      <Panel>
+        <PanelForm>
+          <DocumentationPreview
+            text="By default, your project will use the latest platform
+              dependencies' versions (e.g. engine, sdlc, etc.) in the pipeline.
+              This might be undesirable when you want to produce stable
+              artifacts; in this case, you can freeze the platform dependencies'
+              versions"
+            documentationKey={
+              LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_WHEN_TO_CONFIGURE_PLATFORM_VERSIONS
+            }
+          />
+          <div className="platform-configurations-editor__dependencies">
+            <div className="platform-configurations-editor__dependencies__header">
+              <div className="platform-configurations-editor__dependencies__header__left">
+                <div
+                  className="platform-configurations-editor__toggler"
+                  onClick={toggleOverridePlatformConfigurations}
+                >
+                  <button
+                    className={clsx(
+                      'platform-configurations-editor__toggler__btn',
+                      {
+                        'platform-configurations-editor__toggler__btn--toggled':
+                          Boolean(platformConfigurations),
+                      },
+                    )}
+                    disabled={isReadOnly}
+                    tabIndex={-1}
+                  >
+                    {platformConfigurations ? (
+                      <CheckSquareIcon />
+                    ) : (
+                      <SquareIcon />
+                    )}
+                  </button>
+                  <div className="platform-configurations-editor__toggler__prompt">
+                    {`Override platform dependencies' versions`}
+                  </div>
+                </div>
+              </div>
+              {platformConfigurations && !isUpToDate && (
+                <div className="platform-configurations-editor__dependencies__header__right">
+                  <button
+                    className="btn btn--dark"
+                    tabIndex={-1}
+                    onClick={updateLatestToLatestVersion}
+                  >
+                    Update to the current latest platform version
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="platform-configurations-editor__dependencies__content">
+              {!platformConfigurations &&
+                defaultPlatforms?.map((p) => (
+                  <PlatformDependencyViewer
+                    key={p.name}
+                    isDefault={true}
+                    platform={p}
+                  />
+                ))}
+              {platformConfigurations?.map((p) => (
+                <PlatformDependencyViewer
+                  key={p.name}
+                  platform={p}
+                  isDefault={false}
+                  isLatestVersion={isUpToDate}
+                />
+              ))}
+            </div>
+          </div>
+        </PanelForm>
+      </Panel>
+    );
+  },
+);
+
 const ProjectDependencyActions = observer(
   (props: { config: ProjectConfigurationEditorState }) => {
     const { config } = props;
@@ -501,6 +665,7 @@ export const ProjectConfigurationEditor = observer(() => {
   const tabs = [
     CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE,
     CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES,
+    CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS,
   ];
   const changeTab =
     (tab: CONFIGURATION_EDITOR_TAB): (() => void) =>
@@ -674,7 +839,12 @@ export const ProjectConfigurationEditor = observer(() => {
               )}
             </div>
           )}
-
+          {selectedTab === CONFIGURATION_EDITOR_TAB.PLATFORM_CONFIGURATIONS && (
+            <ProjectPlatformVersionEditor
+              projectConfig={currentProjectConfiguration}
+              isReadOnly={isReadOnly}
+            />
+          )}
           {configState.dependencyInfo &&
             configState.dependencyInfoModalType && (
               <ProjectDependencyInfoModal

@@ -193,7 +193,7 @@ export const MapperPostProcessorEditor = observer(
                               ? 'Table Mapper'
                               : 'Schema Mapper'
                           }
-                          validationErrorMessage={
+                          errorMessage={
                             isMapperDuplicated(mapper)
                               ? 'Mappers have the same values'
                               : undefined

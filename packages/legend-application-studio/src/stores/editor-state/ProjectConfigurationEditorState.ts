@@ -30,12 +30,14 @@ import {
   LogEvent,
   assertErrorThrown,
   guaranteeNonNullable,
+  hashArray,
 } from '@finos/legend-shared';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
   type ProjectConfiguration,
   ProjectStructureVersion,
   UpdateProjectConfigurationCommand,
+  UpdatePlatformConfigurationsCommand,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import {
@@ -51,6 +53,7 @@ import { generateGAVCoordinates } from '@finos/legend-storage';
 export enum CONFIGURATION_EDITOR_TAB {
   PROJECT_STRUCTURE = 'PROJECT_STRUCTURE',
   PROJECT_DEPENDENCIES = 'PROJECT_DEPENDENCIES',
+  PLATFORM_CONFIGURATIONS = 'PLATFORM_CONFIGURATIONS',
 }
 
 export enum DEPENDENCY_INFO_TYPE {
@@ -356,6 +359,17 @@ export class ProjectConfigurationEditorState extends EditorState {
           this.currentProjectConfiguration.projectStructureVersion,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}`,
         );
+
+      if (
+        hashArray(this.originalConfig.platformConfigurations ?? []) !==
+        hashArray(this.currentProjectConfiguration.platformConfigurations ?? [])
+      ) {
+        updateProjectConfigurationCommand.platformConfigurations =
+          new UpdatePlatformConfigurationsCommand(
+            this.currentProjectConfiguration.platformConfigurations,
+          );
+      }
+
       updateProjectConfigurationCommand.projectDependenciesToAdd =
         this.currentProjectConfiguration.projectDependencies.filter(
           (dep) =>

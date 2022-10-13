@@ -221,6 +221,7 @@
 }
 
 .panel__content__form {
+  max-width: 80rem;
   padding: 2rem;
 
   & > div:last-child {
@@ -234,6 +235,19 @@
       width: 100%;
       display: flex;
     }
+  }
+
+  &__description {
+    @include flexVCenter;
+
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-400);
+    padding: 1rem;
+    width: 60%;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-bottom: 3rem;
+    line-height: 1.9rem;
   }
 
   &__section {
@@ -268,11 +282,15 @@
     cursor: default;
   }
 
+  &__section__input-group__error-message {
+    max-width: 45rem;
+  }
+
   &__section__input {
     width: 100%;
     min-width: 5rem;
     max-width: 45rem;
-    margin: 0 0 2rem;
+    margin: 0;
     background: var(--color-dark-grey-100);
     color: var(--color-light-grey-200);
     padding: 1rem;
@@ -372,12 +390,18 @@
   }
 
   &__section__toggler__prompt {
+    @include flexCenter;
+
     word-break: break-word;
     margin-left: 0.8rem;
     color: var(--color-light-grey-400);
     line-height: 2rem;
     user-select: none;
     cursor: pointer;
+
+    svg {
+      margin-left: 0.5rem;
+    }
   }
 
   &__section__dropdown {

@@ -417,7 +417,7 @@ const SnowflakeDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.quotedIdentifiersIgnoreCase}
           name="quoted identifiers ignore case"
-          description="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
+          prompt="Controls whether Snowflake will treat alphabetic characters in double-quoted identifiers as uppercase"
           update={(value: boolean | undefined): void =>
             snowflakeDatasourceSpec_setQuotedIdentifiersIgnoreCase(
               sourceSpec,
@@ -544,7 +544,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyHost}
           name="proxy host"
-          description="Specifies proxy host for connection to GCP BigQuery"
+          prompt="Specifies proxy host for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyHost(
               sourceSpec,
@@ -556,7 +556,7 @@ const BigQueryDatasourceSpecificationEditor = observer(
           isReadOnly={isReadOnly}
           value={sourceSpec.proxyPort}
           name="proxy port"
-          description="Specifies proxy port for connection to GCP BigQuery"
+          prompt="Specifies proxy port for connection to GCP BigQuery"
           update={(value: string | undefined): void =>
             bigQueryDatasourceSpecification_setProxyPort(
               sourceSpec,
@@ -746,7 +746,7 @@ const MiddleTierUsernamePasswordAuthenticationStrategyEditor = observer(
           isReadOnly={isReadOnly}
           value={authSpec.vaultReference}
           name="vault reference"
-          description="Specifies the cred vault reference containing connection credentials"
+          prompt="Specifies the credential vault reference containing connection credentials"
           update={(value: string | undefined): void =>
             middleTierUsernamePasswordAuthenticationStrategy_setVaultReference(
               authSpec,
@@ -1375,7 +1375,7 @@ const RelationalConnectionGeneralEditor = observer(
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
                   name="Quote identifiers"
-                  description="Specifies whether to use double-quotes for SQL identifiers"
+                  prompt="Specifies whether to use double-quotes for SQL identifiers"
                   update={(value?: boolean): void =>
                     dBConnection_setQuoteIdentifiers(connection, Boolean(value))
                   }

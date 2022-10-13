@@ -49,14 +49,11 @@ export const PanelListSelectorItem: React.FC<{
 
 export const PanelListSelectorItemLabel: React.FC<{
   title: string;
-  validationErrorMessage?: string | undefined;
+  errorMessage?: string | undefined;
 }> = (props) => {
-  const { title, validationErrorMessage } = props;
+  const { title, errorMessage } = props;
   return (
-    <div
-      className="panel__list-selector__item__label"
-      title={validationErrorMessage}
-    >
+    <div className="panel__list-selector__item__label" title={errorMessage}>
       {title}
     </div>
   );
