@@ -63,15 +63,14 @@ export const DocumentationPreview: React.FC<{
   const applicationStore = useApplicationStore();
   const documentationEntry =
     applicationStore.documentationService.getDocEntry(documentationKey);
+  const textContent = text ?? documentationEntry?.text;
 
-  if (!documentationEntry) {
+  if (!documentationEntry || !textContent) {
     return null;
   }
   return (
     <div className={clsx('documentation-preview', className)}>
-      <div className="documentation-preview__text">
-        {text ?? documentationEntry.text}
-      </div>
+      <div className="documentation-preview__text">{textContent}</div>
       <div className="documentation-preview__hint">
         <DocumentationLink documentationKey={documentationKey} />
       </div>

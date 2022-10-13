@@ -49,7 +49,7 @@ import {
   SquareIcon,
   ExclamationTriangleIcon,
 } from '@finos/legend-art';
-import { action, flowResult } from 'mobx';
+import { flowResult } from 'mobx';
 import {
   type Platform,
   PlatformConfiguration,
@@ -436,7 +436,7 @@ const PlatformDependencyViewer = observer(
   (props: {
     platform: PlatformConfiguration;
     isDefault: boolean;
-    isLatestVersion?: boolean;
+    isLatestVersion?: boolean | undefined;
   }) => {
     const { platform, isDefault, isLatestVersion } = props;
 
@@ -501,30 +501,26 @@ const ProjectPlatformVersionEditor = observer(
     const defaultPlatforms = convertPlatformtoPlatformConfiguration(
       editorStore.sdlcServerClient.platforms,
     );
-    const isUpToDate = Boolean(
-      platformConfigurations &&
-        platformConfigurations.every(
-          (conf) =>
-            defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
-            conf.version,
-        ),
+    const isUpToDate = platformConfigurations?.every(
+      (conf) =>
+        defaultPlatforms?.find((p) => p.name === conf.name)?.version ===
+        conf.version,
     );
-
-    const updateLatest = action((): void => {
-      platformConfigurations?.forEach((platform) => {
-        const defaultPlatformConfig = defaultPlatforms?.find(
-          (p) => p.name === platform.name,
+    const updateLatestToLatestVersion = (): void => {
+      if (platformConfigurations && defaultPlatforms) {
+        projectConfig.setPlatformConfigurations(
+          platformConfigurations.map((conf) => {
+            const matchingPlatformConfig = defaultPlatforms.find(
+              (p) => p.name === conf.name,
+            );
+            if (matchingPlatformConfig) {
+              return matchingPlatformConfig;
+            }
+            return conf;
+          }),
         );
-        const ind = platformConfigurations?.findIndex((p) => p === platform);
-        if (
-          defaultPlatformConfig &&
-          platformConfigurations &&
-          ind !== undefined
-        ) {
-          platformConfigurations[ind] = defaultPlatformConfig;
-        }
-      });
-    });
+      }
+    };
 
     const toggleOverridePlatformConfigurations = (): void => {
       if (!projectConfig.platformConfigurations) {
@@ -581,7 +577,7 @@ const ProjectPlatformVersionEditor = observer(
                   <button
                     className="btn btn--dark"
                     tabIndex={-1}
-                    onClick={updateLatest}
+                    onClick={updateLatestToLatestVersion}
                   >
                     Update to the current latest platform version
                   </button>
@@ -589,24 +585,22 @@ const ProjectPlatformVersionEditor = observer(
               )}
             </div>
             <div className="platform-configurations-editor__dependencies__content">
-              {defaultPlatforms &&
-                !platformConfigurations &&
-                defaultPlatforms.map((p) => (
+              {!platformConfigurations &&
+                defaultPlatforms?.map((p) => (
                   <PlatformDependencyViewer
                     key={p.name}
                     isDefault={true}
                     platform={p}
                   />
                 ))}
-              {platformConfigurations &&
-                platformConfigurations.map((p) => (
-                  <PlatformDependencyViewer
-                    key={p.name}
-                    platform={p}
-                    isDefault={false}
-                    isLatestVersion={isUpToDate}
-                  />
-                ))}
+              {platformConfigurations?.map((p) => (
+                <PlatformDependencyViewer
+                  key={p.name}
+                  platform={p}
+                  isDefault={false}
+                  isLatestVersion={isUpToDate}
+                />
+              ))}
             </div>
           </div>
         </PanelForm>
