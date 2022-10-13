@@ -30,7 +30,7 @@ import { waitFor, getByText } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { TEST__setUpQueryBuilder } from '../../components/QueryBuilderComponentTestUtils.js';
 import { QUERY_BUILDER_TEST_ID } from '../../components/QueryBuilder_TestID.js';
-import { QueryBuilderProjectionState } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection } from './TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ChangeDetectionModel from './TEST_DATA__QueryBuilder_Model_ChangeDetection.json';
 import { TEST_DATA__TestChangeDetectionWithSimpleProject } from './TEST_DATA__QueryBuilder_TestChangeDetection.js';
@@ -71,22 +71,22 @@ test(integrationTest('Test change detection'), () => {
       );
     });
     const projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     await waitFor(() => getByText(projectionCols, 'Legal Name'));
     guaranteeNonNullable(
       guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderProjectionState,
-      ).columns[0],
+        QueryBuilderTDSState,
+      ).projectionColumns[0],
     ).setColumnName('Name');
     await waitFor(() => getByText(projectionCols, 'Name'));
     expect(queryBuilderState.changeDetectionState.hasChanged).toBeTruthy();
     guaranteeNonNullable(
       guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderProjectionState,
-      ).columns[0],
+        QueryBuilderTDSState,
+      ).projectionColumns[0],
     ).setColumnName('Legal Name');
     await waitFor(() => getByText(projectionCols, 'Legal Name'));
     expect(queryBuilderState.hashCode).toBe(

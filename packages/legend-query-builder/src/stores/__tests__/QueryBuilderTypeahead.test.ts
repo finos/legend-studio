@@ -26,7 +26,7 @@ import { RawLambda } from '@finos/legend-graph';
 import { TEST_DATA__lambda_simpleSingleConditionFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
 import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
-import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
+import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST_DATA__lambda_expected_typeahead_filter,
@@ -39,7 +39,7 @@ import {
   buildProjectionColumnTypeaheadQuery,
   buildPropertyTypeaheadQuery,
 } from '../QueryBuilderTypeaheadHelper.js';
-import { QueryBuilderProjectionState } from '../fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from '../fetch-structure/tds/QueryBuilderTDSState.js';
 
 type TypeaheadTestCase = [
   string,
@@ -128,12 +128,12 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
         new RawLambda(lambda.parameters, lambda.body),
       );
 
-      const projectionState = guaranteeType(
+      const tdsState = guaranteeType(
         queryBuilderState.fetchStructureState.implementation,
-        QueryBuilderProjectionState,
+        QueryBuilderTDSState,
       );
       const postFilterNode = guaranteeType(
-        projectionState.postFilterState.getRootNode(),
+        tdsState.postFilterState.getRootNode(),
         QueryBuilderPostFilterTreeConditionNodeData,
       );
       const jsonQuery =

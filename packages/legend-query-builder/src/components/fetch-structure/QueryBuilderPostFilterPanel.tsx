@@ -70,9 +70,9 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
-import { getColumnMultiplicity } from '../../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
-import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
-import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
+import { getColumnMultiplicity } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
+import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
+import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   type QueryBuilderPostFilterDropTarget,
@@ -82,13 +82,13 @@ import {
   QueryBuilderPostFilterTreeGroupNodeData,
   QUERY_BUILDER_POST_FILTER_DND_TYPE,
   QueryBuilderPostFilterTreeBlankConditionNodeData,
-} from '../../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
+} from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   type QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
   QueryBuilderDerivationProjectionColumnState,
-} from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+} from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import {
   type QueryBuilderParameterDragSource,
@@ -97,19 +97,19 @@ import {
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
-import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      projectionState: QueryBuilderProjectionState;
+      tdsState: QueryBuilderTDSState;
       node: QueryBuilderPostFilterTreeNodeData;
     }
   >(function QueryBuilderPostFilterConditionContextMenu(props, ref) {
-    const { projectionState, node } = props;
-    const postFilterState = projectionState.postFilterState;
+    const { tdsState, node } = props;
+    const postFilterState = tdsState.postFilterState;
     const removeNode = (): void =>
       postFilterState.removeNodeAndPruneBranch(node);
     const createCondition = (): void => {
@@ -365,7 +365,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
   }) => {
     const { node, isDragOver } = props;
     const graph =
-      node.condition.postFilterState.projectionState.queryBuilderState
+      node.condition.postFilterState.tdsState.queryBuilderState
         .graphManagerState.graph;
     const applicationStore = useApplicationStore();
     const changeOperator = (val: QueryBuilderPostFilterOperator) => (): void =>
@@ -505,8 +505,8 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     setValueSpecification={changeValueSpecification}
                     graph={graph}
                     obseverContext={
-                      node.condition.postFilterState.projectionState
-                        .queryBuilderState.observableContext
+                      node.condition.postFilterState.tdsState.queryBuilderState
+                        .observableContext
                     }
                     typeCheckOption={{
                       expectedType: guaranteeNonNullable(
@@ -553,17 +553,17 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
     props: TreeNodeContainerProps<
       QueryBuilderPostFilterTreeNodeData,
       {
-        projectionState: QueryBuilderProjectionState;
+        tdsState: QueryBuilderTDSState;
       }
     >,
   ) => {
     const { node, level, stepPaddingInRem, onNodeSelect, innerProps } = props;
-    const { projectionState: projectionState } = innerProps;
+    const { tdsState } = innerProps;
     const ref = useRef<HTMLDivElement>(null);
     const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
       useState(false);
     const applicationStore = useApplicationStore();
-    const postFilterState = projectionState.postFilterState;
+    const postFilterState = tdsState.postFilterState;
     const isExpandable =
       node instanceof QueryBuilderPostFilterTreeGroupNodeData;
     const selectNode = (): void => onNodeSelect?.(node);
@@ -674,7 +674,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       <ContextMenu
         content={
           <QueryBuilderPostFilterConditionContextMenu
-            projectionState={projectionState}
+            tdsState={tdsState}
             node={node}
           />
         }
@@ -763,7 +763,7 @@ const QueryBuilderPostFilterTreeNodeView = observer(
     props: TreeNodeViewProps<
       QueryBuilderPostFilterTreeNodeData,
       {
-        projectionState: QueryBuilderProjectionState;
+        tdsState: QueryBuilderTDSState;
       }
     >,
   ) => {
@@ -801,9 +801,9 @@ const QueryBuilderPostFilterTreeNodeView = observer(
 );
 
 const QueryBuilderPostFilterTree = observer(
-  (props: { projectionState: QueryBuilderProjectionState }) => {
-    const { projectionState } = props;
-    const postFilterState = projectionState.postFilterState;
+  (props: { tdsState: QueryBuilderTDSState }) => {
+    const { tdsState } = props;
+    const postFilterState = tdsState.postFilterState;
     const rootNodes = postFilterState.rootIds.map((rootId) =>
       postFilterState.getNode(rootId),
     );
@@ -829,7 +829,7 @@ const QueryBuilderPostFilterTree = observer(
               getChildNodes={getChildNodes}
               onNodeSelect={onNodeSelect}
               innerProps={{
-                projectionState: projectionState,
+                tdsState: tdsState,
               }}
             />
           ))}
@@ -840,10 +840,10 @@ const QueryBuilderPostFilterTree = observer(
 );
 
 const QueryBuilderPostFilterPanelContent = observer(
-  (props: { projectionState: QueryBuilderProjectionState }) => {
-    const { projectionState } = props;
+  (props: { tdsState: QueryBuilderTDSState }) => {
+    const { tdsState } = props;
     const applicationStore = useApplicationStore();
-    const postFilterState = projectionState.postFilterState;
+    const postFilterState = tdsState.postFilterState;
     const rootNode = postFilterState.getRootNode();
     // actions
     const collapseTree = (): void => {
@@ -902,10 +902,9 @@ const QueryBuilderPostFilterPanelContent = observer(
         try {
           const columnState = (item as QueryBuilderProjectionColumnDragSource)
             .columnState;
-          const aggregateColumnState =
-            projectionState.aggregationState.columns.find(
-              (column) => column.projectionColumnState === columnState,
-            );
+          const aggregateColumnState = tdsState.aggregationState.columns.find(
+            (column) => column.projectionColumnState === columnState,
+          );
           if (
             !aggregateColumnState &&
             columnState instanceof QueryBuilderDerivationProjectionColumnState
@@ -938,11 +937,7 @@ const QueryBuilderPostFilterPanelContent = observer(
           undefined,
         );
       },
-      [
-        applicationStore,
-        postFilterState,
-        projectionState.aggregationState.columns,
-      ],
+      [applicationStore, postFilterState, tdsState.aggregationState.columns],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
       QueryBuilderProjectionColumnDragSource,
@@ -1057,7 +1052,7 @@ const QueryBuilderPostFilterPanelContent = observer(
                   ): string => item.node.dragPreviewLabel}
                   types={Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE)}
                 />
-                <QueryBuilderPostFilterTree projectionState={projectionState} />
+                <QueryBuilderPostFilterTree tdsState={tdsState} />
               </>
             )}
           </PanelDropZone>
@@ -1078,15 +1073,12 @@ export const QueryBuilderPostFilterPanel = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER_POST_FILTER}
         className="panel"
       >
-        {fetchStructureImplementation instanceof
-          QueryBuilderProjectionState && (
+        {fetchStructureImplementation instanceof QueryBuilderTDSState && (
           <QueryBuilderPostFilterPanelContent
-            projectionState={fetchStructureImplementation}
+            tdsState={fetchStructureImplementation}
           />
         )}
-        {!(
-          fetchStructureImplementation instanceof QueryBuilderProjectionState
-        ) && (
+        {!(fetchStructureImplementation instanceof QueryBuilderTDSState) && (
           <>
             <div className="panel__header">
               <div className="panel__header__title">

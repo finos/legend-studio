@@ -23,9 +23,9 @@ import {
 } from '@finos/legend-art';
 import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { prettyCONSTName } from '@finos/legend-shared';
-import { QueryBuilderProjectionPanel } from './QueryBuilderProjectionPanel.js';
+import { QueryBuilderTDSPanel } from './QueryBuilderTDSPanel.js';
 import { QueryBuilderGraphFetchTreePanel } from './QueryBuilderGraphFetchTreePanel.js';
-import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
@@ -36,12 +36,8 @@ const QueryBuilderFetchStructureEditor = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const fetchStructureImplementation = fetchStructureState.implementation;
 
-    if (fetchStructureImplementation instanceof QueryBuilderProjectionState) {
-      return (
-        <QueryBuilderProjectionPanel
-          projectionState={fetchStructureImplementation}
-        />
-      );
+    if (fetchStructureImplementation instanceof QueryBuilderTDSState) {
+      return <QueryBuilderTDSPanel tdsState={fetchStructureImplementation} />;
     } else if (
       fetchStructureImplementation instanceof QueryBuilderGraphFetchTreeState
     ) {

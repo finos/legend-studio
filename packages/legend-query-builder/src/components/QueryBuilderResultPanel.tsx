@@ -62,22 +62,22 @@ import type { CellMouseOverEvent } from '@ag-grid-community/core';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
-} from '../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+} from '../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
   type QueryBuilderPostFilterTreeNodeData,
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
+} from '../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderPostFilterOperator_Equal,
   QueryBuilderPostFilterOperator_NotEqual,
-} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
+} from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_Equal.js';
 import {
   QueryBuilderPostFilterOperator_In,
   QueryBuilderPostFilterOperator_NotIn,
-} from '../stores/fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
-import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/projection/post-filter/QueryBuilderPostFilterOperator.js';
-import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+} from '../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_In.js';
+import type { QueryBuilderPostFilterOperator } from '../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
+import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import {
   instanceValue_setValue,
   instanceValue_setValues,
@@ -89,22 +89,22 @@ const QueryBuilderGridResultContextMenu = observer(
     HTMLDivElement,
     {
       event: CellMouseOverEvent | null;
-      projectionState: QueryBuilderProjectionState;
+      tdsState: QueryBuilderTDSState;
     }
   >(function QueryBuilderResultContextMenu(props, ref) {
-    const { event, projectionState } = props;
+    const { event, tdsState } = props;
     const applicationStore = useApplicationStore();
     const postFilterEqualOperator = new QueryBuilderPostFilterOperator_Equal();
     const postFilterInOperator = new QueryBuilderPostFilterOperator_In();
     const postFilterNotEqualOperator =
       new QueryBuilderPostFilterOperator_NotEqual();
     const postFilterNotInOperator = new QueryBuilderPostFilterOperator_NotIn();
-    const postFilterState = projectionState.postFilterState;
+    const postFilterState = tdsState.postFilterState;
     const projectionColumnState = guaranteeNonNullable(
-      projectionState.columns
+      tdsState.projectionColumns
         .filter((c) => c.columnName === event?.column.getColId())
         .concat(
-          projectionState.aggregationState.columns
+          tdsState.aggregationState.columns
             .filter((c) => c.columnName === event?.column.getColId())
             .map((ag) => ag.projectionColumnState),
         )[0],
@@ -256,7 +256,7 @@ const QueryBuilderGridResultContextMenu = observer(
     };
 
     const filterByOrOut = (isFilterBy: boolean): void => {
-      projectionState.setShowPostFilterPanel(true);
+      tdsState.setShowPostFilterPanel(true);
       const existingPostFilterNode = getExistingPostFilterNode(
         isFilterBy
           ? [postFilterEqualOperator, postFilterInOperator]
@@ -320,18 +320,16 @@ const QueryBuilderGridResult = observer(
       <ContextMenu
         content={
           // NOTE: we only support this functionality for grid result with a projection fetch-structure
-          fetchStructureImplementation instanceof
-          QueryBuilderProjectionState ? (
+          fetchStructureImplementation instanceof QueryBuilderTDSState ? (
             <QueryBuilderGridResultContextMenu
               event={cellDoubleClickedEvent}
-              projectionState={fetchStructureImplementation}
+              tdsState={fetchStructureImplementation}
             />
           ) : null
         }
         disabled={
-          !(
-            fetchStructureImplementation instanceof QueryBuilderProjectionState
-          ) || !queryBuilderState.isQuerySupported
+          !(fetchStructureImplementation instanceof QueryBuilderTDSState) ||
+          !queryBuilderState.isQuerySupported
         }
         menuProps={{ elevation: 7 }}
         key={executionResult._UUID}

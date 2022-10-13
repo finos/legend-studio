@@ -49,7 +49,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
-import { QueryBuilderProjectionState } from '../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
 
 enum QUERY_BUILDER_HOTKEY {
@@ -188,13 +188,10 @@ export const QueryBuilder = observer(
     const toggleShowPostFilterPanel = (): void => {
       if (
         queryBuilderState.fetchStructureState.implementation instanceof
-        QueryBuilderProjectionState
+        QueryBuilderTDSState
       ) {
-        const projectionState =
-          queryBuilderState.fetchStructureState.implementation;
-        projectionState.setShowPostFilterPanel(
-          !projectionState.showPostFilterPanel,
-        );
+        const tdsState = queryBuilderState.fetchStructureState.implementation;
+        tdsState.setShowPostFilterPanel(!tdsState.showPostFilterPanel);
       }
     };
 
@@ -231,7 +228,7 @@ export const QueryBuilder = observer(
                       Show Function(s)
                     </MenuContentItemLabel>
                   </MenuContentItem>
-                  {/* TODO?: consider hiding this menu option when the fetch-structure is not projection */}
+                  {/* TODO?: consider hiding this menu option when the fetch-structure is not tds */}
                   {!queryBuilderState.isParameterSupportDisabled && (
                     <MenuContentItem
                       onClick={toggleShowParameterPanel}
@@ -257,7 +254,7 @@ export const QueryBuilder = observer(
                       !queryBuilderState.isQuerySupported ||
                       !(
                         queryBuilderState.fetchStructureState
-                          .implementation instanceof QueryBuilderProjectionState
+                          .implementation instanceof QueryBuilderTDSState
                       ) ||
                       Array.from(
                         queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
@@ -266,8 +263,7 @@ export const QueryBuilder = observer(
                   >
                     <MenuContentItemIcon>
                       {queryBuilderState.fetchStructureState
-                        .implementation instanceof
-                        QueryBuilderProjectionState &&
+                        .implementation instanceof QueryBuilderTDSState &&
                       queryBuilderState.fetchStructureState.implementation
                         .showPostFilterPanel ? (
                         <CheckIcon />
@@ -394,8 +390,7 @@ export const QueryBuilder = observer(
                       <ResizablePanel minSize={300}>
                         {(!(
                           queryBuilderState.fetchStructureState
-                            .implementation instanceof
-                          QueryBuilderProjectionState
+                            .implementation instanceof QueryBuilderTDSState
                         ) ||
                           !queryBuilderState.fetchStructureState.implementation
                             .showPostFilterPanel) && (
@@ -404,8 +399,7 @@ export const QueryBuilder = observer(
                           />
                         )}
                         {queryBuilderState.fetchStructureState
-                          .implementation instanceof
-                          QueryBuilderProjectionState &&
+                          .implementation instanceof QueryBuilderTDSState &&
                           queryBuilderState.fetchStructureState.implementation
                             .showPostFilterPanel && (
                             <ResizablePanelGroup orientation="horizontal">

@@ -28,21 +28,18 @@ import {
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
-import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+} from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
+import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
-import type { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 
 const ColumnSortEditor = observer(
-  (props: {
-    projectionState: QueryBuilderProjectionState;
-    sortState: SortColumnState;
-  }) => {
-    const { projectionState, sortState } = props;
+  (props: { tdsState: QueryBuilderTDSState; sortState: SortColumnState }) => {
+    const { tdsState, sortState } = props;
     const applicationStore = useApplicationStore();
-    const sortColumns = projectionState.resultSetModifierState.sortColumns;
-    const projectionOptions = projectionState.columns
+    const sortColumns = tdsState.resultSetModifierState.sortColumns;
+    const projectionOptions = tdsState.projectionColumns
       .filter(
         (projectionCol) =>
           projectionCol === sortState.columnState ||
@@ -72,7 +69,7 @@ const ColumnSortEditor = observer(
       );
     };
     const deleteColumnSort = (): void =>
-      projectionState.resultSetModifierState.deleteSortColumn(sortState);
+      tdsState.resultSetModifierState.deleteSortColumn(sortState);
 
     return (
       <div className="panel__content__form__section__list__item query-builder__projection__options__sort">
@@ -109,11 +106,11 @@ const ColumnSortEditor = observer(
 );
 
 const ColumnsSortEditor = observer(
-  (props: { projectionState: QueryBuilderProjectionState }) => {
-    const { projectionState } = props;
-    const resultSetModifierState = projectionState.resultSetModifierState;
+  (props: { tdsState: QueryBuilderTDSState }) => {
+    const { tdsState } = props;
+    const resultSetModifierState = tdsState.resultSetModifierState;
     const sortColumns = resultSetModifierState.sortColumns;
-    const projectionOptions = projectionState.columns
+    const projectionOptions = tdsState.projectionColumns
       .filter(
         (projectionCol) =>
           !sortColumns.some((sortCol) => sortCol.columnState === projectionCol),
@@ -146,7 +143,7 @@ const ColumnsSortEditor = observer(
             {sortColumns.map((value) => (
               <ColumnSortEditor
                 key={value.columnState.uuid}
-                projectionState={projectionState}
+                tdsState={tdsState}
                 sortState={value}
               />
             ))}
@@ -168,9 +165,9 @@ const ColumnsSortEditor = observer(
 );
 
 export const QueryResultModifierModal = observer(
-  (props: { projectionState: QueryBuilderProjectionState }) => {
-    const { projectionState: projectionState } = props;
-    const resultSetModifierState = projectionState.resultSetModifierState;
+  (props: { tdsState: QueryBuilderTDSState }) => {
+    const { tdsState: tdsState } = props;
+    const resultSetModifierState = tdsState.resultSetModifierState;
     const limitResults = resultSetModifierState.limit;
     const distinct = resultSetModifierState.distinct;
     const close = (): void => resultSetModifierState.setShowModal(false);
@@ -198,7 +195,7 @@ export const QueryResultModifierModal = observer(
           </div>
           <div className="modal__body query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
-              <ColumnsSortEditor projectionState={projectionState} />
+              <ColumnsSortEditor tdsState={tdsState} />
               <div className="panel__content__form__section">
                 <div className="panel__content__form__section__header__label">
                   Eliminate Duplicate Rows

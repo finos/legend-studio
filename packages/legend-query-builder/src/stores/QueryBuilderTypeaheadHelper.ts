@@ -24,18 +24,18 @@ import {
   type RawLambda,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
-import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/projection/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
-import type { QueryBuilderAggregateColumnState } from './fetch-structure/projection/aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderPostFilterOperator_StartWith } from './fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperator_StartWith.js';
+import type { QueryBuilderAggregateColumnState } from './fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {
   PostFilterConditionState,
   QueryBuilderPostFilterTreeConditionNodeData,
-} from './fetch-structure/projection/post-filter/QueryBuilderPostFilterState.js';
+} from './fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import {
   QueryBuilderProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
-} from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+} from './fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
-import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
@@ -45,12 +45,12 @@ const initializeQueryBuilderState = (
   queryBuilderState: QueryBuilderState,
 ): QueryBuilderState => {
   const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
-  const projectionState = guaranteeType(
+  const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
-    QueryBuilderProjectionState,
+    QueryBuilderTDSState,
   );
-  projectionState.resultSetModifierState.distinct = true;
-  projectionState.resultSetModifierState.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
+  tdsState.resultSetModifierState.distinct = true;
+  tdsState.resultSetModifierState.limit = DEFAULT_TYPEAHEAD_SEARCH_LIMIT;
   return builderState;
 };
 
@@ -61,21 +61,21 @@ const buildColumnTypeaheadQuery = (
     | QueryBuilderAggregateColumnState,
   value: ValueSpecification | undefined,
 ): RawLambda => {
-  const projectionState = guaranteeType(
+  const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
-    QueryBuilderProjectionState,
+    QueryBuilderTDSState,
   );
   let projectionColumnState;
   if (columnState instanceof QueryBuilderProjectionColumnState) {
     projectionColumnState = columnState;
   } else {
     projectionColumnState = columnState.projectionColumnState;
-    const aggregationState = projectionState.aggregationState;
+    const aggregationState = tdsState.aggregationState;
     aggregationState.columns = [columnState];
   }
-  projectionState.columns = [projectionColumnState];
+  tdsState.projectionColumns = [projectionColumnState];
   const postConditionState = new PostFilterConditionState(
-    projectionState.postFilterState,
+    tdsState.postFilterState,
     columnState,
     value,
     new QueryBuilderPostFilterOperator_StartWith(),
@@ -84,7 +84,7 @@ const buildColumnTypeaheadQuery = (
     undefined,
     postConditionState,
   );
-  projectionState.postFilterState.addNodeFromNode(postFilterNode, undefined);
+  tdsState.postFilterState.addNodeFromNode(postFilterNode, undefined);
   return builderState.resultState.buildExecutionRawLambda();
 };
 
@@ -94,12 +94,12 @@ export const buildPropertyTypeaheadQuery = (
   value: ValueSpecification | undefined,
 ): RawLambda => {
   const builderState = initializeQueryBuilderState(queryBuilderState);
-  const projectionState = guaranteeType(
+  const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
-    QueryBuilderProjectionState,
+    QueryBuilderTDSState,
   );
   const columnState = new QueryBuilderSimpleProjectionColumnState(
-    projectionState,
+    tdsState,
     propertyExpression,
     false,
   );

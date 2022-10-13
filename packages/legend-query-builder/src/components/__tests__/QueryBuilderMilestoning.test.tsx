@@ -41,8 +41,8 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { stub_RawLambda, create_RawLambda } from '@finos/legend-graph';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
-import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 
@@ -355,12 +355,12 @@ describe(
           expectedNumberOfParameterValues,
         );
 
-        const projectionState = guaranteeType(
+        const tdsState = guaranteeType(
           queryBuilderState.fetchStructureState.implementation,
-          QueryBuilderProjectionState,
+          QueryBuilderTDSState,
         );
         const projectionColumnState = guaranteeType(
-          projectionState.columns[0],
+          tdsState.projectionColumns[0],
           QueryBuilderSimpleProjectionColumnState,
         );
         const derivedPropertyExpressionStates =

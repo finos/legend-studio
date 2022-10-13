@@ -49,12 +49,12 @@ import {
   type INTERNAL__PropagatedValue,
   type ValueSpecification,
 } from '@finos/legend-graph';
-import { processTDSPostFilterExpression } from './fetch-structure/projection/post-filter/QueryBuilderPostFilterStateBuilder.js';
+import { processTDSPostFilterExpression } from './fetch-structure/tds/post-filter/QueryBuilderPostFilterStateBuilder.js';
 import { processFilterExpression } from './filter/QueryBuilderFilterStateBuilder.js';
 import {
   processTDSAggregateExpression,
   processTDSGroupByExpression,
-} from './fetch-structure/projection/aggregation/QueryBuilderAggregationStateBuilder.js';
+} from './fetch-structure/tds/aggregation/QueryBuilderAggregationStateBuilder.js';
 import {
   processGraphFetchExpression,
   processGraphFetchSerializeExpression,
@@ -67,7 +67,7 @@ import {
   processTDSSortDirectionExpression,
   processTDSSortExpression,
   processTDSTakeExpression,
-} from './fetch-structure/projection/QueryBuilderProjectionStateBuilder.js';
+} from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 
