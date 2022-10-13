@@ -24,8 +24,8 @@ import {
 import {
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
-} from '../../DSL_Diagram_DiagramRenderer.js';
-import { HotkeyConfiguration, PanelDisplayState } from '@finos/legend-art';
+} from '../../DiagramRenderer.js';
+import { PanelDisplayState } from '@finos/legend-art';
 import {
   type PackageableElement,
   type AbstractProperty,
@@ -48,28 +48,8 @@ import type { ClassView } from '../../graph/metamodel/pure/packageableElements/d
 import type { Point } from '../../graph/metamodel/pure/packageableElements/diagram/geometry/DSL_Diagram_Point.js';
 import { Diagram } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 import type { PropertyHolderView } from '../../graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_PropertyHolderView.js';
-
-enum DIAGRAM_EDITOR_HOTKEY {
-  RECENTER = 'RECENTER',
-  USE_ZOOM_TOOL = 'USE_ZOOM_TOOL',
-  USE_VIEW_TOOL = 'USE_VIEW_TOOL',
-  USE_PAN_TOOL = 'USE_PAN_TOOL',
-  USE_PROPERTY_TOOL = 'USE_PROPERTY_TOOL',
-  USE_INHERITANCE_TOOL = 'USE_INHERITANCE_TOOL',
-  ADD_CLASS = 'ADD_CLASS',
-  EJECT_PROPERTY = 'EJECT_PROPERTY',
-}
-
-const DIAGRAM_EDITOR_HOTKEY_MAP = Object.freeze({
-  [DIAGRAM_EDITOR_HOTKEY.RECENTER]: 'r',
-  [DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL]: 'z',
-  [DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL]: 'v',
-  [DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL]: 'm',
-  [DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL]: 'p',
-  [DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL]: 'i',
-  [DIAGRAM_EDITOR_HOTKEY.ADD_CLASS]: 'c',
-  [DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY]: 'ArrowRight',
-});
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY } from '../../components/studio/DSL_Diagram_LegendStudioCommand.js';
+import type { CommandRegistrar } from '@finos/legend-application';
 
 export abstract class DiagramEditorSidePanelState {
   readonly uuid = uuid();
@@ -168,7 +148,10 @@ export class DiagramEditorInlinePropertyEditorState {
   }
 }
 
-export class DiagramEditorState extends ElementEditorState {
+export class DiagramEditorState
+  extends ElementEditorState
+  implements CommandRegistrar
+{
   _renderer?: DiagramRenderer | undefined;
   showHotkeyInfosModal = false;
   sidePanelDisplayState = new PanelDisplayState({
@@ -426,69 +409,83 @@ export class DiagramEditorState extends ElementEditorState {
         this.renderer.render();
       }
     };
+  }
 
-    /**
-     * NOTE: although our renderer handles hotkeys, it only does so
-     * when it is in focus. This does not happen when the user just
-     * open the diagram editor, or click out of it. As such, here we create
-     * some global hotkeys that will call the renderer's hotkey handler method.
-     *
-     * We use {@link createDiagramHotKeyAction} to ensure global hotkeys are appropriately
-     * called and especially not called twice when the diagram is in focus. In such case,
-     * its native hotkey handlers will take precedence
-     */
-    [
-      DIAGRAM_EDITOR_HOTKEY.RECENTER,
-      DIAGRAM_EDITOR_HOTKEY.USE_ZOOM_TOOL,
-      DIAGRAM_EDITOR_HOTKEY.USE_VIEW_TOOL,
-      DIAGRAM_EDITOR_HOTKEY.USE_PAN_TOOL,
-      DIAGRAM_EDITOR_HOTKEY.USE_PROPERTY_TOOL,
-      DIAGRAM_EDITOR_HOTKEY.USE_INHERITANCE_TOOL,
-      DIAGRAM_EDITOR_HOTKEY.ADD_CLASS,
-      DIAGRAM_EDITOR_HOTKEY.EJECT_PROPERTY,
-    ].forEach((key) => {
-      this.editorStore.addHotKey(
-        new HotkeyConfiguration(
-          key,
-          [DIAGRAM_EDITOR_HOTKEY_MAP[key]],
-          this.createDiagramHotKeyAction((event?: KeyboardEvent) => {
-            if (event) {
-              this.renderer.keydown(event);
-            }
-          }),
-        ),
-      );
+  registerCommands(): void {
+    const DEFAULT_TRIGGER = (): boolean =>
+      // make sure the current active editor is this diagram editor
+      this.editorStore.currentEditorState === this &&
+      // make sure the renderer is initialized
+      this.isDiagramRendererInitialized &&
+      // make sure the renderer canvas is currently not being in focused
+      // so we don't end up triggering a hotkey twice, because natively the renderer
+      // listens to keydown event as well
+      this.renderer.div !== document.activeElement &&
+      // since we use hotkeys that can be easily in text input
+      // we would need to do this check to make sure we don't accidentally
+      // trigger hotkeys when the user is typing
+      (!document.activeElement ||
+        !['input', 'textarea', 'select'].includes(
+          document.activeElement.tagName.toLowerCase(),
+        ));
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.RECENTER,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.recenter(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_ZOOM_TOOL,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToZoomMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_VIEW_TOOL,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToViewMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PAN_TOOL,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToPanMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PROPERTY_TOOL,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToAddPropertyMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_INHERITANCE_TOOL,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToAddInheritanceMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.ADD_CLASS,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.switchToAddClassMode(),
+    });
+    this.editorStore.applicationStore.commandCenter.registerCommand({
+      key: DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.EJECT_PROPERTY,
+      trigger: this.editorStore.createEditorCommandTrigger(DEFAULT_TRIGGER),
+      action: () => this.renderer.ejectProperty(),
     });
   }
 
-  cleanUp(): void {
-    this.editorStore.resetHotkeys();
+  deregisterCommands(): void {
+    [
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.RECENTER,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_ZOOM_TOOL,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_VIEW_TOOL,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PAN_TOOL,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_PROPERTY_TOOL,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.USE_INHERITANCE_TOOL,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.ADD_CLASS,
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_KEY.EJECT_PROPERTY,
+    ].forEach((commandKey) =>
+      this.editorStore.applicationStore.commandCenter.deregisterCommand(
+        commandKey,
+      ),
+    );
   }
-
-  private createDiagramHotKeyAction = (
-    handler: (event?: KeyboardEvent) => void,
-  ): ((event?: KeyboardEvent) => void) =>
-    this.editorStore.createGlobalHotKeyAction((event?: KeyboardEvent): void => {
-      if (
-        // make sure the current active editor is this diagram editor
-        this.editorStore.currentEditorState === this &&
-        // make sure the renderer is initialized
-        this.isDiagramRendererInitialized &&
-        // make sure the renderer canvas is currently not being in focused
-        // so we don't end up triggering a hotkey twice, because natively the renderer
-        // listens to keydown event as well
-        this.renderer.div !== document.activeElement &&
-        // since we use hotkeys that can be easily in text input
-        // we would need to do this check to make sure we don't accidentally
-        // trigger hotkeys when the user is typing
-        (!document.activeElement ||
-          !['input', 'textarea', 'select'].includes(
-            document.activeElement.tagName.toLowerCase(),
-          ))
-      ) {
-        handler(event);
-      }
-    }, false);
 
   reprocess(
     newElement: PackageableElement,

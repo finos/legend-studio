@@ -24,7 +24,6 @@ import {
   type LegendApplicationConfigurationInput,
   BrowserRouter,
 } from '@finos/legend-application';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendTaxonomyApplication } from '../components/LegendTaxonomyApplication.js';
 import { LegendTaxonomyPluginManager } from './LegendTaxonomyPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
@@ -33,14 +32,10 @@ import {
   type LegendTaxonomyApplicationConfigurationData,
   LegendTaxonomyApplicationConfig,
 } from './LegendTaxonomyApplicationConfig.js';
+import { Core_LegendTaxonomyApplicationPlugin } from '../components/Core_LegendTaxonomyApplicationPlugin.js';
 
 const setupLegendTaxonomyUILibrary = async (): Promise<void> => {
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
-  });
+  // do nothing
 };
 
 export class LegendTaxonomy extends LegendApplication {
@@ -51,7 +46,10 @@ export class LegendTaxonomy extends LegendApplication {
     const application = new LegendTaxonomy(
       LegendTaxonomyPluginManager.create(),
     );
-    application.withBasePlugins([new Core_PureGraphManagerPlugin()]);
+    application.withBasePlugins([
+      new Core_PureGraphManagerPlugin(),
+      new Core_LegendTaxonomyApplicationPlugin(),
+    ]);
     return application;
   }
 

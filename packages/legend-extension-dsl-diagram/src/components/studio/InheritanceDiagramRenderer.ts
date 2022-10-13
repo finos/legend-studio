@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DiagramRenderer } from '../../DSL_Diagram_DiagramRenderer.js';
+import { DiagramRenderer } from '../../DiagramRenderer.js';
 import { uuid } from '@finos/legend-shared';
 import {
   type Class,

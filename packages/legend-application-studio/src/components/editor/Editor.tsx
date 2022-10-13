@@ -18,7 +18,6 @@ import { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type ResizablePanelHandlerProps,
-  buildReactHotkeysConfiguration,
   getControlledResizablePanelProps,
   ResizablePanel,
   ResizablePanelGroup,
@@ -29,7 +28,6 @@ import {
 import { AuxiliaryPanel } from './aux-panel/AuxiliaryPanel.js';
 import { SideBar } from './side-bar/SideBar.js';
 import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
-import { GlobalHotKeys } from 'react-hotkeys';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
@@ -47,6 +45,7 @@ import {
   useParams,
   ActionAlertType,
   ActionAlertActionType,
+  useCommands,
 } from '@finos/legend-application';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { WorkspaceSyncConflictResolver } from './side-bar/WorkspaceSyncConflictResolver.js';
@@ -102,10 +101,7 @@ export const Editor = withEditorStore(
       }
     }, [editorStore, ref, height, width]);
 
-    // Hotkeys
-    const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
-      editorStore.hotkeys,
-    );
+    useCommands(editorStore);
 
     // Cleanup the editor
     useEffect(() => (): void => editorStore.cleanUp(), [editorStore]);
@@ -167,79 +163,73 @@ export const Editor = withEditorStore(
     return (
       <div className="app__page">
         <div className="editor">
-          <GlobalHotKeys
-            keyMap={hotkeyMapping}
-            handlers={hotkeyHandlers}
-            allowChanges={true}
-          >
-            <div className="editor__body">
-              <ActivityBar />
-              <div ref={ref} className="editor__content-container">
-                <div className="editor__content">
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        editorStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                          size: editorStore.sideBarDisplayState.size,
-                        },
-                      )}
-                      direction={1}
-                    >
-                      <SideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      <ResizablePanelGroup orientation="horizontal">
-                        <ResizablePanel
-                          {...getControlledResizablePanelProps(
-                            editorStore.auxPanelDisplayState.isMaximized,
-                          )}
-                        >
-                          {(isResolvingConflicts || editable) &&
-                            editorStore.isInFormMode && <EditPanel />}
-                          {editable && editorStore.isInGrammarTextMode && (
-                            <GrammarTextEditor />
-                          )}
-                          {!editable && <EditPanelSplashScreen />}
-                        </ResizablePanel>
-                        <ResizablePanelSplitter>
-                          <ResizablePanelSplitterLine
-                            color={
-                              editorStore.auxPanelDisplayState.isMaximized
-                                ? 'transparent'
-                                : 'var(--color-dark-grey-250)'
-                            }
-                          />
-                        </ResizablePanelSplitter>
-                        <ResizablePanel
-                          {...getControlledResizablePanelProps(
-                            editorStore.auxPanelDisplayState.size === 0,
-                            {
-                              onStopResize: resizeAuxPanel,
-                              size: editorStore.auxPanelDisplayState.size,
-                            },
-                          )}
-                          direction={-1}
-                        >
-                          <AuxiliaryPanel />
-                        </ResizablePanel>
-                      </ResizablePanelGroup>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+          <div className="editor__body">
+            <ActivityBar />
+            <div ref={ref} className="editor__content-container">
+              <div className="editor__content">
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...getControlledResizablePanelProps(
+                      editorStore.sideBarDisplayState.size === 0,
+                      {
+                        onStopResize: resizeSideBar,
+                        size: editorStore.sideBarDisplayState.size,
+                      },
+                    )}
+                    direction={1}
+                  >
+                    <SideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel minSize={300}>
+                    <ResizablePanelGroup orientation="horizontal">
+                      <ResizablePanel
+                        {...getControlledResizablePanelProps(
+                          editorStore.auxPanelDisplayState.isMaximized,
+                        )}
+                      >
+                        {(isResolvingConflicts || editable) &&
+                          editorStore.isInFormMode && <EditPanel />}
+                        {editable && editorStore.isInGrammarTextMode && (
+                          <GrammarTextEditor />
+                        )}
+                        {!editable && <EditPanelSplashScreen />}
+                      </ResizablePanel>
+                      <ResizablePanelSplitter>
+                        <ResizablePanelSplitterLine
+                          color={
+                            editorStore.auxPanelDisplayState.isMaximized
+                              ? 'transparent'
+                              : 'var(--color-dark-grey-250)'
+                          }
+                        />
+                      </ResizablePanelSplitter>
+                      <ResizablePanel
+                        {...getControlledResizablePanelProps(
+                          editorStore.auxPanelDisplayState.size === 0,
+                          {
+                            onStopResize: resizeAuxPanel,
+                            size: editorStore.auxPanelDisplayState.size,
+                          },
+                        )}
+                        direction={-1}
+                      >
+                        <AuxiliaryPanel />
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <StatusBar actionsDisabled={!editable} />
-            {editable && <ProjectSearchCommand />}
-            {editorStore.localChangesState.workspaceSyncState
-              .workspaceSyncConflictResolutionState.showModal && (
-              <WorkspaceSyncConflictResolver />
-            )}
-            <EmbeddedQueryBuilder />
-            {extraEditorExtensionComponents}
-          </GlobalHotKeys>
+          </div>
+          <StatusBar actionsDisabled={!editable} />
+          {editable && <ProjectSearchCommand />}
+          {editorStore.localChangesState.workspaceSyncState
+            .workspaceSyncConflictResolutionState.showModal && (
+            <WorkspaceSyncConflictResolver />
+          )}
+          <EmbeddedQueryBuilder />
+          {extraEditorExtensionComponents}
         </div>
       </div>
     );

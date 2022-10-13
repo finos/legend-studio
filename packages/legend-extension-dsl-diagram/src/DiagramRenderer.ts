@@ -559,7 +559,7 @@ export class DiagramRenderer {
   }
 
   autoRecenter(): void {
-    this.recenter(
+    this.center(
       this.virtualScreen.position.x + this.virtualScreen.rectangle.width / 2,
       this.virtualScreen.position.y + this.virtualScreen.rectangle.height / 2,
     );
@@ -568,7 +568,7 @@ export class DiagramRenderer {
   /**
    * Reset the screen offset
    */
-  private recenter(x: number, y: number): void {
+  private center(x: number, y: number): void {
     this.screenOffset = new Point(
       -x + this.canvasCenter.x,
       -y + this.canvasCenter.y,
@@ -2292,6 +2292,104 @@ export class DiagramRenderer {
     });
   }
 
+  // -------------------------------- Actions ------------------------------
+
+  recenter(): void {
+    if (this.selectedClasses.length !== 0) {
+      const firstClass = getNullableFirstElement(this.selectedClasses);
+      if (firstClass) {
+        this.center(
+          firstClass.position.x + firstClass.rectangle.width / 2,
+          firstClass.position.y + firstClass.rectangle.height / 2,
+        );
+      }
+    } else {
+      this.autoRecenter();
+    }
+  }
+
+  switchToZoomMode(): void {
+    this.changeMode(
+      this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
+        ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
+        : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToViewMode(): void {
+    this.changeMode(
+      DIAGRAM_INTERACTION_MODE.LAYOUT,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToPanMode(): void {
+    this.changeMode(
+      DIAGRAM_INTERACTION_MODE.PAN,
+      DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+    );
+  }
+
+  switchToAddPropertyMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
+      );
+    }
+  }
+
+  switchToAddInheritanceMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
+      );
+    }
+  }
+
+  switchToAddClassMode(): void {
+    if (!this.isReadOnly) {
+      this.changeMode(
+        DIAGRAM_INTERACTION_MODE.ADD_CLASS,
+        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
+      );
+    }
+  }
+
+  ejectProperty(): void {
+    if (!this.isReadOnly) {
+      if (this.mouseOverClassProperty) {
+        if (
+          this.mouseOverClassProperty.genericType.value.rawType instanceof Class
+        ) {
+          this.addClassView(
+            this.mouseOverClassProperty.genericType.value.rawType,
+            this.canvasCoordinateToModelCoordinate(
+              this.eventCoordinateToCanvasCoordinate(
+                new Point(this.cursorPosition.x, this.cursorPosition.y),
+              ),
+            ),
+          );
+        }
+      } else if (this.selectedClassProperty) {
+        if (
+          this.selectedClassProperty.property.genericType.value
+            .rawType instanceof Class
+        ) {
+          this.addClassView(
+            this.selectedClassProperty.property.genericType.value.rawType,
+            this.selectedClassProperty.selectionPoint,
+          );
+        }
+        this.selectedClassProperty = undefined;
+      }
+    }
+  }
+
+  // --------------------------------- Event handler --------------------------
+
   keydown(e: KeyboardEvent): void {
     // Remove selected view(s)
     if ('Delete' === e.key) {
@@ -2357,7 +2455,7 @@ export class DiagramRenderer {
             );
           }
         }
-        this.selectedClasses = [];
+        this.setSelectedClasses([]);
         this.drawScreen();
       }
     }
@@ -2387,72 +2485,6 @@ export class DiagramRenderer {
         e.preventDefault();
       } else if (this.selectedClasses.length === 1) {
         this.handleEditClassView(this.selectedClasses[0] as ClassView);
-      }
-    }
-
-    // Recenter
-    else if ('r' === e.key) {
-      if (this.selectedClasses.length !== 0) {
-        const firstClass = getNullableFirstElement(this.selectedClasses);
-        if (firstClass) {
-          this.recenter(
-            firstClass.position.x + firstClass.rectangle.width / 2,
-            firstClass.position.y + firstClass.rectangle.height / 2,
-          );
-        }
-      } else {
-        this.autoRecenter();
-      }
-    }
-    // Zoom
-    else if ('z' === e.key) {
-      this.changeMode(
-        this.interactionMode !== DIAGRAM_INTERACTION_MODE.ZOOM_IN
-          ? DIAGRAM_INTERACTION_MODE.ZOOM_IN
-          : DIAGRAM_INTERACTION_MODE.ZOOM_OUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-
-    // Use View Tool
-    else if ('v' === e.key) {
-      this.changeMode(
-        DIAGRAM_INTERACTION_MODE.LAYOUT,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-    // Use Pan Tool
-    else if ('m' === e.key) {
-      this.changeMode(
-        DIAGRAM_INTERACTION_MODE.PAN,
-        DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-      );
-    }
-    // Use Property Tool
-    else if ('p' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.PROPERTY,
-        );
-      }
-    }
-    // Use Inheritance Tool
-    else if ('i' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.INHERITANCE,
-        );
-      }
-    }
-    // Add Class
-    else if ('c' === e.key) {
-      if (!this.isReadOnly) {
-        this.changeMode(
-          DIAGRAM_INTERACTION_MODE.ADD_CLASS,
-          DIAGRAM_RELATIONSHIP_EDIT_MODE.NONE,
-        );
       }
     }
 
@@ -2497,38 +2529,6 @@ export class DiagramRenderer {
     else if (e.altKey && 'ArrowDown' === e.code) {
       if (!this.isReadOnly && this.selectedClasses.length === 1) {
         this.handleAddSimpleProperty(this.selectedClasses[0] as ClassView);
-      }
-    }
-
-    // Eject the property
-    else if ('ArrowRight' === e.key) {
-      if (!this.isReadOnly) {
-        if (this.mouseOverClassProperty) {
-          if (
-            this.mouseOverClassProperty.genericType.value.rawType instanceof
-            Class
-          ) {
-            this.addClassView(
-              this.mouseOverClassProperty.genericType.value.rawType,
-              this.canvasCoordinateToModelCoordinate(
-                this.eventCoordinateToCanvasCoordinate(
-                  new Point(this.cursorPosition.x, this.cursorPosition.y),
-                ),
-              ),
-            );
-          }
-        } else if (this.selectedClassProperty) {
-          if (
-            this.selectedClassProperty.property.genericType.value
-              .rawType instanceof Class
-          ) {
-            this.addClassView(
-              this.selectedClassProperty.property.genericType.value.rawType,
-              this.selectedClassProperty.selectionPoint,
-            );
-          }
-          this.selectedClassProperty = undefined;
-        }
       }
     }
 
@@ -2579,6 +2579,26 @@ export class DiagramRenderer {
       }
 
       this.drawScreen();
+    }
+
+    // Quick actions which are global to diagram editor
+    // NOTE: these are likely fixed hotkeys
+    else if ('r' === e.key) {
+      this.recenter();
+    } else if ('z' === e.key) {
+      this.switchToZoomMode();
+    } else if ('v' === e.key) {
+      this.switchToViewMode();
+    } else if ('m' === e.key) {
+      this.switchToPanMode();
+    } else if ('p' === e.key) {
+      this.switchToAddPropertyMode();
+    } else if ('i' === e.key) {
+      this.switchToAddInheritanceMode();
+    } else if ('c' === e.key) {
+      this.switchToAddClassMode();
+    } else if ('ArrowRight' === e.key) {
+      this.ejectProperty();
     }
   }
 
@@ -3435,6 +3455,8 @@ export class DiagramRenderer {
     }
     return [];
   }
+
+  // --------------------------------------- Extension -----------------------------------
 
   layoutTaxonomy(
     classViewLevels: ClassView[][],

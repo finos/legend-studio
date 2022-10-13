@@ -15,7 +15,6 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { GlobalHotKeys } from 'react-hotkeys';
 import {
   clsx,
   Backdrop,
@@ -45,20 +44,12 @@ import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderF
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
-import { useApplicationStore } from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
-
-enum QUERY_BUILDER_HOTKEY {
-  COMPILE = 'COMPILE',
-}
-
-const QUERY_BUILDER_HOTKEY_MAP = Object.freeze({
-  [QUERY_BUILDER_HOTKEY.COMPILE]: 'f9',
-});
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -158,23 +149,8 @@ const QueryBuilderStatusBar = observer(
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-    const applicationStore = useApplicationStore();
     const isQuerySupported = queryBuilderState.isQuerySupported;
 
-    // Hotkeys
-    const keyMap = {
-      [QUERY_BUILDER_HOTKEY.COMPILE]: [QUERY_BUILDER_HOTKEY_MAP.COMPILE],
-    };
-    const handlers = {
-      [QUERY_BUILDER_HOTKEY.COMPILE]: (
-        event: KeyboardEvent | undefined,
-      ): void => {
-        event?.preventDefault();
-        flowResult(queryBuilderState.compileQuery()).catch(
-          applicationStore.alertUnhandledError,
-        );
-      },
-    };
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -194,6 +170,8 @@ export const QueryBuilder = observer(
         tdsState.setShowPostFilterPanel(!tdsState.showPostFilterPanel);
       }
     };
+
+    useCommands(queryBuilderState);
 
     // settings
     // NOTE: this is temporary until we find a better home for these settings in query builder
@@ -291,157 +269,152 @@ export const QueryBuilder = observer(
             </DropdownMenu>
           </div>
         </div>
-        <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-          <Backdrop
-            className="backdrop"
-            open={queryBuilderState.showBackdrop}
-          />
-          <div className="query-builder__content">
-            <div className="query-builder__activity-bar">
-              <div className="query-builder__activity-bar__items"></div>
-              <DropdownMenu
-                className="query-builder__activity-bar__setting"
-                content={
-                  <MenuContent>
-                    <MenuContentItem
-                      onClick={toggleEngineClientRequestPayloadCompression}
-                    >
-                      <MenuContentItemIcon>
-                        {engineConfig.useClientRequestPayloadCompression ? (
-                          <CheckIcon />
-                        ) : null}
-                      </MenuContentItemIcon>
-                      <MenuContentItemLabel>
-                        Compress request payload
-                      </MenuContentItemLabel>
-                    </MenuContentItem>
-                  </MenuContent>
-                }
-                menuProps={{
-                  anchorOrigin: { vertical: 'center', horizontal: 'center' },
-                  transformOrigin: { vertical: 'bottom', horizontal: 'left' },
-                  elevation: 7,
-                }}
+        <Backdrop className="backdrop" open={queryBuilderState.showBackdrop} />
+        <div className="query-builder__content">
+          <div className="query-builder__activity-bar">
+            <div className="query-builder__activity-bar__items"></div>
+            <DropdownMenu
+              className="query-builder__activity-bar__setting"
+              content={
+                <MenuContent>
+                  <MenuContentItem
+                    onClick={toggleEngineClientRequestPayloadCompression}
+                  >
+                    <MenuContentItemIcon>
+                      {engineConfig.useClientRequestPayloadCompression ? (
+                        <CheckIcon />
+                      ) : null}
+                    </MenuContentItemIcon>
+                    <MenuContentItemLabel>
+                      Compress request payload
+                    </MenuContentItemLabel>
+                  </MenuContentItem>
+                </MenuContent>
+              }
+              menuProps={{
+                anchorOrigin: { vertical: 'center', horizontal: 'center' },
+                transformOrigin: { vertical: 'bottom', horizontal: 'left' },
+                elevation: 7,
+              }}
+            >
+              <button
+                className="query-builder__activity-bar__item"
+                tabIndex={-1}
+                title="Settings..."
               >
-                <button
-                  className="query-builder__activity-bar__item"
-                  tabIndex={-1}
-                  title="Settings..."
-                >
-                  <CogIcon />
-                </button>
-              </DropdownMenu>
-            </div>
-            <div className="query-builder__main">
-              <ResizablePanelGroup orientation="horizontal">
-                <ResizablePanel minSize={120}>
-                  {isQuerySupported ? (
-                    <ResizablePanelGroup orientation="vertical">
-                      <ResizablePanel size={450} minSize={300}>
-                        <QueryBuilderSidebar
-                          queryBuilderState={queryBuilderState}
-                        >
-                          <ResizablePanelGroup orientation="horizontal">
-                            {/* explorer panel */}
-                            <ResizablePanel minSize={40} direction={1}>
-                              <QueryBuilderExplorerPanel
+                <CogIcon />
+              </button>
+            </DropdownMenu>
+          </div>
+          <div className="query-builder__main">
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel minSize={120}>
+                {isQuerySupported ? (
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel size={450} minSize={300}>
+                      <QueryBuilderSidebar
+                        queryBuilderState={queryBuilderState}
+                      >
+                        <ResizablePanelGroup orientation="horizontal">
+                          {/* explorer panel */}
+                          <ResizablePanel minSize={40} direction={1}>
+                            <QueryBuilderExplorerPanel
+                              queryBuilderState={queryBuilderState}
+                            />
+                          </ResizablePanel>
+                          {/* functions panel */}
+                          {queryBuilderState.showFunctionsExplorerPanel && (
+                            <ResizablePanelSplitter />
+                          )}
+                          {queryBuilderState.showFunctionsExplorerPanel && (
+                            <ResizablePanel
+                              minSize={40}
+                              direction={
+                                queryBuilderState.showParametersPanel
+                                  ? [1, -1]
+                                  : -1
+                              }
+                            >
+                              <QueryBuilderFunctionsExplorerPanel
                                 queryBuilderState={queryBuilderState}
                               />
                             </ResizablePanel>
-                            {/* functions panel */}
-                            {queryBuilderState.showFunctionsExplorerPanel && (
-                              <ResizablePanelSplitter />
-                            )}
-                            {queryBuilderState.showFunctionsExplorerPanel && (
-                              <ResizablePanel
-                                minSize={40}
-                                direction={
-                                  queryBuilderState.showParametersPanel
-                                    ? [1, -1]
-                                    : -1
-                                }
-                              >
-                                <QueryBuilderFunctionsExplorerPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                            )}
-                            {/* parameters panel */}
-                            {queryBuilderState.showParametersPanel && (
-                              <ResizablePanelSplitter />
-                            )}
-                            {queryBuilderState.showParametersPanel && (
-                              <ResizablePanel minSize={40} direction={-1}>
-                                <QueryBuilderParametersPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                            )}
-                          </ResizablePanelGroup>
-                        </QueryBuilderSidebar>
-                      </ResizablePanel>
-                      <ResizablePanelSplitter />
-                      <ResizablePanel minSize={300}>
-                        <QueryBuilderFetchStructurePanel
+                          )}
+                          {/* parameters panel */}
+                          {queryBuilderState.showParametersPanel && (
+                            <ResizablePanelSplitter />
+                          )}
+                          {queryBuilderState.showParametersPanel && (
+                            <ResizablePanel minSize={40} direction={-1}>
+                              <QueryBuilderParametersPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          )}
+                        </ResizablePanelGroup>
+                      </QueryBuilderSidebar>
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      <QueryBuilderFetchStructurePanel
+                        queryBuilderState={queryBuilderState}
+                      />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      {(!(
+                        queryBuilderState.fetchStructureState
+                          .implementation instanceof QueryBuilderTDSState
+                      ) ||
+                        !queryBuilderState.fetchStructureState.implementation
+                          .showPostFilterPanel) && (
+                        <QueryBuilderFilterPanel
                           queryBuilderState={queryBuilderState}
                         />
-                      </ResizablePanel>
-                      <ResizablePanelSplitter />
-                      <ResizablePanel minSize={300}>
-                        {(!(
-                          queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState
-                        ) ||
-                          !queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel) && (
-                          <QueryBuilderFilterPanel
-                            queryBuilderState={queryBuilderState}
-                          />
+                      )}
+                      {queryBuilderState.fetchStructureState
+                        .implementation instanceof QueryBuilderTDSState &&
+                        queryBuilderState.fetchStructureState.implementation
+                          .showPostFilterPanel && (
+                          <ResizablePanelGroup orientation="horizontal">
+                            <ResizablePanel minSize={300}>
+                              <QueryBuilderFilterPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                            <ResizablePanelSplitter />
+                            <ResizablePanel>
+                              <QueryBuilderPostFilterPanel
+                                queryBuilderState={queryBuilderState}
+                              />
+                            </ResizablePanel>
+                          </ResizablePanelGroup>
                         )}
-                        {queryBuilderState.fetchStructureState
-                          .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel && (
-                            <ResizablePanelGroup orientation="horizontal">
-                              <ResizablePanel minSize={300}>
-                                <QueryBuilderFilterPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                              <ResizablePanelSplitter />
-                              <ResizablePanel>
-                                <QueryBuilderPostFilterPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                            </ResizablePanelGroup>
-                          )}
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
-                  ) : (
-                    <QueryBuilderUnsupportedQueryEditor
-                      queryBuilderState={queryBuilderState}
-                    />
-                  )}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                ) : (
+                  <QueryBuilderUnsupportedQueryEditor
+                    queryBuilderState={queryBuilderState}
+                  />
+                )}
+              </ResizablePanel>
+              {queryBuilderState.isResultPanelHidden ? null : (
+                <ResizablePanelSplitter />
+              )}
+              {queryBuilderState.isResultPanelHidden ? null : (
+                <ResizablePanel size={300} minSize={40}>
+                  <QueryBuilderResultPanel
+                    queryBuilderState={queryBuilderState}
+                  />
                 </ResizablePanel>
-                {queryBuilderState.isResultPanelHidden ? null : (
-                  <ResizablePanelSplitter />
-                )}
-                {queryBuilderState.isResultPanelHidden ? null : (
-                  <ResizablePanel size={300} minSize={40}>
-                    <QueryBuilderResultPanel
-                      queryBuilderState={queryBuilderState}
-                    />
-                  </ResizablePanel>
-                )}
-              </ResizablePanelGroup>
-            </div>
+              )}
+            </ResizablePanelGroup>
           </div>
-          <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-          {queryBuilderState.textEditorState.mode && (
-            <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
-          )}
-        </GlobalHotKeys>
+        </div>
+        <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
+        {queryBuilderState.textEditorState.mode && (
+          <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
+        )}
       </div>
     );
   },

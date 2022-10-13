@@ -24,7 +24,6 @@ import {
   type LegendApplicationConfigurationInput,
   BrowserRouter,
 } from '@finos/legend-application';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendQueryApplication } from '../components/LegendQueryApplication.js';
 import { LegendQueryPluginManager } from './LegendQueryPluginManager.js';
 import { getRootElement } from '@finos/legend-art';
@@ -35,17 +34,12 @@ import {
 } from './LegendQueryApplicationConfig.js';
 import {
   QueryBuilder_GraphManagerPreset,
+  QueryBuilder_LegendApplicationPlugin,
   setupQueryBuilderUILibrary,
 } from '@finos/legend-query-builder';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   await setupQueryBuilderUILibrary();
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
-  });
 };
 
 export class LegendQuery extends LegendApplication {
@@ -54,8 +48,11 @@ export class LegendQuery extends LegendApplication {
 
   static create(): LegendQuery {
     const application = new LegendQuery(LegendQueryPluginManager.create());
-    application.withBasePlugins([new Core_PureGraphManagerPlugin()]);
     application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
+    application.withBasePlugins([
+      new Core_PureGraphManagerPlugin(),
+      new QueryBuilder_LegendApplicationPlugin(),
+    ]);
     return application;
   }
 

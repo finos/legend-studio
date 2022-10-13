@@ -22,7 +22,7 @@ export { DiagramEditorState } from './stores/studio/DiagramEditorState.js';
 export {
   DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
-} from './DSL_Diagram_DiagramRenderer.js';
+} from './DiagramRenderer.js';
 
 export { Diagram } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_Diagram.js';
 export { ClassView } from './graph/metamodel/pure/packageableElements/diagram/DSL_Diagram_ClassView.js';

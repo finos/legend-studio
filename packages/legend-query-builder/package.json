@@ -62,7 +62,6 @@
     "react": "18.2.0",
     "react-dnd": "16.0.1",
     "react-dom": "18.2.0",
-    "react-hotkeys": "2.0.0",
     "serializr": "2.0.5"
   },
   "devDependencies": {
@@ -83,6 +82,7 @@
     "directory": "build/publishContent"
   },
   "extensions": {
+    "applicationPlugin": "@finos/legend-application-plugin-query-builder",
     "graphManagerPreset": "@finos/legend-graph-manager-preset-query-builder",
     "pureProtocolProcessorPlugin": "@finos/legend-pure-protocol-processor-plugin-query-builder",
     "pureGraphManagerPlugin": "@finos/legend-pure-graph-manager-plugin-query-builder"

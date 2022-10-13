@@ -93,13 +93,9 @@ export class EmbeddedQueryBuilderState {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
       }
-      this.editorStore.setBlockGlobalHotkeys(true);
-      this.editorStore.setHotkeys([]);
     } else {
       this.queryBuilderState = undefined;
       this.actionConfigs = [];
-      this.editorStore.setBlockGlobalHotkeys(false);
-      this.editorStore.resetHotkeys();
     }
   }
 }

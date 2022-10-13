@@ -35,6 +35,8 @@ import { AssistantService } from './AssistantService.js';
 import { EventService } from './EventService.js';
 import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
+import { CommandCenter } from './CommandCenter.js';
+import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -136,6 +138,13 @@ export class ApplicationStore<
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
+  // control and interactions
+  commandCenter: CommandCenter;
+  keyboardShortcutsService: KeyboardShortcutsService;
+
+  // TODO: config
+  // See https://github.com/finos/legend-studio/issues/407
+
   // misc
   showBackdrop = false;
 
@@ -180,6 +189,8 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
+    this.commandCenter = new CommandCenter(this);
+    this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
     this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),

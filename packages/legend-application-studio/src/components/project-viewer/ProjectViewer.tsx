@@ -19,11 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import {
-  ACTIVITY_MODE,
-  LEGEND_STUDIO_HOTKEY,
-  LEGEND_STUDIO_HOTKEY_MAP,
-} from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,
@@ -40,7 +36,6 @@ import {
   useResizeDetector,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { GlobalHotKeys } from 'react-hotkeys';
 import {
   useProjectViewerStore,
   withProjectViewerStore,
@@ -55,7 +50,11 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  useCommands,
+  useParams,
+} from '@finos/legend-application';
 import {
   ActivityBarMenu,
   type ActivityDisplay,
@@ -278,27 +277,6 @@ export const ProjectViewer = withEditorStore(
         ));
       // Resize
       const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-      // Hotkeys
-      const keyMap = {
-        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
-          LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
-        ],
-        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
-          LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
-        ],
-      };
-      const handlers = {
-        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]:
-          editorStore.createGlobalHotKeyAction(() =>
-            editorStore.searchElementCommandState.open(),
-          ),
-        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
-          editorStore.createGlobalHotKeyAction(() => {
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }),
-      };
 
       useEffect(() => {
         if (ref.current) {
@@ -318,43 +296,41 @@ export const ProjectViewer = withEditorStore(
         );
       }, [applicationStore, viewerStore, params]);
 
+      useCommands(editorStore);
+
       return (
         <div className="app__page">
           <div className="editor viewer">
-            <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-              <div className="editor__body">
-                <ProjectViewerActivityBar />
-                <div ref={ref} className="editor__content-container">
-                  <div className="editor__content">
-                    <ResizablePanelGroup orientation="vertical">
-                      <ResizablePanel
-                        {...getControlledResizablePanelProps(
-                          editorStore.sideBarDisplayState.size === 0,
-                          {
-                            onStopResize: resizeSideBar,
-                            size: editorStore.sideBarDisplayState.size,
-                          },
-                        )}
-                        direction={1}
-                      >
-                        <ProjectViewerSideBar />
-                      </ResizablePanel>
-                      <ResizablePanelSplitter />
-                      <ResizablePanel minSize={300}>
-                        {editorStore.isInFormMode && <EditPanel />}
-                        {editorStore.isInGrammarTextMode && (
-                          <GrammarTextEditor />
-                        )}
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
-                  </div>
+            <div className="editor__body">
+              <ProjectViewerActivityBar />
+              <div ref={ref} className="editor__content-container">
+                <div className="editor__content">
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel
+                      {...getControlledResizablePanelProps(
+                        editorStore.sideBarDisplayState.size === 0,
+                        {
+                          onStopResize: resizeSideBar,
+                          size: editorStore.sideBarDisplayState.size,
+                        },
+                      )}
+                      direction={1}
+                    >
+                      <ProjectViewerSideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel minSize={300}>
+                      {editorStore.isInFormMode && <EditPanel />}
+                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
-              {allowOpeningElement && <ProjectSearchCommand />}
-              <ProjectViewerStatusBar />
-              <EmbeddedQueryBuilder />
-              {extraEditorExtensionComponents}
-            </GlobalHotKeys>
+            </div>
+            {allowOpeningElement && <ProjectSearchCommand />}
+            <ProjectViewerStatusBar />
+            <EmbeddedQueryBuilder />
+            {extraEditorExtensionComponents}
           </div>
         </div>
       );

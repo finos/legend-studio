@@ -23,7 +23,7 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from '../../DSL_Diagram_DiagramRenderer.js';
+} from '../../DiagramRenderer.js';
 import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,
@@ -94,6 +94,7 @@ import {
   useApplicationStore,
   useApplicationNavigationContext,
   buildElementOption,
+  useCommands,
 } from '@finos/legend-application';
 import {
   ClassFormEditor,
@@ -1186,7 +1187,6 @@ const DiagramEditorDiagramCanvas = observer(
         renderer.render();
         renderer.autoRecenter();
       }
-      return diagramEditorState.cleanUp();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {
@@ -1428,6 +1428,8 @@ export const DiagramEditor = observer(() => {
   useApplicationNavigationContext(
     DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
   );
+
+  useCommands(diagramEditorState);
 
   return (
     <div className="diagram-editor">

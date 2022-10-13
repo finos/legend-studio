@@ -29,8 +29,6 @@ import {
   AUX_PANEL_MODE,
   GRAPH_EDITOR_MODE,
   EDITOR_MODE,
-  LEGEND_STUDIO_HOTKEY,
-  LEGEND_STUDIO_HOTKEY_MAP,
 } from './EditorConfig.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { MappingEditorState } from './editor-state/element-editor-state/mapping/MappingEditorState.js';
@@ -52,7 +50,6 @@ import {
   type GeneratorFn,
   type PlainObject,
   LogEvent,
-  addUniqueEntry,
   isNonNullable,
   assertErrorThrown,
   guaranteeType,
@@ -88,11 +85,7 @@ import {
   generateSetupRoute,
   generateViewProjectRoute,
 } from './LegendStudioRouter.js';
-import {
-  HotkeyConfiguration,
-  NonBlockingDialogState,
-  PanelDisplayState,
-} from '@finos/legend-art';
+import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -128,6 +121,7 @@ import type { LegendStudioPluginManager } from '../application/LegendStudioPlugi
 import {
   type ActionAlertInfo,
   type BlockingAlertInfo,
+  type CommandRegistrar,
   ActionAlertActionType,
   ActionAlertType,
   APPLICATION_EVENT,
@@ -147,6 +141,7 @@ import { PACKAGEABLE_ELEMENT_TYPE } from './shared/ModelClassifierUtils.js';
 import { GlobalTestRunnerState } from './sidebar-state/testable/GlobalTestRunnerState.js';
 import type { LegendStudioApplicationStore } from './LegendStudioBaseStore.js';
 import { EmbeddedQueryBuilderState } from './EmbeddedQueryBuilderState.js';
+import { LEGEND_STUDIO_COMMAND_KEY } from './LegendStudioCommand.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -156,31 +151,19 @@ export abstract class EditorExtensionState {
   private readonly _$nominalTypeBrand!: 'EditorExtensionState';
 }
 
-export class EditorStore {
+export class EditorStore implements CommandRegistrar {
   applicationStore: LegendStudioApplicationStore;
   sdlcServerClient: SDLCServerClient;
   depotServerClient: DepotServerClient;
   pluginManager: LegendStudioPluginManager;
 
   editorMode: EditorMode;
-  setEditorMode(val: EditorMode): void {
-    this.editorMode = val;
-  }
   // NOTE: once we clear up the editor store to make modes more separated
   // we should remove these sets of functions. They are basically hacks to
   // ensure hiding parts of the UI based on the editing mode.
   // Instead, we will gradually move these `boolean` flags into `EditorMode`
   // See https://github.com/finos/legend-studio/issues/317
   mode = EDITOR_MODE.STANDARD;
-  setMode(val: EDITOR_MODE): void {
-    this.mode = val;
-  }
-  get isInViewerMode(): boolean {
-    return this.mode === EDITOR_MODE.VIEWER;
-  }
-  get isInConflictResolutionMode(): boolean {
-    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
-  }
 
   editorExtensionStates: EditorExtensionState[] = [];
   explorerTreeState: ExplorerTreeState;
@@ -223,10 +206,10 @@ export class EditorStore {
 
   // Hot keys
   blockGlobalHotkeys = false;
-  readonly defaultHotkeys: HotkeyConfiguration[] = [];
-  hotkeys: HotkeyConfiguration[] = [];
+  // readonly defaultHotkeys: HotkeyConfiguration[] = [];
+  // hotkeys: HotkeyConfiguration[] = [];
 
-  // Tabs
+  // Editor Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
   /**
@@ -235,7 +218,6 @@ export class EditorStore {
    */
   elementGenerationStates: ElementFileGenerationState[] = [];
   searchElementCommandState = new NonBlockingDialogState();
-  isDevToolEnabled = true;
 
   constructor(
     applicationStore: LegendStudioApplicationStore,
@@ -253,11 +235,8 @@ export class EditorStore {
       graphEditMode: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
-      blockGlobalHotkeys: observable,
-      hotkeys: observable,
       currentEditorState: observable,
       openedEditorStates: observable,
-      isDevToolEnabled: observable,
 
       isInViewerMode: computed,
       isInConflictResolutionMode: computed,
@@ -272,16 +251,15 @@ export class EditorStore {
       graphManagerState: false,
       setEditorMode: action,
       setMode: action,
-      setDevTool: action,
-      setHotkeys: action,
-      addHotKey: action,
-      resetHotkeys: action,
+
+      blockGlobalHotkeys: observable,
       setBlockGlobalHotkeys: action,
+      setBlockingAlert: action,
+      setActionAlertInfo: action,
+
       setCurrentEditorState: action,
       setActiveAuxPanelMode: action,
       refreshCurrentEntityDiffEditorState: action,
-      setBlockingAlert: action,
-      setActionAlertInfo: action,
       cleanUp: action,
       reset: action,
       setGraphEditMode: action,
@@ -359,101 +337,6 @@ export class EditorStore {
       )
       .map((creator) => creator(this))
       .filter(isNonNullable);
-
-    // hotkeys
-    this.defaultHotkeys = [
-      // actions that need blocking
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.COMPILE,
-        [LEGEND_STUDIO_HOTKEY_MAP.COMPILE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.graphState.globalCompileInFormMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.GENERATE,
-        [LEGEND_STUDIO_HOTKEY_MAP.GENERATE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(
-            this.graphState.graphGenerationState.globalGenerate(),
-          ).catch(applicationStore.alertUnhandledError);
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.CREATE_ELEMENT,
-        [LEGEND_STUDIO_HOTKEY_MAP.CREATE_ELEMENT],
-        this.createGlobalHotKeyAction(() => this.newElementState.openModal()),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT,
-        [LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT],
-        this.createGlobalHotKeyAction(() =>
-          this.searchElementCommandState.open(),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.toggleTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_MODEL_LOADER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_MODEL_LOADER],
-        this.createGlobalHotKeyAction(() =>
-          this.openState(this.modelImporterState),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.SYNC_WITH_WORKSPACE,
-        [LEGEND_STUDIO_HOTKEY_MAP.SYNC_WITH_WORKSPACE],
-        this.createGlobalHotKeyAction(() => {
-          flowResult(this.localChangesState.pushLocalChanges()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }),
-      ),
-      // simple actions (no blocking is needed)
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_AUX_PANEL,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_AUX_PANEL],
-        this.createGlobalHotKeyAction(() => this.auxPanelDisplayState.toggle()),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_EXPLORER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_EXPLORER],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_CHANGES,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_CHANGES],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_REVIEW],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
-        ),
-      ),
-      new HotkeyConfiguration(
-        LEGEND_STUDIO_HOTKEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
-        [LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_SIDEBAR_WORKSPACE_UPDATER],
-        this.createGlobalHotKeyAction(() =>
-          this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
-        ),
-      ),
-    ];
-    this.hotkeys = this.defaultHotkeys;
   }
 
   get isInitialized(): boolean {
@@ -475,38 +358,43 @@ export class EditorStore {
     return this.graphEditMode === GRAPH_EDITOR_MODE.FORM;
   }
 
-  setHotkeys(val: HotkeyConfiguration[]): void {
-    this.hotkeys = val;
+  get isInViewerMode(): boolean {
+    return this.mode === EDITOR_MODE.VIEWER;
   }
 
-  addHotKey(val: HotkeyConfiguration): void {
-    addUniqueEntry(this.hotkeys, val);
+  get isInConflictResolutionMode(): boolean {
+    return this.mode === EDITOR_MODE.CONFLICT_RESOLUTION;
   }
 
-  resetHotkeys(): void {
-    this.hotkeys = this.defaultHotkeys;
+  /**
+   * TODO?: we should really think of how we could simplify the trigger condition below
+   * after we refactor editor modes
+   *
+   * See https://github.com/finos/legend-studio/issues/317
+   */
+  createEditorCommandTrigger(additionalChecker?: () => boolean): () => boolean {
+    return (): boolean =>
+      // we don't want to leak any hotkeys when we have embedded query builder open
+      // TODO?: we probably should come up with a more generic mechanism for this
+      !this.embeddedQueryBuilderState.queryBuilderState &&
+      (!additionalChecker || additionalChecker());
   }
+
+  setEditorMode(val: EditorMode): void {
+    this.editorMode = val;
+  }
+
+  setMode(val: EDITOR_MODE): void {
+    this.mode = val;
+  }
+
+  // ----------
+  // ----------
+  // ----------
+  // ----------
 
   setBlockGlobalHotkeys(val: boolean): void {
     this.blockGlobalHotkeys = val;
-  }
-
-  setDevTool(val: boolean): void {
-    this.isDevToolEnabled = val;
-  }
-
-  setCurrentEditorState(val: EditorState | undefined): void {
-    this.currentEditorState = val;
-  }
-
-  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
-    this.activeAuxPanelMode = val;
-  }
-
-  refreshCurrentEntityDiffEditorState(): void {
-    if (this.currentEditorState instanceof EntityDiffEditorState) {
-      this.currentEditorState.refresh();
-    }
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
@@ -524,16 +412,135 @@ export class EditorStore {
     this.applicationStore.setActionAlertInfo(alertInfo);
   }
 
+  // ----------
+  // ----------
+  // ----------
+  // ----------
+
   cleanUp(): void {
     // dismiss all the alerts as these are parts of application, if we don't do this, we might
     // end up blocking other parts of the app
     // e.g. trying going to an unknown workspace, we will be redirected to the home page
     // but the blocking alert for not-found workspace will still block the app
-    this.setBlockingAlert(undefined);
-    this.setActionAlertInfo(undefined);
+    this.applicationStore.setBlockingAlert(undefined);
+    this.applicationStore.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
     this._isDisposed = true;
+  }
+
+  registerCommands(): void {
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.COMPILE,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          this.isInConflictResolutionMode &&
+          !this.conflictResolutionState.hasResolvedAllConflicts,
+      ),
+      action: () => {
+        if (this.isInFormMode) {
+          flowResult(this.graphState.globalCompileInFormMode()).catch(
+            this.applicationStore.alertUnhandledError,
+          );
+        } else if (this.isInGrammarTextMode) {
+          flowResult(this.graphState.globalCompileInTextMode()).catch(
+            this.applicationStore.alertUnhandledError,
+          );
+        }
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.GENERATE,
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          this.isInConflictResolutionMode &&
+          !this.conflictResolutionState.hasResolvedAllConflicts,
+      ),
+      action: () => {
+        flowResult(this.graphState.graphGenerationState.globalGenerate()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.newElementState.openModal(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => this.searchElementCommandState.open(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => {
+        flowResult(this.toggleTextMode()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.openState(this.modelImporterState),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => {
+        flowResult(this.localChangesState.pushLocalChanges()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.auxPanelDisplayState.toggle(),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
+      trigger: this.createEditorCommandTrigger(),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.EXPLORER),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_REVIEW),
+    });
+    this.applicationStore.commandCenter.registerCommand({
+      key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+      trigger: this.createEditorCommandTrigger(() => !this.isInViewerMode),
+      action: () => this.setActiveActivity(ACTIVITY_MODE.WORKSPACE_UPDATER),
+    });
+  }
+
+  deregisterCommands(): void {
+    [
+      LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE,
+      LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT,
+      LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
+      LEGEND_STUDIO_COMMAND_KEY.GENERATE,
+      LEGEND_STUDIO_COMMAND_KEY.COMPILE,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW,
+      LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER,
+    ].forEach((key) =>
+      this.applicationStore.commandCenter.deregisterCommand(key),
+    );
   }
 
   reset(): void {
@@ -900,6 +907,10 @@ export class EditorStore {
     }
   }
 
+  setCurrentEditorState(val: EditorState | undefined): void {
+    this.currentEditorState = val;
+  }
+
   getCurrentEditorState<T extends EditorState>(clazz: Clazz<T>): T {
     return guaranteeType(
       this.currentEditorState,
@@ -913,26 +924,6 @@ export class EditorStore {
       this.editorExtensionStates.find(filterByType(clazz)),
       `Can't find extension editor state of the specified type: no built extension editor state available from plugins`,
     );
-  }
-
-  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
-    this.graphEditMode = graphEditor;
-    this.graphState.clearCompilationError();
-  }
-
-  setActiveActivity(
-    activity: ACTIVITY_MODE,
-    options?: { keepShowingIfMatchedCurrent?: boolean },
-  ): void {
-    if (!this.sideBarDisplayState.isOpen) {
-      this.sideBarDisplayState.open();
-    } else if (
-      activity === this.activeActivity &&
-      !options?.keepShowingIfMatchedCurrent
-    ) {
-      this.sideBarDisplayState.close();
-    }
-    this.activeActivity = activity;
   }
 
   closeState(editorState: EditorState): void {
@@ -993,6 +984,12 @@ export class EditorStore {
     this.explorerTreeState.reprocess();
   }
 
+  refreshCurrentEntityDiffEditorState(): void {
+    if (this.currentEditorState instanceof EntityDiffEditorState) {
+      this.currentEditorState.refresh();
+    }
+  }
+
   openEntityDiff(entityDiffEditorState: EntityDiffViewState): void {
     const existingEditorState = this.openedEditorStates.find(
       (editorState) =>
@@ -1039,6 +1036,30 @@ export class EditorStore {
       this.openedEditorStates.push(editorState);
     }
     this.setCurrentEditorState(editorState);
+  }
+
+  setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
+    this.graphEditMode = graphEditor;
+    this.graphState.clearCompilationError();
+  }
+
+  setActiveActivity(
+    activity: ACTIVITY_MODE,
+    options?: { keepShowingIfMatchedCurrent?: boolean },
+  ): void {
+    if (!this.sideBarDisplayState.isOpen) {
+      this.sideBarDisplayState.open();
+    } else if (
+      activity === this.activeActivity &&
+      !options?.keepShowingIfMatchedCurrent
+    ) {
+      this.sideBarDisplayState.close();
+    }
+    this.activeActivity = activity;
+  }
+
+  setActiveAuxPanelMode(val: AUX_PANEL_MODE): void {
+    this.activeAuxPanelMode = val;
   }
 
   createElementState(
@@ -1296,29 +1317,6 @@ export class EditorStore {
     }
     this.setCurrentEditorState(generatedFileState);
   }
-
-  createGlobalHotKeyAction =
-    (
-      handler: (event?: KeyboardEvent) => void,
-      preventDefault = true,
-    ): ((event?: KeyboardEvent) => void) =>
-    (event?: KeyboardEvent): void => {
-      if (preventDefault) {
-        event?.preventDefault();
-      }
-      // TODO: maybe we should come up with a better way to block global hot keys, this seems highly restrictive.
-      const isResolvingConflicts =
-        this.isInConflictResolutionMode &&
-        !this.conflictResolutionState.hasResolvedAllConflicts;
-      if (
-        (this.isInitialized &&
-          !isResolvingConflicts &&
-          !this.blockGlobalHotkeys) ||
-        this.isInViewerMode
-      ) {
-        handler(event);
-      }
-    };
 
   closeAllEditorTabs(): void {
     this.setCurrentEditorState(undefined);
