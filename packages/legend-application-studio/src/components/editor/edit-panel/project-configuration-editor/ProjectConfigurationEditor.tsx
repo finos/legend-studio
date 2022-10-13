@@ -47,6 +47,7 @@ import {
   PanelFormTextEditor,
   CheckSquareIcon,
   SquareIcon,
+  ExclamationTriangleIcon,
 } from '@finos/legend-art';
 import { action, flowResult } from 'mobx';
 import {
@@ -446,19 +447,19 @@ const PlatformDependencyViewer = observer(
             {isDefault && (
               <CheckCircleIcon
                 className="platform-configurations-editor__dependency__label__status--default"
-                title="Platform version is outdated"
+                title="Platform version is up to date"
               />
             )}
             {isLatestVersion !== undefined &&
-              (isLatestVersion === false ? (
-                <ExclamationCircleIcon
-                  className="platform-configurations-editor__dependency__label__status--outdated"
-                  title="Platform version is outdated"
-                />
-              ) : (
+              (isLatestVersion ? (
                 <CheckCircleIcon
                   className="platform-configurations-editor__dependency__label__status--up-to-date"
                   title="Platform version is up to date"
+                />
+              ) : (
+                <ExclamationTriangleIcon
+                  className="platform-configurations-editor__dependency__label__status--outdated"
+                  title="Platform version is outdated"
                 />
               ))}
           </div>
