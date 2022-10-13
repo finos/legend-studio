@@ -28,7 +28,6 @@ export enum APPLICATION_EVENT {
   APPLICATION_CONTEXTUAL_DOCUMENTATION_LOAD_SKIPPED = 'application.load.contextual-documentation.skipped',
 
   APPLICATION_COMMAND_CENTER_REGISTRATION_FAILURE = 'application.command-center.registration.failure',
-  APPLICATION_COMMAND_CENTER_MISSING_COMMAND = 'application.command-center.missing-command',
 
   APPLICATION_LOADED = 'application.load.success',
   APPLICATION_LOAD_FAILURE = 'application.load.failure',

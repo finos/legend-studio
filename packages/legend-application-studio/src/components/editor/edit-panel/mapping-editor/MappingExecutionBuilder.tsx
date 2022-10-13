@@ -296,12 +296,10 @@ const MappingExecutionQueryEditor = observer(
               );
             }
           } else {
-            editorStore.setActionAlertInfo({
+            applicationStore.setActionAlertInfo({
               message: 'Mapping execution input data is already set',
               prompt: 'Do you want to regenerate the input data?',
               type: ActionAlertType.CAUTION,
-              onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-              onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
               actions: [
                 {
                   label: 'Regenerate',

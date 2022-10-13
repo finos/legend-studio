@@ -206,6 +206,11 @@ export class ApplicationStore<
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
+    }
     this.blockingAlertInfo = alertInfo;
   }
 
@@ -214,6 +219,11 @@ export class ApplicationStore<
       this.notifyIllegalState(
         'Action alert is stacked: new alert is invoked while another one is being displayed',
       );
+    }
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
     }
     this.actionAlertInfo = alertInfo;
   }

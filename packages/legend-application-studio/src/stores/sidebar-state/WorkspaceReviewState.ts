@@ -206,7 +206,7 @@ export class WorkspaceReviewState {
   *recreateWorkspaceAfterCommittingReview(): GeneratorFn<void> {
     try {
       this.isRecreatingWorkspaceAfterCommittingReview = true;
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -227,7 +227,7 @@ export class WorkspaceReviewState {
       );
       this.editorStore.applicationStore.notifyError(error);
     } finally {
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
       this.isRecreatingWorkspaceAfterCommittingReview = false;
     }
   }
@@ -325,7 +325,7 @@ export class WorkspaceReviewState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -345,12 +345,10 @@ export class WorkspaceReviewState {
         review.id,
         { message: `${review.title} [review]` },
       );
-      this.editorStore.setActionAlertInfo({
+      this.editorStore.applicationStore.setActionAlertInfo({
         message: 'Committed review successfully',
         prompt:
           'You can create a new workspace with the same name or leave for the start page',
-        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Create new workspace',

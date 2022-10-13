@@ -58,8 +58,6 @@ import {
 } from '@finos/legend-server-sdlc';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  ActionAlertActionType,
-  ActionAlertType,
   DocumentationPreview,
   EDITOR_LANGUAGE,
   LEGEND_APPLICATION_DOCUMENTATION_KEY,
@@ -713,36 +711,11 @@ export const ProjectConfigurationEditor = observer(() => {
   const disableAddButton =
     selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
   const updateConfigs = (): void => {
-    if (editorStore.localChangesState.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to update project dependencies',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              flowResult(configState.updateConfigs()).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(configState.updateConfigs()).catch(
         applicationStore.alertUnhandledError,
       );
-    }
+    });
   };
   useEffect(() => {
     if (

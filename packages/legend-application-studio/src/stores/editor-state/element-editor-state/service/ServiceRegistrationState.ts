@@ -255,14 +255,12 @@ export class ServiceRegistrationState {
         'Service registration pattern is missing or empty',
       );
 
-      this.editorStore.setActionAlertInfo({
+      this.editorStore.applicationStore.setActionAlertInfo({
         message: `Service with pattern ${
           serviceRegistrationResult.pattern
         } registered ${this.activatePostRegistration ? 'and activated ' : ''}`,
         prompt: 'You can now launch and monitor the operation of your service',
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Launch Service',

@@ -41,10 +41,6 @@ import type {
 } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '@finos/legend-application';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
 
 export const WorkspaceUpdater = observer(() => {
@@ -55,36 +51,11 @@ export const WorkspaceUpdater = observer(() => {
   const workspaceUpdaterState = editorStore.workspaceUpdaterState;
   // Actions
   const updateWorkspace = (): void => {
-    if (editorStore.localChangesState.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to update workspace',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              flowResult(workspaceUpdaterState.updateWorkspace()).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(workspaceUpdaterState.updateWorkspace()).catch(
         applicationStore.alertUnhandledError,
       );
-    }
+    });
   };
   const refreshWorkspaceUpdater = applicationStore.guardUnhandledError(() =>
     flowResult(workspaceUpdaterState.refreshWorkspaceUpdater()),

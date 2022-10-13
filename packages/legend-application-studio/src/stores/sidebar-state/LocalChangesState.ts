@@ -468,7 +468,7 @@ export class LocalChangesState {
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -518,12 +518,10 @@ export class LocalChangesState {
       yield flowResult(
         this.editorStore.changeDetectionState.computeAggregatedWorkspaceRemoteChanges(),
       );
-      this.editorStore.setActionAlertInfo({
+      this.editorStore.applicationStore.setActionAlertInfo({
         message: 'Local workspace is out-of-sync',
         prompt: 'Please pull remote changes before pushing your local changes',
         type: ActionAlertType.CAUTION,
-        onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Pull remote changes',
@@ -623,13 +621,11 @@ export class LocalChangesState {
               error,
             );
           }
-          this.editorStore.setActionAlertInfo({
+          this.editorStore.applicationStore.setActionAlertInfo({
             message: `Change detection engine failed to build hashes index for workspace after syncing`,
             prompt:
               'To fix this, you can either try to keep refreshing local changes until success or trust and reuse current workspace hashes index',
             type: ActionAlertType.CAUTION,
-            onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Use local hashes index',
@@ -691,6 +687,30 @@ export class LocalChangesState {
       }
     } finally {
       this.pushChangesState.complete();
+    }
+  }
+
+  alertUnsavedChanges(onProceed: () => void): void {
+    if (this.hasUnpushedChanges) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => onProceed(),
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onProceed();
     }
   }
 }

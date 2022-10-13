@@ -119,8 +119,6 @@ import {
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import {
-  type ActionAlertInfo,
-  type BlockingAlertInfo,
   type CommandRegistrar,
   ActionAlertActionType,
   ActionAlertType,
@@ -204,11 +202,6 @@ export class EditorStore implements CommandRegistrar {
     snap: 150,
   });
 
-  // Hot keys
-  blockGlobalHotkeys = false;
-  // readonly defaultHotkeys: HotkeyConfiguration[] = [];
-  // hotkeys: HotkeyConfiguration[] = [];
-
   // Editor Tabs
   currentEditorState?: EditorState | undefined;
   openedEditorStates: EditorState[] = [];
@@ -251,11 +244,6 @@ export class EditorStore implements CommandRegistrar {
       graphManagerState: false,
       setEditorMode: action,
       setMode: action,
-
-      blockGlobalHotkeys: observable,
-      setBlockGlobalHotkeys: action,
-      setBlockingAlert: action,
-      setActionAlertInfo: action,
 
       setCurrentEditorState: action,
       setActiveAuxPanelMode: action,
@@ -387,35 +375,6 @@ export class EditorStore implements CommandRegistrar {
   setMode(val: EDITOR_MODE): void {
     this.mode = val;
   }
-
-  // ----------
-  // ----------
-  // ----------
-  // ----------
-
-  setBlockGlobalHotkeys(val: boolean): void {
-    this.blockGlobalHotkeys = val;
-  }
-
-  setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
-    if (this._isDisposed) {
-      return;
-    }
-    this.setBlockGlobalHotkeys(Boolean(alertInfo)); // block global hotkeys if alert is shown
-    this.applicationStore.setBlockingAlert(alertInfo);
-  }
-
-  setActionAlertInfo(alertInfo: ActionAlertInfo | undefined): void {
-    if (this._isDisposed) {
-      return;
-    }
-    this.applicationStore.setActionAlertInfo(alertInfo);
-  }
-
-  // ----------
-  // ----------
-  // ----------
-  // ----------
 
   cleanUp(): void {
     // dismiss all the alerts as these are parts of application, if we don't do this, we might
@@ -602,12 +561,10 @@ export class EditorStore implements CommandRegistrar {
       // instead, we give them the option to:
       // - reload the page (in case they later gain access)
       // - back to the setup page
-      this.setActionAlertInfo({
+      this.applicationStore.setActionAlertInfo({
         message: `Project not found or inaccessible`,
         prompt: 'Please check that the project exists and request access to it',
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'Reload application',
@@ -673,12 +630,10 @@ export class EditorStore implements CommandRegistrar {
           this.applicationStore.notifyError(error);
         }
       };
-      this.setActionAlertInfo({
+      this.applicationStore.setActionAlertInfo({
         message: 'Workspace not found',
         prompt: `Please note that you can check out the project in viewer mode. Workspace is only required if you need to work on the project.`,
         type: ActionAlertType.STANDARD,
-        onEnter: (): void => this.setBlockGlobalHotkeys(true),
-        onClose: (): void => this.setBlockGlobalHotkeys(false),
         actions: [
           {
             label: 'View project',
@@ -767,13 +722,11 @@ export class EditorStore implements CommandRegistrar {
   }
 
   private *initConflictResolutionMode(): GeneratorFn<void> {
-    this.setActionAlertInfo({
+    this.applicationStore.setActionAlertInfo({
       message: 'Failed to update workspace.',
       prompt:
         'You can discard all of your changes or review them, resolve all merge conflicts and fix any potential compilation issues as well as test failures',
       type: ActionAlertType.CAUTION,
-      onEnter: (): void => this.setBlockGlobalHotkeys(true),
-      onClose: (): void => this.setBlockGlobalHotkeys(false),
       actions: [
         {
           label: 'Discard your changes',
@@ -1328,7 +1281,7 @@ export class EditorStore implements CommandRegistrar {
       if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
         return;
       }
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Switching to text mode...',
         showLoading: true,
       });
@@ -1345,10 +1298,10 @@ export class EditorStore implements CommandRegistrar {
         this.applicationStore.notifyWarning(
           `Can't enter text mode: transformation to grammar text failed. Error: ${error.message}`,
         );
-        this.setBlockingAlert(undefined);
+        this.applicationStore.setBlockingAlert(undefined);
         return;
       }
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
       this.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
       // navigate to the currently opened element immediately after entering text mode editor
       if (this.currentEditorState instanceof ElementEditorState) {

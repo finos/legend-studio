@@ -39,8 +39,6 @@ import {
 import { flowResult } from 'mobx';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
-  ActionAlertType,
-  ActionAlertActionType,
   useApplicationStore,
   EDITOR_LANGUAGE,
   useApplicationNavigationContext,
@@ -151,36 +149,11 @@ export const ModelImporter = observer(() => {
   const label = modelImporterState.modelImportEditorState.label;
   const modelImportEditorState = modelImporterState.modelImportEditorState;
   const loadModel = (): void => {
-    if (editorStore.localChangesState.hasUnpushedChanges) {
-      editorStore.setActionAlertInfo({
-        message: 'You have unpushed changes',
-        prompt:
-          'This action will discard these changes and refresh the application',
-        type: ActionAlertType.CAUTION,
-        onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-        onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-        actions: [
-          {
-            label: 'Proceed to load model',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              modelImporterState.modelImportEditorState
-                .loadModel()
-                .catch(applicationStore.alertUnhandledError);
-            },
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
+    editorStore.localChangesState.alertUnsavedChanges((): void => {
       modelImporterState.modelImportEditorState
         .loadModel()
         .catch(applicationStore.alertUnhandledError);
-    }
+    });
   };
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.MODEL_LOADER,

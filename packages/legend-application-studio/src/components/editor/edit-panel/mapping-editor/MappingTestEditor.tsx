@@ -189,12 +189,10 @@ const MappingTestQueryEditor = observer(
 
         // Attempt to generate data for input data panel as we pick the class mapping
         if (setImplementation) {
-          editorStore.setActionAlertInfo({
+          applicationStore.setActionAlertInfo({
             message: 'Mapping test input data is already set',
             prompt: 'Do you want to regenerate the input data?',
             type: ActionAlertType.CAUTION,
-            onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Regenerate',

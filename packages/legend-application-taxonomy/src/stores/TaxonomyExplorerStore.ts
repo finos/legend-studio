@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CommandRegistrar, TAB_SIZE } from '@finos/legend-application';
+import { type CommandRegistrar, TAB_SIZE } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeData,

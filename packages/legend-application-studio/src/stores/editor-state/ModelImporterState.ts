@@ -238,7 +238,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
   async loadModel(): Promise<void> {
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -266,7 +266,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }
@@ -399,7 +399,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     this.loadModelActionState.inProgress();
     try {
       this.loadModelActionState.inProgress();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Loading model...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -435,7 +435,7 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.loadModelActionState.complete();
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }

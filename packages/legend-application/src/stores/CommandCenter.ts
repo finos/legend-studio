@@ -80,16 +80,7 @@ export class CommandCenter {
 
   runCommand(commandKey: string): boolean {
     const command = this.commandRegistry.get(commandKey);
-    if (!command) {
-      this.applicationStore.log.warn(
-        LogEvent.create(
-          APPLICATION_EVENT.APPLICATION_COMMAND_CENTER_MISSING_COMMAND,
-        ),
-        `Can't find command with key '${commandKey}'`,
-      );
-      return false;
-    }
-    if (!command.trigger || command.trigger()) {
+    if (command && (!command.trigger || command.trigger())) {
       command.action?.();
       return true;
     }

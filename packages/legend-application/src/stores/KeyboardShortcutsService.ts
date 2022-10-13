@@ -99,6 +99,9 @@ export class KeyboardShortcutsService {
   }
 
   dispatch(keyCombination: string): void {
+    if (this.isHotkeysBlocked) {
+      return;
+    }
     const mappedCommandKeys = this.keyMap.get(keyCombination) ?? [];
     for (const commandKey of mappedCommandKeys) {
       // find the first command that works then escape
