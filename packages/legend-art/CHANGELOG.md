@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 4.0.1
+
+### Patch Changes
+
+- [#1514](https://github.com/finos/legend-studio/pull/1514) [`34c29c4e`](https://github.com/finos/legend-studio/commit/34c29c4e6d0f04d3f57c42528a8cb16d05261434) ([@xannem](https://github.com/xannem)) - Support displaying (validation) error message with `PanelFormTextEditor`
+
 ## 4.0.0
 
 ### Major Changes

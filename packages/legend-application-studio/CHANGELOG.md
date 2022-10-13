@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 18.1.0
+
+### Minor Changes
+
+- [#1514](https://github.com/finos/legend-studio/pull/1514) [`34c29c4e`](https://github.com/finos/legend-studio/commit/34c29c4e6d0f04d3f57c42528a8cb16d05261434) ([@xannem](https://github.com/xannem)) - Support configuring project platforms [#1505](https://github.com/finos/legend-studio/issues/1505)
+
 ## 18.0.2
 
 ## 18.0.1
