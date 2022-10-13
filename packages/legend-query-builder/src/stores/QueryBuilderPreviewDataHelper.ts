@@ -19,22 +19,22 @@ import type {
   AbstractPropertyExpression,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
-import { QueryBuilderAggregateOperator_Average } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Average.js';
-import { QueryBuilderAggregateOperator_Count } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Count.js';
-import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_DistinctCount.js';
-import { QueryBuilderAggregateOperator_Max } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Max.js';
-import { QueryBuilderAggregateOperator_Min } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Min.js';
-import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Population.js';
-import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Sample.js';
-import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/projection/aggregation/operators/QueryBuilderAggregateOperator_Sum.js';
-import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/projection/QueryBuilderProjectionColumnState.js';
+import { QueryBuilderAggregateOperator_Average } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Average.js';
+import { QueryBuilderAggregateOperator_Count } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Count.js';
+import { QueryBuilderAggregateOperator_DistinctCount } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_DistinctCount.js';
+import { QueryBuilderAggregateOperator_Max } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Max.js';
+import { QueryBuilderAggregateOperator_Min } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Min.js';
+import { QueryBuilderAggregateOperator_StdDev_Population } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Population.js';
+import { QueryBuilderAggregateOperator_StdDev_Sample } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_StdDev_Sample.js';
+import { QueryBuilderAggregateOperator_Sum } from './fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Sum.js';
+import { QueryBuilderSimpleProjectionColumnState } from './fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   COLUMN_SORT_TYPE,
   SortColumnState,
-} from './fetch-structure/projection/QueryResultSetModifierState.js';
-import type { QueryBuilderAggregateOperator } from './fetch-structure/projection/aggregation/QueryBuilderAggregateOperator.js';
-import { QueryBuilderProjectionState } from './fetch-structure/projection/QueryBuilderProjectionState.js';
+} from './fetch-structure/tds/QueryResultSetModifierState.js';
+import type { QueryBuilderAggregateOperator } from './fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
+import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
 
 const PREVIEW_DATA_TAKE_LIMIT = 10;
 const PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME = 'Value';
@@ -75,12 +75,12 @@ const NUMERIC_AGG_FUNC_TO_AGG_OP: [
 ];
 
 const createSimpleProjectionColumn = (
-  projectionState: QueryBuilderProjectionState,
+  tdsState: QueryBuilderTDSState,
   propertyExpression: AbstractPropertyExpression,
   columnName: string,
 ): QueryBuilderSimpleProjectionColumnState => {
   const col = new QueryBuilderSimpleProjectionColumnState(
-    projectionState,
+    tdsState,
     propertyExpression,
     false,
   );
@@ -123,18 +123,18 @@ export const buildNumericPreviewDataQuery = (
   //   ]
   // )
   const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
-  const projectionState = guaranteeType(
+  const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
-    QueryBuilderProjectionState,
+    QueryBuilderTDSState,
   );
-  const aggregationState = projectionState.aggregationState;
+  const aggregationState = tdsState.aggregationState;
   NUMERIC_AGG_FUNC_TO_AGG_OP.forEach((val) => {
     const colState = createSimpleProjectionColumn(
-      projectionState,
+      tdsState,
       propertyExpression,
       val[0],
     );
-    projectionState.columns.push(colState);
+    tdsState.projectionColumns.push(colState);
     const valAggOp = guaranteeNonNullable(
       aggregationState.operators.find((t) => t instanceof val[1]),
     );
@@ -163,38 +163,38 @@ export const buildNonNumericPreviewDataQuery = (
   //   ]
   // )->sort([desc('Count'), asc('Value')])->take(10)
   const builderState = queryBuilderState.INTERNAL__toBasicQueryBuilderState();
-  const projectionState = guaranteeType(
+  const tdsState = guaranteeType(
     builderState.fetchStructureState.implementation,
-    QueryBuilderProjectionState,
+    QueryBuilderTDSState,
   );
   const valueProjectionColState = createSimpleProjectionColumn(
-    projectionState,
+    tdsState,
     propertyExpression,
     PREVIEW_DATA_NON_NUMERIC_VALUE_COLUMN_NAME,
   );
   const valueCountProjectionState = createSimpleProjectionColumn(
-    projectionState,
+    tdsState,
     propertyExpression,
     PREVIEW_DATA_NON_NUMERIC_COUNT_COLUMN_NAME,
   );
-  projectionState.columns = [
+  tdsState.projectionColumns = [
     valueProjectionColState,
     valueCountProjectionState,
   ];
   const distinctCountOp = guaranteeNonNullable(
-    projectionState.aggregationState.operators.find(
+    tdsState.aggregationState.operators.find(
       (t) => t instanceof QueryBuilderAggregateOperator_Count,
     ),
   );
-  projectionState.aggregationState.changeColumnAggregateOperator(
+  tdsState.aggregationState.changeColumnAggregateOperator(
     distinctCountOp,
     valueCountProjectionState,
   );
   // result set
-  projectionState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
+  tdsState.resultSetModifierState.limit = PREVIEW_DATA_TAKE_LIMIT;
   const sortValueCount = new SortColumnState(valueCountProjectionState);
   sortValueCount.sortType = COLUMN_SORT_TYPE.DESC;
-  projectionState.resultSetModifierState.sortColumns = [
+  tdsState.resultSetModifierState.sortColumns = [
     sortValueCount,
     new SortColumnState(valueProjectionColState),
   ];

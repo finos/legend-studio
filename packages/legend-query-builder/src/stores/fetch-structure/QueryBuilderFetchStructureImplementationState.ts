@@ -27,7 +27,7 @@ import type { LambdaFunctionBuilderOption } from '../QueryBuilderValueSpecificat
 import type { QueryBuilderFetchStructureState } from './QueryBuilderFetchStructureState.js';
 
 export enum FETCH_STRUCTURE_IMPLEMENTATION {
-  PROJECTION = 'PROJECTION',
+  TABULAR_DATA_STRUCTURE = 'TABULAR_DATA_STRUCTURE',
   GRAPH_FETCH = 'GRAPH_FETCH',
 }
 

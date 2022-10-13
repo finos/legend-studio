@@ -17,7 +17,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { QueryBuilderGraphFetchTreeState } from './graph-fetch/QueryBuilderGraphFetchTreeState.js';
-import { QueryBuilderProjectionState } from './projection/QueryBuilderProjectionState.js';
+import { QueryBuilderTDSState } from './tds/QueryBuilderTDSState.js';
 import {
   type QueryBuilderExplorerTreeNodeData,
   QueryBuilderExplorerTreePropertyNodeData,
@@ -46,7 +46,7 @@ export class QueryBuilderFetchStructureState {
      * graph-fetch since `getAll()` naturally works for graph-fetch case
      * and graph-fetch allows somewhat an empty tree
      */
-    this.implementation = new QueryBuilderProjectionState(
+    this.implementation = new QueryBuilderTDSState(
       this.queryBuilderState,
       this,
     );
@@ -54,8 +54,8 @@ export class QueryBuilderFetchStructureState {
 
   changeImplementation(type: string): void {
     switch (type) {
-      case FETCH_STRUCTURE_IMPLEMENTATION.PROJECTION: {
-        this.implementation = new QueryBuilderProjectionState(
+      case FETCH_STRUCTURE_IMPLEMENTATION.TABULAR_DATA_STRUCTURE: {
+        this.implementation = new QueryBuilderTDSState(
           this.queryBuilderState,
           this,
         );

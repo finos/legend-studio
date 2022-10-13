@@ -57,9 +57,9 @@ import {
   QueryBuilderExplorerTreeRootNodeData,
   QueryBuilderExplorerTreeSubTypeNodeData,
 } from '../../stores/explorer/QueryBuilderExplorerState.js';
-import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionColumnState.js';
-import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/projection/QueryResultSetModifierState.js';
-import { QueryBuilderProjectionState } from '../../stores/fetch-structure/projection/QueryBuilderProjectionState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
+import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 
@@ -116,7 +116,7 @@ test(
 
     // check fetch-structure
     let projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     const FIRST_NAME_ALIAS = 'Edited First Name';
     const LAST_NAME_ALIAS = 'Last Name';
@@ -130,13 +130,13 @@ test(
         projectionCols.querySelector(`input[value="${LAST_NAME_ALIAS}"]`),
       ),
     ).not.toBeNull();
-    let projectionState = guaranteeType(
+    let tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
-    expect(projectionState.columns.length).toBe(2);
+    expect(tdsState.projectionColumns.length).toBe(2);
     let fistNameCol = guaranteeNonNullable(
-      projectionState.columns.find((e) => e.columnName === FIRST_NAME_ALIAS),
+      tdsState.projectionColumns.find((e) => e.columnName === FIRST_NAME_ALIAS),
     );
     const firstNameProperty = guaranteeType(
       fistNameCol,
@@ -144,14 +144,14 @@ test(
     ).propertyExpressionState.propertyExpression.func.value;
     expect(firstNameProperty).toBe(getClassProperty(_personClass, 'firstName'));
     const lastNameCol = guaranteeNonNullable(
-      projectionState.columns.find((e) => e.columnName === LAST_NAME_ALIAS),
+      tdsState.projectionColumns.find((e) => e.columnName === LAST_NAME_ALIAS),
     );
     const lastNameProperty = guaranteeType(
       lastNameCol,
       QueryBuilderSimpleProjectionColumnState,
     ).propertyExpressionState.propertyExpression.func.value;
     expect(lastNameProperty).toBe(getClassProperty(_personClass, 'lastName'));
-    expect(projectionState.resultSetModifierState.limit).toBeUndefined();
+    expect(tdsState.resultSetModifierState.limit).toBeUndefined();
 
     // chainedProperty
     const CHAINED_PROPERTY_ALIAS = 'Firm/Legal Name';
@@ -163,12 +163,12 @@ test(
         ),
       );
     });
-    projectionState = guaranteeType(
+    tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
     const projectionWithChainedPropertyCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     expect(
       await waitFor(() =>
@@ -177,9 +177,9 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(projectionState.columns.length).toBe(1);
+    expect(tdsState.projectionColumns.length).toBe(1);
     let legalNameCol = guaranteeNonNullable(
-      projectionState.columns.find(
+      tdsState.projectionColumns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -198,7 +198,7 @@ test(
     expect(_firmPropertyExpression.func.value).toBe(
       getClassProperty(_personClass, 'firm'),
     );
-    expect(projectionState.resultSetModifierState.limit).toBeUndefined();
+    expect(tdsState.resultSetModifierState.limit).toBeUndefined();
 
     // result set modifiers
     const RESULT_LIMIT = 500;
@@ -210,12 +210,12 @@ test(
         ),
       );
     });
-    projectionState = guaranteeType(
+    tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
     projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     expect(
       await waitFor(() =>
@@ -234,16 +234,16 @@ test(
         ),
       ),
     ).not.toBeNull();
-    expect(projectionState.columns.length).toBe(3);
-    const resultSetModifierState = projectionState.resultSetModifierState;
+    expect(tdsState.projectionColumns.length).toBe(3);
+    const resultSetModifierState = tdsState.resultSetModifierState;
     expect(resultSetModifierState.limit).toBe(RESULT_LIMIT);
     expect(resultSetModifierState.distinct).toBe(true);
     expect(resultSetModifierState.sortColumns).toHaveLength(2);
     fistNameCol = guaranteeNonNullable(
-      projectionState.columns.find((e) => e.columnName === FIRST_NAME_ALIAS),
+      tdsState.projectionColumns.find((e) => e.columnName === FIRST_NAME_ALIAS),
     );
     legalNameCol = guaranteeNonNullable(
-      projectionState.columns.find(
+      tdsState.projectionColumns.find(
         (e) => e.columnName === CHAINED_PROPERTY_ALIAS,
       ),
     );
@@ -288,9 +288,9 @@ test(
         ),
       );
     });
-    projectionState = guaranteeType(
+    tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
     let filterValue = 'testFirstName';
     let filterPanel = await waitFor(() =>
@@ -302,7 +302,7 @@ test(
     await waitFor(() => getByText(filterPanel, 'is'));
     const filterState = queryBuilderState.filterState;
     expect(filterState.nodes.size).toBe(1);
-    expect(projectionState.columns.length).toBe(0);
+    expect(tdsState.projectionColumns.length).toBe(0);
 
     // filter with group condition
     act(() => {
@@ -318,9 +318,9 @@ test(
         ),
       );
     });
-    projectionState = guaranteeType(
+    tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
     filterPanel = await waitFor(() =>
       renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_FILTER),
@@ -336,7 +336,7 @@ test(
     await waitFor(() => getByText(filterPanel, lastNameFilterValue));
     await waitFor(() => getByText(filterPanel, 'Last Name'));
     expect(queryBuilderState.filterState.nodes.size).toBe(3);
-    expect(projectionState.columns.length).toBe(0);
+    expect(tdsState.projectionColumns.length).toBe(0);
 
     // projection column with derived property
     act(() => {
@@ -352,12 +352,12 @@ test(
         ),
       );
     });
-    projectionState = guaranteeType(
+    tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
     projectionCols = await waitFor(() =>
-      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PROJECTION),
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TDS),
     );
     expect(
       await waitFor(() =>
@@ -365,7 +365,7 @@ test(
       ),
     ).not.toBeNull();
     await waitFor(() => getByText(projectionCols, 'Name With Title'));
-    expect(projectionState.columns.length).toBe(1);
+    expect(tdsState.projectionColumns.length).toBe(1);
     fireEvent.click(
       getByTitle(projectionCols, 'Set Derived Property Argument(s)...'),
     );
@@ -432,11 +432,11 @@ test(
     });
 
     // check fetch-structure
-    const projectionState = guaranteeType(
+    const tdsState = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
-      QueryBuilderProjectionState,
+      QueryBuilderTDSState,
     );
-    expect(projectionState.columns.length).toBe(1);
+    expect(tdsState.projectionColumns.length).toBe(1);
   },
 );
 
