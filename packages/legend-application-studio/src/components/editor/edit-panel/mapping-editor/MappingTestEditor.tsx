@@ -65,6 +65,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ExecutionPlanViewer,
+  TextInputEditor,
 } from '@finos/legend-application';
 import {
   ClassMappingSelectorModal,
@@ -86,7 +87,6 @@ import {
   isStubbed_RawLambda,
   DEPRECATED__validate_MappingTestAssert,
 } from '@finos/legend-graph';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { flatData_setData } from '../../../../stores/shared/modifier/STO_FlatData_GraphModifierHelper.js';
 import {
   relationalInputData_setData,
@@ -274,7 +274,7 @@ const MappingTestQueryEditor = observer(
         {!isStubbed_RawLambda(queryState.query) && (
           <PanelContent>
             <div className="mapping-test-editor__query-panel__query">
-              <StudioTextInputEditor
+              <TextInputEditor
                 inputValue={queryState.lambdaString}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.PURE}
@@ -326,7 +326,7 @@ export const MappingTestObjectInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={EDITOR_LANGUAGE.JSON}
           inputValue={inputDataState.data}
           isReadOnly={isReadOnly}
@@ -350,7 +350,7 @@ export const MappingTestFlatDataInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={EDITOR_LANGUAGE.TEXT}
           inputValue={inputDataState.inputData.data}
           isReadOnly={isReadOnly}
@@ -377,7 +377,7 @@ export const MappingTestRelationalInputDataBuilder = observer(
 
     return (
       <div className="panel__content mapping-test-editor__input-data-panel__content">
-        <StudioTextInputEditor
+        <TextInputEditor
           language={getRelationalInputTestDataEditorLanguage(
             inputDataState.inputData.inputType,
           )}
@@ -605,7 +605,7 @@ export const MappingTestExpectedOutputAssertionBuilder = observer(
               <ErrorIcon />
             </div>
           )}
-          <StudioTextInputEditor
+          <TextInputEditor
             inputValue={assertionState.expectedResult}
             updateInput={updateExpectedResult}
             isReadOnly={isReadOnly}

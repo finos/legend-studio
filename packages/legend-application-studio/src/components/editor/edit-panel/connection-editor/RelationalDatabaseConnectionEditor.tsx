@@ -79,8 +79,8 @@ import {
   EDITOR_LANGUAGE,
   buildElementOption,
   type PackageableElementOption,
+  TextInputEditor,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { connection_setStore } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   apiTokenAuthenticationStrategy_setApiToken,
@@ -153,7 +153,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
           {capitalize('test data setup SQL')}
         </div>
         <div className="panel__content__form__section__text-editor">
-          <StudioTextInputEditor
+          <TextInputEditor
             inputValue={SQLValue}
             updateInput={(value: string | undefined): void =>
               localH2DatasourceSpecification_setTestDataSetupSqls(

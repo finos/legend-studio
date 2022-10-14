@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  Backdrop,
   HammerIcon,
   ResizablePanelGroup,
   ResizablePanel,
@@ -44,12 +43,19 @@ import { QueryBuilderFetchStructurePanel } from './fetch-structure/QueryBuilderF
 import { QUERY_BUILDER_TEST_ID } from './QueryBuilder_TestID.js';
 import { flowResult } from 'mobx';
 import { QueryBuilderUnsupportedQueryEditor } from './QueryBuilderUnsupportedQueryEditor.js';
-import { useApplicationStore, useCommands } from '@finos/legend-application';
+import {
+  BackdropContainer,
+  useApplicationStore,
+  useCommands,
+} from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
+
+export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
+  'query-builder.backdrop-container';
 
 const QueryBuilderStatusBar = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -187,6 +193,7 @@ export const QueryBuilder = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
+        <BackdropContainer elementID={QUERY_BUILDER_BACKDROP_CONTAINER_ID} />
         <div className="query-builder__sub-header">
           <div className="query-builder__sub-header__actions">
             <DropdownMenu
@@ -269,7 +276,6 @@ export const QueryBuilder = observer(
             </DropdownMenu>
           </div>
         </div>
-        <Backdrop className="backdrop" open={queryBuilderState.showBackdrop} />
         <div className="query-builder__content">
           <div className="query-builder__activity-bar">
             <div className="query-builder__activity-bar__items"></div>

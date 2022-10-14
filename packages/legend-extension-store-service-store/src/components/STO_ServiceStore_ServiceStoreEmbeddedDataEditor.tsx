@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   CaretDownIcon,
   clsx,
@@ -43,7 +43,6 @@ import {
   externalFormatData_setData,
   useEditorStore,
   ExternalFormatDataState,
-  StudioTextInputEditor,
 } from '@finos/legend-application-studio';
 import { observer } from 'mobx-react-lite';
 import { EqualToJsonPattern } from '../graph/metamodel/pure/model/data/contentPattern/STO_ServiceStore_EqualToJsonPattern.js';
@@ -236,7 +235,7 @@ export const QueryParamsEditor = observer(
                 </div>
                 <div className="query-params-editor__content__group">
                   <div className="query-params-editor__expected-value">
-                    <StudioTextInputEditor
+                    <TextInputEditor
                       language={
                         queryParam instanceof EqualToJsonPattern
                           ? EDITOR_LANGUAGE.JSON
@@ -406,7 +405,7 @@ export const HeaderParamsEditor = observer(
                 </div>
                 <div className="header-params-editor__content__group">
                   <div className="header-params-editor__expected-value">
-                    <StudioTextInputEditor
+                    <TextInputEditor
                       language={
                         headerParam instanceof EqualToJsonPattern
                           ? EDITOR_LANGUAGE.JSON
@@ -542,7 +541,7 @@ export const BodyPatternsEditor = observer(
                 </div>
                 <div className="body-patterns-editor__content__group">
                   <div className="body-patterns-editor__expected-value">
-                    <StudioTextInputEditor
+                    <TextInputEditor
                       language={
                         bodyPattern instanceof EqualToJsonPattern
                           ? EDITOR_LANGUAGE.JSON

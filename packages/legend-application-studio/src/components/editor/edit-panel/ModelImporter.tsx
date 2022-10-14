@@ -42,8 +42,8 @@ import {
   useApplicationStore,
   EDITOR_LANGUAGE,
   useApplicationNavigationContext,
+  TextInputEditor,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 import type { ModelImporterExtensionConfiguration } from '../../../stores/LegendStudioApplicationPlugin.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
 import { SCHEMA_SET_TAB_TYPE } from '../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
@@ -189,7 +189,7 @@ export const ModelImporter = observer(() => {
         modelImportEditorState.setModelText(val);
       return (
         <div className="panel__content model-loader__editor">
-          <StudioTextInputEditor
+          <TextInputEditor
             language={
               modelImportEditorState.nativeType ===
               MODEL_IMPORT_NATIVE_INPUT_TYPE.PURE_GRAMMAR

@@ -91,7 +91,7 @@ export class KeyboardShortcutsService {
     if (keyCombination) {
       this.keyMap.set(keyCombination, [
         ...(this.keyMap.get(keyCombination) ?? []).filter(
-          (key) => key === commandKey,
+          (key) => key !== commandKey,
         ),
         commandKey,
       ]);

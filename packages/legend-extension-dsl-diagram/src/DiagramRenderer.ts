@@ -89,6 +89,7 @@ import {
   relationshipView_simplifyPath,
   relationshipView_setPath,
 } from './stores/studio/DSL_Diagram_GraphModifierHelper.js';
+import { forceDispatchKeyboardEvent } from '@finos/legend-application';
 
 export enum DIAGRAM_INTERACTION_MODE {
   LAYOUT,
@@ -2391,6 +2392,10 @@ export class DiagramRenderer {
   // --------------------------------- Event handler --------------------------
 
   keydown(e: KeyboardEvent): void {
+    // NOTE: Since <canvas> element does not bubble `keydown` event naturally, we will
+    // manually do this in order to take advantage of application keyboard shortcuts service
+    forceDispatchKeyboardEvent(e);
+
     // Remove selected view(s)
     if ('Delete' === e.key) {
       if (!this.isReadOnly) {
@@ -2579,26 +2584,6 @@ export class DiagramRenderer {
       }
 
       this.drawScreen();
-    }
-
-    // Quick actions which are global to diagram editor
-    // NOTE: these are likely fixed hotkeys
-    else if ('r' === e.key) {
-      this.recenter();
-    } else if ('z' === e.key) {
-      this.switchToZoomMode();
-    } else if ('v' === e.key) {
-      this.switchToViewMode();
-    } else if ('m' === e.key) {
-      this.switchToPanMode();
-    } else if ('p' === e.key) {
-      this.switchToAddPropertyMode();
-    } else if ('i' === e.key) {
-      this.switchToAddInheritanceMode();
-    } else if ('c' === e.key) {
-      this.switchToAddClassMode();
-    } else if ('ArrowRight' === e.key) {
-      this.ejectProperty();
     }
   }
 

@@ -36,7 +36,6 @@ import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import type { DSL_Data_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import {
@@ -46,7 +45,7 @@ import {
   RelationalCSVDataState,
 } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import type { DataElement } from '@finos/legend-graph';
-import { buildElementOption } from '@finos/legend-application';
+import { buildElementOption, TextInputEditor } from '@finos/legend-application';
 import { RelationalCSVDataEditor } from './RelationalCSVDataEditor.js';
 
 export const ExternalFormatDataEditor = observer(
@@ -136,7 +135,7 @@ export const ExternalFormatDataEditor = observer(
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <StudioTextInputEditor
+            <TextInputEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}

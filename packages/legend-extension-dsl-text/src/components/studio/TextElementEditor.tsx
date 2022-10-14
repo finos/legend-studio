@@ -17,10 +17,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { prettyCONSTName } from '@finos/legend-shared';
-import {
-  StudioTextInputEditor,
-  useEditorStore,
-} from '@finos/legend-application-studio';
+import { useEditorStore } from '@finos/legend-application-studio';
 import { TextEditorState } from '../../stores/studio/TextEditorState.js';
 import {
   OpenPreviewIcon,
@@ -37,6 +34,7 @@ import {
 } from '@finos/legend-art';
 import {
   EDITOR_LANGUAGE,
+  TextInputEditor,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import {
@@ -88,7 +86,7 @@ export const TextElementEditor = observer(() => {
 
   const renderPlainTextEditorView = (): JSX.Element => (
     <div className="panel__content text-element-editor__editor">
-      <StudioTextInputEditor
+      <TextInputEditor
         language={getTextElementEditorLanguage(textElement.type)}
         inputValue={textElement.content}
         updateInput={changeContent}

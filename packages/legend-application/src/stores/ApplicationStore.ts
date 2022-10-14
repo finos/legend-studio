@@ -145,7 +145,8 @@ export class ApplicationStore<
   // TODO: config
   // See https://github.com/finos/legend-studio/issues/407
 
-  // misc
+  // backdrop
+  backdropContainerElementID?: string | undefined;
   showBackdrop = false;
 
   // theme
@@ -162,7 +163,9 @@ export class ApplicationStore<
       blockingAlertInfo: observable,
       actionAlertInfo: observable,
       TEMPORARY__isLightThemeEnabled: observable,
+      backdropContainerElementID: observable,
       showBackdrop: observable,
+      setBackdropContainerElementID: action,
       setShowBackdrop: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
@@ -199,6 +202,15 @@ export class ApplicationStore<
 
   TEMPORARY__setIsLightThemeEnabled(val: boolean): void {
     this.TEMPORARY__isLightThemeEnabled = val;
+  }
+
+  /**
+   * Change the ID used to find the base element to mount the backdrop on.
+   * This is useful when we want to use backdrop with embedded application which
+   * requires its own backdrop usage.
+   */
+  setBackdropContainerElementID(val: string | undefined): void {
+    this.backdropContainerElementID = val;
   }
 
   setShowBackdrop(val: boolean): void {

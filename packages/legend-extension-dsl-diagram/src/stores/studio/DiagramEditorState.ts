@@ -417,10 +417,6 @@ export class DiagramEditorState
       this.editorStore.currentEditorState === this &&
       // make sure the renderer is initialized
       this.isDiagramRendererInitialized &&
-      // make sure the renderer canvas is currently not being in focused
-      // so we don't end up triggering a hotkey twice, because natively the renderer
-      // listens to keydown event as well
-      this.renderer.div !== document.activeElement &&
       // since we use hotkeys that can be easily in text input
       // we would need to do this check to make sure we don't accidentally
       // trigger hotkeys when the user is typing

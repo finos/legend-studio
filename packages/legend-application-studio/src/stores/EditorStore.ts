@@ -183,7 +183,6 @@ export class EditorStore implements CommandRegistrar {
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
 
-  private _isDisposed = false;
   initState = ActionState.create();
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
 
@@ -220,11 +219,10 @@ export class EditorStore implements CommandRegistrar {
   ) {
     makeObservable<
       EditorStore,
-      '_isDisposed' | 'initStandardMode' | 'initConflictResolutionMode'
+      'initStandardMode' | 'initConflictResolutionMode'
     >(this, {
       editorMode: observable,
       mode: observable,
-      _isDisposed: observable,
       graphEditMode: observable,
       activeAuxPanelMode: observable,
       activeActivity: observable,
@@ -385,7 +383,6 @@ export class EditorStore implements CommandRegistrar {
     this.applicationStore.setActionAlertInfo(undefined);
     // stop change detection to avoid memory-leak
     this.changeDetectionState.stop();
-    this._isDisposed = true;
   }
 
   registerCommands(): void {
@@ -394,8 +391,8 @@ export class EditorStore implements CommandRegistrar {
       trigger: this.createEditorCommandTrigger(
         () =>
           this.isInitialized &&
-          this.isInConflictResolutionMode &&
-          !this.conflictResolutionState.hasResolvedAllConflicts,
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
         if (this.isInFormMode) {
@@ -414,8 +411,8 @@ export class EditorStore implements CommandRegistrar {
       trigger: this.createEditorCommandTrigger(
         () =>
           this.isInitialized &&
-          this.isInConflictResolutionMode &&
-          !this.conflictResolutionState.hasResolvedAllConflicts,
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
         flowResult(this.graphState.graphGenerationState.globalGenerate()).catch(
@@ -435,7 +432,12 @@ export class EditorStore implements CommandRegistrar {
     });
     this.applicationStore.commandCenter.registerCommand({
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
-      trigger: this.createEditorCommandTrigger(),
+      trigger: this.createEditorCommandTrigger(
+        () =>
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
+      ),
       action: () => {
         flowResult(this.toggleTextMode()).catch(
           this.applicationStore.alertUnhandledError,
@@ -535,7 +537,6 @@ export class EditorStore implements CommandRegistrar {
           `Fast-refreshing the app - undoing cleanUp() and preventing initialize() recall in editor store...`,
         );
         this.changeDetectionState.start();
-        this._isDisposed = false;
         return;
       }
       this.applicationStore.notifyIllegalState(

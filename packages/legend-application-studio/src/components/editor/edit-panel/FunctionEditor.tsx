@@ -82,7 +82,6 @@ import {
   useApplicationStore,
   buildElementOption,
 } from '@finos/legend-application';
-import { StudioLambdaEditor } from '../../shared/StudioLambdaEditor.js';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import {
   function_setReturnType,
@@ -101,6 +100,7 @@ import {
   rawVariableExpression_setType,
 } from '../../../stores/shared/modifier/RawValueSpecificationGraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../stores/LegendStudioApplicationNavigationContext.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 enum FUNCTION_PARAMETER_TYPE {
   CLASS = 'CLASS',
@@ -685,7 +685,7 @@ export const FunctionMainEditor = observer(
               ),
             })}
           >
-            <StudioLambdaEditor
+            <LambdaEditor
               className="function-editor__element__lambda-editor"
               disabled={
                 lambdaEditorState.isConvertingFunctionBodyToString || isReadOnly

@@ -18,6 +18,12 @@
   background: var(--color-dark-shade-230) !important;
   z-index: 100 !important;
 
+  &__container {
+    height: 0;
+    width: 0;
+    position: absolute;
+  }
+
   &__element {
     z-index: 100;
     position: relative;

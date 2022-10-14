@@ -20,7 +20,6 @@ import {
   type IDisposable,
   editor as monacoEditorAPI,
   languages as monacoLanguagesAPI,
-  KeyCode,
 } from 'monaco-editor';
 import {
   ContextMenu,
@@ -46,6 +45,7 @@ import {
   useApplicationStore,
   type DocumentationEntry,
   useApplicationNavigationContext,
+  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
 import {
   type ElementDragSource,
@@ -817,21 +817,7 @@ export const GrammarTextEditor = observer(() => {
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
       });
-      _editor.onKeyDown((event) => {
-        if (event.keyCode === KeyCode.F9) {
-          event.preventDefault();
-          event.stopPropagation();
-          flowResult(editorStore.graphState.globalCompileInTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        } else if (event.keyCode === KeyCode.F8) {
-          event.preventDefault();
-          event.stopPropagation();
-          flowResult(editorStore.toggleTextMode()).catch(
-            applicationStore.alertUnhandledError,
-          );
-        }
-      });
+      _editor.onKeyDown((event) => createPassThroughOnKeyHandler());
       disableEditorHotKeys(_editor);
       _editor.focus(); // focus on the editor initially
       setEditor(_editor);

@@ -95,7 +95,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   observableContext: ObserverContext;
 
   queryCompileState = ActionState.create();
-  showBackdrop = false;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
 
@@ -120,7 +119,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
-      showBackdrop: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
       changeDetectionState: observable,
@@ -132,7 +130,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       isQuerySupported: computed,
       validationIssues: computed,
 
-      setShowBackdrop: action,
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setClass: action,
@@ -194,10 +191,6 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    */
   get TEMPORARY__isDnDFetchStructureToFilterSupported(): boolean {
     return true;
-  }
-
-  setShowBackdrop(val: boolean): void {
-    this.showBackdrop = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {

@@ -20,7 +20,10 @@ export { QueryBuilder_GraphManagerPreset } from './graphManager/QueryBuilder_Gra
 export { QUERY_BUILDER_TEST_ID } from './components/QueryBuilder_TestID.js';
 export { QueryBuilder_LegendApplicationPlugin } from './components/QueryBuilder_LegendApplicationPlugin.js';
 export { QueryBuilderNavigationBlocker } from './components/QueryBuilderNavigationBlocker.js';
-export { QueryBuilder } from './components/QueryBuilder.js';
+export {
+  QueryBuilder,
+  QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+} from './components/QueryBuilder.js';
 export { QueryBuilderState } from './stores/QueryBuilderState.js';
 
 export { QueryBuilderPropertySearchState } from './stores/explorer/QueryBuilderPropertySearchState.js';

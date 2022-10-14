@@ -47,6 +47,7 @@ import {
 import { capitalize } from '@finos/legend-shared';
 import {
   EDITOR_LANGUAGE,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -54,7 +55,6 @@ import {
   renderColumnTypeIcon,
 } from './DatabaseEditorHelper.js';
 import { flowResult } from 'mobx';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 const getNodeIcon = (node: DatabaseBuilderTreeNodeData): React.ReactNode => {
   if (node instanceof SchemaDatabaseBuilderTreeNodeData) {
@@ -338,7 +338,7 @@ export const DatabaseBuilder = observer(
                     </div>
                   </div>
                   <PanelContent>
-                    <StudioTextInputEditor
+                    <TextInputEditor
                       language={EDITOR_LANGUAGE.PURE}
                       inputValue={databaseBuilderState.databaseGrammarCode}
                       isReadOnly={true}

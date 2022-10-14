@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   type TreeData,
   type TreeNodeContainerProps,
@@ -62,7 +62,6 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from '../../../LegendStudioTestID.js';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getElementTypeIcon } from '../../../shared/ElementIconUtils.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 
 export const getTestableResultIcon = (
@@ -169,7 +168,7 @@ const TestFailViewer = observer(
           </div>
           <div className="modal__body">
             {failure instanceof TestError && (
-              <StudioTextInputEditor
+              <TextInputEditor
                 inputValue={failure.error}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.TEXT}
@@ -185,7 +184,7 @@ const TestFailViewer = observer(
             )}
             {failure instanceof AssertFail &&
               !(failure instanceof EqualToJsonAssertFail) && (
-                <StudioTextInputEditor
+                <TextInputEditor
                   inputValue={failure.message ?? ''}
                   isReadOnly={true}
                   language={EDITOR_LANGUAGE.TEXT}

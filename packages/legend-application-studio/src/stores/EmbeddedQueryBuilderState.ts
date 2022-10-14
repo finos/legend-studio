@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderState,
+  QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+} from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
 import { FormModeCompilationOutcome } from './EditorGraphState.js';
@@ -92,8 +95,14 @@ export class EmbeddedQueryBuilderState {
       if (!this.editorStore.graphState.hasCompilationError) {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
+        this.editorStore.applicationStore.setBackdropContainerElementID(
+          QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+        );
       }
     } else {
+      this.editorStore.applicationStore.setBackdropContainerElementID(
+        undefined,
+      );
       this.queryBuilderState = undefined;
       this.actionConfigs = [];
     }

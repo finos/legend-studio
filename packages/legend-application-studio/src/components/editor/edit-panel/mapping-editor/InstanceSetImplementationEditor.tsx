@@ -86,9 +86,9 @@ import {
   getAllRecordTypes,
   getAllClassProperties,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -402,7 +402,7 @@ const MappingFilterEditor = observer(
         })}
       >
         <div className="class-mapping-filter-editor__content">
-          <StudioLambdaEditor
+          <LambdaEditor
             className="class-mapping-filter-editor__element__lambda-editor"
             disabled={
               isReadOnly ||

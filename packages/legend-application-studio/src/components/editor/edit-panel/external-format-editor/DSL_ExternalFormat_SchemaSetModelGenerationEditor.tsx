@@ -32,8 +32,7 @@ import {
   ResizablePanelSplitterLine,
 } from '@finos/legend-art';
 import { GenerationPropertyEditor } from '../element-generation-editor/FileGenerationEditor.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 
 enum HIDDEN_CONFIGURATION_PROPERTIES {
   FORMAT = 'format',
@@ -212,7 +211,7 @@ export const SchemaSetModelGenerationEditor = observer(
                       .isInProgress
                   }
                 />
-                <StudioTextInputEditor
+                <TextInputEditor
                   inputValue={modelGenerationState.generationValue}
                   isReadOnly={true}
                   language={EDITOR_LANGUAGE.PURE}
