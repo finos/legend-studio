@@ -256,22 +256,19 @@ export const QueryBuilderPropertyExpressionEditor = observer(
           switch (milestoningStereotype) {
             case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
               newParameterValue =
-                queryBuilderState.milestoningState.businessDate;
+                queryBuilderState.milestoningState.businessTemporalHelper.getMilestoningDate();
               break;
             }
             case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
               newParameterValue =
-                queryBuilderState.milestoningState.processingDate;
+                queryBuilderState.milestoningState.processingTemporalHelper.getMilestoningDate();
               break;
             }
             case MILESTONING_STEREOTYPE.BITEMPORAL: {
-              if (index === 0) {
-                newParameterValue =
-                  queryBuilderState.milestoningState.processingDate;
-              } else {
-                newParameterValue =
-                  queryBuilderState.milestoningState.businessDate;
-              }
+              newParameterValue =
+                queryBuilderState.milestoningState.bitemporalHelper.getMilestoningDate(
+                  index,
+                );
               break;
             }
             default:

@@ -55,7 +55,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
+import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderMilestoningHelper.js';
 
 export const getNonCollectionValueSpecificationType = (
   valueSpecification: ValueSpecification,

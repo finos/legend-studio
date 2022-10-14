@@ -46,7 +46,6 @@ import {
   observe_AbstractPropertyExpression,
   GenericTypeExplicitReference,
   GenericType,
-  INTERNAL__PropagatedValue,
   PropertyExplicitReference,
   PrimitiveType,
 } from '@finos/legend-graph';

@@ -82,43 +82,25 @@ const processGetAllExpression = (
   queryBuilderState.explorerState.refreshTreeData();
 
   // check parameters (milestoning) and build state
-  let acceptedNoOfParameters = 1;
+  const acceptedNoOfParameters = 1;
   const stereotype = getMilestoneTemporalStereotype(
     _class,
     queryBuilderState.graphManagerState.graph,
   );
   switch (stereotype) {
     case MILESTONING_STEREOTYPE.BITEMPORAL:
-      acceptedNoOfParameters = 3;
-      assertTrue(
-        expression.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters`,
-      );
-      queryBuilderState.milestoningState.setProcessingDate(
-        expression.parametersValues[1],
-      );
-      queryBuilderState.milestoningState.setBusinessDate(
-        expression.parametersValues[2],
+      queryBuilderState.milestoningState.bitemporalHelper.processGetAllParamaters(
+        expression.parametersValues,
       );
       break;
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      acceptedNoOfParameters = 2;
-      assertTrue(
-        expression.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
-      );
-      queryBuilderState.milestoningState.setBusinessDate(
-        expression.parametersValues[1],
+      queryBuilderState.milestoningState.businessTemporalHelper.processGetAllParamaters(
+        expression.parametersValues,
       );
       break;
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      acceptedNoOfParameters = 2;
-      assertTrue(
-        expression.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
-      );
-      queryBuilderState.milestoningState.setProcessingDate(
-        expression.parametersValues[1],
+      queryBuilderState.milestoningState.processingTemporalHelper.processGetAllParamaters(
+        expression.parametersValues,
       );
       break;
     default:

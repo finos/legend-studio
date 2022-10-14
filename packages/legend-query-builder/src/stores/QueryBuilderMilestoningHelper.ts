@@ -30,8 +30,14 @@ import {
   PRIMITIVE_TYPE,
   type PureModel,
   VariableExpression,
+  type SimpleFunctionExpression,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import {
+  assertTrue,
+  guaranteeNonNullable,
+  guaranteeType,
+} from '@finos/legend-shared';
+import { getParameterValue } from '../components/QueryBuilderSideBar.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import type { QueryBuilderDerivedPropertyExpressionState } from './QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -331,10 +337,263 @@ export const generateMilestonedPropertyParameterValue = (
 
   switch (temporalTarget) {
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-      if (!milestoningState.businessDate) {
-        milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+      return milestoningState.businessTemporalHelper.generateMilestoningDate(
+        isDatePropagationSupported,
+        hasDefaultMilestoningDate ?? false,
+        prevPropertyExpression,
+        temporalSource,
+      );
+    }
+    case MILESTONING_STEREOTYPE.BITEMPORAL: {
+      return milestoningState.bitemporalHelper.generateMilestoningDate(
+        isDatePropagationSupported,
+        hasDefaultMilestoningDate ?? false,
+        prevPropertyExpression,
+        temporalSource,
+        idx,
+        derivedPropertyExpressionState,
+      );
+    }
+    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
+      return milestoningState.processingTemporalHelper.generateMilestoningDate(
+        isDatePropagationSupported,
+        hasDefaultMilestoningDate ?? false,
+        prevPropertyExpression,
+      );
+    }
+    default:
+      return undefined;
+  }
+};
+
+export abstract class QueryBuilderMilestoningBuilderHelper {
+  milestoningState: QueryBuilderMilestoningState;
+
+  constructor(queryBuilderMilestoningState: QueryBuilderMilestoningState) {
+    this.milestoningState = queryBuilderMilestoningState;
+  }
+
+  /**
+   * Gets the milestoning date associated with the given stereotype
+   */
+  abstract getMilestoningDate(): ValueSpecification | undefined;
+
+  /**
+   * Gets the tooltip text for given stereotype
+   */
+  abstract getMilestoningToolTipText(): string;
+
+  /**
+   * Initializes milestoning parameters when they are not defined.
+   * We need to force initialize when we change class as we don't reset the whole milestoning state here.
+   */
+  abstract initializeMilestoningParameters(force?: boolean): void;
+
+  /**
+   * Checks whether the getAll function has the no of parameters as expected for a given stereotype and sets the corresponding milestoning dates.
+   */
+  abstract processGetAllParamaters(parameterValues: ValueSpecification[]): void;
+
+  /**
+   * Builds parameters for getAll() function with milestoned class
+   */
+  abstract buildGetAllParameters(
+    getAllFunction: SimpleFunctionExpression,
+  ): void;
+
+  /**
+   * Generates milestoning date for a propertyexpression based on its source and target stereotype
+   */
+  abstract generateMilestoningDate(
+    isDatePropagationSupported: boolean,
+    hasDefaultMilestoningDate: boolean,
+    prevPropertyExpression: AbstractPropertyExpression | undefined,
+    temporalSource: MILESTONING_STEREOTYPE | undefined,
+  ): ValueSpecification;
+}
+
+export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryBuilderMilestoningBuilderHelper {
+  getMilestoningDate(): ValueSpecification | undefined {
+    return this.milestoningState.businessDate;
+  }
+  getMilestoningToolTipText(): string {
+    return `Business Date: ${getParameterValue(this.getMilestoningDate())}`;
+  }
+  initializeMilestoningParameters(force?: boolean): void {
+    if (!this.milestoningState.businessDate || force) {
+      this.milestoningState.setBusinessDate(
+        this.milestoningState.buildMilestoningParameter(
+          BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+        ),
+      );
+    }
+  }
+  processGetAllParamaters(parameterValues: ValueSpecification[]): void {
+    assertTrue(
+      parameterValues.length === 2,
+      `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
+    );
+    this.milestoningState.setBusinessDate(parameterValues[1]);
+  }
+  buildGetAllParameters(getAllFunction: SimpleFunctionExpression): void {
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        this.getMilestoningDate(),
+        `Milestoning class should have a parameter of type 'Date'`,
+      ),
+    );
+  }
+  generateMilestoningDate(
+    isDatePropagationSupported: boolean,
+    hasDefaultMilestoningDate: boolean,
+    prevPropertyExpression: AbstractPropertyExpression | undefined,
+    temporalSource: MILESTONING_STEREOTYPE | undefined,
+  ): ValueSpecification {
+    this.initializeMilestoningParameters();
+    if (
+      isDatePropagationSupported &&
+      prevPropertyExpression &&
+      !hasDefaultMilestoningDate
+    ) {
+      if (temporalSource === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
+        return new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(prevPropertyExpression.parametersValues[1]),
+        );
+      } else {
+        return new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(prevPropertyExpression.parametersValues[2]),
+        );
+      }
+    } else {
+      return new INTERNAL__PropagatedValue(() =>
+        guaranteeNonNullable(this.getMilestoningDate()),
+      );
+    }
+  }
+}
+
+export class QueryBuilderProcessingTemporalMilestoningBuilderHelper extends QueryBuilderMilestoningBuilderHelper {
+  getMilestoningDate(): ValueSpecification | undefined {
+    return this.milestoningState.processingDate;
+  }
+  getMilestoningToolTipText(): string {
+    return `Processing Date: ${getParameterValue(this.getMilestoningDate())}`;
+  }
+  initializeMilestoningParameters(force?: boolean): void {
+    if (!this.milestoningState.processingDate || force) {
+      this.milestoningState.setProcessingDate(
+        this.milestoningState.buildMilestoningParameter(
+          PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+        ),
+      );
+    }
+  }
+  processGetAllParamaters(parameterValues: ValueSpecification[]): void {
+    assertTrue(
+      parameterValues.length === 2,
+      `Can't process getAll() expression: when used with a milestoned class getAll() expects a parameter`,
+    );
+    this.milestoningState.setProcessingDate(parameterValues[1]);
+  }
+  buildGetAllParameters(getAllFunction: SimpleFunctionExpression): void {
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        this.getMilestoningDate(),
+        `Milestoning class should have a parameter of type 'Date'`,
+      ),
+    );
+  }
+  generateMilestoningDate(
+    isDatePropagationSupported: boolean,
+    hasDefaultMilestoningDate: boolean,
+    prevPropertyExpression: AbstractPropertyExpression | undefined,
+  ): ValueSpecification {
+    this.initializeMilestoningParameters();
+    if (
+      isDatePropagationSupported &&
+      prevPropertyExpression &&
+      !hasDefaultMilestoningDate
+    ) {
+      return new INTERNAL__PropagatedValue(() =>
+        guaranteeNonNullable(prevPropertyExpression.parametersValues[1]),
+      );
+    } else {
+      return new INTERNAL__PropagatedValue(() =>
+        guaranteeNonNullable(this.getMilestoningDate()),
+      );
+    }
+  }
+}
+
+export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilderMilestoningBuilderHelper {
+  getMilestoningDate(index?: number): ValueSpecification | undefined {
+    if (index === 0) {
+      return this.milestoningState.processingDate;
+    } else {
+      return this.milestoningState.businessDate;
+    }
+  }
+  getMilestoningToolTipText(): string {
+    return `Processing Date: ${getParameterValue(
+      this.getMilestoningDate(0),
+    )}, Business Date: ${getParameterValue(this.getMilestoningDate(1))}`;
+  }
+  initializeMilestoningParameters(force?: boolean): void {
+    if (!this.milestoningState.processingDate || force) {
+      this.milestoningState.setProcessingDate(
+        this.milestoningState.buildMilestoningParameter(
+          PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+        ),
+      );
+    }
+    if (!this.milestoningState.businessDate || force) {
+      this.milestoningState.setBusinessDate(
+        this.milestoningState.buildMilestoningParameter(
+          BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+        ),
+      );
+    }
+  }
+  processGetAllParamaters(parameterValues: ValueSpecification[]): void {
+    assertTrue(
+      parameterValues.length === 3,
+      `Can't process getAll() expression: when used with a bitemporal milestoned class getAll() expects two parameters`,
+    );
+    this.milestoningState.setProcessingDate(parameterValues[1]);
+    this.milestoningState.setBusinessDate(parameterValues[2]);
+  }
+  buildGetAllParameters(getAllFunction: SimpleFunctionExpression): void {
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        this.getMilestoningDate(0),
+        `Milestoning class should have a parameter of type 'Date'`,
+      ),
+    );
+    getAllFunction.parametersValues.push(
+      guaranteeNonNullable(
+        this.getMilestoningDate(1),
+        `Milestoning class should have a parameter of type 'Date'`,
+      ),
+    );
+  }
+  generateMilestoningDate(
+    isDatePropagationSupported: boolean,
+    hasDefaultMilestoningDate: boolean,
+    prevPropertyExpression: AbstractPropertyExpression | undefined,
+    temporalSource: MILESTONING_STEREOTYPE | undefined,
+    idx?: number,
+    derivedPropertyExpressionState?: QueryBuilderDerivedPropertyExpressionState,
+  ): ValueSpecification {
+    this.initializeMilestoningParameters();
+    if (idx === 0) {
+      if (
+        temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
+        derivedPropertyExpressionState?.parameterValues.length === 1
+      ) {
+        return new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(
+            guaranteeType(prevPropertyExpression, AbstractPropertyExpression)
+              .parametersValues[1],
           ),
         );
       }
@@ -344,117 +603,45 @@ export const generateMilestonedPropertyParameterValue = (
         prevPropertyExpression &&
         !hasDefaultMilestoningDate
       ) {
-        if (temporalSource === temporalTarget) {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(prevPropertyExpression.parametersValues[1]),
-          );
-        } else {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(prevPropertyExpression.parametersValues[2]),
-          );
-        }
-      } else {
-        parameter = new INTERNAL__PropagatedValue(() =>
-          guaranteeNonNullable(milestoningState.businessDate),
-        );
-      }
-      return parameter;
-    }
-    case MILESTONING_STEREOTYPE.BITEMPORAL: {
-      if (!milestoningState.processingDate) {
-        milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      if (!milestoningState.businessDate) {
-        milestoningState.setBusinessDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      if (idx === 0) {
-        if (
-          temporalSource === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1
-        ) {
-          return new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(
-              guaranteeType(prevPropertyExpression, AbstractPropertyExpression)
-                .parametersValues[1],
-            ),
-          );
-        }
-        let parameter;
-        if (
-          isDatePropagationSupported &&
-          prevPropertyExpression &&
-          !hasDefaultMilestoningDate
-        ) {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(prevPropertyExpression.parametersValues[1]),
-          );
-        } else {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(milestoningState.processingDate),
-          );
-        }
-        return parameter;
-      } else {
-        if (
-          temporalSource === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL &&
-          derivedPropertyExpressionState.parameterValues.length === 1
-        ) {
-          return new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(
-              guaranteeType(
-                derivedPropertyExpressionState.propertyExpression
-                  .parametersValues[0],
-                AbstractPropertyExpression,
-              ).parametersValues[1],
-            ),
-          );
-        }
-        let parameter;
-        if (
-          isDatePropagationSupported &&
-          prevPropertyExpression &&
-          !hasDefaultMilestoningDate
-        ) {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(prevPropertyExpression.parametersValues[2]),
-          );
-        } else {
-          parameter = new INTERNAL__PropagatedValue(() =>
-            guaranteeNonNullable(milestoningState.businessDate),
-          );
-        }
-        return parameter;
-      }
-    }
-    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-      if (!milestoningState.processingDate) {
-        milestoningState.setProcessingDate(
-          derivedPropertyExpressionState.queryBuilderState.milestoningState.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-      }
-      let parameter;
-      if (isDatePropagationSupported && prevPropertyExpression) {
         parameter = new INTERNAL__PropagatedValue(() =>
           guaranteeNonNullable(prevPropertyExpression.parametersValues[1]),
         );
       } else {
         parameter = new INTERNAL__PropagatedValue(() =>
-          guaranteeNonNullable(milestoningState.processingDate),
+          guaranteeNonNullable(this.getMilestoningDate(idx)),
+        );
+      }
+      return parameter;
+    } else {
+      if (
+        temporalSource === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL &&
+        derivedPropertyExpressionState?.parameterValues.length === 1
+      ) {
+        return new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(
+            guaranteeType(
+              derivedPropertyExpressionState.propertyExpression
+                .parametersValues[0],
+              AbstractPropertyExpression,
+            ).parametersValues[1],
+          ),
+        );
+      }
+      let parameter;
+      if (
+        isDatePropagationSupported &&
+        prevPropertyExpression &&
+        !hasDefaultMilestoningDate
+      ) {
+        parameter = new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(prevPropertyExpression.parametersValues[2]),
+        );
+      } else {
+        parameter = new INTERNAL__PropagatedValue(() =>
+          guaranteeNonNullable(this.getMilestoningDate(idx)),
         );
       }
       return parameter;
     }
-    default:
-      return undefined;
   }
-};
+}

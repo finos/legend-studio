@@ -15,8 +15,6 @@
  */
 
 import {
-  BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
   GenericType,
   GenericTypeExplicitReference,
   getMilestoneTemporalStereotype,
@@ -30,10 +28,22 @@ import {
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import {
+  QueryBuilderBitemporalMilestoningBuilderHelper,
+  QueryBuilderBusinessTemporalMilestoningBuilderHelper,
+  QueryBuilderProcessingTemporalMilestoningBuilderHelper,
+} from './QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
+  readonly businessTemporalHelper =
+    new QueryBuilderBusinessTemporalMilestoningBuilderHelper(this);
+  readonly processingTemporalHelper =
+    new QueryBuilderProcessingTemporalMilestoningBuilderHelper(this);
+  readonly bitemporalHelper =
+    new QueryBuilderBitemporalMilestoningBuilderHelper(this);
+
   queryBuilderState: QueryBuilderState;
 
   showMilestoningEditor = false;
@@ -68,32 +78,15 @@ export class QueryBuilderMilestoningState implements Hashable {
   private initializeQueryMilestoningParameters(stereotype: string): void {
     switch (stereotype) {
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        this.setBusinessDate(
-          this.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
+        this.businessTemporalHelper.initializeMilestoningParameters(true);
         break;
       }
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        this.setProcessingDate(
-          this.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
+        this.processingTemporalHelper.initializeMilestoningParameters(true);
         break;
       }
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        this.setProcessingDate(
-          this.buildMilestoningParameter(
-            PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
-        this.setBusinessDate(
-          this.buildMilestoningParameter(
-            BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-          ),
-        );
+        this.processingTemporalHelper.initializeMilestoningParameters(true);
         break;
       }
       default:

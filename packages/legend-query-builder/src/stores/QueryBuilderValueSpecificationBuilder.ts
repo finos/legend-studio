@@ -93,35 +93,20 @@ export const buildLambdaFunction = (
   if (milestoningStereotype) {
     switch (milestoningStereotype) {
       case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.businessDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
+        queryBuilderState.milestoningState.businessTemporalHelper.buildGetAllParameters(
+          getAllFunction,
         );
         break;
       }
       case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.processingDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
+        queryBuilderState.milestoningState.processingTemporalHelper.buildGetAllParameters(
+          getAllFunction,
         );
         break;
       }
       case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.processingDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
-        );
-        getAllFunction.parametersValues.push(
-          guaranteeNonNullable(
-            queryBuilderState.milestoningState.businessDate,
-            `Milestoning class should have a parameter of type 'Date'`,
-          ),
+        queryBuilderState.milestoningState.bitemporalHelper.buildGetAllParameters(
+          getAllFunction,
         );
         break;
       }

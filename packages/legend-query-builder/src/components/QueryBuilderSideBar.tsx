@@ -51,7 +51,7 @@ import {
 } from '@finos/legend-application';
 import { MilestoningParametersEditor } from './explorer/QueryBuilderMilestoningEditor.js';
 
-const getParameterValue = (
+export const getParameterValue = (
   parameter: ValueSpecification | undefined,
 ): string | undefined => {
   if (parameter instanceof VariableExpression) {
@@ -89,21 +89,16 @@ const generateClassLabel = (
   let milestoningTooltipText: string | undefined;
   switch (milestoneStereotype) {
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      milestoningTooltipText = `Business Date: ${getParameterValue(
-        queryBuilderState.milestoningState.businessDate,
-      )}`;
+      milestoningTooltipText =
+        queryBuilderState.milestoningState.businessTemporalHelper.getMilestoningToolTipText();
       break;
     case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      milestoningTooltipText = `Processing Date: ${getParameterValue(
-        queryBuilderState.milestoningState.processingDate,
-      )}`;
+      milestoningTooltipText =
+        queryBuilderState.milestoningState.processingTemporalHelper.getMilestoningToolTipText();
       break;
     case MILESTONING_STEREOTYPE.BITEMPORAL:
-      milestoningTooltipText = `Processing Date: ${getParameterValue(
-        queryBuilderState.milestoningState.processingDate,
-      )}, Business Date: ${getParameterValue(
-        queryBuilderState.milestoningState.businessDate,
-      )}`;
+      milestoningTooltipText =
+        queryBuilderState.milestoningState.bitemporalHelper.getMilestoningToolTipText();
       break;
     default:
       milestoningTooltipText = undefined;
