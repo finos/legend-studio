@@ -54,7 +54,6 @@
     "@types/papaparse": "5.3.5",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
-    "date-fns": "2.29.3",
     "mobx": "6.6.2",
     "mobx-react-lite": "3.4.0",
     "monaco-editor": "0.34.0",

@@ -34,50 +34,51 @@ export enum LEGEND_STUDIO_COMMAND_KEY {
 export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   [LEGEND_STUDIO_COMMAND_KEY.SYNC_WITH_WORKSPACE]: {
     title: 'Sync with workspace',
-    defaultKeyboardShortcut: 'ctrl+s',
+    defaultKeyboardShortcut: 'Control+s',
   },
   [LEGEND_STUDIO_COMMAND_KEY.CREATE_ELEMENT]: {
     title: 'Create new element',
-    defaultKeyboardShortcut: 'ctrl+shift+n',
+    defaultKeyboardShortcut: 'Control+Shift+n',
   },
   [LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT]: {
     title: 'Search for element',
-    defaultKeyboardShortcut: 'ctrl+p',
+    // defaultKeyboardShortcut: 'Control+p',
+    defaultKeyboardShortcut: 'Control+Space',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER]: {
     title: 'Toggle model loader',
-    defaultKeyboardShortcut: 'f2',
+    defaultKeyboardShortcut: 'F2',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE]: {
     title: 'Toggle text mode',
-    defaultKeyboardShortcut: 'f8',
+    defaultKeyboardShortcut: 'F8',
   },
   [LEGEND_STUDIO_COMMAND_KEY.COMPILE]: {
     title: 'Compile',
-    defaultKeyboardShortcut: 'f9',
+    defaultKeyboardShortcut: 'F9',
   },
   [LEGEND_STUDIO_COMMAND_KEY.GENERATE]: {
     title: 'Generate',
-    defaultKeyboardShortcut: 'f10',
+    defaultKeyboardShortcut: 'F10',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_AUX_PANEL]: {
     title: 'Toggle auxiliary panel',
-    defaultKeyboardShortcut: 'ctrl+`',
+    defaultKeyboardShortcut: 'Control+`',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_EXPLORER]: {
     title: 'Toggle explorer sidebar',
-    defaultKeyboardShortcut: 'ctrl+shift+x',
+    defaultKeyboardShortcut: 'Control+Shift+x',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_LOCAL_CHANGES]: {
     title: 'Toggle local changes sidebar',
-    defaultKeyboardShortcut: 'ctrl+shift+g',
+    defaultKeyboardShortcut: 'Control+Shift+g',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_REVIEW]: {
     title: 'Toggle workspace review sidebar',
-    defaultKeyboardShortcut: 'ctrl+shift+m',
+    defaultKeyboardShortcut: 'Control+Shift+m',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_SIDEBAR_WORKSPACE_UPDATER]: {
     title: 'Toggle workspace updater sidebar',
-    defaultKeyboardShortcut: 'ctrl+shift+u',
+    defaultKeyboardShortcut: 'Control+Shift+u',
   },
 };

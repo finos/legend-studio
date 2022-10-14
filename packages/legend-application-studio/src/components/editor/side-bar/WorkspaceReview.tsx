@@ -30,7 +30,6 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { formatDistanceToNow } from 'date-fns';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
@@ -38,6 +37,7 @@ import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { formatDistanceToNow } from '@finos/legend-shared';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();

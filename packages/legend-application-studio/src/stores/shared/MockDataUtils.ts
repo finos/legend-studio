@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { format, addDays } from 'date-fns';
 import {
+  addDays,
   assertErrorThrown,
+  formatDate,
   Randomizer,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -54,7 +55,7 @@ export const createMockPrimitiveProperty = (
     // NOTE that `Date` is the umbrella type that comprises `StrictDate` and `DateTime`, but for simplicity, we will generate `Date` as `StrictDate`
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
-      return format(
+      return formatDate(
         randomizer.getRandomDate(
           new Date(Date.now()),
           addDays(Date.now(), 100),
@@ -62,7 +63,7 @@ export const createMockPrimitiveProperty = (
         DATE_FORMAT,
       );
     case PRIMITIVE_TYPE.DATETIME:
-      return format(
+      return formatDate(
         randomizer.getRandomDate(
           new Date(Date.now()),
           addDays(Date.now(), 100),

@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-import type { CommandConfigData } from '@finos/legend-application';
-
-export enum LEGEND_TAXONOMY_COMMAND_KEY {
-  SEARCH_TAXONOMY = 'explorer.search-taxonomy',
-}
-
-export const LEGEND_TAXONOMY_COMMAND_CONFIG: CommandConfigData = {
-  [LEGEND_TAXONOMY_COMMAND_KEY.SEARCH_TAXONOMY]: {
-    title: 'Search for taxonomy',
-    defaultKeyboardShortcut: 'Control+p',
-  },
-};
+export { format as formatDate, formatDistanceToNow, addDays } from 'date-fns';

@@ -15,7 +15,6 @@
  */
 
 import { action, makeAutoObservable, flowResult, flow } from 'mobx';
-import { format } from 'date-fns';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
@@ -33,6 +32,7 @@ import {
   assertTrue,
   readFileAsText,
   ActionState,
+  formatDate,
 } from '@finos/legend-shared';
 import {
   TAB_SIZE,
@@ -442,7 +442,7 @@ export class LocalChangesState {
   downloadLocalChanges = (): void => {
     const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
       this.sdlcState.activeWorkspace.workspaceId
-    })_${format(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
+    })_${formatDate(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
     const content = JSON.stringify(
       {
         message: '', // TODO?

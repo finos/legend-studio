@@ -26,7 +26,6 @@ import {
   InfoCircleIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { formatDistanceToNow } from 'date-fns';
 import { EntityDiffViewState } from '../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
@@ -35,6 +34,7 @@ import { entityDiffSorter } from '../../stores/EditorSDLCState.js';
 import { useWorkspaceReviewStore } from './WorkspaceReviewStoreProvider.js';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { formatDistanceToNow } from '@finos/legend-shared';
 
 export const WorkspaceReviewSideBar = observer(() => {
   const reviewStore = useWorkspaceReviewStore();

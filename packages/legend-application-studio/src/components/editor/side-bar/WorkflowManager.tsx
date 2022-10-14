@@ -37,7 +37,6 @@ import {
   BanIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { formatDistanceToNow } from 'date-fns';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
@@ -55,6 +54,7 @@ import {
   WorkflowTreeNodeData,
 } from '../../../stores/sidebar-state/WorkflowManagerState.js';
 import {
+  formatDistanceToNow,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,

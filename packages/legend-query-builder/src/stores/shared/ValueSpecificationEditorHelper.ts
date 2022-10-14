@@ -32,8 +32,7 @@ import {
   PRIMITIVE_TYPE,
   TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
-import { Randomizer } from '@finos/legend-shared';
-import { addDays, format } from 'date-fns';
+import { addDays, formatDate, Randomizer } from '@finos/legend-shared';
 import { instanceValue_setValues } from './ValueSpecificationModifierHelper.js';
 
 const createMockPrimitiveProperty = (
@@ -54,7 +53,7 @@ const createMockPrimitiveProperty = (
     // NOTE that `Date` is the umbrella type that comprises `StrictDate` and `DateTime`, but for simplicity, we will generate `Date` as `StrictDate`
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
-      return format(
+      return formatDate(
         randomizer.getRandomDate(
           new Date(Date.now()),
           addDays(Date.now(), 100),
@@ -62,7 +61,7 @@ const createMockPrimitiveProperty = (
         DATE_FORMAT,
       );
     case PRIMITIVE_TYPE.DATETIME:
-      return format(
+      return formatDate(
         randomizer.getRandomDate(
           new Date(Date.now()),
           addDays(Date.now(), 100),
