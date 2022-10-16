@@ -31,7 +31,7 @@ import {
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   BlankPanelContent,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   LockIcon,
   PlusIcon,
@@ -1688,13 +1688,22 @@ export const ClassFormEditor = observer(
       );
     }, [applicationStore, classState]);
 
+    // layout
+    const propertyEditorCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(!editorState.selectedProperty, {
+        size: 250,
+      });
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.CLASS_FORM_EDITOR}
         className="uml-element-editor class-form-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
+          <ResizablePanel
+            {...propertyEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
             <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
@@ -1804,10 +1813,7 @@ export const ClassFormEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(
-              !editorState.selectedProperty,
-              { size: 250 },
-            )}
+            {...propertyEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {editorState.selectedProperty ? (

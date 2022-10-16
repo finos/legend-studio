@@ -18,7 +18,7 @@ import { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type ResizablePanelHandlerProps,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -158,6 +158,26 @@ export const Editor = withEditorStore(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR,
     );
 
+    // layout
+    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.sideBarDisplayState.size === 0,
+      {
+        onStopResize: resizeSideBar,
+        size: editorStore.sideBarDisplayState.size,
+      },
+    );
+    const auxCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.auxPanelDisplayState.size === 0,
+      {
+        onStopResize: resizeAuxPanel,
+        size: editorStore.auxPanelDisplayState.size,
+      },
+    );
+    const maximizedAuxCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(
+        editorStore.auxPanelDisplayState.isMaximized,
+      );
+
     return (
       <div className="app__page">
         <div className="editor">
@@ -167,24 +187,22 @@ export const Editor = withEditorStore(
               <div className="editor__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
-                    {...getControlledResizablePanelProps(
-                      editorStore.sideBarDisplayState.size === 0,
-                      {
-                        onStopResize: resizeSideBar,
-                        size: editorStore.sideBarDisplayState.size,
-                      },
-                    )}
+                    {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
                     direction={1}
                   >
                     <SideBar />
                   </ResizablePanel>
                   <ResizablePanelSplitter />
-                  <ResizablePanel minSize={300}>
+                  <ResizablePanel
+                    {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                    minSize={300}
+                  >
                     <ResizablePanelGroup orientation="horizontal">
                       <ResizablePanel
-                        {...getControlledResizablePanelProps(
-                          editorStore.auxPanelDisplayState.isMaximized,
-                        )}
+                        {...maximizedAuxCollapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.auxPanelDisplayState.size === 0
+                          ? auxCollapsiblePanelGroupProps.remainingPanel
+                          : {})}
                       >
                         {(isResolvingConflicts || editable) &&
                           editorStore.isInFormMode && <EditPanel />}
@@ -203,13 +221,10 @@ export const Editor = withEditorStore(
                         />
                       </ResizablePanelSplitter>
                       <ResizablePanel
-                        {...getControlledResizablePanelProps(
-                          editorStore.auxPanelDisplayState.size === 0,
-                          {
-                            onStopResize: resizeAuxPanel,
-                            size: editorStore.auxPanelDisplayState.size,
-                          },
-                        )}
+                        {...auxCollapsiblePanelGroupProps.collapsiblePanel}
+                        {...(editorStore.auxPanelDisplayState.isMaximized
+                          ? maximizedAuxCollapsiblePanelGroupProps.remainingPanel
+                          : {})}
                         direction={-1}
                       >
                         <AuxiliaryPanel />

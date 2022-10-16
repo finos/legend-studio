@@ -25,7 +25,7 @@ import { WorkspaceReviewPanel } from './WorkspaceReviewPanel.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   clsx,
   PanelLoadingIndicator,
   ResizablePanel,
@@ -159,22 +159,28 @@ const WorkspaceReviewExplorer = observer(() => {
     );
   }, [applicationStore, reviewStore]);
 
+  // layout
+  const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+    editorStore.sideBarDisplayState.size === 0,
+    {
+      onStopResize: resizeSideBar,
+      size: editorStore.sideBarDisplayState.size,
+    },
+  );
+
   return (
     <ResizablePanelGroup orientation="vertical">
       <ResizablePanel
-        {...getControlledResizablePanelProps(
-          editorStore.sideBarDisplayState.size === 0,
-          {
-            onStopResize: resizeSideBar,
-            size: editorStore.sideBarDisplayState.size,
-          },
-        )}
+        {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
         direction={1}
       >
         <WorkspaceReviewSideBar />
       </ResizablePanel>
       <ResizablePanelSplitter />
-      <ResizablePanel minSize={300}>
+      <ResizablePanel
+        {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+        minSize={300}
+      >
         <WorkspaceReviewPanel />
       </ResizablePanel>
     </ResizablePanelGroup>

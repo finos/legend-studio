@@ -30,7 +30,7 @@ import { prettyCONSTName } from '@finos/legend-shared';
 import {
   BlankPanelContent,
   clsx,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   ResizablePanel,
   ResizablePanelGroup,
@@ -541,13 +541,24 @@ export const EnumerationEditor = observer(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ENUMERATION_EDITOR,
     );
 
+    // layout
+    const enumEditorCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      !selectedEnum,
+      {
+        size: 250,
+      },
+    );
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.ENUMERATION_EDITOR}
         className="uml-element-editor enumeration-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
+          <ResizablePanel
+            {...enumEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
             <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
@@ -674,9 +685,7 @@ export const EnumerationEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedEnum, {
-              size: 250,
-            })}
+            {...enumEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {selectedEnum ? (

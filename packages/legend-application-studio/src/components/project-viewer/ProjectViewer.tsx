@@ -26,7 +26,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   RepoIcon,
   CodeBranchIcon,
   HackerIcon,
@@ -298,6 +298,15 @@ export const ProjectViewer = withEditorStore(
 
       useCommands(editorStore);
 
+      // layout
+      const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.sideBarDisplayState.size === 0,
+        {
+          onStopResize: resizeSideBar,
+          size: editorStore.sideBarDisplayState.size,
+        },
+      );
+
       return (
         <div className="app__page">
           <div className="editor viewer">
@@ -307,19 +316,16 @@ export const ProjectViewer = withEditorStore(
                 <div className="editor__content">
                   <ResizablePanelGroup orientation="vertical">
                     <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        editorStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                          size: editorStore.sideBarDisplayState.size,
-                        },
-                      )}
+                      {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
                       direction={1}
                     >
                       <ProjectViewerSideBar />
                     </ResizablePanel>
                     <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
+                    <ResizablePanel
+                      {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                      minSize={300}
+                    >
                       {editorStore.isInFormMode && <EditPanel />}
                       {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
                     </ResizablePanel>

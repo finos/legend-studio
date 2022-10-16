@@ -35,7 +35,7 @@ import {
 import {
   type ResizablePanelHandlerProps,
   ContextMenu,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   BasePopover,
   BlankPanelContent,
   CaretDownIcon,
@@ -664,24 +664,30 @@ const DiagramEditorOverlay = observer(
           .width,
       );
 
+    // layout
+    const sidePanelCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      diagramEditorState.sidePanelDisplayState.size === 0,
+      {
+        classes: ['diagram-editor__overlay__panel'],
+        onStopResize: resizeSidePanel,
+        size: diagramEditorState.sidePanelDisplayState.size,
+      },
+    );
+
     return (
       <ResizablePanelGroup
         className="diagram-editor__overlay"
         orientation="vertical"
       >
-        <ResizablePanel minSize={300}>
+        <ResizablePanel
+          {...sidePanelCollapsiblePanelGroupProps.remainingPanel}
+          minSize={300}
+        >
           <div className="diagram-editor__view-finder" />
         </ResizablePanel>
         <ResizablePanelSplitter className="diagram-editor__overlay__panel-resizer" />
         <ResizablePanel
-          {...getControlledResizablePanelProps(
-            diagramEditorState.sidePanelDisplayState.size === 0,
-            {
-              classes: ['diagram-editor__overlay__panel'],
-              onStopResize: resizeSidePanel,
-              size: diagramEditorState.sidePanelDisplayState.size,
-            },
-          )}
+          {...sidePanelCollapsiblePanelGroupProps.collapsiblePanel}
           direction={-1}
         >
           <div className="panel diagram-editor__side-panel">

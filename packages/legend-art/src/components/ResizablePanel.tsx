@@ -50,7 +50,7 @@ export const ResizablePanelGroup =
     ? (MockedReactComponent as unknown as typeof ReflexContainer)
     : ReflexContainer;
 
-const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
+const RESIZABLE_COLLAPSED_PANEL_CLASS_NAME = 'resizable-panel--collapsed';
 /**
  * NOTE: there is a problem with `react-reflex` that is when a panel
  * is minimized, due to `flex-grow` not being set/round to 0, there is a little
@@ -63,7 +63,7 @@ const RESIZABLE_PANEL_MINIMIZED_CLASS_NAME = 'resizable-panel--minimized';
  *
  * See https://github.com/leefsmp/Re-Flex/issues/146
  */
-export const getControlledResizablePanelProps = (
+export const getCollapsiblePanelGroupProps = (
   minimizeCondition: boolean,
   options?: {
     classes?: ClassValue[];
@@ -71,37 +71,52 @@ export const getControlledResizablePanelProps = (
     onStopResize?: (handleProps: ResizablePanelHandlerProps) => void;
     size?: number;
   },
-): ReflexElementProps => ({
-  className: clsx(...(options?.classes ?? []), {
-    [RESIZABLE_PANEL_MINIMIZED_CLASS_NAME]: minimizeCondition,
-  }),
-  onStartResize: (handleProps: ResizablePanelHandlerProps): void => {
-    (handleProps.domElement as HTMLDivElement).classList.remove(
-      RESIZABLE_PANEL_MINIMIZED_CLASS_NAME,
-    );
-    options?.onStartResize?.(handleProps);
+): {
+  collapsiblePanel: ReflexElementProps;
+  remainingPanel: ReflexElementProps;
+} => ({
+  collapsiblePanel: {
+    className: clsx(...(options?.classes ?? []), {
+      [RESIZABLE_COLLAPSED_PANEL_CLASS_NAME]: minimizeCondition,
+    }),
+    onStartResize: (handleProps: ResizablePanelHandlerProps): void => {
+      (handleProps.domElement as HTMLDivElement).classList.remove(
+        RESIZABLE_COLLAPSED_PANEL_CLASS_NAME,
+      );
+      options?.onStartResize?.(handleProps);
+    },
+    onStopResize: (handleProps: ResizablePanelHandlerProps): void => {
+      const flexGrow = Number(
+        (handleProps.domElement as HTMLDivElement).style.flexGrow,
+      );
+      if (flexGrow <= 0.01) {
+        (handleProps.domElement as HTMLDivElement).style.flexGrow = '0';
+      } else if (flexGrow >= 0.99) {
+        (handleProps.domElement as HTMLDivElement).style.flexGrow = '1';
+      }
+      options?.onStopResize?.(handleProps);
+    },
+    size: !minimizeCondition && options?.size ? options.size : 0,
+    /**
+     * NOTE: When the panel is minimized we want to programatically
+     * set `flex=0`, however, when minimization does not occur
+     * we want to let `react-reflex` calculate the `flex` value
+     * so that the panel is shown properly
+     *
+     * See https://github.com/finos/legend-studio/issues/1316
+     */
+    flex: minimizeCondition ? 0 : (undefined as unknown as number),
   },
-  onStopResize: (handleProps: ResizablePanelHandlerProps): void => {
-    const flexGrow = Number(
-      (handleProps.domElement as HTMLDivElement).style.flexGrow,
-    );
-    if (flexGrow <= 0.01) {
-      (handleProps.domElement as HTMLDivElement).style.flexGrow = '0';
-    } else if (flexGrow >= 0.99) {
-      (handleProps.domElement as HTMLDivElement).style.flexGrow = '1';
-    }
-    options?.onStopResize?.(handleProps);
+  remainingPanel: {
+    /**
+     * Somehow, if we don't set the flex=1 for the second panel when the first panel has flex=0
+     * (i.e. collapsed), the first panel when toggled to display again will not respect the size
+     * set to it programmatically
+     *
+     * See https://github.com/leefsmp/Re-Flex/issues/147
+     */
+    flex: minimizeCondition ? 1 : (undefined as unknown as number),
   },
-  size: !minimizeCondition && options?.size ? options.size : 0,
-  /**
-   * NOTE: When the panel is minimized we want to programatically
-   * set `flex=0`, however, when minimization does not occur
-   * we want to let `react-reflex` calculate the `flex` value
-   * so that the panel is shown properly
-   *
-   * See https://github.com/finos/legend-studio/issues/1316
-   */
-  flex: !minimizeCondition ? (undefined as unknown as number) : 0,
 });
 
 export const ResizablePanel =

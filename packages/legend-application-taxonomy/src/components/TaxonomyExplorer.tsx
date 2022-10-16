@@ -37,7 +37,7 @@ import {
   CompressIcon,
   PanelLoadingIndicator,
   clsx,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -430,6 +430,15 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
 
     useCommands(explorerStore);
 
+    // layout
+    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      explorerStore.sideBarDisplayState.size === 0,
+      {
+        onStopResize: resizeSideBar,
+        size: explorerStore.sideBarDisplayState.size,
+      },
+    );
+
     if (
       taxonomyTreeKey &&
       !applicationStore.config.taxonomyTreeOptions.find(
@@ -450,19 +459,16 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
               <div className="taxonomy-explorer__content">
                 <ResizablePanelGroup orientation="vertical">
                   <ResizablePanel
-                    {...getControlledResizablePanelProps(
-                      explorerStore.sideBarDisplayState.size === 0,
-                      {
-                        onStopResize: resizeSideBar,
-                        size: explorerStore.sideBarDisplayState.size,
-                      },
-                    )}
+                    {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
                     direction={1}
                   >
                     <TaxonomyExplorerSideBar />
                   </ResizablePanel>
                   <ResizablePanelSplitter />
-                  <ResizablePanel minSize={300}>
+                  <ResizablePanel
+                    {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                    minSize={300}
+                  >
                     {explorerStore.currentTaxonomyNodeViewerState ? (
                       <TaxonomyExplorerMainPanel
                         taxonomyViewerState={
