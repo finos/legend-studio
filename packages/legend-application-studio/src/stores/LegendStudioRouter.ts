@@ -32,8 +32,6 @@ export enum LEGEND_STUDIO_PATH_PARAM_TOKEN {
 
 export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}`,
-  VIEW_BY_GAV: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
-  VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   VIEW_BY_ENTITY: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   VIEW_BY_REVISION: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID}`,
   VIEW_BY_VERSION: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/version/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID}`,
@@ -46,6 +44,11 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   EDIT_GROUP_WORKSPACE_ENTITY: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   SETUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
   SETUP_GROUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
+});
+
+export const LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN = Object.freeze({
+  VIEW_BY_GAV: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}`,
+  VIEW_BY_GAV_ENTITY: `/view/archive/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GAV}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
 });
 
 export interface ReviewPathParams {
@@ -184,22 +187,16 @@ export const generateViewProjectByGAVRoute = (
   entityPath?: string | undefined,
 ): string =>
   !entityPath
-    ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
+    ? generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV, {
         gav: generateGAVCoordinates(groupId, artifactId, versionId),
       })
-    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY, {
-        gav: generateGAVCoordinates(groupId, artifactId, versionId),
-        entityPath,
-      });
-
-export const generateViewProjectEntityByGAVRoute = (
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV, {
-    gav: generateGAVCoordinates(groupId, artifactId, versionId),
-  });
+    : generatePath(
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+        {
+          gav: generateGAVCoordinates(groupId, artifactId, versionId),
+          entityPath,
+        },
+      );
 
 export const generateViewVersionRoute = (
   projectId: string,

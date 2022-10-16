@@ -21,6 +21,7 @@ export {
   Switch,
   Redirect,
   useParams,
+  matchPath,
   generatePath,
   MemoryRouter,
 } from 'react-router';

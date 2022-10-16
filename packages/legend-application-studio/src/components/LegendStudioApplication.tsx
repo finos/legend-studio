@@ -26,7 +26,10 @@ import {
   MarkdownTextViewer,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter.js';
+import {
+  LEGEND_STUDIO_ROUTE_PATTERN,
+  LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
+} from '../stores/LegendStudioRouter.js';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -134,13 +137,13 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               path={[
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
               ]}
               component={ProjectViewer}
             />
