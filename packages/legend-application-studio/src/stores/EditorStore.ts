@@ -59,6 +59,7 @@ import {
   assertTrue,
   ActionState,
   filterByType,
+  AssertionError,
 } from '@finos/legend-shared';
 import { UMLEditorState } from './editor-state/element-editor-state/UMLEditorState.js';
 import { ServiceEditorState } from './editor-state/element-editor-state/service/ServiceEditorState.js';
@@ -82,16 +83,18 @@ import type { GenerationFile } from './shared/FileGenerationTreeUtils.js';
 import type { ElementFileGenerationState } from './editor-state/element-editor-state/ElementFileGenerationState.js';
 import { DevToolState } from './aux-panel-state/DevToolState.js';
 import {
+  generateEditorRoute,
   generateSetupRoute,
   generateViewProjectRoute,
+  type WorkspaceEditorPathParams,
 } from './LegendStudioRouter.js';
 import { NonBlockingDialogState, PanelDisplayState } from '@finos/legend-art';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from './LegendStudioApplicationPlugin.js';
 import type { Entity } from '@finos/legend-storage';
 import {
   ProjectConfiguration,
+  WorkspaceType,
   type SDLCServerClient,
-  type WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import {
   type PackageableElement,
@@ -183,6 +186,7 @@ export class EditorStore implements CommandRegistrar {
   embeddedQueryBuilderState: EmbeddedQueryBuilderState;
   newElementState: NewElementState;
 
+  initialEntityPath?: string | undefined;
   initState = ActionState.create();
   graphEditMode = GRAPH_EDITOR_MODE.FORM;
 
@@ -513,6 +517,23 @@ export class EditorStore implements CommandRegistrar {
     this.explorerTreeState = new ExplorerTreeState(this);
   }
 
+  internalizeEntityPath(params: WorkspaceEditorPathParams): void {
+    const { projectId, entityPath } = params;
+    const workspaceType = params.groupWorkspaceId
+      ? WorkspaceType.GROUP
+      : WorkspaceType.USER;
+    const workspaceId = guaranteeNonNullable(
+      params.groupWorkspaceId ?? params.workspaceId,
+      `Workspace/group workspace ID is not provided`,
+    );
+    if (entityPath) {
+      this.initialEntityPath = entityPath;
+      this.applicationStore.navigator.updateCurrentLocation(
+        generateEditorRoute(projectId, workspaceId, workspaceType),
+      );
+    }
+  }
+
   /**
    * This is the entry of the app logic where the initialization of editor states happens
    * Here, we ensure the order of calls after checking existence of current project and workspace
@@ -691,6 +712,7 @@ export class EditorStore implements CommandRegistrar {
       ),
     ]);
     yield flowResult(this.initMode());
+
     onLeave(true);
   }
 
@@ -823,6 +845,25 @@ export class EditorStore implements CommandRegistrar {
       this.explorerTreeState.buildImmutableModelTrees();
       this.explorerTreeState.build();
 
+      // open element if provided an element path
+      if (
+        this.graphManagerState.graphBuildState.hasSucceeded &&
+        this.explorerTreeState.buildState.hasCompleted &&
+        this.initialEntityPath
+      ) {
+        try {
+          this.openElement(
+            this.graphManagerState.graph.getElement(this.initialEntityPath),
+          );
+        } catch {
+          const elementPath = this.initialEntityPath;
+          this.initialEntityPath = undefined;
+          throw new AssertionError(
+            `Can't find element with path '${elementPath}'`,
+          );
+        }
+      }
+
       // ======= (RE)START CHANGE DETECTION =======
       this.changeDetectionState.stop();
       yield flowResult(this.changeDetectionState.observeGraph());
@@ -906,7 +947,7 @@ export class EditorStore implements CommandRegistrar {
       this.openedEditorStates.find((e) => e === editorState),
       'Editor tab should be currently opened',
     );
-    this.currentEditorState = editorState;
+    this.setCurrentEditorState(editorState);
     this.openedEditorStates = [editorState];
     this.explorerTreeState.reprocess();
   }

@@ -294,6 +294,7 @@ export const ProjectViewer = withEditorStore(
         }
       }, [ref, editorStore, width, height]);
 
+      // initialize
       useEffect(() => {
         viewerStore.internalizeEntityPath(params);
       }, [viewerStore, params]);

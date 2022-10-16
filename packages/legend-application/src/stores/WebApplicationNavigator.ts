@@ -94,7 +94,6 @@ interface ApplicationNavigator {
 
 export class WebApplicationNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
-  private _disableLocationUpdate = false;
   private _isNavigationBlocked = false;
   private _forceBypassNavigationBlocking = false;
   private _blockCheckers: (() => boolean)[] = [];
@@ -194,9 +193,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   }
 
   updateCurrentLocation(location: Location): void {
-    if (!this._disableLocationUpdate) {
-      this.historyAPI.push(location);
-    }
+    this.historyAPI.push(location);
   }
 
   getCurrentAddress(): Address {
@@ -219,7 +216,6 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     onBlock?: ((onProceed: () => void) => void) | undefined,
   ): void {
     this._isNavigationBlocked = true;
-    this._disableLocationUpdate = true;
     this.onBlock = onBlock;
 
     // Here we attempt to cancel the effect of the back button
@@ -241,7 +237,6 @@ export class WebApplicationNavigator implements ApplicationNavigator {
 
   unblockNavigation(): void {
     this._isNavigationBlocked = false;
-    this._disableLocationUpdate = false;
     this.onBlock = undefined;
     this.window.onpopstate = null;
     this._blockCheckers = [];

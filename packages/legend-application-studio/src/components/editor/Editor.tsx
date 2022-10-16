@@ -31,12 +31,9 @@ import { EditPanel, EditPanelSplashScreen } from './edit-panel/EditPanel.js';
 import { GrammarTextEditor } from './edit-panel/GrammarTextEditor.js';
 import { StatusBar } from './StatusBar.js';
 import { ActivityBar } from './ActivityBar.js';
-import type {
-  EditorPathParams,
-  GroupEditorPathParams,
-} from '../../stores/LegendStudioRouter.js';
+import type { WorkspaceEditorPathParams } from '../../stores/LegendStudioRouter.js';
 import { ProjectSearchCommand } from '../editor/command-center/ProjectSearchCommand.js';
-import { isNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { useEditorStore, withEditorStore } from './EditorStoreProvider.js';
 import {
@@ -54,16 +51,15 @@ import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 export const Editor = withEditorStore(
   observer(() => {
-    const params = useParams<EditorPathParams | GroupEditorPathParams>();
+    const params = useParams<WorkspaceEditorPathParams>();
     const projectId = params.projectId;
-    const workspaceType = (params as { groupWorkspaceId: string | undefined })
-      .groupWorkspaceId
+    const workspaceType = params.groupWorkspaceId
       ? WorkspaceType.GROUP
       : WorkspaceType.USER;
-    const workspaceId =
-      workspaceType === WorkspaceType.GROUP
-        ? (params as GroupEditorPathParams).groupWorkspaceId
-        : (params as EditorPathParams).workspaceId;
+    const workspaceId = guaranteeNonNullable(
+      params.groupWorkspaceId ?? params.workspaceId,
+      `Workspace/group workspace ID is not provided`,
+    );
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
     const editable =
@@ -124,7 +120,10 @@ export const Editor = withEditorStore(
       }
     }, [editorStore, ref, height, width]);
 
-    // Initialize the app
+    // initialize
+    useEffect(() => {
+      editorStore.internalizeEntityPath(params);
+    }, [editorStore, params]);
     useEffect(() => {
       flowResult(
         editorStore.initialize(projectId, workspaceId, workspaceType),

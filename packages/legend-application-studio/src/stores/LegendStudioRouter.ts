@@ -40,10 +40,12 @@ export const LEGEND_STUDIO_ROUTE_PATTERN = Object.freeze({
   VIEW_BY_REVISION_ENTITY: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/revision/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVISION_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   VIEW_BY_VERSION_ENTITY: `/view/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/version/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.VERSION_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
   REVIEW: `/review/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.REVIEW_ID}`,
-  EDIT: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/`,
-  EDIT_GROUP: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
-  SETUP: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
-  SETUP_GROUP: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
+  EDIT_WORKSPACE: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/`,
+  EDIT_WORKSPACE_ENTITY: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
+  EDIT_GROUP_WORKSPACE: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
+  EDIT_GROUP_WORKSPACE_ENTITY: `/edit/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/entity/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH}`,
+  SETUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}?/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID}?`,
+  SETUP_GROUP_WORKSPACE: `/setup/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID}/groupWorkspace/:${LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID}/`,
 });
 
 export interface ReviewPathParams {
@@ -59,16 +61,11 @@ export interface ViewerPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
 }
 
-export interface CoreEditorPathParams {
+export interface WorkspaceEditorPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]: string;
-}
-
-export interface EditorPathParams extends CoreEditorPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]: string;
-}
-
-export interface GroupEditorPathParams extends CoreEditorPathParams {
-  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.WORKSPACE_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.GROUP_WORKSPACE_ID]?: string;
+  [LEGEND_STUDIO_PATH_PARAM_TOKEN.ENTITY_PATH]?: string;
 }
 export interface SetupPathParams {
   [LEGEND_STUDIO_PATH_PARAM_TOKEN.PROJECT_ID]?: string;
@@ -80,7 +77,7 @@ const generateGroupWorkspaceSetupRoute = (
   projectId: string | undefined,
   groupWorkspaceId: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE, {
     // FIXME: due to some problem with typings, we will need to cast like this
     // we will fix this when upgrading react-router
     // See https://github.com/finos/legend-studio/issues/688
@@ -92,7 +89,7 @@ const generateWorkspaceSetupRoute = (
   projectId: string | undefined,
   workspaceId?: string,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP, {
+  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE, {
     // FIXME: due to some problem with typings, we will need to cast like this
     // we will fix this when upgrading react-router
     // See https://github.com/finos/legend-studio/issues/688
@@ -118,29 +115,44 @@ export const generateSetupRoute = (
 const generateGroupWorkspaceEditorRoute = (
   projectId: string,
   groupWorkspaceId: string,
+  entityPath?: string | undefined,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP, {
-    projectId,
-    groupWorkspaceId,
-  });
+  !entityPath
+    ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE, {
+        projectId,
+        groupWorkspaceId,
+      })
+    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY, {
+        projectId,
+        groupWorkspaceId,
+        entityPath,
+      });
 
 const generateWorkspaceEditorRoute = (
   projectId: string,
   workspaceId: string,
+  entityPath?: string | undefined,
 ): string =>
-  generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT, {
-    projectId,
-    workspaceId,
-  });
+  !entityPath
+    ? generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE, {
+        projectId,
+        workspaceId,
+      })
+    : generatePath(LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY, {
+        projectId,
+        workspaceId,
+        entityPath,
+      });
 
 export const generateEditorRoute = (
   projectId: string,
   workspaceId: string,
   workspaceType: WorkspaceType,
+  entityPath?: string | undefined,
 ): string =>
   workspaceType === WorkspaceType.GROUP
-    ? generateGroupWorkspaceEditorRoute(projectId, workspaceId)
-    : generateWorkspaceEditorRoute(projectId, workspaceId);
+    ? generateGroupWorkspaceEditorRoute(projectId, workspaceId, entityPath)
+    : generateWorkspaceEditorRoute(projectId, workspaceId, entityPath);
 
 export const generateReviewRoute = (
   projectId: string,

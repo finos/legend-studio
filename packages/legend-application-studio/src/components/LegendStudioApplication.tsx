@@ -153,8 +153,10 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               strict={true}
               path={[
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
               ]}
               component={Editor}
             />
@@ -163,8 +165,8 @@ export const LegendStudioApplicationRoot = observer(() => {
               path={[
                 // root path will lead to setup page (home page)
                 '/',
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
               ]}
               component={WorkspaceSetup}
             />
