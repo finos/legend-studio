@@ -25,7 +25,10 @@ import {
 import { LEGEND_STUDIO_TEST_ID } from './LegendStudioTestID.js';
 import { EditorStore } from '../stores/EditorStore.js';
 import { Editor } from './editor/Editor.js';
-import { generateEditorRoute } from '../stores/LegendStudioRouter.js';
+import {
+  generateEditorRoute,
+  LEGEND_STUDIO_ROUTE_PATTERN,
+} from '../stores/LegendStudioRouter.js';
 import type { PlainObject, TEMPORARY__JestMock } from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
@@ -67,6 +70,7 @@ import {
   WebApplicationNavigator,
   Router,
   createMemoryHistory,
+  Route,
 } from '@finos/legend-application';
 import { TEST__getLegendStudioApplicationConfig } from '../stores/EditorStoreTestUtils.js';
 import type { LegendStudioApplicationStore } from '../stores/LegendStudioBaseStore.js';
@@ -343,7 +347,9 @@ export const TEST__setUpEditor = async (
             <TEST__GraphManagerStateProvider>
               <TEST__LegendStudioBaseStoreProvider>
                 <LegendApplicationComponentFrameworkProvider>
-                  <Editor />
+                  <Route path={[LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE]}>
+                    <Editor />
+                  </Route>
                 </LegendApplicationComponentFrameworkProvider>
               </TEST__LegendStudioBaseStoreProvider>
             </TEST__GraphManagerStateProvider>
