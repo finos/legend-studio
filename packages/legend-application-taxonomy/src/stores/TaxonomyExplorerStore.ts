@@ -193,7 +193,7 @@ export class TaxonomyExplorerStore implements CommandRegistrar {
       if (gav && dataSpacePath) {
         this.initialDataSpaceId = `${gav}${DATA_SPACE_ID_DELIMITER}${dataSpacePath}`;
       }
-      this.applicationStore.navigator.goToLocation(
+      this.applicationStore.navigator.updateCurrentLocation(
         generateExploreTaxonomyTreeRoute(
           this.applicationStore.config.currentTaxonomyTreeOption.key,
         ),

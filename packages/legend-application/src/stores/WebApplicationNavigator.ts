@@ -38,22 +38,21 @@ type Address = string;
  */
 interface ApplicationNavigator {
   /**
-   * Navigate to the specified location
-   */
-  goToLocation(location: Location): void;
-
-  /**
-   * Navigate to the specified location and reload the application
-   */
-  reloadToLocation(
-    location: Location,
-    options?: { ignoreBlocking?: boolean | undefined },
-  ): void;
-
-  /**
    * Reload the application using the same address
    */
   reload(): void;
+
+  /**
+   * Navigate to the specified location
+   *
+   * NOTE: this will reload the application
+   * so application states will not be preserved
+   * after navigation
+   */
+  goToLocation(
+    location: Location,
+    options?: { ignoreBlocking?: boolean | undefined },
+  ): void;
 
   /**
    * Visit the specified address
@@ -68,6 +67,14 @@ interface ApplicationNavigator {
    */
   visitAddress(address: Address): void;
 
+  /**
+   * Update the current location
+   *
+   * NOTE: any navigation actions: reload, go to address, go to location, etc.
+   * explicitly updates the current location, this action will just update the
+   * location without doing any navigation
+   */
+  updateCurrentLocation(location: Location): void;
   getCurrentAddress(): Address;
   getCurrentLocation(): Location;
   generateAddress(location: Location): Address;
@@ -87,6 +94,7 @@ interface ApplicationNavigator {
 
 export class WebApplicationNavigator implements ApplicationNavigator {
   private readonly historyAPI: History;
+  private _disableLocationUpdate = false;
   private _isNavigationBlocked = false;
   private _forceBypassNavigationBlocking = false;
   private _blockCheckers: (() => boolean)[] = [];
@@ -121,18 +129,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     );
   }
 
-  goToLocation(location: Location): void {
-    const onProceed = (): void => {
-      this.historyAPI.push(location);
-    };
-    if (this._blockCheckers.some((checker) => checker())) {
-      this.onBlock?.(onProceed);
-    } else {
-      onProceed();
-    }
-  }
-
-  reloadToLocation(
+  goToLocation(
     location: Location,
     options?: { ignoreBlocking?: boolean | undefined },
   ): void {
@@ -196,6 +193,12 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     this.window.open(address, '_blank');
   }
 
+  updateCurrentLocation(location: Location): void {
+    if (!this._disableLocationUpdate) {
+      this.historyAPI.push(location);
+    }
+  }
+
   getCurrentAddress(): Address {
     return this.window.location.href;
   }
@@ -216,6 +219,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     onBlock?: ((onProceed: () => void) => void) | undefined,
   ): void {
     this._isNavigationBlocked = true;
+    this._disableLocationUpdate = true;
     this.onBlock = onBlock;
 
     // Here we attempt to cancel the effect of the back button
@@ -237,6 +241,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
 
   unblockNavigation(): void {
     this._isNavigationBlocked = false;
+    this._disableLocationUpdate = false;
     this.onBlock = undefined;
     this.window.onpopstate = null;
     this._blockCheckers = [];

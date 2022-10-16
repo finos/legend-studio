@@ -254,7 +254,7 @@ const QueryLoader = observer(
       if (selectedQueryID) {
         queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
           editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-          applicationStore.navigator.reloadToLocation(
+          applicationStore.navigator.goToLocation(
             generateExistingQueryEditorRoute(selectedQueryID),
             { ignoreBlocking: true },
           );

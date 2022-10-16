@@ -84,8 +84,10 @@ const WorkspaceReviewStatusBar = observer(() => {
             title="Go back to workspace setup using the specified project"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(reviewStore.projectId),
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(reviewStore.projectId),
+                ),
               )
             }
           >
@@ -97,11 +99,13 @@ const WorkspaceReviewStatusBar = observer(() => {
             title="Go back to workspace setup using the specified workspace"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(
-                  reviewStore.projectId,
-                  review.workspaceId,
-                  review.workspaceType,
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(
+                    reviewStore.projectId,
+                    review.workspaceId,
+                    review.workspaceType,
+                  ),
                 ),
               )
             }
@@ -148,18 +152,12 @@ const WorkspaceReviewExplorer = observer(() => {
   const reviewStore = useWorkspaceReviewStore();
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
+
+  // layout
   const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
     editorStore.sideBarDisplayState.setSize(
       (handleProps.domElement as HTMLDivElement).getBoundingClientRect().width,
     );
-
-  useEffect(() => {
-    flowResult(reviewStore.fetchReviewComparison()).catch(
-      applicationStore.alertUnhandledError,
-    );
-  }, [applicationStore, reviewStore]);
-
-  // layout
   const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
     editorStore.sideBarDisplayState.size === 0,
     {
@@ -167,6 +165,12 @@ const WorkspaceReviewExplorer = observer(() => {
       size: editorStore.sideBarDisplayState.size,
     },
   );
+
+  useEffect(() => {
+    flowResult(reviewStore.fetchReviewComparison()).catch(
+      applicationStore.alertUnhandledError,
+    );
+  }, [applicationStore, reviewStore]);
 
   return (
     <ResizablePanelGroup orientation="vertical">

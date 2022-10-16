@@ -66,6 +66,12 @@ export const Editor = withEditorStore(
         : (params as EditorPathParams).workspaceId;
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
+    const editable =
+      editorStore.graphManagerState.graphBuildState.hasCompleted &&
+      editorStore.isInitialized;
+    const isResolvingConflicts =
+      editorStore.isInConflictResolutionMode &&
+      !editorStore.conflictResolutionState.hasResolvedAllConflicts;
 
     // Extensions
     const extraEditorExtensionComponents = editorStore.pluginManager
@@ -80,7 +86,7 @@ export const Editor = withEditorStore(
         <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
       ));
 
-    // Resize
+    // layout
     const { ref, width, height } = useResizeDetector<HTMLDivElement>();
     // These create snapping effect on panel resizing
     const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
@@ -88,11 +94,28 @@ export const Editor = withEditorStore(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
-
     const resizeAuxPanel = (handleProps: ResizablePanelHandlerProps): void =>
       editorStore.auxPanelDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .height,
+      );
+    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.sideBarDisplayState.size === 0,
+      {
+        onStopResize: resizeSideBar,
+        size: editorStore.sideBarDisplayState.size,
+      },
+    );
+    const auxCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      editorStore.auxPanelDisplayState.size === 0,
+      {
+        onStopResize: resizeAuxPanel,
+        size: editorStore.auxPanelDisplayState.size,
+      },
+    );
+    const maximizedAuxCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(
+        editorStore.auxPanelDisplayState.isMaximized,
       );
 
     useEffect(() => {
@@ -100,11 +123,6 @@ export const Editor = withEditorStore(
         editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
       }
     }, [editorStore, ref, height, width]);
-
-    useCommands(editorStore);
-
-    // Cleanup the editor
-    useEffect(() => (): void => editorStore.cleanUp(), [editorStore]);
 
     // Initialize the app
     useEffect(() => {
@@ -147,36 +165,14 @@ export const Editor = withEditorStore(
       };
     }, [editorStore, applicationStore]);
 
-    const editable =
-      editorStore.graphManagerState.graphBuildState.hasCompleted &&
-      editorStore.isInitialized;
-    const isResolvingConflicts =
-      editorStore.isInConflictResolutionMode &&
-      !editorStore.conflictResolutionState.hasResolvedAllConflicts;
-
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.EDITOR,
     );
 
-    // layout
-    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-      editorStore.sideBarDisplayState.size === 0,
-      {
-        onStopResize: resizeSideBar,
-        size: editorStore.sideBarDisplayState.size,
-      },
-    );
-    const auxCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-      editorStore.auxPanelDisplayState.size === 0,
-      {
-        onStopResize: resizeAuxPanel,
-        size: editorStore.auxPanelDisplayState.size,
-      },
-    );
-    const maximizedAuxCollapsiblePanelGroupProps =
-      getCollapsiblePanelGroupProps(
-        editorStore.auxPanelDisplayState.isMaximized,
-      );
+    useCommands(editorStore);
+
+    // Cleanup the editor
+    useEffect(() => (): void => editorStore.cleanUp(), [editorStore]);
 
     return (
       <div className="app__page">

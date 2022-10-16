@@ -155,8 +155,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             title="Go back to workspace setup using the specified project"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(projectId),
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(projectId),
+                ),
               )
             }
           >
@@ -168,8 +170,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             title="Go back to workspace setup using the specified workspace"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(projectId, workspaceId, workspaceType),
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(projectId, workspaceId, workspaceType),
+                ),
               )
             }
           >

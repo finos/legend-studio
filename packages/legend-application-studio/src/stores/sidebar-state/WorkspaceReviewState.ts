@@ -361,7 +361,7 @@ export class WorkspaceReviewState {
             label: 'Leave',
             type: ActionAlertActionType.PROCEED,
             handler: (): void => {
-              this.editorStore.applicationStore.navigator.reloadToLocation(
+              this.editorStore.applicationStore.navigator.goToLocation(
                 generateSetupRoute(
                   this.editorStore.sdlcState.activeProject.projectId,
                 ),

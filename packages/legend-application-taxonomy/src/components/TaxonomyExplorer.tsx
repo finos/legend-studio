@@ -113,7 +113,7 @@ const TaxonomyExplorerSideBar = observer(() => {
     (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
       explorerStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.reloadToLocation(
+      applicationStore.navigator.goToLocation(
         generateExploreTaxonomyTreeRoute(option.key),
       );
     };
@@ -387,11 +387,19 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
     const taxonomyTreeKey =
       params[LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY];
 
+    // layout
     const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
       explorerStore.sideBarDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
+    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      explorerStore.sideBarDisplayState.size === 0,
+      {
+        onStopResize: resizeSideBar,
+        size: explorerStore.sideBarDisplayState.size,
+      },
+    );
 
     useEffect(() => {
       if (taxonomyTreeKey) {
@@ -403,7 +411,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           applicationStore.notifyWarning(
             `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
           );
-          applicationStore.navigator.goToLocation(
+          applicationStore.navigator.updateCurrentLocation(
             generateExploreTaxonomyTreeRoute(
               applicationStore.config.defaultTaxonomyTreeOption.key,
             ),
@@ -429,15 +437,6 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
     }, [explorerStore, params]);
 
     useCommands(explorerStore);
-
-    // layout
-    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
-      explorerStore.sideBarDisplayState.size === 0,
-      {
-        onStopResize: resizeSideBar,
-        size: explorerStore.sideBarDisplayState.size,
-      },
-    );
 
     if (
       taxonomyTreeKey &&

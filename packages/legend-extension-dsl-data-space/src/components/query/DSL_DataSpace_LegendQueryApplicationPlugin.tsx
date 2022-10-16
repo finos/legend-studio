@@ -205,7 +205,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
                       LegendQueryEventService.create(
                         editorStore.applicationStore.eventService,
                       ).notify_QueryCreated({ queryId: newQuery.id });
-                      editorStore.applicationStore.navigator.reloadToLocation(
+                      editorStore.applicationStore.navigator.goToLocation(
                         generateExistingQueryEditorRoute(newQuery.id),
                       );
                     } else {

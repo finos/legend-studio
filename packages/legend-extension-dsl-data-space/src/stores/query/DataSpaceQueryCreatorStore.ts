@@ -117,7 +117,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.versionId,
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
-          this.applicationStore.navigator.reloadToLocation(
+          this.applicationStore.navigator.goToLocation(
             generateDataSpaceQueryCreatorRoute(
               dataSpaceInfo.groupId,
               dataSpaceInfo.artifactId,
@@ -140,7 +140,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           queryBuilderState.runtimeValue,
           RuntimePointer,
         );
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -157,7 +157,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       },
       (runtimeValue: Runtime) => {
         const runtimePointer = guaranteeType(runtimeValue, RuntimePointer);
-        queryBuilderState.applicationStore.navigator.goToLocation(
+        queryBuilderState.applicationStore.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             queryBuilderState.groupId,
             queryBuilderState.artifactId,
@@ -178,7 +178,7 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
           queryBuilderState.runtimeValue,
           RuntimePointer,
         );
-        queryBuilderState.applicationStore.navigator.goToLocation(
+        queryBuilderState.applicationStore.navigator.updateCurrentLocation(
           generateDataSpaceQueryCreatorRoute(
             queryBuilderState.groupId,
             queryBuilderState.artifactId,

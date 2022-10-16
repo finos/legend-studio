@@ -125,7 +125,7 @@ const NewServiceModal = observer(() => {
                 label: 'Open Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  applicationStore.navigator.reloadToLocation(
+                  applicationStore.navigator.goToLocation(
                     generateProjectServiceQueryUpdaterRoute(
                       editorStore.sdlcState.activeProject.projectId,
                       editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -420,7 +420,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
       );
     flowResult(
       editorStore.saveWorkspace(serviceEntity, false, (): void => {
-        applicationStore.navigator.reloadToLocation(
+        applicationStore.navigator.goToLocation(
           generateServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.groupId,

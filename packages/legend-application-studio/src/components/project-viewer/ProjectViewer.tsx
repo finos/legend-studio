@@ -112,8 +112,10 @@ const ProjectViewerStatusBar = observer(() => {
                 title="Go back to workspace setup using the specified project"
                 tabIndex={-1}
                 onClick={(): void =>
-                  applicationStore.navigator.goToLocation(
-                    generateSetupRoute(projectId),
+                  applicationStore.navigator.visitAddress(
+                    applicationStore.navigator.generateAddress(
+                      generateSetupRoute(projectId),
+                    ),
                   )
                 }
               >
@@ -263,6 +265,7 @@ export const ProjectViewer = withEditorStore(
           (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
             .width,
         );
+
       // Extensions
       const extraEditorExtensionComponents = editorStore.pluginManager
         .getApplicationPlugins()
@@ -275,28 +278,6 @@ export const ProjectViewer = withEditorStore(
         .map((config) => (
           <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
         ));
-      // Resize
-      const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-
-      useEffect(() => {
-        if (ref.current) {
-          editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
-        }
-      }, [ref, editorStore, width, height]);
-
-      useEffect(() => {
-        viewerStore.internalizeEntityPath(params);
-      }, [viewerStore, params]);
-
-      // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
-      // on the second call when we remove entity path from the route
-      useEffect(() => {
-        flowResult(viewerStore.initialize(params)).catch(
-          applicationStore.alertUnhandledError,
-        );
-      }, [applicationStore, viewerStore, params]);
-
-      useCommands(editorStore);
 
       // layout
       const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
@@ -306,6 +287,25 @@ export const ProjectViewer = withEditorStore(
           size: editorStore.sideBarDisplayState.size,
         },
       );
+      const { ref, width, height } = useResizeDetector<HTMLDivElement>();
+      useEffect(() => {
+        if (ref.current) {
+          editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
+        }
+      }, [ref, editorStore, width, height]);
+
+      useEffect(() => {
+        viewerStore.internalizeEntityPath(params);
+      }, [viewerStore, params]);
+      // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
+      // on the second call when we remove entity path from the route
+      useEffect(() => {
+        flowResult(viewerStore.initialize(params)).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }, [applicationStore, viewerStore, params]);
+
+      useCommands(editorStore);
 
       return (
         <div className="app__page">

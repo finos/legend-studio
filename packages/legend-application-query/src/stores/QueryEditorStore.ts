@@ -174,7 +174,7 @@ export class QueryExportState {
         LegendQueryEventService.create(
           this.editorStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
-        this.editorStore.applicationStore.navigator.reloadToLocation(
+        this.editorStore.applicationStore.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
       } else {
@@ -496,7 +496,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -508,7 +508,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: Runtime) => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -592,7 +592,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       service,
       this.executionKey,
       (val: ServiceExecutionContext): void => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
