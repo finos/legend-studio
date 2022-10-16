@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-@import '@finos/legend-art/lib/index.css';
-@import '@finos/legend-application/lib/index.css';
-@import '@finos/legend-query-builder/lib/index.css';
-@import '@finos/legend-application-query/lib/index.css';
-@import '@finos/legend-extension-dsl-data-space/lib/index.css';
-@import '@finos/legend-extension-dsl-service/lib/index.css';
+@import url('@finos/legend-art/lib/index.css');
+@import url('@finos/legend-application/lib/index.css');
+@import url('@finos/legend-query-builder/lib/index.css');
+@import url('@finos/legend-application-query/lib/index.css');
+@import url('@finos/legend-extension-dsl-data-space/lib/index.css');
+@import url('@finos/legend-extension-dsl-service/lib/index.css');
 
 // NOTE: the following styles are temporary so we can have a poor-man version of
 // theming for Legend Query. The reason why we put the code here is that this is
