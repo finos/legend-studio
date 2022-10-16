@@ -33,7 +33,6 @@ import {
   type Runtime,
   type ValueSpecification,
   LATEST_DATE,
-  MILESTONING_STEREOTYPE,
   PrimitiveInstanceValue,
   VariableExpression,
   getMilestoneTemporalStereotype,
@@ -87,21 +86,10 @@ const generateClassLabel = (
   );
 
   let milestoningTooltipText: string | undefined;
-  switch (milestoneStereotype) {
-    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      milestoningTooltipText =
-        queryBuilderState.milestoningState.businessTemporalHelper.getMilestoningToolTipText();
-      break;
-    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      milestoningTooltipText =
-        queryBuilderState.milestoningState.processingTemporalHelper.getMilestoningToolTipText();
-      break;
-    case MILESTONING_STEREOTYPE.BITEMPORAL:
-      milestoningTooltipText =
-        queryBuilderState.milestoningState.bitemporalHelper.getMilestoningToolTipText();
-      break;
-    default:
-      milestoningTooltipText = undefined;
+  if (milestoneStereotype) {
+    milestoningTooltipText = queryBuilderState.milestoningState
+      .getMilestoningBuilderHelper(milestoneStereotype)
+      .getMilestoningToolTipText();
   }
 
   return (

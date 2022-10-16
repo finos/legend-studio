@@ -61,7 +61,7 @@ import {
   functionExpression_setParametersValues,
   instanceValue_setValues,
 } from './shared/ValueSpecificationModifierHelper.js';
-import { generateMilestonedPropertyParameterValue } from './QueryBuilderMilestoningHelper.js';
+import { generateMilestonedPropertyParameterValue } from './milestoning/QueryBuilderMilestoningHelper.js';
 
 export const prettyPropertyName = (value: string): string =>
   isCamelCase(value) ? prettyCamelCase(value) : prettyCONSTName(value);

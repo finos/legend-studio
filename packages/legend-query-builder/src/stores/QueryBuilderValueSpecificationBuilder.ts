@@ -28,7 +28,6 @@ import {
   GenericTypeExplicitReference,
   LambdaFunction,
   SimpleFunctionExpression,
-  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecificationBuilder.js';
@@ -91,27 +90,9 @@ export const buildLambdaFunction = (
     queryBuilderState.graphManagerState.graph,
   );
   if (milestoningStereotype) {
-    switch (milestoningStereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        queryBuilderState.milestoningState.businessTemporalHelper.buildGetAllParameters(
-          getAllFunction,
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        queryBuilderState.milestoningState.processingTemporalHelper.buildGetAllParameters(
-          getAllFunction,
-        );
-        break;
-      }
-      case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        queryBuilderState.milestoningState.bitemporalHelper.buildGetAllParameters(
-          getAllFunction,
-        );
-        break;
-      }
-      default:
-    }
+    queryBuilderState.milestoningState
+      .getMilestoningBuilderHelper(milestoningStereotype)
+      .buildGetAllParameters(getAllFunction);
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 

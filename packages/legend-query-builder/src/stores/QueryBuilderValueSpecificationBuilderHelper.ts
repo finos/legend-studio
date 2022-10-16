@@ -31,7 +31,7 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderS
 import {
   checkIfInternalPropagatedValueCanBeRemoved,
   getValueOfInternalPropagatedValue,
-} from './QueryBuilderMilestoningHelper.js';
+} from './milestoning/QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 
 export const buildPropertyExpressionChain = (

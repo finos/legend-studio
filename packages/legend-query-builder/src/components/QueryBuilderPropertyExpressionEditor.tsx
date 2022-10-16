@@ -55,7 +55,6 @@ import {
   AbstractPropertyExpression,
   INTERNAL__PropagatedValue,
   getMilestoneTemporalStereotype,
-  MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
@@ -68,7 +67,7 @@ import {
   generateMilestonedPropertyParameterValue,
   isDefaultDatePropagationSupported,
   matchMilestoningParameterValue,
-} from '../stores/QueryBuilderMilestoningHelper.js';
+} from '../stores/milestoning/QueryBuilderMilestoningHelper.js';
 
 const DerivedPropertyParameterValueEditor = observer(
   (props: {
@@ -252,27 +251,9 @@ export const QueryBuilderPropertyExpressionEditor = observer(
             queryBuilderState.milestoningState,
           )
         ) {
-          let newParameterValue;
-          switch (milestoningStereotype) {
-            case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-              newParameterValue =
-                queryBuilderState.milestoningState.businessTemporalHelper.getMilestoningDate();
-              break;
-            }
-            case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-              newParameterValue =
-                queryBuilderState.milestoningState.processingTemporalHelper.getMilestoningDate();
-              break;
-            }
-            case MILESTONING_STEREOTYPE.BITEMPORAL: {
-              newParameterValue =
-                queryBuilderState.milestoningState.bitemporalHelper.getMilestoningDate(
-                  index,
-                );
-              break;
-            }
-            default:
-          }
+          const newParameterValue = queryBuilderState.milestoningState
+            .getMilestoningBuilderHelper(milestoningStereotype)
+            .getMilestoningDate(index);
           functionExpression_setParameterValue(
             guaranteeType(nextExpression, AbstractPropertyExpression),
             guaranteeNonNullable(newParameterValue),

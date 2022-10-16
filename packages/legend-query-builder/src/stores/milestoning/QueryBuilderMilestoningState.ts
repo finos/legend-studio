@@ -25,16 +25,19 @@ import {
   Multiplicity,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { type Hashable, hashArray } from '@finos/legend-shared';
-import { action, computed, makeObservable, observable } from 'mobx';
-import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import {
-  QueryBuilderBitemporalMilestoningBuilderHelper,
-  QueryBuilderBusinessTemporalMilestoningBuilderHelper,
-  QueryBuilderProcessingTemporalMilestoningBuilderHelper,
-} from './QueryBuilderMilestoningHelper.js';
-import type { QueryBuilderState } from './QueryBuilderState.js';
-import { LambdaParameterState } from './shared/LambdaParameterState.js';
+  type Hashable,
+  hashArray,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import { action, computed, makeObservable, observable } from 'mobx';
+import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
+import type { QueryBuilderState } from '../QueryBuilderState.js';
+import { LambdaParameterState } from '../shared/LambdaParameterState.js';
+import { QueryBuilderBitemporalMilestoningBuilderHelper } from './QueryBuilderBitempralMilestoningBuilderHelper.js';
+import { QueryBuilderBusinessTemporalMilestoningBuilderHelper } from './QueryBuilderBusinessTemporalMilestoningBuilderHelper.js';
+import type { QueryBuilderMilestoningBuilderHelper } from './QueryBuilderMilestoningBuilderHelper.js';
+import { QueryBuilderProcessingTemporalMilestoningBuilderHelper } from './QueryBuilderProcessingTemporalMilestoningBuilderHelper.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
   readonly businessTemporalHelper =
@@ -75,22 +78,12 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.showMilestoningEditor = val;
   }
 
-  private initializeQueryMilestoningParameters(stereotype: string): void {
-    switch (stereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
-        this.businessTemporalHelper.initializeMilestoningParameters(true);
-        break;
-      }
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL: {
-        this.processingTemporalHelper.initializeMilestoningParameters(true);
-        break;
-      }
-      case MILESTONING_STEREOTYPE.BITEMPORAL: {
-        this.processingTemporalHelper.initializeMilestoningParameters(true);
-        break;
-      }
-      default:
-    }
+  private initializeQueryMilestoningParameters(
+    stereotype: MILESTONING_STEREOTYPE,
+  ): void {
+    this.getMilestoningBuilderHelper(
+      stereotype,
+    ).initializeMilestoningParameters(true);
   }
 
   setProcessingDate(val: ValueSpecification | undefined): void {
@@ -148,6 +141,23 @@ export class QueryBuilderMilestoningState implements Hashable {
       this.queryBuilderState.parametersState.addParameter(variableState);
     }
     return milestoningParameter;
+  }
+
+  getMilestoningBuilderHelper(
+    stereotype: MILESTONING_STEREOTYPE,
+  ): QueryBuilderMilestoningBuilderHelper {
+    switch (stereotype) {
+      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
+        return this.businessTemporalHelper;
+      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
+        return this.processingTemporalHelper;
+      case MILESTONING_STEREOTYPE.BITEMPORAL:
+        return this.bitemporalHelper;
+      default:
+        throw new UnsupportedOperationError(
+          `Unsupported milestoning stereotype ${stereotype}`,
+        );
+    }
   }
 
   get hashCode(): string {

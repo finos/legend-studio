@@ -30,7 +30,6 @@ import {
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
   type LambdaFunction,
-  MILESTONING_STEREOTYPE,
   matchFunctionName,
   Class,
   type CollectionInstanceValue,
@@ -87,27 +86,15 @@ const processGetAllExpression = (
     _class,
     queryBuilderState.graphManagerState.graph,
   );
-  switch (stereotype) {
-    case MILESTONING_STEREOTYPE.BITEMPORAL:
-      queryBuilderState.milestoningState.bitemporalHelper.processGetAllParamaters(
-        expression.parametersValues,
-      );
-      break;
-    case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-      queryBuilderState.milestoningState.businessTemporalHelper.processGetAllParamaters(
-        expression.parametersValues,
-      );
-      break;
-    case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-      queryBuilderState.milestoningState.processingTemporalHelper.processGetAllParamaters(
-        expression.parametersValues,
-      );
-      break;
-    default:
-      assertTrue(
-        expression.parametersValues.length === acceptedNoOfParameters,
-        `Can't process getAll() expression: getAll() expects no arguments`,
-      );
+  if (stereotype) {
+    queryBuilderState.milestoningState
+      .getMilestoningBuilderHelper(stereotype)
+      .processGetAllParamaters(expression.parametersValues);
+  } else {
+    assertTrue(
+      expression.parametersValues.length === acceptedNoOfParameters,
+      `Can't process getAll() expression: getAll() expects no arguments`,
+    );
   }
 };
 
