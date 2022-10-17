@@ -50,6 +50,7 @@ import {
   QuerySearchSpecification,
   Mapping,
   type Runtime,
+  type Service,
 } from '@finos/legend-graph';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
@@ -624,7 +625,18 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       service,
+      this.graphManagerState.usableServices,
       this.executionKey,
+      (val: Service): void => {
+        this.applicationStore.navigator.goToLocation(
+          generateServiceQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            val.path,
+          ),
+        );
+      },
       (val: ServiceExecutionContext): void => {
         this.applicationStore.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(

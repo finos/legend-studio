@@ -264,6 +264,7 @@ export const ServiceExecutionQueryEditor = observer(
                     embeddedQueryBuilderState.editorStore.applicationStore,
                     embeddedQueryBuilderState.editorStore.graphManagerState,
                     service,
+                    undefined,
                     selectedExecutionState.executionContext instanceof
                     KeyedExecutionParameter
                       ? selectedExecutionState.executionContext.key

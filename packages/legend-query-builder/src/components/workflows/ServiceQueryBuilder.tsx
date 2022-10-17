@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  CustomSelectorInput,
-  PURE_MappingIcon,
-  PURE_RuntimeIcon,
-  PlayIcon,
-} from '@finos/legend-art';
+import { CustomSelectorInput, PlayIcon, RobotIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
-import { getMappingCompatibleClasses } from '@finos/legend-graph';
+import { getMappingCompatibleClasses, type Service } from '@finos/legend-graph';
 import {
-  getPackageableElementOptionFormatter,
   buildElementOption,
   useApplicationStore,
+  type PackageableElementOption,
 } from '@finos/legend-application';
-import {
-  buildRuntimeValueOption,
-  getRuntimeOptionFormatter,
-  QueryBuilderClassSelector,
-} from '../QueryBuilderSideBar.js';
+import { QueryBuilderClassSelector } from '../QueryBuilderSideBar.js';
 import type {
   ServiceExecutionContext,
   ServiceQueryBuilderState,
@@ -49,7 +40,7 @@ const buildExecutionContextOption = (
 });
 
 /**
- * This setup panel supports cascading in order: Execution Context -> Class
+ * This setup panel supports cascading in order: Service -> Execution Context -> Class
  *
  * In other words, we will only show:
  * - For class selector: the list of compatible classes with the selected mapping
@@ -61,15 +52,18 @@ const ServiceQueryBuilderSetupPanelContent = observer(
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
 
-    // mapping
-    const selectedMappingOption = queryBuilderState.mapping
-      ? buildElementOption(queryBuilderState.mapping)
-      : null;
-
-    // runtime
-    const selectedRuntimeOption = queryBuilderState.runtimeValue
-      ? buildRuntimeValueOption(queryBuilderState.runtimeValue)
-      : null;
+    // execution context
+    const serviceOptions =
+      queryBuilderState.usableServices?.map(buildElementOption) ?? [];
+    const selectedServiceOption = buildElementOption(queryBuilderState.service);
+    const onServiceOptionChange = (
+      option: PackageableElementOption<Service>,
+    ): void => {
+      if (option.value === queryBuilderState.service) {
+        return;
+      }
+      queryBuilderState.onServiceChange?.(option.value);
+    };
 
     // execution context
     const executionContextOptions = queryBuilderState.executionContexts.map(
@@ -109,6 +103,23 @@ const ServiceQueryBuilderSetupPanelContent = observer(
             </div>
           </div>
           <div className="query-builder__setup__config-group__content">
+            <div className="query-builder__setup__config-group__item">
+              <div
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="service"
+              >
+                <RobotIcon className="query-builder__setup__service__icon__service" />
+              </div>
+              <CustomSelectorInput
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose a service..."
+                options={serviceOptions}
+                disabled={serviceOptions.length <= 1}
+                onChange={onServiceOptionChange}
+                value={selectedServiceOption}
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+              />
+            </div>
             {/* We will display mapping and runtime selector for single-execution and execution context for multi-execution */}
             {Boolean(queryBuilderState.executionContexts.length) && (
               <>
@@ -127,48 +138,6 @@ const ServiceQueryBuilderSetupPanelContent = observer(
                     onChange={onExecutionContextOptionChange}
                     value={selectedExecutionContextOption}
                     darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-                  />
-                </div>
-              </>
-            )}
-            {!queryBuilderState.executionContexts.length && (
-              <>
-                <div className="query-builder__setup__config-group__item">
-                  <div
-                    className="btn--sm query-builder__setup__config-group__item__label"
-                    title="mapping"
-                  >
-                    <PURE_MappingIcon />
-                  </div>
-                  <CustomSelectorInput
-                    className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                    disabled={true}
-                    options={[]}
-                    value={selectedMappingOption}
-                    darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-                    formatOptionLabel={getPackageableElementOptionFormatter({
-                      darkMode:
-                        !applicationStore.TEMPORARY__isLightThemeEnabled,
-                    })}
-                  />
-                </div>
-                <div className="query-builder__setup__config-group__item">
-                  <div
-                    className="btn--sm query-builder__setup__config-group__item__label"
-                    title="runtime"
-                  >
-                    <PURE_RuntimeIcon />
-                  </div>
-                  <CustomSelectorInput
-                    className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                    disabled={true}
-                    options={[]}
-                    value={selectedRuntimeOption}
-                    darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
-                    formatOptionLabel={getRuntimeOptionFormatter({
-                      darkMode:
-                        !applicationStore.TEMPORARY__isLightThemeEnabled,
-                    })}
                   />
                 </div>
               </>
