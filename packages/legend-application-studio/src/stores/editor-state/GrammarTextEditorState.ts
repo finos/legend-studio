@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
@@ -66,8 +66,11 @@ export class GrammarTextEditorState {
   error?: EngineError | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      graphGrammarText: observable,
+      currentElementLabelRegexString: observable,
+      wrapText: observable,
+      error: observable,
       setError: action,
       setGraphGrammarText: action,
       setWrapText: action,

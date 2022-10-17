@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult, flow } from 'mobx';
+import {
+  action,
+  makeObservable,
+  flowResult,
+  flow,
+  observable,
+  computed,
+} from 'mobx';
+import { format } from 'date-fns';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
@@ -65,13 +73,20 @@ class PatchLoaderState {
   isValidPatch = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      changes: observable,
+      currentChanges: observable,
+      isLoadingChanges: observable,
+      showModal: observable,
+      isValidPatch: observable,
       openModal: action,
       closeModal: action,
+      setIsValidPatch: action,
+      setPatchChanges: action,
       deleteChange: action,
+      overiddingChanges: computed,
       loadPatchFile: flow,
+      applyChanges: flow,
     });
 
     this.editorStore = editorStore;
@@ -170,11 +185,20 @@ export class LocalChangesState {
   refreshWorkspaceSyncStatusState = ActionState.create();
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      workspaceSyncState: observable,
+      pushChangesState: observable,
+      refreshLocalChangesDetectorState: observable,
+      patchLoaderState: observable,
+      refreshWorkspaceSyncStatusState: observable,
+      hasUnpushedChanges: computed,
       openLocalChange: action,
+      openWorkspacePullChange: action,
+      openPotentialWorkspacePullConflict: action,
+      downloadLocalChanges: action,
       refreshWorkspaceSyncStatus: flow,
+      refreshLocalChanges: flow,
+      pushLocalChanges: flow,
     });
 
     this.editorStore = editorStore;

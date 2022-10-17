@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { MINIMUM_SERVICE_OWNERS } from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -103,9 +103,21 @@ export class ServiceRegistrationState {
     registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      service: observable,
+      registrationOptions: observable,
+      registrationState: observable,
+      serviceEnv: observable,
+      serviceExecutionMode: observable,
+      projectVersion: observable,
+      activatePostRegistration: observable,
+      enableModesWithVersioning: observable,
+      TEMPORARY__useStoreModel: observable,
       executionModes: computed,
+      options: computed,
+      versionOptions: computed,
+      setServiceEnv: action,
+      setServiceExecutionMode: action,
       updateVersion: action,
       setProjectVersion: action,
       setUseStoreModelWithFullInteractive: action,
@@ -113,6 +125,7 @@ export class ServiceRegistrationState {
       updateType: action,
       updateEnv: action,
       setActivatePostRegistration: action,
+      registerService: flow,
     });
 
     this.editorStore = editorStore;

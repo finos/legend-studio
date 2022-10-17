@@ -21,7 +21,7 @@ import {
   type DialogClassKey as MuiDialogClassKey,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 import { clsx } from 'clsx';
 
 export class NonBlockingDialogState {
@@ -29,7 +29,8 @@ export class NonBlockingDialogState {
   private _suppressClickawayEventListener = false;
 
   constructor() {
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      isOpen: observable,
       open: action,
       close: action,
       suppressClickawayEventListener: action,

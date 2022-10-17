@@ -22,7 +22,14 @@ import {
   LogEvent,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
-import { makeAutoObservable, action, flowResult } from 'mobx';
+import {
+  makeObservable,
+  action,
+  flowResult,
+  observable,
+  flow,
+  computed,
+} from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
@@ -44,12 +51,29 @@ export class WorkspaceReviewStore {
   isReopeningReview = false;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      projectId: false,
-      reviewId: false,
-      review: false,
+    makeObservable(this, {
+      currentProjectId: observable,
+      currentProject: observable,
+      currentReviewId: observable,
+      currentReview: observable,
+      isFetchingCurrentReview: observable,
+      isFetchingComparison: observable,
+      isApprovingReview: observable,
+      isClosingReview: observable,
+      isCommittingReview: observable,
+      isReopeningReview: observable,
+      projectId: computed,
+      reviewId: computed,
+      review: computed,
       setProjectIdAndReviewId: action,
+      initialize: flow,
+      fetchReviewComparison: flow,
+      fetchProject: flow,
+      getReview: flow,
+      approveReview: flow,
+      commitReview: flow,
+      reOpenReview: flow,
+      closeReview: flow,
     });
 
     this.editorStore = editorStore;

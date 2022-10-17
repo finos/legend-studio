@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, makeObservable, flowResult, observable, flow } from 'mobx';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
 import {
   type GeneratorFn,
@@ -53,11 +53,15 @@ export class WorkspaceUpdaterState {
   isRefreshingWorkspaceUpdater = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      committedReviewsBetweenWorkspaceBaseAndProjectLatest: observable,
+      isUpdatingWorkspace: observable,
+      isRefreshingWorkspaceUpdater: observable,
       openProjectLatestChange: action,
       openPotentialWorkspaceUpdateConflict: action,
+      refreshWorkspaceUpdater: flow,
+      updateWorkspace: flow,
+      fetchLatestCommittedReviews: flow,
     });
 
     this.editorStore = editorStore;

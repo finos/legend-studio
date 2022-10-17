@@ -27,7 +27,6 @@ import {
   flow,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
 } from 'mobx';
 import {
@@ -499,17 +498,27 @@ export class MappingExecutionState {
     mappingEditorState: MappingEditorState,
     name: string,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      mappingEditorState: false,
+    makeObservable(this, {
+      name: observable,
+      queryState: observable,
+      inputDataState: observable,
+      showServicePathModal: observable,
       executionPlanState: observable,
+      isExecuting: observable,
+      isGeneratingPlan: observable,
+      planGenerationDebugText: observable,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
-      setPlanGenerationDebugText: action,
       setShowServicePathModal: action,
+      setPlanGenerationDebugText: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
+      promoteToTest: flow,
+      promoteToService: flow,
+      executeMapping: flow,
+      generatePlan: flow,
+      buildQueryWithClassMapping: flow,
     });
 
     this.editorStore = editorStore;

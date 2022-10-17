@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { observable, action, makeAutoObservable } from 'mobx';
+import { observable, action, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { TreeData } from '@finos/legend-art';
 import {
@@ -69,14 +69,16 @@ export class FileGenerationState {
     editorStore: EditorStore,
     fileGeneration: FileGenerationSpecification,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      fileGeneration: false,
+    makeObservable(this, {
+      isGenerating: observable,
+      root: observable,
       directoryTreeData: observable.ref,
       selectedNode: observable.ref,
+      filesIndex: observable,
       resetFileGeneration: action,
       setIsGeneration: action,
       setDirectoryTreeData: action,
+      getOrCreateDirectory: action,
       processGenerationResult: action,
       reprocessNodeTree: action,
       setSelectedNode: action,
@@ -84,6 +86,7 @@ export class FileGenerationState {
       addScopeElement: action,
       deleteScopeElement: action,
       updateFileGenerationParameters: action,
+      generate: flow,
     });
 
     this.editorStore = editorStore;

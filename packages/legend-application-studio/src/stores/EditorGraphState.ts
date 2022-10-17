@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, computed, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import {
@@ -126,12 +133,27 @@ export class EditorGraphState {
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      graphGenerationState: false,
-      getPackageableElementType: false,
-      hasCompilationError: computed,
+    makeObservable(this, {
+      isInitializingGraph: observable,
+      isRunningGlobalCompile: observable,
+      isRunningGlobalGenerate: observable,
+      isApplicationLeavingTextMode: observable,
+      isUpdatingGraph: observable,
+      isUpdatingApplication: observable,
       clearCompilationError: action,
+      checkIfApplicationUpdateOperationIsRunning: action,
+      computeLocalEntityChanges: action,
+      hasCompilationError: computed,
+      isApplicationUpdateOperationIsRunning: computed,
+      buildGraph: flow,
+      loadEntityChangesToGraph: flow,
+      globalCompileInFormMode: flow,
+      globalCompileInTextMode: flow,
+      leaveTextMode: flow,
+      checkLambdaParsingError: flow,
+      updateGenerationGraphAndApplication: flow,
+      getIndexedDependencyEntities: flow,
+      buildProjectDependencyCoordinates: flow,
     });
 
     this.editorStore = editorStore;

@@ -19,8 +19,8 @@ import {
   observable,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
+  flow,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -595,8 +595,13 @@ export class NewElementState {
   newElementDriver?: NewElementDriver<PackageableElement> | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      showModal: observable,
+      showType: observable,
+      type: observable,
+      _package: observable,
+      name: observable,
+      newElementDriver: observable,
       setShowModal: action,
       setName: action,
       setShowType: action,
@@ -606,6 +611,11 @@ export class NewElementState {
       openModal: action,
       closeModal: action,
       createElement: action,
+      getNewElementDriver: action, //svp
+      elementAndPackageName: computed,
+      selectedPackage: computed,
+      isValid: computed,
+      save: flow,
     });
 
     this.editorStore = editorStore;

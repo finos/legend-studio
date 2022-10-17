@@ -15,14 +15,7 @@
  */
 
 import type { TreeNodeData, TreeData } from '@finos/legend-art';
-import {
-  makeAutoObservable,
-  observable,
-  action,
-  flowResult,
-  makeObservable,
-  flow,
-} from 'mobx';
+import { observable, action, flowResult, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
@@ -114,12 +107,16 @@ export class WorkflowLogState {
     job: WorkflowJob | undefined,
     logs: string | undefined,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      workflowManagerState: observable,
       job: observable,
       logs: observable,
+      fetchJobLogState: observable,
       setLogs: action,
       setJob: action,
+      closeModal: action,
+      refreshJobLogs: flow,
+      viewJobLogs: flow,
     });
 
     this.editorStore = editorStore;
@@ -198,10 +195,17 @@ export class WorkflowState {
     workflow: Workflow,
     jobs: WorkflowJob[] | undefined,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      workflowManagerState: observable,
       treeData: observable.ref,
+      isExecutingWorkflowRequest: observable,
       setWorkflowTreeData: action,
+      buildTreeData: action,
+      fetchAllWorkspaceWorkJobs: flow,
+      onTreeNodeSelect: flow,
+      cancelJob: flow,
+      refreshWorkflow: flow,
+      retryJob: flow,
     });
 
     this.editorStore = editorStore;

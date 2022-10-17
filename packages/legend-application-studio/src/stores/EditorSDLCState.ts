@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   type PlainObject,
@@ -61,12 +61,33 @@ export class EditorSDLCState {
   isFetchingProject = false;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      currentProject: observable,
+      currentWorkspace: observable,
+      remoteWorkspaceRevision: observable,
+      currentRevision: observable,
+      isWorkspaceOutdated: observable,
+      workspaceWorkflows: observable,
+      projectVersions: observable,
+      isCheckingIfWorkspaceIsOutdated: observable,
+      isFetchingProjectVersions: observable,
+      isFetchingProject: observable,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
       setWorkspaceLatestRevision: action,
+      handleChangeDetectionRefreshIssue: action,
+      fetchCurrentProject: flow,
+      fetchCurrentWorkspace: flow,
+      fetchProjectVersions: flow,
+      checkIfCurrentWorkspaceIsInConflictResolutionMode: flow,
+      fetchRemoteWorkspaceRevision: flow,
+      fetchCurrentRevision: flow,
+      checkIfWorkspaceIsOutdated: flow,
+      buildWorkspaceLatestRevisionEntityHashesIndex: flow,
+      buildWorkspaceBaseRevisionEntityHashesIndex: flow,
+      buildProjectLatestRevisionEntityHashesIndex: flow,
+      fetchWorkspaceWorkflows: flow,
     });
 
     this.editorStore = editorStore;

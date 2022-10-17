@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
 export class PanelDisplayState {
   _tempSize: number;
@@ -35,7 +35,13 @@ export class PanelDisplayState {
     this._initialDefaultSize = size.default;
     this.snapSize = size.snap;
 
-    makeAutoObservable(this, {
+    makeObservable(this, {
+      _tempSize: observable,
+      size: observable,
+      _initialDefaultSize: observable,
+      defaultSize: observable,
+      snapSize: observable,
+      maxSize: observable,
       // open/close
       setSize: action,
       open: action,
@@ -111,6 +117,13 @@ export class PanelDisplayState {
     }
   }
 
+  setMaxSize(val: number): void {
+    this._tempSize = Math.min(this._tempSize, val);
+    this.size = Math.min(this.size, val);
+    this.defaultSize = Math.min(this._initialDefaultSize, val);
+    this.maxSize = val;
+  }
+
   maximize(): void {
     if (this.maxSize !== undefined) {
       if (this.size !== this.maxSize) {
@@ -137,12 +150,5 @@ export class PanelDisplayState {
         this.maximize();
       }
     }
-  }
-
-  setMaxSize(val: number): void {
-    this._tempSize = Math.min(this._tempSize, val);
-    this.size = Math.min(this.size, val);
-    this.defaultSize = Math.min(this._initialDefaultSize, val);
-    this.maxSize = val;
   }
 }

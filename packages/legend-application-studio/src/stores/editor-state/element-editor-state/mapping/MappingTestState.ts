@@ -39,14 +39,7 @@ import {
   ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
-import {
-  observable,
-  flow,
-  action,
-  makeObservable,
-  makeAutoObservable,
-  flowResult,
-} from 'mobx';
+import { observable, flow, action, makeObservable, flowResult } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type MappingTest,
@@ -416,13 +409,25 @@ export class MappingTestState {
     test: MappingTest,
     mappingEditorState: MappingEditorState,
   ) {
-    makeAutoObservable(this, {
-      uuid: false,
-      editorStore: false,
-      mappingEditorState: false,
-      executionPlanState: false,
+    makeObservable(this, {
+      selectedTab: observable,
+      result: observable,
+      test: observable,
+      runTime: observable,
+      isSkipped: observable,
+      errorRunningTest: observable,
+      testExecutionResultText: observable,
+      isRunningTest: observable,
+      isExecutingTest: observable,
+      queryState: observable,
+      inputDataState: observable,
+      assertionState: observable,
+      isGeneratingPlan: observable,
+      executionPlanState: observable,
+      testRunPromise: observable,
       setIsRunningTest: action,
       setSelectedTab: action,
+      setTestRunPromise: action,
       resetTestRunStatus: action,
       setResult: action,
       toggleSkipTest: action,
@@ -432,6 +437,9 @@ export class MappingTestState {
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
       generatePlan: flow,
+      regenerateExpectedResult: flow,
+      runTest: flow,
+      onTestStateOpen: flow,
     });
 
     this.editorStore = editorStore;
