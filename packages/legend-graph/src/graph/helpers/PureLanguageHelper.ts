@@ -135,7 +135,7 @@ export const generateFunctionCallString = (
   return `${element.package?.path}${ELEMENT_PATH_DELIMITER}${element.functionName}(${lambdaString})`;
 };
 
-export const generateFunctionSignature = (
+export const generateFunctionPrettyName = (
   element: ConcreteFunctionDefinition,
   fullPath: boolean,
 ): string =>

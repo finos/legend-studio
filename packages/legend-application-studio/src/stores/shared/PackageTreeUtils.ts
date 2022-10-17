@@ -40,7 +40,7 @@ import {
   FileGenerationSpecification,
   GenerationSpecification,
   DataElement,
-  generateFunctionSignature,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 
 const getElementProjectExplorerDnDType = (
@@ -111,7 +111,7 @@ export const generatePackableElementTreeNodeDataLabel = (
   node?: PackageTreeNodeData,
 ): string =>
   element instanceof ConcreteFunctionDefinition
-    ? generateFunctionSignature(element, false)
+    ? generateFunctionPrettyName(element, false)
     : node?.label ?? element.name;
 
 export const getPackableElementTreeNodeData = (

@@ -20,7 +20,7 @@ import { unitTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
   generateFunctionCallString,
-  generateFunctionSignature,
+  generateFunctionPrettyName,
 } from '../PureLanguageHelper.js';
 import { TEST__getTestGraph } from '../../GraphTestUtils.js';
 
@@ -45,7 +45,7 @@ test(unitTest('Generate default parameter value for type'), async () => {
   expect(generateFunctionCallString(setFunction)).toBe(
     "model::functions::set('', model::IncType.Corp, %2020-11-01, %2020-11-01T00:00:00)",
   );
-  expect(generateFunctionSignature(setFunction, true)).toBe(
+  expect(generateFunctionPrettyName(setFunction, true)).toBe(
     'model::functions::set(name: String[1], type: IncType[1], date: Date[1], dateTime: DateTime[1]): String[1]',
   );
 });

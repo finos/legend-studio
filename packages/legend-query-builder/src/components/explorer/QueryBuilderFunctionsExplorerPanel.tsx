@@ -51,7 +51,7 @@ import {
 import { useDrag } from 'react-dnd';
 import {
   ConcreteFunctionDefinition,
-  generateFunctionSignature,
+  generateFunctionPrettyName,
   getElementRootPackage,
   Package,
   ROOT_PACKAGE_NAME,
@@ -157,7 +157,7 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
       element,
       rootPackageName,
     );
-    const functionSignature = generateFunctionSignature(element, true);
+    const functionPrettyName = generateFunctionPrettyName(element, true);
     const [, dragConnector, dragPreviewConnector] = useDrag(
       () => ({
         type: QUERY_BUILDER_FUNCTION_DND_TYPE,
@@ -180,9 +180,9 @@ const QueryBuilderFunctionsExplorerListEntry = observer(
           </div>
           <div
             className="query-builder__functions-explorer__function__label"
-            title={functionSignature}
+            title={functionPrettyName}
           >
-            {functionSignature}
+            {functionPrettyName}
           </div>
         </div>
         <div className="query-builder__functions-explorer__function__actions">
@@ -212,7 +212,7 @@ const QueryBuilderFunctionsExplorerTreeNodeContainer = observer(
     const isPackage = node.packageableElement instanceof Package;
     const name =
       node.packageableElement instanceof ConcreteFunctionDefinition
-        ? generateFunctionSignature(node.packageableElement, false)
+        ? generateFunctionPrettyName(node.packageableElement, false)
         : node.packageableElement.name;
     const isExpandable = Boolean(node.childrenIds.length);
     const nodeExpandIcon = isExpandable ? (
@@ -482,7 +482,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
             labelGetter={(
               item: QueryBuilderFunctionsExplorerDragSource,
             ): string =>
-              generateFunctionSignature(
+              generateFunctionPrettyName(
                 item.node.packageableElement as ConcreteFunctionDefinition,
                 true,
               )
