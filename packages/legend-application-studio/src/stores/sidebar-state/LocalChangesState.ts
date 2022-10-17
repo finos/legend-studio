@@ -22,7 +22,6 @@ import {
   observable,
   computed,
 } from 'mobx';
-import { format } from 'date-fns';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
