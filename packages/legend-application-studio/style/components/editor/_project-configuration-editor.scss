@@ -221,10 +221,29 @@
     cursor: pointer;
   }
 
-  &__visit-btn {
+  &__visit-project-btn {
+    @include flexVCenter;
+
     height: 2.8rem;
-    width: 2.8rem;
     margin-left: 0.5rem;
+
+    &__btn {
+      height: 2.8rem;
+      width: 2.8rem;
+      border-radius: 0.2rem 0 0 0.2rem;
+    }
+
+    &__dropdown-trigger {
+      height: 2.8rem;
+      width: 1.6rem;
+      border-radius: 0 0.2rem 0.2rem 0;
+      border-left: 0.1rem solid var(--color-dark-shade-200);
+      cursor: pointer;
+
+      svg {
+        font-size: 1.2rem;
+      }
+    }
   }
 
   &__remove-btn[disabled] {

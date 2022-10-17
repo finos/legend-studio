@@ -61,7 +61,7 @@ export class LegendStudioBaseStore {
 
   initState = ActionState.create();
 
-  isSDLCAuthorized = false;
+  isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
@@ -129,9 +129,7 @@ export class LegendStudioBaseStore {
       // setup telemetry service
       this.applicationStore.telemetryService.setUserId(currentUserID);
     } else {
-      // TODO?: not sure if this is the best approach
-      // should we create a separate flag to indicate that this is overridden
-      this.isSDLCAuthorized = true;
+      this.isSDLCAuthorized = undefined;
     }
 
     ApplicationTelemetry.logEvent_ApplicationInitialized(

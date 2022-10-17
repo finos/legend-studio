@@ -123,10 +123,27 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      {!baseStore.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized === false && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
+      )}
+      {baseStore.isSDLCAuthorized === undefined && (
+        <>
+          <Switch>
+            <Route
+              exact={true}
+              path={[
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              ]}
+              component={ProjectViewer}
+            />
+            <Route>
+              <LegendStudioNotFoundRouteScreen />
+            </Route>
+          </Switch>
+        </>
       )}
       {baseStore.isSDLCAuthorized && (
         <>
@@ -142,8 +159,6 @@ export const LegendStudioApplicationRoot = observer(() => {
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION_ENTITY,
-                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
-                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
               ]}
               component={ProjectViewer}
             />

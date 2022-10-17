@@ -46,6 +46,11 @@ export class TaxonomyTreeOption {
   );
 }
 
+type LegendStudioApplicationInstanceConfigurationData = {
+  sdlcProjectIDPrefix: string;
+  url: string;
+};
+
 export interface LegendTaxonomyApplicationConfigurationData
   extends LegendApplicationConfigurationData {
   appName: string;
@@ -55,7 +60,10 @@ export interface LegendTaxonomyApplicationConfigurationData
   };
   engine: { url: string; queryUrl?: string };
   query: { url: string };
-  studio: { url: string };
+  studio: {
+    url: string;
+    instances: LegendStudioApplicationInstanceConfigurationData[];
+  };
   taxonomy: PlainObject<TaxonomyTreeOption>[];
 }
 
@@ -65,6 +73,8 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
   readonly depotServerUrl: string;
   readonly queryUrl: string;
   readonly studioUrl: string;
+  readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
+    [];
 
   currentTaxonomyTreeOption!: TaxonomyTreeOption;
   taxonomyTreeOptions: TaxonomyTreeOption[] = [];
@@ -160,6 +170,10 @@ export class LegendTaxonomyApplicationConfig extends LegendApplicationConfig {
     this.studioUrl = guaranteeNonEmptyString(
       input.configData.studio.url,
       `Can't configure application: 'studio.url' field is missing or empty`,
+    );
+    this.studioInstances = guaranteeNonNullable(
+      input.configData.studio.instances,
+      `Can't configure application: 'studio.instances' field is missing`,
     );
   }
 

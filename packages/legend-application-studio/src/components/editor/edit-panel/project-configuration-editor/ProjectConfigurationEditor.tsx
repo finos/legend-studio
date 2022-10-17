@@ -39,7 +39,6 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExternalLinkSquareIcon,
-  ArchiveIcon,
   Dialog,
   Panel,
   PanelForm,
@@ -48,6 +47,10 @@ import {
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
+  DropdownMenu,
+  CaretDownIcon,
+  MenuContentItem,
+  MenuContent,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -71,11 +74,11 @@ import {
   type ProjectData,
   type ProjectDependencyInfo,
 } from '@finos/legend-server-depot';
-import { generateViewProjectRoute } from '../../../../stores/LegendStudioRouter.js';
 import {
-  compareSemVerVersions,
-  generateGAVCoordinates,
-} from '@finos/legend-storage';
+  generateViewProjectByGAVRoute,
+  generateViewProjectRoute,
+} from '../../../../stores/LegendStudioRouter.js';
+import { compareSemVerVersions } from '@finos/legend-storage';
 
 interface VersionOption {
   label: string;
@@ -324,26 +327,24 @@ const ProjectDependencyEditor = observer(
         }
       }
     };
-    const openProjectinArchive = (): void => {
+    const viewProject = (): void => {
       if (!projectDependency.isLegacyDependency) {
-        const projectDependencyVersionId =
-          projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
-            ? SNAPSHOT_VERSION_ALIAS
-            : projectDependency.versionId;
         applicationStore.navigator.visitAddress(
-          `${
-            applicationStore.config.baseUrl
-          }view/archive/${generateGAVCoordinates(
-            guaranteeNonNullable(projectDependency.groupId),
-            guaranteeNonNullable(projectDependency.artifactId),
-            projectDependencyVersionId,
-          )}`,
+          applicationStore.navigator.generateAddress(
+            generateViewProjectByGAVRoute(
+              guaranteeNonNullable(projectDependency.groupId),
+              guaranteeNonNullable(projectDependency.artifactId),
+              projectDependency.versionId === MASTER_SNAPSHOT_ALIAS
+                ? SNAPSHOT_VERSION_ALIAS
+                : projectDependency.versionId,
+            ),
+          ),
         );
       }
     };
     // NOTE: This assumes that the dependant project is in the same studio instance as the current project
     // In the future, the studio instance may be part of the project data
-    const openProject = (): void => {
+    const viewSDLCProject = (): void => {
       if (projectDependencyData) {
         applicationStore.navigator.visitAddress(
           applicationStore.navigator.generateAddress(
@@ -389,33 +390,41 @@ const ProjectDependencyEditor = observer(
           }
           darkMode={true}
         />
-        <button
-          className="project-dependency-editor__visit-btn btn--dark btn--sm"
-          disabled={
-            projectDependency.isLegacyDependency ||
-            !selectedProject ||
-            !selectedVersionOption ||
-            !projectDependencyData
-          }
-          onClick={openProject}
-          tabIndex={-1}
-          title="Open Project"
-        >
-          <ExternalLinkSquareIcon />
-        </button>
-        <button
-          className="project-dependency-editor__visit-btn btn--dark btn--sm"
-          disabled={
-            projectDependency.isLegacyDependency ||
-            !selectedProject ||
-            !selectedVersionOption
-          }
-          onClick={openProjectinArchive}
-          tabIndex={-1}
-          title="Open Project in archive"
-        >
-          <ArchiveIcon />
-        </button>
+        <div className="project-dependency-editor__visit-project-btn">
+          <button
+            className="project-dependency-editor__visit-project-btn__btn btn--dark"
+            disabled={
+              projectDependency.isLegacyDependency ||
+              !selectedProject ||
+              !selectedVersionOption
+            }
+            onClick={viewProject}
+            tabIndex={-1}
+            title="View project"
+          >
+            <ExternalLinkSquareIcon />
+          </button>
+          <DropdownMenu
+            className="project-dependency-editor__visit-project-btn__dropdown-trigger btn--dark"
+            content={
+              <MenuContent>
+                <MenuContentItem
+                  disabled={
+                    projectDependency.isLegacyDependency ||
+                    !selectedProject ||
+                    !selectedVersionOption ||
+                    !projectDependencyData
+                  }
+                  onClick={viewSDLCProject}
+                >
+                  View SDLC project
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <CaretDownIcon title="Show more options..." />
+          </DropdownMenu>
+        </div>
         <button
           className="project-dependency-editor__remove-btn btn--dark btn--caution"
           disabled={isReadOnly}
@@ -709,7 +718,7 @@ export const ProjectConfigurationEditor = observer(() => {
     }
   };
   const disableAddButton =
-    selectedTab === CONFIGURATION_EDITOR_TAB.PROJECT_STRUCTURE || isReadOnly;
+    selectedTab !== CONFIGURATION_EDITOR_TAB.PROJECT_DEPENDENCIES || isReadOnly;
   const updateConfigs = (): void => {
     editorStore.localChangesState.alertUnsavedChanges((): void => {
       flowResult(configState.updateConfigs()).catch(

@@ -42,8 +42,7 @@ export const LEGEND_STUDIO_COMMAND_CONFIG: CommandConfigData = {
   },
   [LEGEND_STUDIO_COMMAND_KEY.SEARCH_ELEMENT]: {
     title: 'Search for element',
-    // defaultKeyboardShortcut: 'Control+p',
-    defaultKeyboardShortcut: 'Control+Space',
+    defaultKeyboardShortcut: 'Control+p',
   },
   [LEGEND_STUDIO_COMMAND_KEY.TOGGLE_MODEL_LOADER]: {
     title: 'Toggle model loader',

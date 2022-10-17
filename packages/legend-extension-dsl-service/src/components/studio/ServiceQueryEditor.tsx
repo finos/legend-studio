@@ -29,7 +29,6 @@ import {
   BlankPanelContent,
   CustomSelectorInput,
   Dialog,
-  ExternalLinkSquareIcon,
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
@@ -39,6 +38,7 @@ import {
   clsx,
   CheckSquareIcon,
   SquareIcon,
+  GitBranchIcon,
 } from '@finos/legend-art';
 import {
   type ProjectServiceQueryUpdaterPathParams,
@@ -397,7 +397,7 @@ const RegisterServiceModal = observer(() => {
 const ServiceQueryEditorHeaderContent = observer(() => {
   const editorStore = useServiceQueryEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
-  const viewProject = (): void =>
+  const openWorkspace = (): void =>
     applicationStore.navigator.visitAddress(
       applicationStore.navigator.generateAddress(
         generateEditorRoute(
@@ -469,10 +469,10 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
-          title="View project"
-          onClick={viewProject}
+          title="Open workspace"
+          onClick={openWorkspace}
         >
-          <ExternalLinkSquareIcon />
+          <GitBranchIcon className="service-query-editor__header__action__icon--branch" />
         </button>
         <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorReviewAction />

@@ -62,7 +62,10 @@ import {
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioBaseStoreProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {
@@ -170,7 +173,7 @@ const ProjectViewerStatusBar = observer(() => {
 
 const ProjectViewerSideBar = observer(() => {
   const viewerStore = useProjectViewerStore();
-  const editorStore = viewerStore.editorStore;
+  const editorStore = useEditorStore();
   const renderSideBar = (): React.ReactNode => {
     switch (editorStore.activeActivity) {
       case ACTIVITY_MODE.EXPLORER:
@@ -196,7 +199,9 @@ const ProjectViewerSideBar = observer(() => {
 
 const ProjectViewerActivityBar = observer(() => {
   const viewerStore = useProjectViewerStore();
-  const editorStore = viewerStore.editorStore;
+  const baseStore = useLegendStudioBaseStore();
+  const editorStore = useEditorStore();
+
   const changeActivity =
     (activity: ACTIVITY_MODE): (() => void) =>
     (): void =>
@@ -208,7 +213,7 @@ const ProjectViewerActivityBar = observer(() => {
       title: 'Explorer (Ctrl + Shift + X)',
       icon: <FileTrayIcon />,
     },
-    !editorStore.isInConflictResolutionMode && {
+    baseStore.isSDLCAuthorized !== undefined && {
       mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
       title: 'Project',
       icon: (
@@ -257,14 +262,6 @@ export const ProjectViewer = withEditorStore(
       const viewerStore = useProjectViewerStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
-      const allowOpeningElement =
-        editorStore.sdlcState.currentProject &&
-        editorStore.graphManagerState.graphBuildState.hasSucceeded;
-      const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
-        editorStore.sideBarDisplayState.setSize(
-          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
-            .width,
-        );
 
       // Extensions
       const extraEditorExtensionComponents = editorStore.pluginManager
@@ -280,6 +277,11 @@ export const ProjectViewer = withEditorStore(
         ));
 
       // layout
+      const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+        editorStore.sideBarDisplayState.setSize(
+          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+            .width,
+        );
       const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
         editorStore.sideBarDisplayState.size === 0,
         {
@@ -334,7 +336,9 @@ export const ProjectViewer = withEditorStore(
                 </div>
               </div>
             </div>
-            {allowOpeningElement && <ProjectSearchCommand />}
+            {editorStore.graphManagerState.graphBuildState.hasSucceeded && (
+              <ProjectSearchCommand />
+            )}
             <ProjectViewerStatusBar />
             <EmbeddedQueryBuilder />
             {extraEditorExtensionComponents}

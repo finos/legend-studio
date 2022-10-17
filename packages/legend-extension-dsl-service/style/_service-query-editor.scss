@@ -102,6 +102,10 @@
       svg {
         color: var(--color-light-grey-100);
       }
+
+      &__icon--branch {
+        font-size: 1.8rem;
+      }
     }
 
     &__action + &__action {
