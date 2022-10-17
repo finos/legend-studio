@@ -44,6 +44,7 @@ import {
   guaranteeNonEmptyString,
   isNonNullable,
   returnUndefOnError,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { EmbeddedDataType } from '../../editor-state/ExternalFormatState.js';
 import type { EditorStore } from '../../EditorStore.js';
@@ -85,7 +86,7 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
   }
 
   visit_Connection(connection: Connection): EmbeddedData {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_ConnectionPointer(connection: ConnectionPointer): EmbeddedData {
     const packageableConnection =
@@ -93,7 +94,7 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
     return packageableConnection.accept_ConnectionVisitor(this);
   }
   visit_ModelChainConnection(connection: ModelChainConnection): EmbeddedData {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_JsonModelConnection(connection: JsonModelConnection): EmbeddedData {
     const _class = connection.class.value;
@@ -106,15 +107,15 @@ export class TEMPORARY_EmbeddedDataConnectionVisitor
     return data;
   }
   visit_XmlModelConnection(connection: XmlModelConnection): EmbeddedData {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_FlatDataConnection(connection: FlatDataConnection): EmbeddedData {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
   visit_RelationalDatabaseConnection(
     connection: RelationalDatabaseConnection,
   ): EmbeddedData {
-    throw new Error('Method not implemented.');
+    throw new UnsupportedOperationError();
   }
 }
 

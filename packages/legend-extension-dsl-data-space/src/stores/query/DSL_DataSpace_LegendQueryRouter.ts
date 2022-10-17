@@ -41,7 +41,15 @@ export interface DataSpaceQueryEditorQueryParams {
   [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
 }
 
-export const CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN = `/create-from-dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`;
+export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
+  SETUP: `/dataspace`,
+  CREATE: `/dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`,
+});
+
+export const generateDataSpaceQuerySetupRoute = generatePath(
+  DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
+  {},
+);
 
 export const generateDataSpaceQueryCreatorRoute = (
   groupId: string,
@@ -53,7 +61,7 @@ export const generateDataSpaceQueryCreatorRoute = (
   classPath?: string | undefined,
 ): string =>
   `${generatePath(
-    generateExtensionUrlPattern(CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN),
+    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
     {
       [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
         groupId,

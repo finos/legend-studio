@@ -494,6 +494,7 @@ const QueryEditorHeaderContent = observer(
           <div className="query-editor__header__action query-editor__header__action__view-project">
             <button
               className="query-editor__header__action__view-project__btn btn--dark"
+              disabled={editorStore.isViewProjectActionDisabled}
               tabIndex={-1}
               title="View project"
               onClick={viewProject}
@@ -502,9 +503,13 @@ const QueryEditorHeaderContent = observer(
             </button>
             <DropdownMenu
               className="query-editor__header__action__view-project__dropdown-trigger btn--dark"
+              disabled={editorStore.isViewProjectActionDisabled}
               content={
                 <MenuContent>
-                  <MenuContentItem onClick={viewSDLCProject}>
+                  <MenuContentItem
+                    disabled={editorStore.isViewProjectActionDisabled}
+                    onClick={viewSDLCProject}
+                  >
                     View SDLC project
                   </MenuContentItem>
                 </MenuContent>
@@ -530,6 +535,7 @@ const QueryEditorHeaderContent = observer(
           <button
             className="query-editor__header__action btn--dark"
             tabIndex={-1}
+            disabled={editorStore.isSaveActionDisabled}
             onClick={saveQuery}
             title="Save query"
           >

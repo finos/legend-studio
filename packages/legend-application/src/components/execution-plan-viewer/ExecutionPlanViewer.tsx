@@ -330,7 +330,8 @@ const ExecutionPlanViewPanel = observer(
                 </button>
               </div>
               <DropdownMenu
-                className="execution-plan-viewer__panel__view-mode"
+                className="execution-plan-viewer__panel__view-mode__type"
+                title="View as..."
                 content={
                   <MenuContent className="execution-plan-viewer__panel__view-mode__options execution-plan-viewer__panel__view-mode__options--with-group">
                     <div className="execution-plan-viewer__panel__view-mode__option__group execution-plan-viewer__panel__view-mode__option__group--native">
@@ -358,14 +359,9 @@ const ExecutionPlanViewPanel = observer(
                   transformOrigin: { vertical: 'top', horizontal: 'right' },
                 }}
               >
-                <button
-                  className="execution-plan-viewer__panel__view-mode__type"
-                  title="View as..."
-                >
-                  <div className="execution-plan-viewer__panel__view-mode__type__label">
-                    {executionPlanState.viewMode}
-                  </div>
-                </button>
+                <div className="execution-plan-viewer__panel__view-mode__type__label">
+                  {executionPlanState.viewMode}
+                </div>
               </DropdownMenu>
             </div>
             <div className="panel__content execution-plan-viewer__panel__content">

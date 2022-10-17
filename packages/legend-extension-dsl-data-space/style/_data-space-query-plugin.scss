@@ -108,6 +108,16 @@
   }
 }
 
+.query-builder__setup__data-space-setup {
+  .query-builder__setup.panel {
+    height: 9.8rem;
+  }
+
+  .query-builder__side-bar__content {
+    height: calc(100% - 9.8rem);
+  }
+}
+
 .query-builder__setup__data-space {
   &--with-runtime {
     .query-builder__setup.panel {

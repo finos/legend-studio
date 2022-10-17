@@ -137,6 +137,7 @@ export class QueryExportState {
 
   async persistQuery(createNew: boolean): Promise<void> {
     if (
+      this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
       !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
     ) {
@@ -302,6 +303,14 @@ export abstract class QueryEditorStore {
     this.queryLoaderState = new QueryLoaderState(this);
   }
 
+  get isViewProjectActionDisabled(): boolean {
+    return false;
+  }
+
+  get isSaveActionDisabled(): boolean {
+    return false;
+  }
+
   setExportState(val: QueryExportState | undefined): void {
     this.exportState = val;
   }
@@ -386,8 +395,7 @@ export abstract class QueryEditorStore {
       );
 
       yield this.setUpEditorState();
-      const { groupId, artifactId, versionId } = this.getProjectInfo();
-      yield flowResult(this.buildGraph(groupId, artifactId, versionId));
+      yield flowResult(this.buildGraph());
       this.queryBuilderState =
         (yield this.initializeQueryBuilderState()) as QueryBuilderState;
 
@@ -403,12 +411,10 @@ export abstract class QueryEditorStore {
     }
   }
 
-  *buildGraph(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-  ): GeneratorFn<void> {
+  *buildGraph(): GeneratorFn<void> {
     const stopWatch = new StopWatch();
+
+    const { groupId, artifactId, versionId } = this.getProjectInfo();
 
     // fetch project data
     const project = ProjectData.serialization.fromJson(

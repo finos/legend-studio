@@ -37,7 +37,7 @@ import {
   ActionAlertType,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import { CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
+import { DATA_SPACE_QUERY_ROUTE_PATTERN } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import {
   createQueryDataSpaceTaggedValue,
@@ -57,6 +57,7 @@ import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { DataSpaceQuerySetup } from './DataSpaceQuerySetupLandingPage.js';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -65,10 +66,16 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
     return [
+      // data space query editor setup
+      {
+        key: 'data-space-query-setup-application-page',
+        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
+        renderer: DataSpaceQuerySetup,
+      },
       // data space query editor
       {
         key: 'data-space-query-editor-application-page',
-        urlPatterns: [CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN],
+        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
         renderer: DataSpaceQueryCreator,
       },
     ];
