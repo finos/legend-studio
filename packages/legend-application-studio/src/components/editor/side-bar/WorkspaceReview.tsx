@@ -30,18 +30,14 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { formatDistanceToNow } from 'date-fns';
 import { generateReviewRoute } from '../../../stores/LegendStudioRouter.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import type { EntityDiff } from '@finos/legend-server-sdlc';
 import { entityDiffSorter } from '../../../stores/EditorSDLCState.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import {
-  ActionAlertType,
-  ActionAlertActionType,
-} from '@finos/legend-application';
 import { useLegendStudioApplicationStore } from '../../LegendStudioBaseStoreProvider.js';
+import { formatDistanceToNow } from '@finos/legend-shared';
 
 export const WorkspaceReviewDiffs = observer(() => {
   const editorStore = useEditorStore();
@@ -134,38 +130,12 @@ export const WorkspaceReview = observer(() => {
   };
   const commitReview = (): void => {
     if (workspaceReview && !isDispatchingAction) {
-      const commit = (): void => {
+      editorStore.localChangesState.alertUnsavedChanges((): void => {
         workspaceReviewState.setReviewTitle('');
         flowResult(
           workspaceReviewState.commitWorkspaceReview(workspaceReview),
         ).catch(applicationStore.alertUnhandledError);
-      };
-      if (editorStore.localChangesState.hasUnpushedChanges) {
-        editorStore.setActionAlertInfo({
-          message: 'You have unpushed changes',
-          prompt:
-            'This action will discard these changes and refresh the application',
-          type: ActionAlertType.CAUTION,
-          onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-          onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
-          actions: [
-            {
-              label: 'Proceed to commit review',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                commit();
-              },
-            },
-            {
-              label: 'Abort',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
-          ],
-        });
-      } else {
-        commit();
-      }
+      });
     }
   };
   const createReview = (): void => {

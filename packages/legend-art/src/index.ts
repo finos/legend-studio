@@ -17,7 +17,6 @@
 export * from './utils/ComponentUtils.js';
 export * from './utils/PanelDisplayState.js';
 export * from './utils/TextEditorUtils.js';
-export * from './utils/HotkeyConfiguration.js';
 
 export * from './components/CJS__Fuse.cjs';
 

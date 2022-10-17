@@ -42,10 +42,10 @@ import {
   ContentType,
   debounce,
   downloadFileUsingDataURI,
+  formatDate,
   isString,
   uuid,
 } from '@finos/legend-shared';
-import { format } from 'date-fns';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TAB_SIZE } from '../const.js';
@@ -284,7 +284,7 @@ const VirtualAssistantSearchPanel = observer(() => {
 
   const downloadDocRegistry = (): void => {
     downloadFileUsingDataURI(
-      `documentation-registry_${format(
+      `documentation-registry_${formatDate(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,
@@ -298,7 +298,7 @@ const VirtualAssistantSearchPanel = observer(() => {
   };
   const downloadContextualDocIndex = (): void => {
     downloadFileUsingDataURI(
-      `documentation-registry_${format(
+      `documentation-registry_${formatDate(
         new Date(Date.now()),
         DATE_TIME_FORMAT,
       )}.json`,

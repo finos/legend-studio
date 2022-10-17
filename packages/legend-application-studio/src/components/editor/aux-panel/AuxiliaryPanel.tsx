@@ -57,7 +57,7 @@ export const AuxiliaryPanel = observer(() => {
       mode: AUX_PANEL_MODE.DEV_TOOL,
       name: 'DEVELOPER TOOLS',
       icon: undefined,
-      isVisible: editorStore.isDevToolEnabled,
+      isVisible: true,
     },
   };
 

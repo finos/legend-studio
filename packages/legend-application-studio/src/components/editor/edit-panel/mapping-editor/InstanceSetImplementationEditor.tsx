@@ -86,9 +86,9 @@ import {
   getAllRecordTypes,
   getAllClassProperties,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../shared/StudioLambdaEditor.js';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 export const InstanceSetImplementationSourceExplorer = observer(
   (props: {
@@ -125,10 +125,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
         if (!embeddedSetImpls.length) {
           setSourceElementForSourceSelectorModal(null);
         } else {
-          editorStore.setActionAlertInfo({
+          applicationStore.setActionAlertInfo({
             message: CHANGING_SOURCE_ON_EMBEDDED,
-            onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Continue',
@@ -220,10 +218,8 @@ export const InstanceSetImplementationSourceExplorer = observer(
           if (!embeddedSetImpls.length) {
             changeClassMappingSourceDriver(droppedPackagableElement);
           } else {
-            editorStore.setActionAlertInfo({
+            applicationStore.setActionAlertInfo({
               message: CHANGING_SOURCE_ON_EMBEDDED,
-              onEnter: (): void => editorStore.setBlockGlobalHotkeys(true),
-              onClose: (): void => editorStore.setBlockGlobalHotkeys(false),
               actions: [
                 {
                   label: 'Continue',
@@ -241,7 +237,7 @@ export const InstanceSetImplementationSourceExplorer = observer(
       },
       [
         changeClassMappingSourceDriver,
-        editorStore,
+        applicationStore,
         isReadOnly,
         setImplementation,
       ],
@@ -406,7 +402,7 @@ const MappingFilterEditor = observer(
         })}
       >
         <div className="class-mapping-filter-editor__content">
-          <StudioLambdaEditor
+          <LambdaEditor
             className="class-mapping-filter-editor__element__lambda-editor"
             disabled={
               isReadOnly ||

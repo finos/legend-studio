@@ -53,12 +53,12 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
                 (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
               );
             if (matchingSDLCEntry) {
-              editorStore.applicationStore.navigator.visitAddress(
+              editorStore.applicationStore.navigator.goToAddress(
                 buildUrl([
                   editorStore.applicationStore.config.studioUrl,
                   generateQueryProductionizerRoute(editorStore.query.id),
                 ]),
-                { useSameWindow: true },
+                { ignoreBlocking: true },
               );
             } else {
               editorStore.applicationStore.notifyWarning(

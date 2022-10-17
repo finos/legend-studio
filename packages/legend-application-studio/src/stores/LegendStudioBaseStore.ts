@@ -28,6 +28,7 @@ import {
   ActionAlertActionType,
   ActionAlertType,
   ApplicationTelemetry,
+  matchPath,
 } from '@finos/legend-application';
 import {
   action,
@@ -43,6 +44,7 @@ import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { LegendStudioApplicationConfig } from '../application/LegendStudioApplicationConfig.js';
 import { LegendStudioEventService } from './LegendStudioEventService.js';
+import { LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN } from './LegendStudioRouter.js';
 
 const UNKNOWN_USER_ID = '(unknown)';
 
@@ -59,7 +61,7 @@ export class LegendStudioBaseStore {
 
   initState = ActionState.create();
 
-  isSDLCAuthorized = false;
+  isSDLCAuthorized: boolean | undefined = false;
   SDLCServerTermsOfServicesUrlsToView: string[] = [];
 
   constructor(
@@ -98,27 +100,37 @@ export class LegendStudioBaseStore {
     }
     this.initState.inProgress();
 
-    // setup SDLC server client
-    yield flowResult(this.initializeSDLCServerClient());
+    // authorize SDLC, unless navigation location match SDLC-bypassed patterns
+    if (
+      !matchPath(this.applicationStore.navigator.getCurrentLocation(), [
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+        LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+      ])
+    ) {
+      // setup SDLC server client
+      yield flowResult(this.initializeSDLCServerClient());
 
-    let currentUserID = UNKNOWN_USER_ID;
-    try {
-      const currentUser = User.serialization.fromJson(
-        (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
-      );
-      this.sdlcServerClient.setCurrentUser(currentUser);
-      currentUserID = currentUser.userId;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.log.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.applicationStore.notifyWarning(error.message);
+      let currentUserID = UNKNOWN_USER_ID;
+      try {
+        const currentUser = User.serialization.fromJson(
+          (yield this.sdlcServerClient.getCurrentUser()) as PlainObject<User>,
+        );
+        this.sdlcServerClient.setCurrentUser(currentUser);
+        currentUserID = currentUser.userId;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.log.error(
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
+          error,
+        );
+        this.applicationStore.notifyWarning(error.message);
+      }
+
+      // setup telemetry service
+      this.applicationStore.telemetryService.setUserId(currentUserID);
+    } else {
+      this.isSDLCAuthorized = undefined;
     }
-
-    // setup telemetry service
-    this.applicationStore.telemetryService.setUserId(currentUserID);
 
     ApplicationTelemetry.logEvent_ApplicationInitialized(
       this.applicationStore.telemetryService,
@@ -149,14 +161,11 @@ export class LegendStudioBaseStore {
       this.isSDLCAuthorized =
         (yield this.sdlcServerClient.isAuthorized()) as boolean;
       if (!this.isSDLCAuthorized) {
-        this.applicationStore.navigator.visitAddress(
+        this.applicationStore.navigator.goToAddress(
           SDLCServerClient.authorizeCallbackUrl(
             this.applicationStore.config.sdlcServerUrl,
             this.applicationStore.navigator.getCurrentAddress(),
           ),
-          {
-            useSameWindow: true,
-          },
         );
       } else {
         // Only proceed intialization after passing authorization check

@@ -35,7 +35,7 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitterLine,
   BlankPanelContent,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   InputWithInlineValidation,
   LockIcon,
   PlusIcon,
@@ -440,13 +440,22 @@ export const AssociationEditor = observer(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.ASSOCIATION_EDITOR,
     );
 
+    // layout
+    const propertyEditorCollapsiblePanelGroupProps =
+      getCollapsiblePanelGroupProps(!selectedProperty, {
+        size: 250,
+      });
+
     return (
       <div
         data-testid={LEGEND_STUDIO_TEST_ID.ASSOCIATION_EDITOR}
         className="uml-element-editor association-editor"
       >
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={56}>
+          <ResizablePanel
+            {...propertyEditorCollapsiblePanelGroupProps.remainingPanel}
+            minSize={56}
+          >
             <Panel>
               <div className="panel__header">
                 <div className="panel__header__title">
@@ -561,9 +570,7 @@ export const AssociationEditor = observer(
             <ResizablePanelSplitterLine color="var(--color-light-grey-200)" />
           </ResizablePanelSplitter>
           <ResizablePanel
-            {...getControlledResizablePanelProps(!selectedProperty, {
-              size: 250,
-            })}
+            {...propertyEditorCollapsiblePanelGroupProps.collapsiblePanel}
             direction={-1}
           >
             {selectedProperty ? (

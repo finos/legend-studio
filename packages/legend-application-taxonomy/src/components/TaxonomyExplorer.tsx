@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { GlobalHotKeys } from 'react-hotkeys';
 import { observer } from 'mobx-react-lite';
 import {
   type LegendTaxonomyPathParams,
@@ -38,11 +37,10 @@ import {
   CompressIcon,
   PanelLoadingIndicator,
   clsx,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-  buildReactHotkeysConfiguration,
   compareLabelFn,
   CustomSelectorInput,
   NonBlockingDialog,
@@ -60,7 +58,7 @@ import {
 } from './TaxonomyExplorerStoreProvider.js';
 import type { TaxonomyNodeViewerState } from '../stores/TaxonomyNodeViewerState.js';
 import { useLegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStoreProvider.js';
-import { useParams } from '@finos/legend-application';
+import { useCommands, useParams } from '@finos/legend-application';
 
 const TaxonomyExplorerActivityBar = observer(() => (
   <div className="taxonomy-explorer__activity-bar">
@@ -115,7 +113,7 @@ const TaxonomyExplorerSideBar = observer(() => {
     (option: TaxonomyTreeOption): (() => void) =>
     (): void => {
       explorerStore.taxonomyServerClient.setBaseUrl(option.url);
-      applicationStore.navigator.reloadToLocation(
+      applicationStore.navigator.goToLocation(
         generateExploreTaxonomyTreeRoute(option.key),
       );
     };
@@ -389,16 +387,19 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
     const taxonomyTreeKey =
       params[LEGEND_TAXONOMY_PARAM_TOKEN.TAXONOMY_TREE_KEY];
 
-    // Hotkeys
-    const [hotkeyMapping, hotkeyHandlers] = buildReactHotkeysConfiguration(
-      explorerStore.hotkeys,
-    );
-
+    // layout
     const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
       explorerStore.sideBarDisplayState.setSize(
         (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
           .width,
       );
+    const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      explorerStore.sideBarDisplayState.size === 0,
+      {
+        onStopResize: resizeSideBar,
+        size: explorerStore.sideBarDisplayState.size,
+      },
+    );
 
     useEffect(() => {
       if (taxonomyTreeKey) {
@@ -410,7 +411,7 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           applicationStore.notifyWarning(
             `Can't find taxonomy tree with key '${taxonomyTreeKey}'. Redirected to default tree '${applicationStore.config.defaultTaxonomyTreeOption.key}'`,
           );
-          applicationStore.navigator.goToLocation(
+          applicationStore.navigator.updateCurrentLocation(
             generateExploreTaxonomyTreeRoute(
               applicationStore.config.defaultTaxonomyTreeOption.key,
             ),
@@ -435,6 +436,8 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
       explorerStore.internalizeDataSpacePath(params);
     }, [explorerStore, params]);
 
+    useCommands(explorerStore);
+
     if (
       taxonomyTreeKey &&
       !applicationStore.config.taxonomyTreeOptions.find(
@@ -449,50 +452,41 @@ export const TaxonomyExplorer = withTaxonomyExplorerStore(
           isLoading={explorerStore.initState.isInProgress}
         />
         <div className="taxonomy-explorer">
-          <GlobalHotKeys
-            keyMap={hotkeyMapping}
-            handlers={hotkeyHandlers}
-            allowChanges={true}
-          >
-            <div className="taxonomy-explorer__body">
-              <TaxonomyExplorerActivityBar />
-              <div className="taxonomy-explorer__content-container">
-                <div className="taxonomy-explorer__content">
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel
-                      {...getControlledResizablePanelProps(
-                        explorerStore.sideBarDisplayState.size === 0,
-                        {
-                          onStopResize: resizeSideBar,
-                          size: explorerStore.sideBarDisplayState.size,
-                        },
-                      )}
-                      direction={1}
-                    >
-                      <TaxonomyExplorerSideBar />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {explorerStore.currentTaxonomyNodeViewerState ? (
-                        <TaxonomyExplorerMainPanel
-                          taxonomyViewerState={
-                            explorerStore.currentTaxonomyNodeViewerState
-                          }
-                        />
-                      ) : (
-                        <TaxonomyExplorerSplashScreen />
-                      )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </div>
+          <div className="taxonomy-explorer__body">
+            <TaxonomyExplorerActivityBar />
+            <div className="taxonomy-explorer__content-container">
+              <div className="taxonomy-explorer__content">
+                <ResizablePanelGroup orientation="vertical">
+                  <ResizablePanel
+                    {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
+                    direction={1}
+                  >
+                    <TaxonomyExplorerSideBar />
+                  </ResizablePanel>
+                  <ResizablePanelSplitter />
+                  <ResizablePanel
+                    {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                    minSize={300}
+                  >
+                    {explorerStore.currentTaxonomyNodeViewerState ? (
+                      <TaxonomyExplorerMainPanel
+                        taxonomyViewerState={
+                          explorerStore.currentTaxonomyNodeViewerState
+                        }
+                      />
+                    ) : (
+                      <TaxonomyExplorerSplashScreen />
+                    )}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
               </div>
             </div>
-            <div className="taxonomy-explorer__status-bar ">
-              <div className="taxonomy-explorer__status-bar__left"></div>
-              <div className="taxonomy-explorer__status-bar__right"></div>
-            </div>
-            <TaxonomySearchCommand />
-          </GlobalHotKeys>
+          </div>
+          <div className="taxonomy-explorer__status-bar ">
+            <div className="taxonomy-explorer__status-bar__left"></div>
+            <div className="taxonomy-explorer__status-bar__right"></div>
+          </div>
+          <TaxonomySearchCommand />
         </div>
       </div>
     );

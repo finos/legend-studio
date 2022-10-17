@@ -53,8 +53,13 @@ import {
   getDiagramSnippetWithOneClassView,
   getDiagramSnippetWithPropertyView,
 } from './DSL_Diagram_CodeSnippets.js';
-import type { DocumentationEntry } from '@finos/legend-application';
+import {
+  collectKeyedCommandConfigEntriesFromConfig,
+  type DocumentationEntry,
+  type KeyedCommandConfigEntry,
+} from '@finos/legend-application';
 import { DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../stores/studio/DSL_Diagram_LegendStudioApplicationNavigationContext.js';
+import { DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG } from './DSL_Diagram_LegendStudioCommand.js';
 
 const DIAGRAM_ELEMENT_TYPE = 'DIAGRAM';
 const DIAGRAM_ELEMENT_PROJECT_EXPLORER_DND_TYPE = 'PROJECT_EXPLORER_DIAGRAM';
@@ -65,6 +70,12 @@ export class DSL_Diagram_LegendStudioApplicationPlugin
 {
   constructor() {
     super(packageJson.extensions.applicationStudioPlugin, packageJson.version);
+  }
+
+  override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
+    return collectKeyedCommandConfigEntriesFromConfig(
+      DSL_DIAGRAM_LEGEND_STUDIO_COMMAND_CONFIG,
+    );
   }
 
   override getExtraRequiredDocumentationKeys(): string[] {

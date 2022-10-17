@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flowResult, makeAutoObservable, observable } from 'mobx';
+import { computed, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import {
   type GeneratorFn,
@@ -68,20 +68,32 @@ interface ProjectViewerGraphBuilderMaterial {
 }
 
 export class ProjectViewerStore {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
   currentRevision?: Revision | undefined;
   latestVersion?: Version | undefined;
   revision?: Revision | undefined;
   version?: Version | undefined;
-  elementPath?: string | undefined;
+  initialEntityPath?: string | undefined;
   projectGAVCoordinates?: ProjectGAVCoordinates | undefined;
   workflowManagerState: WorkflowManagerState | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable<
+      ProjectViewerStore,
+      'initializeWithProjectInformation' | 'initializeWithGAV'
+    >(this, {
+      currentRevision: observable,
+      latestVersion: observable,
+      revision: observable,
+      version: observable,
       projectGAVCoordinates: observable.ref,
-      internalizeEntityPath: action,
+      workflowManagerState: observable.ref,
+      onLatestVersion: computed,
+      onCurrentRevision: computed,
+      initializeWithProjectInformation: flow,
+      initializeWithGAV: flow,
+      buildGraph: flow,
+      initialize: flow,
     });
 
     this.editorStore = editorStore;
@@ -92,6 +104,7 @@ export class ProjectViewerStore {
       this.latestVersion && this.version && this.latestVersion === this.version,
     );
   }
+
   get onCurrentRevision(): boolean {
     return Boolean(
       this.currentRevision &&
@@ -110,9 +123,9 @@ export class ProjectViewerStore {
   internalizeEntityPath(params: ViewerPathParams): void {
     const { gav, projectId, revisionId, versionId, entityPath } = params;
     if (entityPath) {
-      this.elementPath = entityPath;
+      this.initialEntityPath = entityPath;
       if (projectId) {
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigator.updateCurrentLocation(
           versionId
             ? generateViewVersionRoute(projectId, versionId)
             : revisionId
@@ -125,33 +138,11 @@ export class ProjectViewerStore {
           artifactId,
           versionId: _versionId,
         } = parseGAVCoordinates(gav);
-        this.editorStore.applicationStore.navigator.goToLocation(
+        this.editorStore.applicationStore.navigator.updateCurrentLocation(
           generateViewProjectByGAVRoute(groupId, artifactId, _versionId),
         );
       }
     }
-  }
-
-  private *initializeGraphManagerState(): GeneratorFn<void> {
-    // setup engine
-    yield this.editorStore.graphManagerState.graphManager.initialize(
-      {
-        env: this.editorStore.applicationStore.config.env,
-        tabSize: TAB_SIZE,
-        clientConfig: {
-          baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
-          queryBaseUrl:
-            this.editorStore.applicationStore.config.engineQueryServerUrl,
-          enableCompression: true,
-        },
-      },
-      {
-        tracerService: this.editorStore.applicationStore.tracerService,
-      },
-    );
-
-    // initialize graph manager
-    yield this.editorStore.graphManagerState.initializeSystem();
   }
 
   /**
@@ -357,8 +348,23 @@ export class ProjectViewerStore {
     try {
       const stopWatch = new StopWatch();
 
-      // initialize system
-      yield flowResult(this.initializeGraphManagerState());
+      // initialize graph manager
+      yield this.editorStore.graphManagerState.graphManager.initialize(
+        {
+          env: this.editorStore.applicationStore.config.env,
+          tabSize: TAB_SIZE,
+          clientConfig: {
+            baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
+            queryBaseUrl:
+              this.editorStore.applicationStore.config.engineQueryServerUrl,
+            enableCompression: true,
+          },
+        },
+        {
+          tracerService: this.editorStore.applicationStore.tracerService,
+        },
+      );
+      yield this.editorStore.graphManagerState.initializeSystem();
 
       // reset
       this.editorStore.graphManagerState.resetGraph();
@@ -549,22 +555,40 @@ export class ProjectViewerStore {
       if (
         this.editorStore.graphManagerState.graphBuildState.hasSucceeded &&
         this.editorStore.explorerTreeState.buildState.hasCompleted &&
-        this.elementPath
+        this.initialEntityPath
       ) {
         try {
-          const element = this.editorStore.graphManagerState.graph.getElement(
-            this.elementPath,
+          this.editorStore.openElement(
+            this.editorStore.graphManagerState.graph.getElement(
+              this.initialEntityPath,
+            ),
           );
-          this.editorStore.openElement(element);
         } catch {
-          const elementPath = this.elementPath;
-          this.elementPath = undefined;
+          const elementPath = this.initialEntityPath;
+          this.initialEntityPath = undefined;
           throw new AssertionError(
-            `Can't find element '${elementPath}' in project '${this.editorStore.sdlcState.activeProject.projectId}'`,
+            `Can't find element with path '${elementPath}'`,
           );
         }
       }
-      this.initWorkflowManagerState();
+
+      // initialize workflow manager
+      // NOTE: We will not show workflow viewer when `GAV` coordinates are provided
+      // as we don't know which sdlc instance to fetch from.
+      // Revision will be supported once `SDLC` adds the workflow apis.
+      if (this.version) {
+        this.workflowManagerState = new ProjectVersionWorkflowManagerState(
+          this.editorStore,
+          this.editorStore.sdlcState,
+          this.version,
+        );
+      } else if (!this.projectGAVCoordinates && !this.revision) {
+        this.workflowManagerState = new ProjectWorkflowManagerState(
+          this.editorStore,
+          this.editorStore.sdlcState,
+        );
+      }
+
       onLeave(true);
     } catch (error) {
       assertErrorThrown(error);
@@ -574,24 +598,6 @@ export class ProjectViewerStore {
       );
       this.editorStore.applicationStore.notifyError(error);
       onLeave(false);
-    }
-  }
-
-  initWorkflowManagerState(): void {
-    // NOTE: We will not show workflow viewer when `GAV` coordinates are provided
-    // as we don't know which sdlc instance to fetch from.
-    // Revision will be supported once `SDLC` adds the workflow apis.
-    if (this.version) {
-      this.workflowManagerState = new ProjectVersionWorkflowManagerState(
-        this.editorStore,
-        this.editorStore.sdlcState,
-        this.version,
-      );
-    } else if (!this.projectGAVCoordinates && !this.revision) {
-      this.workflowManagerState = new ProjectWorkflowManagerState(
-        this.editorStore,
-        this.editorStore.sdlcState,
-      );
     }
   }
 }

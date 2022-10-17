@@ -35,7 +35,6 @@ import {
   type QueryBuilderDiffViewState,
   QueryBuilderDiffViewMode,
 } from '../stores/QueryBuilderChangeDetectionState.js';
-import { prettyCONSTName } from '@finos/legend-shared';
 import { pruneSourceInformation } from '@finos/legend-graph';
 
 const TextDiffView = observer(
@@ -147,7 +146,7 @@ export const QueryBuilderDiffViewPanel = observer(
                   })}
                   key={mode}
                 >
-                  {prettyCONSTName(mode)}
+                  {mode}
                 </button>
               ))}
             </div>

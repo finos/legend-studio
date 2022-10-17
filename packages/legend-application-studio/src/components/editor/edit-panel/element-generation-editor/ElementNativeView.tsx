@@ -22,8 +22,8 @@ import { flowResult } from 'mobx';
 import {
   useApplicationStore,
   EDITOR_LANGUAGE,
+  TextInputEditor,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 
 export const ElementNativeView = observer(
   (props: { currentElementState: ElementEditorState }) => {
@@ -51,7 +51,7 @@ export const ElementNativeView = observer(
     }, [applicationStore, currentElementState, currentElementState.editMode]);
 
     return (
-      <StudioTextInputEditor
+      <TextInputEditor
         inputValue={generatedText}
         language={editorLanguage}
         isReadOnly={true}

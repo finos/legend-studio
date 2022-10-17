@@ -461,12 +461,13 @@ export class GraphGenerationState {
       .filter(isNonNullable);
     const currentEditorState = this.editorStore.currentEditorState;
     if (currentEditorState instanceof FileGenerationViewerState) {
-      this.editorStore.currentEditorState =
+      this.editorStore.setCurrentEditorState(
         this.editorStore.openedEditorStates.find(
           (e) =>
             e instanceof FileGenerationViewerState &&
             e.generatedFile.path === currentEditorState.generatedFile.path,
-        );
+        ),
+      );
     }
   }
 

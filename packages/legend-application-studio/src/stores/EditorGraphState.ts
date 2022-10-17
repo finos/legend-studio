@@ -362,7 +362,7 @@ export class EditorGraphState {
 
   private redirectToModelImporterForDebugging(error: Error): void {
     if (this.editorStore.isInConflictResolutionMode) {
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: `Can't de-serialize graph model from entities`,
         prompt: `Please refresh the application and abort conflict resolution`,
       });
@@ -641,7 +641,7 @@ export class EditorGraphState {
     try {
       this.isApplicationLeavingTextMode = true;
       this.clearCompilationError();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Compiling graph before leaving text mode...',
         showLoading: true,
       });
@@ -653,9 +653,12 @@ export class EditorGraphState {
             // surpress the modal to reveal error properly in the text editor
             // if the blocking modal is not dismissed, the edior will not be able to gain focus as modal has a focus trap
             // therefore, the editor will not be able to get the focus
-            { onError: () => this.editorStore.setBlockingAlert(undefined) },
+            {
+              onError: () =>
+                this.editorStore.applicationStore.setBlockingAlert(undefined),
+            },
           )) as Entity[];
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
         });
@@ -685,13 +688,11 @@ export class EditorGraphState {
           this.editorStore.applicationStore.notifyWarning(
             `Compilation failed: ${error.message}`,
           );
-          this.editorStore.setActionAlertInfo({
+          this.editorStore.applicationStore.setActionAlertInfo({
             message: 'Project is not in a compiled state',
             prompt:
               'All changes made since the last time the graph was built successfully will be lost',
             type: ActionAlertType.CAUTION,
-            onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-            onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
             actions: [
               {
                 label: 'Discard Changes',
@@ -716,7 +717,7 @@ export class EditorGraphState {
       );
     } finally {
       this.isApplicationLeavingTextMode = false;
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 

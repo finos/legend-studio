@@ -31,6 +31,10 @@ import {
   CheckSquareIcon,
   SquareIcon,
   ManageSearchIcon,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -68,6 +72,7 @@ import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import {
   QueryBuilder,
+  QueryBuilderNavigationBlocker,
   type QueryBuilderState,
 } from '@finos/legend-query-builder';
 
@@ -253,8 +258,9 @@ const QueryLoader = observer(
       if (selectedQueryID) {
         queryBuilderState.changeDetectionState.alertUnsavedChanges(() => {
           editorStore.queryLoaderState.setIsQueryLoaderOpen(false);
-          applicationStore.navigator.reloadToLocation(
+          applicationStore.navigator.goToLocation(
             generateExistingQueryEditorRoute(selectedQueryID),
+            { ignoreBlocking: true },
           );
         });
       }
@@ -418,7 +424,7 @@ const QueryEditorHeaderContent = observer(
     const openQueryLoader = (): void => {
       editorStore.queryLoaderState.setIsQueryLoaderOpen(true);
     };
-    const viewQueryProject = (): void => {
+    const viewProject = (): void => {
       const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
       applicationStore.navigator.visitAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
@@ -429,6 +435,9 @@ const QueryEditorHeaderContent = observer(
           undefined,
         ),
       );
+    };
+    const viewSDLCProject = (): void => {
+      editorStore.viewSDLCProject().catch(applicationStore.alertUnhandledError);
     };
     const toggleLightDarkMode = (): void =>
       applicationStore.TEMPORARY__setIsLightThemeEnabled(
@@ -482,14 +491,28 @@ const QueryEditorHeaderContent = observer(
               queryBuilderState={queryBuilderState}
             />
           )}
-          <button
-            className="query-editor__header__action btn--dark"
-            tabIndex={-1}
-            title="View project"
-            onClick={viewQueryProject}
-          >
-            <ExternalLinkSquareIcon />
-          </button>
+          <div className="query-editor__header__action query-editor__header__action__view-project">
+            <button
+              className="query-editor__header__action__view-project__btn btn--dark"
+              tabIndex={-1}
+              title="View project"
+              onClick={viewProject}
+            >
+              <ExternalLinkSquareIcon />
+            </button>
+            <DropdownMenu
+              className="query-editor__header__action__view-project__dropdown-trigger btn--dark"
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={viewSDLCProject}>
+                    View SDLC project
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <CaretDownIcon />
+            </DropdownMenu>
+          </div>
           {applicationStore.config.options.TEMPORARY__enableThemeSwitcher && (
             <button
               className="query-editor__header__action btn--dark"
@@ -566,7 +589,12 @@ export const QueryEditor = observer(() => {
       <div className="query-editor__content">
         <PanelLoadingIndicator isLoading={isLoadingEditor} />
         {!isLoadingEditor && editorStore.queryBuilderState && (
-          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          <>
+            <QueryBuilderNavigationBlocker
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          </>
         )}
         {(isLoadingEditor || !editorStore.queryBuilderState) && (
           <BlankPanelContent>

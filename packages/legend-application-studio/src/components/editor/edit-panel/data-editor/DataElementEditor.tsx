@@ -67,10 +67,10 @@ import {
   externalFormatData_setContentType,
   externalFormatData_setData,
 } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import type { ExternalFormatDataState } from '../../../../stores/editor-state/element-editor-state/data/EmbeddedDataState.js';
 import { renderEmbeddedDataEditor } from './EmbeddedDataEditor.js';
+import { TextInputEditor } from '@finos/legend-application';
 
 export const ExternalFormatDataEditor = observer(
   (props: {
@@ -148,7 +148,7 @@ export const ExternalFormatDataEditor = observer(
         </div>
         <div className={clsx('external-format-data-editor__content')}>
           <div className="external-format-data-editor__content__input">
-            <StudioTextInputEditor
+            <TextInputEditor
               language={language}
               inputValue={externalFormatDataState.embeddedData.data}
               updateInput={changeData}

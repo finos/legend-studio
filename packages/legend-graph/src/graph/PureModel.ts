@@ -644,6 +644,6 @@ export class PureModel extends BasicModel {
       );
     }
 
-    super.renameOwnElement(element, newPath);
+    super.renameOwnElement(element, element.path, newPath);
   }
 }

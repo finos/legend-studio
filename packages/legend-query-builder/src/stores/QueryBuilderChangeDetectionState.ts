@@ -157,7 +157,7 @@ export class QueryBuilderChangeDetectionState {
               ),
           },
           {
-            label: 'Cancel',
+            label: 'Abort',
             type: ActionAlertActionType.PROCEED,
             default: true,
           },

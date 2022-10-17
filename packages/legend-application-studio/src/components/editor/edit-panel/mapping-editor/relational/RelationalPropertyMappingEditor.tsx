@@ -45,13 +45,13 @@ import {
   getRawGenericType,
   EnumerationMappingExplicitReference,
 } from '@finos/legend-graph';
-import { StudioLambdaEditor } from '../../../../shared/StudioLambdaEditor.js';
 import { relationalPropertyMapping_setTransformer } from '../../../../../stores/shared/modifier/STO_Relational_GraphModifierHelper.js';
 import { getExpectedReturnType } from '../PropertyMappingsEditor.js';
 import {
   CLASS_PROPERTY_TYPE,
   getClassPropertyType,
 } from '../../../../../stores/shared/ModelClassifierUtils.js';
+import { LambdaEditor } from '@finos/legend-query-builder';
 
 const SimplePropertyMappingEditor = observer(
   (props: {
@@ -67,7 +67,7 @@ const SimplePropertyMappingEditor = observer(
     return (
       <div className="property-mapping-editor__entry__container">
         <div ref={drop} className="property-mapping-editor__entry">
-          <StudioLambdaEditor
+          <LambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}
@@ -168,7 +168,7 @@ const EnumerationPropertyMappingEditor = observer(
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <StudioLambdaEditor
+          <LambdaEditor
             className={clsx(
               'property-mapping-editor__entry__enumeration__transform',
             )}
@@ -249,7 +249,7 @@ const ClassPropertyMappingEditor = observer(
               <ArrowCircleRightIcon />
             </button>
           </div>
-          <StudioLambdaEditor
+          <LambdaEditor
             disabled={transformProps.disableTransform}
             lambdaEditorState={propertyMappingState}
             forceBackdrop={transformProps.forceBackdrop}

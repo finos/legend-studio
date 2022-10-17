@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import {
   clsx,
   CompareIcon,
@@ -43,7 +43,6 @@ import {
 import { externalFormatData_setData } from '../../../../stores/shared/modifier/DSL_Data_GraphModifierHelper.js';
 import { TESTABLE_RESULT } from '../../../../stores/sidebar-state/testable/GlobalTestRunnerState.js';
 import { JsonDiffView } from '../../../shared/DiffView.js';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import { UnsupportedEditorPanel } from '../UnsupportedElementEditor.js';
 
 const EqualToJsonAsssertionEditor = observer(
@@ -80,7 +79,7 @@ const EqualToJsonAsssertionEditor = observer(
         </div>
         <div className="equal-to-json-editor__content panel__content">
           <div className="equal-to-json-editor__content__data">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={assertion.expected.data}
               language={EDITOR_LANGUAGE.JSON}
               updateInput={(val: string): void => {

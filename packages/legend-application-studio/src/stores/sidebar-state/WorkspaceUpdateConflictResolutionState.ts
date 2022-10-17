@@ -464,7 +464,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (!isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -476,7 +476,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
@@ -490,7 +490,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
 
     try {
       this.isAcceptingConflictResolution = true;
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Accepting conflict resolution...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -512,8 +512,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
           revisionId: this.sdlcState.activeRevision.id,
         },
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -533,7 +534,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (!isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -545,7 +546,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
@@ -559,7 +560,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
 
     try {
       this.isDiscardingConflictResolutionChanges = true;
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Discarding conflict resolution changes...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -568,8 +569,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -589,7 +591,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.checkIfCurrentWorkspaceIsInConflictResolutionMode(),
       )) as boolean;
       if (!isInConflictResolutionMode) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Workspace is no longer in conflict resolution mode',
           prompt: 'Please refresh the application',
         });
@@ -601,7 +603,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         error instanceof NetworkClientError &&
         error.response.status === HttpStatus.NOT_FOUND
       ) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Current project or workspace no longer exists',
           prompt: 'Please refresh the application',
         });
@@ -615,7 +617,7 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
 
     try {
       this.isAbortingConflictResolution = true;
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Aborting conflict resolution...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -624,8 +626,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activeWorkspace,
       );
-      this.editorStore.setIgnoreNavigationBlocking(true);
-      this.editorStore.applicationStore.navigator.reload();
+      this.editorStore.applicationStore.navigator.reload({
+        ignoreBlocking: true,
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.log.error(
@@ -716,13 +719,13 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
   *promptBuildGraphAfterAllConflictsResolved(): GeneratorFn<void> {
     if (!this.conflicts.length) {
       this.confirmHasResolvedAllConflicts();
-      this.editorStore.setBlockingAlert({
+      this.editorStore.applicationStore.setBlockingAlert({
         message: 'Building graph...',
         prompt: 'Please do not close the application',
         showLoading: true,
       });
       yield flowResult(this.buildGraphInConflictResolutionMode());
-      this.editorStore.setBlockingAlert(undefined);
+      this.editorStore.applicationStore.setBlockingAlert(undefined);
     }
   }
 }

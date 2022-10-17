@@ -16,11 +16,12 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
+import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
 import {
   type QuerySetupStore,
   QuerySetupState,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
 } from '@finos/legend-application-query';
 import {
   type StoredEntity,
@@ -180,6 +181,43 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
                 entityPath,
               ),
             ),
+          viewSDLCProject: (
+            _groupId: string,
+            _artifactId: string,
+            entityPath: string | undefined,
+          ): void => {
+            const view = async (): Promise<void> => {
+              // fetch project data
+              const _project = ProjectData.serialization.fromJson(
+                await this.setupStore.depotServerClient.getProject(
+                  _groupId,
+                  _artifactId,
+                ),
+              );
+              // find the matching SDLC instance
+              const projectIDPrefix = parseProjectIdentifier(
+                _project.projectId,
+              ).prefix;
+              const matchingSDLCEntry =
+                this.setupStore.applicationStore.config.studioInstances.find(
+                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+                );
+              if (matchingSDLCEntry) {
+                this.setupStore.applicationStore.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+                    matchingSDLCEntry.url,
+                    _project.projectId,
+                    entityPath,
+                  ),
+                );
+              } else {
+                this.setupStore.applicationStore.notifyWarning(
+                  `Can't find the corresponding SDLC instance to view the SDLC project`,
+                );
+              }
+            };
+            view().catch(this.setupStore.applicationStore.alertUnhandledError);
+          },
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },

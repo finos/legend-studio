@@ -19,18 +19,14 @@ import { observer } from 'mobx-react-lite';
 import { EditPanel } from '../editor/edit-panel/EditPanel.js';
 import { GrammarTextEditor } from '../editor/edit-panel/GrammarTextEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import {
-  ACTIVITY_MODE,
-  LEGEND_STUDIO_HOTKEY,
-  LEGEND_STUDIO_HOTKEY_MAP,
-} from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
   type ResizablePanelHandlerProps,
   clsx,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   RepoIcon,
   CodeBranchIcon,
   HackerIcon,
@@ -40,7 +36,6 @@ import {
   useResizeDetector,
 } from '@finos/legend-art';
 import { isNonNullable } from '@finos/legend-shared';
-import { GlobalHotKeys } from 'react-hotkeys';
 import {
   useProjectViewerStore,
   withProjectViewerStore,
@@ -55,7 +50,11 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
-import { useApplicationStore, useParams } from '@finos/legend-application';
+import {
+  useApplicationStore,
+  useCommands,
+  useParams,
+} from '@finos/legend-application';
 import {
   ActivityBarMenu,
   type ActivityDisplay,
@@ -63,7 +62,10 @@ import {
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { ProjectOverview } from '../editor/side-bar/ProjectOverview.js';
 import { WorkflowManager } from '../editor/side-bar/WorkflowManager.js';
-import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
+import {
+  useLegendStudioApplicationStore,
+  useLegendStudioBaseStore,
+} from '../LegendStudioBaseStoreProvider.js';
 import { EmbeddedQueryBuilder } from '../EmbeddedQueryBuilder.js';
 
 const ProjectViewerStatusBar = observer(() => {
@@ -113,8 +115,10 @@ const ProjectViewerStatusBar = observer(() => {
                 title="Go back to workspace setup using the specified project"
                 tabIndex={-1}
                 onClick={(): void =>
-                  applicationStore.navigator.goToLocation(
-                    generateSetupRoute(projectId),
+                  applicationStore.navigator.visitAddress(
+                    applicationStore.navigator.generateAddress(
+                      generateSetupRoute(projectId),
+                    ),
                   )
                 }
               >
@@ -169,7 +173,7 @@ const ProjectViewerStatusBar = observer(() => {
 
 const ProjectViewerSideBar = observer(() => {
   const viewerStore = useProjectViewerStore();
-  const editorStore = viewerStore.editorStore;
+  const editorStore = useEditorStore();
   const renderSideBar = (): React.ReactNode => {
     switch (editorStore.activeActivity) {
       case ACTIVITY_MODE.EXPLORER:
@@ -195,7 +199,9 @@ const ProjectViewerSideBar = observer(() => {
 
 const ProjectViewerActivityBar = observer(() => {
   const viewerStore = useProjectViewerStore();
-  const editorStore = viewerStore.editorStore;
+  const baseStore = useLegendStudioBaseStore();
+  const editorStore = useEditorStore();
+
   const changeActivity =
     (activity: ACTIVITY_MODE): (() => void) =>
     (): void =>
@@ -207,7 +213,7 @@ const ProjectViewerActivityBar = observer(() => {
       title: 'Explorer (Ctrl + Shift + X)',
       icon: <FileTrayIcon />,
     },
-    !editorStore.isInConflictResolutionMode && {
+    baseStore.isSDLCAuthorized !== undefined && {
       mode: ACTIVITY_MODE.PROJECT_OVERVIEW,
       title: 'Project',
       icon: (
@@ -256,14 +262,7 @@ export const ProjectViewer = withEditorStore(
       const viewerStore = useProjectViewerStore();
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
-      const allowOpeningElement =
-        editorStore.sdlcState.currentProject &&
-        editorStore.graphManagerState.graphBuildState.hasSucceeded;
-      const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
-        editorStore.sideBarDisplayState.setSize(
-          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
-            .width,
-        );
+
       // Extensions
       const extraEditorExtensionComponents = editorStore.pluginManager
         .getApplicationPlugins()
@@ -276,40 +275,31 @@ export const ProjectViewer = withEditorStore(
         .map((config) => (
           <Fragment key={config.key}>{config.renderer(editorStore)}</Fragment>
         ));
-      // Resize
-      const { ref, width, height } = useResizeDetector<HTMLDivElement>();
-      // Hotkeys
-      const keyMap = {
-        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]: [
-          LEGEND_STUDIO_HOTKEY_MAP.OPEN_ELEMENT,
-        ],
-        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]: [
-          LEGEND_STUDIO_HOTKEY_MAP.TOGGLE_TEXT_MODE,
-        ],
-      };
-      const handlers = {
-        [LEGEND_STUDIO_HOTKEY.OPEN_ELEMENT]:
-          editorStore.createGlobalHotKeyAction(() =>
-            editorStore.searchElementCommandState.open(),
-          ),
-        [LEGEND_STUDIO_HOTKEY.TOGGLE_TEXT_MODE]:
-          editorStore.createGlobalHotKeyAction(() => {
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }),
-      };
 
+      // layout
+      const resizeSideBar = (handleProps: ResizablePanelHandlerProps): void =>
+        editorStore.sideBarDisplayState.setSize(
+          (handleProps.domElement as HTMLDivElement).getBoundingClientRect()
+            .width,
+        );
+      const sideBarCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+        editorStore.sideBarDisplayState.size === 0,
+        {
+          onStopResize: resizeSideBar,
+          size: editorStore.sideBarDisplayState.size,
+        },
+      );
+      const { ref, width, height } = useResizeDetector<HTMLDivElement>();
       useEffect(() => {
         if (ref.current) {
           editorStore.auxPanelDisplayState.setMaxSize(ref.current.offsetHeight);
         }
       }, [ref, editorStore, width, height]);
 
+      // initialize
       useEffect(() => {
         viewerStore.internalizeEntityPath(params);
       }, [viewerStore, params]);
-
       // NOTE: since we internalize the entity path in the route, we should not re-initialize the graph
       // on the second call when we remove entity path from the route
       useEffect(() => {
@@ -318,43 +308,40 @@ export const ProjectViewer = withEditorStore(
         );
       }, [applicationStore, viewerStore, params]);
 
+      useCommands(editorStore);
+
       return (
         <div className="app__page">
           <div className="editor viewer">
-            <GlobalHotKeys keyMap={keyMap} handlers={handlers}>
-              <div className="editor__body">
-                <ProjectViewerActivityBar />
-                <div ref={ref} className="editor__content-container">
-                  <div className="editor__content">
-                    <ResizablePanelGroup orientation="vertical">
-                      <ResizablePanel
-                        {...getControlledResizablePanelProps(
-                          editorStore.sideBarDisplayState.size === 0,
-                          {
-                            onStopResize: resizeSideBar,
-                            size: editorStore.sideBarDisplayState.size,
-                          },
-                        )}
-                        direction={1}
-                      >
-                        <ProjectViewerSideBar />
-                      </ResizablePanel>
-                      <ResizablePanelSplitter />
-                      <ResizablePanel minSize={300}>
-                        {editorStore.isInFormMode && <EditPanel />}
-                        {editorStore.isInGrammarTextMode && (
-                          <GrammarTextEditor />
-                        )}
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
-                  </div>
+            <div className="editor__body">
+              <ProjectViewerActivityBar />
+              <div ref={ref} className="editor__content-container">
+                <div className="editor__content">
+                  <ResizablePanelGroup orientation="vertical">
+                    <ResizablePanel
+                      {...sideBarCollapsiblePanelGroupProps.collapsiblePanel}
+                      direction={1}
+                    >
+                      <ProjectViewerSideBar />
+                    </ResizablePanel>
+                    <ResizablePanelSplitter />
+                    <ResizablePanel
+                      {...sideBarCollapsiblePanelGroupProps.remainingPanel}
+                      minSize={300}
+                    >
+                      {editorStore.isInFormMode && <EditPanel />}
+                      {editorStore.isInGrammarTextMode && <GrammarTextEditor />}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </div>
               </div>
-              {allowOpeningElement && <ProjectSearchCommand />}
-              <ProjectViewerStatusBar />
-              <EmbeddedQueryBuilder />
-              {extraEditorExtensionComponents}
-            </GlobalHotKeys>
+            </div>
+            {editorStore.graphManagerState.graphBuildState.hasSucceeded && (
+              <ProjectSearchCommand />
+            )}
+            <ProjectViewerStatusBar />
+            <EmbeddedQueryBuilder />
+            {extraEditorExtensionComponents}
           </div>
         </div>
       );

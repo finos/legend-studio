@@ -17,6 +17,7 @@
 import { useState, useEffect } from 'react';
 
 export { clsx, type ClassValue } from 'clsx';
+export { Portal } from '@mui/material';
 
 export { useResizeDetector } from 'react-resize-detector';
 

@@ -124,6 +124,34 @@
       &__icon--loader {
         font-size: 2rem;
       }
+
+      &__view-project {
+        @include flexVCenter;
+
+        width: 4.8rem;
+
+        &__btn {
+          @include flexCenter;
+
+          height: 3.2rem;
+          width: 3.2rem;
+          border-radius: 0.2rem 0 0 0.2rem;
+        }
+
+        &__dropdown-trigger {
+          @include flexVCenter;
+
+          height: 3.2rem;
+          width: 1.6rem;
+          border-radius: 0 0.2rem 0.2rem 0;
+          border-left: 0.1rem solid var(--color-dark-shade-200);
+          cursor: pointer;
+
+          svg {
+            font-size: 1.2rem;
+          }
+        }
+      }
     }
 
     &__action + &__action {

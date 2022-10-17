@@ -15,7 +15,6 @@
  */
 
 import { createRoot } from 'react-dom/client';
-import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { LegendStudioApplication } from '../components/LegendStudioApplication.js';
 import { LegendStudioPluginManager } from './LegendStudioPluginManager.js';
 import {
@@ -37,6 +36,7 @@ import {
 import { Core_LegendStudioApplicationPlugin } from '../components/Core_LegendStudioApplicationPlugin.js';
 import {
   QueryBuilder_GraphManagerPreset,
+  QueryBuilder_LegendApplicationPlugin,
   setupQueryBuilderUILibrary,
 } from '@finos/legend-query-builder';
 
@@ -46,13 +46,6 @@ const setupLegendStudioUILibrary = async (
 ): Promise<void> => {
   await setupLegendApplicationUILibrary(pluginManager, logger);
   await setupQueryBuilderUILibrary();
-
-  configureReactHotkeys({
-    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
-    // We want to listen to hotkey from every where in the app so we disable that
-    // See https://github.com/greena13/react-hotkeys#ignoring-events
-    ignoreTags: [],
-  });
 };
 
 export class LegendStudio extends LegendApplication {
@@ -61,11 +54,12 @@ export class LegendStudio extends LegendApplication {
 
   static create(): LegendStudio {
     const application = new LegendStudio(LegendStudioPluginManager.create());
-    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     application.withBasePlugins([
       new Core_PureGraphManagerPlugin(),
       new Core_LegendStudioApplicationPlugin(),
+      new QueryBuilder_LegendApplicationPlugin(),
     ]);
+    application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     return application;
   }
 

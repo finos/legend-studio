@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, observable, makeObservable, computed } from 'mobx';
+import {
+  action,
+  flow,
+  observable,
+  makeObservable,
+  computed,
+  flowResult,
+} from 'mobx';
 import {
   type GeneratorFn,
   LogEvent,
@@ -56,7 +63,10 @@ import {
   buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
-import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type {
+  CommandRegistrar,
+  GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import { QueryBuilderParametersState } from './QueryBuilderParametersState.js';
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
@@ -64,8 +74,9 @@ import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterO
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
+import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 
-export abstract class QueryBuilderState {
+export abstract class QueryBuilderState implements CommandRegistrar {
   applicationStore: GenericLegendApplicationStore;
   graphManagerState: GraphManagerState;
 
@@ -84,7 +95,6 @@ export abstract class QueryBuilderState {
   observableContext: ObserverContext;
 
   queryCompileState = ActionState.create();
-  showBackdrop = false;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
 
@@ -109,7 +119,6 @@ export abstract class QueryBuilderState {
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
-      showBackdrop: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
       changeDetectionState: observable,
@@ -121,7 +130,6 @@ export abstract class QueryBuilderState {
       isQuerySupported: computed,
       validationIssues: computed,
 
-      setShowBackdrop: action,
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
       setClass: action,
@@ -185,10 +193,6 @@ export abstract class QueryBuilderState {
     return true;
   }
 
-  setShowBackdrop(val: boolean): void {
-    this.showBackdrop = val;
-  }
-
   setShowFunctionsExplorerPanel(val: boolean): void {
     this.showFunctionsExplorerPanel = val;
   }
@@ -211,6 +215,23 @@ export abstract class QueryBuilderState {
 
   get isQuerySupported(): boolean {
     return !this.unsupportedQueryState.rawLambda;
+  }
+
+  registerCommands(): void {
+    this.applicationStore.commandCenter.registerCommand({
+      key: QUERY_BUILDER_COMMAND_KEY.COMPILE,
+      action: () => {
+        flowResult(this.compileQuery()).catch(
+          this.applicationStore.alertUnhandledError,
+        );
+      },
+    });
+  }
+
+  deregisterCommands(): void {
+    [QUERY_BUILDER_COMMAND_KEY.COMPILE].forEach((key) =>
+      this.applicationStore.commandCenter.deregisterCommand(key),
+    );
   }
 
   resetQueryResult(): void {

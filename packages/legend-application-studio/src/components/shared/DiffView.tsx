@@ -16,12 +16,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { editor as monacoEditorAPI, KeyCode } from 'monaco-editor';
+import { editor as monacoEditorAPI } from 'monaco-editor';
 import {
   EDITOR_THEME,
   EDITOR_LANGUAGE,
   TAB_SIZE,
   useApplicationStore,
+  createPassThroughOnKeyHandler,
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
@@ -35,7 +36,6 @@ import {
   tryToFormatJSONString,
   tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
 import { useEditorStore } from '../editor/EditorStoreProvider.js';
 
 export const TextDiffView = observer(
@@ -69,24 +69,7 @@ export const TextDiffView = observer(
           theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });
-        _editor.getOriginalEditor().onKeyDown((event) => {
-          if (event.keyCode === KeyCode.F8) {
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }
-        });
-        _editor.getModifiedEditor().onKeyDown((event) => {
-          if (event.keyCode === KeyCode.F8) {
-            event.preventDefault();
-            event.stopPropagation();
-            flowResult(editorStore.toggleTextMode()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }
-        });
+        _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
         disableEditorHotKeys(_editor);
         setEditor(_editor);
       }

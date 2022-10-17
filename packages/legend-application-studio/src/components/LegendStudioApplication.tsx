@@ -26,7 +26,10 @@ import {
   MarkdownTextViewer,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { LEGEND_STUDIO_ROUTE_PATTERN } from '../stores/LegendStudioRouter.js';
+import {
+  LEGEND_STUDIO_ROUTE_PATTERN,
+  LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN,
+} from '../stores/LegendStudioRouter.js';
 import type { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import { flowResult } from 'mobx';
 import { SDLCServerClientProvider } from '@finos/legend-server-sdlc';
@@ -120,10 +123,27 @@ export const LegendStudioApplicationRoot = observer(() => {
 
   return (
     <div className="app">
-      {!baseStore.isSDLCAuthorized && (
+      {baseStore.isSDLCAuthorized === false && (
         <div className="app__page">
           <PanelLoadingIndicator isLoading={true} />
         </div>
+      )}
+      {baseStore.isSDLCAuthorized === undefined && (
+        <>
+          <Switch>
+            <Route
+              exact={true}
+              path={[
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV,
+                LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
+              ]}
+              component={ProjectViewer}
+            />
+            <Route>
+              <LegendStudioNotFoundRouteScreen />
+            </Route>
+          </Switch>
+        </>
       )}
       {baseStore.isSDLCAuthorized && (
         <>
@@ -134,8 +154,6 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               path={[
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV,
-                LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_GAV_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_ENTITY,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_REVISION,
                 LEGEND_STUDIO_ROUTE_PATTERN.VIEW_BY_VERSION,
@@ -153,8 +171,10 @@ export const LegendStudioApplicationRoot = observer(() => {
               exact={true}
               strict={true}
               path={[
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.EDIT,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE_ENTITY,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.EDIT_WORKSPACE_ENTITY,
               ]}
               component={Editor}
             />
@@ -163,8 +183,8 @@ export const LegendStudioApplicationRoot = observer(() => {
               path={[
                 // root path will lead to setup page (home page)
                 '/',
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP,
-                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_WORKSPACE,
+                LEGEND_STUDIO_ROUTE_PATTERN.SETUP_GROUP_WORKSPACE,
               ]}
               component={WorkspaceSetup}
             />

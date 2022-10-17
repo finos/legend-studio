@@ -37,12 +37,12 @@ import {
   BanIcon,
   PanelContent,
 } from '@finos/legend-art';
-import { formatDistanceToNow } from 'date-fns';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
 import { WorkflowJobStatus, WorkflowStatus } from '@finos/legend-server-sdlc';
 import {
   EDITOR_LANGUAGE,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
 import {
@@ -54,11 +54,11 @@ import {
   WorkflowTreeNodeData,
 } from '../../../stores/sidebar-state/WorkflowManagerState.js';
 import {
+  formatDistanceToNow,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
 } from '@finos/legend-shared';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,
@@ -231,7 +231,7 @@ const WorkflowJobLogsViewer = observer(
             </div>
           </div>
           <div className="modal__body">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={logs}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.TEXT}

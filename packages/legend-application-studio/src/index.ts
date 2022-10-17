@@ -60,7 +60,6 @@ export * from './components/shared/ProjectSelectorUtils.js';
 export * from './components/shared/WorkspaceSelectorUtils.js';
 export { ClassFormEditor } from './components/editor/edit-panel/uml-editor/ClassEditor.js';
 export { TypeTree } from './components/shared/TypeTree.js';
-export { StudioTextInputEditor } from './components/shared/StudioTextInputEditor.js';
 
 // test
 export {

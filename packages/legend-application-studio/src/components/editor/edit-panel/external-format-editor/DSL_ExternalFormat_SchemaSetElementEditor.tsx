@@ -40,8 +40,7 @@ import {
   type InnerSchemaSetEditorState,
   SCHEMA_SET_TAB_TYPE,
 } from '../../../../stores/editor-state/element-editor-state/external-format/DSL_ExternalFormat_SchemaSetEditorState.js';
-import { EDITOR_LANGUAGE } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import { EDITOR_LANGUAGE, TextInputEditor } from '@finos/legend-application';
 import { getEditorLanguageFromFormat } from '../../../../stores/editor-state/FileGenerationViewerState.js';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -178,7 +177,7 @@ const SchemaBasicEditor = observer(
         />
         <div className={clsx('schema-editor__content')}>
           <div className="schema-editor__content__input">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={schema.content}
               language={language}
               updateInput={(val: string): void => {

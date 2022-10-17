@@ -35,6 +35,10 @@ import {
   InfoCircleIcon,
   ExternalLinkIcon,
   useResizeDetector,
+  DropdownMenu,
+  MenuContent,
+  MenuContentItem,
+  CaretDownIcon,
 } from '@finos/legend-art';
 import {
   type Diagram,
@@ -313,14 +317,14 @@ const DataSpaceInfo = observer(
     const { dataSpaceViewerState } = props;
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const viewProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
         undefined,
       );
     const viewDataSpaceInProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
@@ -520,38 +524,58 @@ export const DataSpaceViewer = observer(
     ];
 
     const viewProject = (): void =>
-      dataSpaceViewerState.viewProject?.(
+      dataSpaceViewerState.viewProject(
         dataSpaceViewerState.groupId,
         dataSpaceViewerState.artifactId,
         dataSpaceViewerState.versionId,
+        analysisResult.path,
+      );
+    const viewSDLCProject = (): void =>
+      dataSpaceViewerState.viewSDLCProject(
+        dataSpaceViewerState.groupId,
+        dataSpaceViewerState.artifactId,
         analysisResult.path,
       );
 
     return (
       <div className="data-space__viewer">
         <div className="data-space__viewer__header">
-          <button
-            className="data-space__viewer__title"
-            tabIndex={-1}
-            title={`View Project (${generateGAVCoordinates(
-              dataSpaceViewerState.groupId,
-              dataSpaceViewerState.artifactId,
-              dataSpaceViewerState.versionId,
-            )})`}
-            onClick={viewProject}
-          >
-            <div
-              className="data-space__viewer__title__label"
-              title={`${analysisResult.title ?? analysisResult.name} - ${
-                analysisResult.path
-              }`}
+          <div className="data-space__viewer__title">
+            <button
+              className="data-space__viewer__title__btn"
+              tabIndex={-1}
+              title={`View Project (${generateGAVCoordinates(
+                dataSpaceViewerState.groupId,
+                dataSpaceViewerState.artifactId,
+                dataSpaceViewerState.versionId,
+              )})`}
+              onClick={viewProject}
             >
-              {analysisResult.title ?? analysisResult.name}
-            </div>
-            <div className="data-space__viewer__title__link">
-              <ExternalLinkSquareIcon />
-            </div>
-          </button>
+              <div
+                className="data-space__viewer__title__label"
+                title={`${analysisResult.title ?? analysisResult.name} - ${
+                  analysisResult.path
+                }`}
+              >
+                {analysisResult.title ?? analysisResult.name}
+              </div>
+              <div className="data-space__viewer__title__link">
+                <ExternalLinkSquareIcon />
+              </div>
+            </button>
+            <DropdownMenu
+              className="data-space__viewer__title__dropdown-trigger"
+              content={
+                <MenuContent>
+                  <MenuContentItem onClick={viewSDLCProject}>
+                    View SDLC project
+                  </MenuContentItem>
+                </MenuContent>
+              }
+            >
+              <CaretDownIcon title="Show more options..." />
+            </DropdownMenu>
+          </div>
           <div
             className={clsx('data-space__viewer__description', {
               'data-space__viewer__description--empty':

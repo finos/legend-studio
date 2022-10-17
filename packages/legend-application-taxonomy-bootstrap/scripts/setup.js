@@ -60,6 +60,12 @@ export const setup = (outputDir) => {
         },
         studio: {
           url: 'http://localhost:9000/studio',
+          instances: [
+            {
+              sdlcProjectIDPrefix: 'PROD',
+              url: 'http://localhost:9000/studio',
+            },
+          ],
         },
         documentation: {
           url: 'https://legend.finos.org',

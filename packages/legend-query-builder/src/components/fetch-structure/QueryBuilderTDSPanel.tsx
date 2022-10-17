@@ -55,7 +55,6 @@ import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderLambdaEditor } from '../shared/QueryBuilderLambdaEditor.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
   type QueryBuilderParameterDragSource,
@@ -76,6 +75,7 @@ import { QueryBuilderPostFilterTreeConditionNodeData } from '../../stores/fetch-
 import { filterByType } from '@finos/legend-shared';
 import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { LambdaEditor } from '../shared/LambdaEditor.js';
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -210,9 +210,8 @@ const QueryBuilderDerivationProjectionColumnEditor = observer(
           { backdrop__element: hasParserError },
         )}
       >
-        <QueryBuilderLambdaEditor
+        <LambdaEditor
           className="query-builder__lambda-editor"
-          queryBuilderState={projectionColumnState.tdsState.queryBuilderState}
           disabled={
             projectionColumnState.tdsState.isConvertDerivationProjectionObjects
           }

@@ -31,7 +31,7 @@ export const ServiceQueryEditorWorkspaceStatus = observer(() => {
   const isWorkspaceOutated = editorStore.sdlcState.isWorkspaceOutdated;
 
   const updateWorkspace = (): void => {
-    editorStore.setActionAlertInfo({
+    applicationStore.setActionAlertInfo({
       // TODO?: we might want to factor in change-detection to have more confidence here
       message: `Please backup your work. Proceed to update workspace?`,
       type: ActionAlertType.CAUTION,
@@ -55,7 +55,7 @@ export const ServiceQueryEditorWorkspaceStatus = observer(() => {
   };
 
   const syncWorkspace = (): void => {
-    editorStore.setActionAlertInfo({
+    applicationStore.setActionAlertInfo({
       // TODO?: we might want to factor in change-detection to have more confidence here
       message: `Please backup your work. Proceed to sync workspace?`,
       type: ActionAlertType.CAUTION,

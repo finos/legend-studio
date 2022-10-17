@@ -15,11 +15,7 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
-import {
-  editor as monacoEditorAPI,
-  type IDisposable,
-  type IKeyboardEvent,
-} from 'monaco-editor';
+import { editor as monacoEditorAPI, type IDisposable } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -45,17 +41,13 @@ import {
 import { flowResult } from 'mobx';
 import { ParserError, type EngineError, type Type } from '@finos/legend-graph';
 import {
+  createPassThroughOnKeyHandler,
   EDITOR_LANGUAGE,
   EDITOR_THEME,
   TAB_SIZE,
   useApplicationStore,
 } from '@finos/legend-application';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-
-export type LambdaEditorOnKeyDownEventHandler = {
-  matcher: (event: IKeyboardEvent) => boolean;
-  action: (event: IKeyboardEvent) => void;
-};
 
 const LambdaErrorFeedback: React.FC<{
   error?: EngineError | undefined;
@@ -102,7 +94,6 @@ const LambdaEditorInline = observer(
     forceExpansion?: boolean | undefined;
     disablePopUp?: boolean | undefined;
     backdropSetter?: ((val: boolean) => void) | undefined;
-    onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
     openInPopUp: () => void;
     onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
@@ -121,7 +112,6 @@ const LambdaEditorInline = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
-      onKeyDownEventHandlers,
       openInPopUp,
       onEditorFocusEventHandler,
     } = props;
@@ -292,29 +282,9 @@ const LambdaEditorInline = observer(
 
       // set hotkeys (before calling the action, finish parsing the current text value)
       onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      /**
-       * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, and we need to
-       * use `stopPropagation` to prevent the event top bubble up to global hotkeys listener.
-       * If we really want to use `setCommand` the other approach is to set <HotKeys/> around this lambda editor to override F9
-       * perhaps that's the cleaner approach because we use `react-hotkeys` to handle it's business, but there is an on-going
-       * issue with <HotKeys/> keybindings are lost when component rerenders and this happen as users type because we call `setValue`
-       * See https://github.com/greena13/react-hotkeys/issues/209
-       *
-       * The main role of this section is to disable `monaco-editor` command and override with global actions, such as generate, compile,
-       * toggle text mode, etc. The important thing is before we do so, we would like to finish the parsing of the current string, otherwise,
-       * those operations can end up flushing the current state and trashing the user input, which is bad, as such, we make sure the
-       * parsing passes before actually calling those global operations.
-       */
-      onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
-        onKeyDownEventHandlers.forEach((handler) => {
-          if (handler.matcher(event)) {
-            event.preventDefault();
-            event.stopPropagation();
-            transformStringToLambda?.cancel();
-            handler.action(event);
-          }
-        });
-      });
+      onKeyDownEventDisposer.current = editor.onKeyDown(
+        createPassThroughOnKeyHandler(),
+      );
 
       onDidFocusEditorWidgetDisposer.current?.dispose();
       onDidFocusEditorWidgetDisposer.current = editor.onDidFocusEditorWidget(
@@ -451,7 +421,6 @@ const LambdaEditorPopUp = observer(
     disabled: boolean;
     lambdaEditorState: LambdaEditorState;
     transformStringToLambda: DebouncedFunc<() => GeneratorFn<void>> | undefined;
-    onKeyDownEventHandlers: LambdaEditorOnKeyDownEventHandler[];
     onClose: () => void;
   }) => {
     const {
@@ -459,7 +428,6 @@ const LambdaEditorPopUp = observer(
       disabled,
       lambdaEditorState,
       transformStringToLambda,
-      onKeyDownEventHandlers,
       onClose,
     } = props;
     const applicationStore = useApplicationStore();
@@ -557,29 +525,9 @@ const LambdaEditorPopUp = observer(
 
       // set hotkeys (before calling the action, finish parsing the current text value)
       onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      /**
-       * NOTE: We can use `setCommand` here but that does not expose the event so we cannot `stopPropagation`, and we need to
-       * use `stopPropagation` to prevent the event top bubble up to global hotkeys listener.
-       * If we really want to use `setCommand` the other approach is to set <HotKeys/> around this lambda editor to override F9
-       * perhaps that's the cleaner approach because we use `react-hotkeys` to handle it's business, but there is an on-going
-       * issue with <HotKeys/> keybindings are lost when component rerenders and this happen as users type because we call `setValue`
-       * See https://github.com/greena13/react-hotkeys/issues/209
-       *
-       * The main role of this section is to disable `monaco-editor` command and override with global actions, such as generate, compile,
-       * toggle text mode, etc. The important thing is before we do so, we would like to finish the parsing of the current string, otherwise,
-       * those operations can end up flushing the current state and trashing the user input, which is bad, as such, we make sure the
-       * parsing passes before actually calling those global operations.
-       */
-      onKeyDownEventDisposer.current = editor.onKeyDown((event) => {
-        onKeyDownEventHandlers.forEach((handler) => {
-          if (handler.matcher(event)) {
-            event.preventDefault();
-            event.stopPropagation();
-            transformStringToLambda?.cancel();
-            handler.action(event);
-          }
-        });
-      });
+      onKeyDownEventDisposer.current = editor.onKeyDown(
+        createPassThroughOnKeyHandler(),
+      );
 
       // Set the text value
       const currentValue = getEditorValue(editor);
@@ -751,11 +699,6 @@ export const LambdaEditor = observer(
      * To whether or not hide parser error bar in inline mode
      */
     hideErrorBar?: boolean | undefined;
-    /**
-     * Allow adding hotkeys handler to the editor, this is usually used
-     * to allow activating global hotkeys while typing in the editor
-     */
-    onKeyDownEventHandlers?: LambdaEditorOnKeyDownEventHandler[];
     onEditorFocusEventHandler?: (() => void) | undefined;
   }) => {
     const {
@@ -772,7 +715,6 @@ export const LambdaEditor = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
-      onKeyDownEventHandlers,
       onEditorFocusEventHandler,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
@@ -798,7 +740,6 @@ export const LambdaEditor = observer(
             disabled={disabled}
             lambdaEditorState={lambdaEditorState}
             transformStringToLambda={debouncedTransformStringToLambda}
-            onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
             onClose={closePopUp}
           />
         </>
@@ -849,7 +790,6 @@ export const LambdaEditor = observer(
         disablePopUp={disablePopUp}
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
-        onKeyDownEventHandlers={onKeyDownEventHandlers ?? []}
         openInPopUp={openInPopUp}
         onEditorFocusEventHandler={onEditorFocusEventHandler}
       />

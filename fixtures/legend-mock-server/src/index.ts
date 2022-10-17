@@ -54,8 +54,13 @@ server.get(`${STUDIO_BASE_URL}/documentation.json`, async (request, reply) => {
   await reply.send(DOCUMENTATION_DATA);
 });
 
-server.listen(PORT, (error, address) => {
-  if (error) {
-    throw error;
-  }
-});
+server.listen(
+  {
+    port: PORT,
+  },
+  (error, address) => {
+    if (error) {
+      throw error;
+    }
+  },
+);

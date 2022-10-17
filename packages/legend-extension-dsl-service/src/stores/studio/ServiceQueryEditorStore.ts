@@ -298,7 +298,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
 
   *recreateWorkspace(): GeneratorFn<void> {
     try {
-      this.setBlockingAlert({
+      this.applicationStore.setBlockingAlert({
         message: 'Recreating workspace...',
         prompt: 'Please do not close the application',
         showLoading: true,
@@ -321,7 +321,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
       );
       this.applicationStore.notifyError(error);
     } finally {
-      this.setBlockingAlert(undefined);
+      this.applicationStore.setBlockingAlert(undefined);
     }
   }
 
@@ -383,7 +383,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
           'Service registration pattern is missing or empty',
         );
 
-        this.setActionAlertInfo({
+        this.applicationStore.setActionAlertInfo({
           message: `Service with pattern ${serviceRegistrationResult.pattern} registered and activated`,
           prompt:
             'You can now launch and monitor the operation of your service',

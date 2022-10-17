@@ -32,11 +32,15 @@
   }
 
   &__title {
-    @include flexCenter;
+    @include flexVCenter;
 
-    height: 3.4rem;
-    max-width: 100%;
-    background: var(--color-blue-150);
+    &__btn {
+      @include flexCenter;
+
+      height: 3.4rem;
+      max-width: 100%;
+      background: var(--color-blue-150);
+    }
 
     &__label {
       @include ellipsisTextOverflow;
@@ -62,6 +66,21 @@
       svg {
         font-size: 1.6rem;
         color: var(--color-light-grey-0);
+      }
+    }
+
+    &__dropdown-trigger {
+      @include flexCenter;
+
+      width: 1.6rem;
+      height: 3.4rem;
+      background: var(--color-blue-150);
+      cursor: pointer;
+      border-left: 0.1rem solid var(--color-dark-shade-50);
+
+      svg {
+        color: var(--color-light-grey-0);
+        font-size: 1.2rem;
       }
     }
   }

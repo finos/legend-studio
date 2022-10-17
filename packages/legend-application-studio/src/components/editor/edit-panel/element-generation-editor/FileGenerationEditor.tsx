@@ -84,8 +84,10 @@ import {
   resolvePackagePathAndElementName,
   getNullableFileGenerationConfig,
 } from '@finos/legend-graph';
-import { useApplicationStore } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
+import {
+  TextInputEditor,
+  useApplicationStore,
+} from '@finos/legend-application';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import {
   fileGeneration_addScopeElement,
@@ -316,7 +318,7 @@ export const GenerationResultViewer = observer(
             </div>
             <PanelContent>
               {fileNode instanceof GenerationFile && (
-                <StudioTextInputEditor
+                <TextInputEditor
                   inputValue={getTextContent(fileNode.content, fileNode.format)}
                   isReadOnly={true}
                   language={getEditorLanguageFromFormat(fileNode.format)}

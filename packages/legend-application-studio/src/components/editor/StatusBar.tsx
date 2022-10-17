@@ -31,31 +31,30 @@ import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
 import {
   generateSetupRoute,
-  type EditorPathParams,
-  type GroupEditorPathParams,
+  type WorkspaceEditorPathParams,
 } from '../../stores/LegendStudioRouter.js';
 import { flowResult } from 'mobx';
 import { useEditorStore } from './EditorStoreProvider.js';
 import { WorkspaceType } from '@finos/legend-server-sdlc';
 import { useLegendStudioApplicationStore } from '../LegendStudioBaseStoreProvider.js';
 import { useParams } from '@finos/legend-application';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const { actionsDisabled } = props;
-  const params = useParams<EditorPathParams | GroupEditorPathParams>();
+  const params = useParams<WorkspaceEditorPathParams>();
   const editorStore = useEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
   const isInConflictResolutionMode = editorStore.isInConflictResolutionMode;
   // SDLC
   const projectId = params.projectId;
-  const workspaceType = (params as { groupWorkspaceId: string | undefined })
-    .groupWorkspaceId
+  const workspaceType = params.groupWorkspaceId
     ? WorkspaceType.GROUP
     : WorkspaceType.USER;
-  const workspaceId =
-    workspaceType === WorkspaceType.GROUP
-      ? (params as GroupEditorPathParams).groupWorkspaceId
-      : (params as EditorPathParams).workspaceId;
+  const workspaceId = guaranteeNonNullable(
+    params.groupWorkspaceId ?? params.workspaceId,
+    `Workspace/group workspace ID is not provided`,
+  );
   const currentProject = editorStore.sdlcState.currentProject;
   const goToWorkspaceUpdater = (): void =>
     editorStore.setActiveActivity(
@@ -155,8 +154,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             title="Go back to workspace setup using the specified project"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(projectId),
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(projectId),
+                ),
               )
             }
           >
@@ -168,8 +169,10 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             title="Go back to workspace setup using the specified workspace"
             tabIndex={-1}
             onClick={(): void =>
-              applicationStore.navigator.goToLocation(
-                generateSetupRoute(projectId, workspaceId, workspaceType),
+              applicationStore.navigator.visitAddress(
+                applicationStore.navigator.generateAddress(
+                  generateSetupRoute(projectId, workspaceId, workspaceType),
+                ),
               )
             }
           >

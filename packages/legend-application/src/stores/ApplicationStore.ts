@@ -35,6 +35,8 @@ import { AssistantService } from './AssistantService.js';
 import { EventService } from './EventService.js';
 import { ApplicationNavigationContextService } from './ApplicationNavigationContextService.js';
 import type { LegendApplicationPlugin } from './LegendApplicationPlugin.js';
+import { CommandCenter } from './CommandCenter.js';
+import { KeyboardShortcutsService } from './KeyboardShortcutsService.js';
 
 export enum ActionAlertType {
   STANDARD = 'STANDARD',
@@ -136,7 +138,15 @@ export class ApplicationStore<
   telemetryService = new TelemetryService();
   tracerService = new TracerService();
 
-  // misc
+  // control and interactions
+  commandCenter: CommandCenter;
+  keyboardShortcutsService: KeyboardShortcutsService;
+
+  // TODO: config
+  // See https://github.com/finos/legend-studio/issues/407
+
+  // backdrop
+  backdropContainerElementID?: string | undefined;
   showBackdrop = false;
 
   // theme
@@ -153,7 +163,9 @@ export class ApplicationStore<
       blockingAlertInfo: observable,
       actionAlertInfo: observable,
       TEMPORARY__isLightThemeEnabled: observable,
+      backdropContainerElementID: observable,
       showBackdrop: observable,
+      setBackdropContainerElementID: action,
       setShowBackdrop: action,
       setBlockingAlert: action,
       setActionAlertInfo: action,
@@ -180,6 +192,8 @@ export class ApplicationStore<
     this.telemetryService.registerPlugins(
       pluginManager.getTelemetryServicePlugins(),
     );
+    this.commandCenter = new CommandCenter(this);
+    this.keyboardShortcutsService = new KeyboardShortcutsService(this);
     this.tracerService.registerPlugins(pluginManager.getTracerServicePlugins());
     this.eventService.registerEventNotifierPlugins(
       pluginManager.getEventNotifierPlugins(),
@@ -190,11 +204,25 @@ export class ApplicationStore<
     this.TEMPORARY__isLightThemeEnabled = val;
   }
 
+  /**
+   * Change the ID used to find the base element to mount the backdrop on.
+   * This is useful when we want to use backdrop with embedded application which
+   * requires its own backdrop usage.
+   */
+  setBackdropContainerElementID(val: string | undefined): void {
+    this.backdropContainerElementID = val;
+  }
+
   setShowBackdrop(val: boolean): void {
     this.showBackdrop = val;
   }
 
   setBlockingAlert(alertInfo: BlockingAlertInfo | undefined): void {
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
+    }
     this.blockingAlertInfo = alertInfo;
   }
 
@@ -203,6 +231,11 @@ export class ApplicationStore<
       this.notifyIllegalState(
         'Action alert is stacked: new alert is invoked while another one is being displayed',
       );
+    }
+    if (alertInfo) {
+      this.keyboardShortcutsService.blockGlobalHotkeys();
+    } else {
+      this.keyboardShortcutsService.unblockGlobalHotkeys();
     }
     this.actionAlertInfo = alertInfo;
   }

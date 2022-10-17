@@ -29,7 +29,7 @@ import {
 } from '@finos/legend-art';
 import type { FileGenerationSpecification } from '@finos/legend-graph';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import { StudioTextInputEditor } from '../../shared/StudioTextInputEditor.js';
+import { TextInputEditor } from '@finos/legend-application';
 
 export const FileGenerationViewer = observer(() => {
   const editorStore = useEditorStore();
@@ -90,16 +90,14 @@ export const FileGenerationViewer = observer(() => {
             </div>
           </div>
           <PanelContent>
-            {
-              <StudioTextInputEditor
-                inputValue={getTextContent(
-                  generatedFile.content,
-                  generatedFile.format,
-                )}
-                isReadOnly={true}
-                language={getEditorLanguageFromFormat(generatedFile.format)}
-              />
-            }
+            <TextInputEditor
+              inputValue={getTextContent(
+                generatedFile.content,
+                generatedFile.format,
+              )}
+              isReadOnly={true}
+              language={getEditorLanguageFromFormat(generatedFile.format)}
+            />
           </PanelContent>
         </div>
       </Panel>

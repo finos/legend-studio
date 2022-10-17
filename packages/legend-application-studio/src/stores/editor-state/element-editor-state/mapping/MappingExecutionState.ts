@@ -863,12 +863,10 @@ export class MappingExecutionState {
           );
         }
       } else {
-        this.editorStore.setActionAlertInfo({
+        this.editorStore.applicationStore.setActionAlertInfo({
           message: 'Mapping execution input data is already set',
           prompt: 'Do you want to regenerate the input data?',
           type: ActionAlertType.CAUTION,
-          onEnter: (): void => this.editorStore.setBlockGlobalHotkeys(true),
-          onClose: (): void => this.editorStore.setBlockGlobalHotkeys(false),
           actions: [
             {
               label: 'Regenerate',

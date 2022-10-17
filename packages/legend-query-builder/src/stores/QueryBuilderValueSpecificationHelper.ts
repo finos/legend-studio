@@ -44,13 +44,13 @@ import {
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
+  formatDate,
   guaranteeNonNullable,
   guaranteeType,
   isNumber,
   isString,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { format } from 'date-fns';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { getDerivedPropertyMilestoningSteoreotype } from './QueryBuilderPropertyEditorState.js';
 
@@ -220,9 +220,9 @@ export const generateDefaultValueForPrimitiveType = (
       return 0;
     case PRIMITIVE_TYPE.DATE:
     case PRIMITIVE_TYPE.STRICTDATE:
-      return format(new Date(Date.now()), DATE_FORMAT);
+      return formatDate(new Date(Date.now()), DATE_FORMAT);
     case PRIMITIVE_TYPE.DATETIME:
-      return format(new Date(Date.now()), DATE_TIME_FORMAT);
+      return formatDate(new Date(Date.now()), DATE_TIME_FORMAT);
     default:
       throw new UnsupportedOperationError(
         `Can't generate default value for primitive type '${type}'`,

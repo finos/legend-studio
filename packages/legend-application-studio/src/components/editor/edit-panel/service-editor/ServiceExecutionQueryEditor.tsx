@@ -42,9 +42,9 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   EDITOR_LANGUAGE,
   ExecutionPlanViewer,
+  TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
-import { StudioTextInputEditor } from '../../../shared/StudioTextInputEditor.js';
 import {
   type LightQuery,
   isStubbed_PackageableElement,
@@ -80,7 +80,7 @@ const ServiceExecutionResultViewer = observer(
             <div className="modal__title">Execution Result</div>
           </div>
           <div className="modal__body">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={executionResultText ?? ''}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.JSON}
@@ -209,7 +209,7 @@ const ServiceExecutionQueryImporter = observer(
               isLoading={queryState.loadQueryInfoState.isInProgress}
             />
             {queryState.selectedQueryInfo && (
-              <StudioTextInputEditor
+              <TextInputEditor
                 inputValue={queryState.selectedQueryInfo.content}
                 isReadOnly={true}
                 language={EDITOR_LANGUAGE.PURE}
@@ -448,7 +448,7 @@ export const ServiceExecutionQueryEditor = observer(
             }
           />
           <div className="service-execution-query-editor__content">
-            <StudioTextInputEditor
+            <TextInputEditor
               inputValue={queryState.lambdaString}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.PURE}

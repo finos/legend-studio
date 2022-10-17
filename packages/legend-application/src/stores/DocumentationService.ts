@@ -122,10 +122,10 @@ export const collectContextualDocumnetationEntries = (
   }));
 
 export class DocumentationService {
-  url?: string | undefined;
+  readonly url?: string | undefined;
 
-  private docRegistry = new Map<string, DocumentationEntry>();
-  private contextualDocIndex = new Map<string, DocumentationEntry>();
+  private readonly docRegistry = new Map<string, DocumentationEntry>();
+  private readonly contextualDocIndex = new Map<string, DocumentationEntry>();
 
   constructor(applicationStore: GenericLegendApplicationStore) {
     // set the main documenation site url

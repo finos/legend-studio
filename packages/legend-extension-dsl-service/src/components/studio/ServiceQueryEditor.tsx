@@ -29,7 +29,6 @@ import {
   BlankPanelContent,
   CustomSelectorInput,
   Dialog,
-  ExternalLinkSquareIcon,
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
@@ -39,6 +38,7 @@ import {
   clsx,
   CheckSquareIcon,
   SquareIcon,
+  GitBranchIcon,
 } from '@finos/legend-art';
 import {
   type ProjectServiceQueryUpdaterPathParams,
@@ -52,7 +52,10 @@ import {
   ServiceQueryUpdaterStoreProvider,
   useServiceQueryEditorStore,
 } from './ServiceQueryEditorStoreProvider.js';
-import { QueryBuilder } from '@finos/legend-query-builder';
+import {
+  QueryBuilder,
+  QueryBuilderNavigationBlocker,
+} from '@finos/legend-query-builder';
 import {
   ELEMENT_PATH_DELIMITER,
   extractElementNameFromPath,
@@ -122,7 +125,7 @@ const NewServiceModal = observer(() => {
                 label: 'Open Service',
                 type: ActionAlertActionType.PROCEED,
                 handler: (): void => {
-                  applicationStore.navigator.reloadToLocation(
+                  applicationStore.navigator.goToLocation(
                     generateProjectServiceQueryUpdaterRoute(
                       editorStore.sdlcState.activeProject.projectId,
                       editorStore.sdlcState.activeWorkspace.workspaceId,
@@ -394,7 +397,7 @@ const RegisterServiceModal = observer(() => {
 const ServiceQueryEditorHeaderContent = observer(() => {
   const editorStore = useServiceQueryEditorStore();
   const applicationStore = useLegendStudioApplicationStore();
-  const viewProject = (): void =>
+  const openWorkspace = (): void =>
     applicationStore.navigator.visitAddress(
       applicationStore.navigator.generateAddress(
         generateEditorRoute(
@@ -417,7 +420,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
       );
     flowResult(
       editorStore.saveWorkspace(serviceEntity, false, (): void => {
-        applicationStore.navigator.reloadToLocation(
+        applicationStore.navigator.goToLocation(
           generateServiceQueryUpdaterRoute(
             editorStore.projectConfigurationEditorState
               .currentProjectConfiguration.groupId,
@@ -466,10 +469,10 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}
-          title="View project"
-          onClick={viewProject}
+          title="Open workspace"
+          onClick={openWorkspace}
         >
-          <ExternalLinkSquareIcon />
+          <GitBranchIcon className="service-query-editor__header__action__icon--branch" />
         </button>
         <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorReviewAction />
@@ -517,7 +520,12 @@ export const ServiceQueryEditor = observer(() => {
       <div className="service-query-editor__content">
         <PanelLoadingIndicator isLoading={editorStore.initState.isInProgress} />
         {editorStore.queryBuilderState && (
-          <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          <>
+            <QueryBuilderNavigationBlocker
+              queryBuilderState={editorStore.queryBuilderState}
+            />
+            <QueryBuilder queryBuilderState={editorStore.queryBuilderState} />
+          </>
         )}
         {!editorStore.queryBuilderState && (
           <BlankPanelContent>

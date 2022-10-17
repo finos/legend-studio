@@ -23,7 +23,7 @@ import {
   DIAGRAM_INTERACTION_MODE,
   DIAGRAM_RELATIONSHIP_EDIT_MODE,
   DIAGRAM_ZOOM_LEVELS,
-} from '../../DSL_Diagram_DiagramRenderer.js';
+} from '../../DiagramRenderer.js';
 import {
   type DiagramEditorInlineClassCreatorState,
   type DiagramEditorInlineClassRenamerState,
@@ -35,7 +35,7 @@ import {
 import {
   type ResizablePanelHandlerProps,
   ContextMenu,
-  getControlledResizablePanelProps,
+  getCollapsiblePanelGroupProps,
   BasePopover,
   BlankPanelContent,
   CaretDownIcon,
@@ -94,6 +94,7 @@ import {
   useApplicationStore,
   useApplicationNavigationContext,
   buildElementOption,
+  useCommands,
 } from '@finos/legend-application';
 import {
   ClassFormEditor,
@@ -663,24 +664,30 @@ const DiagramEditorOverlay = observer(
           .width,
       );
 
+    // layout
+    const sidePanelCollapsiblePanelGroupProps = getCollapsiblePanelGroupProps(
+      diagramEditorState.sidePanelDisplayState.size === 0,
+      {
+        classes: ['diagram-editor__overlay__panel'],
+        onStopResize: resizeSidePanel,
+        size: diagramEditorState.sidePanelDisplayState.size,
+      },
+    );
+
     return (
       <ResizablePanelGroup
         className="diagram-editor__overlay"
         orientation="vertical"
       >
-        <ResizablePanel minSize={300}>
+        <ResizablePanel
+          {...sidePanelCollapsiblePanelGroupProps.remainingPanel}
+          minSize={300}
+        >
           <div className="diagram-editor__view-finder" />
         </ResizablePanel>
         <ResizablePanelSplitter className="diagram-editor__overlay__panel-resizer" />
         <ResizablePanel
-          {...getControlledResizablePanelProps(
-            diagramEditorState.sidePanelDisplayState.size === 0,
-            {
-              classes: ['diagram-editor__overlay__panel'],
-              onStopResize: resizeSidePanel,
-              size: diagramEditorState.sidePanelDisplayState.size,
-            },
-          )}
+          {...sidePanelCollapsiblePanelGroupProps.collapsiblePanel}
           direction={-1}
         >
           <div className="panel diagram-editor__side-panel">
@@ -1186,7 +1193,6 @@ const DiagramEditorDiagramCanvas = observer(
         renderer.render();
         renderer.autoRecenter();
       }
-      return diagramEditorState.cleanUp();
     }, [diagramCanvasRef, diagramEditorState]);
 
     useEffect(() => {
@@ -1428,6 +1434,8 @@ export const DiagramEditor = observer(() => {
   useApplicationNavigationContext(
     DSL_DIAGRAM_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DIAGRAM_EDITOR,
   );
+
+  useCommands(diagramEditorState);
 
   return (
     <div className="diagram-editor">

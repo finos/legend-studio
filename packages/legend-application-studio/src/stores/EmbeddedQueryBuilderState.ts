@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderState } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderState,
+  QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+} from '@finos/legend-query-builder';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { flow, flowResult, makeObservable, observable } from 'mobx';
 import { FormModeCompilationOutcome } from './EditorGraphState.js';
@@ -57,7 +60,7 @@ export class EmbeddedQueryBuilderState {
         return;
       }
       if (!config.disableCompile) {
-        this.editorStore.setBlockingAlert({
+        this.editorStore.applicationStore.setBlockingAlert({
           message: 'Compiling graph before building query...',
           showLoading: true,
         });
@@ -70,21 +73,21 @@ export class EmbeddedQueryBuilderState {
         )) as FormModeCompilationOutcome;
         switch (compilationOutcome) {
           case FormModeCompilationOutcome.SKIPPED: {
-            this.editorStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.setBlockingAlert(undefined);
             this.editorStore.applicationStore.notifyWarning(
               `Can't open query builder: Can't compile at this time, please try again later`,
             );
             return;
           }
           case FormModeCompilationOutcome.SUCCEEDED: {
-            this.editorStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.setBlockingAlert(undefined);
             break;
           }
           default: {
             this.editorStore.applicationStore.notifyWarning(
               `Can't open query builder: Compilation failed! Please fix the compilation issue and try again`,
             );
-            this.editorStore.setBlockingAlert(undefined);
+            this.editorStore.applicationStore.setBlockingAlert(undefined);
             return;
           }
         }
@@ -92,14 +95,16 @@ export class EmbeddedQueryBuilderState {
       if (!this.editorStore.graphState.hasCompilationError) {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
+        this.editorStore.applicationStore.setBackdropContainerElementID(
+          QUERY_BUILDER_BACKDROP_CONTAINER_ID,
+        );
       }
-      this.editorStore.setBlockGlobalHotkeys(true);
-      this.editorStore.setHotkeys([]);
     } else {
+      this.editorStore.applicationStore.setBackdropContainerElementID(
+        undefined,
+      );
       this.queryBuilderState = undefined;
       this.actionConfigs = [];
-      this.editorStore.setBlockGlobalHotkeys(false);
-      this.editorStore.resetHotkeys();
     }
   }
 }

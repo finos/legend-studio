@@ -102,7 +102,7 @@ import type { PureProtocolProcessorPlugin } from '../../../../PureProtocolProces
 import { V1_BindingTransformer } from '../../../model/packageableElements/externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
 import { V1_MergeOperationClassMapping } from '../../../model/packageableElements/mapping/V1_MergeOperationClassMapping.js';
 import type { V1_RelationalOperationElement } from '../../../model/packageableElements/store/relational/model/V1_RelationalOperationElement.js';
-import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping//V1_FlatDataAssociationMapping.js';
+import { V1_FlatDataAssociationMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationMapping.js';
 import { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 
 enum V1_ClassMappingType {

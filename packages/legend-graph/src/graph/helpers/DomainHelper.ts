@@ -219,9 +219,14 @@ export const getRawGenericType = <T extends Type>(
   clazz: Clazz<T>,
 ): T => guaranteeType<T>(genericType.rawType, clazz);
 
-export const isElementReadOnly = (element: PackageableElement): boolean =>
-  returnUndefOnError(() => getElementRootPackage(element))?.name !==
+export const isMainGraphElement = (
+  element: PackageableElement,
+): element is PackageableElement =>
+  returnUndefOnError(() => getElementRootPackage(element))?.name ===
   ROOT_PACKAGE_NAME.MAIN;
+
+export const isElementReadOnly = (element: PackageableElement): boolean =>
+  !isMainGraphElement(element);
 
 export const isDependencyElement = (
   element: PackageableElement,

@@ -16,6 +16,7 @@
 
 import { configure as configureMobx } from 'mobx';
 import { editor as monacoEditorAPI } from 'monaco-editor';
+import { configure as configureReactHotkeys } from 'react-hotkeys';
 import { MONOSPACED_FONT_FAMILY } from '../const.js';
 import type {
   LegendApplicationConfig,
@@ -129,6 +130,13 @@ export const setupLegendApplicationUILibrary = async (
     // However, no warning will shown in production mode
     // See https://mobx.js.org/configuration.html#enforceactions
     enforceActions: 'observed',
+  });
+
+  configureReactHotkeys({
+    // By default, `react-hotkeys` will avoid capturing keys from input tags like <input>, <textarea>, <select>
+    // We want to listen to hotkey from every where in the app so we disable that
+    // See https://github.com/greena13/react-hotkeys#ignoring-events
+    ignoreTags: [],
   });
 
   configureComponents();

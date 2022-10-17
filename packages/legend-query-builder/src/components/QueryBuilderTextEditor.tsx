@@ -20,12 +20,12 @@ import { clsx, Dialog } from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { flowResult } from 'mobx';
-import { QueryBuilderLambdaEditor } from './shared/QueryBuilderLambdaEditor.js';
 import {
   EDITOR_LANGUAGE,
   TextInputEditor,
   useApplicationStore,
 } from '@finos/legend-application';
+import { LambdaEditor } from './shared/LambdaEditor.js';
 
 export const QueryBuilderTextEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -38,7 +38,7 @@ export const QueryBuilderTextEditor = observer(
     const discardChanges = (): void => {
       queryBuilderState.textEditorState.setMode(undefined);
       // force close the backdrop just in case changes are discarded when there are grammar issues
-      queryBuilderState.setShowBackdrop(false);
+      applicationStore.setShowBackdrop(false);
     };
     const mode = queryTextEditorState.mode;
     useEffect(() => {
@@ -82,10 +82,9 @@ export const QueryBuilderTextEditor = observer(
               })}
             >
               {mode === QueryBuilderTextEditorMode.TEXT && (
-                <QueryBuilderLambdaEditor
+                <LambdaEditor
                   className="query-builder-text-mode__lambda-editor"
                   disabled={queryTextEditorState.isConvertingLambdaToString}
-                  queryBuilderState={queryBuilderState}
                   lambdaEditorState={queryTextEditorState}
                   forceBackdrop={false}
                   forceExpansion={true}

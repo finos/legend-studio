@@ -77,7 +77,6 @@ export const V1_TEMPORARY_buildMilestoningClass = (
   graph: PureModel,
 ): void => {
   const milestonedStereotype = getMilestoneTemporalStereotype(_class, graph);
-  _class._generatedMilestonedProperties;
   switch (milestonedStereotype) {
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL: {
       _class._generatedMilestonedProperties.push(

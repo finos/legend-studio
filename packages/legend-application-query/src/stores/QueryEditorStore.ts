@@ -52,12 +52,17 @@ import {
   type Runtime,
 } from '@finos/legend-graph';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
-import type { Entity, ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  type Entity,
+  type ProjectGAVCoordinates,
+  parseProjectIdentifier,
+} from '@finos/legend-storage';
 import {
   type DepotServerClient,
   ProjectData,
@@ -174,7 +179,7 @@ export class QueryExportState {
         LegendQueryEventService.create(
           this.editorStore.applicationStore.eventService,
         ).notify_QueryCreated({ queryId: newQuery.id });
-        this.editorStore.applicationStore.navigator.reloadToLocation(
+        this.editorStore.applicationStore.navigator.goToLocation(
           generateExistingQueryEditorRoute(newQuery.id),
         );
       } else {
@@ -304,9 +309,38 @@ export abstract class QueryEditorStore {
   /**
    * Set up the editor state before building the graph
    */
+
   protected async setUpEditorState(): Promise<void> {
     // do nothing
   }
+
+  async viewSDLCProject(): Promise<void> {
+    const { groupId, artifactId } = this.getProjectInfo();
+
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await this.depotServerClient.getProject(groupId, artifactId),
+    );
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry = this.applicationStore.config.studioInstances.find(
+      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+    );
+    if (matchingSDLCEntry) {
+      this.applicationStore.navigator.visitAddress(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+          matchingSDLCEntry.url,
+          project.projectId,
+          undefined,
+        ),
+      );
+    } else {
+      this.applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to view the SDLC project`,
+      );
+    }
+  }
+
   /**
    * Set up the query builder state after building the graph
    */
@@ -496,7 +530,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       (val: Mapping) => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -508,7 +542,7 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
         );
       },
       (val: Runtime) => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateMappingQueryCreatorRoute(
             this.groupId,
             this.artifactId,
@@ -592,7 +626,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       service,
       this.executionKey,
       (val: ServiceExecutionContext): void => {
-        this.applicationStore.navigator.goToLocation(
+        this.applicationStore.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(
             this.groupId,
             this.artifactId,
