@@ -84,7 +84,7 @@ import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/pack
 import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSL_Mapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 import { getFunctionName } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinitionHelper.js';
-import { V1_generateFunctionNamePlusSignature } from '../../../helpers/V1_DomainHelper.js';
+import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -236,10 +236,7 @@ export class V1_ElementSecondPassBuilder
       `Function 'returnMultiplicity' field is missing`,
     );
     const func = this.context.currentSubGraph.getOwnFunction(
-      V1_buildFullPath(
-        protocol.package,
-        V1_generateFunctionNamePlusSignature(protocol),
-      ),
+      V1_buildFullPath(protocol.package, V1_buildFunctionSignature(protocol)),
     );
     func.returnType = this.context.resolveType(protocol.returnType);
     func.returnMultiplicity = this.context.graph.getMultiplicity(
