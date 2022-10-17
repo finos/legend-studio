@@ -78,10 +78,6 @@ const NewFileGenerationModal = observer(
         close();
       }
     };
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      promoteToFileGeneration().catch(applicationStore.alertUnhandledError);
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
 
@@ -98,7 +94,15 @@ const NewFileGenerationModal = observer(
           },
         }}
       >
-        <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            promoteToFileGeneration().catch(
+              applicationStore.alertUnhandledError,
+            );
+          }}
+          className="modal search-modal modal--dark"
+        >
           <div className="modal__title">
             Promote file generation specification
           </div>

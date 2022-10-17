@@ -464,10 +464,6 @@ export const CreateNewElementModal = observer(() => {
     newElementState.setName('');
     elementNameInputRef.current?.focus();
   };
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    save();
-  };
 
   if (!newElementState.showModal) {
     return null;
@@ -484,7 +480,10 @@ export const CreateNewElementModal = observer(() => {
     >
       <form
         data-testid={LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL}
-        onSubmit={handleSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          save();
+        }}
         className="modal modal--dark search-modal"
       >
         <div className="modal__title">

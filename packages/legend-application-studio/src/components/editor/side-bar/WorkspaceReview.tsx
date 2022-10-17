@@ -209,8 +209,8 @@ export const WorkspaceReview = observer(() => {
             <>
               <form
                 className="workspace-review__title"
-                onSubmit={(e): void => {
-                  e.preventDefault();
+                onSubmit={(event) => {
+                  event.preventDefault();
                 }}
               >
                 <div className="workspace-review__title__content">

@@ -78,10 +78,6 @@ export const CreateWorkspaceModal = observer(
     const onClose = (): void => {
       setupStore.setShowCreateWorkspaceModal(false);
     };
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      createWorkspace();
-    };
 
     return (
       <Dialog
@@ -103,7 +99,12 @@ export const CreateWorkspaceModal = observer(
               }
             />
           </div>
-          <form onSubmit={handleSubmit}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              createWorkspace();
+            }}
+          >
             <PanelLoadingIndicator
               isLoading={setupStore.createWorkspaceState.isInProgress}
             />

@@ -39,10 +39,6 @@ const RelationalTableIdentifierModal = observer(
     const tableIdentifierState = dataState.tableIdentifierState;
     const editableTable = tableIdentifierState.table;
     const closeModal = (): void => dataState.closeModal();
-    const handleSubmit = (): void => {
-      tableIdentifierState.handleSubmit();
-      closeModal();
-    };
     const changeTableValue: React.ChangeEventHandler<HTMLInputElement> = (
       event,
     ) => {
@@ -61,7 +57,11 @@ const RelationalTableIdentifierModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            tableIdentifierState.handleSubmit();
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">

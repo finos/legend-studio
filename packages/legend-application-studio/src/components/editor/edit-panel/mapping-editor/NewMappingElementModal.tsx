@@ -189,10 +189,6 @@ export const NewMappingElementModal = observer(() => {
       handleClose();
     }
   };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    handleSubmit();
-  };
   // Title
   const titleText = spec
     ? spec.showTarget
@@ -224,7 +220,10 @@ export const NewMappingElementModal = observer(() => {
     >
       {spec && (
         <form
-          onSubmit={onSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
           className="modal search-modal new-mapping-element-modal"
         >
           {titleText && <div className="modal__title">{titleText}</div>}

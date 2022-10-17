@@ -145,10 +145,6 @@ const CreateWorkspaceModal = observer(
     const onClose = (): void => {
       setupStore.setShowCreateWorkspaceModal(false);
     };
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      createWorkspace();
-    };
 
     return (
       <Dialog
@@ -161,7 +157,10 @@ const CreateWorkspaceModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            createWorkspace();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">Create New Workspace</div>

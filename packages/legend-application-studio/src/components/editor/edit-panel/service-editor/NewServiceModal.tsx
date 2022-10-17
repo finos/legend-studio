@@ -61,10 +61,6 @@ export const NewServiceModal = observer(
           .catch(applicationStore.alertUnhandledError);
       }
     };
-    const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      create();
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
       setServicePath(event.target.value);
     return (
@@ -80,7 +76,13 @@ export const NewServiceModal = observer(
           },
         }}
       >
-        <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            create();
+          }}
+          className="modal search-modal modal--dark"
+        >
           <div className="modal__title">Promote to Service</div>
           <div className="input-group">
             <input
