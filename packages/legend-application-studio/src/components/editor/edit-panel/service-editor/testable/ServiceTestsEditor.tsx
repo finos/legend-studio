@@ -159,7 +159,6 @@ export const NewParameterModal = observer(
     };
     const options = setupState.newParamOptions;
     const closeModal = (): void => setupState.setShowNewParameterModal(false);
-    const handleSubmit = (): void => setupState.addParameterValue();
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val === null) {
         setupState.setNewParameterValueName('');
@@ -175,7 +174,10 @@ export const NewParameterModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setupState.addParameterValue();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">New Test Parameter Value </div>

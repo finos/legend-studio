@@ -227,7 +227,12 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                     </div>
                   )}
                 </div>
-                <form onSubmit={handleProceed}>
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    handleProceed();
+                  }}
+                >
                   <div className="workspace-setup__selector">
                     <div
                       className="workspace-setup__selector__icon"

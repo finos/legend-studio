@@ -141,10 +141,6 @@ const NewServiceModal = observer(() => {
       ).catch(applicationStore.alertUnhandledError);
     }
   };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    create();
-  };
   const onClose = (): void => editorStore.setShowNewServiceModal(false);
 
   return (
@@ -160,7 +156,13 @@ const NewServiceModal = observer(() => {
         },
       }}
     >
-      <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          create();
+        }}
+        className="modal search-modal modal--dark"
+      >
         <div className="modal__title">Create New Service</div>
         <Panel>
           <div className="panel__content__form">
@@ -292,10 +294,6 @@ const RegisterServiceModal = observer(() => {
       ).catch(applicationStore.alertUnhandledError);
     }
   };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    registerService();
-  };
   const onClose = (): void =>
     editorStore.setShowServiceRegistrationModal(false);
 
@@ -312,7 +310,13 @@ const RegisterServiceModal = observer(() => {
         },
       }}
     >
-      <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          registerService();
+        }}
+        className="modal search-modal modal--dark"
+      >
         <div className="modal__title">Register Service</div>
         <Panel>
           <div className="panel__content__form">

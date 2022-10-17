@@ -50,10 +50,6 @@ const NewReviewModal = observer(() => {
         .catch(applicationStore.alertUnhandledError);
     }
   };
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    submitReview();
-  };
   const onClose = (): void => editorStore.setShowSubmitReviewModal(false);
 
   return (
@@ -69,7 +65,13 @@ const NewReviewModal = observer(() => {
         },
       }}
     >
-      <form onSubmit={onSubmit} className="modal search-modal modal--dark">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitReview();
+        }}
+        className="modal search-modal modal--dark"
+      >
         <div className="modal__title">Submit for Review</div>
         <Panel>
           <PanelLoadingIndicator

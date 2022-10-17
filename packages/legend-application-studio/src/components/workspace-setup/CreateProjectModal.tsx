@@ -124,10 +124,7 @@ const CreateNewProjectTab = observer(() => {
   const disableSubmit =
     dispatchingActions || !projectName || !artifactId || !groupId;
 
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
-  ): void => {
-    event.preventDefault();
+  const handleSubmit = (): void => {
     if (projectName && groupId && artifactId) {
       if (allowCreatingNewProject) {
         flowResult(
@@ -158,7 +155,12 @@ const CreateNewProjectTab = observer(() => {
     );
   }
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        handleSubmit();
+      }}
+    >
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
@@ -437,10 +439,7 @@ const ImportProjectTab = observer(() => {
   const disableSubmit =
     dispatchingActions || !projectIdentifier || !artifactId || !groupId;
 
-  const handleSubmit = (
-    event: React.FormEvent<HTMLFormElement | HTMLButtonElement>,
-  ): void => {
-    event.preventDefault();
+  const handleSubmit = (): void => {
     if (importProjectSuccessReport) {
       applicationStore.navigator.visitAddress(
         importProjectSuccessReport.reviewUrl,
@@ -455,7 +454,12 @@ const ImportProjectTab = observer(() => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        handleSubmit();
+      }}
+    >
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />

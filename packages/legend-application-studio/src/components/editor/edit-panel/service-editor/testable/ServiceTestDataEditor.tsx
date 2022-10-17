@@ -253,14 +253,6 @@ export const NewConnectionDataModal = observer(
           (c) => c.connectionId === selectedConnection?.value.id,
         ),
       );
-    const handleSubmit = (): void => {
-      const connection = newConnectionState.connection;
-      const data = newConnectionState.embeddedDataType;
-      if (connection && data) {
-        testDataState.createConnectionTestData();
-        closeModal();
-      }
-    };
     const onConnectionSelectionChange = (val: {
       label: string;
       value?: IdentifiedConnection;
@@ -309,7 +301,15 @@ export const NewConnectionDataModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const connection = newConnectionState.connection;
+            const data = newConnectionState.embeddedDataType;
+            if (connection && data) {
+              testDataState.createConnectionTestData();
+              closeModal();
+            }
+          }}
           className="modal service-test-data-modal modal--dark"
         >
           <div className="modal__header">

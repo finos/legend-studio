@@ -334,10 +334,6 @@ export const ChangeExecutionModal = observer(
     const closeModal = (): void => executionState.setShowChangeExecModal(false);
     const isChangingToMulti =
       executionState instanceof SingleServicePureExecutionState;
-    const handleSubmit = (): void => {
-      executionState.changeExecution();
-      closeModal();
-    };
     const renderChangeExecution = (): React.ReactNode => {
       if (executionState instanceof SingleServicePureExecutionState) {
         const keyValue = executionState.multiExecutionKey;
@@ -404,7 +400,11 @@ export const ChangeExecutionModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            executionState.changeExecution();
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">
@@ -553,11 +553,6 @@ export const NewExecutionParameterModal = observer(
 
     const closeModal = (): void =>
       executionState.setNewKeyParameterModal(false);
-    const handleSubmit = (): void => {
-      executionState.addExecutionParameter(keyValue);
-      setKeyValue('');
-      closeModal();
-    };
     const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setKeyValue(event.target.value);
     };
@@ -569,7 +564,12 @@ export const NewExecutionParameterModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            executionState.addExecutionParameter(keyValue);
+            setKeyValue('');
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">New Execution Context</div>
@@ -607,10 +607,6 @@ const RenameModal = observer(
   }) => {
     const { val, isReadOnly, showModal, closeModal, setValue } = props;
     const [inputValue, setInputValue] = useState(val);
-    const handleSubmit = (): void => {
-      setValue(inputValue);
-      closeModal();
-    };
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
       setInputValue(event.target.value);
     };
@@ -622,7 +618,11 @@ const RenameModal = observer(
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setValue(inputValue);
+            closeModal();
+          }}
           className="modal modal--dark search-modal"
         >
           <div className="modal__title">Rename</div>
