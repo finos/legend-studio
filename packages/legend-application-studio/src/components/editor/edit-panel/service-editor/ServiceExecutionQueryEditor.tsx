@@ -402,10 +402,7 @@ export const ServiceExecutionQueryEditor = observer(
                   className="service-editor__execution__execute-btn__label"
                   onClick={runQuery}
                   title="Run Query"
-                  disabled={
-                    executionState.isRunningQuery ||
-                    executionState.isGeneratingPlan
-                  }
+                  disabled={executionState.isGeneratingPlan}
                   tabIndex={-1}
                 >
                   <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
@@ -415,10 +412,7 @@ export const ServiceExecutionQueryEditor = observer(
                 </button>
                 <DropdownMenu
                   className="service-editor__execution__execute-btn__dropdown-btn"
-                  disabled={
-                    executionState.isRunningQuery ||
-                    executionState.isGeneratingPlan
-                  }
+                  disabled={executionState.isGeneratingPlan}
                   content={
                     <MenuContent>
                       <MenuContentItem

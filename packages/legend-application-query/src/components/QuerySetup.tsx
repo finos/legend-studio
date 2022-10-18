@@ -22,23 +22,26 @@ import {
   clsx,
   CustomSelectorInput,
   PanelLoadingIndicator,
-  PlusIcon,
-  RobotIcon,
   SearchIcon,
   UserIcon,
   QuestionCircleIcon,
-  DroidIcon,
-  ManageSearchIcon,
-  ArrowCirceUpIcon,
+  CogIcon,
+  MoreHorizontalIcon,
+  DropdownMenu,
+  PencilIcon,
+  ChevronDownThinIcon,
+  CircleIcon,
+  MenuContent,
+  MenuContentItem,
+  MenuContentItemIcon,
+  MenuContentItemLabel,
+  CheckIcon,
+  MenuContentDivider,
 } from '@finos/legend-art';
-import {
-  debounce,
-  getNullableFirstElement,
-  isNonNullable,
-} from '@finos/legend-shared';
+import { debounce, getNullableFirstElement } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   generateMappingQueryCreatorRoute,
   generateExistingQueryEditorRoute,
@@ -80,6 +83,7 @@ import {
   buildQueryOption,
 } from '@finos/legend-query-builder';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
+import type { QuerySetupActionConfiguration } from '../stores/LegendQueryApplicationPlugin.js';
 
 const EditExistingQuerySetup = observer(
   (props: { querySetupState: EditExistingQuerySetupState }) => {
@@ -1106,123 +1110,235 @@ const CreateMappingQuerySetup = observer(
   },
 );
 
+const QuerySetupAction = observer(
+  (props: { action: QuerySetupActionConfiguration }) => {
+    const { action } = props;
+    const setupStore = useQuerySetupStore();
+    const applicationStore = useApplicationStore();
+    const onClick = (): void => {
+      action.action(setupStore).catch(applicationStore.alertUnhandledError);
+    };
+
+    if (!setupStore.showAdvancedActions && action.isAdvanced) {
+      return null;
+    }
+    return (
+      <button
+        className={clsx('query-setup__landing-page__action', action.className, {
+          'query-setup__landing-page__action--advanced': action.isAdvanced,
+        })}
+        tabIndex={-1}
+        onClick={onClick}
+      >
+        <div className="query-setup__landing-page__action__icon">
+          {action.icon}
+        </div>
+        <div className="query-setup__landing-page__action__label">
+          {action.label}
+        </div>
+      </button>
+    );
+  },
+);
+
+const QuerySetupActionGroupConfigMenu = observer(() => {
+  const setupStore = useQuerySetupStore();
+  const toggleShowAdvancedActions = (): void =>
+    setupStore.setShowAdvancedActions(!setupStore.showAdvancedActions);
+  const toggleShowAllGroups = (): void =>
+    setupStore.setShowAllGroups(!setupStore.showAllGroups);
+  const reset = (): void => setupStore.resetConfig();
+
+  return (
+    <MenuContent className="query-setup__landing-page__config-menu">
+      <MenuContentItem onClick={toggleShowAdvancedActions}>
+        <MenuContentItemIcon>
+          {setupStore.showAdvancedActions ? <CheckIcon /> : null}
+        </MenuContentItemIcon>
+        <MenuContentItemLabel>Show advanced actions</MenuContentItemLabel>
+      </MenuContentItem>
+      <MenuContentItem onClick={toggleShowAllGroups}>
+        <MenuContentItemIcon>
+          {setupStore.showAllGroups ? <CheckIcon /> : null}
+        </MenuContentItemIcon>
+        <MenuContentItemLabel>Show all action groups</MenuContentItemLabel>
+      </MenuContentItem>
+      <MenuContentDivider />
+      <MenuContentItem>Focus on action group:</MenuContentItem>
+      <MenuContentItem
+        onClick={() => setupStore.setActionGroupToFocus(undefined)}
+      >
+        <MenuContentItemIcon>
+          {!setupStore.actionGroupToFocus ? <CheckIcon /> : null}
+        </MenuContentItemIcon>
+        <MenuContentItemLabel>(none)</MenuContentItemLabel>
+      </MenuContentItem>
+      {setupStore.actionGroups.map((groupKey) => (
+        <MenuContentItem
+          key={groupKey}
+          onClick={() => setupStore.setActionGroupToFocus(groupKey)}
+        >
+          <MenuContentItemIcon>
+            {setupStore.actionGroupToFocus === groupKey ? <CheckIcon /> : null}
+          </MenuContentItemIcon>
+          <MenuContentItemLabel>{groupKey}</MenuContentItemLabel>
+        </MenuContentItem>
+      ))}
+      <MenuContentDivider />
+      <MenuContentItem onClick={reset} disabled={!setupStore.isCustomized}>
+        Reset
+      </MenuContentItem>
+    </MenuContent>
+  );
+});
+
+const QuerySetupActionGroup = observer(
+  (props: { tag?: string | undefined }) => {
+    const { tag } = props;
+    const setupStore = useQuerySetupStore();
+    const actions = setupStore.actions.filter((action) => action.tag === tag);
+    const createActions = actions.filter((action) => action.isCreateAction);
+    const editActions = actions.filter((action) => !action.isCreateAction);
+    const showAdvancedActions = (): void =>
+      setupStore.setShowAdvancedActions(true);
+
+    return (
+      <div
+        className={clsx('query-setup__landing-page__action-group', {
+          'query-setup__landing-page__action-group--with-tag': Boolean(tag),
+        })}
+      >
+        {tag && (
+          <div className="query-setup__landing-page__action-group__tag">
+            {tag}
+          </div>
+        )}
+        <div className="query-setup__landing-page__action-group__header">
+          {(!tag || setupStore.actionGroupToFocus === tag) && (
+            <DropdownMenu
+              className="query-setup__landing-page__action-group__config"
+              title="Show settings..."
+              content={<QuerySetupActionGroupConfigMenu />}
+              menuProps={{
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+              }}
+            >
+              <CogIcon />
+              {setupStore.isCustomized && (
+                <div className="query-setup__landing-page__action-group__config__status">
+                  <CircleIcon />
+                </div>
+              )}
+            </DropdownMenu>
+          )}
+        </div>
+        <div className="query-setup__landing-page__action-group__body">
+          <div className="query-setup__landing-page__action-group__body__column">
+            {editActions.map((action) => (
+              <QuerySetupAction key={action.key} action={action} />
+            ))}
+          </div>
+          <div className="query-setup__landing-page__action-group__body__column">
+            {createActions.map((action) => (
+              <QuerySetupAction key={action.key} action={action} />
+            ))}
+          </div>
+        </div>
+        <div className="query-setup__landing-page__action-group__footer">
+          <div className="query-setup__landing-page__action-group__footer__content">
+            {!setupStore.showAdvancedActions && (
+              <button
+                className="query-setup__landing-page__action-group__footer__btn"
+                onClick={showAdvancedActions}
+                tabIndex={-1}
+                title="Show advanced actions"
+              >
+                <MoreHorizontalIcon />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  },
+);
+
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
-  const extraQuerySetupOptions = setupStore.pluginManager
-    .getApplicationPlugins()
-    .flatMap(
-      (plugin) =>
-        plugin.getExtraQuerySetupOptionRendererConfigurations?.() ?? [],
-    )
-    .filter(isNonNullable)
-    .map((config) => (
-      <Fragment key={config.key}>{config.renderer(setupStore)}</Fragment>
-    ));
-  const editQuery = (): void =>
-    setupStore.setSetupState(new EditExistingQuerySetupState(setupStore));
-  const updateServiceQuery = (): void =>
-    setupStore.setSetupState(
-      new UpdateExistingServiceQuerySetupState(setupStore),
-    );
-  const cloneServiceQuery = (): void =>
-    setupStore.setSetupState(new CloneServiceQuerySetupState(setupStore));
-  const createMappingQuery = (): void =>
-    setupStore.setSetupState(new CreateMappingQuerySetupState(setupStore));
-  const loadServiceQueryFromProject = (): void =>
-    setupStore.setSetupState(new LoadProjectServiceQuerySetupState(setupStore));
-  const productionizeQuery = (): void =>
-    setupStore.setSetupState(new QueryProductionizationSetupState(setupStore));
+  const applicationStore = useLegendQueryApplicationStore();
+  const goToStudio = (): void =>
+    applicationStore.navigator.visitAddress(applicationStore.config.studioUrl);
+  const showAllActionGroup = (): void => setupStore.setShowAllGroups(true);
 
   useEffect(() => {
     setupStore.initialize();
   }, [setupStore]);
 
   return (
-    <>
-      <div className="query-setup__landing-page">
-        <PanelLoadingIndicator isLoading={setupStore.initState.isInProgress} />
-        {setupStore.initState.hasCompleted && (
-          <>
-            <div className="query-setup__landing-page__title">
-              What do you want to do today
-              <QuestionCircleIcon
-                className="query-setup__landing-page__title__question-mark"
-                title="Choose one of the option below to start"
-              />
-            </div>
-            <div className="query-setup__landing-page__options">
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--existing-query"
-                onClick={editQuery}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <ManageSearchIcon className="query-setup__landing-page__icon--search" />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Load an existing query
-                </div>
-              </button>
-              {extraQuerySetupOptions}
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--create-query"
-                onClick={createMappingQuery}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <PlusIcon />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Create new query on a mapping
-                </div>
-              </button>
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
-                onClick={cloneServiceQuery}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <RobotIcon />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Clone an existing service query
-                </div>
-              </button>
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
-                onClick={updateServiceQuery}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <DroidIcon />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Update an existing service query
-                </div>
-              </button>
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
-                onClick={loadServiceQueryFromProject}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <DroidIcon />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Load service query from a project
-                </div>
-              </button>
-              <button
-                className="query-setup__landing-page__option query-setup__landing-page__option--advanced query-setup__landing-page__option--service-query"
-                onClick={productionizeQuery}
-              >
-                <div className="query-setup__landing-page__option__icon">
-                  <ArrowCirceUpIcon />
-                </div>
-                <div className="query-setup__landing-page__option__label">
-                  Productionize an existing query
-                </div>
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+    <div className="query-setup__landing-page">
+      {setupStore.initState.hasCompleted && (
+        <>
+          <div className="query-setup__landing-page__title">
+            What do you want to do today
+            <QuestionCircleIcon
+              className="query-setup__landing-page__title__question-mark"
+              title="Choose one of the option below to start"
+            />
+          </div>
+          <div className="query-setup__landing-page__actions">
+            {setupStore.actionGroupToFocus && (
+              <QuerySetupActionGroup tag={setupStore.actionGroupToFocus} />
+            )}
+            {!setupStore.actionGroupToFocus && (
+              <>
+                <QuerySetupActionGroup />
+                {setupStore.showAllGroups && (
+                  <>
+                    {setupStore.actionGroups.map((tag) => (
+                      <QuerySetupActionGroup key={tag} tag={tag} />
+                    ))}
+                    <div className="query-setup__landing-page__action-group query-setup__landing-page__action-group--studio">
+                      <div className="query-setup__landing-page__action-group__tag">
+                        Studio
+                      </div>
+                      <div className="query-setup__landing-page__action-group__header" />
+                      <div className="query-setup__landing-page__action-group__body">
+                        <button
+                          className="query-setup__landing-page__action query-setup__landing-page__action--studio"
+                          onClick={goToStudio}
+                          tabIndex={-1}
+                        >
+                          <div className="query-setup__landing-page__action__icon">
+                            <PencilIcon />
+                          </div>
+                          <div className="query-setup__landing-page__action__label">
+                            Open Legend Studio
+                          </div>
+                        </button>
+                      </div>
+                      <div className="query-setup__landing-page__action-group__footer" />
+                    </div>
+                  </>
+                )}
+                {!setupStore.showAllGroups && (
+                  <div className="query-setup__landing-page__footer">
+                    <button
+                      className="query-setup__landing-page__footer__more-btn"
+                      onClick={showAllActionGroup}
+                      tabIndex={-1}
+                      title="Show all action groups"
+                    >
+                      <ChevronDownThinIcon />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 });
 
@@ -1259,10 +1375,13 @@ export const QuerySetup = withQuerySetupStore(
     };
 
     return (
-      <div className="query-setup">
-        {!querySetupState && <QuerySetupLandingPage />}
-        {querySetupState && renderQuerySetupScreen(querySetupState)}
-      </div>
+      <>
+        <PanelLoadingIndicator isLoading={setupStore.initState.isInProgress} />
+        <div className="query-setup">
+          {!querySetupState && <QuerySetupLandingPage />}
+          {querySetupState && renderQuerySetupScreen(querySetupState)}
+        </div>
+      </>
     );
   }),
 );

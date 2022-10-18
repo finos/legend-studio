@@ -25,9 +25,30 @@ import type {
 } from './QueryEditorStore.js';
 import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
 
-export type QuerySetupOptionRendererConfiguration = {
+export enum QuerySetupActionTag {
+  SDLC = 'SDLC',
+}
+
+export type QuerySetupActionConfiguration = {
   key: string;
-  renderer: (setupStore: QuerySetupStore) => React.ReactNode | undefined;
+  isCreateAction: boolean;
+  isAdvanced: boolean;
+  /**
+   * NOTE: we could potentially support multiple tags, but for simplicity
+   * we will only limit this to one
+   *
+   * If no tag is provided, the action will be classified into the default group
+   */
+  tag?: string;
+  // NOTE: we could have an advanced option for rendering, i.e. specifying the
+  // component for the button, this gives a lot of flexibility and could facilitate
+  // powerful interaction like click to open modal dialog, etc., but this allows
+  // too much customization, so we will not have that for now
+  //
+  label: string;
+  icon: React.ReactNode;
+  className?: string | undefined;
+  action: (setupStore: QuerySetupStore) => Promise<void>;
 };
 
 export type QuerySetupRenderer = (
@@ -63,9 +84,9 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
   }
 
   /**
-   * Get the list of renderer configurations for the query setup option.
+   * Get the list of actions (configurations) for query setup.
    */
-  getExtraQuerySetupOptionRendererConfigurations?(): QuerySetupOptionRendererConfiguration[];
+  getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
 
   /**
    * Get the list of renderers for query setup.

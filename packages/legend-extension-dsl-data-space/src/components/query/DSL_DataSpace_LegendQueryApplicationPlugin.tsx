@@ -18,7 +18,7 @@ import packageJson from '../../../package.json';
 import {
   type QueryEditorStore,
   type QueryEditorHeaderLabeler,
-  type QuerySetupOptionRendererConfiguration,
+  type QuerySetupActionConfiguration,
   type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
@@ -82,31 +82,22 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
     ];
   }
 
-  override getExtraQuerySetupOptionRendererConfigurations(): QuerySetupOptionRendererConfiguration[] {
+  override getExtraQuerySetupActionConfigurations(): QuerySetupActionConfiguration[] {
     return [
       {
-        key: 'data-space-query-option',
-        renderer: (
-          setupStore: QuerySetupStore,
-        ): React.ReactNode | undefined => {
-          const createQuery = (): void =>
-            setupStore.applicationStore.navigator.goToLocation(
-              generateDataSpaceQuerySetupRoute(),
-            );
-          return (
-            <button
-              className="query-setup__landing-page__option query-setup__landing-page__option--data-space"
-              onClick={createQuery}
-            >
-              <div className="query-setup__landing-page__option__icon">
-                <SquareIcon className="query-setup__landing-page__icon--data-space" />
-              </div>
-              <div className="query-setup__landing-page__option__label">
-                Create query from data space
-              </div>
-            </button>
+        key: 'create-query-from-data-space',
+        isAdvanced: false,
+        isCreateAction: true,
+        action: async (setupStore: QuerySetupStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateDataSpaceQuerySetupRoute(),
           );
         },
+        label: 'Create query from data space',
+        className: 'query-setup__landing-page__action--data-space',
+        icon: (
+          <SquareIcon className="query-setup__landing-page__icon--data-space" />
+        ),
       },
     ];
   }

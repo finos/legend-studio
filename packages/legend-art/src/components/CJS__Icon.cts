@@ -202,6 +202,7 @@ export {
   IoFlaskSharp as FlaskIcon,
 } from 'react-icons/io5';
 export {
+  BsChevronDown as ChevronDownThinIcon,
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,

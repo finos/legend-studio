@@ -17,29 +17,26 @@
 @use 'mixins' as *;
 
 .query-setup {
-  @include flexCenter;
+  @include flexHCenter;
 
   width: 100%;
   height: 100%;
+  padding: 20rem;
+  overflow: overlay;
 }
 
 .query-setup__landing-page {
-  @include flexCenter;
-
+  display: flex;
   flex-direction: column;
-  height: 40rem;
-  width: 32rem;
-  background: var(--color-dark-grey-80);
-  border-radius: 0.2rem;
+  width: 62rem;
 
   &__title {
-    @include flexCenter;
+    @include flexVCenter;
 
-    height: 3.4rem;
-    width: 25rem;
+    justify-content: flex-start;
     color: var(--color-light-grey-400);
     font-family: 'Roboto Mono', monospace;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     margin-bottom: 1rem;
     cursor: default;
     user-select: none;
@@ -56,13 +53,117 @@
     }
   }
 
-  &__option {
+  &__action-group {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-dark-grey-80);
+    border-radius: 0.2rem;
+    position: relative;
+
+    &__tag {
+      @include flexVCenter;
+
+      height: 1.6rem;
+      background: var(--color-blue-200);
+      color: var(--color-light-grey-0);
+      font-size: 1.1rem;
+      padding: 0.5rem;
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      position: absolute;
+      top: -0.5rem;
+      font-weight: 700;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &--studio &__tag {
+      background: var(--color-purple-200);
+    }
+
+    &__header {
+      @include flexVCenter;
+
+      justify-content: flex-end;
+      height: 2.5rem;
+    }
+
+    &__config {
+      @include flexCenter;
+
+      height: 2.5rem;
+      width: 2.5rem;
+      cursor: pointer;
+      color: var(--color-dark-grey-400);
+      position: relative;
+
+      &:hover {
+        color: var(--color-dark-grey-500);
+      }
+
+      &__status {
+        position: absolute;
+        right: 0.4rem;
+        bottom: 0.2rem;
+
+        svg {
+          font-size: 0.8rem;
+          color: var(--color-blue-100);
+        }
+      }
+    }
+
+    &__body {
+      @include flexHCenter;
+    }
+
+    &__body__column {
+      @include flexVCenter;
+
+      flex-direction: column;
+      width: 28rem;
+
+      & + & {
+        border-left: 0.2rem solid var(--color-dark-grey-50);
+      }
+    }
+
+    &__footer {
+      @include flexCenter;
+
+      height: 2.5rem;
+
+      &__content {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        width: 54rem;
+        height: 2.5rem;
+      }
+
+      &__btn {
+        svg {
+          font-size: 2rem;
+          color: var(--color-dark-grey-400);
+        }
+
+        &:hover svg {
+          color: var(--color-dark-grey-500);
+        }
+      }
+    }
+
+    & + & {
+      margin-top: 1rem;
+    }
+  }
+
+  &__action {
     @include flexVCenter;
 
     height: 3.4rem;
-    width: 25rem;
+    width: 26rem;
     border-radius: 0.2rem;
-    background: var(--color-light-grey-300);
+    background: var(--color-light-grey-400);
     user-select: none;
 
     &--existing-query:hover {
@@ -73,45 +174,101 @@
       background: var(--color-blue-50);
     }
 
-    &--create-query:hover {
+    &--productionize-query:hover {
+      background: var(--color-orange-100);
+    }
+
+    &--create-mapping-query:hover {
       background: var(--color-lime-75);
     }
 
+    &--studio {
+      width: 54rem;
+
+      &:hover {
+        background: var(--color-lime-75);
+      }
+    }
+
     &--advanced {
-      background: var(--color-dark-grey-500);
+      background: var(--color-dark-grey-400);
     }
-  }
 
-  &__option + &__option {
-    margin-top: 0.5rem;
-  }
+    &__icon {
+      @include flexCenter;
+      @include flexConstantDimension;
 
-  &__option__icon {
-    @include flexCenter;
-    @include flexConstantDimension;
+      height: 3.4rem;
+      width: 3.4rem;
+      border-right: 0.1rem solid var(--color-dark-shade-300);
 
-    height: 3.4rem;
-    width: 3.4rem;
-    border-right: 0.1rem solid var(--color-dark-shade-300);
+      svg {
+        color: var(--color-dark-shade-800);
+      }
+    }
 
-    svg {
+    &__label {
+      @include flexVCenter;
+
+      padding: 0 1.5rem;
+      height: 100%;
+      width: 100%;
       color: var(--color-dark-shade-800);
+      font-size: 1.2rem;
+      font-weight: 500;
     }
-  }
 
-  &__option__label {
-    @include flexVCenter;
-
-    padding: 0 1.5rem;
-    height: 100%;
-    width: 100%;
-    color: var(--color-dark-shade-800);
-    font-size: 1.2rem;
-    font-weight: 500;
+    & + & {
+      margin-top: 0.5rem;
+    }
   }
 
   &__icon--search {
     font-size: 2rem;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 1rem;
+
+    &__more-btn {
+      svg {
+        font-size: 2.6rem;
+        color: var(--color-dark-grey-250);
+        animation: bouncedown 0.5s alternate ease infinite;
+      }
+
+      &:hover svg {
+        color: var(--color-dark-grey-400);
+      }
+    }
+
+    @keyframes bouncedown {
+      from {
+        transform: translateY(0.2rem);
+      }
+
+      to {
+        transform: translateY(-0.2rem);
+      }
+    }
+  }
+
+  &__config-menu {
+    .menu__item {
+      font-size: 1.2rem;
+      height: 2.2rem;
+    }
+
+    .menu__item__icon svg {
+      font-size: 1.2rem;
+    }
+
+    .menu__item__label {
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
+    }
   }
 }
 

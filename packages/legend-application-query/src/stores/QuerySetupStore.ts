@@ -28,6 +28,8 @@ import {
   ActionState,
   assertErrorThrown,
   LogEvent,
+  uniq,
+  isNonNullable,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -67,6 +69,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl,
 } from './LegendQueryRouter.js';
+import type { QuerySetupActionConfiguration } from './LegendQueryApplicationPlugin.js';
 
 export abstract class QuerySetupState {
   setupStore: QuerySetupStore;
@@ -615,13 +618,26 @@ export class QuerySetupStore {
   readonly initState = ActionState.create();
   querySetupState?: QuerySetupState | undefined;
 
+  actions: QuerySetupActionConfiguration[] = [];
+  actionGroups: string[] = [];
+  showAllGroups = false;
+  showAdvancedActions = false;
+  actionGroupToFocus?: string | undefined;
+
   constructor(
     applicationStore: LegendQueryApplicationStore,
     depotServerClient: DepotServerClient,
   ) {
     makeObservable(this, {
       querySetupState: observable,
+      showAllGroups: observable,
+      showAdvancedActions: observable,
+      actionGroupToFocus: observable,
+      isCustomized: computed,
       setSetupState: action,
+      setShowAllGroups: action,
+      setShowAdvancedActions: action,
+      setActionGroupToFocus: action,
       initialize: flow,
     });
 
@@ -632,10 +648,48 @@ export class QuerySetupStore {
     );
     this.depotServerClient = depotServerClient;
     this.pluginManager = applicationStore.pluginManager;
+    this.actions = this.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) => plugin.getExtraQuerySetupActionConfigurations?.() ?? [],
+      )
+      .sort((a, b) => (a.isAdvanced ? 1 : 0) - (b.isAdvanced ? 1 : 0));
+    this.actionGroups = uniq(
+      this.actions.map((config) => config.tag).filter(isNonNullable),
+    ).sort();
+  }
+
+  get isCustomized(): boolean {
+    return (
+      this.showAllGroups ||
+      this.showAdvancedActions ||
+      Boolean(this.actionGroupToFocus)
+    );
   }
 
   setSetupState(val: QuerySetupState | undefined): void {
     this.querySetupState = val;
+  }
+
+  setShowAllGroups(val: boolean): void {
+    this.showAllGroups = val;
+  }
+
+  setShowAdvancedActions(val: boolean): void {
+    this.showAdvancedActions = val;
+  }
+
+  setActionGroupToFocus(val: string | undefined): void {
+    if (val && !this.actionGroups.includes(val)) {
+      return;
+    }
+    this.actionGroupToFocus = val;
+  }
+
+  resetConfig(): void {
+    this.setShowAdvancedActions(false);
+    this.setShowAllGroups(false);
+    this.setActionGroupToFocus(undefined);
   }
 
   *initialize(): GeneratorFn<void> {
