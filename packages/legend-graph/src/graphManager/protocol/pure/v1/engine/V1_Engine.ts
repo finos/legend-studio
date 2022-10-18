@@ -366,7 +366,7 @@ export class V1_Engine {
   async compilePureModelContextData(
     model: V1_PureModelContextData,
     options?:
-      | { onError?: (() => void) | undefined; getErrorWarnings?: boolean }
+      | { onError?: (() => void) | undefined; getCompilationWarnings?: boolean }
       | undefined,
   ): Promise<void> {
     try {
@@ -393,16 +393,18 @@ export class V1_Engine {
   async getWarningsFromCompilePureModelContextData(
     model: V1_PureModelContextData,
     options?:
-      | { onError?: (() => void) | undefined; getErrorWarnings?: boolean }
+      | { onError?: (() => void) | undefined; getCompilationWarnings?: boolean }
       | undefined,
   ): Promise<EngineWarning[] | undefined> {
     try {
       const compileResponse = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-      if (compileResponse.warnings && options?.getErrorWarnings === true) {
-        const warnings = compileResponse.warnings as EngineWarning[];
-        return warnings;
+      if (
+        compileResponse.warnings &&
+        options?.getCompilationWarnings === true
+      ) {
+        return compileResponse.warnings as EngineWarning[];
       } else {
         return undefined;
       }
@@ -426,7 +428,7 @@ export class V1_Engine {
   async compileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<V1_PureModelContextData> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,

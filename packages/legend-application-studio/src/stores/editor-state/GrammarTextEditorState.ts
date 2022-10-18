@@ -78,7 +78,6 @@ export class GrammarTextEditorState {
       setError: action,
       setWarning: action,
       setWarnings: action,
-      clearConsoleProblems: action,
       setGraphGrammarText: action,
       setWrapText: action,
       resetCurrentElementLabelRegexString: action,
@@ -98,11 +97,6 @@ export class GrammarTextEditorState {
 
   setWarnings(warnings: EngineWarning[] | undefined): void {
     this.warnings = warnings;
-  }
-
-  clearConsoleProblems(): void {
-    this.warnings = undefined;
-    this.warning = undefined;
   }
 
   setGraphGrammarText(code: string): void {

@@ -215,21 +215,19 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               OUTDATED
             </button>
           )}
-          {warnings && (
-            <button
-              className="editor__status-bar__workspace__warning__btn"
-              tabIndex={-1}
-              onClick={showAuxPanelProblems}
-              title={`Warnings: ${warnings.length}`}
-            >
-              <div className="editor__status-bar__workspace__icon">
-                <WarningOutlineIcon />
-              </div>
-              <div className="editor__status-bar__workspace__warning__btn__label">
-                {warnings.length}
-              </div>
-            </button>
-          )}
+          <button
+            className="editor__status-bar__workspace__warning__btn"
+            tabIndex={-1}
+            onClick={showAuxPanelProblems}
+            title={`Warnings: ${warnings ? warnings.length : 0}`}
+          >
+            <div className="editor__status-bar__workspace__icon">
+              <WarningOutlineIcon />
+            </div>
+            <div className="editor__status-bar__workspace__warning__btn__label">
+              {warnings ? warnings.length : 0}
+            </div>
+          </button>
         </div>
       </div>
       <div

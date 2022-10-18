@@ -46,6 +46,10 @@
     background: transparent;
     cursor: pointer;
     width: 2.8rem;
+
+    svg {
+      color: var(--color-light-grey-400);
+    }
   }
 
   &__header__action[disabled] svg {
@@ -252,6 +256,10 @@
 
   &__section {
     padding: 0 1rem;
+
+    .input-group__error-message {
+      max-width: 45rem;
+    }
   }
 
   &__icon {

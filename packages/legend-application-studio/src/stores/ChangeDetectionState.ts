@@ -35,6 +35,7 @@ import {
   hashObject,
   promisify,
   ActionState,
+  hashArray,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
 import type { EditorGraphState } from './EditorGraphState.js';
@@ -129,12 +130,6 @@ class RevisionChangeDetectionState {
       );
     }
     this.changes = changes;
-
-    if (this.changes.length > 0 && this.editorStore.isInFormMode === true) {
-      // removing all the warnings on any key change in editor
-      // since we do not know the changes until they hit compile again
-      this.editorStore.grammarTextEditorState.clearConsoleProblems();
-    }
     if (!quiet) {
       this.editorStore.applicationStore.log.info(
         LogEvent.create(
@@ -277,12 +272,14 @@ export class ChangeDetectionState {
   aggregatedConflictResolutionChanges: EntityDiff[] = [];
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
+  graphHash: string | undefined;
 
   observerContext: ObserverContext;
 
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       resolutions: observable,
+      graphHash: observable,
       projectLatestRevisionState: observable.ref,
       conflictResolutionBaseRevisionState: observable.ref,
       conflictResolutionHeadRevisionState: observable.ref,
@@ -298,6 +295,7 @@ export class ChangeDetectionState {
       conflicts: observable.ref,
       setAggregatedProjectLatestChanges: action,
       setPotentialWorkspaceUpdateConflicts: action,
+      setGraphHash: action,
       stop: action,
       start: action,
       computeAggregatedWorkspaceChanges: flow,
@@ -341,10 +339,18 @@ export class ChangeDetectionState {
     this.observerContext = new ObserverContext(
       this.editorStore.pluginManager.getPureGraphManagerPlugins(),
     );
+
+    this.graphHash = hashArray(
+      this.editorStore.graphManagerState.graph.allOwnElements,
+    );
   }
 
   setAggregatedProjectLatestChanges(diffs: EntityDiff[]): void {
     this.aggregatedProjectLatestChanges = diffs;
+  }
+
+  setGraphHash(value: string | undefined): void {
+    this.graphHash = value;
   }
 
   setAggregatedWorkspaceRemoteChanges(diffs: EntityDiff[]): void {
@@ -741,6 +747,9 @@ export class ChangeDetectionState {
    */
   *computeLocalChanges(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
+    this.setGraphHash(
+      hashArray(this.editorStore.graphManagerState.graph.allOwnElements),
+    );
     yield Promise.all([
       this.workspaceLocalLatestRevisionState.computeChanges(quiet), // for local changes detection
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection

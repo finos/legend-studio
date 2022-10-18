@@ -36,16 +36,21 @@ export const PanelFullContent: React.FC<{
 };
 
 export const PanelHeader: React.FC<{
-  title: string;
+  title?: string;
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
   const { title, children } = props;
   return (
     <div className="panel__header">
-      <div className="panel__header__title">
-        <div className="panel__header__title__label">{title.toLowerCase()}</div>
-      </div>
+      {title && (
+        <div className="panel__header__title">
+          <div className="panel__header__title__label">
+            {title.toLowerCase()}
+          </div>
+        </div>
+      )}
+
       {children}
     </div>
   );
@@ -143,7 +148,7 @@ export const PanelSection: React.FC<{
           <div className="panel__content__form__section">{elementChild}</div>
         );
       } else {
-        return <></>;
+        return <div className="panel__content__form__section"> {child}</div>;
       }
     });
     if (section) {
@@ -229,15 +234,6 @@ export const PanelFormTextEditor = observer(
               {errorMessage}
             </div>
           )}
-        </div>
-        <div className="input-group">
-          <input
-            className="panel__content__form__section__input"
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={displayValue}
-            onChange={changeValue}
-          />
         </div>
       </>
     );

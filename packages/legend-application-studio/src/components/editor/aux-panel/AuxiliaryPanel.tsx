@@ -23,6 +23,9 @@ import {
   XIcon,
   PanelContent,
   Badge,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import { Console } from './Console.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
@@ -90,7 +93,7 @@ export const AuxiliaryPanel = observer(() => {
 
   return (
     <div className="panel auxiliary-panel">
-      <div className="panel__header">
+      <PanelHeader>
         <div className="auxiliary-panel__header__tabs">
           {tabsToShow
             .map((tab) => auxTabMap[tab])
@@ -122,8 +125,8 @@ export const AuxiliaryPanel = observer(() => {
               </button>
             ))}
         </div>
-        <div className="auxiliary-panel__header__actions">
-          <button
+        <PanelHeaderActions>
+          <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={toggleExpandAuxPanel}
             tabIndex={-1}
@@ -134,17 +137,17 @@ export const AuxiliaryPanel = observer(() => {
             ) : (
               <ChevronUpIcon />
             )}
-          </button>
-          <button
+          </PanelHeaderActionItem>
+          <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={closePanel}
             tabIndex={-1}
             title="Close"
           >
             <XIcon />
-          </button>
-        </div>
-      </div>
+          </PanelHeaderActionItem>
+        </PanelHeaderActions>
+      </PanelHeader>
       <PanelContent>
         {isTabVisible(AUX_PANEL_MODE.PROBLEMS) && (
           <div className="auxiliary-panel__content__tab">

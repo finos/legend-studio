@@ -16,9 +16,10 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  PanelForm,
   PanelSection,
   PanelFormBooleanEditor,
+  Panel,
+  PanelFormTextEditor,
 } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -30,12 +31,6 @@ export const DevTool = observer(() => {
   const engineConfig = observe_TEMPORARY__AbstractEngineConfig(
     editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig(),
   );
-  const changeEngineClientBaseUrl: React.ChangeEventHandler<
-    HTMLInputElement
-  > = (event) =>
-    engineConfig.setBaseUrl(
-      event.target.value === '' ? undefined : event.target.value,
-    );
   const toggleEngineClientRequestPayloadCompression = (): void =>
     engineConfig.setUseClientRequestPayloadCompression(
       !engineConfig.useClientRequestPayloadCompression,
@@ -46,42 +41,34 @@ export const DevTool = observer(() => {
     );
 
   return (
-    <div className="console-panel">
-      <div className="console-panel__content">
-        <PanelForm>
-          <PanelSection>
-            <PanelFormBooleanEditor
-              name="Engine client request payload compression"
-              description="Specifies if request payload should be compressed"
-              value={engineConfig.useClientRequestPayloadCompression}
-              isReadOnly={false}
-              update={toggleEngineClientRequestPayloadCompression}
-            />
-            {/* TODO: switch out with panel text group after merge  */}
-            <div className="panel__content__form__section__header__label">
-              Engine client base URL
-            </div>
-            <div className="input-group">
-              <input
-                className="panel__content__form__section__input input-group__input input--dark"
-                spellCheck={false}
-                value={engineConfig.baseUrl ?? ''}
-                onChange={changeEngineClientBaseUrl}
-              />
-              {!isValidUrl(engineConfig.baseUrl ?? '') && (
-                <div className="input-group__error-message">Invalid URL</div>
-              )}
-            </div>
-            <PanelFormBooleanEditor
-              name="Engine execution runner"
-              description="Use Base64 encoding for adhoc connection data URLs"
-              value={engineConfig.useClientRequestPayloadCompression}
-              isReadOnly={false}
-              update={toggleDataUrlEncoding}
-            />
-          </PanelSection>
-        </PanelForm>
-      </div>
-    </div>
+    <Panel className="console-panel">
+      <PanelSection>
+        <PanelFormBooleanEditor
+          name="Engine client request payload compression"
+          prompt="Specifies if request payload should be compressed"
+          value={engineConfig.useClientRequestPayloadCompression}
+          isReadOnly={false}
+          update={toggleEngineClientRequestPayloadCompression}
+        />
+        <PanelFormTextEditor
+          name="Engine client base URL"
+          value={engineConfig.baseUrl ?? ''}
+          isReadOnly={false}
+          update={(value: string | undefined): void =>
+            engineConfig.setBaseUrl(value === '' ? undefined : value)
+          }
+          errorMessage={
+            !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
+          }
+        />
+        <PanelFormBooleanEditor
+          name="Engine execution runner"
+          prompt="Use Base64 encoding for adhoc connection data URLs"
+          value={engineConfig.useClientRequestPayloadCompression}
+          isReadOnly={false}
+          update={toggleDataUrlEncoding}
+        />
+      </PanelSection>
+    </Panel>
   );
 });

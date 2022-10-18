@@ -1498,18 +1498,19 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       | {
           onError?: (() => void) | undefined;
           keepSourceInformation?: boolean | undefined;
-          getErrorWarnings?: boolean;
+          flagDoNotBreakIfCompilationWarning?: boolean | undefined;
+          getCompilationWarnings?: boolean;
         }
       | undefined,
   ): Promise<EngineWarning[] | void> {
-    if (options?.getErrorWarnings) {
+    if (options?.getCompilationWarnings) {
       return this.engine.getWarningsFromCompilePureModelContextData(
         this.getFullGraphModelData(graph, {
           keepSourceInformation: options.keepSourceInformation,
         }),
         {
           onError: options.onError,
-          getErrorWarnings: options.getErrorWarnings,
+          getCompilationWarnings: options.getCompilationWarnings,
         },
       );
     } else {
@@ -1527,7 +1528,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async compileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<Entity[]> {
     return this.pureModelContextDataToEntities(
       await this.engine.compileText(
@@ -1541,7 +1542,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async getWarningsFromCompileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<EngineWarning[] | undefined> {
     return this.engine.getWarningsFromCompileText(
       graphGrammar,

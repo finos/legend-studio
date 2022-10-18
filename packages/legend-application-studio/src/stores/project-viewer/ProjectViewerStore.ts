@@ -478,7 +478,7 @@ export class ProjectViewerStore {
         yield flowResult(
           this.editorStore.graphState.globalCompileInTextMode({
             ignoreBlocking: true,
-            suppressCompilationFailureMessage: true,
+            flagDoNotBreakIfCompilationWarning: false,
           }),
         );
       } else {

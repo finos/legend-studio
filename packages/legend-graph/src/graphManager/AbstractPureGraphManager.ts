@@ -242,13 +242,14 @@ export abstract class AbstractPureGraphManager {
     options?: {
       onError?: () => void;
       keepSourceInformation?: boolean;
-      getErrorWarnings?: boolean;
+      flagDoNotBreakIfCompilationWarning?: boolean;
+      getCompilationWarnings?: boolean;
     },
   ): Promise<void | EngineWarning[]>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void; getErrorWarnings?: boolean },
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
   ): Promise<Entity[]>;
   abstract getWarningsFromCompileText(
     graphGrammar: string,
