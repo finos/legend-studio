@@ -47,7 +47,6 @@ import {
   LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   generateExistingQueryEditorRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
@@ -56,6 +55,8 @@ import {
   ExistingQueryEditorStore,
   QueryExportState,
   ServiceQueryCreatorStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
 import { useApplicationStore, useParams } from '@finos/legend-application';
 import {
@@ -426,18 +427,21 @@ const QueryEditorHeaderContent = observer(
     };
     const viewProject = (): void => {
       const { groupId, artifactId, versionId } = editorStore.getProjectInfo();
-      applicationStore.navigator.visitAddress(
-        EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-          applicationStore.config.studioUrl,
-          groupId,
-          artifactId,
-          versionId,
-          undefined,
-        ),
+      createViewProjectHandler(applicationStore)(
+        groupId,
+        artifactId,
+        versionId,
+        undefined,
       );
     };
     const viewSDLCProject = (): void => {
-      editorStore.viewSDLCProject().catch(applicationStore.alertUnhandledError);
+      const { groupId, artifactId } = editorStore.getProjectInfo();
+      createViewSDLCProjectHandler(
+        applicationStore,
+        editorStore.depotServerClient,
+      )(groupId, artifactId, undefined).catch(
+        applicationStore.alertUnhandledError,
+      );
     };
     const toggleLightDarkMode = (): void =>
       applicationStore.TEMPORARY__setIsLightThemeEnabled(

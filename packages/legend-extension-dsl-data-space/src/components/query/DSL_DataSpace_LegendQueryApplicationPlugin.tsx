@@ -19,8 +19,6 @@ import {
   type QueryEditorStore,
   type QueryEditorHeaderLabeler,
   type QuerySetupOptionRendererConfiguration,
-  type QuerySetupRenderer,
-  type QuerySetupState,
   type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
@@ -28,16 +26,19 @@ import {
   generateExistingQueryEditorRoute,
   LegendQueryEventService,
   LEGEND_QUERY_APP_EVENT,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
 import { SquareIcon } from '@finos/legend-art';
-import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
-import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import { DATA_SPACE_QUERY_ROUTE_PATTERN } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
+import {
+  DATA_SPACE_QUERY_ROUTE_PATTERN,
+  generateDataSpaceQuerySetupRoute,
+} from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
 import {
   createQueryDataSpaceTaggedValue,
@@ -57,7 +58,7 @@ import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
-import { DataSpaceQuerySetup } from './DataSpaceQuerySetupLandingPage.js';
+import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -89,7 +90,9 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
           setupStore: QuerySetupStore,
         ): React.ReactNode | undefined => {
           const createQuery = (): void =>
-            setupStore.setSetupState(new DataSpaceQuerySetupState(setupStore));
+            setupStore.applicationStore.navigator.goToLocation(
+              generateDataSpaceQuerySetupRoute(),
+            );
           return (
             <button
               className="query-setup__landing-page__option query-setup__landing-page__option--data-space"
@@ -104,17 +107,6 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             </button>
           );
         },
-      },
-    ];
-  }
-
-  override getExtraQuerySetupRenderers(): QuerySetupRenderer[] {
-    return [
-      (querySetupState: QuerySetupState): React.ReactNode | undefined => {
-        if (querySetupState instanceof DataSpaceQuerySetupState) {
-          return <DataspaceQuerySetup querySetupState={querySetupState} />;
-        }
-        return undefined;
       },
     ];
   }
@@ -175,6 +167,11 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             query.groupId,
             query.artifactId,
             query.versionId,
+            createViewProjectHandler(editorStore.applicationStore),
+            createViewSDLCProjectHandler(
+              editorStore.applicationStore,
+              editorStore.depotServerClient,
+            ),
             (dataSpaceInfo: DataSpaceInfo) => {
               if (dataSpaceInfo.defaultExecutionContext) {
                 const persistQuery = async (): Promise<void> => {

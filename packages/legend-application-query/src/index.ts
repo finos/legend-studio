@@ -32,6 +32,8 @@ export * from './stores/LegendQueryRouter.js';
 export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
 export { LegendQueryApplicationConfig } from './application/LegendQueryApplicationConfig.js';
 export {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
   QueryEditorStore,
   ExistingQueryEditorStore,
   type QueryExportConfiguration,

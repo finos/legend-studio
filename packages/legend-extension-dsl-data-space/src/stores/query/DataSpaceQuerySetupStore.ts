@@ -15,6 +15,8 @@
  */
 
 import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
   QueryEditorStore,
   type QueryExportConfiguration,
 } from '@finos/legend-application-query';
@@ -29,7 +31,7 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { flow, makeObservable, observable } from 'mobx';
+import { action, flow, makeObservable, observable } from 'mobx';
 import { QueryBuilderState } from '@finos/legend-query-builder';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
 import {
@@ -41,38 +43,83 @@ import {
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { generateDataSpaceQueryCreatorRoute } from './DSL_DataSpace_LegendQueryRouter.js';
-import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/query/DataSpaceQuerySetupLandingPage.js';
+import { renderDataSpaceQuerySetupSetupPanelContent } from '../../components/query/DataSpaceQuerySetup.js';
+import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 
 export class DataSpaceQuerySetupState extends QueryBuilderState {
   readonly depotServerClient: DepotServerClient;
   readonly loadDataSpacesState = ActionState.create();
   readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
+  readonly viewProject: (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ) => void;
+  readonly viewSDLCProject: (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ) => Promise<void>;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderDataSpaceQuerySetupSetupPanelContent(this);
 
   dataSpaces: DataSpaceInfo[] = [];
   showRuntimeSelector = false;
+  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     depotServerClient: DepotServerClient,
     onDataSpaceChange: (val: DataSpaceInfo) => void,
+    viewProject: (
+      groupId: string,
+      artifactId: string,
+      versionId: string,
+      entityPath: string | undefined,
+    ) => void,
+    viewSDLCProject: (
+      groupId: string,
+      artifactId: string,
+      entityPath: string | undefined,
+    ) => Promise<void>,
   ) {
     super(applicationStore, graphManagerState);
 
     makeObservable(this, {
       dataSpaces: observable,
+      advancedSearchState: observable,
+      showAdvancedSearchPanel: action,
+      hideAdvancedSearchPanel: action,
       loadDataSpaces: flow,
     });
 
     this.depotServerClient = depotServerClient;
     this.onDataSpaceChange = onDataSpaceChange;
+    this.viewProject = viewProject;
+    this.viewSDLCProject = viewSDLCProject;
   }
 
   override get sideBarClassName(): string | undefined {
     return 'query-builder__setup__data-space-setup';
+  }
+
+  showAdvancedSearchPanel(): void {
+    this.advancedSearchState = new DataSpaceAdvancedSearchState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.depotServerClient,
+      {
+        viewProject: this.viewProject,
+        viewSDLCProject: this.viewSDLCProject,
+      },
+    );
+  }
+
+  hideAdvancedSearchPanel(): void {
+    this.advancedSearchState = undefined;
   }
 
   *loadDataSpaces(searchText: string): GeneratorFn<void> {
@@ -140,6 +187,11 @@ export class DataSpaceQuerySetupStore extends QueryEditorStore {
           );
         }
       },
+      createViewProjectHandler(this.applicationStore),
+      createViewSDLCProjectHandler(
+        this.applicationStore,
+        this.depotServerClient,
+      ),
     );
 
     return queryBuilderState;

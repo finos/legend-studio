@@ -23,11 +23,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import {
-  type Entity,
-  parseGAVCoordinates,
-  parseProjectIdentifier,
-} from '@finos/legend-storage';
+import { type Entity, parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
   ProjectData,
@@ -43,10 +39,12 @@ import type { LegendTaxonomyPluginManager } from '../application/LegendTaxonomyP
 import type { LegendTaxonomyApplicationStore } from './LegendTaxonomyBaseStore.js';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   type LegendTaxonomyStandaloneDataSpaceViewerPathParams,
 } from './LegendTaxonomyRouter.js';
+import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './LegendTaxonomyDataSpaceViewerHelper.js';
 
 export class StandaloneDataSpaceViewerStore {
   applicationStore: LegendTaxonomyApplicationStore;
@@ -134,60 +132,17 @@ export class StandaloneDataSpaceViewerStore {
       )) as DataSpaceAnalysisResult;
 
       this.viewerState = new DataSpaceViewerState(
+        this.applicationStore,
         groupId,
         artifactId,
         versionId,
         analysisResult,
         {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void =>
-            this.applicationStore.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                this.applicationStore.config.studioUrl,
-                _groupId,
-                _artifactId,
-                _versionId,
-                entityPath,
-              ),
-            ),
-          viewSDLCProject: (
-            _groupId: string,
-            _artifactId: string,
-            entityPath: string | undefined,
-          ): void => {
-            const view = async (): Promise<void> => {
-              // fetch project data
-              const _project = ProjectData.serialization.fromJson(
-                await this.depotServerClient.getProject(_groupId, _artifactId),
-              );
-              // find the matching SDLC instance
-              const projectIDPrefix = parseProjectIdentifier(
-                _project.projectId,
-              ).prefix;
-              const matchingSDLCEntry =
-                this.applicationStore.config.studioInstances.find(
-                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-                );
-              if (matchingSDLCEntry) {
-                this.applicationStore.navigator.visitAddress(
-                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                    matchingSDLCEntry.url,
-                    _project.projectId,
-                    entityPath,
-                  ),
-                );
-              } else {
-                this.applicationStore.notifyWarning(
-                  `Can't find the corresponding SDLC instance to view the SDLC project`,
-                );
-              }
-            };
-            view().catch(this.applicationStore.alertUnhandledError);
-          },
+          viewProject: createViewProjectHandler(this.applicationStore),
+          viewSDLCProject: createViewSDLCProjectHandler(
+            this.applicationStore,
+            this.depotServerClient,
+          ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
         },

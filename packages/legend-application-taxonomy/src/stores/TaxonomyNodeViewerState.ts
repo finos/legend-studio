@@ -21,7 +21,7 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
+import type { Entity } from '@finos/legend-storage';
 import { ProjectData } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -37,16 +37,16 @@ import {
   flowResult,
   computed,
 } from 'mobx';
-import {
-  EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-} from './LegendTaxonomyRouter.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl } from './LegendTaxonomyRouter.js';
 import type {
   DataSpaceTaxonomyContext,
   TaxonomyExplorerStore,
   TaxonomyTreeNodeData,
 } from './TaxonomyExplorerStore.js';
+import {
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
+} from './LegendTaxonomyDataSpaceViewerHelper.js';
 
 interface TaxonomyNodeDataSpaceOption {
   label: string;
@@ -61,9 +61,10 @@ export const buildTaxonomyNodeDataSpaceOption = (
 });
 
 export class TaxonomyNodeViewerState {
-  explorerStore: TaxonomyExplorerStore;
-  taxonomyNode: TaxonomyTreeNodeData;
-  initDataSpaceViewerState = ActionState.create();
+  readonly explorerStore: TaxonomyExplorerStore;
+  readonly taxonomyNode: TaxonomyTreeNodeData;
+  readonly initDataSpaceViewerState = ActionState.create();
+
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   currentDataSpace?: DataSpaceTaxonomyContext | undefined;
   dataSpaceSearchText = '';
@@ -158,66 +159,19 @@ export class TaxonomyNodeViewerState {
           ),
       )) as DataSpaceAnalysisResult;
       const dataSpaceViewerState = new DataSpaceViewerState(
+        this.explorerStore.applicationStore,
         dataSpaceTaxonomyContext.groupId,
         dataSpaceTaxonomyContext.artifactId,
         dataSpaceTaxonomyContext.versionId,
         analysisResult,
         {
-          viewProject: (
-            _groupId: string,
-            _artifactId: string,
-            _versionId: string,
-            entityPath: string | undefined,
-          ): void => {
-            this.explorerStore.applicationStore.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                this.explorerStore.applicationStore.config.studioUrl,
-                _groupId,
-                _artifactId,
-                _versionId,
-                entityPath,
-              ),
-            );
-          },
-          viewSDLCProject: (
-            _groupId: string,
-            _artifactId: string,
-            entityPath: string | undefined,
-          ): void => {
-            const view = async (): Promise<void> => {
-              // fetch project data
-              const _project = ProjectData.serialization.fromJson(
-                await this.explorerStore.depotServerClient.getProject(
-                  _groupId,
-                  _artifactId,
-                ),
-              );
-              // find the matching SDLC instance
-              const projectIDPrefix = parseProjectIdentifier(
-                _project.projectId,
-              ).prefix;
-              const matchingSDLCEntry =
-                this.explorerStore.applicationStore.config.studioInstances.find(
-                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-                );
-              if (matchingSDLCEntry) {
-                this.explorerStore.applicationStore.navigator.visitAddress(
-                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                    matchingSDLCEntry.url,
-                    _project.projectId,
-                    entityPath,
-                  ),
-                );
-              } else {
-                this.explorerStore.applicationStore.notifyWarning(
-                  `Can't find the corresponding SDLC instance to view the SDLC project`,
-                );
-              }
-            };
-            view().catch(
-              this.explorerStore.applicationStore.alertUnhandledError,
-            );
-          },
+          viewProject: createViewProjectHandler(
+            this.explorerStore.applicationStore,
+          ),
+          viewSDLCProject: createViewSDLCProjectHandler(
+            this.explorerStore.applicationStore,
+            this.explorerStore.depotServerClient,
+          ),
           onDiagramClassDoubleClick: (classView: ClassView): void =>
             this.queryDataSpace(classView.class.value.path),
         },

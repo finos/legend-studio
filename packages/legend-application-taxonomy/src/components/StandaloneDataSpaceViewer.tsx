@@ -115,11 +115,11 @@ export const StandaloneDataSpaceViewer = withStandaloneDataSpaceViewerStore(
               )}
               {viewerStore.initState.hasFailed && (
                 <BlankPanelContent>
-                  <div className="query-setup__data-space__view--failed">
-                    <div className="query-setup__data-space__view--failed__icon">
+                  <div className="standalone-data-space-viewer__failure">
+                    <div className="standalone-data-space-viewer__failure__icon">
                       <TimesCircleIcon />
                     </div>
-                    <div className="query-setup__data-space__view--failed__text">
+                    <div className="standalone-data-space-viewer__failure__text">
                       Can&apos;t load data space
                     </div>
                   </div>

@@ -46,10 +46,11 @@ export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
   CREATE: `/dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`,
 });
 
-export const generateDataSpaceQuerySetupRoute = generatePath(
-  DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP,
-  {},
-);
+export const generateDataSpaceQuerySetupRoute = (): string =>
+  generatePath(
+    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP),
+    {},
+  );
 
 export const generateDataSpaceQueryCreatorRoute = (
   groupId: string,

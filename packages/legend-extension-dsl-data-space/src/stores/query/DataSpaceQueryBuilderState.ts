@@ -47,13 +47,26 @@ import type {
 } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../graphManager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
+import { DataSpaceAdvancedSearchState } from './DataSpaceAdvancedSearchState.js';
 
 export class DataSpaceQueryBuilderState extends QueryBuilderState {
+  readonly depotServerClient: DepotServerClient;
   readonly dataSpace: DataSpace;
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
-  readonly depotServerClient: DepotServerClient;
+  readonly viewProject: (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ) => void;
+  readonly viewSDLCProject: (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ) => Promise<void>;
+  readonly isAdvancedDataSpaceSearchEnabled: boolean;
   readonly loadDataSpacesState = ActionState.create();
   readonly onDataSpaceChange: (val: DataSpaceInfo) => void;
   readonly onExecutionContextChange?:
@@ -68,6 +81,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   executionContext!: DataSpaceExecutionContext;
   dataSpaces: DataSpaceInfo[] = [];
   showRuntimeSelector = false;
+  advancedSearchState?: DataSpaceAdvancedSearchState | undefined;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -76,8 +90,19 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     dataSpace: DataSpace,
     executionContext: DataSpaceExecutionContext,
     groupId: string,
-    versionId: string,
     artifactId: string,
+    versionId: string,
+    viewProject: (
+      groupId: string,
+      artifactId: string,
+      versionId: string,
+      entityPath: string | undefined,
+    ) => void,
+    viewSDLCProject: (
+      groupId: string,
+      artifactId: string,
+      entityPath: string | undefined,
+    ) => Promise<void>,
     onDataSpaceChange: (val: DataSpaceInfo) => void,
     onExecutionContextChange?:
       | ((val: DataSpaceExecutionContext) => void)
@@ -91,6 +116,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       dataSpaces: observable,
       executionContext: observable,
       showRuntimeSelector: observable,
+      advancedSearchState: observable,
+      showAdvancedSearchPanel: action,
+      hideAdvancedSearchPanel: action,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
       loadDataSpaces: flow,
@@ -102,16 +130,47 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     this.groupId = groupId;
     this.artifactId = artifactId;
     this.versionId = versionId;
+    this.viewProject = viewProject;
+    this.viewSDLCProject = viewSDLCProject;
     this.onDataSpaceChange = onDataSpaceChange;
     this.onExecutionContextChange = onExecutionContextChange;
     this.onRuntimeChange = onRuntimeChange;
     this.onClassChange = onClassChange;
+    // NOTE: if we reuse this state in the future (e.g. in Studio), we might need
+    // to turn this flag off
+    this.isAdvancedDataSpaceSearchEnabled = true;
   }
 
   override get sideBarClassName(): string | undefined {
     return this.showRuntimeSelector
       ? 'query-builder__setup__data-space--with-runtime'
       : 'query-builder__setup__data-space';
+  }
+
+  showAdvancedSearchPanel(): void {
+    this.advancedSearchState = new DataSpaceAdvancedSearchState(
+      this.applicationStore,
+      this.graphManagerState,
+      this.depotServerClient,
+      {
+        viewProject: this.viewProject,
+        viewSDLCProject: this.viewSDLCProject,
+      },
+      {
+        groupId: this.groupId,
+        artifactId: this.artifactId,
+        versionId: this.versionId,
+        title: this.dataSpace.title,
+        name: this.dataSpace.name,
+        path: this.dataSpace.path,
+        defaultExecutionContext: this.dataSpace.defaultExecutionContext.name,
+      },
+      this.versionId === SNAPSHOT_VERSION_ALIAS,
+    );
+  }
+
+  hideAdvancedSearchPanel(): void {
+    this.advancedSearchState = undefined;
   }
 
   setExecutionContext(val: DataSpaceExecutionContext): void {

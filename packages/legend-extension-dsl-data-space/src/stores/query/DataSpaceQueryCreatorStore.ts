@@ -27,6 +27,8 @@ import {
   QueryEditorStore,
   type QueryExportConfiguration,
   type LegendQueryApplicationStore,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -115,6 +117,11 @@ export class DataSpaceQueryCreatorStore extends QueryEditorStore {
       this.groupId,
       this.artifactId,
       this.versionId,
+      createViewProjectHandler(this.applicationStore),
+      createViewSDLCProjectHandler(
+        this.applicationStore,
+        this.depotServerClient,
+      ),
       (dataSpaceInfo: DataSpaceInfo) => {
         if (dataSpaceInfo.defaultExecutionContext) {
           this.applicationStore.navigator.goToLocation(

@@ -53,6 +53,7 @@ import {
   type Service,
 } from '@finos/legend-graph';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
@@ -84,6 +85,58 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
+
+export const createViewProjectHandler =
+  (applicationStore: LegendQueryApplicationStore) =>
+  (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ): void =>
+    applicationStore.navigator.visitAddress(
+      EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+        applicationStore.config.studioUrl,
+        groupId,
+        artifactId,
+        versionId,
+        entityPath,
+      ),
+    );
+
+export const createViewSDLCProjectHandler =
+  (
+    applicationStore: LegendQueryApplicationStore,
+    depotServerClient: DepotServerClient,
+  ) =>
+  async (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ): Promise<void> => {
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await depotServerClient.getProject(groupId, artifactId),
+    );
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry = applicationStore.config.studioInstances.find(
+      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+    );
+    if (matchingSDLCEntry) {
+      applicationStore.navigator.visitAddress(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+          matchingSDLCEntry.url,
+          project.projectId,
+          entityPath,
+        ),
+      );
+    } else {
+      applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to view the SDLC project`,
+      );
+    }
+  };
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -322,33 +375,6 @@ export abstract class QueryEditorStore {
 
   protected async setUpEditorState(): Promise<void> {
     // do nothing
-  }
-
-  async viewSDLCProject(): Promise<void> {
-    const { groupId, artifactId } = this.getProjectInfo();
-
-    // fetch project data
-    const project = ProjectData.serialization.fromJson(
-      await this.depotServerClient.getProject(groupId, artifactId),
-    );
-    // find the matching SDLC instance
-    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
-    const matchingSDLCEntry = this.applicationStore.config.studioInstances.find(
-      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-    );
-    if (matchingSDLCEntry) {
-      this.applicationStore.navigator.visitAddress(
-        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-          matchingSDLCEntry.url,
-          project.projectId,
-          undefined,
-        ),
-      );
-    } else {
-      this.applicationStore.notifyWarning(
-        `Can't find the corresponding SDLC instance to view the SDLC project`,
-      );
-    }
   }
 
   /**
