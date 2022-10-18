@@ -831,6 +831,7 @@ export const QueryBuilderExplorerPanel = observer(
             </button>
             <DropdownMenu
               className="panel__header__action"
+              title="Show Options Menu..."
               content={
                 <MenuContent>
                   <MenuContentItem onClick={toggleShowUnmappedProperties}>
@@ -871,10 +872,7 @@ export const QueryBuilderExplorerPanel = observer(
                 elevation: 7,
               }}
             >
-              <MoreVerticalIcon
-                title="Show Options Menu..."
-                className="query-builder__icon__more-options"
-              />
+              <MoreVerticalIcon className="query-builder__icon__more-options" />
             </DropdownMenu>
           </div>
           {propertySearchPanelState.isSearchPanelOpen && (

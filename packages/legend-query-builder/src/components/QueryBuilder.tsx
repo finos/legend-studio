@@ -198,6 +198,7 @@ export const QueryBuilder = observer(
           <div className="query-builder__sub-header__actions">
             <DropdownMenu
               className="query-builder__sub-header__custom-action"
+              title="Show Advanced Menu..."
               content={
                 <MenuContent>
                   <MenuContentItem
@@ -266,12 +267,9 @@ export const QueryBuilder = observer(
                 elevation: 7,
               }}
             >
-              <button
-                className="query-builder__sub-header__custom-action__label"
-                title="Show Advanced Menu..."
-              >
+              <div className="query-builder__sub-header__custom-action__label">
                 Advanced
-              </button>
+              </div>
               <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
             </DropdownMenu>
           </div>
@@ -280,7 +278,8 @@ export const QueryBuilder = observer(
           <div className="query-builder__activity-bar">
             <div className="query-builder__activity-bar__items"></div>
             <DropdownMenu
-              className="query-builder__activity-bar__setting"
+              className="query-builder__activity-bar__item"
+              title="Settings..."
               content={
                 <MenuContent>
                   <MenuContentItem
@@ -303,13 +302,7 @@ export const QueryBuilder = observer(
                 elevation: 7,
               }}
             >
-              <button
-                className="query-builder__activity-bar__item"
-                tabIndex={-1}
-                title="Settings..."
-              >
-                <CogIcon />
-              </button>
+              <CogIcon />
             </DropdownMenu>
           </div>
           <div className="query-builder__main">

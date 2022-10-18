@@ -265,14 +265,14 @@
       width: 12rem;
     }
 
-    &[disabled] &__label,
-    &[disabled] &__dropdown-btn {
+    &__label[disabled],
+    &__dropdown-btn[disabled] {
       background: var(--color-dark-grey-250);
     }
 
-    &[disabled] &__label__icon,
-    &[disabled] &__label__title,
-    &[disabled] &__dropdown-btn svg {
+    &__label[disabled] &__label__icon,
+    &__label[disabled] &__label__title,
+    &__dropdown-btn[disabled] svg {
       color: var(--color-dark-grey-500);
     }
   }

@@ -21,9 +21,9 @@
   border: 0.1rem solid var(--color-dark-grey-50);
   padding: 0.5rem 0;
 
-  &__trigger--on-menu-open {
-    background: var(--color-dark-blue-shade-100);
-  }
+  // &__trigger--on-menu-open {
+  //   background: var(--color-dark-blue-shade-100);
+  // }
 
   // TODO: consider removing as this has been integrated into `BaseMenu` component
   // &__container {

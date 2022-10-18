@@ -219,6 +219,7 @@ export const ModelImporter = observer(() => {
       <div className="panel__header model-loader__header">
         <div className="model-loader__header__configs">
           <DropdownMenu
+            className="model-loader__header__configs__type"
             content={
               <MenuContent className="model-loader__header__configs__type__menu">
                 <div className="model-loader__header__configs__type-option__group model-loader__header__configs__type-option__group--native">
@@ -298,13 +299,11 @@ export const ModelImporter = observer(() => {
               transformOrigin: { vertical: 'top', horizontal: 'right' },
             }}
           >
-            <div className="model-loader__header__configs__type">
-              <div className="model-loader__header__configs__type__label">
-                {prettyCONSTName(label)}
-              </div>
-              <div className="model-loader__header__configs__type__icon">
-                <CaretDownIcon />
-              </div>
+            <div className="model-loader__header__configs__type__label">
+              {prettyCONSTName(label)}
+            </div>
+            <div className="model-loader__header__configs__type__icon">
+              <CaretDownIcon />
             </div>
           </DropdownMenu>
           {modelImportEditorState.allowHardReplace && (

@@ -639,6 +639,7 @@ export const ServiceRequestPatternEditor = observer(
               </div>
               <div className="service-request-pattern-editor__header__actions">
                 <DropdownMenu
+                  className="service-request-pattern-editor__type"
                   disabled={isReadOnly}
                   content={
                     <MenuContent className="service-request-pattern-editor__dropdown">
@@ -658,13 +659,11 @@ export const ServiceRequestPatternEditor = observer(
                     transformOrigin: { vertical: 'top', horizontal: 'right' },
                   }}
                 >
-                  <div className="service-request-pattern-editor__type">
-                    <div className="service-request-pattern-editor__type__label">
-                      {serviceRequestPattern.method}
-                    </div>
-                    <div className="service-request-pattern-editor__type__icon">
-                      <CaretDownIcon />
-                    </div>
+                  <div className="service-request-pattern-editor__type__label">
+                    {serviceRequestPattern.method}
+                  </div>
+                  <div className="service-request-pattern-editor__type__icon">
+                    <CaretDownIcon />
                   </div>
                 </DropdownMenu>
               </div>

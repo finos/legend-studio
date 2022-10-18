@@ -223,7 +223,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               data space execution context
             </div>
             <DropdownMenu
-              className="query-builder__setup__config-group__header__dropdown"
+              className="query-builder__setup__config-group__header__dropdown-trigger"
+              title="Show Settings..."
               content={
                 <MenuContent>
                   <MenuContentItem
@@ -249,12 +250,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="query-builder__setup__config-group__header__dropdown-trigger"
-                title="Show Settings..."
-              >
-                <MoreHorizontalIcon />
-              </button>
+              <MoreHorizontalIcon />
             </DropdownMenu>
           </div>
           <div className="query-builder__setup__config-group__content">

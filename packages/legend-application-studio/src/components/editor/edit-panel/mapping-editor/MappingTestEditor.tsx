@@ -405,6 +405,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
     return (
       <DropdownMenu
         className="mapping-test-editor__input-data-panel__type-selector"
+        title="Choose input data type..."
         disabled={isReadOnly}
         content={
           <MenuContent>
@@ -420,10 +421,7 @@ const RelationalMappingTestInputDataTypeSelector = observer(
           </MenuContent>
         }
       >
-        <div
-          className="mapping-test-editor__input-data-panel__type-selector__value"
-          title="Choose input data type..."
-        >
+        <div className="mapping-test-editor__input-data-panel__type-selector__value">
           <div className="mapping-test-editor__input-data-panel__type-selector__value__label">
             {inputDataState.inputData.inputType}
           </div>
@@ -769,20 +767,20 @@ export const MappingTestEditor = observer(
                 </div>
               </button>
             ) : (
-              <button
-                className="mapping-test-editor__execute-btn"
-                onClick={runTest}
-                disabled={
-                  testState.isExecutingTest || testState.isGeneratingPlan
-                }
-                tabIndex={-1}
-              >
-                <div className="mapping-test-editor__execute-btn__label">
+              <div className="mapping-test-editor__execute-btn">
+                <button
+                  className="mapping-test-editor__execute-btn__label"
+                  onClick={runTest}
+                  disabled={
+                    testState.isExecutingTest || testState.isGeneratingPlan
+                  }
+                  tabIndex={-1}
+                >
                   <PlayIcon className="mapping-test-editor__execute-btn__label__icon" />
                   <div className="mapping-test-editor__execute-btn__label__title">
                     Run Test
                   </div>
-                </div>
+                </button>
                 <DropdownMenu
                   className="mapping-test-editor__execute-btn__dropdown-btn"
                   disabled={
@@ -811,7 +809,7 @@ export const MappingTestEditor = observer(
                 >
                   <CaretDownIcon />
                 </DropdownMenu>
-              </button>
+              </div>
             )}
           </div>
         </div>

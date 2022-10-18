@@ -418,6 +418,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
                 <DropdownMenu
                   className="query-builder__projection__column__aggregate__operator__dropdown"
+                  title="Choose Aggregate Operator..."
                   disabled={!aggreateOperators.length}
                   content={
                     <MenuContent>
@@ -446,7 +447,7 @@ const QueryBuilderProjectionColumnEditor = observer(
                     elevation: 7,
                   }}
                 >
-                  <button
+                  <div
                     className={clsx(
                       'query-builder__projection__column__aggregate__operator__badge',
                       {
@@ -454,18 +455,12 @@ const QueryBuilderProjectionColumnEditor = observer(
                           Boolean(aggregateColumnState),
                       },
                     )}
-                    tabIndex={-1}
-                    title="Choose Aggregate Operator..."
                   >
                     <SigmaIcon />
-                  </button>
-                  <button
-                    className="query-builder__projection__column__aggregate__operator__dropdown__trigger"
-                    tabIndex={-1}
-                    title="Choose Aggregate Operator..."
-                  >
+                  </div>
+                  <div className="query-builder__projection__column__aggregate__operator__dropdown__trigger">
                     <CaretDownIcon />
-                  </button>
+                  </div>
                 </DropdownMenu>
               </div>
             </div>
