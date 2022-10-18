@@ -36,11 +36,8 @@ import { forceDispatchKeyboardEvent } from '../LegendApplicationComponentFramewo
 /**
  * NOTE: `monaco-editor` does not bubble `keydown` event in natural order, we will
  * have to manually do this in order to take advantage of application keyboard shortcuts service
- * Also, we want to first stop propagation to prevent the original keyboard event from triggering
- * some unexpected hotkey in some flows we don't know about.
  */
 export const createPassThroughOnKeyHandler = () => (event: IKeyboardEvent) => {
-  event.stopPropagation();
   forceDispatchKeyboardEvent(event.browserEvent);
 };
 
@@ -68,7 +65,6 @@ export const TextInputEditor: React.FC<{
   const [editor, setEditor] = useState<
     monacoEditorAPI.IStandaloneCodeEditor | undefined
   >();
-  const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
   const onDidChangeModelContentEventDisposer = useRef<IDisposable | undefined>(
     undefined,
   );
@@ -102,6 +98,13 @@ export const TextInputEditor: React.FC<{
         formatOnType: true,
         formatOnPaste: true,
       });
+      // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+      // else, we could risk triggering these hotkeys command multiple times
+      // e.g.
+      // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+      // onKeyDownEventDisposer.current?.dispose();
+      // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+      _editor.onKeyDown(() => createPassThroughOnKeyHandler());
       disableEditorHotKeys(_editor);
       setEditor(_editor);
     }
@@ -128,13 +131,6 @@ export const TextInputEditor: React.FC<{
           updateInput?.(currentVal);
         }
       });
-
-    // dispose to avoid trigger hotkeys multiple times
-    // for a more extensive note on this, see `LambdaEditor`
-    onKeyDownEventDisposer.current?.dispose();
-    onKeyDownEventDisposer.current = editor.onKeyDown(
-      createPassThroughOnKeyHandler(),
-    );
 
     // Set the text value and editor options
     const currentValue = getEditorValue(editor);

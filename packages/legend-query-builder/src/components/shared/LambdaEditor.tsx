@@ -119,7 +119,6 @@ const LambdaEditorInline = observer(
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
-    const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
     const onDidFocusEditorWidgetDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
@@ -187,6 +186,13 @@ const LambdaEditorInline = observer(
             : EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
+        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+        // else, we could risk triggering these hotkeys command multiple times
+        // e.g.
+        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+        // onKeyDownEventDisposer.current?.dispose();
+        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
@@ -279,12 +285,6 @@ const LambdaEditorInline = observer(
             }
           }
         });
-
-      // set hotkeys (before calling the action, finish parsing the current text value)
-      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      onKeyDownEventDisposer.current = editor.onKeyDown(
-        createPassThroughOnKeyHandler(),
-      );
 
       onDidFocusEditorWidgetDisposer.current?.dispose();
       onDidFocusEditorWidgetDisposer.current = editor.onDidFocusEditorWidget(
@@ -431,7 +431,6 @@ const LambdaEditorPopUp = observer(
       onClose,
     } = props;
     const applicationStore = useApplicationStore();
-    const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
@@ -468,6 +467,13 @@ const LambdaEditorPopUp = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
+        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+        // else, we could risk triggering these hotkeys command multiple times
+        // e.g.
+        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+        // onKeyDownEventDisposer.current?.dispose();
+        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
@@ -522,12 +528,6 @@ const LambdaEditorPopUp = observer(
             }
           }
         });
-
-      // set hotkeys (before calling the action, finish parsing the current text value)
-      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      onKeyDownEventDisposer.current = editor.onKeyDown(
-        createPassThroughOnKeyHandler(),
-      );
 
       // Set the text value
       const currentValue = getEditorValue(editor);
