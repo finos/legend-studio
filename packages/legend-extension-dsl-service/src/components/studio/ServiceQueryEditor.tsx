@@ -98,6 +98,7 @@ const NewServiceModal = observer(() => {
   const patternValidationResult = validate_ServicePattern(pattern);
 
   // actions
+  const onClose = (): void => editorStore.setShowNewServiceModal(false);
   const handleEnter = (): void => pathRef.current?.focus();
   const create = (): void => {
     if (!elementAlreadyExists && !patternValidationResult) {
@@ -116,6 +117,7 @@ const NewServiceModal = observer(() => {
 
       flowResult(
         editorStore.saveWorkspace(serviceEntity, true, (): void => {
+          onClose();
           applicationStore.setActionAlertInfo({
             message: `Successfully created service '${serviceName}'. Now your service can be found in workspace '${editorStore.sdlcState.activeWorkspace.workspaceId}' of project '${editorStore.sdlcState.activeProject.name}' (${editorStore.sdlcState.activeProject.projectId})`,
             prompt: `Please make sure to review the service and submit a review to officially make the service part of the project`,
@@ -141,7 +143,6 @@ const NewServiceModal = observer(() => {
       ).catch(applicationStore.alertUnhandledError);
     }
   };
-  const onClose = (): void => editorStore.setShowNewServiceModal(false);
 
   return (
     <Dialog
