@@ -160,6 +160,16 @@
     }
   }
 
+  &__input__proceed-btn {
+    @include flexCenter;
+    @include flexConstantDimension;
+
+    width: 2.8rem;
+    height: 2.8rem;
+    color: var(--color-light-grey-200);
+    margin-left: 0.5rem;
+  }
+
   &__option {
     @include ellipsisTextOverflow;
 

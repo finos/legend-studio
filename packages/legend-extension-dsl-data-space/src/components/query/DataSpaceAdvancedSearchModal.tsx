@@ -26,6 +26,7 @@ import {
   SearchIcon,
   Dialog,
   TimesIcon,
+  ArrowRightIcon,
 } from '@finos/legend-art';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { debounce } from '@finos/legend-shared';
@@ -52,6 +53,11 @@ export const DataSpaceAdvancedSearchModal = observer(
     const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [searchText, setSearchText] = useState('');
     const handleEnter = (): void => dataSpaceSearchRef.current?.focus();
+    const proceedToCreateQuery = (): void => {
+      flowResult(searchState.proceedToCreateQuery()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
 
     const toggleGetSnapshot = (): void => {
       searchState.setToGetSnapShot(!searchState.toGetSnapShot);
@@ -193,6 +199,14 @@ export const DataSpaceAdvancedSearchModal = observer(
                 onClick={toggleGetSnapshot}
               >
                 <BoltIcon />
+              </button>
+              <button
+                className="data-space-advanced-search__dialog__input__proceed-btn"
+                tabIndex={-1}
+                title="Proceed to create query"
+                onClick={proceedToCreateQuery}
+              >
+                <ArrowRightIcon />
               </button>
             </div>
             <div className="data-space-advanced-search__dialog__view">

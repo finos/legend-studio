@@ -102,6 +102,10 @@ export class DataSpaceQuerySetupState extends QueryBuilderState {
     this.viewSDLCProject = viewSDLCProject;
   }
 
+  override get isResultPanelHidden(): boolean {
+    return true;
+  }
+
   override get sideBarClassName(): string | undefined {
     return 'query-builder__setup__data-space-setup';
   }

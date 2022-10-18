@@ -23,10 +23,14 @@ import {
   QueryEditorStoreContext,
   useLegendQueryApplicationStore,
 } from '@finos/legend-application-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flowResult } from 'mobx';
 import { QueryBuilderClassSelector } from '@finos/legend-query-builder';
-import { CustomSelectorInput, SearchIcon } from '@finos/legend-art';
+import {
+  CustomSelectorInput,
+  SearchIcon,
+  type SelectComponent,
+} from '@finos/legend-art';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
 import {
   type DataSpaceQuerySetupState,
@@ -73,6 +77,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
   (props: { queryBuilderState: DataSpaceQuerySetupState }) => {
     const { queryBuilderState } = props;
     const applicationStore = useApplicationStore();
+    const dataSpaceSearchRef = useRef<SelectComponent>(null);
     const [dataSpaceSearchText, setDataSpaceSearchText] = useState('');
 
     // data space
@@ -109,6 +114,8 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
       );
     }, [queryBuilderState, applicationStore]);
 
+    useEffect(() => dataSpaceSearchRef.current?.focus());
+
     return (
       <>
         <div className="query-builder__setup__config-group">
@@ -126,6 +133,7 @@ const DataSpaceQuerySetupSetupPanelContent = observer(
                 <DataSpaceIcon />
               </div>
               <CustomSelectorInput
+                ref={dataSpaceSearchRef}
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 options={dataSpaceOptions}
                 isLoading={queryBuilderState.loadDataSpacesState.isInProgress}
