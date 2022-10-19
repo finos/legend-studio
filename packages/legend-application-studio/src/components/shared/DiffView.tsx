@@ -26,7 +26,6 @@ import {
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
-  disableEditorHotKeys,
   baseTextEditorSettings,
   useResizeDetector,
 } from '@finos/legend-art';
@@ -70,7 +69,6 @@ export const TextDiffView = observer(
           readOnly: true,
         });
         _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
-        disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
     }, [applicationStore, editorStore, editor]);

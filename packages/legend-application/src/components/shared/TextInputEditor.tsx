@@ -22,7 +22,6 @@ import {
 } from 'monaco-editor';
 import {
   disposeEditor,
-  disableEditorHotKeys,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
   getEditorValue,
@@ -105,7 +104,6 @@ export const TextInputEditor: React.FC<{
       // onKeyDownEventDisposer.current?.dispose();
       // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
       _editor.onKeyDown(() => createPassThroughOnKeyHandler());
-      disableEditorHotKeys(_editor);
       setEditor(_editor);
     }
   }, [applicationStore, editor]);

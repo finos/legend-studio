@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  editor as monacoEditorAPI,
-  MarkerSeverity,
-  KeyCode,
-} from 'monaco-editor';
-import { noop } from '@finos/legend-shared';
+import { editor as monacoEditorAPI, MarkerSeverity } from 'monaco-editor';
 
 /**
  * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten
@@ -81,19 +76,6 @@ export const baseTextEditorSettings: monacoEditorAPI.IStandaloneEditorConstructi
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,
   };
-
-// There is currently no good way to `monaco-editor` to disable hotkeys as part of the settings or global state
-// See https://github.com/microsoft/monaco-editor/issues/287
-// See https://github.com/microsoft/monaco-editor/issues/102
-export const disableEditorHotKeys = (
-  editor:
-    | monacoEditorAPI.IStandaloneCodeEditor
-    | monacoEditorAPI.IStandaloneDiffEditor,
-): void => {
-  editor.addCommand(KeyCode.F1, noop()); // disable command pallete
-  editor.addCommand(KeyCode.F8, noop()); // disable show error command
-  editor.addCommand(KeyCode.F9, noop()); // disable debugger breakpoint
-};
 
 export const moveToPosition = (
   editor: monacoEditorAPI.ICodeEditor,

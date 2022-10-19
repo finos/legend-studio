@@ -21,7 +21,6 @@ import {
   clsx,
   setErrorMarkers,
   disposeEditor,
-  disableEditorHotKeys,
   baseTextEditorSettings,
   getEditorValue,
   normalizeLineEnding,
@@ -193,7 +192,6 @@ const LambdaEditorInline = observer(
         // onKeyDownEventDisposer.current?.dispose();
         // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
         _editor.onKeyDown(() => createPassThroughOnKeyHandler());
-        disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
     }, [editor, applicationStore, useBaseTextEditorSettings]);
@@ -474,7 +472,6 @@ const LambdaEditorPopUp = observer(
         // onKeyDownEventDisposer.current?.dispose();
         // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
         _editor.onKeyDown(() => createPassThroughOnKeyHandler());
-        disableEditorHotKeys(_editor);
         setEditor(_editor);
       }
     };

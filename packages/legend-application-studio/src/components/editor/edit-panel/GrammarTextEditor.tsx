@@ -27,7 +27,6 @@ import {
   setErrorMarkers,
   disposeEditor,
   baseTextEditorSettings,
-  disableEditorHotKeys,
   resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
@@ -818,7 +817,6 @@ export const GrammarTextEditor = observer(() => {
         // also, it's better to place that logic in an effect that watches for the regex string
       });
       _editor.onKeyDown(createPassThroughOnKeyHandler());
-      disableEditorHotKeys(_editor);
       _editor.focus(); // focus on the editor initially
       setEditor(_editor);
     }

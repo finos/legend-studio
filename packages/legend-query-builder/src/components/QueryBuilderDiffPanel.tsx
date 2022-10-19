@@ -15,6 +15,7 @@
  */
 
 import {
+  createPassThroughOnKeyHandler,
   EDITOR_LANGUAGE,
   EDITOR_THEME,
   TAB_SIZE,
@@ -24,7 +25,6 @@ import {
   baseTextEditorSettings,
   clsx,
   Dialog,
-  disableEditorHotKeys,
   disposeDiffEditor,
   useResizeDetector,
 } from '@finos/legend-art';
@@ -70,7 +70,7 @@ const TextDiffView = observer(
           readOnly: true,
           wordWrap: 'on',
         });
-        disableEditorHotKeys(_editor);
+        _editor.getOriginalEditor().onKeyDown(createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [applicationStore, editor]);

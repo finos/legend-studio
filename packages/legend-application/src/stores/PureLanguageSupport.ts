@@ -24,6 +24,7 @@ import {
 } from '@finos/legend-graph';
 import {
   editor as monacoEditorAPI,
+  KeyCode,
   languages as monacoLanguagesAPI,
 } from 'monaco-editor';
 import { EDITOR_LANGUAGE, EDITOR_THEME } from '../const.js';
@@ -357,6 +358,15 @@ export const setupPureLanguageService = (
 ): void => {
   // register Pure language in `monaco-editor`
   monacoEditorAPI.defineTheme(EDITOR_THEME.LEGEND, theme);
+  // Override `monaco-editor` native hotkeys
+  // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
+  monacoEditorAPI.addKeybindingRules([
+    {
+      // disable show error command
+      keybinding: KeyCode.F8,
+      command: null,
+    },
+  ]);
   monacoLanguagesAPI.register({ id: EDITOR_LANGUAGE.PURE });
   monacoLanguagesAPI.setLanguageConfiguration(
     EDITOR_LANGUAGE.PURE,
