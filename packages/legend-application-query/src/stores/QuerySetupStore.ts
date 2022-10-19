@@ -50,7 +50,6 @@ import {
 import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
 import {
-  APPLICATION_EVENT,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   TAB_SIZE,
@@ -68,6 +67,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateExistingServiceQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioUpdateProjectServiceQueryUrl,
+  generateQuerySetupRoute,
 } from './LegendQueryRouter.js';
 import type { QuerySetupActionConfiguration } from './LegendQueryApplicationPlugin.js';
 
@@ -619,10 +619,10 @@ export class QuerySetupStore {
   querySetupState?: QuerySetupState | undefined;
 
   actions: QuerySetupActionConfiguration[] = [];
-  actionGroups: string[] = [];
+  tags: string[] = [];
   showAllGroups = false;
   showAdvancedActions = false;
-  actionGroupToFocus?: string | undefined;
+  tagToFocus?: string | undefined;
 
   constructor(
     applicationStore: LegendQueryApplicationStore,
@@ -632,12 +632,12 @@ export class QuerySetupStore {
       querySetupState: observable,
       showAllGroups: observable,
       showAdvancedActions: observable,
-      actionGroupToFocus: observable,
+      tagToFocus: observable,
       isCustomized: computed,
       setSetupState: action,
       setShowAllGroups: action,
       setShowAdvancedActions: action,
-      setActionGroupToFocus: action,
+      setTagToFocus: action,
       initialize: flow,
     });
 
@@ -654,16 +654,14 @@ export class QuerySetupStore {
         (plugin) => plugin.getExtraQuerySetupActionConfigurations?.() ?? [],
       )
       .sort((a, b) => (a.isAdvanced ? 1 : 0) - (b.isAdvanced ? 1 : 0));
-    this.actionGroups = uniq(
+    this.tags = uniq(
       this.actions.map((config) => config.tag).filter(isNonNullable),
     ).sort();
   }
 
   get isCustomized(): boolean {
     return (
-      this.showAllGroups ||
-      this.showAdvancedActions ||
-      Boolean(this.actionGroupToFocus)
+      this.showAllGroups || this.showAdvancedActions || Boolean(this.tagToFocus)
     );
   }
 
@@ -673,40 +671,58 @@ export class QuerySetupStore {
 
   setShowAllGroups(val: boolean): void {
     this.showAllGroups = val;
+    this.updateCurentLocation();
   }
 
   setShowAdvancedActions(val: boolean): void {
     this.showAdvancedActions = val;
+    this.updateCurentLocation();
   }
 
-  setActionGroupToFocus(val: string | undefined): void {
-    if (val && !this.actionGroups.includes(val)) {
+  setTagToFocus(val: string | undefined): void {
+    if (val && !this.tags.includes(val)) {
       return;
     }
-    this.actionGroupToFocus = val;
+    this.tagToFocus = val;
+    this.updateCurentLocation();
   }
 
   resetConfig(): void {
     this.setShowAdvancedActions(false);
     this.setShowAllGroups(false);
-    this.setActionGroupToFocus(undefined);
+    this.setTagToFocus(undefined);
+    this.updateCurentLocation();
   }
 
-  *initialize(): GeneratorFn<void> {
+  private updateCurentLocation(): void {
+    this.applicationStore.navigator.updateCurrentLocation(
+      generateQuerySetupRoute(
+        this.showAllGroups,
+        this.showAdvancedActions,
+        this.tagToFocus,
+      ),
+    );
+  }
+
+  *initialize(
+    showAdvancedActions: string | undefined,
+    showAllGroups: string | undefined,
+    tagToFocus: string | undefined,
+  ): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
-          `Fast-refreshing the app - preventing initialize() recall...`,
-        );
-        return;
-      }
-      this.applicationStore.notifyIllegalState(
-        `Query setup store is already initialized`,
-      );
       return;
     }
+
+    if (showAdvancedActions) {
+      this.showAdvancedActions = showAdvancedActions !== 'false';
+    }
+    if (showAllGroups) {
+      this.showAllGroups = showAllGroups !== 'false';
+    }
+    if (tagToFocus) {
+      this.tagToFocus = this.tags.includes(tagToFocus) ? tagToFocus : undefined;
+    }
+    this.updateCurentLocation();
 
     try {
       this.initState.inProgress();

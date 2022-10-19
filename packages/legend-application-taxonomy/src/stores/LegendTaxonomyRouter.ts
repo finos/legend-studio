@@ -127,7 +127,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl =
     runtimePath: string | undefined,
     classPath: string | undefined,
   ): string =>
-    `${queryUrl}/extensions/create-from-dataspace/${generateGAVCoordinates(
+    `${queryUrl}/extensions/dataspace/${generateGAVCoordinates(
       groupId,
       artifactId,
       versionId,

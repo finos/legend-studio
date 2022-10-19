@@ -71,7 +71,6 @@ import {
 } from '@finos/legend-server-depot';
 import {
   TAB_SIZE,
-  APPLICATION_EVENT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-application';
@@ -387,17 +386,6 @@ export abstract class QueryEditorStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
-          `Fast-refreshing the app - preventing initialize() recall...`,
-        );
-        return;
-      }
-      this.applicationStore.notifyIllegalState(
-        `Query editor store is already initialized`,
-      );
       return;
     }
 

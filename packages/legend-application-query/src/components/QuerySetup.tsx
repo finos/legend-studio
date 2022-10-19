@@ -38,7 +38,11 @@ import {
   CheckIcon,
   MenuContentDivider,
 } from '@finos/legend-art';
-import { debounce, getNullableFirstElement } from '@finos/legend-shared';
+import {
+  debounce,
+  getNullableFirstElement,
+  getQueryParameters,
+} from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -46,6 +50,8 @@ import {
   generateMappingQueryCreatorRoute,
   generateExistingQueryEditorRoute,
   generateServiceQueryCreatorRoute,
+  LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN,
+  type QuerySetupQueryParams,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QuerySetupState,
@@ -1165,21 +1171,19 @@ const QuerySetupActionGroupConfigMenu = observer(() => {
       </MenuContentItem>
       <MenuContentDivider />
       <MenuContentItem>Focus on action group:</MenuContentItem>
-      <MenuContentItem
-        onClick={() => setupStore.setActionGroupToFocus(undefined)}
-      >
+      <MenuContentItem onClick={() => setupStore.setTagToFocus(undefined)}>
         <MenuContentItemIcon>
-          {!setupStore.actionGroupToFocus ? <CheckIcon /> : null}
+          {!setupStore.tagToFocus ? <CheckIcon /> : null}
         </MenuContentItemIcon>
         <MenuContentItemLabel>(none)</MenuContentItemLabel>
       </MenuContentItem>
-      {setupStore.actionGroups.map((groupKey) => (
+      {setupStore.tags.map((groupKey) => (
         <MenuContentItem
           key={groupKey}
-          onClick={() => setupStore.setActionGroupToFocus(groupKey)}
+          onClick={() => setupStore.setTagToFocus(groupKey)}
         >
           <MenuContentItemIcon>
-            {setupStore.actionGroupToFocus === groupKey ? <CheckIcon /> : null}
+            {setupStore.tagToFocus === groupKey ? <CheckIcon /> : null}
           </MenuContentItemIcon>
           <MenuContentItemLabel>{groupKey}</MenuContentItemLabel>
         </MenuContentItem>
@@ -1214,7 +1218,7 @@ const QuerySetupActionGroup = observer(
           </div>
         )}
         <div className="query-setup__landing-page__action-group__header">
-          {(!tag || setupStore.actionGroupToFocus === tag) && (
+          {(!tag || setupStore.tagToFocus === tag) && (
             <DropdownMenu
               className="query-setup__landing-page__action-group__config"
               title="Show settings..."
@@ -1267,13 +1271,22 @@ const QuerySetupActionGroup = observer(
 const QuerySetupLandingPage = observer(() => {
   const setupStore = useQuerySetupStore();
   const applicationStore = useLegendQueryApplicationStore();
+  const params = getQueryParameters<QuerySetupQueryParams>(
+    applicationStore.navigator.getCurrentAddress(),
+    true,
+  );
+  const showAdvancedActions =
+    params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS];
+  const showAllGroups =
+    params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS];
+  const tagToFocus = params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG];
   const goToStudio = (): void =>
     applicationStore.navigator.visitAddress(applicationStore.config.studioUrl);
   const showAllActionGroup = (): void => setupStore.setShowAllGroups(true);
 
   useEffect(() => {
-    setupStore.initialize();
-  }, [setupStore]);
+    setupStore.initialize(showAdvancedActions, showAllGroups, tagToFocus);
+  }, [setupStore, showAdvancedActions, showAllGroups, tagToFocus]);
 
   return (
     <div className="query-setup__landing-page">
@@ -1287,15 +1300,15 @@ const QuerySetupLandingPage = observer(() => {
             />
           </div>
           <div className="query-setup__landing-page__actions">
-            {setupStore.actionGroupToFocus && (
-              <QuerySetupActionGroup tag={setupStore.actionGroupToFocus} />
+            {setupStore.tagToFocus && (
+              <QuerySetupActionGroup tag={setupStore.tagToFocus} />
             )}
-            {!setupStore.actionGroupToFocus && (
+            {!setupStore.tagToFocus && (
               <>
                 <QuerySetupActionGroup />
                 {setupStore.showAllGroups && (
                   <>
-                    {setupStore.actionGroups.map((tag) => (
+                    {setupStore.tags.map((tag) => (
                       <QuerySetupActionGroup key={tag} tag={tag} />
                     ))}
                     <div className="query-setup__landing-page__action-group query-setup__landing-page__action-group--studio">

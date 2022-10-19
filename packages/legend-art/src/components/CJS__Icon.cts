@@ -140,6 +140,7 @@ export {
   FaServer as ServerIcon,
   FaTable as TableIcon,
   FaArchive as ArchiveIcon,
+  FaBrain as BrainIcon,
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,

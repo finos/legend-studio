@@ -26,6 +26,7 @@ import { deflate } from 'pako';
 import {
   parse as _getQueryParams,
   parseUrl as _getQueryParamsFromUrl,
+  stringify as _stringifyQueryParams,
 } from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
 
@@ -531,6 +532,23 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
     : _getQueryParams(url);
   return params as unknown as T;
 };
+
+export const stringifyQueryParams = (
+  params: Record<string, unknown>,
+): string => {
+  const data: Record<string, string> = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (!value) {
+      return;
+    }
+    data[key] = value.toString();
+  });
+  return _stringifyQueryParams(data);
+};
+export const addQueryParamsStringToUrl = (
+  url: string,
+  val: string | undefined,
+): string => (val ? `${url}?${val}` : url);
 
 export const buildUrl = (parts: string[]): string =>
   parts

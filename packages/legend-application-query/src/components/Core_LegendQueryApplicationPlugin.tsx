@@ -31,6 +31,7 @@ import {
 } from '../stores/QuerySetupStore.js';
 import {
   ArrowCirceUpIcon,
+  BrainIcon,
   DroidIcon,
   ManageSearchIcon,
   PlusIcon,
@@ -58,6 +59,19 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         icon: (
           <ManageSearchIcon className="query-setup__landing-page__icon--search" />
         ),
+      },
+      {
+        key: 'create-query-from-taxonomy',
+        isAdvanced: false,
+        isCreateAction: true,
+        action: async (setupStore: QuerySetupStore) => {
+          setupStore.applicationStore.navigator.goToAddress(
+            setupStore.applicationStore.config.taxonomyUrl,
+          );
+        },
+        label: 'Create query from taxonomy',
+        className: 'query-setup__landing-page__action--taxonomy-query',
+        icon: <BrainIcon />,
       },
       {
         key: 'create-mapping-query',

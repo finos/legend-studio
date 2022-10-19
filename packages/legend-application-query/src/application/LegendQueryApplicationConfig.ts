@@ -70,6 +70,9 @@ export interface LegendQueryApplicationConfigurationData
     url: string;
     instances: LegendStudioApplicationInstanceConfigurationData[];
   };
+  taxonomy: {
+    url: string;
+  };
 }
 
 export class LegendQueryApplicationConfig extends LegendApplicationConfig {
@@ -81,6 +84,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly studioUrl: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
+  readonly taxonomyUrl: string;
 
   constructor(
     input: LegendApplicationConfigurationInput<LegendQueryApplicationConfigurationData>,
@@ -120,6 +124,16 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
     this.studioInstances = guaranteeNonNullable(
       input.configData.studio.instances,
       `Can't configure application: 'studio.instances' field is missing`,
+    );
+
+    // taxonomy
+    assertNonNullable(
+      input.configData.taxonomy,
+      `Can't configure application: 'taxonomy' field is missing`,
+    );
+    this.taxonomyUrl = guaranteeNonEmptyString(
+      input.configData.taxonomy.url,
+      `Can't configure application: 'taxonomy.url' field is missing or empty`,
     );
 
     // options
