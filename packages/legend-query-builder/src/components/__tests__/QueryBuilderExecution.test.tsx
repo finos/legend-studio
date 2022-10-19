@@ -1,0 +1,127 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { describe, test, expect } from '@jest/globals';
+import { act } from '@testing-library/react';
+import {
+  TEST_DATA_QueryExecution_ExecutionInput,
+  TEST_DATA_QueryExecution_ExecutionResult,
+} from './TEST_DATA_QueryBuilder_Query_Execution.js';
+import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json';
+import {
+  stub_RawLambda,
+  create_RawLambda,
+  ParameterValue,
+  PrimitiveInstanceValue,
+  PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
+  GenericType,
+  GenericTypeExplicitReference,
+} from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-storage';
+import { type PlainObject, integrationTest } from '@finos/legend-shared';
+import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+
+type QueryPropertyParameterTestCase = [
+  string,
+  {
+    mappingPath: string;
+    runtimePath: string;
+    entities: Entity[];
+    rawLambda: { parameters?: object; body?: object };
+    expectedNumberOfParameter: number;
+    expectedNumberOfParameterValues: number;
+    executionResult: PlainObject<unknown>;
+  },
+];
+
+const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
+  [
+    'test query execution with parameters',
+    {
+      mappingPath: TEST_DATA_QueryExecution_ExecutionInput.mapping,
+      runtimePath: TEST_DATA_QueryExecution_ExecutionInput.runtime.runtime,
+      entities: TEST_DATA_QueryBuilder_QueryExecution_Entities,
+      rawLambda: TEST_DATA_QueryExecution_ExecutionInput.function,
+      expectedNumberOfParameter: 1,
+      expectedNumberOfParameterValues: 1,
+      executionResult: TEST_DATA_QueryExecution_ExecutionResult,
+    },
+  ],
+];
+
+describe(integrationTest(`test query execution with parameters`), () => {
+  test.each(QUERY_PROPERTY_PARAMETER_CASES)(
+    '%s',
+    async (
+      testName: QueryPropertyParameterTestCase[0],
+      testCase: QueryPropertyParameterTestCase[1],
+    ) => {
+      const {
+        mappingPath,
+        runtimePath,
+        entities,
+        rawLambda,
+        expectedNumberOfParameter,
+        expectedNumberOfParameterValues,
+      } = testCase;
+      const { queryBuilderState } = await TEST__setUpQueryBuilder(
+        entities,
+        stub_RawLambda(),
+        mappingPath,
+        runtimePath,
+      );
+      await act(async () => {
+        queryBuilderState.initializeWithQuery(
+          create_RawLambda(rawLambda.parameters, rawLambda.body),
+        );
+      });
+      expect(queryBuilderState.parametersState.parameterStates.length).toBe(
+        expectedNumberOfParameter,
+      );
+      const expectedParameterValues =
+        TEST_DATA_QueryExecution_ExecutionInput.parameterValues.map((p) => {
+          const parameterValue = new ParameterValue();
+          parameterValue.name = p.name;
+          parameterValue.value = p.value;
+          return parameterValue;
+        });
+      const multiplicityOne =
+        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+          TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
+        );
+      queryBuilderState.parametersState.parameterStates.forEach(
+        (queryParamState) => {
+          queryParamState.value = new PrimitiveInstanceValue(
+            GenericTypeExplicitReference.create(
+              new GenericType(
+                queryBuilderState.graphManagerState.graph.getPrimitiveType(
+                  PRIMITIVE_TYPE.INTEGER,
+                ),
+              ),
+            ),
+            multiplicityOne,
+          );
+          (queryParamState.value as PrimitiveInstanceValue).values = [20];
+        },
+      );
+      const parameterValues =
+        queryBuilderState.resultState.buildExecutionParameterValues();
+      expect(parameterValues).toEqual(expectedParameterValues);
+      expect(parameterValues.length).toBe(expectedNumberOfParameterValues);
+    },
+  );
+});

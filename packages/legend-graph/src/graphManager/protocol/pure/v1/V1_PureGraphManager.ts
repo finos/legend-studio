@@ -227,6 +227,7 @@ import {
 } from '../../../../graph/metamodel/pure/test/result/TestResult.js';
 import {
   type Service,
+  type ParameterValue,
   MultiExecutionServiceTestResult,
 } from '../../../../DSL_Service_Exports.js';
 import type { Testable } from '../../../../graph/metamodel/pure/test/Testable.js';
@@ -257,6 +258,7 @@ import type {
   TextCompilationResult,
 } from '../../../action/compilation/CompilationResult.js';
 import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
+import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1920,6 +1922,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     runtime: Runtime,
     clientVersion: string,
+    parameterValues?: ParameterValue[],
   ): V1_ExecuteInput =>
     this.buildExecutionInput(
       graph,
@@ -1928,6 +1931,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       runtime,
       clientVersion,
       new V1_ExecuteInput(),
+      parameterValues,
     );
 
   private buildExecutionInput = (
@@ -1937,6 +1941,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     runtime: Runtime,
     clientVersion: string,
     executeInput: V1_ExecuteInput,
+    parameterValues?: ParameterValue[],
   ): V1_ExecuteInput => {
     /**
      * NOTE: to lessen network load, we might need to think of a way to only include relevant part of the pure model context data here
@@ -1994,6 +1999,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
     executeInput.model = prunedGraphData;
     executeInput.context = new V1_RawBaseExecutionContext(); // TODO: potentially need to support more types
+    if (parameterValues) {
+      executeInput.parameterValues = parameterValues.map((p) =>
+        V1_transformParameterValue(p),
+      );
+    }
     return executeInput;
   };
 
@@ -2012,6 +2022,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           lambda,
           runtime,
           V1_PureGraphManager.TARGET_PROTOCOL_VERSION,
+          options?.parameterValues,
         ),
         options,
       ),

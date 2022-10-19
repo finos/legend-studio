@@ -23,6 +23,7 @@ import {
   stringifyLosslessJSON,
   UnsupportedOperationError,
   filterByType,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
@@ -60,9 +61,9 @@ import {
   buildLambdaVariableExpressions,
   observe_ValueSpecification,
   VariableExpression,
-  buildRawLambdaFromLambdaFunction,
   stub_PackageableRuntime,
   stub_Mapping,
+  ParameterValue,
 } from '@finos/legend-graph';
 import { type Entity, parseGACoordinates } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
@@ -78,7 +79,6 @@ import {
   service_setExecution,
 } from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
-  buildParametersLetLambdaFunc,
   LambdaEditorState,
   LambdaParametersState,
   LambdaParameterState,
@@ -578,15 +578,15 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
     try {
       this.isRunningQuery = true;
-      const query = this.getExecutionQuery();
       const promise =
         this.editorStore.graphManagerState.graphManager.executeMapping(
-          query,
+          this.getExecutionQuery(),
           this.selectedExecutionContextState.executionContext.mapping.value,
           this.selectedExecutionContextState.executionContext.runtime,
           this.editorStore.graphManagerState.graph,
           {
             useLosslessParse: true,
+            parameterValues: this.buildExecutionParameterValues(),
           },
         );
       this.setQueryRunPromise(promise);
@@ -610,28 +610,19 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   getExecutionQuery(): RawLambda {
-    if (this.parameterState.parameterStates.length) {
-      const letlambdaFunction = buildParametersLetLambdaFunc(
-        this.editorStore.graphManagerState.graph,
-        this.parameterState.parameterStates,
-      );
-      const letRawLambda = buildRawLambdaFromLambdaFunction(
-        letlambdaFunction,
-        this.editorStore.graphManagerState,
-      );
-      // reset parameters
-      if (
-        Array.isArray(this.queryState.query.body) &&
-        Array.isArray(letRawLambda.body)
-      ) {
-        letRawLambda.body = [
-          ...(letRawLambda.body as object[]),
-          ...(this.queryState.query.body as object[]),
-        ];
-        return letRawLambda;
-      }
-    }
     return this.queryState.query;
+  }
+
+  buildExecutionParameterValues(): ParameterValue[] {
+    return this.parameterState.parameterStates.map((queryParamState) => {
+      const paramValue = new ParameterValue();
+      paramValue.name = queryParamState.parameter.name;
+      paramValue.value =
+        this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
+          guaranteeNonNullable(queryParamState.value),
+        );
+      return paramValue;
+    });
   }
 
   get serviceExecutionParameters():

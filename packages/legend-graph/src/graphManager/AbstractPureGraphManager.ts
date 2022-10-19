@@ -73,6 +73,7 @@ import type {
   CompilationResult,
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
+import type { ParameterValue } from '../DSL_Service_Exports.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -105,6 +106,7 @@ export interface ExecutionOptions {
    */
   useLosslessParse?: boolean | undefined;
   serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined;
+  parameterValues?: ParameterValue[];
 }
 
 export interface ServiceRegistrationOptions {
