@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { generatePath } from '@finos/legend-application';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+} from '@finos/legend-application';
 import {
   addQueryParamsStringToUrl,
   stringifyQueryParams,
@@ -41,6 +44,12 @@ export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
+  EDIT_EXISTING_QUERY_SETUP: '/setup/existing-query',
+  CREATE_MAPPING_QUERY_SETUP: '/setup/manual',
+  CLONE_SERVICE_QUERY_SETUP: '/setup/clone-service-query',
+  QUERY_PRODUCTIONIZER_SETUP: '/setup/productionize-query',
+  UPDATE_EXISTING_SERVICE_QUERY_SETUP: '/setup/update-existing-service-query',
+  LOAD_PROJECT_SERVICE_QUERY_SETUP: '/setup/load-project-service-query',
   CREATE_FROM_MAPPING_QUERY: `/create/manual/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
   CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
   EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
@@ -65,6 +74,33 @@ export const generateQuerySetupRoute = (
         showAdvancedActions,
       [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]: tag,
     }),
+  );
+
+export const generateEditExistingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP, {});
+export const generateCreateMappingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP, {});
+export const generateCloneServiceQuerySetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP, {}),
+  );
+export const generateQueryProductionizerSetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP, {}),
+  );
+export const generateUpdateExistingServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
+      {},
+    ),
+  );
+export const generateLoadProjectServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
+      {},
+    ),
   );
 
 export const generateMappingQueryCreatorRoute = (

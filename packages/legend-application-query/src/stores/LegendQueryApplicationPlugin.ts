@@ -23,7 +23,7 @@ import type {
   ExistingQueryEditorStore,
   QueryEditorStore,
 } from './QueryEditorStore.js';
-import type { QuerySetupState, QuerySetupStore } from './QuerySetupStore.js';
+import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
 
 export enum QuerySetupActionTag {
   SDLC = 'SDLC',
@@ -48,12 +48,8 @@ export type QuerySetupActionConfiguration = {
   label: string;
   icon: React.ReactNode;
   className?: string | undefined;
-  action: (setupStore: QuerySetupStore) => Promise<void>;
+  action: (setupStore: QuerySetupLandingPageStore) => Promise<void>;
 };
-
-export type QuerySetupRenderer = (
-  setupState: QuerySetupState,
-) => React.ReactNode | undefined;
 
 export type QueryEditorHeaderLabeler = (
   editorStore: QueryEditorStore,
@@ -87,11 +83,6 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
-
-  /**
-   * Get the list of renderers for query setup.
-   */
-  getExtraQuerySetupRenderers?(): QuerySetupRenderer[];
 
   /**
    * Get the list of query editor header labelers.

@@ -19,7 +19,6 @@ import {
   type QueryEditorStore,
   type QueryEditorHeaderLabeler,
   type QuerySetupActionConfiguration,
-  type QuerySetupStore,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
@@ -88,7 +87,7 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         key: 'create-query-from-data-space',
         isAdvanced: false,
         isCreateAction: true,
-        action: async (setupStore: QuerySetupStore) => {
+        action: async (setupStore) => {
           setupStore.applicationStore.navigator.goToLocation(
             generateDataSpaceQuerySetupRoute(),
           );

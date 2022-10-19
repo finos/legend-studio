@@ -20,15 +20,7 @@ import {
   type QuerySetupActionConfiguration,
 } from '../stores/LegendQueryApplicationPlugin.js';
 import packageJson from '../../package.json';
-import {
-  CloneServiceQuerySetupState,
-  CreateMappingQuerySetupState,
-  EditExistingQuerySetupState,
-  LoadProjectServiceQuerySetupState,
-  QueryProductionizationSetupState,
-  UpdateExistingServiceQuerySetupState,
-  type QuerySetupStore,
-} from '../stores/QuerySetupStore.js';
+import type { QuerySetupLandingPageStore } from '../stores/QuerySetupStore.js';
 import {
   ArrowCirceUpIcon,
   BrainIcon,
@@ -37,6 +29,20 @@ import {
   PlusIcon,
   RobotIcon,
 } from '@finos/legend-art';
+import {
+  generateCloneServiceQuerySetupRoute,
+  generateCreateMappingQuerySetupRoute,
+  generateEditExistingQuerySetupRoute,
+  generateLoadProjectServiceQuerySetup,
+  generateQueryProductionizerSetupRoute,
+  generateUpdateExistingServiceQuerySetup,
+  LEGEND_QUERY_ROUTE_PATTERN,
+} from '../stores/LegendQueryRouter.js';
+import type { ApplicationPageEntry } from '@finos/legend-application';
+import { CloneQueryServiceSetup } from './CloneQueryServiceSetup.js';
+import { QueryProductionizerSetup } from './QueryProductionizerSetup.js';
+import { UpdateExistingServiceQuerySetup } from './UpdateExistingServiceQuerySetup.js';
+import { LoadProjectServiceQuerySetup } from './LoadProjectServiceQuerySetup.js';
 
 export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   static NAME = packageJson.extensions.applicationQueryPlugin;
@@ -45,14 +51,45 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
     super(Core_LegendQueryApplicationPlugin.NAME, packageJson.version);
   }
 
+  override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
+    return [
+      {
+        key: 'clone-service-query-setup-application-page',
+        urlPatterns: [LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP],
+        renderer: CloneQueryServiceSetup,
+      },
+      {
+        key: 'query-productionizer-setup-application-page',
+        urlPatterns: [LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP],
+        renderer: QueryProductionizerSetup,
+      },
+      {
+        key: 'update-existing-service-query-setup-application-page',
+        urlPatterns: [
+          LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
+        ],
+        renderer: UpdateExistingServiceQuerySetup,
+      },
+      {
+        key: 'load-project-service-query-setup-application-page',
+        urlPatterns: [
+          LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
+        ],
+        renderer: LoadProjectServiceQuerySetup,
+      },
+    ];
+  }
+
   override getExtraQuerySetupActionConfigurations(): QuerySetupActionConfiguration[] {
     return [
       {
         key: 'open-existing-query',
         isAdvanced: false,
         isCreateAction: false,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(new EditExistingQuerySetupState(setupStore));
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateEditExistingQuerySetupRoute(),
+          );
         },
         label: 'Open an existing query',
         className: 'query-setup__landing-page__action--existing-query',
@@ -64,7 +101,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'create-query-from-taxonomy',
         isAdvanced: false,
         isCreateAction: true,
-        action: async (setupStore: QuerySetupStore) => {
+        action: async (setupStore: QuerySetupLandingPageStore) => {
           setupStore.applicationStore.navigator.goToAddress(
             setupStore.applicationStore.config.taxonomyUrl,
           );
@@ -77,9 +114,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'create-mapping-query',
         isAdvanced: true,
         isCreateAction: true,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(
-            new CreateMappingQuerySetupState(setupStore),
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateCreateMappingQuerySetupRoute(),
           );
         },
         label: 'Create new query on a mapping',
@@ -90,8 +127,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'clone-service-query',
         isAdvanced: true,
         isCreateAction: true,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(new CloneServiceQuerySetupState(setupStore));
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateCloneServiceQuerySetupRoute(),
+          );
         },
         label: 'Clone an existing service query',
         className: 'query-setup__landing-page__action--service-query',
@@ -103,9 +142,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: false,
         isCreateAction: false,
         tag: QuerySetupActionTag.SDLC,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(
-            new UpdateExistingServiceQuerySetupState(setupStore),
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateUpdateExistingServiceQuerySetup(),
           );
         },
         label: 'Update an existing service query',
@@ -117,9 +156,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: true,
         isCreateAction: false,
         tag: QuerySetupActionTag.SDLC,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(
-            new LoadProjectServiceQuerySetupState(setupStore),
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateLoadProjectServiceQuerySetup(),
           );
         },
         label: 'Open service query from a project',
@@ -131,9 +170,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         isAdvanced: false,
         isCreateAction: true,
         tag: QuerySetupActionTag.SDLC,
-        action: async (setupStore: QuerySetupStore) => {
-          setupStore.setSetupState(
-            new QueryProductionizationSetupState(setupStore),
+        action: async (setupStore: QuerySetupLandingPageStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateQueryProductionizerSetupRoute(),
           );
         },
         label: 'Productionize an existing query',

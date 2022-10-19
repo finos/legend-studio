@@ -22,14 +22,13 @@ export {
   QueryEditorStoreContext,
   useQueryEditorStore,
 } from './components/QueryEditorStoreProvider.js';
-export { useQuerySetupStore } from './components/QuerySetupStoreProvider.js';
 export { QueryEditor } from './components/QueryEditor.js';
 
 export { LegendQueryPluginManager } from './application/LegendQueryPluginManager.js';
 
 export * from './stores/LegendQueryApplicationPlugin.js';
 export * from './stores/LegendQueryRouter.js';
-export { QuerySetupState, QuerySetupStore } from './stores/QuerySetupStore.js';
+export { BaseQuerySetupStore } from './stores/QuerySetupStore.js';
 export { LegendQueryApplicationConfig } from './application/LegendQueryApplicationConfig.js';
 export {
   createViewProjectHandler,

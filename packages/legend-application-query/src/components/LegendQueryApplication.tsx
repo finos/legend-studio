@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { LEGEND_QUERY_ROUTE_PATTERN } from '../stores/LegendQueryRouter.js';
-import { QuerySetup } from './QuerySetup.js';
+import { QuerySetupLandingPage } from './QuerySetup.js';
 import {
   MappingQueryCreator,
   ExistingQueryEditor,
@@ -35,6 +35,8 @@ import {
   LegendQueryBaseStoreProvider,
   useLegendQueryApplicationStore,
 } from './LegendQueryBaseStoreProvider.js';
+import { EditExistingQuerySetup } from './EditExistingQuerySetup.js';
+import { CreateMappingQuerySetup } from './CreateMappingQuerySetup.js';
 
 const LegendQueryApplicationRoot = observer(() => {
   const applicationStore = useLegendQueryApplicationStore();
@@ -48,7 +50,17 @@ const LegendQueryApplicationRoot = observer(() => {
         <Route
           exact={true}
           path={LEGEND_QUERY_ROUTE_PATTERN.SETUP}
-          component={QuerySetup}
+          component={QuerySetupLandingPage}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP}
+          component={EditExistingQuerySetup}
+        />
+        <Route
+          exact={true}
+          path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP}
+          component={CreateMappingQuerySetup}
         />
         <Route
           exact={true}
