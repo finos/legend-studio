@@ -75,7 +75,7 @@ export class QueryBuilderPostFilterOperator_In
     postFilterConditionState: PostFilterConditionState,
   ): boolean {
     const propertyType = guaranteeNonNullable(
-      postFilterConditionState.columnState.getReturnType(),
+      postFilterConditionState.columnState.getColumnType(),
     );
     const valueSpec = postFilterConditionState.value;
     if (valueSpec instanceof CollectionInstanceValue) {
@@ -128,7 +128,7 @@ export class QueryBuilderPostFilterOperator_In
         TYPICAL_MULTIPLICITY_TYPE.ONE,
       );
     const propertyType = guaranteeNonNullable(
-      postFilterConditionState.columnState.getReturnType(),
+      postFilterConditionState.columnState.getColumnType(),
     );
     return new CollectionInstanceValue(
       multiplicityOne,

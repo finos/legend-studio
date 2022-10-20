@@ -48,7 +48,7 @@ export abstract class QueryBuilderPostFilterOperator implements Hashable {
   isCompatibleWithPostFilterColumn(
     postFilterState: PostFilterConditionState,
   ): boolean {
-    const columnType = postFilterState.columnState.getReturnType();
+    const columnType = postFilterState.columnState.getColumnType();
     if (columnType) {
       return this.isCompatibleWithType(columnType);
     }

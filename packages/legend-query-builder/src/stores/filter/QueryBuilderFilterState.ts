@@ -374,6 +374,7 @@ export class QueryBuilderFilterState
   isRearrangingConditions = false;
   operators: QueryBuilderFilterOperator[] = [];
   private _suppressClickawayEventListener = false;
+  showPanel = true;
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -385,6 +386,7 @@ export class QueryBuilderFilterState
       selectedNode: observable,
       isRearrangingConditions: observable,
       lambdaParameterName: observable,
+      showPanel: observable,
       setLambdaParameterName: action,
       setRearrangingConditions: action,
       suppressClickawayEventListener: action,
@@ -398,6 +400,7 @@ export class QueryBuilderFilterState
       pruneTree: action,
       simplifyTree: action,
       collapseTree: action,
+      setShowPanel: action,
       expandTree: action,
       hashCode: computed,
     });
@@ -412,6 +415,10 @@ export class QueryBuilderFilterState
 
   setLambdaParameterName(val: string): void {
     this.lambdaParameterName = val;
+  }
+
+  setShowPanel(val: boolean): void {
+    this.showPanel = val;
   }
 
   setRearrangingConditions(val: boolean): void {

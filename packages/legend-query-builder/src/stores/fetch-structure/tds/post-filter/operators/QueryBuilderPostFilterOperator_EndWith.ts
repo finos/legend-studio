@@ -69,7 +69,7 @@ export class QueryBuilderPostFilterOperator_EndWith
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
-    const propertyType = postFilterConditionState.columnState.getReturnType();
+    const propertyType = postFilterConditionState.columnState.getColumnType();
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.STRING: {
         return buildPrimitiveInstanceValue(

@@ -91,6 +91,7 @@ export {
   FaExpand as ExpandIcon,
   FaBrush as BrushIcon,
   FaSortAlphaDown as SortDownIcon,
+  FaSort as SortIcon,
   FaSortAlphaDownAlt as SortDownAltIcon,
   FaFolderPlus as NewFolderIcon,
   FaCaretRight as CaretRightIcon,
@@ -168,6 +169,7 @@ export {
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,
+  MdWindow as WindowIcon,
   MdReviews as ReviewIcon,
 } from 'react-icons/md';
 export {

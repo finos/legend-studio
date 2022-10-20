@@ -35,10 +35,6 @@ import {
   guaranteeNonNullable,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
-import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
-import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
@@ -49,6 +45,11 @@ import {
   type QueryResultSetModifierState,
   type SortColumnState,
 } from '../QueryResultSetModifierState.js';
+import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
+import { buildPropertyExpressionChain } from '../../../QueryBuilderValueSpecificationBuilderHelper.js';
+import { appendOlapGroupByState } from '../olapGroupBy/QueryBuilderOlapGroupByValueSpecificationBuilder.js';
+import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpecificationBuilder.js';
 
 const buildSortExpression = (
   sortColumnState: SortColumnState,
@@ -395,6 +396,9 @@ export const appendProjection = (
     ];
     lambdaFunction.expressionSequence[0] = projectFunction;
   }
+
+  // build olapGroupBy
+  appendOlapGroupByState(tdsState.olapGroupByState, lambdaFunction);
 
   // build post-filter
   appendPostFilter(tdsState.postFilterState, lambdaFunction);

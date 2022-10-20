@@ -56,7 +56,10 @@ import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../../QueryBuilderConfig.js';
-import { QueryBuilderAggregationState } from './aggregation/QueryBuilderAggregationState.js';
+import {
+  QueryBuilderAggregateColumnState,
+  QueryBuilderAggregationState,
+} from './aggregation/QueryBuilderAggregationState.js';
 import { buildGenericLambdaFunctionInstanceValue } from '../../QueryBuilderValueSpecificationHelper.js';
 import {
   FETCH_STRUCTURE_IMPLEMENTATION,
@@ -88,6 +91,10 @@ import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecifi
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
+import { QueryBuilderOlapGroupByState } from './olapGroupBy/QueryBuilderOlapGroupByState.js';
+import type { QueryBuilderTDSOlapOperator } from './olapGroupBy/operators/QueryBuilderTdsOlapOperator.js';
+import { getQueryBuilderCoreOlapGroupByOperators } from './olapGroupBy/QueryBuilderOlapGroupByOperatorLoader.js';
+import type { QueryBuilderTDSColumnState } from './QueryBuilderTdsColumnState.js';
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState
@@ -95,15 +102,19 @@ export class QueryBuilderTDSState
 {
   readonly aggregationState: QueryBuilderAggregationState;
   readonly postFilterState: QueryBuilderPostFilterState;
+  readonly olapGroupByState: QueryBuilderOlapGroupByState;
   readonly resultSetModifierState: QueryResultSetModifierState;
   projectionColumns: QueryBuilderProjectionColumnState[] = [];
   isConvertDerivationProjectionObjects = false;
   showPostFilterPanel = false;
+  showOlapGroupByPanel = false;
 
   postFilterOperators: QueryBuilderPostFilterOperator[] =
     getQueryBuilderCorePostFilterOperators();
   aggregationOperators: QueryBuilderAggregateOperator[] =
     getQueryBuilderCoreAggregrationOperators();
+  olapGroupByOperators: QueryBuilderTDSOlapOperator[] =
+    getQueryBuilderCoreOlapGroupByOperators();
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -115,12 +126,15 @@ export class QueryBuilderTDSState
       projectionColumns: observable,
       isConvertDerivationProjectionObjects: observable,
       showPostFilterPanel: observable,
+      showOlapGroupByPanel: observable,
+      TEMPORARY__showPostFetchStructurePanel: computed,
       derivations: computed,
       hasParserError: computed,
       addColumn: action,
       moveColumn: action,
       replaceColumn: action,
       setShowPostFilterPanel: action,
+      setShowOlapGroupByPanel: action,
       convertDerivationProjectionObjects: flow,
     });
 
@@ -132,6 +146,10 @@ export class QueryBuilderTDSState
     this.aggregationState = new QueryBuilderAggregationState(
       this,
       this.aggregationOperators,
+    );
+    this.olapGroupByState = new QueryBuilderOlapGroupByState(
+      this,
+      this.olapGroupByOperators,
     );
   }
 
@@ -148,6 +166,14 @@ export class QueryBuilderTDSState
   get hasParserError(): boolean {
     return this.derivations.some(
       (derivation) => derivation.derivationLambdaEditorState.parserError,
+    );
+  }
+
+  override get TEMPORARY__showPostFetchStructurePanel(): boolean {
+    return (
+      this.queryBuilderState.filterState.showPanel ||
+      this.showOlapGroupByPanel ||
+      this.showPostFilterPanel
     );
   }
 
@@ -241,6 +267,43 @@ export class QueryBuilderTDSState
     return undefined;
   }
 
+  get tdsColumns(): QueryBuilderTDSColumnState[] {
+    const aggregationStateCols = this.aggregationState.columns.map(
+      (c) => c.projectionColumnState,
+    );
+    // remove projection columns in aggregation
+    const projectionColumns = this.projectionColumns.filter(
+      (c) => !aggregationStateCols.includes(c),
+    );
+    return [
+      ...this.aggregationState.columns,
+      ...projectionColumns,
+      ...this.olapGroupByState.olapColumns,
+    ];
+  }
+
+  isDuplicateColumn(col: QueryBuilderTDSColumnState): boolean {
+    return (
+      this.tdsColumns.filter((c) => c.columnName === col.columnName).length > 1
+    );
+  }
+
+  isColumnInUse(tdsCol: QueryBuilderTDSColumnState): boolean {
+    return Boolean(
+      [
+        ...this.postFilterState.referencedTDSColumns,
+        ...this.olapGroupByState.referencedTDSColumns,
+      ].find((col) => {
+        if (col instanceof QueryBuilderAggregateColumnState) {
+          return tdsCol instanceof QueryBuilderAggregateColumnState
+            ? tdsCol === col
+            : col.projectionColumnState === tdsCol;
+        }
+        return col === tdsCol;
+      }),
+    );
+  }
+
   onClassChange(_class: Class | undefined): void {
     return;
   }
@@ -254,6 +317,10 @@ export class QueryBuilderTDSState
 
   setShowPostFilterPanel(val: boolean): void {
     this.showPostFilterPanel = val;
+  }
+
+  setShowOlapGroupByPanel(val: boolean): void {
+    this.showOlapGroupByPanel = val;
   }
 
   *convertDerivationProjectionObjects(): GeneratorFn<void> {

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-export enum QUERY_BUILDER_TEST_ID {
-  LAMBDA_EDITOR__EDITOR_INPUT = 'lambda-editor__editor__input',
+import { type Hashable, uuid } from '@finos/legend-shared';
+import type { Type } from '@finos/legend-graph';
 
-  QUERY_BUILDER = 'query__builder',
-  QUERY_BUILDER_SETUP = 'query__builder__setup',
-  QUERY_BUILDER_TDS = 'query__builder__tds',
-  QUERY_BUILDER_GRAPH_FETCH = 'query__builder__graph__fetch',
-  QUERY_BUILDER_FILTER = 'query__builder__filter',
-  QUERY_BUILDER_POST_FILTER = 'query__builder__post-filter',
-  QUERY_BUILDER_OLAP_GROUPBY = 'query__builder__olap-groupby',
-  QUERY_BUILDER_EXPLORER = 'query__builder__explorer',
-  QUERY_BUILDER_PROPERTY_SEARCH_PANEL = 'query__builder__property__search__panel',
+export abstract class QueryBuilderTDSColumnState implements Hashable {
+  readonly uuid = uuid();
+
+  abstract get columnName(): string;
+
+  abstract getColumnType(): Type | undefined;
+
+  abstract get hashCode(): string;
 }

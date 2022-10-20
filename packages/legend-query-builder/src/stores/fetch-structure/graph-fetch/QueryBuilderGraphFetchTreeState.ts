@@ -15,7 +15,7 @@
  */
 
 import type { QueryBuilderState } from '../../QueryBuilderState.js';
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type CompilationError,
   PackageableElementExplicitReference,
@@ -73,6 +73,7 @@ export class QueryBuilderGraphFetchTreeState
     makeObservable(this, {
       treeData: observable.ref,
       isChecked: observable,
+      TEMPORARY__showPostFetchStructurePanel: computed,
       setGraphFetchTree: action,
       setChecked: action,
     });

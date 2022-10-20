@@ -53,7 +53,6 @@ import {
 import { QueryBuilderPropertyExpressionBadge } from '../QueryBuilderPropertyExpressionEditor.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
-import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -71,8 +70,6 @@ import {
   QUERY_BUILDER_FUNCTION_DND_TYPE,
 } from '../../stores/explorer/QueryFunctionsExplorerState.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../stores/QueryBuilderConfig.js';
-import { QueryBuilderPostFilterTreeConditionNodeData } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
-import { filterByType } from '@finos/legend-shared';
 import type { QueryBuilderAggregateOperator } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregateOperator.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { LambdaEditor } from '../shared/LambdaEditor.js';
@@ -234,21 +231,7 @@ const QueryBuilderProjectionColumnEditor = observer(
 
     const { projectionColumnState } = props;
     const tdsState = projectionColumnState.tdsState;
-    const postFilterColumnStates = Array.from(
-      tdsState.postFilterState.nodes.values(),
-    )
-      .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
-      .map((n) => n.condition.columnState);
-
-    const isRemovalDisabled =
-      postFilterColumnStates
-        .filter((co) => co instanceof QueryBuilderAggregateColumnState)
-        .map(
-          (co) =>
-            (co as QueryBuilderAggregateColumnState).projectionColumnState,
-        )
-        .includes(projectionColumnState) ||
-      postFilterColumnStates.includes(projectionColumnState);
+    const isRemovalDisabled = tdsState.isColumnInUse(projectionColumnState);
 
     const removeColumn = (): void =>
       tdsState.removeColumn(projectionColumnState);
@@ -258,9 +241,7 @@ const QueryBuilderProjectionColumnEditor = observer(
       event,
     ) => projectionColumnState.setColumnName(event.target.value);
     const isDuplicatedColumnName =
-      projectionColumnState.tdsState.projectionColumns.filter(
-        (column) => column.columnName === projectionColumnState.columnName,
-      ).length > 1;
+      projectionColumnState.tdsState.isDuplicateColumn(projectionColumnState);
 
     // aggregation
     const aggregateColumnState = tdsState.aggregationState.columns.find(
@@ -415,7 +396,6 @@ const QueryBuilderProjectionColumnEditor = observer(
                     )}
                   </div>
                 )}
-
                 <DropdownMenu
                   className="query-builder__projection__column__aggregate__operator__dropdown"
                   title="Choose Aggregate Operator..."
@@ -472,7 +452,8 @@ const QueryBuilderProjectionColumnEditor = observer(
                 disabled={isRemovalDisabled}
                 title={
                   isRemovalDisabled
-                    ? "This column is used in the post filter and can't be removed"
+                    ? // TODO: We may want to provide a list of all places where column is in use
+                      "This column is used and can't be removed"
                     : 'Remove'
                 }
               >

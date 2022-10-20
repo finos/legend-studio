@@ -38,8 +38,9 @@ import {
   uuid,
   filterByType,
   ActionState,
-  type Hashable,
   hashArray,
+  uniq,
+  type Hashable,
 } from '@finos/legend-shared';
 import {
   action,
@@ -50,10 +51,10 @@ import {
   observable,
 } from 'mobx';
 import { DEFAULT_POST_FILTER_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
-import type { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
-  type QueryBuilderProjectionColumnState,
+  QueryBuilderProjectionColumnState,
   type QueryBuilderProjectionColumnDragSource,
   QueryBuilderDerivationProjectionColumnState,
 } from '../projection/QueryBuilderProjectionColumnState.js';
@@ -65,6 +66,7 @@ import {
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',
@@ -303,9 +305,7 @@ export class QueryBuilderPostFilterTreeBlankConditionNodeData
 
 export class PostFilterConditionState implements Hashable {
   readonly postFilterState: QueryBuilderPostFilterState;
-  columnState:
-    | QueryBuilderProjectionColumnState
-    | QueryBuilderAggregateColumnState;
+  columnState: QueryBuilderTDSColumnState;
   value?: ValueSpecification | undefined;
   operator: QueryBuilderPostFilterOperator;
   typeaheadSearchResults: string[] | undefined;
@@ -313,9 +313,7 @@ export class PostFilterConditionState implements Hashable {
 
   constructor(
     postFilterState: QueryBuilderPostFilterState,
-    colState:
-      | QueryBuilderProjectionColumnState
-      | QueryBuilderAggregateColumnState,
+    colState: QueryBuilderTDSColumnState,
     value: ValueSpecification | undefined,
     operator: QueryBuilderPostFilterOperator | undefined,
   ) {
@@ -363,12 +361,18 @@ export class PostFilterConditionState implements Hashable {
     try {
       this.typeaheadSearchState.inProgress();
       this.typeaheadSearchResults = undefined;
+      const _columnState =
+        this.columnState instanceof QueryBuilderProjectionColumnState ||
+        this.columnState instanceof QueryBuilderAggregateColumnState
+          ? this.columnState
+          : undefined;
+      const columnState = guaranteeNonNullable(_columnState);
       if (performTypeahead(this.value)) {
         const result =
           (yield this.postFilterState.tdsState.queryBuilderState.graphManagerState.graphManager.executeMapping(
             buildProjectionColumnTypeaheadQuery(
               this.postFilterState.tdsState.queryBuilderState,
-              this.columnState,
+              columnState,
               this.value,
             ),
             guaranteeNonNullable(
@@ -534,6 +538,14 @@ export class QueryBuilderPostFilterState
           QueryBuilderPostFilterTreeGroupNodeData,
         )
       : undefined;
+  }
+
+  get referencedTDSColumns(): QueryBuilderTDSColumnState[] {
+    return uniq(
+      Array.from(this.nodes.values())
+        .filter(filterByType(QueryBuilderPostFilterTreeConditionNodeData))
+        .map((n) => n.condition.columnState),
+    );
   }
 
   getRootNode(): QueryBuilderPostFilterTreeNodeData | undefined {

@@ -67,7 +67,7 @@ export const buildPostFilterConditionExpression = (
   if (correspondingTdsDerivedProperty) {
     tdsDerivedPropertyName = correspondingTdsDerivedProperty;
   } else {
-    const type = guaranteeNonNullable(colState.getReturnType());
+    const type = guaranteeNonNullable(colState.getColumnType());
     tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);
   }
   tdsPropertyExpression.func = PropertyExplicitReference.create(

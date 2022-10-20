@@ -91,7 +91,7 @@ export class QueryBuilderPostFilterOperator_Equal
       return isTypeCompatibleForAssignment(
         getNonCollectionValueSpecificationType(valueSpecification),
         guaranteeNonNullable(
-          postFilterConditionState.columnState.getReturnType(),
+          postFilterConditionState.columnState.getColumnType(),
         ),
       );
     }
@@ -102,7 +102,7 @@ export class QueryBuilderPostFilterOperator_Equal
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = guaranteeNonNullable(
-      postFilterConditionState.columnState.getReturnType(),
+      postFilterConditionState.columnState.getColumnType(),
     );
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING:
@@ -166,7 +166,7 @@ export class QueryBuilderPostFilterOperator_Equal
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getReturnType()?.path ===
+      postFilterConditionState.columnState.getColumnType()?.path ===
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME

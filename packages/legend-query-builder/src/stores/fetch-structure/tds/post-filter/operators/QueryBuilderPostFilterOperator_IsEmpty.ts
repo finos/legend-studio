@@ -62,7 +62,7 @@ export class QueryBuilderPostFilterOperator_IsEmpty
   override isCompatibleWithPostFilterColumn(
     postFilterState: PostFilterConditionState,
   ): boolean {
-    const columnType = postFilterState.columnState.getReturnType();
+    const columnType = postFilterState.columnState.getColumnType();
     if (columnType && this.isCompatibleWithType(columnType)) {
       if (
         postFilterState.columnState instanceof

@@ -18,7 +18,6 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   type TreeNodeContainerProps,
   type TreeNodeViewProps,
-  type TooltipPlacement,
   BlankPanelPlaceholder,
   CaretDownIcon,
   ChevronDownIcon,
@@ -39,11 +38,6 @@ import {
   NewFolderIcon,
   PlusCircleIcon,
   InfoCircleIcon,
-  Tooltip,
-  StringTypeIcon,
-  ToggleIcon,
-  HashtagIcon,
-  ClockIcon,
   PanelDropZone,
   DragPreviewLayer,
   PanelEntryDropZonePlaceholder,
@@ -52,25 +46,20 @@ import {
   PanelContent,
 } from '@finos/legend-art';
 import {
-  type Type,
   type ValueSpecification,
   Class,
   Enumeration,
   PrimitiveType,
-  PRIMITIVE_TYPE,
-  getMultiplicityDescription,
 } from '@finos/legend-graph';
 import {
   assertErrorThrown,
   guaranteeNonNullable,
-  returnUndefOnError,
   debounce,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useDrop, useDrag } from 'react-dnd';
-import { getColumnMultiplicity } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
 import { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import type { QueryBuilderPostFilterOperator } from '../../stores/fetch-structure/tds/post-filter/QueryBuilderPostFilterOperator.js';
 import {
@@ -99,6 +88,15 @@ import { isTypeCompatibleForAssignment } from '../../stores/QueryBuilderValueSpe
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../stores/QueryBuilderGroupOperationHelper.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+import {
+  QueryBuilderColumnInfoTooltip,
+  renderPropertyTypeIcon,
+} from './QueryBuilderTDSComponentHelper.js';
+import {
+  type QueryBuilderOlapColumnDragSource,
+  QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTdsColumnState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<
@@ -197,91 +195,6 @@ const QueryBuilderPostFilterGroupConditionEditor = observer(
   },
 );
 
-const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
-  if (type instanceof PrimitiveType) {
-    if (type.name === PRIMITIVE_TYPE.STRING) {
-      return <StringTypeIcon className="query-builder-column-badge__icon" />;
-    } else if (type.name === PRIMITIVE_TYPE.BOOLEAN) {
-      return <ToggleIcon className="query-builder-column-badge__icon" />;
-    } else if (
-      type.name === PRIMITIVE_TYPE.NUMBER ||
-      type.name === PRIMITIVE_TYPE.INTEGER ||
-      type.name === PRIMITIVE_TYPE.FLOAT ||
-      type.name === PRIMITIVE_TYPE.DECIMAL
-    ) {
-      return <HashtagIcon className="query-builder-column-badge__icon" />;
-    } else if (
-      type.name === PRIMITIVE_TYPE.DATE ||
-      type.name === PRIMITIVE_TYPE.DATETIME ||
-      type.name === PRIMITIVE_TYPE.STRICTDATE
-    ) {
-      return <ClockIcon className="query-builder-column-badge__icon" />;
-    }
-  } else if (type instanceof Enumeration) {
-    return <div className="icon query-builder-column-badge__icon">E</div>;
-  }
-  return null;
-};
-
-const QueryBuilderColumnInfoTooltip: React.FC<{
-  columnState:
-    | QueryBuilderProjectionColumnState
-    | QueryBuilderAggregateColumnState;
-  children: React.ReactElement;
-  placement?: TooltipPlacement | undefined;
-}> = (props) => {
-  const { columnState, placement, children } = props;
-  const type = columnState.getReturnType();
-  const multiplicity = returnUndefOnError(() =>
-    getColumnMultiplicity(columnState),
-  );
-  return (
-    <Tooltip
-      arrow={true}
-      {...(placement !== undefined ? { placement } : {})}
-      classes={{
-        tooltip: 'query-builder__tooltip',
-        arrow: 'query-builder__tooltip__arrow',
-        tooltipPlacementRight: 'query-builder__tooltip--right',
-      }}
-      TransitionProps={{
-        // disable transition
-        // NOTE: somehow, this is the only workaround we have, if for example
-        // we set `appear = true`, the tooltip will jump out of position
-        timeout: 0,
-      }}
-      title={
-        <div className="query-builder__tooltip__content">
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Name</div>
-            <div className="query-builder__tooltip__item__value">
-              {columnState.columnName}
-            </div>
-          </div>
-          <div className="query-builder__tooltip__item">
-            <div className="query-builder__tooltip__item__label">Type</div>
-            <div className="query-builder__tooltip__item__value">
-              {type?.path}
-            </div>
-          </div>
-          {multiplicity && (
-            <div className="query-builder__tooltip__item">
-              <div className="query-builder__tooltip__item__label">
-                Multiplicity
-              </div>
-              <div className="query-builder__tooltip__item__value">
-                {getMultiplicityDescription(multiplicity)}
-              </div>
-            </div>
-          )}
-        </div>
-      }
-    >
-      {children}
-    </Tooltip>
-  );
-};
-
 export const QueryBuilderColumnBadge = observer(
   (props: {
     postFilterConditionState: PostFilterConditionState;
@@ -291,7 +204,7 @@ export const QueryBuilderColumnBadge = observer(
   }) => {
     const { postFilterConditionState, onColumnChange } = props;
     const applicationStore = useApplicationStore();
-    const type = postFilterConditionState.columnState.getReturnType();
+    const type = postFilterConditionState.columnState.getColumnType();
     const handleDrop = useCallback(
       (item: QueryBuilderProjectionColumnDragSource): Promise<void> =>
         onColumnChange(item.columnState),
@@ -303,7 +216,10 @@ export const QueryBuilderColumnBadge = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+        accept: [
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+        ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item).catch(applicationStore.alertUnhandledError);
@@ -386,7 +302,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
       (item: QueryBuilderParameterDragSource): void => {
         const parameterType =
           item.variable.parameter.genericType?.value.rawType;
-        const conditionValueType = node.condition.columnState.getReturnType();
+        const conditionValueType = node.condition.columnState.getColumnType();
         if (
           conditionValueType &&
           isTypeCompatibleForAssignment(parameterType, conditionValueType)
@@ -507,7 +423,7 @@ const QueryBuilderPostFilterConditionEditor = observer(
                     }
                     typeCheckOption={{
                       expectedType: guaranteeNonNullable(
-                        node.condition.columnState.getReturnType(),
+                        node.condition.columnState.getColumnType(),
                       ),
                     }}
                     resetValue={resetNode}
@@ -569,9 +485,15 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
       postFilterState.removeNodeAndPruneBranch(node);
     const handleDrop = useCallback(
       (item: QueryBuilderPostFilterDropTarget, type: string): void => {
-        if (type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE) {
-          const columnState = (item as QueryBuilderProjectionColumnDragSource)
-            .columnState;
+        if (
+          type === QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE ||
+          type === QUERY_BUILDER_OLAP_COLUMN_DND_TYPE
+        ) {
+          const columnState = (
+            item as
+              | QueryBuilderProjectionColumnDragSource
+              | QueryBuilderOlapColumnDragSource
+          ).columnState as QueryBuilderTDSColumnState;
           let conditionState: PostFilterConditionState;
           try {
             conditionState = new PostFilterConditionState(
@@ -590,7 +512,6 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
             applicationStore.notifyWarning(error.message);
             return;
           }
-
           if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
             postFilterState.addNodeFromNode(
               new QueryBuilderPostFilterTreeConditionNodeData(
@@ -633,6 +554,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
         accept: [
           ...Object.values(QUERY_BUILDER_POST_FILTER_DND_TYPE),
           QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
         ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
@@ -942,11 +864,14 @@ const QueryBuilderPostFilterPanelContent = observer(
       { isDragOver: boolean }
     >(
       () => ({
-        accept: [QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE],
+        accept: [
+          QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE,
+          QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
+        ],
         drop: (item, monitor): void => {
           if (!monitor.didDrop()) {
             handleDrop(item).catch(applicationStore.alertUnhandledError);
-          } // prevent drop event propagation to accomondate for nested DnD
+          }
         },
         collect: (monitor) => ({
           isDragOver: monitor.isOver({ shallow: true }),

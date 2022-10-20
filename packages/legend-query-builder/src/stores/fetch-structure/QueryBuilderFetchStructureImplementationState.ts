@@ -67,4 +67,8 @@ export abstract class QueryBuilderFetchStructureImplementationState
     options?: LambdaFunctionBuilderOption,
   ): void;
   abstract get hashCode(): string;
+
+  get TEMPORARY__showPostFetchStructurePanel(): boolean {
+    return this.queryBuilderState.filterState.showPanel;
+  }
 }
