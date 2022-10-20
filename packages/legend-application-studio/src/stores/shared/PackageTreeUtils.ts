@@ -40,6 +40,7 @@ import {
   FileGenerationSpecification,
   GenerationSpecification,
   DataElement,
+  generateFunctionPrettyName,
 } from '@finos/legend-graph';
 
 const getElementProjectExplorerDnDType = (
@@ -105,6 +106,14 @@ export const getSelectedPackageTreeNodePackage = (
       : node.packageableElement.package
     : undefined;
 
+export const generatePackageableElementTreeNodeDataLabel = (
+  element: PackageableElement,
+  node?: PackageTreeNodeData,
+): string =>
+  element instanceof ConcreteFunctionDefinition
+    ? generateFunctionPrettyName(element, false)
+    : node?.label ?? element.name;
+
 export const getPackableElementTreeNodeData = (
   editorStore: EditorStore,
   element: PackageableElement,
@@ -112,7 +121,7 @@ export const getPackableElementTreeNodeData = (
 ): PackageTreeNodeData => ({
   id: element.path,
   dndType: getElementProjectExplorerDnDType(editorStore, element),
-  label: element.name,
+  label: generatePackageableElementTreeNodeDataLabel(element),
   childrenIds:
     element instanceof Package
       ? element.children

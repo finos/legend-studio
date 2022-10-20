@@ -453,6 +453,7 @@ export const observe_ConcreteFunctionDefinition = skipObserved(
     observe_Abstract_PackageableElement(metamodel);
 
     makeObservable<ConcreteFunctionDefinition, '_elementHashCode'>(metamodel, {
+      functionName: observable,
       returnMultiplicity: observable,
       parameters: observable.shallow, // only observe the list structure, each object itself is not observed
       expressionSequence: observable.ref, // only observe the reference, the object itself is not observed

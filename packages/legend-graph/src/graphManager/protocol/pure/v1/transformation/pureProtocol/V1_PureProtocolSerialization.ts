@@ -64,9 +64,33 @@ export const V1_entitiesToPureModelContextData = async (
   entities: Entity[] | undefined,
   graph: V1_PureModelContextData,
   plugins: PureProtocolProcessorPlugin[],
+  /**
+   * FIXME: to be deleted when most users have migrated to using full function signature as function name
+   * Currently, SDLC store many functions in legacy form (entity path does
+   * not contain full function signature). However, since they store function
+   * entity in text, when they parse the content to return JSON for entity
+   * content, the content is then updated to have proper `name` for function
+   * entities, this means that there's now a mismatch in the path constructed
+   * from entity content and the entity path, which is a contract that SDLC
+   * should maintain but currently not because of this change
+   * See https://github.com/finos/legend-sdlc/pull/515
+   *
+   * For that reason, during this migration, we want to respect entity path
+   * instead of the path constructed from entity content to properly
+   * reflect the renaming of function in local changes.
+   */
+  TEMPORARY__entityPathIndex?: Map<string, string>,
 ): Promise<void> => {
   try {
     if (entities?.length) {
+      const entityToElement = (entity: Entity): V1_PackageableElement => {
+        const element = V1_deserializePackageableElement(
+          entity.content as PlainObject<V1_PackageableElement>,
+          plugins,
+        );
+        TEMPORARY__entityPathIndex?.set(element.path, entity.path);
+        return element;
+      };
       graph.elements = await Promise.all<V1_PackageableElement>(
         entities.map(
           (e) =>
@@ -80,10 +104,7 @@ export const V1_entitiesToPureModelContextData = async (
                     // path is changed in the backend. If we are to check for this, we might consider
                     // not throwing error but quitely print out warnings about elements that would not
                     // be built.
-                    V1_deserializePackageableElement(
-                      e.content as PlainObject<V1_PackageableElement>,
-                      plugins,
-                    ),
+                    entityToElement(e),
                   );
                 } catch (error) {
                   assertErrorThrown(error);

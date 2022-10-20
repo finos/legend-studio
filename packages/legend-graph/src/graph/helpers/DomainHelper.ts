@@ -26,6 +26,7 @@ import {
   PURE_DEPRECATED_STEREOTYPE,
   ROOT_PACKAGE_NAME,
   MILESTONING_VERSION_PROPERTY_SUFFIX,
+  FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN,
 } from '../MetaModelConst.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
 import type { PackageableElement } from '../metamodel/pure/packageableElements/PackageableElement.js';
@@ -65,6 +66,7 @@ import type { Constraint } from '../metamodel/pure/packageableElements/domain/Co
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
 import type { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
+import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 
 export const addElementToPackage = (
   parent: Package,
@@ -605,3 +607,40 @@ export const getGeneratedMilestonedPropertiesForAssociation = (
       prop.name !==
         `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS_IN_RANGE}`,
   );
+
+const getMultiplicityString = (
+  lowerBound: number,
+  upperBound: number | undefined,
+): string => {
+  if (lowerBound === upperBound) {
+    return lowerBound.toString();
+  } else if (lowerBound === 0 && upperBound === undefined) {
+    return FUNCTION_SIGNATURE_MULTIPLICITY_INFINITE_TOKEN;
+  }
+  return `$${lowerBound}_${upperBound ?? 'MANY'}$`;
+};
+
+export const getFunctionSignature = (
+  func: ConcreteFunctionDefinition,
+): string =>
+  `_${func.parameters
+    .map(
+      (p) =>
+        `${p.type.value.name}_${getMultiplicityString(
+          p.multiplicity.lowerBound,
+          p.multiplicity.upperBound,
+        )}_`,
+    )
+    .join('_')}_${func.returnType.value.name}_${getMultiplicityString(
+    func.returnMultiplicity.lowerBound,
+    func.returnMultiplicity.upperBound,
+  )}_`;
+
+export const getFunctionName = (
+  func: ConcreteFunctionDefinition,
+  name: string,
+): string => name.substring(0, name.indexOf(getFunctionSignature(func)));
+
+export const getFunctionNameWithPath = (
+  func: ConcreteFunctionDefinition,
+): string => func.package?.path + ELEMENT_PATH_DELIMITER + func.functionName;

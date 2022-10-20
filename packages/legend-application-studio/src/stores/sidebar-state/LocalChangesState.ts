@@ -193,12 +193,14 @@ export class LocalChangesState {
   openLocalChange(diff: EntityDiff): void {
     const fromEntityGetter = (
       entityPath: string | undefined,
-    ): Entity | undefined =>
-      entityPath
-        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
-            (e) => e.path === entityPath,
-          )
-        : undefined;
+    ): Entity | undefined => {
+      if (entityPath) {
+        return this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
+          (e) => e.path === entityPath,
+        );
+      }
+      return undefined;
+    };
     const toEntityGetter = (
       entityPath: string | undefined,
     ): Entity | undefined => {
@@ -250,31 +252,23 @@ export class LocalChangesState {
     const fromEntityGetter = (
       entityPath: string | undefined,
     ): Entity | undefined => {
-      if (!entityPath) {
-        return undefined;
-      }
-      const element =
-        this.editorStore.graphManagerState.graph.getNullableElement(entityPath);
-      if (!element) {
-        return undefined;
-      }
-      const entity =
-        this.editorStore.graphManagerState.graphManager.elementToEntity(
-          element,
-          {
-            pruneSourceInformation: true,
-          },
+      if (entityPath) {
+        return this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
+          (e) => e.path === entityPath,
         );
-      return entity;
+      }
+      return undefined;
     };
     const toEntityGetter = (
       entityPath: string | undefined,
-    ): Entity | undefined =>
-      entityPath
-        ? this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
-            (e) => e.path === entityPath,
-          )
-        : undefined;
+    ): Entity | undefined => {
+      if (entityPath) {
+        return this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
+          (e) => e.path === entityPath,
+        );
+      }
+      return undefined;
+    };
     const fromEntity = EntityDiff.shouldOldEntityExist(diff)
       ? guaranteeNonNullable(
           fromEntityGetter(diff.getValidatedOldPath()),

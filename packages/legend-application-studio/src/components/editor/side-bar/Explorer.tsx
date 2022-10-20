@@ -54,7 +54,10 @@ import { useDrag } from 'react-dnd';
 import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
-import { getTreeChildNodes } from '../../../stores/shared/PackageTreeUtils.js';
+import {
+  generatePackageableElementTreeNodeDataLabel,
+  getTreeChildNodes,
+} from '../../../stores/shared/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
 import {
   type GenerationTreeNodeData,
@@ -75,8 +78,11 @@ import {
   isSystemElement,
   isDependencyElement,
   isElementReadOnly,
+  ConcreteFunctionDefinition,
   Class,
   isMainGraphElement,
+  getFunctionSignature,
+  getFunctionNameWithPath,
 } from '@finos/legend-graph';
 import { useApplicationStore } from '@finos/legend-application';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../../../stores/shared/ModelClassifierUtils.js';
@@ -88,7 +94,11 @@ const ElementRenamer = observer(() => {
   const applicationStore = useApplicationStore();
   const explorerTreeState = editorStore.explorerTreeState;
   const element = explorerTreeState.elementToRename;
-  const [path, setPath] = useState(element?.path ?? '');
+  const [path, setPath] = useState(
+    (element instanceof ConcreteFunctionDefinition
+      ? getFunctionNameWithPath(element)
+      : element?.path) ?? '',
+  );
   const pathInputRef = useRef<HTMLInputElement>(null);
   const changePath: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -129,9 +139,14 @@ const ElementRenamer = observer(() => {
     event.preventDefault();
     if (element && canRenameElement) {
       explorerTreeState.setElementToRename(undefined);
-      flowResult(editorStore.renameElement(element, path)).catch(
-        applicationStore.alertUnhandledError,
-      );
+      flowResult(
+        editorStore.renameElement(
+          element,
+          element instanceof ConcreteFunctionDefinition
+            ? path + getFunctionSignature(element)
+            : path,
+        ),
+      ).catch(applicationStore.alertUnhandledError);
     }
   };
 
@@ -140,7 +155,11 @@ const ElementRenamer = observer(() => {
 
   useEffect(() => {
     if (element) {
-      setPath(element.path);
+      setPath(
+        element instanceof ConcreteFunctionDefinition
+          ? getFunctionNameWithPath(element)
+          : element.path,
+      );
     }
   }, [element]);
 
@@ -458,7 +477,10 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {node.label}
+            {generatePackageableElementTreeNodeDataLabel(
+              node.packageableElement,
+              node,
+            )}
           </button>
         </div>
       </ContextMenu>

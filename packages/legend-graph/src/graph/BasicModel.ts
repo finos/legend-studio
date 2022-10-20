@@ -60,6 +60,7 @@ import {
 import {
   addElementToPackage,
   deleteElementFromPackage,
+  getFunctionName,
   getOrCreateGraphPackage,
   getOrCreatePackage,
 } from '../graph/helpers/DomainHelper.js';
@@ -657,6 +658,9 @@ export abstract class BasicModel {
           : this.root);
       // update element name
       element.name = newElementName;
+      if (element instanceof ConcreteFunctionDefinition) {
+        element.functionName = getFunctionName(element, element.name);
+      }
       // update element package if needed
       if (element.package !== newParentPackage) {
         if (element.package) {

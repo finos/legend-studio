@@ -251,7 +251,6 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
-import { V1_getFunctionSuffix } from './helpers/V1_DomainHelper.js';
 import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 
 class V1_PureModelContextDataIndex {
@@ -2300,14 +2299,40 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   async buildHashesIndex(entities: Entity[]): Promise<Map<string, string>> {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
+    /**
+     * FIXME: to be deleted when most users have migrated to using full function signature as function name
+     * Currently, SDLC store many functions in legacy form (entity path does
+     * not contain full function signature). However, since they store function
+     * entity in text, when they parse the content to return JSON for entity
+     * content, the content is then updated to have proper `name` for function
+     * entities, this means that there's now a mismatch in the path constructed
+     * from entity content and the entity path, which is a contract that SDLC
+     * should maintain but currently not because of this change
+     * See https://github.com/finos/legend-sdlc/pull/515
+     *
+     * For that reason, during this migration, we want to respect entity path
+     * instead of the path constructed from entity content to properly
+     * reflect the renaming of function in local changes.
+     */
+    const TEMPORARY__entityPathIndex = new Map<string, string>();
     await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
+      TEMPORARY__entityPathIndex,
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
-        promisify(() => hashMap.set(element.path, element.hashCode)),
+        promisify(() =>
+          hashMap.set(
+            TEMPORARY__entityPathIndex.get(element.path)
+              ? guaranteeNonNullable(
+                  TEMPORARY__entityPathIndex.get(element.path),
+                )
+              : element.path,
+            element.hashCode,
+          ),
+        ),
       ),
     );
     return hashMap;
@@ -2582,23 +2607,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         .build(),
     ) as T;
 
-  private getElementPath = (elementProtocol: V1_PackageableElement): string => {
-    let name = elementProtocol.name;
-    // These functions calculation the function suffix and are used to identify if an
-    // function imported into Studio via model loader already has a suffix attached to the name
-    // if so, we will remove that suffix
-    // TODO: to be revised when we support function overloading
-    if (elementProtocol instanceof V1_ConcreteFunctionDefinition) {
-      const suffixIndex = elementProtocol.name.indexOf(
-        V1_getFunctionSuffix(elementProtocol),
-      );
-      if (suffixIndex > 0) {
-        name = elementProtocol.name.substring(0, suffixIndex - 1);
-      }
-    }
-
-    return `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${name}`;
-  };
+  private getElementPath = (elementProtocol: V1_PackageableElement): string =>
+    `${elementProtocol.package}${ENTITY_PATH_DELIMITER}${elementProtocol.name}`;
 
   private getElementClassiferPath = (
     protocol: V1_PackageableElement,
