@@ -83,8 +83,8 @@ import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSL_Mapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
-import { getFunctionName } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinitionHelper.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
+import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>

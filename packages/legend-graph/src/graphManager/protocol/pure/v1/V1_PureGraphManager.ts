@@ -2300,23 +2300,34 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const hashMap = new Map<string, string>();
     const pureModelContextData = new V1_PureModelContextData();
     /**
-     * @ToDelete
-     * This will be deleted once all users have migrated to using full function signature as function name
+     * FIXME: to be deleted when most users have migrated to using full function signature as function name
+     * Currently, SDLC store many functions in legacy form (entity path does
+     * not contain full function signature). However, since they store function
+     * entity in text, when they parse the content to return JSON for entity
+     * content, the content is then updated to have proper `name` for function
+     * entities, this means that there's now a mismatch in the path constructed
+     * from entity content and the entity path, which is a contract that SDLC
+     * should maintain but currently not because of this change
+     * See https://github.com/finos/legend-sdlc/pull/515
+     *
+     * For that reason, during this migration, we want to respect entity path
+     * instead of the path constructed from entity content to properly
+     * reflect the renaming of function in local changes.
      */
-    const TEMPORARY_elementToEntityMap = new Map<string, string>();
+    const TEMPORARY__entityPathIndex = new Map<string, string>();
     await V1_entitiesToPureModelContextData(
       entities,
       pureModelContextData,
       this.pluginManager.getPureProtocolProcessorPlugins(),
-      TEMPORARY_elementToEntityMap,
+      TEMPORARY__entityPathIndex,
     );
     await Promise.all(
       pureModelContextData.elements.map((element) =>
         promisify(() =>
           hashMap.set(
-            TEMPORARY_elementToEntityMap.get(element.path)
+            TEMPORARY__entityPathIndex.get(element.path)
               ? guaranteeNonNullable(
-                  TEMPORARY_elementToEntityMap.get(element.path),
+                  TEMPORARY__entityPathIndex.get(element.path),
                 )
               : element.path,
             element.hashCode,

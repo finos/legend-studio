@@ -65,10 +65,21 @@ export const V1_entitiesToPureModelContextData = async (
   graph: V1_PureModelContextData,
   plugins: PureProtocolProcessorPlugin[],
   /**
-   * @ToDelete
-   * This will be deleted once all users have migrated to using full function signature as function name
+   * FIXME: to be deleted when most users have migrated to using full function signature as function name
+   * Currently, SDLC store many functions in legacy form (entity path does
+   * not contain full function signature). However, since they store function
+   * entity in text, when they parse the content to return JSON for entity
+   * content, the content is then updated to have proper `name` for function
+   * entities, this means that there's now a mismatch in the path constructed
+   * from entity content and the entity path, which is a contract that SDLC
+   * should maintain but currently not because of this change
+   * See https://github.com/finos/legend-sdlc/pull/515
+   *
+   * For that reason, during this migration, we want to respect entity path
+   * instead of the path constructed from entity content to properly
+   * reflect the renaming of function in local changes.
    */
-  TEMPORARY_elementToEntityMap?: Map<string, string>,
+  TEMPORARY__entityPathIndex?: Map<string, string>,
 ): Promise<void> => {
   try {
     if (entities?.length) {
@@ -77,7 +88,7 @@ export const V1_entitiesToPureModelContextData = async (
           entity.content as PlainObject<V1_PackageableElement>,
           plugins,
         );
-        TEMPORARY_elementToEntityMap?.set(element.path, entity.path);
+        TEMPORARY__entityPathIndex?.set(element.path, entity.path);
         return element;
       };
       graph.elements = await Promise.all<V1_PackageableElement>(

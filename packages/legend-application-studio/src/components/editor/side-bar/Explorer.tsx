@@ -55,7 +55,7 @@ import { ElementDragSource } from '../../../stores/shared/DnDUtils.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { ACTIVITY_MODE } from '../../../stores/EditorConfig.js';
 import {
-  generatePackableElementTreeNodeDataLabel,
+  generatePackageableElementTreeNodeDataLabel,
   getTreeChildNodes,
 } from '../../../stores/shared/PackageTreeUtils.js';
 import type { PackageTreeNodeData } from '../../../stores/shared/TreeUtils.js';
@@ -477,7 +477,7 @@ const PackageTreeNodeContainer = observer(
             tabIndex={-1}
             title={node.packageableElement.path}
           >
-            {generatePackableElementTreeNodeDataLabel(
+            {generatePackageableElementTreeNodeDataLabel(
               node.packageableElement,
               node,
             )}

@@ -106,7 +106,7 @@ export const getSelectedPackageTreeNodePackage = (
       : node.packageableElement.package
     : undefined;
 
-export const generatePackableElementTreeNodeDataLabel = (
+export const generatePackageableElementTreeNodeDataLabel = (
   element: PackageableElement,
   node?: PackageTreeNodeData,
 ): string =>
@@ -121,7 +121,7 @@ export const getPackableElementTreeNodeData = (
 ): PackageTreeNodeData => ({
   id: element.path,
   dndType: getElementProjectExplorerDnDType(editorStore, element),
-  label: generatePackableElementTreeNodeDataLabel(element),
+  label: generatePackageableElementTreeNodeDataLabel(element),
   childrenIds:
     element instanceof Package
       ? element.children

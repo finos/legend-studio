@@ -60,12 +60,12 @@ import {
 import {
   addElementToPackage,
   deleteElementFromPackage,
+  getFunctionName,
   getOrCreateGraphPackage,
   getOrCreatePackage,
 } from '../graph/helpers/DomainHelper.js';
 import { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { Testable } from '../graph/metamodel/pure/test/Testable.js';
-import { getFunctionName } from './metamodel/pure/packageableElements/domain/ConcreteFunctionDefinitionHelper.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,

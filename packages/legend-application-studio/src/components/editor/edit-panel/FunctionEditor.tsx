@@ -140,10 +140,8 @@ type FunctionParameterDragSource = {
 const FUNCTION_PARAMETER_DND_TYPE = 'FUNCTION_PARAMETER';
 
 /**
- * Use a hack to update graph's functionIndex based on the fact that functionIndex
- * is readOnly. Changing  parameter/returnValue's type/multiplicity of the function
- * or adding/deleting parameters will change the function's signature too.
- * Therefore, graph.functionIndex needs to be updated.
+ * NOTE: every time we update the function signature (parameters, return value), we need to adjust the function path,
+ * therefore, we need to update the graph's function index.
  */
 const updateFunctionName = (
   editorStore: EditorStore,

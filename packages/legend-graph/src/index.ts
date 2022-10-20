@@ -63,11 +63,6 @@ export {
 } from './graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
 export { ConcreteFunctionDefinition } from './graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 export {
-  getFunctionName,
-  getFunctionSignature,
-  getFunctionNameWithPath,
-} from './graph/metamodel/pure/packageableElements/domain/ConcreteFunctionDefinitionHelper.js';
-export {
   StereotypeReference,
   StereotypeExplicitReference,
 } from './graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';

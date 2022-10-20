@@ -43,19 +43,14 @@ const V1_buildFunctionParameterSignature = (variable: V1_RawVariable): string =>
     .split(ELEMENT_PATH_DELIMITER)
     .pop()}_${V1_buildFunctionMultiplicitySignature(variable.multiplicity)}_`;
 
-export const V1_getFunctionSuffix = (
-  fn: V1_ConcreteFunctionDefinition,
-): string =>
-  `${fn.parameters
-    .map((p) => V1_buildFunctionParameterSignature(p))
-    .join('_')}_${fn.returnType
-    .split(ELEMENT_PATH_DELIMITER)
-    .pop()}_${V1_buildFunctionMultiplicitySignature(fn.returnMultiplicity)}_`;
-
 export const V1_buildFunctionSignature = (
   func: V1_ConcreteFunctionDefinition,
 ): string => {
-  const functionSignature = `_${V1_getFunctionSuffix(func)}`;
+  const functionSignature = `_${func.parameters
+    .map((p) => V1_buildFunctionParameterSignature(p))
+    .join('_')}_${func.returnType
+    .split(ELEMENT_PATH_DELIMITER)
+    .pop()}_${V1_buildFunctionMultiplicitySignature(func.returnMultiplicity)}_`;
   return func.name.endsWith(functionSignature)
     ? func.name
     : func.name + functionSignature;
