@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 19.1.0
+
+### Minor Changes
+
+- [#1339](https://github.com/finos/legend-studio/pull/1339) [`a7b1479b`](https://github.com/finos/legend-studio/commit/a7b1479b615d65af273f3e08aefadf3be24dc1c5) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support function overloading ([#1211](https://github.com/finos/legend-studio/issues/1211)).
+
 ## 19.0.0
 
 ### Major Changes
