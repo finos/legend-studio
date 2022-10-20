@@ -1,5 +1,26 @@
 # @finos/legend-application-taxonomy
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - Allow configuring instances of `Legend Studio` which `Legend Taxonomy` can refer to for integration (e.g. editing data space).
+
+  ```jsonc
+  {
+    ... // existing config content
+    "studio": {
+      "url": "http://localhost:9000/studio",
+      "instances": [
+        {
+          "sdlcProjectIDPrefix": "PROD",
+          "url": "http://localhost:9000/studio"
+        }
+      ]
+    }
+  }
+  ```
+
 ## 6.1.3
 
 ## 6.1.2

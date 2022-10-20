@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.0
+
+### Major Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked routing for data space query builder: `/create-from-dataspace/...` is now `/dataspace/...`; also, the basic route `/dataspace/` now will show an empty query builder page
+
 ## 8.0.1
 
 ## 8.0.0
