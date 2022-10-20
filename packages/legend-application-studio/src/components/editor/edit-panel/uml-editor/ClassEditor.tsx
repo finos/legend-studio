@@ -821,7 +821,7 @@ const DerivedPropertyBasicEditor = observer(
               lambdaEditorState={dpState}
               forceBackdrop={hasParserError}
               expectedType={propertyType}
-              onEditorFocusEventHandler={onLambdaEditorFocus}
+              onEditorFocus={onLambdaEditorFocus}
             />
           </div>
         </PanelEntryDropZonePlaceholder>
@@ -982,7 +982,7 @@ const ConstraintEditor = observer(
               expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
                 PRIMITIVE_TYPE.BOOLEAN,
               )}
-              onEditorFocusEventHandler={onLambdaEditorFocus}
+              onEditorFocus={onLambdaEditorFocus}
             />
           </div>
         </PanelEntryDropZonePlaceholder>

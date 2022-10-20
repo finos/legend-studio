@@ -16,8 +16,6 @@
 
 import packageJson from '../../../package.json';
 import {
-  type QueryEditorStore,
-  type QueryEditorHeaderLabeler,
   type QuerySetupActionConfiguration,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
@@ -39,15 +37,8 @@ import {
   generateDataSpaceQuerySetupRoute,
 } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
-import {
-  createQueryDataSpaceTaggedValue,
-  DataSpaceQueryCreatorStore,
-} from '../../stores/query/DataSpaceQueryCreatorStore.js';
-import {
-  Query,
-  extractElementNameFromPath,
-  isValidFullPath,
-} from '@finos/legend-graph';
+import { createQueryDataSpaceTaggedValue } from '../../stores/query/DataSpaceQueryCreatorStore.js';
+import { Query, isValidFullPath } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
@@ -97,25 +88,6 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
         icon: (
           <SquareIcon className="query-setup__landing-page__icon--data-space" />
         ),
-      },
-    ];
-  }
-
-  override getExtraQueryEditorHeaderLabelers(): QueryEditorHeaderLabeler[] {
-    return [
-      (editorStore: QueryEditorStore): React.ReactNode | undefined => {
-        if (editorStore instanceof DataSpaceQueryCreatorStore) {
-          return (
-            <div className="query-editor__header__label">
-              <SquareIcon className="query-editor__header__label__icon icon--data-space" />
-              {extractElementNameFromPath(editorStore.dataSpacePath)}
-              <div className="query-editor__header__label__tag">
-                {editorStore.executionContext}
-              </div>
-            </div>
-          );
-        }
-        return undefined;
       },
     ];
   }

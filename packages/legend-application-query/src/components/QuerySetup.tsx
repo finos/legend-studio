@@ -148,7 +148,7 @@ const QuerySetupActionGroupConfigMenu = observer(() => {
         <MenuContentItemLabel>Show all action groups</MenuContentItemLabel>
       </MenuContentItem>
       <MenuContentDivider />
-      <MenuContentItem>Focus on action group:</MenuContentItem>
+      <MenuContentItem disabled={true}>Focus on action group:</MenuContentItem>
       <MenuContentItem onClick={() => setupStore.setTagToFocus(undefined)}>
         <MenuContentItemIcon>
           {!setupStore.tagToFocus ? <CheckIcon /> : null}
@@ -295,7 +295,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
                         ))}
                         <div className="query-setup__landing-page__action-group query-setup__landing-page__action-group--studio">
                           <div className="query-setup__landing-page__action-group__tag">
-                            Studio
+                            Developer Workstation
                           </div>
                           <div className="query-setup__landing-page__action-group__header" />
                           <div className="query-setup__landing-page__action-group__body">

@@ -19,14 +19,11 @@ import type { Query } from '@finos/legend-graph';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
 import type React from 'react';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
-import type {
-  ExistingQueryEditorStore,
-  QueryEditorStore,
-} from './QueryEditorStore.js';
+import type { ExistingQueryEditorStore } from './QueryEditorStore.js';
 import type { QuerySetupLandingPageStore } from './QuerySetupStore.js';
 
 export enum QuerySetupActionTag {
-  SDLC = 'SDLC',
+  PRODUCTIONIZATION = 'Productionization',
 }
 
 export type QuerySetupActionConfiguration = {
@@ -50,10 +47,6 @@ export type QuerySetupActionConfiguration = {
   className?: string | undefined;
   action: (setupStore: QuerySetupLandingPageStore) => Promise<void>;
 };
-
-export type QueryEditorHeaderLabeler = (
-  editorStore: QueryEditorStore,
-) => React.ReactNode | undefined;
 
 export type ExistingQueryEditorStateBuilder = (
   query: Query,
@@ -83,11 +76,6 @@ export abstract class LegendQueryApplicationPlugin extends LegendApplicationPlug
    * Get the list of actions (configurations) for query setup.
    */
   getExtraQuerySetupActionConfigurations?(): QuerySetupActionConfiguration[];
-
-  /**
-   * Get the list of query editor header labelers.
-   */
-  getExtraQueryEditorHeaderLabelers?(): QueryEditorHeaderLabeler[];
 
   /**
    * Get the list of existing query editor state builders.

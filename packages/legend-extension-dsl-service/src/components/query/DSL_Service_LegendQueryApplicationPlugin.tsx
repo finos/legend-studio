@@ -82,7 +82,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
               onClick={proceed}
               title="Productionize query..."
             >
-              <ArrowCirceUpIcon className="query-editor__header__action__icon--service" />
+              <ArrowCirceUpIcon />
             </button>
           );
         },

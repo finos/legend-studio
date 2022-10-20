@@ -32,7 +32,6 @@ import {
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
-  RobotIcon,
   RocketIcon,
   SaveIcon,
   clsx,
@@ -58,7 +57,6 @@ import {
 } from '@finos/legend-query-builder';
 import {
   ELEMENT_PATH_DELIMITER,
-  extractElementNameFromPath,
   resolvePackagePathAndElementName,
   validate_ServicePattern,
 } from '@finos/legend-graph';
@@ -449,12 +447,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
 
   return (
     <div className="service-query-editor__header__content">
-      <div className="service-query-editor__header__content__main">
-        <div className="service-query-editor__header__label service-query-editor__header__label--service-query">
-          <RobotIcon className="service-query-editor__header__label__icon" />
-          {extractElementNameFromPath(editorStore.service.path)}
-        </div>
-      </div>
+      <div className="service-query-editor__header__content__main" />
 
       <div className="service-query-editor__header__actions">
         <button
@@ -479,8 +472,8 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         >
           <GitBranchIcon className="service-query-editor__header__action__icon--branch" />
         </button>
-        <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorReviewAction />
+        <div className="service-query-editor__header__actions__divider" />
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}

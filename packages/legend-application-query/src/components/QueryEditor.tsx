@@ -17,10 +17,8 @@
 import {
   type SelectComponent,
   Dialog,
-  ArrowLeftIcon,
   ExternalLinkSquareIcon,
   PanelLoadingIndicator,
-  RobotIcon,
   SaveIcon,
   BlankPanelContent,
   clsx,
@@ -35,6 +33,11 @@ import {
   MenuContent,
   MenuContentItem,
   CaretDownIcon,
+  MenuIcon,
+  MenuContentDivider,
+  MenuContentItemIcon,
+  CheckIcon,
+  MenuContentItemLabel,
 } from '@finos/legend-art';
 import { debounce, getQueryParameters } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -44,17 +47,15 @@ import {
   type ExistingQueryEditorPathParams,
   type ServiceQueryCreatorPathParams,
   type ServiceQueryCreatorQueryParams,
-  LEGEND_QUERY_ROUTE_PATTERN,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_PATH_PARAM_TOKEN,
   generateExistingQueryEditorRoute,
+  generateQuerySetupRoute,
 } from '../stores/LegendQueryRouter.js';
 import {
   type QueryEditorStore,
-  MappingQueryCreatorStore,
   ExistingQueryEditorStore,
   QueryExportState,
-  ServiceQueryCreatorStore,
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../stores/QueryEditorStore.js';
@@ -65,10 +66,7 @@ import {
   ServiceQueryCreatorStoreProvider,
   useQueryEditorStore,
 } from './QueryEditorStoreProvider.js';
-import {
-  type RawLambda,
-  extractElementNameFromPath,
-} from '@finos/legend-graph';
+import type { RawLambda } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { useLegendQueryApplicationStore } from './LegendQueryBaseStoreProvider.js';
 import {
@@ -161,46 +159,6 @@ const QueryExport = observer(() => {
     </Dialog>
   );
 });
-
-const renderQueryEditorHeaderLabel = (
-  editorStore: QueryEditorStore,
-): React.ReactNode => {
-  if (editorStore instanceof ExistingQueryEditorStore) {
-    return (
-      <div className="query-editor__header__label query-editor__header__label--existing-query">
-        {editorStore.query.name}
-      </div>
-    );
-  } else if (editorStore instanceof MappingQueryCreatorStore) {
-    return (
-      <div className="query-editor__header__label query-editor__header__label--create-query">
-        New Query
-      </div>
-    );
-  } else if (editorStore instanceof ServiceQueryCreatorStore) {
-    return (
-      <div className="query-editor__header__label query-editor__header__label--service-query">
-        <RobotIcon className="query-editor__header__label__icon" />
-        {extractElementNameFromPath(editorStore.servicePath)}
-        {editorStore.executionKey && (
-          <div className="query-editor__header__label__tag">
-            {editorStore.executionKey}
-          </div>
-        )}
-      </div>
-    );
-  }
-  const extraQueryEditorHeaderLabelers = editorStore.pluginManager
-    .getApplicationPlugins()
-    .flatMap((plugin) => plugin.getExtraQueryEditorHeaderLabelers?.() ?? []);
-  for (const labeler of extraQueryEditorHeaderLabelers) {
-    const label = labeler(editorStore);
-    if (label) {
-      return label;
-    }
-  }
-  return null;
-};
 
 const QueryLoader = observer(
   (props: {
@@ -464,9 +422,7 @@ const QueryEditorHeaderContent = observer(
 
     return (
       <div className="query-editor__header__content">
-        <div className="query-editor__header__content__main">
-          {renderQueryEditorHeaderLabel(editorStore)}
-        </div>
+        <div className="query-editor__header__content__main" />
         <div className="query-editor__header__actions">
           {editorStore instanceof ExistingQueryEditorStore &&
             applicationStore.pluginManager
@@ -556,8 +512,27 @@ export const QueryEditor = observer(() => {
   const applicationStore = useApplicationStore();
   const editorStore = useQueryEditorStore();
   const isLoadingEditor = !editorStore.initState.hasCompleted;
-  const backToMainMenu = (): void =>
-    applicationStore.navigator.goToLocation(LEGEND_QUERY_ROUTE_PATTERN.SETUP);
+
+  // documentation
+  const appDocUrl = applicationStore.documentationService.url;
+  const goToDocumentation = (): void => {
+    if (appDocUrl) {
+      applicationStore.navigator.visitAddress(appDocUrl);
+    }
+  };
+  // go to setup page
+  const goToQuerySetup = (): void =>
+    applicationStore.navigator.visitAddress(
+      applicationStore.navigator.generateAddress(generateQuerySetupRoute()),
+    );
+  // settings
+  // NOTE: this is temporary until we find a better home for these settings in query builder
+  const engineConfig =
+    editorStore.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
+  const toggleEngineClientRequestPayloadCompression = (): void =>
+    engineConfig.setUseClientRequestPayloadCompression(
+      !engineConfig.useClientRequestPayloadCompression,
+    );
 
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
@@ -583,13 +558,46 @@ export const QueryEditor = observer(() => {
       ])}
     >
       <div className="query-editor__header">
-        <button
-          className="query-editor__header__back-btn btn--dark"
-          onClick={backToMainMenu}
-          title="Back to Main Menu"
-        >
-          <ArrowLeftIcon />
-        </button>
+        <div className="query-editor__header__menu">
+          <DropdownMenu
+            className="query-editor__header__menu-item"
+            menuProps={{
+              anchorOrigin: { vertical: 'top', horizontal: 'right' },
+              transformOrigin: { vertical: 'top', horizontal: 'left' },
+              elevation: 7,
+            }}
+            content={
+              <MenuContent>
+                {/* <MenuContentItem onClick={openHelp}>Help...</MenuContentItem> */}
+                <MenuContentItem
+                  disabled={!appDocUrl}
+                  onClick={goToDocumentation}
+                >
+                  See Documentation
+                </MenuContentItem>
+                <MenuContentItem onClick={goToQuerySetup}>
+                  Back to query setup
+                </MenuContentItem>
+                <MenuContentDivider />
+                <MenuContentItem disabled={true}>Settings</MenuContentItem>
+                <MenuContentItem
+                  onClick={toggleEngineClientRequestPayloadCompression}
+                >
+                  <MenuContentItemIcon>
+                    {engineConfig.useClientRequestPayloadCompression ? (
+                      <CheckIcon />
+                    ) : null}
+                  </MenuContentItemIcon>
+                  <MenuContentItemLabel>
+                    Compress request payload
+                  </MenuContentItemLabel>
+                </MenuContentItem>
+              </MenuContent>
+            }
+          >
+            <MenuIcon />
+          </DropdownMenu>
+        </div>
         {!isLoadingEditor && editorStore.queryBuilderState && (
           <QueryEditorHeaderContent
             queryBuilderState={editorStore.queryBuilderState}

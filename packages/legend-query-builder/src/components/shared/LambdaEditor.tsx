@@ -94,7 +94,7 @@ const LambdaEditorInline = observer(
     disablePopUp?: boolean | undefined;
     backdropSetter?: ((val: boolean) => void) | undefined;
     openInPopUp: () => void;
-    onEditorFocusEventHandler?: (() => void) | undefined;
+    onEditorFocus?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -112,7 +112,7 @@ const LambdaEditorInline = observer(
       useBaseTextEditorSettings,
       hideErrorBar,
       openInPopUp,
-      onEditorFocusEventHandler,
+      onEditorFocus,
     } = props;
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
@@ -287,7 +287,7 @@ const LambdaEditorInline = observer(
       onDidFocusEditorWidgetDisposer.current?.dispose();
       onDidFocusEditorWidgetDisposer.current = editor.onDidFocusEditorWidget(
         () => {
-          onEditorFocusEventHandler?.();
+          onEditorFocus?.();
         },
       );
 
@@ -696,7 +696,7 @@ export const LambdaEditor = observer(
      * To whether or not hide parser error bar in inline mode
      */
     hideErrorBar?: boolean | undefined;
-    onEditorFocusEventHandler?: (() => void) | undefined;
+    onEditorFocus?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -712,7 +712,7 @@ export const LambdaEditor = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
-      onEditorFocusEventHandler,
+      onEditorFocus,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
     const openInPopUp = (): void => setShowPopUp(true);
@@ -788,7 +788,7 @@ export const LambdaEditor = observer(
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         openInPopUp={openInPopUp}
-        onEditorFocusEventHandler={onEditorFocusEventHandler}
+        onEditorFocus={onEditorFocus}
       />
     );
   },

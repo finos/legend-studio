@@ -74,6 +74,8 @@
       top: -0.5rem;
       font-weight: 700;
       font-family: 'Roboto Mono', monospace;
+      user-select: none;
+      cursor: default;
     }
 
     &--studio &__tag {

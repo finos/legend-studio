@@ -141,7 +141,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'update-existing-service-query',
         isAdvanced: false,
         isCreateAction: false,
-        tag: QuerySetupActionTag.SDLC,
+        tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
           setupStore.applicationStore.navigator.goToLocation(
             generateUpdateExistingServiceQuerySetup(),
@@ -155,7 +155,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'open-project-service-query',
         isAdvanced: true,
         isCreateAction: false,
-        tag: QuerySetupActionTag.SDLC,
+        tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
           setupStore.applicationStore.navigator.goToLocation(
             generateLoadProjectServiceQuerySetup(),
@@ -169,7 +169,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         key: 'productionize-query',
         isAdvanced: false,
         isCreateAction: true,
-        tag: QuerySetupActionTag.SDLC,
+        tag: QuerySetupActionTag.PRODUCTIONIZATION,
         action: async (setupStore: QuerySetupLandingPageStore) => {
           setupStore.applicationStore.navigator.goToLocation(
             generateQueryProductionizerSetupRoute(),

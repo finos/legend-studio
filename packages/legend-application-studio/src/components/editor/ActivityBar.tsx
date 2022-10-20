@@ -100,50 +100,29 @@ export const ActivityBarMenu: React.FC = () => {
     <>
       <div className="activity-bar__menu">
         <DropdownMenu
-          className="app__header__action activity-bar__menu-item"
+          className="activity-bar__menu-item"
           menuProps={{
             anchorOrigin: { vertical: 'top', horizontal: 'right' },
             transformOrigin: { vertical: 'top', horizontal: 'left' },
             elevation: 7,
           }}
           content={
-            <MenuContent className="app__header__menu">
+            <MenuContent>
+              <MenuContentItem onClick={showAppInfo}>About</MenuContentItem>
+              <MenuContentItem onClick={openHelp}>Help...</MenuContentItem>
               <MenuContentItem
-                className="app__header__menu__item"
-                onClick={showAppInfo}
-              >
-                About
-              </MenuContentItem>
-              <MenuContentItem
-                className="app__header__menu__item"
-                onClick={openHelp}
-              >
-                Help...
-              </MenuContentItem>
-              <MenuContentItem
-                className="app__header__menu__item"
                 disabled={!appDocUrl}
                 onClick={goToDocumentation}
               >
                 See Documentation
               </MenuContentItem>
               <MenuContentDivider />
-              <MenuContentItem
-                className="app__header__menu__item"
-                onClick={goToWorkspaceSetup}
-              >
+              <MenuContentItem onClick={goToWorkspaceSetup}>
                 Back to workspace setup
               </MenuContentItem>
             </MenuContent>
           }
         >
-          {/* <div className="activity-bar__menu">
-            <button
-              className="activity-bar__menu-item"
-              tabIndex={-1}
-              title="Menu"
-            ></button>
-          </div> */}
           <MenuIcon />
         </DropdownMenu>
       </div>
