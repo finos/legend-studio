@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 4.1.0
+
+### Minor Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - Change the wrapping component for `DropdownMenu` from `<div>` to `<button>`
+
 ## 4.0.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @finos/legend-application-studio
 
+## 19.0.0
+
+### Major Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `StudioLambdaEditor` and `StudioTextInputEditor` since there is no longer need to have these components as we have generalized our keyboard handling in the parent components. Migrate to `LambaEditor` and `TextInputEditor` instead.
+
+### Patch Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - Fix a problem with element renamer where we mistakenly disallow users to rename the package to have the same name as a package from another spaces (system, dependencies, generation, etc.)
+
+- [#1567](https://github.com/finos/legend-studio/pull/1567) [`6ff83758`](https://github.com/finos/legend-studio/commit/6ff8375811246defd3ce811bf4e22e313d16d642) ([@akphi](https://github.com/akphi)) - Fix a regression introduced by #1552 where the `Edit Workspace` button in setup screen does not result in proper navigation.
+
 ## 18.1.0
 
 ### Minor Changes

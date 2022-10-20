@@ -1,5 +1,28 @@
 # @finos/legend-application-query
 
+## 9.0.0
+
+### Major Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked query setup page, the list of option is not partitioned based on various dimensions: is it create/edit action? is it advanced mode, who is the target audience, etc. In particular, we replaced `QuerySetupOptionRendererConfiguration` by `QuerySetupActionConfiguration`
+
+  ```ts
+  type QuerySetupActionConfiguration = {
+    key: string;
+    isCreateAction: boolean;
+    isAdvanced: boolean;
+    tag?: string;
+    label: string;
+    icon: React.ReactNode;
+    className?: string | undefined;
+    action: (setupStore: QuerySetupStore) => Promise<void>;
+  };
+  ```
+
+### Minor Changes
+
+- [#1565](https://github.com/finos/legend-studio/pull/1565) [`ebe9acf9`](https://github.com/finos/legend-studio/commit/ebe9acf9bc01234849e64df792693e493c95cb8f) ([@akphi](https://github.com/akphi)) - Add a new query setup mode from `taxonomy`, this requires modification to `Legend Query` config to also include `url` of `Legend Taxonomy`.
+
 ## 8.1.3
 
 ## 8.1.2

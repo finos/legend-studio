@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 19.0.0
+
+### Major Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** `BasicModel.renameOwnElement` now requires passing the `oldPath` in. This helps fix a problem with renaming an element belonging to a package that has just been renamed.
+
 ## 18.0.1
 
 ### Patch Changes

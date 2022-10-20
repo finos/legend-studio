@@ -1,5 +1,17 @@
 # @finos/legend-application
 
+## 10.0.0
+
+### Major Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Reworked `ApplicationNavigator` completely: it nolonger genericize on the type of location, rather, location now has a fixed shape (which for simplification purpose. is `string` for now); the methods are now reorganized to be more self-explanatory; support for navigation blocking is also added, with the pair of method `blockNavigation()/unblockNavigation()`, the former of which receives a list of checkers for when to enable blocking as well as an event handler when blocking occurs.
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** In `ApplicationNavigator`, changed `reloadToLocation` to `goToLocation`, the old `goToLocation` will now be called `updateCurrentLocation` and subjected to navigation blocking, this method will technically only update the location of the application (i.e. for `WebApplicationNavigator`, the URL) without reloading the app, or going to another section of the app; hence this method should only be used in very particular cases: majority of the time, `goToLocation` should be used.
+
+### Minor Changes
+
+- [#1552](https://github.com/finos/legend-studio/pull/1552) [`683800ab`](https://github.com/finos/legend-studio/commit/683800ab3ca1752c4382f22bcf8dede42518449d) ([@akphi](https://github.com/akphi)) - Rework keyboard support for application, now we don't need to consume `react-hotkeys` directly, but we can more systematically set keyboard shortcuts using `KeyboardShortcutsService`.
+
 ## 9.0.1
 
 ## 9.0.0
