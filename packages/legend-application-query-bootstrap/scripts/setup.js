@@ -79,6 +79,14 @@ export const setup = (outputDir) => {
             },
           ],
         },
+        taxonomy: {
+          url: 'http://localhost:9092/taxonomy',
+        },
+        // extensions: {
+        //   core: {
+        //     TEMPORARY__enableThemeSwitcher: true,
+        //   },
+        // },
       },
       undefined,
       2,

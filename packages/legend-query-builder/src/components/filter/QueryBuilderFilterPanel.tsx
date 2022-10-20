@@ -229,6 +229,7 @@ const QueryBuilderFilterConditionEditor = observer(
             </div>
             <DropdownMenu
               className="query-builder-filter-tree__condition-node__operator"
+              title="Choose Operator..."
               content={
                 <MenuContent>
                   {node.condition.operators.map((op) => (
@@ -251,13 +252,9 @@ const QueryBuilderFilterConditionEditor = observer(
               <div className="query-builder-filter-tree__condition-node__operator__label">
                 {node.condition.operator.getLabel(node.condition)}
               </div>
-              <button
-                className="query-builder-filter-tree__condition-node__operator__dropdown__trigger"
-                tabIndex={-1}
-                title="Choose Operator..."
-              >
+              <div className="query-builder-filter-tree__condition-node__operator__dropdown__trigger">
                 <CaretDownIcon />
-              </button>
+              </div>
             </DropdownMenu>
             {node.condition.value && (
               <div

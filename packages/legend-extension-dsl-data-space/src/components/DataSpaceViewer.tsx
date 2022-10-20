@@ -55,6 +55,7 @@ import {
 } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graphManager/action/analytics/DataSpaceAnalysis.js';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { useApplicationStore } from '@finos/legend-application';
 
 interface DataSpaceViewerActivityConfig {
   mode: DATA_SPACE_VIEWER_ACTIVITY_MODE;
@@ -479,6 +480,7 @@ const DataSpaceSupportInfoViewerInner = observer(
 export const DataSpaceViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
+    const applicationStore = useApplicationStore();
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
     const changeActivity =
       (activity: DATA_SPACE_VIEWER_ACTIVITY_MODE): (() => void) =>
@@ -530,12 +532,15 @@ export const DataSpaceViewer = observer(
         dataSpaceViewerState.versionId,
         analysisResult.path,
       );
-    const viewSDLCProject = (): void =>
-      dataSpaceViewerState.viewSDLCProject(
-        dataSpaceViewerState.groupId,
-        dataSpaceViewerState.artifactId,
-        analysisResult.path,
-      );
+    const viewSDLCProject = (): void => {
+      dataSpaceViewerState
+        .viewSDLCProject(
+          dataSpaceViewerState.groupId,
+          dataSpaceViewerState.artifactId,
+          analysisResult.path,
+        )
+        .catch(applicationStore.alertUnhandledError);
+    };
 
     return (
       <div className="data-space__viewer">

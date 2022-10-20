@@ -17,7 +17,6 @@
 import {
   ActionAlertActionType,
   ActionAlertType,
-  APPLICATION_EVENT,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   TAB_SIZE,
@@ -268,17 +267,6 @@ export class QueryProductionizerStore {
 
   *initialize(queryId: string | undefined): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
-          `Fast-refreshing the app - preventing initialize() recall...`,
-        );
-        return;
-      }
-      this.applicationStore.notifyIllegalState(
-        `Query productionizer store is already initialized`,
-      );
       return;
     }
 

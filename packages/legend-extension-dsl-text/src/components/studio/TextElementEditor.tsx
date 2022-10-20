@@ -93,6 +93,7 @@ export const TextElementEditor = observer(() => {
             </div>
           )}
           <DropdownMenu
+            className="text-element-editor__header__configs__type"
             disabled={isReadOnly}
             content={
               <MenuContent>
@@ -113,13 +114,11 @@ export const TextElementEditor = observer(() => {
               transformOrigin: { vertical: 'top', horizontal: 'right' },
             }}
           >
-            <div className="text-element-editor__header__configs__type">
-              <div className="text-element-editor__header__configs__type__label">
-                {prettyCONSTName(textElement.type)}
-              </div>
-              <div className="text-element-editor__header__configs__type__icon">
-                <CaretDownIcon />
-              </div>
+            <div className="text-element-editor__header__configs__type__label">
+              {prettyCONSTName(textElement.type)}
+            </div>
+            <div className="text-element-editor__header__configs__type__icon">
+              <CaretDownIcon />
             </div>
           </DropdownMenu>
           {isPreviewSupported ? (

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
   type ClassView,
   type DiagramRenderer,
@@ -42,6 +43,7 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
 }
 
 export class DataSpaceViewerState {
+  readonly applicationStore: GenericLegendApplicationStore;
   groupId: string;
   artifactId: string;
   versionId: string;
@@ -61,10 +63,11 @@ export class DataSpaceViewerState {
     groupId: string,
     artifactId: string,
     entityPath: string | undefined,
-  ) => void;
+  ) => Promise<void>;
   onDiagramClassDoubleClick: (classView: ClassView) => void;
 
   constructor(
+    applicationStore: GenericLegendApplicationStore,
     groupId: string,
     artifactId: string,
     versionId: string,
@@ -80,7 +83,7 @@ export class DataSpaceViewerState {
         groupId: string,
         artifactId: string,
         entityPath: string | undefined,
-      ) => void;
+      ) => Promise<void>;
       onDiagramClassDoubleClick: (classView: ClassView) => void;
     },
   ) {
@@ -98,6 +101,7 @@ export class DataSpaceViewerState {
       setCurrentRuntime: action,
     });
 
+    this.applicationStore = applicationStore;
     this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.groupId = groupId;
     this.artifactId = artifactId;

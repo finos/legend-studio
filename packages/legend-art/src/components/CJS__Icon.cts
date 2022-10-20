@@ -140,6 +140,7 @@ export {
   FaServer as ServerIcon,
   FaTable as TableIcon,
   FaArchive as ArchiveIcon,
+  FaBrain as BrainIcon,
 } from 'react-icons/fa';
 export {
   GiWaterDrop as WaterDropIcon,
@@ -202,6 +203,7 @@ export {
   IoFlaskSharp as FlaskIcon,
 } from 'react-icons/io5';
 export {
+  BsChevronDown as ChevronDownThinIcon,
   BsFillTriangleFill as FilledTriangleIcon,
   BsFillFileEarmarkSpreadsheetFill as TabulatedDataFileIcon,
   BsBoxSeam as BundleIcon,

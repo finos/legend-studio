@@ -32,7 +32,6 @@ import {
   Panel,
   PanelLoadingIndicator,
   PlusIcon,
-  RobotIcon,
   RocketIcon,
   SaveIcon,
   clsx,
@@ -58,7 +57,6 @@ import {
 } from '@finos/legend-query-builder';
 import {
   ELEMENT_PATH_DELIMITER,
-  extractElementNameFromPath,
   resolvePackagePathAndElementName,
   validate_ServicePattern,
 } from '@finos/legend-graph';
@@ -98,6 +96,7 @@ const NewServiceModal = observer(() => {
   const patternValidationResult = validate_ServicePattern(pattern);
 
   // actions
+  const onClose = (): void => editorStore.setShowNewServiceModal(false);
   const handleEnter = (): void => pathRef.current?.focus();
   const create = (): void => {
     if (!elementAlreadyExists && !patternValidationResult) {
@@ -116,6 +115,7 @@ const NewServiceModal = observer(() => {
 
       flowResult(
         editorStore.saveWorkspace(serviceEntity, true, (): void => {
+          onClose();
           applicationStore.setActionAlertInfo({
             message: `Successfully created service '${serviceName}'. Now your service can be found in workspace '${editorStore.sdlcState.activeWorkspace.workspaceId}' of project '${editorStore.sdlcState.activeProject.name}' (${editorStore.sdlcState.activeProject.projectId})`,
             prompt: `Please make sure to review the service and submit a review to officially make the service part of the project`,
@@ -141,7 +141,6 @@ const NewServiceModal = observer(() => {
       ).catch(applicationStore.alertUnhandledError);
     }
   };
-  const onClose = (): void => editorStore.setShowNewServiceModal(false);
 
   return (
     <Dialog
@@ -448,12 +447,7 @@ const ServiceQueryEditorHeaderContent = observer(() => {
 
   return (
     <div className="service-query-editor__header__content">
-      <div className="service-query-editor__header__content__main">
-        <div className="service-query-editor__header__label service-query-editor__header__label--service-query">
-          <RobotIcon className="service-query-editor__header__label__icon" />
-          {extractElementNameFromPath(editorStore.service.path)}
-        </div>
-      </div>
+      <div className="service-query-editor__header__content__main" />
 
       <div className="service-query-editor__header__actions">
         <button
@@ -478,8 +472,8 @@ const ServiceQueryEditorHeaderContent = observer(() => {
         >
           <GitBranchIcon className="service-query-editor__header__action__icon--branch" />
         </button>
-        <div className="service-query-editor__header__actions__divider" />
         <ServiceQueryEditorReviewAction />
+        <div className="service-query-editor__header__actions__divider" />
         <button
           className="service-query-editor__header__action service-query-editor__header__action--simple btn--dark"
           tabIndex={-1}

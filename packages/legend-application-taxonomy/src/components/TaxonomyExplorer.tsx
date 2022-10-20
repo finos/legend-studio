@@ -130,7 +130,9 @@ const TaxonomyExplorerSideBar = observer(() => {
             </div>
             {applicationStore.config.taxonomyTreeOptions.length > 1 && (
               <DropdownMenu
-                className={clsx('taxonomy-explorer__header__server-dropdown')}
+                className="taxonomy-explorer__header__server-dropdown"
+                title="Choose a taxonomy tree..."
+                onOpen={showTaxonomyTreeDropdown}
                 onClose={hideTaxonomyTreeDropdown}
                 menuProps={{ elevation: 7 }}
                 content={
@@ -157,12 +159,7 @@ const TaxonomyExplorerSideBar = observer(() => {
                   </MenuContent>
                 }
               >
-                <button
-                  className="taxonomy-explorer__header__server-dropdown__label"
-                  tabIndex={-1}
-                  onClick={showTaxonomyTreeDropdown}
-                  title="Choose a taxonomy tree..."
-                >
+                <div className="taxonomy-explorer__header__server-dropdown__label">
                   <div className="taxonomy-explorer__header__server-dropdown__label__text">
                     {applicationStore.config.currentTaxonomyTreeOption.label}
                   </div>
@@ -173,7 +170,7 @@ const TaxonomyExplorerSideBar = observer(() => {
                       <ChevronDownIcon />
                     )}
                   </div>
-                </button>
+                </div>
               </DropdownMenu>
             )}
           </div>

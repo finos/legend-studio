@@ -50,8 +50,10 @@ import {
   QuerySearchSpecification,
   Mapping,
   type Runtime,
+  type Service,
 } from '@finos/legend-graph';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateExistingQueryEditorRoute,
   generateMappingQueryCreatorRoute,
@@ -69,7 +71,6 @@ import {
 } from '@finos/legend-server-depot';
 import {
   TAB_SIZE,
-  APPLICATION_EVENT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
 } from '@finos/legend-application';
@@ -83,6 +84,58 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
+
+export const createViewProjectHandler =
+  (applicationStore: LegendQueryApplicationStore) =>
+  (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ): void =>
+    applicationStore.navigator.visitAddress(
+      EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
+        applicationStore.config.studioUrl,
+        groupId,
+        artifactId,
+        versionId,
+        entityPath,
+      ),
+    );
+
+export const createViewSDLCProjectHandler =
+  (
+    applicationStore: LegendQueryApplicationStore,
+    depotServerClient: DepotServerClient,
+  ) =>
+  async (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ): Promise<void> => {
+    // fetch project data
+    const project = ProjectData.serialization.fromJson(
+      await depotServerClient.getProject(groupId, artifactId),
+    );
+    // find the matching SDLC instance
+    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
+    const matchingSDLCEntry = applicationStore.config.studioInstances.find(
+      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+    );
+    if (matchingSDLCEntry) {
+      applicationStore.navigator.visitAddress(
+        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
+          matchingSDLCEntry.url,
+          project.projectId,
+          entityPath,
+        ),
+      );
+    } else {
+      applicationStore.notifyWarning(
+        `Can't find the corresponding SDLC instance to view the SDLC project`,
+      );
+    }
+  };
 
 export interface QueryExportConfiguration {
   defaultName?: string | undefined;
@@ -136,6 +189,7 @@ export class QueryExportState {
 
   async persistQuery(createNew: boolean): Promise<void> {
     if (
+      this.editorStore.isSaveActionDisabled ||
       !this.queryBuilderState.mapping ||
       !(this.queryBuilderState.runtimeValue instanceof RuntimePointer)
     ) {
@@ -301,6 +355,14 @@ export abstract class QueryEditorStore {
     this.queryLoaderState = new QueryLoaderState(this);
   }
 
+  get isViewProjectActionDisabled(): boolean {
+    return false;
+  }
+
+  get isSaveActionDisabled(): boolean {
+    return false;
+  }
+
   setExportState(val: QueryExportState | undefined): void {
     this.exportState = val;
   }
@@ -314,33 +376,6 @@ export abstract class QueryEditorStore {
     // do nothing
   }
 
-  async viewSDLCProject(): Promise<void> {
-    const { groupId, artifactId } = this.getProjectInfo();
-
-    // fetch project data
-    const project = ProjectData.serialization.fromJson(
-      await this.depotServerClient.getProject(groupId, artifactId),
-    );
-    // find the matching SDLC instance
-    const projectIDPrefix = parseProjectIdentifier(project.projectId).prefix;
-    const matchingSDLCEntry = this.applicationStore.config.studioInstances.find(
-      (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-    );
-    if (matchingSDLCEntry) {
-      this.applicationStore.navigator.visitAddress(
-        EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-          matchingSDLCEntry.url,
-          project.projectId,
-          undefined,
-        ),
-      );
-    } else {
-      this.applicationStore.notifyWarning(
-        `Can't find the corresponding SDLC instance to view the SDLC project`,
-      );
-    }
-  }
-
   /**
    * Set up the query builder state after building the graph
    */
@@ -351,17 +386,6 @@ export abstract class QueryEditorStore {
 
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
-      // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'development') {
-        this.applicationStore.log.info(
-          LogEvent.create(APPLICATION_EVENT.DEVELOPMENT_ISSUE),
-          `Fast-refreshing the app - preventing initialize() recall...`,
-        );
-        return;
-      }
-      this.applicationStore.notifyIllegalState(
-        `Query editor store is already initialized`,
-      );
       return;
     }
 
@@ -385,8 +409,7 @@ export abstract class QueryEditorStore {
       );
 
       yield this.setUpEditorState();
-      const { groupId, artifactId, versionId } = this.getProjectInfo();
-      yield flowResult(this.buildGraph(groupId, artifactId, versionId));
+      yield flowResult(this.buildGraph());
       this.queryBuilderState =
         (yield this.initializeQueryBuilderState()) as QueryBuilderState;
 
@@ -402,12 +425,10 @@ export abstract class QueryEditorStore {
     }
   }
 
-  *buildGraph(
-    groupId: string,
-    artifactId: string,
-    versionId: string,
-  ): GeneratorFn<void> {
+  *buildGraph(): GeneratorFn<void> {
     const stopWatch = new StopWatch();
+
+    const { groupId, artifactId, versionId } = this.getProjectInfo();
 
     // fetch project data
     const project = ProjectData.serialization.fromJson(
@@ -624,7 +645,18 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       this.applicationStore,
       this.graphManagerState,
       service,
+      this.graphManagerState.usableServices,
       this.executionKey,
+      (val: Service): void => {
+        this.applicationStore.navigator.goToLocation(
+          generateServiceQueryCreatorRoute(
+            this.groupId,
+            this.artifactId,
+            this.versionId,
+            val.path,
+          ),
+        );
+      },
       (val: ServiceExecutionContext): void => {
         this.applicationStore.navigator.updateCurrentLocation(
           generateServiceQueryCreatorRoute(

@@ -42,7 +42,9 @@ export type ServiceExecutionContext = {
 
 export class ServiceQueryBuilderState extends QueryBuilderState {
   readonly service: Service;
+  readonly usableServices: Service[] | undefined;
   readonly executionContexts: ServiceExecutionContext[] = [];
+  readonly onServiceChange?: ((val: Service) => void) | undefined;
   readonly onExecutionContextChange?:
     | ((val: ServiceExecutionContext) => void)
     | undefined;
@@ -56,7 +58,9 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     service: Service,
+    usableServices: Service[] | undefined,
     executionContextKey?: string | undefined,
+    onServiceChange?: ((val: Service) => void) | undefined,
     onExecutionContextChange?:
       | ((val: ServiceExecutionContext) => void)
       | undefined,
@@ -69,6 +73,8 @@ export class ServiceQueryBuilderState extends QueryBuilderState {
     });
 
     this.service = service;
+    this.usableServices = usableServices;
+    this.onServiceChange = onServiceChange;
     this.onExecutionContextChange = onExecutionContextChange;
 
     if (service.execution instanceof PureSingleExecution) {

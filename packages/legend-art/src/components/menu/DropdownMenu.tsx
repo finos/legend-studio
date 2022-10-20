@@ -25,6 +25,7 @@ export const DropdownMenu: React.FC<{
   content?: React.ReactNode | undefined;
   className?: string | undefined;
   disabled?: boolean | undefined;
+  title?: string | undefined;
   onOpen?: (() => void) | undefined;
   onClose?: (() => void) | undefined;
 }> = (props) => {
@@ -34,11 +35,12 @@ export const DropdownMenu: React.FC<{
     children,
     menuProps,
     content,
+    title,
+    disabled,
     onClose,
     onOpen,
-    disabled,
   } = props;
-  const triggerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const onTriggerClick: React.MouseEventHandler = (event) => {
     event.stopPropagation();
@@ -71,7 +73,14 @@ export const DropdownMenu: React.FC<{
   }, [anchorEl, open]);
 
   return (
-    <div ref={triggerRef} className={className} onClick={onTriggerClick}>
+    <button
+      ref={triggerRef}
+      className={className}
+      disabled={disabled}
+      onClick={onTriggerClick}
+      tabIndex={-1}
+      title={title}
+    >
       {children}
       <BaseMenu
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -88,6 +97,6 @@ export const DropdownMenu: React.FC<{
       >
         {content}
       </BaseMenu>
-    </div>
+    </button>
   );
 };

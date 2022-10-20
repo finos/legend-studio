@@ -549,6 +549,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
     return (
       <DropdownMenu
         className="mapping-execution-builder__input-data-panel__type-selector"
+        title="Choose input data type..."
         content={
           <MenuContent>
             {Object.keys(RelationalInputType).map((mode) => (
@@ -563,10 +564,7 @@ const RelationalMappingExecutionInputDataTypeSelector = observer(
           </MenuContent>
         }
       >
-        <div
-          className="mapping-execution-builder__input-data-panel__type-selector__value"
-          title="Choose input data type..."
-        >
+        <div className="mapping-execution-builder__input-data-panel__type-selector__value">
           <div className="mapping-execution-builder__input-data-panel__type-selector__value__label">
             {inputDataState.inputData.inputType}
           </div>
@@ -773,23 +771,23 @@ export const MappingExecutionBuilder = observer(
                 <FlaskIcon />
               </button>
             )}
-            <button
-              className="mapping-execution-builder__execute-btn"
-              onClick={execute}
-              disabled={
-                isStubbed_RawLambda(queryState.query) ||
-                !inputDataState.isValid ||
-                executionState.isGeneratingPlan ||
-                executionState.isExecuting
-              }
-              tabIndex={-1}
-            >
-              <div className="mapping-execution-builder__execute-btn__label">
+            <div className="mapping-execution-builder__execute-btn">
+              <button
+                className="mapping-execution-builder__execute-btn__label"
+                onClick={execute}
+                disabled={
+                  isStubbed_RawLambda(queryState.query) ||
+                  !inputDataState.isValid ||
+                  executionState.isGeneratingPlan ||
+                  executionState.isExecuting
+                }
+                tabIndex={-1}
+              >
                 <PlayIcon className="mapping-execution-builder__execute-btn__label__icon" />
                 <div className="mapping-execution-builder__execute-btn__label__title">
                   Run Query
                 </div>
-              </div>
+              </button>
               <DropdownMenu
                 className="mapping-execution-builder__execute-btn__dropdown-btn"
                 disabled={
@@ -821,7 +819,7 @@ export const MappingExecutionBuilder = observer(
               >
                 <CaretDownIcon />
               </DropdownMenu>
-            </button>
+            </div>
           </div>
         </div>
         <div className="mapping-execution-builder__content">

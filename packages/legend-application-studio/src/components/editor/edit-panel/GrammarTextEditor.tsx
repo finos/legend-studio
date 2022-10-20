@@ -27,7 +27,6 @@ import {
   setErrorMarkers,
   disposeEditor,
   baseTextEditorSettings,
-  disableEditorHotKeys,
   resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
@@ -817,8 +816,7 @@ export const GrammarTextEditor = observer(() => {
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
       });
-      _editor.onKeyDown((event) => createPassThroughOnKeyHandler());
-      disableEditorHotKeys(_editor);
+      _editor.onKeyDown(createPassThroughOnKeyHandler());
       _editor.focus(); // focus on the editor initially
       setEditor(_editor);
     }

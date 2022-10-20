@@ -440,7 +440,8 @@ export const EditPanel = observer(() => {
         <div className="edit-panel__header__actions">
           {currentEditorState instanceof ElementEditorState && (
             <DropdownMenu
-              className="edit-panel__view-mode"
+              className="edit-panel__view-mode__type"
+              title="View as..."
               content={
                 <MenuContent
                   data-testid={
@@ -503,23 +504,19 @@ export const EditPanel = observer(() => {
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="edit-panel__view-mode__type"
-                title="View as..."
-              >
-                <div className="edit-panel__view-mode__type__label">
-                  {currentEditorState.generationViewMode
-                    ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
-                        currentEditorState.generationViewMode,
-                      ).label
-                    : currentEditorState.editMode}
-                </div>
-              </button>
+              <div className="edit-panel__view-mode__type__label">
+                {currentEditorState.generationViewMode
+                  ? editorStore.graphState.graphGenerationState.getFileGenerationConfiguration(
+                      currentEditorState.generationViewMode,
+                    ).label
+                  : currentEditorState.editMode}
+              </div>
             </DropdownMenu>
           )}
           {currentEditorState instanceof EntityDiffViewState && (
             <DropdownMenu
-              className="edit-panel__view-mode"
+              className="edit-panel__view-mode__type"
+              title="View as..."
               content={
                 <MenuContent
                   data-testid={
@@ -550,14 +547,9 @@ export const EditPanel = observer(() => {
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="edit-panel__view-mode__type"
-                title="View as..."
-              >
-                <div className="edit-panel__view-mode__type__label">
-                  {currentEditorState.diffMode}
-                </div>
-              </button>
+              <div className="edit-panel__view-mode__type__label">
+                {currentEditorState.diffMode}
+              </div>
             </DropdownMenu>
           )}
         </div>

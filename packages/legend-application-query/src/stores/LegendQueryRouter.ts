@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { generatePath } from '@finos/legend-application';
+import {
+  generateExtensionUrlPattern,
+  generatePath,
+} from '@finos/legend-application';
+import {
+  addQueryParamsStringToUrl,
+  stringifyQueryParams,
+} from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
@@ -25,16 +32,76 @@ export enum LEGEND_QUERY_PATH_PARAM_TOKEN {
   SERVICE_PATH = 'servicePath',
 }
 
+export enum LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN {
+  SHOW_ALL_GROUPS = 'showAllGroups',
+  SHOW_ADVANCED_ACTIONS = 'showAdvancedActions',
+  TAG = 'tag',
+}
+
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
   SERVICE_EXECUTION_KEY = 'executionKey',
 }
 
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: '/setup',
+  EDIT_EXISTING_QUERY_SETUP: '/setup/existing-query',
+  CREATE_MAPPING_QUERY_SETUP: '/setup/manual',
+  CLONE_SERVICE_QUERY_SETUP: '/setup/clone-service-query',
+  QUERY_PRODUCTIONIZER_SETUP: '/setup/productionize-query',
+  UPDATE_EXISTING_SERVICE_QUERY_SETUP: '/setup/update-existing-service-query',
+  LOAD_PROJECT_SERVICE_QUERY_SETUP: '/setup/load-project-service-query',
   CREATE_FROM_MAPPING_QUERY: `/create/manual/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.MAPPING_PATH}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}`,
   CREATE_FROM_SERVICE_QUERY: `/create-from-service/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH}`,
   EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
+
+export interface QuerySetupQueryParams {
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]?: string;
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]?: string;
+  [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]?: string;
+}
+
+export const generateQuerySetupRoute = (
+  showAllGroups?: boolean | undefined,
+  showAdvancedActions?: boolean | undefined,
+  tag?: string | undefined,
+): string =>
+  addQueryParamsStringToUrl(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.SETUP, {}),
+    stringifyQueryParams({
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]: showAllGroups,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]:
+        showAdvancedActions,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]: tag,
+    }),
+  );
+
+export const generateEditExistingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY_SETUP, {});
+export const generateCreateMappingQuerySetupRoute = (): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_MAPPING_QUERY_SETUP, {});
+export const generateCloneServiceQuerySetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.CLONE_SERVICE_QUERY_SETUP, {}),
+  );
+export const generateQueryProductionizerSetupRoute = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.QUERY_PRODUCTIONIZER_SETUP, {}),
+  );
+export const generateUpdateExistingServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.UPDATE_EXISTING_SERVICE_QUERY_SETUP,
+      {},
+    ),
+  );
+export const generateLoadProjectServiceQuerySetup = (): string =>
+  generateExtensionUrlPattern(
+    generatePath(
+      LEGEND_QUERY_ROUTE_PATTERN.LOAD_PROJECT_SERVICE_QUERY_SETUP,
+      {},
+    ),
+  );
 
 export const generateMappingQueryCreatorRoute = (
   groupId: string,
@@ -64,18 +131,21 @@ export const generateServiceQueryCreatorRoute = (
   artifactId: string,
   versionId: string,
   servicePath: string,
-  key?: string,
+  executionKey?: string | undefined,
 ): string =>
-  `${generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
-    [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-      groupId,
-      artifactId,
-      versionId,
-    ),
-    [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
-  })}${
-    key ? `?${LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY}=${key}` : ''
-  }`;
+  addQueryParamsStringToUrl(
+    generatePath(LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY, {
+      [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
+        groupId,
+        artifactId,
+        versionId,
+      ),
+      [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
+    }),
+    stringifyQueryParams({
+      [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey,
+    }),
+  );
 
 export interface ServiceQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: string;

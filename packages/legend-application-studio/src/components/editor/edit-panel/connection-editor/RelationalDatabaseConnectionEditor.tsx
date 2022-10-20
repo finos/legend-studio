@@ -29,7 +29,6 @@ import {
   CustomSelectorInput,
   ErrorIcon,
   PanelHeader,
-  PanelHeaderActionItem,
   PlusIcon,
   PanelFormTextEditor,
   ContextMenu,
@@ -46,6 +45,7 @@ import {
   PanelListSelectorItemLabel,
   PanelSection,
   PanelFormBooleanEditor,
+  PanelHeaderActions,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -1024,39 +1024,38 @@ const PostProcessorRelationalConnectionEditor = observer(
                 <ResizablePanel size={200} minSize={100}>
                   <Panel>
                     <PanelHeader title="post-processor">
-                      <DropdownMenu
-                        disabled={isReadOnly}
-                        content={postProcessorOptions.map(
-                          (postProcessorType) => (
-                            <MenuContentItem
-                              key={postProcessorType.value}
-                              onClick={addPostProcessor(
-                                postProcessorType.value,
-                              )}
-                            >
-                              New {postProcessorType.label} Post-Processor
-                            </MenuContentItem>
-                          ),
-                        )}
-                        menuProps={{
-                          anchorOrigin: {
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                          },
-                          transformOrigin: {
-                            vertical: 'top',
-                            horizontal: 'right',
-                          },
-                          elevation: 7,
-                        }}
-                      >
-                        <PanelHeaderActionItem
+                      <PanelHeaderActions>
+                        <DropdownMenu
+                          title="Create post-processor"
+                          className="panel__header__action"
                           disabled={isReadOnly}
-                          title="Create Post-Processor"
+                          content={postProcessorOptions.map(
+                            (postProcessorType) => (
+                              <MenuContentItem
+                                key={postProcessorType.value}
+                                onClick={addPostProcessor(
+                                  postProcessorType.value,
+                                )}
+                              >
+                                New {postProcessorType.label} Post-Processor
+                              </MenuContentItem>
+                            ),
+                          )}
+                          menuProps={{
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'right',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'right',
+                            },
+                            elevation: 7,
+                          }}
                         >
                           <PlusIcon />
-                        </PanelHeaderActionItem>
-                      </DropdownMenu>
+                        </DropdownMenu>
+                      </PanelHeaderActions>
                     </PanelHeader>
                     <PanelContent>
                       {postProcessors.map((postProcessor, idx) => (

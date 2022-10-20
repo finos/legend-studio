@@ -37,6 +37,7 @@ import {
   QueryBuilder_LegendApplicationPlugin,
   setupQueryBuilderUILibrary,
 } from '@finos/legend-query-builder';
+import { Core_LegendQueryApplicationPlugin } from '../components/Core_LegendQueryApplicationPlugin.js';
 
 export const setupLegendQueryUILibrary = async (): Promise<void> => {
   await setupQueryBuilderUILibrary();
@@ -51,6 +52,7 @@ export class LegendQuery extends LegendApplication {
     application.withBasePresets([new QueryBuilder_GraphManagerPreset()]);
     application.withBasePlugins([
       new Core_PureGraphManagerPlugin(),
+      new Core_LegendQueryApplicationPlugin(),
       new QueryBuilder_LegendApplicationPlugin(),
     ]);
     return application;

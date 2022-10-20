@@ -90,7 +90,7 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
 
   constructor(modelImporterState: ModelImporterState) {
     super(modelImporterState);
-    this.modelText = this.getExampleEntitiesInputText();
+
     makeObservable(this, {
       nativeType: observable,
       modelText: observable,
@@ -98,9 +98,10 @@ export class NativeModelImporterEditorState extends ModelImporterEditorState {
       setModelText: action,
       setNativeImportType: action,
       isLoadingDisabled: computed,
-      loadModel: flow,
       loadCurrentProjectEntities: flow,
     });
+
+    this.modelText = this.getExampleEntitiesInputText();
   }
 
   get label(): string {
@@ -288,8 +289,7 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
     modelImporterState: ModelImporterState,
   ) {
     super(modelImporterState);
-    this.config = config;
-    this.rendererState = rendererState;
+
     makeObservable(this, {
       config: observable,
       modelImporterState: observable,
@@ -299,6 +299,9 @@ export class ExtensionModelImporterEditorState extends ModelImporterEditorState 
       setExtension: action,
       loadModel: flow,
     });
+
+    this.config = config;
+    this.rendererState = rendererState;
   }
 
   get label(): string {
@@ -338,6 +341,18 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
     modelImporterState: ModelImporterState,
   ) {
     super(modelImporterState);
+
+    makeObservable(this, {
+      schemaSet: observable,
+      schemaSetEditorState: observable,
+      loadModelActionState: observable,
+      description: observable,
+      isolatedSchemaGraph: observable,
+      setExternalFormat: action,
+      setDescription: action,
+      isLoadingDisabled: computed,
+    });
+
     this.description = description;
     this.schemaSet = new SchemaSet(DEFAULT_SCHEMA_NAME);
     this.schemaSet.format = description.name;
@@ -352,17 +367,6 @@ export class ExternalFormatModelImporterState extends ModelImporterEditorState {
       this.editorStore,
       this.isolatedSchemaGraph,
     );
-    makeObservable(this, {
-      schemaSet: observable,
-      schemaSetEditorState: observable,
-      loadModelActionState: observable,
-      description: observable,
-      isolatedSchemaGraph: observable,
-      setExternalFormat: action,
-      setDescription: action,
-      isLoadingDisabled: computed,
-      loadModel: flow,
-    });
   }
 
   get allowHardReplace(): boolean {
@@ -458,6 +462,7 @@ export class ModelImporterState extends EditorState {
       setExternalFormatImportFormat: action,
       setImportEditorState: action,
     });
+
     this.modelImportEditorState = new NativeModelImporterEditorState(this);
     this.extensionConfigs = this.editorStore.pluginManager
       .getApplicationPlugins()
@@ -471,12 +476,15 @@ export class ModelImporterState extends EditorState {
   get headerName(): string {
     return 'Model Importer';
   }
+
   setReplaceFlag(val: boolean): void {
     this.replace = val;
   }
+
   setImportEditorState(val: ModelImporterEditorState): void {
     this.modelImportEditorState = val;
   }
+
   setNativeImportType(
     nativeImportType: MODEL_IMPORT_NATIVE_INPUT_TYPE,
   ): NativeModelImporterEditorState {
@@ -488,6 +496,7 @@ export class ModelImporterState extends EditorState {
     this.setImportEditorState(nativeEditorState);
     return nativeEditorState;
   }
+
   setExternalFormatImportFormat(
     externalFormat: ExternalFormatDescription,
   ): ExternalFormatModelImporterState {
@@ -499,6 +508,7 @@ export class ModelImporterState extends EditorState {
     this.setImportEditorState(extensionEditorState);
     return extensionEditorState;
   }
+
   setModelImporterExtension(
     extension: ModelImporterExtensionConfiguration,
   ): ExtensionModelImporterEditorState {

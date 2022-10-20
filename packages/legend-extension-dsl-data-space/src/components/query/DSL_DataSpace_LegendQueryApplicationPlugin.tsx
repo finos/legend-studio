@@ -16,38 +16,29 @@
 
 import packageJson from '../../../package.json';
 import {
-  type QueryEditorStore,
-  type QueryEditorHeaderLabeler,
-  type QuerySetupOptionRendererConfiguration,
-  type QuerySetupRenderer,
-  type QuerySetupState,
-  type QuerySetupStore,
+  type QuerySetupActionConfiguration,
   type ExistingQueryEditorStateBuilder,
   type ExistingQueryEditorStore,
   LegendQueryApplicationPlugin,
   generateExistingQueryEditorRoute,
   LegendQueryEventService,
   LEGEND_QUERY_APP_EVENT,
+  createViewProjectHandler,
+  createViewSDLCProjectHandler,
 } from '@finos/legend-application-query';
 import { SquareIcon } from '@finos/legend-art';
-import { DataSpaceQuerySetupState } from '../../stores/query/DataSpaceQuerySetupState.js';
-import { DataspaceQuerySetup } from './DataSpaceQuerySetup.js';
 import {
   ActionAlertActionType,
   ActionAlertType,
   type ApplicationPageEntry,
 } from '@finos/legend-application';
-import { CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN } from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
+import {
+  DATA_SPACE_QUERY_ROUTE_PATTERN,
+  generateDataSpaceQuerySetupRoute,
+} from '../../stores/query/DSL_DataSpace_LegendQueryRouter.js';
 import { DataSpaceQueryCreator } from './DataSpaceQueryCreator.js';
-import {
-  createQueryDataSpaceTaggedValue,
-  DataSpaceQueryCreatorStore,
-} from '../../stores/query/DataSpaceQueryCreatorStore.js';
-import {
-  Query,
-  extractElementNameFromPath,
-  isValidFullPath,
-} from '@finos/legend-graph';
+import { createQueryDataSpaceTaggedValue } from '../../stores/query/DataSpaceQueryCreatorStore.js';
+import { Query, isValidFullPath } from '@finos/legend-graph';
 import {
   QUERY_PROFILE_PATH,
   QUERY_PROFILE_TAG_DATA_SPACE,
@@ -57,6 +48,7 @@ import type { DataSpaceInfo } from '../../stores/query/DataSpaceInfo.js';
 import { getOwnDataSpace } from '../../graphManager/DSL_DataSpace_GraphManagerHelper.js';
 import { assertErrorThrown, LogEvent, uuid } from '@finos/legend-shared';
 import type { QueryBuilderState } from '@finos/legend-query-builder';
+import { DataSpaceQuerySetup } from './DataSpaceQuerySetup.js';
 
 export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -65,68 +57,37 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
 
   override getExtraApplicationPageEntries(): ApplicationPageEntry[] {
     return [
+      // data space query editor setup
+      {
+        key: 'data-space-query-setup-application-page',
+        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP],
+        renderer: DataSpaceQuerySetup,
+      },
       // data space query editor
       {
         key: 'data-space-query-editor-application-page',
-        urlPatterns: [CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN],
+        urlPatterns: [DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE],
         renderer: DataSpaceQueryCreator,
       },
     ];
   }
 
-  override getExtraQuerySetupOptionRendererConfigurations(): QuerySetupOptionRendererConfiguration[] {
+  override getExtraQuerySetupActionConfigurations(): QuerySetupActionConfiguration[] {
     return [
       {
-        key: 'data-space-query-option',
-        renderer: (
-          setupStore: QuerySetupStore,
-        ): React.ReactNode | undefined => {
-          const createQuery = (): void =>
-            setupStore.setSetupState(new DataSpaceQuerySetupState(setupStore));
-          return (
-            <button
-              className="query-setup__landing-page__option query-setup__landing-page__option--data-space"
-              onClick={createQuery}
-            >
-              <div className="query-setup__landing-page__option__icon">
-                <SquareIcon className="query-setup__landing-page__icon--data-space" />
-              </div>
-              <div className="query-setup__landing-page__option__label">
-                Create query from data space
-              </div>
-            </button>
+        key: 'create-query-from-data-space',
+        isAdvanced: false,
+        isCreateAction: true,
+        action: async (setupStore) => {
+          setupStore.applicationStore.navigator.goToLocation(
+            generateDataSpaceQuerySetupRoute(),
           );
         },
-      },
-    ];
-  }
-
-  override getExtraQuerySetupRenderers(): QuerySetupRenderer[] {
-    return [
-      (querySetupState: QuerySetupState): React.ReactNode | undefined => {
-        if (querySetupState instanceof DataSpaceQuerySetupState) {
-          return <DataspaceQuerySetup querySetupState={querySetupState} />;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  override getExtraQueryEditorHeaderLabelers(): QueryEditorHeaderLabeler[] {
-    return [
-      (editorStore: QueryEditorStore): React.ReactNode | undefined => {
-        if (editorStore instanceof DataSpaceQueryCreatorStore) {
-          return (
-            <div className="query-editor__header__label">
-              <SquareIcon className="query-editor__header__label__icon icon--data-space" />
-              {extractElementNameFromPath(editorStore.dataSpacePath)}
-              <div className="query-editor__header__label__tag">
-                {editorStore.executionContext}
-              </div>
-            </div>
-          );
-        }
-        return undefined;
+        label: 'Create query from data space',
+        className: 'query-setup__landing-page__action--data-space',
+        icon: (
+          <SquareIcon className="query-setup__landing-page__icon--data-space" />
+        ),
       },
     ];
   }
@@ -168,6 +129,11 @@ export class DSL_DataSpace_LegendQueryApplicationPlugin extends LegendQueryAppli
             query.groupId,
             query.artifactId,
             query.versionId,
+            createViewProjectHandler(editorStore.applicationStore),
+            createViewSDLCProjectHandler(
+              editorStore.applicationStore,
+              editorStore.depotServerClient,
+            ),
             (dataSpaceInfo: DataSpaceInfo) => {
               if (dataSpaceInfo.defaultExecutionContext) {
                 const persistQuery = async (): Promise<void> => {

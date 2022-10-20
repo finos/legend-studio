@@ -21,7 +21,6 @@ import {
   clsx,
   setErrorMarkers,
   disposeEditor,
-  disableEditorHotKeys,
   baseTextEditorSettings,
   getEditorValue,
   normalizeLineEnding,
@@ -95,7 +94,7 @@ const LambdaEditorInline = observer(
     disablePopUp?: boolean | undefined;
     backdropSetter?: ((val: boolean) => void) | undefined;
     openInPopUp: () => void;
-    onEditorFocusEventHandler?: (() => void) | undefined;
+    onEditorFocus?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -113,13 +112,12 @@ const LambdaEditorInline = observer(
       useBaseTextEditorSettings,
       hideErrorBar,
       openInPopUp,
-      onEditorFocusEventHandler,
+      onEditorFocus,
     } = props;
     const applicationStore = useApplicationStore();
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
-    const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
     const onDidFocusEditorWidgetDisposer = useRef<IDisposable | undefined>(
       undefined,
     );
@@ -187,7 +185,13 @@ const LambdaEditorInline = observer(
             : EDITOR_THEME.LEGEND,
           ...lambdaEditorOptions,
         });
-        disableEditorHotKeys(_editor);
+        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+        // else, we could risk triggering these hotkeys command multiple times
+        // e.g.
+        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+        // onKeyDownEventDisposer.current?.dispose();
+        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     }, [editor, applicationStore, useBaseTextEditorSettings]);
@@ -280,16 +284,10 @@ const LambdaEditorInline = observer(
           }
         });
 
-      // set hotkeys (before calling the action, finish parsing the current text value)
-      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      onKeyDownEventDisposer.current = editor.onKeyDown(
-        createPassThroughOnKeyHandler(),
-      );
-
       onDidFocusEditorWidgetDisposer.current?.dispose();
       onDidFocusEditorWidgetDisposer.current = editor.onDidFocusEditorWidget(
         () => {
-          onEditorFocusEventHandler?.();
+          onEditorFocus?.();
         },
       );
 
@@ -431,7 +429,6 @@ const LambdaEditorPopUp = observer(
       onClose,
     } = props;
     const applicationStore = useApplicationStore();
-    const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
     const onDidChangeModelContentEventDisposer = useRef<
       IDisposable | undefined
     >(undefined);
@@ -468,7 +465,13 @@ const LambdaEditorPopUp = observer(
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
-        disableEditorHotKeys(_editor);
+        // NOTE: if we ever set any hotkey explicitly, we would like to use the disposer partern instead
+        // else, we could risk triggering these hotkeys command multiple times
+        // e.g.
+        // const onKeyDownEventDisposer = useRef<IDisposable | undefined>(undefined);
+        // onKeyDownEventDisposer.current?.dispose();
+        // onKeyDownEventDisposer.current = editor.onKeyDown(() => ...)
+        _editor.onKeyDown(() => createPassThroughOnKeyHandler());
         setEditor(_editor);
       }
     };
@@ -522,12 +525,6 @@ const LambdaEditorPopUp = observer(
             }
           }
         });
-
-      // set hotkeys (before calling the action, finish parsing the current text value)
-      onKeyDownEventDisposer.current?.dispose(); // dispose to avoid trigger hotkeys multiple times
-      onKeyDownEventDisposer.current = editor.onKeyDown(
-        createPassThroughOnKeyHandler(),
-      );
 
       // Set the text value
       const currentValue = getEditorValue(editor);
@@ -699,7 +696,7 @@ export const LambdaEditor = observer(
      * To whether or not hide parser error bar in inline mode
      */
     hideErrorBar?: boolean | undefined;
-    onEditorFocusEventHandler?: (() => void) | undefined;
+    onEditorFocus?: (() => void) | undefined;
   }) => {
     const {
       className,
@@ -715,7 +712,7 @@ export const LambdaEditor = observer(
       disablePopUp,
       useBaseTextEditorSettings,
       hideErrorBar,
-      onEditorFocusEventHandler,
+      onEditorFocus,
     } = props;
     const [showPopUp, setShowPopUp] = useState(false);
     const openInPopUp = (): void => setShowPopUp(true);
@@ -791,7 +788,7 @@ export const LambdaEditor = observer(
         useBaseTextEditorSettings={useBaseTextEditorSettings}
         hideErrorBar={hideErrorBar}
         openInPopUp={openInPopUp}
-        onEditorFocusEventHandler={onEditorFocusEventHandler}
+        onEditorFocus={onEditorFocus}
       />
     );
   },

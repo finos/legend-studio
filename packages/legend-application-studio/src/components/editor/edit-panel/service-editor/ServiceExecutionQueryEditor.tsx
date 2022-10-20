@@ -264,6 +264,7 @@ export const ServiceExecutionQueryEditor = observer(
                     embeddedQueryBuilderState.editorStore.applicationStore,
                     embeddedQueryBuilderState.editorStore.graphManagerState,
                     service,
+                    undefined,
                     selectedExecutionState.executionContext instanceof
                     KeyedExecutionParameter
                       ? selectedExecutionState.executionContext.key
@@ -396,19 +397,19 @@ export const ServiceExecutionQueryEditor = observer(
                 </div>
               </button>
             ) : (
-              <button
-                className="service-editor__execution__execute-btn"
-                onClick={runQuery}
-                title="Run Query"
-                disabled={executionState.isRunningQuery}
-                tabIndex={-1}
-              >
-                <div className="service-editor__execution__execute-btn__label">
+              <div className="service-editor__execution__execute-btn">
+                <button
+                  className="service-editor__execution__execute-btn__label"
+                  onClick={runQuery}
+                  title="Run Query"
+                  disabled={executionState.isGeneratingPlan}
+                  tabIndex={-1}
+                >
                   <PlayIcon className="service-editor__execution__execute-btn__label__icon" />
                   <div className="service-editor__execution__execute-btn__label__title">
                     Run Query
                   </div>
-                </div>
+                </button>
                 <DropdownMenu
                   className="service-editor__execution__execute-btn__dropdown-btn"
                   disabled={executionState.isGeneratingPlan}
@@ -435,7 +436,7 @@ export const ServiceExecutionQueryEditor = observer(
                 >
                   <CaretDownIcon />
                 </DropdownMenu>
-              </button>
+              </div>
             )}
           </div>
         </div>

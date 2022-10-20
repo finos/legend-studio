@@ -1370,6 +1370,7 @@ const DiagramEditorHeader = observer(
         </div>
         <DropdownMenu
           className="diagram-editor__header__dropdown"
+          title="Zoom..."
           content={
             <MenuContent>
               <MenuContentItem
@@ -1396,13 +1397,9 @@ const DiagramEditorHeader = observer(
             elevation: 7,
           }}
         >
-          <button
-            className="diagram-editor__header__dropdown__label diagram-editor__header__zoomer__dropdown__label"
-            tabIndex={-1}
-            title="Zoom..."
-          >
+          <div className="diagram-editor__header__dropdown__label diagram-editor__header__zoomer__dropdown__label">
             {Math.round(diagramEditorState.renderer.zoom * 100)}%
-          </button>
+          </div>
           <div className="diagram-editor__header__dropdown__trigger diagram-editor__header__zoomer__dropdown__trigger">
             <CaretDownIcon />
           </div>

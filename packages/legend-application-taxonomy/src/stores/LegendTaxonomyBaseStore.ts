@@ -24,6 +24,7 @@ export type LegendTaxonomyApplicationStore = ApplicationStore<
   LegendTaxonomyApplicationConfig,
   LegendTaxonomyPluginManager
 >;
+
 export class LegendTaxonomyBaseStore {
   applicationStore: LegendTaxonomyApplicationStore;
   depotServerClient: DepotServerClient;

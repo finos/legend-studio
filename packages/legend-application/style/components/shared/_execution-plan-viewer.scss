@@ -181,8 +181,6 @@
     }
 
     &__view-mode {
-      display: flex;
-
       &__type {
         @include flexCenter;
 

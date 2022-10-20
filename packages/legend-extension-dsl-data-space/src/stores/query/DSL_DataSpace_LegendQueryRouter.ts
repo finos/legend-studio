@@ -19,6 +19,10 @@ import {
   generatePath,
 } from '@finos/legend-application';
 import { LEGEND_QUERY_PATH_PARAM_TOKEN } from '@finos/legend-application-query';
+import {
+  addQueryParamsStringToUrl,
+  stringifyQueryParams,
+} from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 
 export enum DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN {
@@ -41,7 +45,16 @@ export interface DataSpaceQueryEditorQueryParams {
   [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
 }
 
-export const CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN = `/create-from-dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`;
+export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
+  SETUP: `/dataspace`,
+  CREATE: `/dataspace/:${LEGEND_QUERY_PATH_PARAM_TOKEN.GAV}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH}/:${DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT}/:${LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH}?`,
+});
+
+export const generateDataSpaceQuerySetupRoute = (): string =>
+  generatePath(
+    generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.SETUP),
+    {},
+  );
 
 export const generateDataSpaceQueryCreatorRoute = (
   groupId: string,
@@ -52,22 +65,23 @@ export const generateDataSpaceQueryCreatorRoute = (
   runtimePath?: string | undefined,
   classPath?: string | undefined,
 ): string =>
-  `${generatePath(
-    generateExtensionUrlPattern(CREATE_QUERY_FROM_DATA_SPACE_ROUTE_PATTERN),
-    {
-      [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
-        groupId,
-        artifactId,
-        versionId,
-      ),
-      [DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH]:
-        dataSpacePath,
-      [DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT]:
-        executionContextKey,
-      [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
-    },
-  )}${
-    classPath
-      ? `?${DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH}=${classPath}`
-      : ''
-  }`;
+  addQueryParamsStringToUrl(
+    generatePath(
+      generateExtensionUrlPattern(DATA_SPACE_QUERY_ROUTE_PATTERN.CREATE),
+      {
+        [LEGEND_QUERY_PATH_PARAM_TOKEN.GAV]: generateGAVCoordinates(
+          groupId,
+          artifactId,
+          versionId,
+        ),
+        [DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.DATA_SPACE_PATH]:
+          dataSpacePath,
+        [DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT]:
+          executionContextKey,
+        [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]: runtimePath,
+      },
+    ),
+    stringifyQueryParams({
+      [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]: classPath,
+    }),
+  );

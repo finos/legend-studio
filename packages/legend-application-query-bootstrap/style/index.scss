@@ -73,6 +73,10 @@
     }
   }
 
+  .menu__item[disabled] {
+    color: var(--color-light-grey-400);
+  }
+
   // ---------------------------- Button -------------------------------
 
   .btn--dark,
@@ -87,8 +91,8 @@
     color: var(--color-white);
   }
 
-  .btn--dark.btn--caution:disabled,
-  .btn--dark:disabled {
+  .btn--dark.btn--caution[disabled],
+  .btn--dark[disabled] {
     background: var(--color-dark-grey-500);
     color: var(--color-white);
   }
@@ -440,6 +444,7 @@
 
   .query-editor__header {
     background: var(--color-legacy-light-blue-350);
+    border-color: var(--color-legacy-light-blue-600);
 
     &__label {
       background: var(--color-dark-shade-100);
@@ -451,7 +456,15 @@
     }
   }
 
-  .query-editor__header__back-btn.btn--dark,
+  .query-editor__header__menu {
+    border-color: var(--color-legacy-light-blue-600);
+  }
+
+  .query-editor__header__menu-item {
+    color: var(--color-white);
+  }
+
+  .query-editor__header__action__view-project .btn--dark,
   .query-editor__header__action.btn--dark {
     background: var(--color-legacy-light-blue-250);
     color: var(--color-white);
@@ -476,17 +489,8 @@
     background: var(--color-legacy-light-grey-200);
   }
 
-  .query-builder__activity-bar {
-    background: var(--color-legacy-light-grey-100);
-    border-color: var(--color-legacy-light-grey-300);
-  }
-
   .query-builder__status-bar {
     background: var(--color-legacy-light-blue-350);
-  }
-
-  .query-builder__activity-bar__item:hover {
-    color: var(--color-dark-grey-250);
   }
 
   .query-builder__sub-header__custom-action {
@@ -549,7 +553,7 @@
   }
 
   .query-builder__setup__milestoning {
-    &:disabled {
+    &[disabled] {
       background: var(--color-light-grey-180);
     }
   }
@@ -885,21 +889,21 @@
     }
   }
 
-  .query-builder__result__execute-btn:disabled:hover
+  .query-builder__result__execute-btn
     .query-builder__result__execute-btn__label,
-  .query-builder__result__execute-btn:disabled
+  .query-builder__result__execute-btn[disabled]:hover
+    .query-builder__result__execute-btn__label,
+  .query-builder__result__execute-btn[disabled]
     .query-builder__result__execute-btn__label {
-    background: var(--color-legacy-light-grey-200);
-
     &__title,
     svg {
-      color: var(--color-light-grey-400);
+      color: var(--color-white);
     }
   }
 
-  .query-builder__result__execute-btn:disabled:hover
+  .query-builder__result__execute-btn[disabled]:hover
     .query-builder__result__execute-btn__dropdown-btn,
-  .query-builder__result__execute-btn:disabled
+  .query-builder__result__execute-btn[disabled]
     .query-builder__result__execute-btn__dropdown-btn {
     background: var(--color-legacy-light-grey-200);
     border-color: var(--color-dark-shade-50);

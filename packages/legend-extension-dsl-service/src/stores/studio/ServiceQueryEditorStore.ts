@@ -196,6 +196,7 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         this.graphManagerState,
         this.service,
         undefined,
+        undefined,
       );
 
       // leverage initialization of query builder state to ensure we handle unsupported queries

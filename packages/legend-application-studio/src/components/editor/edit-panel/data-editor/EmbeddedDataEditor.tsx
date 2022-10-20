@@ -103,6 +103,7 @@ export const ExternalFormatDataEditor = observer(
               <WrenchIcon />
             </button>
             <DropdownMenu
+              className="external-format-data-editor__type"
               disabled={isReadOnly}
               content={
                 <MenuContent className="external-format-data-editor__dropdown">
@@ -122,13 +123,11 @@ export const ExternalFormatDataEditor = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <div className="external-format-data-editor__type">
-                <div className="external-format-data-editor__type__label">
-                  {externalFormatDataState.embeddedData.contentType}
-                </div>
-                <div className="external-format-data-editor__type__icon">
-                  <CaretDownIcon />
-                </div>
+              <div className="external-format-data-editor__type__label">
+                {externalFormatDataState.embeddedData.contentType}
+              </div>
+              <div className="external-format-data-editor__type__icon">
+                <CaretDownIcon />
               </div>
             </DropdownMenu>
           </div>

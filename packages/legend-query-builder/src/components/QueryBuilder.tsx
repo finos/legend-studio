@@ -29,7 +29,6 @@ import {
   MenuContentItemLabel,
   CheckIcon,
   CaretDownIcon,
-  CogIcon,
   DiffIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
@@ -179,248 +178,204 @@ export const QueryBuilder = observer(
 
     useCommands(queryBuilderState);
 
-    // settings
-    // NOTE: this is temporary until we find a better home for these settings in query builder
-    const engineConfig =
-      queryBuilderState.graphManagerState.graphManager.TEMPORARY__getEngineConfig();
-    const toggleEngineClientRequestPayloadCompression = (): void =>
-      engineConfig.setUseClientRequestPayloadCompression(
-        !engineConfig.useClientRequestPayloadCompression,
-      );
-
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
         <BackdropContainer elementID={QUERY_BUILDER_BACKDROP_CONTAINER_ID} />
-        <div className="query-builder__sub-header">
-          <div className="query-builder__sub-header__actions">
-            <DropdownMenu
-              className="query-builder__sub-header__custom-action"
-              content={
-                <MenuContent>
-                  <MenuContentItem
-                    onClick={toggleShowFunctionPanel}
-                    disabled={!queryBuilderState.isQuerySupported}
-                  >
-                    <MenuContentItemIcon>
-                      {queryBuilderState.showFunctionsExplorerPanel ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Function(s)
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
-                  {/* TODO?: consider hiding this menu option when the fetch-structure is not tds */}
-                  {!queryBuilderState.isParameterSupportDisabled && (
-                    <MenuContentItem
-                      onClick={toggleShowParameterPanel}
-                      disabled={
-                        !queryBuilderState.isQuerySupported ||
-                        queryBuilderState.parametersState.parameterStates
-                          .length > 0
-                      }
-                    >
-                      <MenuContentItemIcon>
-                        {queryBuilderState.showParametersPanel ? (
-                          <CheckIcon />
-                        ) : null}
-                      </MenuContentItemIcon>
-                      <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                        Show Parameter(s)
-                      </MenuContentItemLabel>
-                    </MenuContentItem>
-                  )}
-                  <MenuContentItem
-                    onClick={toggleShowPostFilterPanel}
-                    disabled={
-                      !queryBuilderState.isQuerySupported ||
-                      !(
-                        queryBuilderState.fetchStructureState
-                          .implementation instanceof QueryBuilderTDSState
-                      ) ||
-                      Array.from(
-                        queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
-                      ).length > 0
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      {queryBuilderState.fetchStructureState
-                        .implementation instanceof QueryBuilderTDSState &&
-                      queryBuilderState.fetchStructureState.implementation
-                        .showPostFilterPanel ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                      Show Post-Filter
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
-                </MenuContent>
-              }
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-                elevation: 7,
-              }}
-            >
-              <button
-                className="query-builder__sub-header__custom-action__label"
-                title="Show Advanced Menu..."
-              >
-                Advanced
-              </button>
-              <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
-            </DropdownMenu>
-          </div>
-        </div>
-        <div className="query-builder__content">
-          <div className="query-builder__activity-bar">
-            <div className="query-builder__activity-bar__items"></div>
-            <DropdownMenu
-              className="query-builder__activity-bar__setting"
-              content={
-                <MenuContent>
-                  <MenuContentItem
-                    onClick={toggleEngineClientRequestPayloadCompression}
-                  >
-                    <MenuContentItemIcon>
-                      {engineConfig.useClientRequestPayloadCompression ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Compress request payload
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
-                </MenuContent>
-              }
-              menuProps={{
-                anchorOrigin: { vertical: 'center', horizontal: 'center' },
-                transformOrigin: { vertical: 'bottom', horizontal: 'left' },
-                elevation: 7,
-              }}
-            >
-              <button
-                className="query-builder__activity-bar__item"
-                tabIndex={-1}
-                title="Settings..."
-              >
-                <CogIcon />
-              </button>
-            </DropdownMenu>
-          </div>
-          <div className="query-builder__main">
-            <ResizablePanelGroup orientation="horizontal">
-              <ResizablePanel minSize={120}>
-                {isQuerySupported ? (
-                  <ResizablePanelGroup orientation="vertical">
-                    <ResizablePanel size={450} minSize={300}>
-                      <QueryBuilderSidebar
-                        queryBuilderState={queryBuilderState}
+        <div className="query-builder__body">
+          <div className="query-builder__content">
+            <div className="query-builder__sub-header">
+              <div className="query-builder__sub-header__actions">
+                <DropdownMenu
+                  className="query-builder__sub-header__custom-action"
+                  title="Show Advanced Menu..."
+                  content={
+                    <MenuContent>
+                      <MenuContentItem
+                        onClick={toggleShowFunctionPanel}
+                        disabled={!queryBuilderState.isQuerySupported}
                       >
-                        <ResizablePanelGroup orientation="horizontal">
-                          {/* explorer panel */}
-                          <ResizablePanel minSize={40} direction={1}>
-                            <QueryBuilderExplorerPanel
-                              queryBuilderState={queryBuilderState}
-                            />
-                          </ResizablePanel>
-                          {/* functions panel */}
-                          {queryBuilderState.showFunctionsExplorerPanel && (
-                            <ResizablePanelSplitter />
-                          )}
-                          {queryBuilderState.showFunctionsExplorerPanel && (
-                            <ResizablePanel
-                              minSize={40}
-                              direction={
-                                queryBuilderState.showParametersPanel
-                                  ? [1, -1]
-                                  : -1
-                              }
-                            >
-                              <QueryBuilderFunctionsExplorerPanel
+                        <MenuContentItemIcon>
+                          {queryBuilderState.showFunctionsExplorerPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Function(s)
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      {/* TODO?: consider hiding this menu option when the fetch-structure is not tds */}
+                      {!queryBuilderState.isParameterSupportDisabled && (
+                        <MenuContentItem
+                          onClick={toggleShowParameterPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            queryBuilderState.parametersState.parameterStates
+                              .length > 0
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            {queryBuilderState.showParametersPanel ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Parameter(s)
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
+                      <MenuContentItem
+                        onClick={toggleShowPostFilterPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState
+                          ) ||
+                          Array.from(
+                            queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
+                          ).length > 0
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.fetchStructureState
+                            .implementation instanceof QueryBuilderTDSState &&
+                          queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Post-Filter
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                    </MenuContent>
+                  }
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                    transformOrigin: { vertical: 'top', horizontal: 'right' },
+                    elevation: 7,
+                  }}
+                >
+                  <div className="query-builder__sub-header__custom-action__label">
+                    Advanced
+                  </div>
+                  <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
+                </DropdownMenu>
+              </div>
+            </div>
+            <div className="query-builder__main">
+              <ResizablePanelGroup orientation="horizontal">
+                <ResizablePanel minSize={120}>
+                  {isQuerySupported ? (
+                    <ResizablePanelGroup orientation="vertical">
+                      <ResizablePanel size={450} minSize={300}>
+                        <QueryBuilderSidebar
+                          queryBuilderState={queryBuilderState}
+                        >
+                          <ResizablePanelGroup orientation="horizontal">
+                            {/* explorer panel */}
+                            <ResizablePanel minSize={40} direction={1}>
+                              <QueryBuilderExplorerPanel
                                 queryBuilderState={queryBuilderState}
                               />
                             </ResizablePanel>
-                          )}
-                          {/* parameters panel */}
-                          {queryBuilderState.showParametersPanel && (
-                            <ResizablePanelSplitter />
-                          )}
-                          {queryBuilderState.showParametersPanel && (
-                            <ResizablePanel minSize={40} direction={-1}>
-                              <QueryBuilderParametersPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                          )}
-                        </ResizablePanelGroup>
-                      </QueryBuilderSidebar>
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      <QueryBuilderFetchStructurePanel
-                        queryBuilderState={queryBuilderState}
-                      />
-                    </ResizablePanel>
-                    <ResizablePanelSplitter />
-                    <ResizablePanel minSize={300}>
-                      {(!(
-                        queryBuilderState.fetchStructureState
-                          .implementation instanceof QueryBuilderTDSState
-                      ) ||
-                        !queryBuilderState.fetchStructureState.implementation
-                          .showPostFilterPanel) && (
-                        <QueryBuilderFilterPanel
+                            {/* functions panel */}
+                            {queryBuilderState.showFunctionsExplorerPanel && (
+                              <ResizablePanelSplitter />
+                            )}
+                            {queryBuilderState.showFunctionsExplorerPanel && (
+                              <ResizablePanel
+                                minSize={40}
+                                direction={
+                                  queryBuilderState.showParametersPanel
+                                    ? [1, -1]
+                                    : -1
+                                }
+                              >
+                                <QueryBuilderFunctionsExplorerPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            )}
+                            {/* parameters panel */}
+                            {queryBuilderState.showParametersPanel && (
+                              <ResizablePanelSplitter />
+                            )}
+                            {queryBuilderState.showParametersPanel && (
+                              <ResizablePanel minSize={40} direction={-1}>
+                                <QueryBuilderParametersPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            )}
+                          </ResizablePanelGroup>
+                        </QueryBuilderSidebar>
+                      </ResizablePanel>
+                      <ResizablePanelSplitter />
+                      <ResizablePanel minSize={300}>
+                        <QueryBuilderFetchStructurePanel
                           queryBuilderState={queryBuilderState}
                         />
-                      )}
-                      {queryBuilderState.fetchStructureState
-                        .implementation instanceof QueryBuilderTDSState &&
-                        queryBuilderState.fetchStructureState.implementation
-                          .showPostFilterPanel && (
-                          <ResizablePanelGroup orientation="horizontal">
-                            <ResizablePanel minSize={300}>
-                              <QueryBuilderFilterPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                            <ResizablePanelSplitter />
-                            <ResizablePanel>
-                              <QueryBuilderPostFilterPanel
-                                queryBuilderState={queryBuilderState}
-                              />
-                            </ResizablePanel>
-                          </ResizablePanelGroup>
+                      </ResizablePanel>
+                      <ResizablePanelSplitter />
+                      <ResizablePanel minSize={300}>
+                        {(!(
+                          queryBuilderState.fetchStructureState
+                            .implementation instanceof QueryBuilderTDSState
+                        ) ||
+                          !queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel) && (
+                          <QueryBuilderFilterPanel
+                            queryBuilderState={queryBuilderState}
+                          />
                         )}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                ) : (
-                  <QueryBuilderUnsupportedQueryEditor
-                    queryBuilderState={queryBuilderState}
-                  />
-                )}
-              </ResizablePanel>
-              {queryBuilderState.isResultPanelHidden ? null : (
-                <ResizablePanelSplitter />
-              )}
-              {queryBuilderState.isResultPanelHidden ? null : (
-                <ResizablePanel size={300} minSize={40}>
-                  <QueryBuilderResultPanel
-                    queryBuilderState={queryBuilderState}
-                  />
+                        {queryBuilderState.fetchStructureState
+                          .implementation instanceof QueryBuilderTDSState &&
+                          queryBuilderState.fetchStructureState.implementation
+                            .showPostFilterPanel && (
+                            <ResizablePanelGroup orientation="horizontal">
+                              <ResizablePanel minSize={300}>
+                                <QueryBuilderFilterPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                              <ResizablePanelSplitter />
+                              <ResizablePanel>
+                                <QueryBuilderPostFilterPanel
+                                  queryBuilderState={queryBuilderState}
+                                />
+                              </ResizablePanel>
+                            </ResizablePanelGroup>
+                          )}
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  ) : (
+                    <QueryBuilderUnsupportedQueryEditor
+                      queryBuilderState={queryBuilderState}
+                    />
+                  )}
                 </ResizablePanel>
-              )}
-            </ResizablePanelGroup>
+                {queryBuilderState.isResultPanelHidden ? null : (
+                  <ResizablePanelSplitter />
+                )}
+                {queryBuilderState.isResultPanelHidden ? null : (
+                  <ResizablePanel size={300} minSize={40}>
+                    <QueryBuilderResultPanel
+                      queryBuilderState={queryBuilderState}
+                    />
+                  </ResizablePanel>
+                )}
+              </ResizablePanelGroup>
+            </div>
           </div>
+          {queryBuilderState.textEditorState.mode && (
+            <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
+          )}
         </div>
         <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-        {queryBuilderState.textEditorState.mode && (
-          <QueryBuilderTextEditor queryBuilderState={queryBuilderState} />
-        )}
       </div>
     );
   },

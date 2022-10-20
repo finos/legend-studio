@@ -170,7 +170,7 @@ const TaxonomyNodeViewerExplorer = observer(
       <div className="panel taxonomy-node-viewer__explorer">
         <div className="panel__header taxonomy-node-viewer__explorer__header">
           <div className="panel__header__title taxonomy-node-viewer__explorer__header__title">
-            Dataspaces ({dataSpaceOptions.length}/
+            Data spaces ({dataSpaceOptions.length}/
             {taxonomyNode.dataSpaceTaxonomyContexts.length})
           </div>
         </div>

@@ -15,18 +15,13 @@
  */
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Class } from '@finos/legend-graph';
-import { type Entity, parseProjectIdentifier } from '@finos/legend-storage';
-import {
-  type QuerySetupStore,
-  QuerySetupState,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-} from '@finos/legend-application-query';
+import type { Class, GraphManagerState } from '@finos/legend-graph';
+import type { Entity } from '@finos/legend-storage';
 import {
   type StoredEntity,
   DepotScope,
   ProjectData,
+  type DepotServerClient,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -43,21 +38,54 @@ import { type DataSpaceInfo, extractDataSpaceInfo } from './DataSpaceInfo.js';
 import {
   DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
+  type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { retrieveAnalyticsResultCache } from '../../graphManager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
 
-export class DataSpaceQuerySetupState extends QuerySetupState {
+export class DataSpaceAdvancedSearchState {
+  readonly applicationStore: GenericLegendApplicationStore;
+  readonly graphManagerState: GraphManagerState;
+  readonly depotServerClient: DepotServerClient;
+  readonly viewProject: (
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entityPath: string | undefined,
+  ) => void;
+  readonly viewSDLCProject: (
+    groupId: string,
+    artifactId: string,
+    entityPath: string | undefined,
+  ) => Promise<void>;
+
   dataSpaces: DataSpaceInfo[] = [];
-  loadDataSpacesState = ActionState.create();
-  loadDataSpaceState = ActionState.create();
+  readonly loadDataSpacesState = ActionState.create();
+  readonly loadDataSpaceState = ActionState.create();
   currentDataSpace?: DataSpaceInfo | undefined;
   dataSpaceViewerState?: DataSpaceViewerState | undefined;
   toGetSnapShot = false;
 
-  constructor(setupStore: QuerySetupStore) {
-    super(setupStore);
-
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    graphManagerState: GraphManagerState,
+    depotServerClient: DepotServerClient,
+    actions: {
+      viewProject: (
+        groupId: string,
+        artifactId: string,
+        versionId: string,
+        entityPath: string | undefined,
+      ) => void;
+      viewSDLCProject: (
+        groupId: string,
+        artifactId: string,
+        entityPath: string | undefined,
+      ) => Promise<void>;
+    },
+    currentDataSpace?: DataSpaceInfo | undefined,
+    toGetSnapshot?: boolean | undefined,
+  ) {
     makeObservable(this, {
       dataSpaces: observable,
       currentDataSpace: observable.ref,
@@ -70,6 +98,16 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       loadDataSpace: flow,
       proceedToCreateQuery: flow,
     });
+
+    this.applicationStore = applicationStore;
+    this.graphManagerState = graphManagerState;
+    this.depotServerClient = depotServerClient;
+    this.viewProject = actions.viewProject;
+    this.viewSDLCProject = actions.viewSDLCProject;
+    this.currentDataSpace = currentDataSpace;
+    if (toGetSnapshot !== undefined) {
+      this.toGetSnapShot = toGetSnapshot;
+    }
   }
 
   setCurrentDataSpace(val: DataSpaceInfo | undefined): void {
@@ -90,7 +128,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     this.loadDataSpacesState.inProgress();
     try {
       this.dataSpaces = (
-        (yield this.setupStore.depotServerClient.getEntitiesByClassifierPath(
+        (yield this.depotServerClient.getEntitiesByClassifierPath(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             search: isValidSearchString ? searchText : undefined,
@@ -107,7 +145,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpacesState.fail();
-      this.setupStore.applicationStore.notifyError(error);
+      this.applicationStore.notifyError(error);
     }
   }
 
@@ -120,7 +158,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       this.loadDataSpaceState.setMessage(`Fetching project...`);
       const project = ProjectData.serialization.fromJson(
         (yield flowResult(
-          this.setupStore.depotServerClient.getProject(
+          this.depotServerClient.getProject(
             dataSpace.groupId,
             dataSpace.artifactId,
           ),
@@ -129,7 +167,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
       // fetch entities
       this.loadDataSpaceState.setMessage(`Fetching entities...`);
-      const entities = (yield this.setupStore.depotServerClient.getEntities(
+      const entities = (yield this.depotServerClient.getEntities(
         project,
         dataSpace.versionId,
       )) as Entity[];
@@ -137,7 +175,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       // fetch dependencies
       this.loadDataSpaceState.setMessage(`Fetching dependencies...`);
       const dependencyEntitiesIndex = (yield flowResult(
-        this.setupStore.depotServerClient.getIndexedDependencyEntities(
+        this.depotServerClient.getIndexedDependencyEntities(
           project,
           dataSpace.versionId,
         ),
@@ -146,7 +184,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
       // analyze data space
       this.loadDataSpaceState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
-        this.setupStore.graphManagerState.graphManager,
+        this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,
         entities,
@@ -157,67 +195,18 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
             dataSpace.artifactId,
             dataSpace.versionId,
             dataSpace.path,
-            this.setupStore.depotServerClient,
+            this.depotServerClient,
           ),
       )) as DataSpaceAnalysisResult;
       this.dataSpaceViewerState = new DataSpaceViewerState(
+        this.applicationStore,
         dataSpace.groupId,
         dataSpace.artifactId,
         dataSpace.versionId,
         analysisResult,
         {
-          viewProject: (
-            groupId: string,
-            artifactId: string,
-            versionId: string,
-            entityPath: string | undefined,
-          ): void =>
-            this.setupStore.applicationStore.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
-                this.setupStore.applicationStore.config.studioUrl,
-                groupId,
-                artifactId,
-                versionId,
-                entityPath,
-              ),
-            ),
-          viewSDLCProject: (
-            _groupId: string,
-            _artifactId: string,
-            entityPath: string | undefined,
-          ): void => {
-            const view = async (): Promise<void> => {
-              // fetch project data
-              const _project = ProjectData.serialization.fromJson(
-                await this.setupStore.depotServerClient.getProject(
-                  _groupId,
-                  _artifactId,
-                ),
-              );
-              // find the matching SDLC instance
-              const projectIDPrefix = parseProjectIdentifier(
-                _project.projectId,
-              ).prefix;
-              const matchingSDLCEntry =
-                this.setupStore.applicationStore.config.studioInstances.find(
-                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
-                );
-              if (matchingSDLCEntry) {
-                this.setupStore.applicationStore.navigator.visitAddress(
-                  EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                    matchingSDLCEntry.url,
-                    _project.projectId,
-                    entityPath,
-                  ),
-                );
-              } else {
-                this.setupStore.applicationStore.notifyWarning(
-                  `Can't find the corresponding SDLC instance to view the SDLC project`,
-                );
-              }
-            };
-            view().catch(this.setupStore.applicationStore.alertUnhandledError);
-          },
+          viewProject: this.viewProject,
+          viewSDLCProject: this.viewSDLCProject,
           onDiagramClassDoubleClick: (classView: ClassView): void => {
             this.proceedToCreateQuery(classView.class.value);
           },
@@ -227,7 +216,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
     } catch (error) {
       assertErrorThrown(error);
       this.loadDataSpaceState.fail();
-      this.setupStore.applicationStore.notifyError(error);
+      this.applicationStore.notifyError(error);
     } finally {
       this.loadDataSpaceState.setMessage(undefined);
     }
@@ -235,7 +224,7 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
-      this.setupStore.applicationStore.navigator.goToLocation(
+      this.applicationStore.navigator.goToLocation(
         generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
@@ -249,7 +238,6 @@ export class DataSpaceQuerySetupState extends QuerySetupState {
           _class?.path,
         ),
       );
-      this.setupStore.setSetupState(undefined);
     }
   }
 }

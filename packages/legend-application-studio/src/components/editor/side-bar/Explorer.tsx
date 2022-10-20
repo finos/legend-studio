@@ -722,36 +722,26 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           <FileImportIcon />
         </button>
       )}
-      <DropdownMenu
-        disabled={
-          disabled ||
-          isInGrammarMode ||
-          (selectedTreeNode &&
-            isElementReadOnly(selectedTreeNode.packageableElement))
-        }
-        content={<ExplorerDropdownMenu />}
-        menuProps={{
-          anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
-          transformOrigin: { vertical: 'top', horizontal: 'left' },
-          elevation: 7,
-        }}
-      >
-        {!editorStore.isInViewerMode && (
-          <button
-            disabled={
-              disabled ||
-              isInGrammarMode ||
-              (selectedTreeNode &&
-                isElementReadOnly(selectedTreeNode.packageableElement))
-            }
-            className="panel__header__action"
-            tabIndex={-1}
-            title="New Element... (Ctrl + Shift + N)"
-          >
-            <PlusIcon />
-          </button>
-        )}
-      </DropdownMenu>
+      {!editorStore.isInViewerMode && (
+        <DropdownMenu
+          className="panel__header__action"
+          title="New Element... (Ctrl + Shift + N)"
+          disabled={
+            disabled ||
+            isInGrammarMode ||
+            (selectedTreeNode &&
+              isElementReadOnly(selectedTreeNode.packageableElement))
+          }
+          content={<ExplorerDropdownMenu />}
+          menuProps={{
+            anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+            transformOrigin: { vertical: 'top', horizontal: 'left' },
+            elevation: 7,
+          }}
+        >
+          <PlusIcon />
+        </DropdownMenu>
+      )}
       <button
         className="panel__header__action"
         disabled={disabled}

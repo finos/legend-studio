@@ -535,28 +535,28 @@ export const QueryBuilderResultPanel = observer(
                 </div>
               </button>
             ) : (
-              <button
-                className="query-builder__result__execute-btn"
-                onClick={runQuery}
-                tabIndex={-1}
-                title={
-                  queryValidationIssues
-                    ? `Query is not valid:\n${queryValidationIssues
-                        .map((issue) => `\u2022 ${issue}`)
-                        .join('\n')}`
-                    : undefined
-                }
-                disabled={!isQueryValid}
-              >
-                <div className="query-builder__result__execute-btn__label">
+              <div className="query-builder__result__execute-btn">
+                <button
+                  className="query-builder__result__execute-btn__label"
+                  onClick={runQuery}
+                  tabIndex={-1}
+                  title={
+                    queryValidationIssues
+                      ? `Query is not valid:\n${queryValidationIssues
+                          .map((issue) => `\u2022 ${issue}`)
+                          .join('\n')}`
+                      : undefined
+                  }
+                  disabled={!isQueryValid}
+                >
                   <PlayIcon className="query-builder__result__execute-btn__label__icon" />
                   <div className="query-builder__result__execute-btn__label__title">
                     Run Query
                   </div>
-                </div>
+                </button>
                 <DropdownMenu
                   className="query-builder__result__execute-btn__dropdown-btn"
-                  disabled={resultState.isGeneratingPlan}
+                  disabled={resultState.isGeneratingPlan || !isQueryValid}
                   content={
                     <MenuContent>
                       <MenuContentItem
@@ -580,10 +580,12 @@ export const QueryBuilderResultPanel = observer(
                 >
                   <CaretDownIcon />
                 </DropdownMenu>
-              </button>
+              </div>
             )}
             <DropdownMenu
               className="query-builder__result__export__dropdown"
+              title="Export"
+              disabled={!isQueryValid}
               content={
                 <MenuContent>
                   {Object.values(EXECUTION_SERIALIZATION_FORMAT).map(
@@ -605,21 +607,12 @@ export const QueryBuilderResultPanel = observer(
                 elevation: 7,
               }}
             >
-              <button
-                className="query-builder__result__export__dropdown__label"
-                tabIndex={-1}
-                title="Export"
-                disabled={!isQueryValid}
-              >
+              <div className="query-builder__result__export__dropdown__label">
                 Export
-              </button>
-              <button
-                className="query-builder__result__export__dropdown__trigger"
-                tabIndex={-1}
-                disabled={!isQueryValid}
-              >
+              </div>
+              <div className="query-builder__result__export__dropdown__trigger">
                 <CaretDownIcon />
-              </button>
+              </div>
             </DropdownMenu>
           </div>
         </div>

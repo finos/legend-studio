@@ -17,7 +17,6 @@
 import {
   ResizablePanelGroup,
   ResizablePanel,
-  PanelHeaderActionItem,
   PlusIcon,
   ResizablePanelSplitter,
   PanelFormTextEditor,
@@ -34,6 +33,7 @@ import {
   PanelContent,
   PanelListSelectorItemLabel,
   PanelSection,
+  PanelHeaderActions,
 } from '@finos/legend-art';
 import {
   type Mapper,
@@ -137,31 +137,36 @@ export const MapperPostProcessorEditor = observer(
             <ResizablePanel size={170} minSize={70}>
               <Panel>
                 <PanelHeader title="mapper">
-                  <DropdownMenu
-                    disabled={isReadOnly}
-                    content={
-                      <MenuContent>
-                        <MenuContentItem onClick={addSchemaMapper}>
-                          New Schema Mapper
-                        </MenuContentItem>
-                        <MenuContentItem onClick={addTableMapper}>
-                          New Table Mapper
-                        </MenuContentItem>
-                      </MenuContent>
-                    }
-                    menuProps={{
-                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                      transformOrigin: { vertical: 'top', horizontal: 'right' },
-                      elevation: 7,
-                    }}
-                  >
-                    <PanelHeaderActionItem
+                  <PanelHeaderActions>
+                    <DropdownMenu
+                      title="Create mapper"
+                      className="panel__header__action"
                       disabled={isReadOnly}
-                      title="Create Mapper"
+                      content={
+                        <MenuContent>
+                          <MenuContentItem onClick={addSchemaMapper}>
+                            New Schema Mapper
+                          </MenuContentItem>
+                          <MenuContentItem onClick={addTableMapper}>
+                            New Table Mapper
+                          </MenuContentItem>
+                        </MenuContent>
+                      }
+                      menuProps={{
+                        anchorOrigin: {
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'right',
+                        },
+                        elevation: 7,
+                      }}
                     >
                       <PlusIcon />
-                    </PanelHeaderActionItem>
-                  </DropdownMenu>
+                    </DropdownMenu>
+                  </PanelHeaderActions>
                 </PanelHeader>
                 <PanelContent>
                   {mappers.map((mapper) => (

@@ -26,6 +26,7 @@ import {
   MenuContentItemIcon,
   CheckIcon,
   MenuContentItemLabel,
+  SearchIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useApplicationStore } from '@finos/legend-application';
@@ -49,15 +50,44 @@ import { debounce, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { DataSpaceIcon } from '../DSL_DataSpace_Icon.js';
+import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 
-type DataSpaceOption = {
+export type DataSpaceOption = {
   label: string;
   value: DataSpaceInfo;
 };
-const buildDataSpaceOption = (value: DataSpaceInfo): DataSpaceOption => ({
+export const buildDataSpaceOption = (
+  value: DataSpaceInfo,
+): DataSpaceOption => ({
   label: value.title ?? value.name,
   value,
 });
+export const formatDataSpaceOptionLabel = (
+  option: DataSpaceOption,
+): React.ReactNode => (
+  <div
+    className="query-builder__setup__data-space__option"
+    title={`${option.label} - ${option.value.path} - ${generateGAVCoordinates(
+      option.value.groupId,
+      option.value.artifactId,
+      option.value.versionId,
+    )}`}
+  >
+    <div className="query-builder__setup__data-space__option__label">
+      {option.label}
+    </div>
+    <div className="query-builder__setup__data-space__option__path">
+      {option.value.path}
+    </div>
+    <div className="query-builder__setup__data-space__option__gav">
+      {generateGAVCoordinates(
+        option.value.groupId,
+        option.value.artifactId,
+        option.value.versionId,
+      )}
+    </div>
+  </div>
+);
 
 type ExecutionContextOption = {
   label: string;
@@ -105,34 +135,6 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     const onDataSpaceOptionChange = (option: DataSpaceOption): void => {
       queryBuilderState.onDataSpaceChange(option.value);
     };
-    const formatDataSpaceOptionLabel = (
-      option: DataSpaceOption,
-    ): React.ReactNode => (
-      <div
-        className="query-builder__setup__data-space__option"
-        title={`${option.label} - ${
-          option.value.path
-        } - ${generateGAVCoordinates(
-          option.value.groupId,
-          option.value.artifactId,
-          option.value.versionId,
-        )}`}
-      >
-        <div className="query-builder__setup__data-space__option__label">
-          {option.label}
-        </div>
-        <div className="query-builder__setup__data-space__option__path">
-          {option.value.path}
-        </div>
-        <div className="query-builder__setup__data-space__option__gav">
-          {generateGAVCoordinates(
-            option.value.groupId,
-            option.value.artifactId,
-            option.value.versionId,
-          )}
-        </div>
-      </div>
-    );
 
     // data space search text
     const debouncedLoadDataSpaces = useMemo(
@@ -151,6 +153,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         debouncedLoadDataSpaces(value);
       }
     };
+    const openDataSpaceAdvancedSearch = (): void =>
+      queryBuilderState.showAdvancedSearchPanel();
 
     // execution context
     const executionContextOptions =
@@ -219,7 +223,8 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               data space execution context
             </div>
             <DropdownMenu
-              className="query-builder__setup__config-group__header__dropdown"
+              className="query-builder__setup__config-group__header__dropdown-trigger"
+              title="Show Settings..."
               content={
                 <MenuContent>
                   <MenuContentItem
@@ -245,12 +250,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 transformOrigin: { vertical: 'top', horizontal: 'right' },
               }}
             >
-              <button
-                className="query-builder__setup__config-group__header__dropdown-trigger"
-                title="Show Settings..."
-              >
-                <MoreHorizontalIcon />
-              </button>
+              <MoreHorizontalIcon />
             </DropdownMenu>
           </div>
           <div className="query-builder__setup__config-group__content">
@@ -274,6 +274,26 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
                 formatOptionLabel={formatDataSpaceOptionLabel}
               />
+              {queryBuilderState.isAdvancedDataSpaceSearchEnabled && (
+                <>
+                  <button
+                    tabIndex={-1}
+                    className="query-builder__setup__data-space-searcher__btn btn--dark"
+                    onClick={openDataSpaceAdvancedSearch}
+                    title="Open advanced search for data space..."
+                  >
+                    <SearchIcon />
+                  </button>
+                  {queryBuilderState.advancedSearchState && (
+                    <DataSpaceAdvancedSearchModal
+                      searchState={queryBuilderState.advancedSearchState}
+                      onClose={() =>
+                        queryBuilderState.hideAdvancedSearchPanel()
+                      }
+                    />
+                  )}
+                </>
+              )}
             </div>
             <div className="query-builder__setup__config-group__item">
               <div

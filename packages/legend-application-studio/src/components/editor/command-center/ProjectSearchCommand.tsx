@@ -98,6 +98,8 @@ export const ProjectSearchCommand = observer(() => {
       <div className="modal search-modal modal--dark">
         <div className="project-search-command">
           <DropdownMenu
+            className="project-search-command__type"
+            title="Choose Element Type..."
             content={
               <div className="project-search-command__options">
                 <div
@@ -118,22 +120,16 @@ export const ProjectSearchCommand = observer(() => {
               </div>
             }
           >
-            <button
-              className="project-search-command__type"
-              tabIndex={-1}
-              title="Choose Element Type..."
-            >
-              <div className="project-search-command__type__label">
-                {elementType ? (
-                  getElementTypeIcon(editorStore, elementType)
-                ) : (
-                  <MoreHorizontalIcon />
-                )}
-              </div>
-              <div className="project-search-command__type__selector">
-                <CaretDownIcon />
-              </div>
-            </button>
+            <div className="project-search-command__type__label">
+              {elementType ? (
+                getElementTypeIcon(editorStore, elementType)
+              ) : (
+                <MoreHorizontalIcon />
+              )}
+            </div>
+            <div className="project-search-command__type__selector">
+              <CaretDownIcon />
+            </div>
           </DropdownMenu>
           <CustomSelectorInput
             ref={selectorRef}

@@ -35,28 +35,6 @@ export const PanelFullContent: React.FC<{
   return <div className="panel__content--full">{children}</div>;
 };
 
-export const PanelHeaderActionItem: React.FC<{
-  title: string;
-  className?: string;
-  disabled?: boolean;
-  children: React.ReactNode;
-  onClick?: () => void;
-}> = (props) => {
-  const { className, onClick, children, disabled, title } = props;
-  return (
-    <div className="panel__header__actions">
-      <button
-        className={clsx('panel__header__action', className)}
-        disabled={Boolean(disabled)}
-        onClick={onClick}
-        title={title}
-      >
-        {children}
-      </button>
-    </div>
-  );
-};
-
 export const PanelHeader: React.FC<{
   title: string;
   children?: React.ReactNode;
@@ -70,6 +48,36 @@ export const PanelHeader: React.FC<{
       </div>
       {children}
     </div>
+  );
+};
+
+export const PanelHeaderActions: React.FC<{
+  children?: React.ReactNode;
+  className?: string;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__header__actions', className)}>{children}</div>
+  );
+};
+
+export const PanelHeaderActionItem: React.FC<{
+  title: string;
+  className?: string;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}> = (props) => {
+  const { className, onClick, children, disabled, title } = props;
+  return (
+    <button
+      className={clsx('panel__header__action', className)}
+      disabled={Boolean(disabled)}
+      onClick={onClick}
+      title={title}
+    >
+      {children}
+    </button>
   );
 };
 

@@ -454,6 +454,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
             </div>
             <DropdownMenu
               className="panel__header__action"
+              title="Show Options Menu..."
               content={
                 <MenuContent>
                   <MenuContentItem onClick={toggleShowDependencyFuncions}>
@@ -472,10 +473,7 @@ export const QueryBuilderFunctionsExplorerPanel = observer(
                 elevation: 7,
               }}
             >
-              <MoreVerticalIcon
-                title="Show Options Menu..."
-                className="query-builder__icon__more-options"
-              />
+              <MoreVerticalIcon className="query-builder__icon__more-options" />
             </DropdownMenu>
           </div>
         </div>
