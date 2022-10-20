@@ -76,7 +76,7 @@ import {
   stub_TaggedValue,
   stub_Stereotype,
   stub_RawVariableExpression,
-  ELEMENT_PATH_DELIMITER,
+  getFunctionNameWithPath,
   getFunctionSignature,
 } from '@finos/legend-graph';
 import {
@@ -155,9 +155,7 @@ const updateFunctionName = (
     graph_renameElement(
       editorStore.graphManagerState.graph,
       func,
-      `${func.package?.path}${ELEMENT_PATH_DELIMITER}${
-        func.functionName
-      }${getFunctionSignature(func)}`,
+      `${getFunctionNameWithPath(func)}${getFunctionSignature(func)}`,
       editorStore.changeDetectionState.observerContext,
     );
   } catch (error) {

@@ -71,7 +71,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
   // TODO: remove these when Engine composer handles empty `preConstraints`/`postConstraints`.
-  'basic-function-overloading.pure': SKIP,
+  'basic-function-overloading.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 };
 
 type GrammarRoundtripOptions = {
