@@ -55,8 +55,8 @@ import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/ra
 import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
 import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
-import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
-import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
+import type { V1_TDSOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TDSOlapAggregation.js';
+import type { V1_TDSOlapRank } from '../../../../model/valueSpecification/raw/V1_TDSOlapRank.js';
 import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
 import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
 import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
@@ -310,11 +310,11 @@ class V1_ValueSpecificationPathResolver
   visit_TDSSortInformation(spec: V1_TDSSortInformation): V1_ValueSpecification {
     return spec;
   }
-  visit_TdsOlapRank(spec: V1_TdsOlapRank): V1_ValueSpecification {
+  visit_TDSOlapRank(spec: V1_TDSOlapRank): V1_ValueSpecification {
     spec.function.accept_ValueSpecificationVisitor(this);
     return spec;
   }
-  visit_TdsOlapAggregation(spec: V1_TdsOlapAggregation): V1_ValueSpecification {
+  visit_TDSOlapAggregation(spec: V1_TDSOlapAggregation): V1_ValueSpecification {
     spec.function.accept_ValueSpecificationVisitor(this);
     return spec;
   }

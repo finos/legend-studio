@@ -37,7 +37,7 @@ import {
   type Enumeration,
   InstanceValue,
   extractExecutionResultValues,
-  TdsExecutionResult,
+  TDSExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
   EnumValueInstanceValue,
@@ -295,7 +295,7 @@ const QueryBuilderGridResultContextMenu = observer(
 
 const QueryBuilderGridResult = observer(
   (props: {
-    executionResult: TdsExecutionResult;
+    executionResult: TDSExecutionResult;
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
@@ -363,7 +363,7 @@ const QueryBuilderResultValues = observer(
     queryBuilderState: QueryBuilderState;
   }) => {
     const { executionResult, queryBuilderState } = props;
-    if (executionResult instanceof TdsExecutionResult) {
+    if (executionResult instanceof TDSExecutionResult) {
       return (
         <QueryBuilderGridResult
           queryBuilderState={queryBuilderState}
@@ -478,7 +478,7 @@ export const QueryBuilderResultPanel = observer(
     const allowSettingPreviewLimit = queryBuilderState.isQuerySupported;
     const resultSetSize = (result: ExecutionResult | undefined): string =>
       result
-        ? result instanceof TdsExecutionResult
+        ? result instanceof TDSExecutionResult
           ? `${
               result.result.rows.length
             } row(s) in ${resultState.executionDuration?.toString()} ms`

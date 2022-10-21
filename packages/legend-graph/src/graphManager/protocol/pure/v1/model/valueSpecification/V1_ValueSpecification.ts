@@ -44,8 +44,8 @@ import type { V1_PureList } from '../../model/valueSpecification/raw/V1_PureList
 import type { V1_TDSAggregateValue } from '../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import type { V1_TDSColumnInformation } from '../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
 import type { V1_TDSSortInformation } from '../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import type { V1_TdsOlapRank } from '../../model/valueSpecification/raw/V1_TdsOlapRank.js';
-import type { V1_TdsOlapAggregation } from '../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import type { V1_TDSOlapRank } from './raw/V1_TDSOlapRank.js';
+import type { V1_TDSOlapAggregation } from './raw/V1_TDSOlapAggregation.js';
 import type { V1_AppliedProperty } from './application/V1_AppliedProperty.js';
 import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr.js';
 import type { V1_HackedClass } from './raw/V1_HackedClass.js';
@@ -95,8 +95,8 @@ export interface V1_ValueSpecificationVisitor<T> {
   visit_TDSAggregateValue(valueSpecification: V1_TDSAggregateValue): T;
   visit_TDSColumnInformation(valueSpecification: V1_TDSColumnInformation): T;
   visit_TDSSortInformation(valueSpecification: V1_TDSSortInformation): T;
-  visit_TdsOlapRank(valueSpecification: V1_TdsOlapRank): T;
-  visit_TdsOlapAggregation(valueSpecification: V1_TdsOlapAggregation): T;
+  visit_TDSOlapRank(valueSpecification: V1_TDSOlapRank): T;
+  visit_TDSOlapAggregation(valueSpecification: V1_TDSOlapAggregation): T;
 
   visit_INTERNAL__UnknownValueSpecfication(
     valueSpecification: V1_INTERNAL__UnknownValueSpecification,

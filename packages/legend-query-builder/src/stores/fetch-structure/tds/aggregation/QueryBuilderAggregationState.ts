@@ -27,7 +27,7 @@ import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
 import type { QueryBuilderProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
-import { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 
 export class QueryBuilderAggregateColumnState
   extends QueryBuilderTDSColumnState

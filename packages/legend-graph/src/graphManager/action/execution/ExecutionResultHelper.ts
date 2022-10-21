@@ -18,7 +18,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type ExecutionResult,
   JsonExecutionResult,
-  TdsExecutionResult,
+  TDSExecutionResult,
   ClassExecutionResult,
   INTERNAL__UnknownExecutionResult,
 } from './ExecutionResult.js';
@@ -30,7 +30,7 @@ export const extractExecutionResultValues = (
 ): object => {
   if (executionResult instanceof JsonExecutionResult) {
     return executionResult.values;
-  } else if (executionResult instanceof TdsExecutionResult) {
+  } else if (executionResult instanceof TDSExecutionResult) {
     // Note we need the result values in object format to run test results
     return executionResult.result.rows.map((v) => ({ values: v.values }));
   } else if (executionResult instanceof ClassExecutionResult) {

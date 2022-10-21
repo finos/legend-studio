@@ -219,7 +219,7 @@ export * from './graphManager/DSL_Generation_PureGraphManagerPlugin_Extension.js
 export * from './graphManager/Testable_PureGraphManagerPlugin_Extension.js';
 export {
   ExecutionResult,
-  TdsExecutionResult,
+  TDSExecutionResult as TDSExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
 } from './graphManager/action/execution/ExecutionResult.js';

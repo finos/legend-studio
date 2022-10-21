@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../V1_ValueSpecification.js';
-import type { V1_Lambda } from './V1_Lambda.js';
+import { type Hashable, uuid } from '@finos/legend-shared';
+import type { Type } from '@finos/legend-graph';
 
-export class V1_TDSOlapRank extends V1_ValueSpecification {
-  function!: V1_Lambda;
+export abstract class QueryBuilderTDSColumnState implements Hashable {
+  readonly uuid = uuid();
 
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_TDSOlapRank(this);
-  }
+  abstract get columnName(): string;
+
+  abstract getColumnType(): Type | undefined;
+
+  abstract get hashCode(): string;
 }

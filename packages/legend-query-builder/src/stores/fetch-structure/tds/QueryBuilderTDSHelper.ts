@@ -24,7 +24,7 @@ import {
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import type { QueryBuilderTDSState } from './QueryBuilderTDSState.js';
-import type { QueryBuilderTDSColumnState } from './QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 import { COLUMN_SORT_TYPE } from './QueryResultSetModifierState.js';
 
 export const findTDSColumnState = (

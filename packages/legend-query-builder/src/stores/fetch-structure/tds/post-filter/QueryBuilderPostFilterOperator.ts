@@ -31,7 +31,7 @@ export abstract class QueryBuilderPostFilterOperator implements Hashable {
 
   abstract getLabel(): string;
 
-  getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
+  getTDSColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return undefined;
   }
 
