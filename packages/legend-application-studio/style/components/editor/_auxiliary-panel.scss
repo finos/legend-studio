@@ -27,6 +27,8 @@
   z-index: 1;
 
   .panel {
+    padding: 1.5rem 1rem;
+
     &__header {
       padding: 0 0 0 1rem;
       height: 3.4rem;
@@ -73,40 +75,40 @@
     font-weight: 500;
   }
 
-  &__header__tab__title__warning__count {
+  &__header__tab__title__problem__count {
     border-radius: 0.8rem;
     background: var(--color-dark-grey-250);
     color: var(--color-light-grey-200);
     font-size: 1.1rem;
   }
 
-  &__warning__label {
+  &__problem__label {
     padding: 0.5rem 1rem;
   }
 
-  &__warning__btn {
+  &__problem__btn {
     width: 100%;
     margin: 0;
   }
 
-  &__warning__btn:hover {
+  &__problem__btn:hover {
     background: var(--color-dark-grey-200);
   }
 
-  &__warning__label__message {
+  &__problem__label__message {
     @include ellipsisTextOverflow;
 
     max-width: 80%;
     color: var(--color-light-grey-400);
   }
 
-  &__warning__label__source {
+  &__problem__label__source {
     color: var(--color-dark-grey-500);
     margin-left: 0.5rem;
   }
 
-  &__warning__label__message--stale,
-  &__warning__label__source--stale {
+  &__problem__label__message--stale,
+  &__problem__label__source--stale {
     color: var(--color-dark-grey-400);
   }
 

@@ -19,7 +19,7 @@ import { editor as monacoEditorAPI, type IDisposable } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  setErrorMarkers,
+  setErrorMarker,
   disposeEditor,
   baseTextEditorSettings,
   getEditorValue,
@@ -309,7 +309,7 @@ const LambdaEditorInline = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(
+          setErrorMarker(
             editorModel,
             error.message,
             error.sourceInformation.startLine,
@@ -544,7 +544,7 @@ const LambdaEditorPopUp = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(
+          setErrorMarker(
             editorModel,
             error.message,
             error.sourceInformation.startLine,

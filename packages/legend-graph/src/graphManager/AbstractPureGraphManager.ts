@@ -68,7 +68,7 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
 import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import type { EngineWarning } from './action/EngineWarning.js';
+import type { CompilationWarning } from './action/compilation/CompilationWarning.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -242,20 +242,16 @@ export abstract class AbstractPureGraphManager {
     options?: {
       onError?: () => void;
       keepSourceInformation?: boolean;
-      flagDoNotBreakIfCompilationWarning?: boolean;
-      getCompilationWarnings?: boolean;
     },
-  ): Promise<void | EngineWarning[]>;
+  ): Promise<CompilationWarning[] | undefined>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
-    options?: { onError?: () => void; getCompilationWarnings?: boolean },
-  ): Promise<Entity[]>;
-  abstract getWarningsFromCompileText(
-    graphGrammar: string,
-    graph: PureModel,
     options?: { onError?: () => void },
-  ): Promise<EngineWarning[] | undefined>;
+  ): Promise<{
+    warnings?: CompilationWarning[] | undefined;
+    entities: Entity[];
+  }>;
   abstract getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,

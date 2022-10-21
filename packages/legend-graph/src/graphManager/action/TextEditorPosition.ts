@@ -14,15 +14,7 @@
  * limitations under the License.
  */
 
-import { ApplicationError } from '@finos/legend-shared';
-import type { SourceInformation } from './SourceInformation.js';
-
-export class EngineWarning extends ApplicationError {
-  sourceInformation?: SourceInformation;
-
-  constructor(message: string, sourceInformation: SourceInformation) {
-    super(message);
-
-    this.sourceInformation = sourceInformation;
-  }
-}
+export type TextEditorPosition = {
+  lineNumber: number;
+  column: number;
+};

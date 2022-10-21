@@ -80,6 +80,7 @@ export const PanelHeaderActionItem: React.FC<{
       disabled={Boolean(disabled)}
       onClick={onClick}
       title={title}
+      tabIndex={-1}
     >
       {children}
     </button>

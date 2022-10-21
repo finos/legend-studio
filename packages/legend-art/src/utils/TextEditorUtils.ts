@@ -16,6 +16,8 @@
 
 import { editor as monacoEditorAPI, MarkerSeverity } from 'monaco-editor';
 
+export const DUMMY_MARKER_OWNER = 'dummy_marker_owner';
+
 /**
  * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten
  * this pace just in case the usage of the editor causes memory-leak somehow
@@ -97,7 +99,7 @@ export const revealError = (
   moveToPosition(editor, startLine, startColumn);
 };
 
-export const setErrorMarkers = (
+export const setErrorMarker = (
   editorModel: monacoEditorAPI.ITextModel,
   message: string,
   startLine: number,
@@ -105,7 +107,7 @@ export const setErrorMarkers = (
   endLine: number,
   endColumn: number,
 ): void => {
-  monacoEditorAPI.setModelMarkers(editorModel, 'Error', [
+  monacoEditorAPI.setModelMarkers(editorModel, DUMMY_MARKER_OWNER, [
     {
       startLineNumber: startLine,
       startColumn,
@@ -118,25 +120,33 @@ export const setErrorMarkers = (
   ]);
 };
 
-export const setWarningMarkers = (
+export type TextEditorRange = {
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+};
+
+export const setAllWarningMarkers = (
   editorModel: monacoEditorAPI.ITextModel,
-  message: string,
-  startLine: number,
-  startColumn: number,
-  endLine: number,
-  endColumn: number,
+  allWarnings: { textEditorRange: TextEditorRange; message: string }[],
 ): void => {
-  monacoEditorAPI.setModelMarkers(editorModel, 'Error', [
-    {
-      startLineNumber: startLine,
-      startColumn,
-      endColumn: endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
-      endLineNumber: endLine,
-      // NOTE: when the message is empty, no error tooltip is shown, we want to avoid this
-      message: message === '' ? '(no warning message)' : message,
+  const markers = allWarnings.map((warning) => {
+    const marker = {
+      startLineNumber: warning.textEditorRange.startLineNumber,
+      startColumn: warning.textEditorRange.startColumn,
+      endColumn: warning.textEditorRange.endColumn,
+      endLineNumber: warning.textEditorRange.endLineNumber,
+      message: warning.message,
       severity: MarkerSeverity.Warning,
-    },
-  ]);
+    };
+    return marker;
+  });
+  monacoEditorAPI.setModelMarkers(editorModel, DUMMY_MARKER_OWNER, markers);
+};
+
+export const clearProblemMarkers = (): void => {
+  monacoEditorAPI.removeAllMarkers(DUMMY_MARKER_OWNER);
 };
 
 // We need to dynamically adjust the width of the line number gutter, otherwise as the document gets

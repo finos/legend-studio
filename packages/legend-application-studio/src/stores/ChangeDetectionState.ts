@@ -272,14 +272,14 @@ export class ChangeDetectionState {
   aggregatedConflictResolutionChanges: EntityDiff[] = [];
   conflicts: EntityChangeConflict[] = []; // conflicts in conflict resolution mode (derived from aggregated workspace changes and conflict resolution changes)
   resolutions: EntityChangeConflictResolution[] = [];
-  graphHash: string | undefined;
+  currentGraphHash: string | undefined;
 
   observerContext: ObserverContext;
 
   constructor(editorStore: EditorStore, graphState: EditorGraphState) {
     makeObservable(this, {
       resolutions: observable,
-      graphHash: observable,
+      currentGraphHash: observable,
       projectLatestRevisionState: observable.ref,
       conflictResolutionBaseRevisionState: observable.ref,
       conflictResolutionHeadRevisionState: observable.ref,
@@ -295,7 +295,6 @@ export class ChangeDetectionState {
       conflicts: observable.ref,
       setAggregatedProjectLatestChanges: action,
       setPotentialWorkspaceUpdateConflicts: action,
-      setGraphHash: action,
       stop: action,
       start: action,
       computeAggregatedWorkspaceChanges: flow,
@@ -340,7 +339,7 @@ export class ChangeDetectionState {
       this.editorStore.pluginManager.getPureGraphManagerPlugins(),
     );
 
-    this.graphHash = hashArray(
+    this.currentGraphHash = hashArray(
       this.editorStore.graphManagerState.graph.allOwnElements,
     );
   }
@@ -349,8 +348,13 @@ export class ChangeDetectionState {
     this.aggregatedProjectLatestChanges = diffs;
   }
 
-  setGraphHash(value: string | undefined): void {
-    this.graphHash = value;
+  getCurrentGraphHash(): string {
+    return hashObject(
+      Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
+        // sort to ensure this array order does not affect change detection status
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([key, value]) => `${key}@${value}`),
+    );
   }
 
   setAggregatedWorkspaceRemoteChanges(diffs: EntityDiff[]): void {
@@ -419,16 +423,10 @@ export class ChangeDetectionState {
      * See https://medium.com/terria/when-and-why-does-mobxs-keepalive-cause-a-memory-leak-8c29feb9ff55
      */
     this.changeDetectionReaction = reaction(
-      // to be safe, rather than just giving the reaction the hash index snapshot to watch, we hash the snapshot content
-      () =>
-        hashObject(
-          Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
-            // sort to ensure this array order does not affect change detection status
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([key, value]) => `${key}@${value}`),
-        ),
+      () => this.getCurrentGraphHash(),
       () => {
         flowResult(this.computeLocalChanges(true)).catch(noop());
+        this.currentGraphHash = this.getCurrentGraphHash();
       },
       {
         // fire reaction immediately to compute the first changeset
@@ -747,9 +745,6 @@ export class ChangeDetectionState {
    */
   *computeLocalChanges(quiet?: boolean): GeneratorFn<void> {
     const startTime = Date.now();
-    this.setGraphHash(
-      hashArray(this.editorStore.graphManagerState.graph.allOwnElements),
-    );
     yield Promise.all([
       this.workspaceLocalLatestRevisionState.computeChanges(quiet), // for local changes detection
       this.conflictResolutionBaseRevisionState.computeChanges(quiet), // for conflict resolution changes detection

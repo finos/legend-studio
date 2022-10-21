@@ -538,7 +538,6 @@ export class SchemaSetEditorState extends ElementEditorState {
         newGraph,
         {
           keepSourceInformation: true,
-          flagDoNotBreakIfCompilationWarning: false,
         },
       );
     } catch (error) {

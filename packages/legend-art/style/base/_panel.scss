@@ -268,6 +268,10 @@
     &--warning {
       color: var(--color-yellow-200);
     }
+
+    &--error {
+      color: var(--color-test--error);
+    }
   }
 
   &__section__header__label {

@@ -48,7 +48,7 @@ import {
   disposeEditor,
   baseTextEditorSettings,
   moveToPosition,
-  setErrorMarkers,
+  setErrorMarker,
   revealError,
   resetLineNumberGutterWidth,
   getEditorValue,
@@ -376,7 +376,7 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarkers(
+          setErrorMarker(
             editorModel,
             error.message,
             error.sourceInformation.startLine,

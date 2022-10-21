@@ -41,7 +41,7 @@ export const DevTool = observer(() => {
     );
 
   return (
-    <Panel className="console-panel">
+    <Panel>
       <PanelSection>
         <PanelFormBooleanEditor
           name="Engine client request payload compression"

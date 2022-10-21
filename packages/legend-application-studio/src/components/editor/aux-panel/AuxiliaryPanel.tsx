@@ -50,7 +50,7 @@ export const AuxiliaryPanel = observer(() => {
       name: string;
       icon?: React.ReactNode;
       isVisible: boolean;
-      badge?: string;
+      counter?: number;
     };
   } = {
     [AUX_PANEL_MODE.CONSOLE]: {
@@ -70,12 +70,11 @@ export const AuxiliaryPanel = observer(() => {
       name: 'PROBLEMS',
       icon: undefined,
       isVisible: true,
-      ...(editorStore.grammarTextEditorState.warnings?.length
+      ...(editorStore.graphState.warnings?.length
         ? {
-            badge:
-              editorStore.grammarTextEditorState.warnings.length.toString(),
+            counter: editorStore.graphState.warnings.length,
           }
-        : { badge: '0' }),
+        : { counter: 0 }),
     },
   };
 
@@ -115,10 +114,10 @@ export const AuxiliaryPanel = observer(() => {
                 )}
                 <div className="auxiliary-panel__header__tab__title">
                   {tab.name}
-                  {tab.badge && (
+                  {tab.counter !== undefined && (
                     <Badge
-                      title={tab.badge}
-                      className="auxiliary-panel__header__tab__title__warning__count"
+                      title={tab.counter.toString()}
+                      className="auxiliary-panel__header__tab__title__problem__count"
                     />
                   )}
                 </div>
@@ -129,7 +128,6 @@ export const AuxiliaryPanel = observer(() => {
           <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={toggleExpandAuxPanel}
-            tabIndex={-1}
             title="Toggle expand/collapse"
           >
             {editorStore.auxPanelDisplayState.isMaximized ? (
@@ -141,7 +139,6 @@ export const AuxiliaryPanel = observer(() => {
           <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={closePanel}
-            tabIndex={-1}
             title="Close"
           >
             <XIcon />

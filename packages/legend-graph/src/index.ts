@@ -229,6 +229,10 @@ export * from './graphManager/PureGraphManagerPlugin.js';
 export * from './graphManager/action/query/Query.js';
 export * from './graphManager/action/query/QuerySearchSpecification.js';
 export * from './graphManager/action/EngineError.js';
+export * from './graphManager/action/compilation/CompilationWarning.js';
+export * from './graphManager/action/compilation/CompilationResult.js';
+export * from './graphManager/action/TextEditorPosition.js';
+
 export * from './graphManager/action/SourceInformationHelper.js';
 export * from './graphManager/action/generation/DatabaseBuilderInput.js';
 export * from './graphManager/action/generation/GenerationConfigurationDescription.js';
@@ -237,7 +241,6 @@ export { ServiceExecutionMode } from './graphManager/action/service/ServiceExecu
 export { ServiceRegistrationResult } from './graphManager/action/service/ServiceRegistrationResult.js';
 export { DEPRECATED__ServiceTestResult } from './graphManager/action/service/DEPRECATED__ServiceTestResult.js';
 export { SourceInformation } from './graphManager/action/SourceInformation.js';
-export { EngineWarning } from './graphManager/action/EngineWarning.js';
 
 export * from './graphManager/protocol/pure/PureProtocolProcessorPlugin.js';
 export * from './graphManager/protocol/pure/Testable_PureProtocolProcessorPlugin_Extension.js';

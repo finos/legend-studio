@@ -15,12 +15,14 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
+<<<<<<< HEAD
 import { action, makeObservable, observable } from 'mobx';
+=======
+import { action, makeAutoObservable, observable } from 'mobx';
+>>>>>>> 71cd5708b (compilation warnings)
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
-  type EngineError,
-  type EngineWarning,
   type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
@@ -44,6 +46,7 @@ import {
   ModelChainConnection,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
+  type TextEditorPosition,
 } from '@finos/legend-graph';
 
 const getGrammarElementTypeLabelRegexString = (
@@ -65,11 +68,10 @@ export class GrammarTextEditorState {
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText = false;
-  error?: EngineError | undefined;
-  warning?: EngineWarning | undefined;
-  warnings?: EngineWarning[] | undefined;
+  forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
+<<<<<<< HEAD
     makeObservable(this, {
       graphGrammarText: observable,
       currentElementLabelRegexString: observable,
@@ -78,6 +80,12 @@ export class GrammarTextEditorState {
       setError: action,
       setWarning: action,
       setWarnings: action,
+=======
+    makeAutoObservable(this, {
+      editorStore: false,
+      forcedCursorPosition: observable,
+      setForcedCursorPosition: action,
+>>>>>>> 71cd5708b (compilation warnings)
       setGraphGrammarText: action,
       setWrapText: action,
       resetCurrentElementLabelRegexString: action,
@@ -87,16 +95,8 @@ export class GrammarTextEditorState {
     this.editorStore = editorStore;
   }
 
-  setError(error: EngineError | undefined): void {
-    this.error = error;
-  }
-
-  setWarning(warning: EngineWarning | undefined): void {
-    this.warning = warning;
-  }
-
-  setWarnings(warnings: EngineWarning[] | undefined): void {
-    this.warnings = warnings;
+  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
+    this.forcedCursorPosition = position;
   }
 
   setGraphGrammarText(code: string): void {

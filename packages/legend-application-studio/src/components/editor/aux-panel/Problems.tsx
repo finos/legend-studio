@@ -22,39 +22,45 @@ import {
   clsx,
   PanelSection,
   Panel,
+  ErrorIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import type { EngineWarning } from '@finos/legend-graph';
+import type { CompilationWarning } from '@finos/legend-graph';
 
-export const WarningItem = observer(
+export const ProblemItem = observer(
   (props: {
-    warning: EngineWarning;
+    problem: CompilationWarning;
     textMode?: boolean;
+    isError?: boolean;
     isStaleWarnings: boolean;
   }) => {
-    const { warning, textMode, isStaleWarnings } = props;
+    const { problem, textMode, isError, isStaleWarnings } = props;
 
     return (
-      <div className="auxiliary-panel__warning__label">
+      <div className="auxiliary-panel__problem__label">
         <PanelListItem>
-          <WarningOutlineIcon className="panel__content__form__icon panel__content__form__icon--warning" />{' '}
+          {isError ? (
+            <ErrorIcon className="panel__content__form__icon panel__content__form__icon--error" />
+          ) : (
+            <WarningOutlineIcon className="panel__content__form__icon panel__content__form__icon--warning" />
+          )}
           <div
-            className={clsx('auxiliary-panel__warning__label__message', {
-              'auxiliary-panel__warning__label__message--stale':
+            className={clsx('auxiliary-panel__problem__label__message', {
+              'auxiliary-panel__problem__label__message--stale':
                 isStaleWarnings,
             })}
           >
-            {`${warning.message} `}
+            {`${problem.message} `}
           </div>
-          {warning.sourceInformation && (
+          {problem.sourceInformation && (
             <div
-              className={clsx('auxiliary-panel__warning__label__source', {
-                'auxiliary-panel__warning__label__source--stale':
+              className={clsx('auxiliary-panel__problem__label__source', {
+                'auxiliary-panel__problem__label__source--stale':
                   isStaleWarnings,
               })}
             >
               {textMode &&
-                `[Ln ${warning.sourceInformation.startLine}, Col ${warning.sourceInformation.startColumn}]`}
+                `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
             </div>
           )}
         </PanelListItem>
@@ -65,25 +71,75 @@ export const WarningItem = observer(
 
 export const Problems = observer(() => {
   const editorStore = useEditorStore();
-  const warnings = editorStore.grammarTextEditorState.warnings;
+  const warnings = editorStore.graphState.warnings;
+  const error = editorStore.graphState.error;
 
-  const isStaleWarnings = editorStore.graphState.isStaleWarnings;
+  let isStaleWarnings: boolean;
+  if (editorStore.isInGrammarTextMode) {
+    isStaleWarnings = editorStore.graphState.isStaleTextWarnings;
+  } else {
+    if (
+      editorStore.graphState.mostRecentFormModeCompilationcurrentGraphHash ===
+      undefined
+    ) {
+      isStaleWarnings = true;
+    }
+    isStaleWarnings =
+      editorStore.graphState.mostRecentFormModeCompilationcurrentGraphHash !==
+      editorStore.graphState.currentGraphHash;
+  }
 
-  const setWarning = (warning: EngineWarning): void => {
-    editorStore.grammarTextEditorState.setWarning(warning);
+  const setProblemCursorPosition = (problem: CompilationWarning): void => {
+    if (problem.sourceInformation) {
+      editorStore.grammarTextEditorState.setForcedCursorPosition({
+        lineNumber: problem.sourceInformation.startLine,
+        column: problem.sourceInformation.startColumn,
+      });
+    }
   };
 
   return (
-    <Panel className="console-panel">
+    <Panel>
+      {error && <PanelSection> Error </PanelSection>}
+      {error && !editorStore.isInGrammarTextMode && (
+        <PanelList>
+          <ProblemItem
+            key={error.message}
+            problem={error as CompilationWarning}
+            isError={true}
+            isStaleWarnings={false}
+          />
+        </PanelList>
+      )}
+      {error && editorStore.isInGrammarTextMode && (
+        <PanelList>
+          <button
+            title={error.message}
+            key={error.message}
+            onClick={() =>
+              setProblemCursorPosition(error as CompilationWarning)
+            }
+            className="auxiliary-panel__problem__btn"
+          >
+            <ProblemItem
+              key={error.message}
+              problem={error as CompilationWarning}
+              isError={true}
+              textMode={true}
+              isStaleWarnings={false}
+            />
+          </button>
+        </PanelList>
+      )}
       <PanelSection>
         <div>
-          {editorStore.grammarTextEditorState.warnings === undefined &&
+          {editorStore.graphState.warnings === undefined &&
             'Please compile (F9) to see possible problems'}
-          {!editorStore.grammarTextEditorState.warnings ||
-            (editorStore.grammarTextEditorState.warnings.length === 0 &&
+          {!editorStore.graphState.warnings ||
+            (editorStore.graphState.warnings.length === 0 &&
               'No warnings detected')}
-          {editorStore.grammarTextEditorState.warnings &&
-            editorStore.grammarTextEditorState.warnings.length > 0 &&
+          {editorStore.graphState.warnings &&
+            editorStore.graphState.warnings.length > 0 &&
             (isStaleWarnings
               ? 'Stale warnings - please compile (F9) to reload latest possible problems'
               : 'Warnings: ')}
@@ -93,9 +149,9 @@ export const Problems = observer(() => {
         {warnings &&
           !editorStore.isInGrammarTextMode &&
           warnings.map((warning) => (
-            <WarningItem
+            <ProblemItem
               key={warning.message}
-              warning={warning}
+              problem={warning}
               isStaleWarnings={isStaleWarnings}
             />
           ))}
@@ -105,12 +161,12 @@ export const Problems = observer(() => {
             <button
               title={warning.message}
               key={warning.message}
-              onClick={() => setWarning(warning)}
-              className="auxiliary-panel__warning__btn"
+              onClick={() => setProblemCursorPosition(warning)}
+              className="auxiliary-panel__problem__btn"
             >
-              <WarningItem
+              <ProblemItem
                 key={warning.message}
-                warning={warning}
+                problem={warning}
                 textMode={true}
                 isStaleWarnings={isStaleWarnings}
               />

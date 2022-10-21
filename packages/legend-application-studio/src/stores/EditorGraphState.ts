@@ -93,7 +93,8 @@ import {
   type GraphBuilderReport,
   GraphManagerTelemetry,
   DataElement,
-  type EngineWarning,
+  type CompilationWarning,
+  type TextCompilationResult,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -132,9 +133,10 @@ export class EditorGraphState {
   readonly editorStore: EditorStore;
   readonly graphGenerationState: GraphGenerationState;
 
-  warnings?: EngineWarning[] | undefined;
-  originalGraphHash: string | undefined;
-  originalGrammarText: string | undefined;
+  warnings?: CompilationWarning[] | undefined;
+  error: EngineError | undefined;
+  mostRecentFormModeCompilationcurrentGraphHash: string | undefined;
+  isStaleTextWarnings: boolean;
   isInitializingGraph = false;
   isRunningGlobalCompile = false;
   isRunningGlobalGenerate = false;
@@ -150,6 +152,7 @@ export class EditorGraphState {
       isApplicationLeavingTextMode: observable,
       isUpdatingGraph: observable,
       isUpdatingApplication: observable,
+      warnings: observable,
       hasCompilationError: computed,
       hasEngineWarnings: computed,
       isStaleWarnings: computed,
@@ -168,27 +171,32 @@ export class EditorGraphState {
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
     this.warnings = undefined;
+    this.isStaleTextWarnings = false;
   }
 
-  setOriginalGraphHash(graphHash: string | undefined): void {
-    this.originalGraphHash = graphHash;
+  setWarnings(val: CompilationWarning[] | undefined): void {
+    this.warnings = val;
   }
 
-  setOriginalGrammarText(grammarText: string | undefined): void {
-    this.originalGrammarText = grammarText;
+  setError(val: EngineError | undefined): void {
+    this.error = val;
+  }
+
+  setIsStaleTextWarnings(val: boolean): void {
+    this.isStaleTextWarnings = val;
   }
 
   get currentGraphHash(): string | undefined {
-    return this.editorStore.changeDetectionState.graphHash;
-  }
-
-  get currentGrammarText(): string | undefined {
-    return this.editorStore.grammarTextEditorState.graphGrammarText;
+    return this.editorStore.changeDetectionState.currentGraphHash;
   }
 
   get hasCompilationError(): boolean {
     return (
-      Boolean(this.editorStore.grammarTextEditorState.error) ||
+      Boolean(
+        this.editorStore.grammarTextEditorState.forcedCursorPosition &&
+          this.editorStore.grammarTextEditorState
+            .forcedCursorPosition instanceof EngineError,
+      ) ||
       this.editorStore.openedEditorStates
         .filter(filterByType(ElementEditorState))
         .some((editorState) => editorState.hasCompilationError)
@@ -457,8 +465,8 @@ export class EditorGraphState {
         this.editorStore.setGraphEditMode(GRAPH_EDITOR_MODE.GRAMMAR_TEXT);
         yield flowResult(
           this.globalCompileInTextMode({
+            suppressCompilationFailureMessage: true,
             ignoreBlocking: true,
-            flagDoNotBreakIfCompilationWarning: false,
           }),
         );
         return {
@@ -532,16 +540,7 @@ export class EditorGraphState {
     disableNotificationOnSuccess?: boolean;
     openConsole?: boolean;
   }): GeneratorFn<FormModeCompilationOutcome> {
-    if (!this.originalGraphHash) {
-      this.setOriginalGraphHash(
-        this.editorStore.changeDetectionState.graphHash,
-      );
-    } else {
-      if (this.isStaleWarnings) {
-        this.setOriginalGraphHash(this.currentGraphHash);
-      }
-    }
-
+    this.mostRecentFormModeCompilationcurrentGraphHash = this.currentGraphHash;
     assertTrue(
       this.editorStore.isInFormMode,
       'Editor must be in form mode to call this method',
@@ -560,28 +559,26 @@ export class EditorGraphState {
       // information are populated), can reveal compilation error. If compilation errors
       // show up in other parts, the user will get redirected to text-mode
 
-      const compilationWarnings =
+      const CompilationWarnings =
         (yield this.editorStore.graphManagerState.graphManager.compileGraph(
           this.editorStore.graphManagerState.graph,
           {
             keepSourceInformation: true,
-            getCompilationWarnings: true,
-            flagDoNotBreakIfCompilationWarning: false,
           },
-        )) as EngineWarning[];
+        )) as CompilationWarning[];
 
-      this.editorStore.grammarTextEditorState.setWarnings(compilationWarnings);
+      this.editorStore.graphState.setWarnings(CompilationWarnings);
 
-      const compilationWarning = compilationWarnings[0];
-
-      if (compilationWarning) {
+      if (
+        this.editorStore.graphState.warnings &&
+        this.editorStore.graphState.warnings.length > 0
+      ) {
         this.editorStore.applicationStore.log.warn(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-          'Compilation suceeded with warnings:',
-          compilationWarning,
+          'Compilation suceeded with warnings.',
         );
         this.editorStore.applicationStore.notifyWarning(
-          `Compilation suceeded with warnings: ${compilationWarning.message}`,
+          `Compilation suceeded with warnings`,
         );
       } else {
         if (!options?.disableNotificationOnSuccess) {
@@ -597,6 +594,8 @@ export class EditorGraphState {
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
+
+      this.setError(error);
       this.editorStore.applicationStore.log.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
         error,
@@ -656,7 +655,7 @@ export class EditorGraphState {
         yield flowResult(
           this.globalCompileInTextMode({
             ignoreBlocking: true,
-            flagDoNotBreakIfCompilationWarning: false,
+            suppressCompilationFailureMessage: true,
             disableNotificationOnSuccess: options?.disableNotificationOnSuccess,
           }),
         );
@@ -676,9 +675,9 @@ export class EditorGraphState {
   // we can show the transition between form mode and text mode warning and the compilation failure warning at the same time
   *globalCompileInTextMode(options?: {
     ignoreBlocking?: boolean | undefined;
-    flagDoNotBreakIfCompilationWarning?: boolean | undefined;
     disableNotificationOnSuccess?: boolean | undefined;
     openConsole?: boolean;
+    suppressCompilationFailureMessage: true;
   }): GeneratorFn<void> {
     assertTrue(
       this.editorStore.isInGrammarTextMode,
@@ -697,37 +696,25 @@ export class EditorGraphState {
       if (options?.openConsole) {
         this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.CONSOLE);
       }
-      const entities =
+
+      const TextCompilationResult =
         (yield this.editorStore.graphManagerState.graphManager.compileText(
           this.editorStore.grammarTextEditorState.graphGrammarText,
           this.editorStore.graphManagerState.graph,
-        )) as Entity[];
+        )) as TextCompilationResult;
+      const entities = TextCompilationResult.entities;
 
-      if (!this.originalGrammarText) {
-        this.setOriginalGrammarText(
-          this.editorStore.grammarTextEditorState.graphGrammarText,
+      const CompilationWarnings = TextCompilationResult.engineWarnings;
+      this.editorStore.graphState.setIsStaleTextWarnings(false);
+
+      if (CompilationWarnings && CompilationWarnings.length > 0) {
+        this.editorStore.applicationStore.log.warn(
+          LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
+          'Compilation suceeded with warnings',
         );
-      } else {
-        if (this.isStaleWarnings) {
-          this.setOriginalGrammarText(this.currentGrammarText);
-        }
-      }
-
-      const compilationWarnings =
-        (yield this.editorStore.graphManagerState.graphManager.getWarningsFromCompileText(
-          this.editorStore.grammarTextEditorState.graphGrammarText,
-          this.editorStore.graphManagerState.graph,
-        )) as EngineWarning[];
-
-      const compilationWarning = compilationWarnings[0];
-
-      if (compilationWarning) {
-        this.editorStore.grammarTextEditorState.setWarning(compilationWarning),
-          this.editorStore.applicationStore.log.warn(
-            LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-            'Compilation suceeded with warnings: ',
-            compilationWarning,
-          );
+        this.editorStore.applicationStore.notifyWarning(
+          'Compilation suceeded with warnings',
+        );
       } else {
         if (!options?.disableNotificationOnSuccess) {
           this.editorStore.applicationStore.notifySuccess(
@@ -736,44 +723,28 @@ export class EditorGraphState {
         }
       }
 
-      this.editorStore.grammarTextEditorState.setWarnings(compilationWarnings);
+      this.editorStore.graphState.setWarnings(CompilationWarnings);
 
-      if (
-        !compilationWarning ||
-        options?.flagDoNotBreakIfCompilationWarning === true
-      ) {
-        yield flowResult(this.updateGraphAndApplication(entities));
-      } else {
-        this.editorStore.applicationStore.setActionAlertInfo({
-          message:
-            'Due to compilation warnings your graph was not updated. Please resolve the warnings before proceeding.',
-          actions: [
-            {
-              label: 'Go to Warnings',
-              handler: (): void => {
-                this.editorStore.auxPanelDisplayState.open();
-                this.editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.PROBLEMS);
-              },
-
-              type: ActionAlertActionType.STANDARD,
-            },
-          ],
-        });
-      }
+      yield flowResult(this.updateGraphAndApplication(entities));
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof EngineError) {
-        this.editorStore.grammarTextEditorState.setError(error);
+        this.setError(error);
+
+        if (error.sourceInformation) {
+          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
+        }
       }
-      this.editorStore.applicationStore.log.error(
-        LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
-        'Compilation failed:',
-        error,
-      );
-      if (!this.editorStore.applicationStore.notification) {
-        this.editorStore.grammarTextEditorState.setWarnings([
-          error as EngineWarning,
-        ] as EngineWarning[]);
+      if (
+        !this.editorStore.applicationStore.notification ||
+        !options?.suppressCompilationFailureMessage
+      ) {
+        this.editorStore.graphState.setWarnings([
+          error,
+        ] as CompilationWarning[]);
         this.editorStore.applicationStore.notifyWarning(
           `Compilation failed: ${error.message}`,
         );
@@ -799,7 +770,7 @@ export class EditorGraphState {
         showLoading: true,
       });
       try {
-        const entities =
+        const entities = (
           (yield this.editorStore.graphManagerState.graphManager.compileText(
             this.editorStore.grammarTextEditorState.graphGrammarText,
             this.editorStore.graphManagerState.graph,
@@ -810,7 +781,8 @@ export class EditorGraphState {
               onError: () =>
                 this.editorStore.applicationStore.setBlockingAlert(undefined),
             },
-          )) as Entity[];
+          )) as TextCompilationResult
+        ).entities;
         this.editorStore.applicationStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
@@ -824,8 +796,11 @@ export class EditorGraphState {
         }
       } catch (error) {
         assertErrorThrown(error);
-        if (error instanceof EngineError) {
-          this.editorStore.grammarTextEditorState.setError(error);
+        if (error instanceof EngineError && error.sourceInformation) {
+          this.editorStore.grammarTextEditorState.setForcedCursorPosition({
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
         }
         this.editorStore.applicationStore.log.error(
           LogEvent.create(GRAPH_MANAGER_EVENT.COMPILATION_FAILURE),
@@ -944,7 +919,7 @@ export class EditorGraphState {
       /**
        * NOTE: this can post memory-leak issue if we start having immutable elements referencing current graph elements:
        * e.g. subclass analytics on the immutable class, etc.
-       *gu
+       *
        * @risk memory-leak
        */
       if (

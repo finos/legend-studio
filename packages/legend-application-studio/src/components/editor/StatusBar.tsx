@@ -96,8 +96,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
 
-  //Warnings
-  const warnings = editorStore.grammarTextEditorState.warnings;
+  // Warnings
+  const warnings = editorStore.graphState.warnings;
 
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
@@ -126,7 +126,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   // Other actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
 
-  const showAuxPanelProblems = (): void => {
+  const showCompilationWarnings = (): void => {
     editorStore.auxPanelDisplayState.open();
     editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.PROBLEMS);
   };
@@ -218,7 +218,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           <button
             className="editor__status-bar__workspace__warning__btn"
             tabIndex={-1}
-            onClick={showAuxPanelProblems}
+            onClick={showCompilationWarnings}
             title={`Warnings: ${warnings ? warnings.length : 0}`}
           >
             <div className="editor__status-bar__workspace__icon">

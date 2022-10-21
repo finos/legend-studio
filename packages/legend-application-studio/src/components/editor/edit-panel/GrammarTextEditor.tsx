@@ -24,7 +24,6 @@ import {
 import {
   ContextMenu,
   revealError,
-  setErrorMarkers,
   disposeEditor,
   baseTextEditorSettings,
   resetLineNumberGutterWidth,
@@ -36,7 +35,10 @@ import {
   HackerIcon,
   PanelContent,
   useResizeDetector,
-  setWarningMarkers,
+  clearProblemMarkers,
+  setAllWarningMarkers,
+  setErrorMarker,
+  type TextEditorRange,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -780,8 +782,9 @@ export const GrammarTextEditor = observer(() => {
   const grammarTextEditorState = editorStore.grammarTextEditorState;
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
-  const error = grammarTextEditorState.error;
-  const warning = grammarTextEditorState.warning;
+  const error = editorStore.graphState.error;
+
+  const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
@@ -813,10 +816,15 @@ export const GrammarTextEditor = observer(() => {
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
-        editorStore.graphState.clearCompilationError();
         // we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
+
+        editorStore.graphState.clearCompilationError();
+
+        clearProblemMarkers();
+        editorStore.graphState.setError(undefined);
+        editorStore.graphState.setIsStaleTextWarnings(true);
       });
       _editor.onKeyDown(createPassThroughOnKeyHandler());
       _editor.focus(); // focus on the editor initially
@@ -885,7 +893,7 @@ export const GrammarTextEditor = observer(() => {
     if (editorModel) {
       editorModel.updateOptions({ tabSize: TAB_SIZE });
       if (error?.sourceInformation) {
-        setErrorMarkers(
+        setErrorMarker(
           editorModel,
           error.message,
           error.sourceInformation.startLine,
@@ -893,20 +901,29 @@ export const GrammarTextEditor = observer(() => {
           error.sourceInformation.endLine,
           error.sourceInformation.endColumn,
         );
-      } else {
-        monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
-      if (warning?.sourceInformation) {
-        setWarningMarkers(
-          editorModel,
-          warning.message,
-          warning.sourceInformation.startLine,
-          warning.sourceInformation.startColumn,
-          warning.sourceInformation.endLine,
-          warning.sourceInformation.endColumn,
-        );
-      } else {
-        monacoEditorAPI.setModelMarkers(editorModel, 'Warning', []);
+
+      const warningMarkers: {
+        textEditorRange: TextEditorRange;
+        message: string;
+      }[] = [];
+
+      editorStore.graphState.warnings?.forEach((warning) => {
+        if (warning.message && warning.sourceInformation) {
+          warningMarkers.push({
+            textEditorRange: {
+              startLineNumber: warning.sourceInformation.startLine,
+              startColumn: warning.sourceInformation.startColumn,
+              endColumn: warning.sourceInformation.endColumn + 1,
+              endLineNumber: warning.sourceInformation.endLine,
+            },
+            message:
+              warning.message === '' ? '(no warning message)' : warning.message,
+          });
+        }
+      });
+      if (!editorStore.graphState.isStaleTextWarnings) {
+        setAllWarningMarkers(editorModel, warningMarkers);
       }
     }
     // Disable editing if user is in viewer mode
@@ -1151,27 +1168,15 @@ export const GrammarTextEditor = observer(() => {
    */
   useEffect(() => {
     if (editor) {
-      if (error?.sourceInformation) {
+      if (forcedCursorPosition) {
         revealError(
           editor,
-          error.sourceInformation.startLine,
-          error.sourceInformation.startColumn,
+          forcedCursorPosition.lineNumber,
+          forcedCursorPosition.column,
         );
       }
     }
-  }, [editor, error, error?.sourceInformation]);
-
-  useEffect(() => {
-    if (editor) {
-      if (warning?.sourceInformation) {
-        revealError(
-          editor,
-          warning.sourceInformation.startLine,
-          warning.sourceInformation.startColumn,
-        );
-      }
-    }
-  }, [editor, warning, warning?.sourceInformation]);
+  }, [editor, forcedCursorPosition]);
 
   /**
    * This effect helps to navigate to the currently selected element in the explorer tree

@@ -92,7 +92,8 @@ import {
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import type { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
-import type { EngineWarning } from '../../../../action/EngineWarning.js';
+import { V1_TextCompilationResult } from './compilation/V1_CompilationResult.js';
+import type { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -365,46 +366,14 @@ export class V1_Engine {
 
   async compilePureModelContextData(
     model: V1_PureModelContextData,
-    options?:
-      | { onError?: (() => void) | undefined; getCompilationWarnings?: boolean }
-      | undefined,
-  ): Promise<void> {
+    options?: { onError?: (() => void) | undefined } | undefined,
+  ): Promise<V1_CompilationWarning[] | undefined> {
     try {
-      await this.engineServerClient.compile(
+      const compilationResult = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-    } catch (error) {
-      assertErrorThrown(error);
-      options?.onError?.();
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        throw V1_buildCompilationError(
-          V1_CompilationError.serialization.fromJson(
-            error.payload as PlainObject<V1_CompilationError>,
-          ),
-        );
-      }
-      throw error;
-    }
-  }
-
-  async getWarningsFromCompilePureModelContextData(
-    model: V1_PureModelContextData,
-    options?:
-      | { onError?: (() => void) | undefined; getCompilationWarnings?: boolean }
-      | undefined,
-  ): Promise<EngineWarning[] | undefined> {
-    try {
-      const compileResponse = await this.engineServerClient.compile(
-        this.serializePureModelContextData(model),
-      );
-      if (
-        compileResponse.warnings &&
-        options?.getCompilationWarnings === true
-      ) {
-        return compileResponse.warnings as EngineWarning[];
+      if (compilationResult.warnings) {
+        return compilationResult.warnings as V1_CompilationWarning[];
       } else {
         return undefined;
       }
@@ -429,7 +398,7 @@ export class V1_Engine {
     graphText: string,
     compileContext?: V1_PureModelContextData,
     options?: { onError?: () => void; getCompilationWarnings?: boolean },
-  ): Promise<V1_PureModelContextData> {
+  ): Promise<V1_TextCompilationResult> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
       // NOTE: we need to return source information here so we can locate the compilation
@@ -445,50 +414,17 @@ export class V1_Engine {
       : mainGraph;
     try {
       await this.engineServerClient.compile(pureModelContextDataJson);
-      return V1_deserializePureModelContextData(mainGraph);
-    } catch (error) {
-      assertErrorThrown(error);
-      options?.onError?.();
-      if (
-        error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.BAD_REQUEST
-      ) {
-        throw V1_buildCompilationError(
-          V1_CompilationError.serialization.fromJson(
-            error.payload as PlainObject<V1_CompilationError>,
-          ),
-        );
-      }
-      throw error;
-    }
-  }
-
-  async getWarningsFromCompileText(
-    graphText: string,
-    compileContext?: V1_PureModelContextData,
-    options?: { onError?: () => void },
-  ): Promise<EngineWarning[] | undefined> {
-    const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
-      ...options,
-      // NOTE: we need to return source information here so we can locate the compilation
-      // errors/warnings
-      returnSourceInformation: true,
-    });
-    const pureModelContextDataJson = compileContext
-      ? mergeObjects(
-          this.serializePureModelContextData(compileContext),
-          mainGraph,
-          false,
-        )
-      : mainGraph;
-    try {
-      const compileResponse = await this.engineServerClient.compile(
+      const entities = V1_deserializePureModelContextData(mainGraph);
+      const compilationResult = await this.engineServerClient.compile(
         pureModelContextDataJson,
       );
-      if (compileResponse.warnings) {
-        return compileResponse.warnings as EngineWarning[];
+      if (compilationResult.warnings) {
+        return new V1_TextCompilationResult(
+          entities,
+          compilationResult.warnings as V1_CompilationWarning[],
+        );
       } else {
-        return undefined;
+        return new V1_TextCompilationResult(entities, undefined);
       }
     } catch (error) {
       assertErrorThrown(error);
