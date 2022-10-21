@@ -1220,7 +1220,7 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday = {
+export const TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday = {
   _type: 'lambda',
   body: [
     {

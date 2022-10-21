@@ -16,7 +16,6 @@
 
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
-  uuid,
   deleteEntry,
   addUniqueEntry,
   type Hashable,
@@ -28,9 +27,12 @@ import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { QueryBuilderAggregateOperator } from './QueryBuilderAggregateOperator.js';
 import type { QueryBuilderProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
 
-export class QueryBuilderAggregateColumnState implements Hashable {
-  readonly uuid = uuid();
+export class QueryBuilderAggregateColumnState
+  extends QueryBuilderTDSColumnState
+  implements Hashable
+{
   readonly aggregationState: QueryBuilderAggregationState;
   projectionColumnState: QueryBuilderProjectionColumnState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
@@ -41,6 +43,7 @@ export class QueryBuilderAggregateColumnState implements Hashable {
     projectionColumnState: QueryBuilderProjectionColumnState,
     operator: QueryBuilderAggregateOperator,
   ) {
+    super();
     makeObservable(this, {
       projectionColumnState: observable,
       lambdaParameterName: observable,
@@ -55,11 +58,6 @@ export class QueryBuilderAggregateColumnState implements Hashable {
     this.projectionColumnState = projectionColumnState;
     this.operator = operator;
   }
-
-  get columnName(): string {
-    return this.projectionColumnState.columnName;
-  }
-
   setColumnState(val: QueryBuilderProjectionColumnState): void {
     this.projectionColumnState = val;
   }
@@ -72,7 +70,7 @@ export class QueryBuilderAggregateColumnState implements Hashable {
     this.operator = val;
   }
 
-  getReturnType(): Type {
+  getColumnType(): Type {
     return this.operator.getReturnType(this);
   }
 
@@ -81,6 +79,10 @@ export class QueryBuilderAggregateColumnState implements Hashable {
       QUERY_BUILDER_HASH_STRUCTURE.AGGREGATE_COLUMN_STATE,
       this.operator,
     ]);
+  }
+
+  get columnName(): string {
+    return this.projectionColumnState.columnName;
   }
 }
 

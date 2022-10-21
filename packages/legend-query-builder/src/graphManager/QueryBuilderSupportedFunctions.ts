@@ -39,6 +39,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   TDS_GROUP_BY = 'meta::pure::tds::groupBy',
   TDS_SORT = 'meta::pure::tds::sort',
   TDS_TAKE = 'meta::pure::tds::take',
+  TDS_FUNC = 'meta::pure::tds::func',
 
   // filter
   CONTAINS = 'meta::pure::functions::string::contains',
@@ -64,4 +65,10 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  // OLAP
+  OLAP_GROUPBY = 'meta::pure::tds::olapGroupBy',
+  OLAP_RANK = 'meta::pure::functions::math::olap::rank',
+  OLAP_AVERAGE_RANK = 'meta::pure::functions::math::olap::averageRank',
+  OLAP_DENSE_RANK = 'meta::pure::functions::math::olap::denseRank',
+  OLAP_ROW_NUMBER = 'meta::pure::functions::math::olap::rowNumber',
 }

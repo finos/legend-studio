@@ -50,6 +50,13 @@ import {
 } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import { TEST__LegendApplicationPluginManager } from '@finos/legend-application';
+import {
+  TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
+  TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
+  TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
+  TEST_DATA__OlapGroupBy_entities,
+  TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc,
+} from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();
@@ -76,6 +83,10 @@ const m2mCtx = {
 
 const postFilterCtx = {
   entities: TEST_DATA__PostFilterModel,
+};
+
+const olapGroupbyCtx = {
+  entities: TEST_DATA__OlapGroupBy_entities,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -149,6 +160,26 @@ const cases: RoundtripTestCase[] = [
     'Date compability for Filter and Post-filter',
     postFilterCtx,
     TEST_DATA_dateCompabilityForFilterAndPostFilter,
+  ],
+  [
+    'OlapGroupBy with simple string with rank operation',
+    olapGroupbyCtx,
+    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rank'),
+  ],
+  [
+    'OlapGroupBy with stacked olapGroupBy function',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
+  ],
+  [
+    'OlapGroupBy with multi stacked olapGroupBy function',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
+  ],
+  [
+    'OlapGroupBy with simple string with rank operation and post filter()',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   ],
 ];
 

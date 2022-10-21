@@ -32,7 +32,9 @@ import {
   guaranteeType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import type { QueryBuilderAggregateColumnState } from '../aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderDerivationProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import { getTDSColumnState } from '../QueryBuilderTDSHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
   type QueryBuilderPostFilterState,
@@ -43,20 +45,16 @@ import {
   TDS_COLUMN_GETTER,
   getTypeFromDerivedProperty,
 } from './QueryBuilderPostFilterState.js';
-import {
-  type QueryBuilderProjectionColumnState,
-  QueryBuilderDerivationProjectionColumnState,
-} from '../projection/QueryBuilderProjectionColumnState.js';
-import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
-import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
-import type { QueryBuilderState } from '../../../QueryBuilderState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
+import type { QueryBuilderState } from '../../../QueryBuilderState.js';
+import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
+import { toGroupOperation } from '../../../QueryBuilderGroupOperationHelper.js';
 
 const findProjectionColumnState = (
   propertyExpression: AbstractPropertyExpression,
   postFilterState: QueryBuilderPostFilterState,
-): QueryBuilderProjectionColumnState | QueryBuilderAggregateColumnState => {
-  const tdsState = postFilterState.tdsState;
+): QueryBuilderTDSColumnState => {
+  const projectionState = postFilterState.tdsState;
   const properyExpressionName = propertyExpression.func.value.name;
   assertTrue(
     Object.values(TDS_COLUMN_GETTER).includes(
@@ -76,13 +74,7 @@ const findProjectionColumnState = (
     ).values[0],
     'Can`t process TDS column expression: Column should be a string primitive instance value',
   );
-  const columnStates = [
-    ...tdsState.aggregationState.columns,
-    ...tdsState.projectionColumns,
-  ];
-  const columnState = guaranteeNonNullable(
-    columnStates.find((c) => c.columnName === columnName),
-  );
+  const columnState = getTDSColumnState(projectionState, columnName);
   if (
     tdsColumnGetter !== TDS_COLUMN_GETTER.IS_NULL &&
     tdsColumnGetter !== TDS_COLUMN_GETTER.IS_NOT_NULL
@@ -97,7 +89,7 @@ const findProjectionColumnState = (
       }
       return columnState;
     }
-    const columnType = guaranteeNonNullable(columnState.getReturnType());
+    const columnType = guaranteeNonNullable(columnState.getColumnType());
     assertTrue(
       (getTDSColumnDerivedProperyFromType(columnType) as string) ===
         tdsColumnGetter,

@@ -83,9 +83,24 @@ import {
   TEST_DATA__lambda_simpleConditionPostFilter,
   TEST_DATA__lambda_aggregationPostFilter,
   TEST_DATA__lambda_derivationPostFilter,
-  TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
+  TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday,
 } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
 import { INTERNAL__BasicQueryBuilderState } from '../QueryBuilderState.js';
+import {
+  TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
+  TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc,
+  TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
+  TEST_DATA__OlapGroupBy_entities,
+  TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
+  TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn,
+  TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy,
+  TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+  TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy,
+  TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation,
+  TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
+  TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
+  TEST_DATA__GroupBy_postFilter_OlapGroupBy,
+} from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
 
 type RoundtripTestCase = [
   string,
@@ -118,6 +133,10 @@ const m2mFilterCtx = {
 
 const postFilterCtx = {
   entities: TEST_DATA__PostFilterModel,
+};
+
+const olapGroupbyCtx = {
+  entities: TEST_DATA__OlapGroupBy_entities,
 };
 
 const cases: RoundtripTestCase[] = [
@@ -326,7 +345,98 @@ const cases: RoundtripTestCase[] = [
   [
     'Post-filter with today()',
     postFilterCtx,
-    TEST_DATA_lambda_dateTimeCapabilityPostFilterWithToday,
+    TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday,
+    undefined,
+  ],
+  // OLAP
+  [
+    'OlapGroupBy with simple string with rank() operation',
+    olapGroupbyCtx,
+    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rank'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with simple string with denseRank() operation',
+    olapGroupbyCtx,
+    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('denseRank'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with simple string with rowNumber() operation',
+    olapGroupbyCtx,
+    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('rowNumber'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with simple string with averageRank() operation',
+    olapGroupbyCtx,
+    TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc('averageRank'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with simple string with rank and no sortBy',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with stacked olapGroupBy function',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_StackedGroupBy,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with multi stacked olapGroupBy function',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with rank operation and post filter()',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with rank operation and post filter() on olapGroup column',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with sum agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with agg operation and sortBy()',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with stacked aggregtions',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with stacked aggregation and rank operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with stacked aggregation and rank operation and different var name',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
+    undefined,
+  ],
+  [
+    'OlapGroupBy with tds groupBy -> post-filter -> olap groupBy',
+    postFilterCtx,
+    TEST_DATA__GroupBy_postFilter_OlapGroupBy,
     undefined,
   ],
 ];

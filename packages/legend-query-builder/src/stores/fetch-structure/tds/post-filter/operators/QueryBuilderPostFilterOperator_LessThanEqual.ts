@@ -46,7 +46,7 @@ export class QueryBuilderPostFilterOperator_LessThanEqual
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getReturnType()?.path ===
+      postFilterConditionState.columnState.getColumnType()?.path ===
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME

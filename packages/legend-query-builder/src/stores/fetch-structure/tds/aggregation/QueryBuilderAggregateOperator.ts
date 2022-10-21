@@ -84,7 +84,7 @@ export abstract class QueryBuilderAggregateOperator implements Hashable {
    */
   getReturnType(aggregateColumnState: QueryBuilderAggregateColumnState): Type {
     return guaranteeNonNullable(
-      aggregateColumnState.projectionColumnState.getReturnType(),
+      aggregateColumnState.projectionColumnState.getColumnType(),
     );
   }
 

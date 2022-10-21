@@ -570,6 +570,135 @@ export const V1_buildGroupByFunctionExpression = (
   return [expression, processedParams];
 };
 
+export const V1_buildOlapGroupByFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+  const processedParams: ValueSpecification[] = [];
+  assertTrue(
+    parameters.length === 5 || parameters.length === 4,
+    `Can't build olapGroupBy() expression: olapGroupBy() expects 4 or 5 arguments`,
+  );
+  let paramIndex = 0;
+  const containsSortByExpression = parameters.length === 5;
+
+  // preceding expression
+  const precedingExperession = (
+    parameters[paramIndex] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExperession.genericType,
+    `Can't build olapGroupBy() expression: preceding expression return type is missing`,
+  );
+  processedParams.push(precedingExperession);
+  paramIndex++;
+
+  // partition (window) columns
+  const columns = (
+    parameters[paramIndex] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  processedParams.push(columns);
+  paramIndex++;
+
+  // OLAP sortBy
+  if (containsSortByExpression) {
+    const sortBy = (
+      parameters[paramIndex] as V1_ValueSpecification
+    ).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    );
+    processedParams.push(sortBy);
+    paramIndex++;
+  }
+
+  // OLAP agg operation
+  const olapOperatorExp = parameters[paramIndex];
+  let olapOperationLambda: V1_Lambda;
+  if (olapOperatorExp instanceof V1_AppliedFunction) {
+    olapOperationLambda = guaranteeType(
+      olapOperatorExp.parameters[1],
+      V1_Lambda,
+      `Can't build olapGroupBy() expression: olap operation function expects argument ${
+        paramIndex + 1
+      } to be a lambda`,
+    );
+  } else {
+    olapOperationLambda = guaranteeType(
+      olapOperatorExp,
+      V1_Lambda,
+      `Can't build olapGroupBy() expression: olapGroupBy() expects argument ${
+        paramIndex + 1
+      } to be a lambda`,
+    );
+  }
+  const olapOperationParameters = olapOperationLambda.parameters;
+  const variables = new Set<string>();
+  olapOperationParameters.forEach((variable) => {
+    if (!variables.has(variable.name) && !variable.class) {
+      const variableExpression = new VariableExpression(
+        variable.name,
+        precedingExperession.multiplicity,
+      );
+      variableExpression.genericType = precedingExperession.genericType;
+      processingContext.addInferredVariables(variable.name, variableExpression);
+    }
+  });
+  const olapOperation = (
+    olapOperatorExp as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  processedParams.push(olapOperation);
+  paramIndex++;
+
+  // OLAP column name
+  const olapColumnName = (
+    parameters[paramIndex] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  processedParams.push(olapColumnName);
+  paramIndex++;
+
+  // build final expression
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    processedParams,
+    functionName,
+    compileContext,
+  );
+  expression.genericType = GenericTypeExplicitReference.create(
+    new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
+  );
+  return [expression, processedParams];
+};
+
 export const V1_buildSubTypePropertyExpressionTypeInference = (
   inferredVariable: SimpleFunctionExpression,
 ): Type | undefined =>

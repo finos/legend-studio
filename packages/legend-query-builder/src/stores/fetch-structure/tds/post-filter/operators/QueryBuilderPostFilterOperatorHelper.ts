@@ -20,18 +20,19 @@ import {
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../../aggregation/QueryBuilderAggregationState.js';
-import {
-  type QueryBuilderProjectionColumnState,
-  QueryBuilderSimpleProjectionColumnState,
-} from '../../projection/QueryBuilderProjectionColumnState.js';
+import { QueryBuilderOlapGroupByColumnState } from '../../olapGroupBy/QueryBuilderOlapGroupByState.js';
+import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTdsColumnState.js';
 
 export const getColumnMultiplicity = (
-  columnState:
-    | QueryBuilderProjectionColumnState
-    | QueryBuilderAggregateColumnState,
+  columnState: QueryBuilderTDSColumnState | QueryBuilderAggregateColumnState,
 ): Multiplicity => {
   if (columnState instanceof QueryBuilderAggregateColumnState) {
     return columnState.aggregationState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+      TYPICAL_MULTIPLICITY_TYPE.ONE,
+    );
+  } else if (columnState instanceof QueryBuilderOlapGroupByColumnState) {
+    return columnState.olapState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
     );
   } else if (columnState instanceof QueryBuilderSimpleProjectionColumnState) {

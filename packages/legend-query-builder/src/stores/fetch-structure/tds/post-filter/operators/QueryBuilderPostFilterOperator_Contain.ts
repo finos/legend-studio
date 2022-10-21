@@ -72,7 +72,7 @@ export class QueryBuilderPostFilterOperator_Contain
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
     const propertyType = guaranteeNonNullable(
-      postFilterConditionState.columnState.getReturnType(),
+      postFilterConditionState.columnState.getColumnType(),
     );
     switch (propertyType.path) {
       case PRIMITIVE_TYPE.STRING: {

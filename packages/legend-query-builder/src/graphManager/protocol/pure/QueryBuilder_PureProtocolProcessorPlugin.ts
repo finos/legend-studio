@@ -20,6 +20,7 @@ import {
   V1_buildFilterFunctionExpression,
   V1_buildGetAllFunctionExpression,
   V1_buildGroupByFunctionExpression,
+  V1_buildOlapGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
@@ -115,6 +116,19 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           )
         ) {
           return V1_buildGroupByFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
+          )
+        ) {
+          return V1_buildOlapGroupByFunctionExpression(
             functionName,
             parameters,
             openVariables,

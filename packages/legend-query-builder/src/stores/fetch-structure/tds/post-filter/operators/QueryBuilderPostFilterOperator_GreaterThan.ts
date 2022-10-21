@@ -74,7 +74,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan
         ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
         : undefined,
       guaranteeNonNullable(
-        postFilterConditionState.columnState.getReturnType(),
+        postFilterConditionState.columnState.getColumnType(),
       ),
     );
   }
@@ -82,7 +82,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
-    const propertyType = postFilterConditionState.columnState.getReturnType();
+    const propertyType = postFilterConditionState.columnState.getColumnType();
     switch (propertyType?.path) {
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL:
@@ -120,7 +120,7 @@ export class QueryBuilderPostFilterOperator_GreaterThan
     return buildPostFilterConditionExpression(
       postFilterConditionState,
       this,
-      postFilterConditionState.columnState.getReturnType()?.path ===
+      postFilterConditionState.columnState.getColumnType()?.path ===
         PRIMITIVE_TYPE.DATETIME &&
         postFilterConditionState.value?.genericType?.value.rawType.path !==
           PRIMITIVE_TYPE.DATETIME

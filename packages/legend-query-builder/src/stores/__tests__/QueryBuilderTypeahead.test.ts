@@ -16,6 +16,7 @@
 
 import { expect, test, describe } from '@jest/globals';
 import {
+  guaranteeNonNullable,
   guaranteeType,
   integrationTest,
   type TEMPORARY__JestMatcher,
@@ -35,6 +36,8 @@ import {
   TEST_DATA__lambda_typeahead_simple_postFilter,
 } from './TEST_DATA__QueryBuilder_TestTypeaheadSearch.js';
 import { TEST__setUpQueryBuilderState } from '../QueryBuilderStateTestUtils.js';
+import { QueryBuilderProjectionColumnState } from '../fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
+import { QueryBuilderAggregateColumnState } from '../fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import {
   buildProjectionColumnTypeaheadQuery,
   buildPropertyTypeaheadQuery,
@@ -136,11 +139,18 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
         tdsState.postFilterState.getRootNode(),
         QueryBuilderPostFilterTreeConditionNodeData,
       );
+      const columnState =
+        postFilterNode.condition.columnState instanceof
+          QueryBuilderProjectionColumnState ||
+        postFilterNode.condition.columnState instanceof
+          QueryBuilderAggregateColumnState
+          ? postFilterNode.condition.columnState
+          : undefined;
       const jsonQuery =
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           buildProjectionColumnTypeaheadQuery(
             queryBuilderState,
-            postFilterNode.condition.columnState,
+            guaranteeNonNullable(columnState),
             postFilterNode.condition.value,
           ),
         );

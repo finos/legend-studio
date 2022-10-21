@@ -70,6 +70,7 @@ import {
 } from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
+import { processTDSOlapGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByStateBuilder.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -394,6 +395,7 @@ export class QueryBuilderValueSpecificationProcessor
         matchFunctionName(precedingExpression.functionName, [
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
         ])
       ) {
         assertTrue(
@@ -410,7 +412,7 @@ export class QueryBuilderValueSpecificationProcessor
         return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or project()/groupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/groupBy()/olapGroupBy()`,
         );
       }
     } else if (
@@ -471,6 +473,17 @@ export class QueryBuilderValueSpecificationProcessor
       processTDSAggregateExpression(
         valueSpecification,
         this.parentExpression,
+        this.queryBuilderState,
+      );
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
+      )
+    ) {
+      processTDSOlapGroupByExpression(
+        valueSpecification,
         this.queryBuilderState,
       );
       return;

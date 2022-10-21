@@ -48,10 +48,12 @@ import {
   useCommands,
 } from '@finos/legend-application';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
-import { QueryBuilderPostFilterPanel } from './fetch-structure/QueryBuilderPostFilterPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
+import { guaranteeType } from '@finos/legend-shared';
+import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
+import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -151,11 +153,28 @@ const QueryBuilderStatusBar = observer(
   },
 );
 
+const QueryBuilderPostGraphFetchPanel = observer(
+  (props: { graphFetchState: QueryBuilderGraphFetchTreeState }) => {
+    const { graphFetchState } = props;
+
+    if (!graphFetchState.TEMPORARY__showPostFetchStructurePanel) {
+      return null;
+    }
+    return (
+      <QueryBuilderFilterPanel
+        queryBuilderState={graphFetchState.queryBuilderState}
+      />
+    );
+  },
+);
+
 export const QueryBuilder = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const isQuerySupported = queryBuilderState.isQuerySupported;
-
+    const fetchStructureState = queryBuilderState.fetchStructureState;
+    const isTDSState =
+      fetchStructureState.implementation instanceof QueryBuilderTDSState;
     const toggleShowFunctionPanel = (): void => {
       queryBuilderState.setShowFunctionsExplorerPanel(
         !queryBuilderState.showFunctionsExplorerPanel,
@@ -164,6 +183,11 @@ export const QueryBuilder = observer(
     const toggleShowParameterPanel = (): void => {
       queryBuilderState.setShowParametersPanel(
         !queryBuilderState.showParametersPanel,
+      );
+    };
+    const toggleShowFilterPanel = (): void => {
+      queryBuilderState.filterState.setShowPanel(
+        !queryBuilderState.filterState.showPanel,
       );
     };
     const toggleShowPostFilterPanel = (): void => {
@@ -177,7 +201,37 @@ export const QueryBuilder = observer(
     };
 
     useCommands(queryBuilderState);
-
+    const toggleShowOlapGroupByPanel = (): void => {
+      if (isTDSState) {
+        const tdsState = guaranteeType(
+          queryBuilderState.fetchStructureState.implementation,
+          QueryBuilderTDSState,
+        );
+        tdsState.setShowOlapGroupByPanel(!tdsState.showOlapGroupByPanel);
+      }
+    };
+    const showPostFetchStructurePanel =
+      queryBuilderState.fetchStructureState.implementation
+        .TEMPORARY__showPostFetchStructurePanel;
+    const renderPostFetchStructure = (): React.ReactNode => {
+      if (fetchStructureState.implementation instanceof QueryBuilderTDSState) {
+        return (
+          <QueryBuilderPostTDSPanel
+            tdsState={fetchStructureState.implementation}
+          />
+        );
+      } else if (
+        fetchStructureState.implementation instanceof
+        QueryBuilderGraphFetchTreeState
+      ) {
+        return (
+          <QueryBuilderPostGraphFetchPanel
+            graphFetchState={fetchStructureState.implementation}
+          />
+        );
+      }
+      return null;
+    };
     return (
       <div
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
@@ -226,6 +280,50 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                       )}
+                      <MenuContentItem
+                        onClick={toggleShowFilterPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          Array.from(
+                            queryBuilderState.filterState.nodes.values(),
+                          ).length > 0
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {queryBuilderState.filterState.showPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show Filter
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
+                      <MenuContentItem
+                        onClick={toggleShowOlapGroupByPanel}
+                        disabled={
+                          !queryBuilderState.isQuerySupported ||
+                          !(
+                            queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState
+                          ) ||
+                          queryBuilderState.fetchStructureState.implementation
+                            .olapGroupByState.olapColumns.length > 0
+                        }
+                      >
+                        <MenuContentItemIcon>
+                          {isTDSState &&
+                          guaranteeType(
+                            queryBuilderState.fetchStructureState
+                              .implementation,
+                            QueryBuilderTDSState,
+                          ).showOlapGroupByPanel ? (
+                            <CheckIcon />
+                          ) : null}
+                        </MenuContentItemIcon>
+                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                          Show OLAP GroupBy
+                        </MenuContentItemLabel>
+                      </MenuContentItem>
                       <MenuContentItem
                         onClick={toggleShowPostFilterPanel}
                         disabled={
@@ -320,37 +418,14 @@ export const QueryBuilder = observer(
                           queryBuilderState={queryBuilderState}
                         />
                       </ResizablePanel>
-                      <ResizablePanelSplitter />
-                      <ResizablePanel minSize={300}>
-                        {(!(
-                          queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState
-                        ) ||
-                          !queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel) && (
-                          <QueryBuilderFilterPanel
-                            queryBuilderState={queryBuilderState}
-                          />
-                        )}
-                        {queryBuilderState.fetchStructureState
-                          .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel && (
-                            <ResizablePanelGroup orientation="horizontal">
-                              <ResizablePanel minSize={300}>
-                                <QueryBuilderFilterPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                              <ResizablePanelSplitter />
-                              <ResizablePanel>
-                                <QueryBuilderPostFilterPanel
-                                  queryBuilderState={queryBuilderState}
-                                />
-                              </ResizablePanel>
-                            </ResizablePanelGroup>
-                          )}
-                      </ResizablePanel>
+                      {showPostFetchStructurePanel && (
+                        <ResizablePanelSplitter />
+                      )}
+                      {showPostFetchStructurePanel && (
+                        <ResizablePanel minSize={300}>
+                          {renderPostFetchStructure()}
+                        </ResizablePanel>
+                      )}
                     </ResizablePanelGroup>
                   ) : (
                     <QueryBuilderUnsupportedQueryEditor

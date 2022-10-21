@@ -19,7 +19,6 @@ import {
   type GeneratorFn,
   LogEvent,
   assertErrorThrown,
-  uuid,
   guaranteeNonNullable,
   assertTrue,
   assertNonEmptyString,
@@ -50,11 +49,12 @@ import {
   RawLambda,
   stub_RawLambda,
 } from '@finos/legend-graph';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
   QUERY_BUILDER_SOURCE_ID_LABEL,
 } from '../../../QueryBuilderConfig.js';
-import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import { LambdaEditorState } from '../../../shared/LambdaEditorState.js';
 
@@ -64,12 +64,15 @@ export interface QueryBuilderProjectionColumnDragSource {
   columnState: QueryBuilderProjectionColumnState;
 }
 
-export abstract class QueryBuilderProjectionColumnState implements Hashable {
-  readonly uuid = uuid();
+export abstract class QueryBuilderProjectionColumnState
+  extends QueryBuilderTDSColumnState
+  implements Hashable
+{
   tdsState: QueryBuilderTDSState;
   columnName: string;
 
   constructor(tdsState: QueryBuilderTDSState, columnName: string) {
+    super();
     makeObservable(this, {
       uuid: false,
       tdsState: false,
@@ -77,7 +80,6 @@ export abstract class QueryBuilderProjectionColumnState implements Hashable {
       setColumnName: action,
       hashCode: computed,
     });
-
     this.tdsState = tdsState;
     this.columnName = columnName;
   }
@@ -85,10 +87,6 @@ export abstract class QueryBuilderProjectionColumnState implements Hashable {
   setColumnName(val: string): void {
     this.columnName = val;
   }
-
-  abstract getReturnType(): Type | undefined;
-
-  abstract get hashCode(): string;
 }
 
 export class QueryBuilderSimpleProjectionColumnState
@@ -143,7 +141,7 @@ export class QueryBuilderSimpleProjectionColumnState
     );
   }
 
-  override getReturnType(): Type | undefined {
+  override getColumnType(): Type | undefined {
     return this.propertyExpressionState.propertyExpression.func.value
       .genericType.value.rawType;
   }
@@ -333,7 +331,7 @@ export class QueryBuilderDerivationProjectionColumnState
     this.setReturnType(resolvedType);
   }
 
-  override getReturnType(): Type | undefined {
+  override getColumnType(): Type | undefined {
     return this.returnType;
   }
 

@@ -1,0 +1,408 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.query-builder__olap {
+  &__columns {
+    padding: 0.5rem 0;
+  }
+
+  &__column {
+    @include flexVCenter;
+
+    color: var(--color-light-grey-400);
+    padding: 0 0.5rem;
+
+    &:hover {
+      background: var(--color-dark-blue-shade-100);
+    }
+  }
+
+  &__column__context-menu {
+    display: flex;
+    height: 100%;
+    width: 100%;
+  }
+
+  &__column--selected-from-context-menu {
+    background: var(--color-dark-blue-shade-100);
+  }
+
+  &__column__drag-handle {
+    @include flexCenter;
+
+    background: var(--color-dark-grey-100);
+    height: 2.4rem;
+    width: 1.6rem;
+    min-width: 1.6rem;
+    margin-left: 0.5rem;
+
+    svg {
+      color: var(--color-dark-grey-300);
+      font-size: 1.2rem;
+    }
+
+    &__container {
+      @include flexCenter;
+
+      height: 3.4rem;
+    }
+  }
+
+  &__column__name {
+    @include flexVCenter;
+
+    margin-left: 0 0.5rem 0 0.5rem;
+    height: 3.4rem;
+    width: calc(100% - 15rem);
+    min-width: 10rem;
+
+    &__input {
+      padding: 0.5rem;
+      height: 2.8rem;
+      line-height: 2.8rem;
+      background: var(--color-dark-grey-100);
+      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-light-grey-200);
+
+      &:focus {
+        border: 0.1rem solid var(--color-blue-200);
+        outline: none;
+      }
+    }
+  }
+
+  &__column__operation {
+    @include flexVCenter;
+
+    padding: 0 0.5rem;
+    height: 3.4rem;
+
+    &__operator {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    &__operator__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+      white-space: nowrap;
+      width: 3rem;
+
+      &__agg {
+        width: 13rem;
+      }
+    }
+
+    &__operator__dropdown {
+      @include flexVCenter;
+
+      height: 100%;
+    }
+
+    &__operator__badge {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.8rem;
+      background: var(--color-yellow-500);
+      color: var(--color-light-grey-100);
+
+      svg {
+        color: var(--color-dark-grey-280);
+      }
+    }
+
+    &__operator__dropdown__option {
+      font-size: 1.1rem;
+      height: 2.8rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__operator__dropdown__trigger {
+      @include flexCenter;
+
+      height: 100%;
+      width: 1.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0 0.2rem 0.2rem 0;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-light-grey-100);
+      }
+    }
+  }
+
+  &__column__actions {
+    @include flexVCenter;
+
+    height: 100%;
+    width: 3.4rem;
+  }
+
+  &__column__action {
+    @include flexCenter;
+
+    height: 3.4rem;
+    width: 3.4rem;
+
+    .query-builder__icon,
+    svg {
+      color: var(--color-light-grey-400);
+    }
+
+    &:hover .query-builder__icon,
+    &:hover svg {
+      color: var(--color-light-grey-100);
+    }
+
+    &[disabled] .query-builder__icon,
+    &[disabled] svg {
+      color: var(--color-dark-grey-300);
+    }
+  }
+
+  &__column:hover &__column__action {
+    display: flex;
+  }
+
+  &__column__sortby {
+    @include flexVCenter;
+
+    padding: 0 0.5rem;
+    height: 3.4rem;
+
+    &__operator {
+      @include flexVCenter;
+
+      height: 2.8rem;
+    }
+
+    &__operator__label {
+      @include flexCenter;
+
+      height: 100%;
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+      white-space: nowrap;
+      width: 3rem;
+    }
+
+    &__operator__dropdown {
+      @include flexVCenter;
+
+      height: 100%;
+    }
+
+    &__operator__dropdown__option {
+      font-size: 1.1rem;
+      height: 2.8rem;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &__operator__dropdown__trigger {
+      @include flexCenter;
+
+      height: 100%;
+      width: 1.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0 0.2rem 0.2rem 0;
+
+      svg {
+        font-size: 1.2rem;
+        color: var(--color-light-grey-100);
+      }
+    }
+
+    &__operator__badge {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.8rem;
+      background: var(--color-dark-grey-280);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        font-size: 1.8rem;
+      }
+    }
+
+    &__operator__badge--activated {
+      border-radius: 0;
+      background: var(--color-purple-50);
+
+      svg {
+        color: var(--color-dark-grey-280);
+      }
+    }
+
+    &__none {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      background: var(--color-dark-grey-100);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+      white-space: nowrap;
+      width: 13rem;
+    }
+  }
+
+  &__column__window {
+    @include flexVCenter;
+
+    height: 3.4rem;
+
+    &__content {
+      display: flex;
+      height: 2.8rem;
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem;
+
+      &__label {
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        color: var(--color-light-grey-100);
+        font-weight: bold;
+        height: 2.8rem;
+        align-items: center;
+      }
+    }
+
+    &__popover {
+      padding: 1rem;
+      min-width: 40rem;
+    }
+
+    &__operator__badge {
+      @include flexCenter;
+
+      height: 100%;
+      width: 2.8rem;
+      background: var(--color-orange-150);
+      color: var(--color-light-grey-100);
+      border-radius: 0.2rem 0 0 0.2rem;
+
+      svg {
+        color: var(--color-dark-grey-280);
+      }
+    }
+  }
+
+  &__tds__column {
+    @include flexVCenter;
+
+    width: 10rem;
+    height: 2.8rem;
+
+    &-badge {
+      @include flexVCenter;
+
+      width: 100%;
+      height: 100%;
+
+      &__content {
+        @include flexVCenter;
+
+        width: 100%;
+        height: 2.8rem;
+        border-radius: 0.2rem;
+        background: var(--color-dark-grey-100);
+      }
+
+      &__property {
+        @include ellipsisTextOverflow;
+
+        padding: 0 1rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+        width: 100%;
+        text-align: center;
+      }
+
+      &__type {
+        height: 100%;
+        width: 2.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.2rem;
+        border-radius: 0.2rem 0 0 0.2rem;
+
+        &--enumeration {
+          background: var(--color-medium-green-450);
+        }
+
+        &--primitive {
+          background: var(--color-blue-200);
+        }
+      }
+    }
+
+    &__options {
+      display: flex;
+      width: 100%;
+      padding-left: 0;
+    }
+
+    &__dropdown {
+      max-width: 45rem;
+      width: 100%;
+    }
+
+    &__remove-btn {
+      @include flexCenter;
+
+      flex: 2.8rem 0 0;
+      height: 2.8rem;
+      color: var(--color-light-grey-200);
+      background: var(--color-dark-grey-200);
+      border-radius: 0.2rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+  }
+
+  &__modal {
+    overflow: hidden;
+
+    &__body {
+      overflow: auto;
+      padding: 1rem;
+      padding-bottom: 1.5rem;
+    }
+  }
+}

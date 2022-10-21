@@ -26,8 +26,8 @@ import {
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 
 export enum COLUMN_SORT_TYPE {
-  ASC,
-  DESC,
+  ASC = 'ASC',
+  DESC = 'DESC',
 }
 
 export class SortColumnState implements Hashable {
