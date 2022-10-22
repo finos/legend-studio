@@ -382,7 +382,6 @@ export class ApplicationStore<
     await navigator.clipboard.writeText(text).catch((error) => {
       this.notifyError(error);
     });
-    return;
   }
 
   notifyUnsupportedFeature(featureName: string): void {

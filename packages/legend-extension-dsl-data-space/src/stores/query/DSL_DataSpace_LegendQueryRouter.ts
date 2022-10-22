@@ -82,6 +82,8 @@ export const generateDataSpaceQueryCreatorRoute = (
       },
     ),
     stringifyQueryParams({
-      [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]: classPath,
+      [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]: classPath
+        ? encodeURIComponent(classPath)
+        : undefined,
     }),
   );
