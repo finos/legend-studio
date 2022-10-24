@@ -260,7 +260,7 @@ export const QueryBuilder = observer(
                           Show Function(s)
                         </MenuContentItemLabel>
                       </MenuContentItem>
-                      {/* TODO?: consider hiding this menu option when the fetch-structure is not tds */}
+                      {/* TODO?: consider hiding this menu option when the fetch-structure is not TDS */}
                       {!queryBuilderState.isParameterSupportDisabled && (
                         <MenuContentItem
                           onClick={toggleShowParameterPanel}

@@ -201,7 +201,7 @@ export const processTDSOlapGroupByExpression = (
     );
     assertTrue(
       !operation.isColumnAggregator(),
-      `Operator '${operation.getLabel()}' expects a tds column to aggregate against`,
+      `Operator '${operation.getLabel()}' expects a TDS column to aggregate against`,
     );
     operatorState = new QueryBuilderTDSOlapRankOperatorState(
       tdsState.olapGroupByState,

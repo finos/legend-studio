@@ -60,8 +60,8 @@ import { V1_PureList } from '../../../model/valueSpecification/raw/V1_PureList.j
 import { V1_TDSAggregateValue } from '../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import { V1_TDSColumnInformation } from '../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
 import { V1_TDSSortInformation } from '../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import { V1_TdsOlapRank } from '../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
-import { V1_TdsOlapAggregation } from '../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import { V1_TDSOlapRank } from '../../../model/valueSpecification/raw/V1_TDSOlapRank.js';
+import { V1_TDSOlapAggregation } from '../../../model/valueSpecification/raw/V1_TDSOlapAggregation.js';
 import { V1_multiplicitySchema } from './V1_CoreSerializationHelper.js';
 import type {
   V1_ValueSpecification,
@@ -479,12 +479,12 @@ const tdsSortInformationModelSchema = createModelSchema(V1_TDSSortInformation, {
   direction: primitive(),
 });
 
-const tdsOlapRankModelSchema = createModelSchema(V1_TdsOlapRank, {
+const tdsOlapRankModelSchema = createModelSchema(V1_TDSOlapRank, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.TDS_OLAP_RANK),
   function: usingModelSchema(lambdaModelSchema),
 });
 
-const tdsOlapAggregationModelSchema = createModelSchema(V1_TdsOlapAggregation, {
+const tdsOlapAggregationModelSchema = createModelSchema(V1_TDSOlapAggregation, {
   _type: usingConstantValueSchema(
     V1_ValueSpecificationType.TDS_OLAP_AGGREGATION,
   ),
@@ -666,13 +666,13 @@ class V1_ValueSpecificationSerializer
   ): PlainObject<V1_ValueSpecification> {
     return serialize(tdsSortInformationModelSchema, valueSpecification);
   }
-  visit_TdsOlapRank(
-    valueSpecification: V1_TdsOlapRank,
+  visit_TDSOlapRank(
+    valueSpecification: V1_TDSOlapRank,
   ): PlainObject<V1_ValueSpecification> {
     return serialize(tdsOlapRankModelSchema, valueSpecification);
   }
-  visit_TdsOlapAggregation(
-    valueSpecification: V1_TdsOlapAggregation,
+  visit_TDSOlapAggregation(
+    valueSpecification: V1_TDSOlapAggregation,
   ): PlainObject<V1_ValueSpecification> {
     return serialize(tdsOlapAggregationModelSchema, valueSpecification);
   }

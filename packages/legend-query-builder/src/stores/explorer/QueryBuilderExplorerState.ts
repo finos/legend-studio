@@ -54,7 +54,7 @@ import {
   Property,
   Association,
   PRIMITIVE_TYPE,
-  TdsExecutionResult,
+  TDSExecutionResult,
   type ExecutionResult,
   getAllSubclasses,
   PropertyExplicitReference,
@@ -741,7 +741,7 @@ export class QueryBuilderExplorerState {
             )) as ExecutionResult;
           assertType(
             previewResult,
-            TdsExecutionResult,
+            TDSExecutionResult,
             `Unexpected preview data format`,
           );
           const previewResultData =
@@ -778,7 +778,7 @@ export class QueryBuilderExplorerState {
             )) as ExecutionResult;
           assertType(
             previewResult,
-            TdsExecutionResult,
+            TDSExecutionResult,
             `Unexpected preview data format`,
           );
           this.previewDataState.setPreviewData(
