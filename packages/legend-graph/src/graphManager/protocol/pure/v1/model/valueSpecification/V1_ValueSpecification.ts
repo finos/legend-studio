@@ -44,8 +44,8 @@ import type { V1_PureList } from '../../model/valueSpecification/raw/V1_PureList
 import type { V1_TDSAggregateValue } from '../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import type { V1_TDSColumnInformation } from '../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
 import type { V1_TDSSortInformation } from '../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import type { V1_TdsOlapRank } from '../../model/valueSpecification/raw/V1_TdsOlapRank.js';
-import type { V1_TdsOlapAggregation } from '../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import type { V1_TdsOlapRank } from './raw/V1_TDSOlapRank.js';
+import type { V1_TdsOlapAggregation } from './raw/V1_TDSOlapAggregation.js';
 import type { V1_AppliedProperty } from './application/V1_AppliedProperty.js';
 import type { V1_PackageableElementPtr } from './raw/V1_PackageableElementPtr.js';
 import type { V1_HackedClass } from './raw/V1_HackedClass.js';

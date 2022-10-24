@@ -60,8 +60,8 @@ import { V1_PureList } from '../../../model/valueSpecification/raw/V1_PureList.j
 import { V1_TDSAggregateValue } from '../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import { V1_TDSColumnInformation } from '../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
 import { V1_TDSSortInformation } from '../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import { V1_TdsOlapRank } from '../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
-import { V1_TdsOlapAggregation } from '../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
+import { V1_TdsOlapRank } from '../../../model/valueSpecification/raw/V1_TDSOlapRank.js';
+import { V1_TdsOlapAggregation } from '../../../model/valueSpecification/raw/V1_TDSOlapAggregation.js';
 import { V1_multiplicitySchema } from './V1_CoreSerializationHelper.js';
 import type {
   V1_ValueSpecification,

@@ -55,8 +55,8 @@ import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/ra
 import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
 import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
 import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
-import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TdsOlapAggregation.js';
-import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TdsOlapRank.js';
+import type { V1_TdsOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TDSOlapAggregation.js';
+import type { V1_TdsOlapRank } from '../../../../model/valueSpecification/raw/V1_TDSOlapRank.js';
 import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
 import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
 import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
