@@ -63,9 +63,9 @@ export const buildPostFilterConditionExpression = (
     multiplicityOne,
   );
   let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
-  const correspondingTdsDerivedProperty = operator.getTdsColumnGetter();
-  if (correspondingTdsDerivedProperty) {
-    tdsDerivedPropertyName = correspondingTdsDerivedProperty;
+  const correspondingTDSDerivedProperty = operator.getTDSColumnGetter();
+  if (correspondingTDSDerivedProperty) {
+    tdsDerivedPropertyName = correspondingTDSDerivedProperty;
   } else {
     const type = guaranteeNonNullable(colState.getColumnType());
     tdsDerivedPropertyName = getTDSColumnDerivedProperyFromType(type);

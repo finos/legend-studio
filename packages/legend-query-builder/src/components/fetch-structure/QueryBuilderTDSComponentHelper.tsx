@@ -32,7 +32,7 @@ import {
 import { returnUndefOnError } from '@finos/legend-shared';
 import type { QueryBuilderAggregateColumnState } from '../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
 import { getColumnMultiplicity } from '../../stores/fetch-structure/tds/post-filter/operators/QueryBuilderPostFilterOperatorHelper.js';
-import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState_.js';
 
 export const renderPropertyTypeIcon = (type: Type): React.ReactNode => {
   if (type instanceof PrimitiveType) {

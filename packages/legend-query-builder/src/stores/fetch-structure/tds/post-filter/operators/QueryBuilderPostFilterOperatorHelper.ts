@@ -22,7 +22,7 @@ import { UnsupportedOperationError } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../../aggregation/QueryBuilderAggregationState.js';
 import { QueryBuilderOlapGroupByColumnState } from '../../olapGroupBy/QueryBuilderOlapGroupByState.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState_.js';
 
 export const getColumnMultiplicity = (
   columnState: QueryBuilderTDSColumnState | QueryBuilderAggregateColumnState,

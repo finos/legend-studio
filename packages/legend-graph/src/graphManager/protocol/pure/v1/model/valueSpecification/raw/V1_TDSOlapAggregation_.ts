@@ -17,16 +17,16 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+} from '../V1_ValueSpecification.js';
 import type { V1_Lambda } from './V1_Lambda.js';
 
-export class V1_TdsOlapAggregation extends V1_ValueSpecification {
+export class V1_TDSOlapAggregation extends V1_ValueSpecification {
   function!: V1_Lambda;
   columnName!: string;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_TdsOlapAggregation(this);
+    return visitor.visit_TDSOlapAggregation(this);
   }
 }

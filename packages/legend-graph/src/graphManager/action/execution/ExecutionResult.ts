@@ -67,7 +67,7 @@ export class TDSColumn {
   doc?: string | undefined;
 }
 
-export class TdsBuilder extends ResultBuilder {
+export class TDSBuilder extends ResultBuilder {
   columns: TDSColumn[] = [];
 
   constructor() {
@@ -75,18 +75,18 @@ export class TdsBuilder extends ResultBuilder {
   }
 }
 
-export class TdsRow {
+export class TDSRow {
   values: (string | number | boolean | null)[] = [];
 }
 
 export class TabularDataSet {
   columns: string[] = [];
-  rows: TdsRow[] = [];
+  rows: TDSRow[] = [];
 }
 
-export class TdsExecutionResult extends ExecutionResult {
+export class TDSExecutionResult extends ExecutionResult {
   readonly _UUID = uuid();
-  override builder = new TdsBuilder();
+  override builder = new TDSBuilder();
   result = new TabularDataSet();
 }
 

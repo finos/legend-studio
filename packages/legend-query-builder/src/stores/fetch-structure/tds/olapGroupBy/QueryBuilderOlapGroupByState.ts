@@ -27,10 +27,10 @@ import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../projection/QueryBuilderProjectionColumnState.js';
-import { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { COLUMN_SORT_TYPE } from '../QueryResultSetModifierState.js';
-import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTdsOlapOperator.js';
+import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator_.js';
 
 export const QUERY_BUILDER_OLAP_COLUMN_DND_TYPE = 'OLAP_COLUMN';
 
@@ -194,7 +194,7 @@ export class QueryBuilderOlapGroupByColumnState
   }
 
   get possibleReferencedColumns(): QueryBuilderTDSColumnState[] {
-    // column can only reference tds columns already defined, i.e in an earlier index of the olap columns
+    // column can only reference TDS columns already defined, i.e in an earlier index of the olap columns
     const idx = this.olapState.tdsState.tdsColumns.findIndex((e) => e === this);
     if (idx === -1) {
       return this.olapState.tdsState.tdsColumns;
