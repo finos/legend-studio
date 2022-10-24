@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult, flow } from 'mobx';
+import {
+  action,
+  makeObservable,
+  flowResult,
+  flow,
+  observable,
+  computed,
+} from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
@@ -55,8 +62,8 @@ import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-edi
 import { DATE_TIME_FORMAT } from '@finos/legend-graph';
 
 class PatchLoaderState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
   changes: EntityChange[] | undefined;
   currentChanges: EntityChange[] = [];
@@ -65,17 +72,35 @@ class PatchLoaderState {
   isValidPatch = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      changes: observable,
+      currentChanges: observable,
+      isLoadingChanges: observable,
+      showModal: observable,
+      isValidPatch: observable,
+      overiddingChanges: computed,
       openModal: action,
       closeModal: action,
+      setIsValidPatch: action,
+      setPatchChanges: action,
       deleteChange: action,
       loadPatchFile: flow,
+      applyChanges: flow,
     });
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
+  }
+
+  get overiddingChanges(): EntityChange[] {
+    if (this.changes?.length) {
+      return this.changes.filter((change) =>
+        this.currentChanges.find(
+          (local) => local.entityPath === change.entityPath,
+        ),
+      );
+    }
+    return [];
   }
 
   openModal(localChanges: EntityChange[]): void {
@@ -101,17 +126,6 @@ class PatchLoaderState {
     if (this.changes) {
       deleteEntry(this.changes, change);
     }
-  }
-
-  get overiddingChanges(): EntityChange[] {
-    if (this.changes?.length) {
-      return this.changes.filter((change) =>
-        this.currentChanges.find(
-          (local) => local.entityPath === change.entityPath,
-        ),
-      );
-    }
-    return [];
   }
 
   *loadPatchFile(file: File): GeneratorFn<void> {
@@ -161,20 +175,21 @@ class PatchLoaderState {
 }
 
 export class LocalChangesState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
-  workspaceSyncState: WorkspaceSyncState;
-  pushChangesState = ActionState.create();
-  refreshLocalChangesDetectorState = ActionState.create();
-  patchLoaderState: PatchLoaderState;
-  refreshWorkspaceSyncStatusState = ActionState.create();
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+  readonly workspaceSyncState: WorkspaceSyncState;
+  readonly pushChangesState = ActionState.create();
+  readonly refreshLocalChangesDetectorState = ActionState.create();
+  readonly refreshWorkspaceSyncStatusState = ActionState.create();
+  readonly patchLoaderState: PatchLoaderState;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
-      openLocalChange: action,
+    makeObservable(this, {
+      hasUnpushedChanges: computed,
+      openPotentialWorkspacePullConflict: action,
       refreshWorkspaceSyncStatus: flow,
+      refreshLocalChanges: flow,
+      pushLocalChanges: flow,
     });
 
     this.editorStore = editorStore;
@@ -188,6 +203,46 @@ export class LocalChangesState {
       this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
         .changes.length,
     );
+  }
+
+  downloadLocalChanges(): void {
+    const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
+      this.sdlcState.activeWorkspace.workspaceId
+    })_${formatDate(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
+    const content = JSON.stringify(
+      {
+        message: '', // TODO?
+        entityChanges: this.editorStore.graphState.computeLocalEntityChanges(),
+        revisionId: this.sdlcState.activeRevision.id,
+      },
+      undefined,
+      TAB_SIZE,
+    );
+    downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
+  }
+
+  alertUnsavedChanges(onProceed: () => void): void {
+    if (this.hasUnpushedChanges) {
+      this.editorStore.applicationStore.setActionAlertInfo({
+        message:
+          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Proceed',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => onProceed(),
+          },
+          {
+            label: 'Abort',
+            type: ActionAlertActionType.PROCEED,
+            default: true,
+          },
+        ],
+      });
+    } else {
+      onProceed();
+    }
   }
 
   openLocalChange(diff: EntityDiff): void {
@@ -296,6 +351,53 @@ export class LocalChangesState {
     );
   }
 
+  openPotentialWorkspacePullConflict(conflict: EntityChangeConflict): void {
+    const baseEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
+            (e) => e.path === entityPath,
+          )
+        : undefined;
+    const currentChangeEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.graphManagerState.graph.allOwnElements
+            .map((element) =>
+              this.editorStore.graphManagerState.graphManager.elementToEntity(
+                element,
+              ),
+            )
+            .find((e) => e.path === entityPath)
+        : undefined;
+    const incomingChangeEntityGetter = (
+      entityPath: string | undefined,
+    ): Entity | undefined =>
+      entityPath
+        ? this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
+            (e) => e.path === entityPath,
+          )
+        : undefined;
+    const conflictEditorState = new EntityChangeConflictEditorState(
+      this.editorStore,
+      this.editorStore.conflictResolutionState,
+      conflict.entityPath,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
+      SPECIAL_REVISION_ALIAS.LOCAL,
+      SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
+      baseEntityGetter(conflict.entityPath),
+      currentChangeEntityGetter(conflict.entityPath),
+      incomingChangeEntityGetter(conflict.entityPath),
+      baseEntityGetter,
+      currentChangeEntityGetter,
+      incomingChangeEntityGetter,
+    );
+    conflictEditorState.setReadOnly(true);
+    this.editorStore.openEntityChangeConflict(conflictEditorState);
+  }
+
   *refreshLocalChanges(): GeneratorFn<void> {
     const startTime = Date.now();
     this.refreshLocalChangesDetectorState.inProgress();
@@ -385,69 +487,6 @@ export class LocalChangesState {
       this.refreshWorkspaceSyncStatusState.complete();
     }
   }
-
-  openPotentialWorkspacePullConflict(conflict: EntityChangeConflict): void {
-    const baseEntityGetter = (
-      entityPath: string | undefined,
-    ): Entity | undefined =>
-      entityPath
-        ? this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState.entities.find(
-            (e) => e.path === entityPath,
-          )
-        : undefined;
-    const currentChangeEntityGetter = (
-      entityPath: string | undefined,
-    ): Entity | undefined =>
-      entityPath
-        ? this.editorStore.graphManagerState.graph.allOwnElements
-            .map((element) =>
-              this.editorStore.graphManagerState.graphManager.elementToEntity(
-                element,
-              ),
-            )
-            .find((e) => e.path === entityPath)
-        : undefined;
-    const incomingChangeEntityGetter = (
-      entityPath: string | undefined,
-    ): Entity | undefined =>
-      entityPath
-        ? this.editorStore.changeDetectionState.workspaceRemoteLatestRevisionState.entities.find(
-            (e) => e.path === entityPath,
-          )
-        : undefined;
-    const conflictEditorState = new EntityChangeConflictEditorState(
-      this.editorStore,
-      this.editorStore.conflictResolutionState,
-      conflict.entityPath,
-      SPECIAL_REVISION_ALIAS.WORKSPACE_BASE,
-      SPECIAL_REVISION_ALIAS.LOCAL,
-      SPECIAL_REVISION_ALIAS.WORKSPACE_HEAD,
-      baseEntityGetter(conflict.entityPath),
-      currentChangeEntityGetter(conflict.entityPath),
-      incomingChangeEntityGetter(conflict.entityPath),
-      baseEntityGetter,
-      currentChangeEntityGetter,
-      incomingChangeEntityGetter,
-    );
-    conflictEditorState.setReadOnly(true);
-    this.editorStore.openEntityChangeConflict(conflictEditorState);
-  }
-
-  downloadLocalChanges = (): void => {
-    const fileName = `entityChanges_(${this.sdlcState.currentProject?.name}_${
-      this.sdlcState.activeWorkspace.workspaceId
-    })_${formatDate(new Date(Date.now()), DATE_TIME_FORMAT)}.json`;
-    const content = JSON.stringify(
-      {
-        message: '', // TODO?
-        entityChanges: this.editorStore.graphState.computeLocalEntityChanges(),
-        revisionId: this.sdlcState.activeRevision.id,
-      },
-      undefined,
-      TAB_SIZE,
-    );
-    downloadFileUsingDataURI(fileName, content, ContentType.APPLICATION_JSON);
-  };
 
   *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
@@ -681,30 +720,6 @@ export class LocalChangesState {
       }
     } finally {
       this.pushChangesState.complete();
-    }
-  }
-
-  alertUnsavedChanges(onProceed: () => void): void {
-    if (this.hasUnpushedChanges) {
-      this.editorStore.applicationStore.setActionAlertInfo({
-        message:
-          'Unsaved changes to your query will be lost if you continue. Do you still want to proceed?',
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Proceed',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => onProceed(),
-          },
-          {
-            label: 'Abort',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    } else {
-      onProceed();
     }
   }
 }

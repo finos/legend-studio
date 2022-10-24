@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, computed, flowResult, makeAutoObservable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import { CHANGE_DETECTION_EVENT } from './ChangeDetectionEvent.js';
 import { GRAPH_EDITOR_MODE, AUX_PANEL_MODE } from './EditorConfig.js';
 import {
@@ -116,8 +123,9 @@ export interface GraphBuilderResult {
 }
 
 export class EditorGraphState {
-  editorStore: EditorStore;
-  graphGenerationState: GraphGenerationState;
+  readonly editorStore: EditorStore;
+  readonly graphGenerationState: GraphGenerationState;
+
   isInitializingGraph = false;
   isRunningGlobalCompile = false;
   isRunningGlobalGenerate = false;
@@ -126,12 +134,24 @@ export class EditorGraphState {
   isUpdatingApplication = false; // including graph update and async operations such as change detection
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      graphGenerationState: false,
-      getPackageableElementType: false,
+    makeObservable<EditorGraphState, 'updateGraphAndApplication'>(this, {
+      isInitializingGraph: observable,
+      isRunningGlobalCompile: observable,
+      isRunningGlobalGenerate: observable,
+      isApplicationLeavingTextMode: observable,
+      isUpdatingGraph: observable,
+      isUpdatingApplication: observable,
       hasCompilationError: computed,
+      isApplicationUpdateOperationIsRunning: computed,
       clearCompilationError: action,
+      buildGraph: flow,
+      loadEntityChangesToGraph: flow,
+      globalCompileInFormMode: flow,
+      globalCompileInTextMode: flow,
+      leaveTextMode: flow,
+      checkLambdaParsingError: flow,
+      updateGraphAndApplication: flow,
+      updateGenerationGraphAndApplication: flow,
     });
 
     this.editorStore = editorStore;
@@ -145,13 +165,6 @@ export class EditorGraphState {
         .filter(filterByType(ElementEditorState))
         .some((editorState) => editorState.hasCompilationError)
     );
-  }
-
-  clearCompilationError(): void {
-    this.editorStore.grammarTextEditorState.setError(undefined);
-    this.editorStore.openedEditorStates
-      .filter(filterByType(ElementEditorState))
-      .forEach((editorState) => editorState.clearCompilationError());
   }
 
   get isApplicationUpdateOperationIsRunning(): boolean {
@@ -196,6 +209,57 @@ export class EditorGraphState {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Get entitiy changes to prepare for syncing
+   */
+  computeLocalEntityChanges(): EntityChange[] {
+    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
+      ? this.editorStore.changeDetectionState
+          .conflictResolutionHeadRevisionState.entityHashesIndex
+      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
+          .entityHashesIndex;
+    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
+    const entityChanges: EntityChange[] = [];
+    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
+      (element) => {
+        const elementPath = element.path;
+        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
+          const entity =
+            this.editorStore.graphManagerState.graphManager.elementToEntity(
+              element,
+              {
+                pruneSourceInformation: true,
+              },
+            );
+          entityChanges.push({
+            classifierPath: entity.classifierPath,
+            entityPath: element.path,
+            content: entity.content,
+            type:
+              baseHashesIndex.get(elementPath) !== undefined
+                ? EntityChangeType.MODIFY
+                : EntityChangeType.CREATE,
+          });
+        }
+        originalPaths.delete(elementPath);
+      },
+    );
+    Array.from(originalPaths).forEach((path) => {
+      entityChanges.push({
+        type: EntityChangeType.DELETE,
+        entityPath: path,
+      });
+    });
+    return entityChanges;
+  }
+
+  clearCompilationError(): void {
+    this.editorStore.grammarTextEditorState.setError(undefined);
+    this.editorStore.openedEditorStates
+      .filter(filterByType(ElementEditorState))
+      .forEach((editorState) => editorState.clearCompilationError());
   }
 
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
@@ -378,50 +442,6 @@ export class EditorGraphState {
     // Making an async call
     nativeImporterState.loadCurrentProjectEntities();
     this.editorStore.openState(this.editorStore.modelImporterState);
-  }
-
-  /**
-   * Get entitiy changes to prepare for syncing
-   */
-  computeLocalEntityChanges(): EntityChange[] {
-    const baseHashesIndex = this.editorStore.isInConflictResolutionMode
-      ? this.editorStore.changeDetectionState
-          .conflictResolutionHeadRevisionState.entityHashesIndex
-      : this.editorStore.changeDetectionState.workspaceLocalLatestRevisionState
-          .entityHashesIndex;
-    const originalPaths = new Set(Array.from(baseHashesIndex.keys()));
-    const entityChanges: EntityChange[] = [];
-    this.editorStore.graphManagerState.graph.allOwnElements.forEach(
-      (element) => {
-        const elementPath = element.path;
-        if (baseHashesIndex.get(elementPath) !== element.hashCode) {
-          const entity =
-            this.editorStore.graphManagerState.graphManager.elementToEntity(
-              element,
-              {
-                pruneSourceInformation: true,
-              },
-            );
-          entityChanges.push({
-            classifierPath: entity.classifierPath,
-            entityPath: element.path,
-            content: entity.content,
-            type:
-              baseHashesIndex.get(elementPath) !== undefined
-                ? EntityChangeType.MODIFY
-                : EntityChangeType.CREATE,
-          });
-        }
-        originalPaths.delete(elementPath);
-      },
-    );
-    Array.from(originalPaths).forEach((path) => {
-      entityChanges.push({
-        type: EntityChangeType.DELETE,
-        entityPath: path,
-      });
-    });
-    return entityChanges;
   }
 
   /**
@@ -1023,28 +1043,27 @@ export class EditorGraphState {
     }
   }
 
-  *getIndexedDependencyEntities(): GeneratorFn<Map<string, Entity[]>> {
+  async getIndexedDependencyEntities(): Promise<Map<string, Entity[]>> {
     const dependencyEntitiesIndex = new Map<string, Entity[]>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
     try {
       if (currentConfiguration.projectDependencies.length) {
-        const dependencyCoordinates = (yield flowResult(
-          this.buildProjectDependencyCoordinates(
+        const dependencyCoordinates =
+          await this.buildProjectDependencyCoordinates(
             currentConfiguration.projectDependencies,
-          ),
-        )) as ProjectDependencyCoordinates[];
+          );
         // NOTE: if A@v1 is transitive dependencies of 2 or more
         // direct dependencies, metadata server will take care of deduplication
         const dependencyEntitiesJson =
-          (yield this.editorStore.depotServerClient.collectDependencyEntities(
+          await this.editorStore.depotServerClient.collectDependencyEntities(
             dependencyCoordinates.map((e) =>
               ProjectDependencyCoordinates.serialization.toJson(e),
             ),
             true,
             true,
-          )) as PlainObject<ProjectVersionEntities>[];
+          );
         const dependencyEntities = dependencyEntitiesJson.map((e) =>
           ProjectVersionEntities.serialization.fromJson(e),
         );
@@ -1080,11 +1099,11 @@ export class EditorGraphState {
           let dependencyInfo: ProjectDependencyInfo | undefined;
           try {
             const dependencyTree =
-              (yield this.editorStore.depotServerClient.analyzeDependencyTree(
+              await this.editorStore.depotServerClient.analyzeDependencyTree(
                 dependencyCoordinates.map((e) =>
                   ProjectDependencyCoordinates.serialization.toJson(e),
                 ),
-              )) as PlainObject<ProjectVersionEntities>;
+              );
             dependencyInfo =
               ProjectDependencyInfo.serialization.fromJson(dependencyTree);
           } catch (error) {
@@ -1130,10 +1149,10 @@ export class EditorGraphState {
     return dependencyEntitiesIndex;
   }
 
-  *buildProjectDependencyCoordinates(
+  async buildProjectDependencyCoordinates(
     projectDependencies: ProjectDependency[],
-  ): GeneratorFn<ProjectDependencyCoordinates[]> {
-    return (yield Promise.all(
+  ): Promise<ProjectDependencyCoordinates[]> {
+    return Promise.all(
       projectDependencies.map((dep) => {
         // legacyDependencies
         // We do this for backward compatible reasons as we expect current dependency ids to be in the format of {groupId}:{artifactId}.
@@ -1178,7 +1197,7 @@ export class EditorGraphState {
           );
         }
       }),
-    )) as ProjectDependencyCoordinates[];
+    );
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------

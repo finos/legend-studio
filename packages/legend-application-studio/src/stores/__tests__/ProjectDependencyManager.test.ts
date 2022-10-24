@@ -22,7 +22,6 @@ import {
   guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
-import { flowResult } from 'mobx';
 import type { Entity } from '@finos/legend-storage';
 import { ProjectConfiguration } from '@finos/legend-server-sdlc';
 import {
@@ -247,9 +246,8 @@ const testDependencyElements = async (
   }
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);
-  const dependencyEntitiesIndex = await flowResult(
-    editorStore.graphState.getIndexedDependencyEntities(),
-  );
+  const dependencyEntitiesIndex =
+    await editorStore.graphState.getIndexedDependencyEntities();
   editorStore.graphManagerState.graph.dependencyManager = dependencyManager;
   await editorStore.graphManagerState.graphManager.buildDependencies(
     editorStore.graphManagerState.coreModel,

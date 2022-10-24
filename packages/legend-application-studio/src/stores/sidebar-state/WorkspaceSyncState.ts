@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  makeAutoObservable,
-  flowResult,
-  action,
-  flow,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { flowResult, action, flow, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import type { Entity } from '@finos/legend-storage';
@@ -373,23 +366,25 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
 }
 
 export class WorkspaceSyncState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
   pullChangesState = ActionState.create();
   incomingRevisions: Revision[] = [];
   workspaceSyncConflictResolutionState: WorkspaceSyncConflictResolutionState;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
-      fetchIncomingRevisions: flow,
-      setIncomingRevisions: action,
-      pullChanges: flow,
+    makeObservable(this, {
+      pullChangesState: observable,
+      incomingRevisions: observable,
+      workspaceSyncConflictResolutionState: observable,
       resetConflictState: action,
-      forcePull: flow,
+      setIncomingRevisions: action,
+      fetchIncomingRevisions: flow,
+      pullChanges: flow,
       loadChanges: flow,
+      forcePull: flow,
+      applyResolutionChanges: flow,
     });
 
     this.editorStore = editorStore;

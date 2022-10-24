@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { observable, action, makeAutoObservable } from 'mobx';
+import { observable, action, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import type { TreeData } from '@finos/legend-art';
 import {
@@ -57,8 +57,9 @@ import {
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export class FileGenerationState {
-  editorStore: EditorStore;
-  fileGeneration: FileGenerationSpecification;
+  readonly editorStore: EditorStore;
+  readonly fileGeneration: FileGenerationSpecification;
+
   isGenerating = false;
   root: GenerationDirectory;
   directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
@@ -69,11 +70,12 @@ export class FileGenerationState {
     editorStore: EditorStore,
     fileGeneration: FileGenerationSpecification,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      fileGeneration: false,
+    makeObservable(this, {
+      isGenerating: observable,
+      root: observable,
       directoryTreeData: observable.ref,
       selectedNode: observable.ref,
+      filesIndex: observable,
       resetFileGeneration: action,
       setIsGeneration: action,
       setDirectoryTreeData: action,
@@ -84,6 +86,7 @@ export class FileGenerationState {
       addScopeElement: action,
       deleteScopeElement: action,
       updateFileGenerationParameters: action,
+      generate: flow,
     });
 
     this.editorStore = editorStore;
@@ -91,19 +94,27 @@ export class FileGenerationState {
     this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
   }
 
+  getOrCreateDirectory(directoryName: string): GenerationDirectory {
+    return GenerationDirectory.getOrCreateDirectory(
+      this.root,
+      directoryName,
+      true,
+    );
+  }
+
   resetFileGeneration(): void {
     this.fileGeneration.configurationProperties = [];
   }
+
   setIsGeneration(isGenerating: boolean): void {
     this.isGenerating = isGenerating;
   }
+
   setDirectoryTreeData(
     directoryTreeData: TreeData<GenerationTreeNodeData>,
   ): void {
     this.directoryTreeData = directoryTreeData;
   }
-  getOrCreateDirectory = (directoryName: string): GenerationDirectory =>
-    GenerationDirectory.getOrCreateDirectory(this.root, directoryName, true);
 
   *generate(): GeneratorFn<void> {
     this.isGenerating = true;

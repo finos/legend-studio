@@ -19,8 +19,8 @@ import {
   observable,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
+  flow,
 } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -595,8 +595,16 @@ export class NewElementState {
   newElementDriver?: NewElementDriver<PackageableElement> | undefined;
 
   constructor(editorStore: EditorStore) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      showModal: observable,
+      showType: observable,
+      type: observable,
+      _package: observable,
+      name: observable,
+      newElementDriver: observable,
+      elementAndPackageName: computed,
+      selectedPackage: computed,
+      isValid: computed,
       setShowModal: action,
       setName: action,
       setShowType: action,
@@ -606,6 +614,7 @@ export class NewElementState {
       openModal: action,
       closeModal: action,
       createElement: action,
+      save: flow,
     });
 
     this.editorStore = editorStore;
@@ -619,11 +628,13 @@ export class NewElementState {
       this.name,
     );
   }
+
   get selectedPackage(): Package {
     return this._package
       ? this._package
       : this.editorStore.explorerTreeState.getSelectedNodePackage();
   }
+
   get isValid(): boolean {
     return this.newElementDriver?.isValid ?? true;
   }
@@ -631,17 +642,21 @@ export class NewElementState {
   setShowModal(val: boolean): void {
     this.showModal = val;
   }
+
   setName(name: string): void {
     this.name = name;
   }
+
   setShowType(showType: boolean): void {
     this.showType = showType;
   }
+
   setNewElementDriver(
     newElementDriver?: NewElementDriver<PackageableElement>,
   ): void {
     this.newElementDriver = newElementDriver;
   }
+
   setPackage(_package?: Package): void {
     this._package = _package;
   }

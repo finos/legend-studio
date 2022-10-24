@@ -16,7 +16,7 @@
 
 import type { EditorStore } from '../../EditorStore.js';
 import { FileGenerationState } from '../../editor-state/FileGenerationState.js';
-import { action, flow, flowResult, makeAutoObservable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { ElementEditorState } from './ElementEditorState.js';
 import { type GeneratorFn, AssertionError, uuid } from '@finos/legend-shared';
 import {
@@ -31,17 +31,19 @@ import { handlePostCreateAction } from '../../editor/NewElementState.js';
 
 export class ElementFileGenerationState {
   readonly uuid = uuid();
-  editorStore: EditorStore;
-  fileGenerationType: string;
+  readonly editorStore: EditorStore;
+  readonly fileGenerationType: string;
+
   fileGenerationState: FileGenerationState;
   showNewFileGenerationModal = false;
 
   constructor(editorStore: EditorStore, fileGenerationType: string) {
-    makeAutoObservable(this, {
-      uuid: false,
-      editorStore: false,
+    makeObservable(this, {
+      fileGenerationState: observable,
+      showNewFileGenerationModal: observable,
       setShowNewFileGenerationModal: action,
       promoteToFileGeneration: flow,
+      regenerate: flow,
     });
 
     this.editorStore = editorStore;

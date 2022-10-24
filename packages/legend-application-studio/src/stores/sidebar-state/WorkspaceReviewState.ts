@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, makeAutoObservable, flowResult } from 'mobx';
+import { action, makeObservable, flowResult, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { CHANGE_DETECTION_EVENT } from '../ChangeDetectionEvent.js';
@@ -41,8 +41,9 @@ import {
 import { ActionAlertActionType } from '@finos/legend-application';
 
 export class WorkspaceReviewState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+
   reviewTitle = '';
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   workspaceReview?: Review | undefined;
@@ -57,20 +58,35 @@ export class WorkspaceReviewState {
   isRecreatingWorkspaceAfterCommittingReview = false;
 
   constructor(editorStore: EditorStore, sdlcState: EditorSDLCState) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      sdlcState: false,
+    makeObservable(this, {
+      reviewTitle: observable,
+      committedReviewsBetweenWorkspaceBaseAndProjectLatest: observable,
+      workspaceReview: observable,
+      isUpdatingWorkspace: observable,
+      isRefreshingWorkspaceUpdater: observable,
+      isFetchingCurrentWorkspaceReview: observable,
+      isRefreshingWorkspaceChangesDetector: observable,
+      isClosingWorkspaceReview: observable,
+      isCreatingWorkspaceReview: observable,
+      isCommittingWorkspaceReview: observable,
+      isRecreatingWorkspaceAfterCommittingReview: observable,
       setReviewTitle: action,
       openReviewChange: action,
+      refreshWorkspaceChanges: flow,
+      fetchCurrentWorkspaceReview: flow,
+      recreateWorkspaceAfterCommittingReview: flow,
+      closeWorkspaceReview: flow,
+      createWorkspaceReview: flow,
+      commitWorkspaceReview: flow,
     });
 
     this.editorStore = editorStore;
     this.sdlcState = sdlcState;
   }
 
-  setReviewTitle = (val: string): void => {
+  setReviewTitle(val: string): void {
     this.reviewTitle = val;
-  };
+  }
 
   openReviewChange(diff: EntityDiff): void {
     const fromEntityGetter = (

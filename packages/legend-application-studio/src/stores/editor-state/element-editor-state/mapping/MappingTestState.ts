@@ -39,14 +39,7 @@ import {
   ContentType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../EditorStore.js';
-import {
-  observable,
-  flow,
-  action,
-  makeObservable,
-  makeAutoObservable,
-  flowResult,
-} from 'mobx';
+import { observable, flow, action, makeObservable, flowResult } from 'mobx';
 import { createMockDataForMappingElementSource } from '../../../shared/MockDataUtils.js';
 import {
   type MappingTest,
@@ -393,9 +386,10 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
 
 export class MappingTestState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   result: TEST_RESULT = TEST_RESULT.NONE;
   test: MappingTest;
   runTime = 0;
@@ -416,13 +410,25 @@ export class MappingTestState {
     test: MappingTest,
     mappingEditorState: MappingEditorState,
   ) {
-    makeAutoObservable(this, {
-      uuid: false,
-      editorStore: false,
-      mappingEditorState: false,
-      executionPlanState: false,
+    makeObservable(this, {
+      selectedTab: observable,
+      result: observable,
+      test: observable,
+      runTime: observable,
+      isSkipped: observable,
+      errorRunningTest: observable,
+      testExecutionResultText: observable,
+      isRunningTest: observable,
+      isExecutingTest: observable,
+      queryState: observable,
+      inputDataState: observable,
+      assertionState: observable,
+      isGeneratingPlan: observable,
+      executionPlanState: observable,
+      testRunPromise: observable,
       setIsRunningTest: action,
       setSelectedTab: action,
+      setTestRunPromise: action,
       resetTestRunStatus: action,
       setResult: action,
       toggleSkipTest: action,
@@ -432,6 +438,9 @@ export class MappingTestState {
       setInputDataStateBasedOnSource: action,
       updateAssertion: action,
       generatePlan: flow,
+      regenerateExpectedResult: flow,
+      runTest: flow,
+      onTestStateOpen: flow,
     });
 
     this.editorStore = editorStore;
@@ -454,9 +463,9 @@ export class MappingTestState {
     this.selectedTab = val;
   }
 
-  setTestRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+  setTestRunPromise(promise: Promise<ExecutionResult> | undefined): void {
     this.testRunPromise = promise;
-  };
+  }
 
   buildQueryState(): MappingTestQueryState {
     const queryState = new MappingTestQueryState(
@@ -518,21 +527,26 @@ export class MappingTestState {
     this.runTime = 0;
     this.setResult(TEST_RESULT.NONE);
   }
+
   setResult(result: TEST_RESULT): void {
     this.result = result;
   }
+
   toggleSkipTest(): void {
     this.isSkipped = !this.isSkipped;
   }
-  setQueryState = (queryState: MappingTestQueryState): void => {
+
+  setQueryState(queryState: MappingTestQueryState): void {
     this.queryState = queryState;
-  };
-  setInputDataState = (inputDataState: MappingTestInputDataState): void => {
+  }
+
+  setInputDataState(inputDataState: MappingTestInputDataState): void {
     this.inputDataState = inputDataState;
-  };
-  setAssertionState = (assertionState: MappingTestAssertionState): void => {
+  }
+
+  setAssertionState(assertionState: MappingTestAssertionState): void {
     this.assertionState = assertionState;
-  };
+  }
 
   setInputDataStateBasedOnSource(
     source: MappingElementSource | undefined,

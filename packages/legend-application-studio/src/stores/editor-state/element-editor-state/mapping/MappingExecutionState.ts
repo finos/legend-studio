@@ -27,7 +27,6 @@ import {
   flow,
   computed,
   makeObservable,
-  makeAutoObservable,
   flowResult,
 } from 'mobx';
 import {
@@ -481,9 +480,10 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 
 export class MappingExecutionState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   name: string;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
   showServicePathModal = false;
@@ -499,17 +499,27 @@ export class MappingExecutionState {
     mappingEditorState: MappingEditorState,
     name: string,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
-      mappingEditorState: false,
+    makeObservable(this, {
+      name: observable,
+      queryState: observable,
+      inputDataState: observable,
+      showServicePathModal: observable,
       executionPlanState: observable,
+      isExecuting: observable,
+      isGeneratingPlan: observable,
+      planGenerationDebugText: observable,
       setQueryState: action,
       setInputDataState: action,
       setExecutionResultText: action,
-      setPlanGenerationDebugText: action,
       setShowServicePathModal: action,
+      setPlanGenerationDebugText: action,
       setInputDataStateBasedOnSource: action,
       reset: action,
+      promoteToTest: flow,
+      promoteToService: flow,
+      executeMapping: flow,
+      generatePlan: flow,
+      buildQueryWithClassMapping: flow,
     });
 
     this.editorStore = editorStore;
@@ -530,18 +540,22 @@ export class MappingExecutionState {
     );
   }
 
-  setQueryState = (val: MappingExecutionQueryState): void => {
+  setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
-  };
-  setInputDataState = (val: MappingExecutionInputDataState): void => {
+  }
+
+  setInputDataState(val: MappingExecutionInputDataState): void {
     this.inputDataState = val;
-  };
-  setExecutionResultText = (val: string | undefined): void => {
+  }
+
+  setExecutionResultText(val: string | undefined): void {
     this.executionResultText = val;
-  };
-  setShowServicePathModal = (val: boolean): void => {
+  }
+
+  setShowServicePathModal(val: boolean): void {
     this.showServicePathModal = val;
-  };
+  }
+
   setPlanGenerationDebugText(val: string | undefined): void {
     this.planGenerationDebugText = val;
   }

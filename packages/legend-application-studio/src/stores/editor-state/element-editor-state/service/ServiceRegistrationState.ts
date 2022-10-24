@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, computed, makeAutoObservable } from 'mobx';
+import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { MINIMUM_SERVICE_OWNERS } from '../../../editor-state/element-editor-state/service/ServiceEditorState.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import {
@@ -89,7 +89,8 @@ export class ServiceRegistrationState {
   readonly editorStore: EditorStore;
   readonly service: Service;
   readonly registrationOptions: ServiceRegistrationEnvironmentConfig[] = [];
-  registrationState = ActionState.create();
+  readonly registrationState = ActionState.create();
+
   serviceEnv?: string | undefined;
   serviceExecutionMode?: ServiceExecutionMode | undefined;
   projectVersion?: Version | string | undefined;
@@ -103,16 +104,26 @@ export class ServiceRegistrationState {
     registrationOptions: ServiceRegistrationEnvironmentConfig[],
     enableModesWithVersioning: boolean,
   ) {
-    makeAutoObservable(this, {
-      editorStore: false,
+    makeObservable(this, {
+      serviceEnv: observable,
+      serviceExecutionMode: observable,
+      projectVersion: observable,
+      activatePostRegistration: observable,
+      enableModesWithVersioning: observable,
+      TEMPORARY__useStoreModel: observable,
       executionModes: computed,
-      updateVersion: action,
+      options: computed,
+      versionOptions: computed,
+      setServiceEnv: action,
+      setServiceExecutionMode: action,
       setProjectVersion: action,
+      setActivatePostRegistration: action,
       setUseStoreModelWithFullInteractive: action,
       initialize: action,
+      updateVersion: action,
       updateType: action,
       updateEnv: action,
-      setActivatePostRegistration: action,
+      registerService: flow,
     });
 
     this.editorStore = editorStore;
@@ -121,48 +132,6 @@ export class ServiceRegistrationState {
     this.enableModesWithVersioning = enableModesWithVersioning;
     this.initialize();
     this.registrationState.setMessageFormatter(prettyCONSTName);
-  }
-
-  setServiceEnv(val: string | undefined): void {
-    this.serviceEnv = val;
-  }
-  setServiceExecutionMode(val: ServiceExecutionMode | undefined): void {
-    this.serviceExecutionMode = val;
-  }
-  setProjectVersion(val: Version | string | undefined): void {
-    this.projectVersion = val;
-  }
-  setActivatePostRegistration(val: boolean): void {
-    this.activatePostRegistration = val;
-  }
-  setUseStoreModelWithFullInteractive(val: boolean): void {
-    this.TEMPORARY__useStoreModel = val;
-  }
-
-  initialize(): void {
-    this.serviceEnv = getNullableFirstElement(this.registrationOptions)?.env;
-    this.serviceExecutionMode = this.executionModes[0];
-    this.updateVersion();
-  }
-
-  updateVersion(): void {
-    if (this.serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE) {
-      this.projectVersion = LATEST_PROJECT_REVISION;
-    } else if (this.serviceExecutionMode === ServiceExecutionMode.PROD) {
-      this.projectVersion = this.editorStore.sdlcState.projectVersions[0];
-    } else {
-      this.projectVersion = undefined;
-    }
-  }
-
-  updateType(val: ServiceExecutionMode | undefined): void {
-    this.setServiceExecutionMode(val);
-    this.updateVersion();
-  }
-
-  updateEnv(val: string | undefined): void {
-    this.setServiceEnv(val);
-    this.setServiceExecutionMode(this.executionModes[0]);
   }
 
   get options(): ServiceRegistrationEnvironmentConfig[] {
@@ -212,6 +181,52 @@ export class ServiceRegistrationState {
       return options;
     }
     return undefined;
+  }
+
+  setServiceEnv(val: string | undefined): void {
+    this.serviceEnv = val;
+  }
+
+  setServiceExecutionMode(val: ServiceExecutionMode | undefined): void {
+    this.serviceExecutionMode = val;
+  }
+
+  setProjectVersion(val: Version | string | undefined): void {
+    this.projectVersion = val;
+  }
+
+  setActivatePostRegistration(val: boolean): void {
+    this.activatePostRegistration = val;
+  }
+
+  setUseStoreModelWithFullInteractive(val: boolean): void {
+    this.TEMPORARY__useStoreModel = val;
+  }
+
+  initialize(): void {
+    this.serviceEnv = getNullableFirstElement(this.registrationOptions)?.env;
+    this.serviceExecutionMode = this.executionModes[0];
+    this.updateVersion();
+  }
+
+  updateVersion(): void {
+    if (this.serviceExecutionMode === ServiceExecutionMode.SEMI_INTERACTIVE) {
+      this.projectVersion = LATEST_PROJECT_REVISION;
+    } else if (this.serviceExecutionMode === ServiceExecutionMode.PROD) {
+      this.projectVersion = this.editorStore.sdlcState.projectVersions[0];
+    } else {
+      this.projectVersion = undefined;
+    }
+  }
+
+  updateType(val: ServiceExecutionMode | undefined): void {
+    this.setServiceExecutionMode(val);
+    this.updateVersion();
+  }
+
+  updateEnv(val: string | undefined): void {
+    this.setServiceEnv(val);
+    this.setServiceExecutionMode(this.executionModes[0]);
   }
 
   *registerService(): GeneratorFn<void> {
