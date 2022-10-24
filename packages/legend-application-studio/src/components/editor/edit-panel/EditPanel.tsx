@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type WheelEvent,
-} from 'react';
+import { forwardRef, useEffect, useState, type WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
@@ -29,12 +22,9 @@ import {
   ContextMenu,
   MenuContent,
   MenuContentItem,
-  TimesIcon,
   PlusIcon,
   ArrowsAltHIcon,
   useResizeDetector,
-  useDragPreviewLayer,
-  PanelEntryDropZonePlaceholder,
   PanelEntryDropZonePlaceholderContent,
 } from '@finos/legend-art';
 import { MappingEditor } from './mapping-editor/MappingEditor.js';
@@ -80,7 +70,7 @@ import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../store
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { PackageableDataEditorState } from '../../../stores/editor-state/element-editor-state/data/DataEditorState.js';
 import { DataElementEditor } from './data-editor/DataElementEditor.js';
-import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import { GeneralTabEditor } from './GeneralTabEditor.js';
 
 export const ViewerEditPanelSplashScreen: React.FC = () => {
   const commandListWidth = 300;
@@ -221,163 +211,6 @@ const EditPanelHeaderTabContextMenu = observer(
     );
   }),
 );
-
-const EDITOR_DND_TYPE = 'EDITOR_STATE';
-
-export const EditorMainTabEditor = observer(
-  (props: {
-    editorState: EditorState;
-    currentEditorState: EditorState;
-    renderHeaderLabel: (editorState: EditorState) => React.ReactNode;
-  }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const { editorState, currentEditorState, renderHeaderLabel } = props;
-
-    const editorStore = useEditorStore();
-
-    // actions
-    const closeTab =
-      (newEditorState: EditorState): React.MouseEventHandler =>
-      (event): void => {
-        editorStore.closeState(newEditorState);
-      };
-
-    const closeTabOnMiddleClick =
-      (newEditorState: EditorState): React.MouseEventHandler =>
-      (event): void => {
-        if (event.nativeEvent.button === 1) {
-          editorStore.closeState(newEditorState);
-        }
-      };
-    const openTab =
-      (newEditorState: EditorState): (() => void) =>
-      (): void => {
-        editorStore.openState(newEditorState);
-      };
-
-    // Drag and Drop
-    const handleHover = useCallback(
-      (item: EditorPanelDragSource, monitor: DropTargetMonitor): void => {
-        const draggingTab = item.panel;
-        const hoveredTab = editorState;
-
-        const dragIndex = editorStore.openedEditorStates.findIndex(
-          (e) => e === draggingTab,
-        );
-        const hoverIndex = editorStore.openedEditorStates.findIndex(
-          (e) => e === hoveredTab,
-        );
-
-        const hoverBoundingReact = ref.current?.getBoundingClientRect();
-        const distanceThreshold =
-          ((hoverBoundingReact?.left ?? 0) - (hoverBoundingReact?.right ?? 0)) /
-          2;
-        const dragDistance =
-          (monitor.getClientOffset()?.x ?? 0) -
-          (hoverBoundingReact?.right ?? 0);
-        if (dragIndex < hoverIndex && dragDistance < distanceThreshold) {
-          return;
-        }
-        if (dragIndex > hoverIndex && dragDistance > distanceThreshold) {
-          return;
-        }
-
-        editorStore.swapTabs(draggingTab, hoveredTab);
-      },
-      [editorStore, editorState],
-    );
-
-    const [{ isBeingDraggedEditorPanel }, dropConnector] = useDrop<
-      EditorPanelDragSource,
-      void,
-      { isBeingDraggedEditorPanel: EditorState | undefined }
-    >(
-      () => ({
-        accept: [EDITOR_DND_TYPE],
-        hover: (item, monitor) => handleHover(item, monitor),
-        collect: (
-          monitor,
-        ): {
-          isBeingDraggedEditorPanel: EditorState | undefined;
-        } => ({
-          isBeingDraggedEditorPanel:
-            monitor.getItem<EditorPanelDragSource | null>()?.panel,
-        }),
-      }),
-      [handleHover],
-    );
-    const isBeingDragged = editorState === isBeingDraggedEditorPanel;
-
-    const [, dragConnector, dragPreviewConnector] =
-      useDrag<EditorPanelDragSource>(
-        () => ({
-          type: EDITOR_DND_TYPE,
-          item: () => ({
-            panel: editorState,
-          }),
-        }),
-        [editorState],
-      );
-    dragConnector(dropConnector(ref));
-    useDragPreviewLayer(dragPreviewConnector);
-
-    return (
-      <div
-        ref={ref}
-        key={editorState.uuid}
-        className={clsx('edit-panel__header__tab', {
-          'edit-panel__header__tab--active': editorState === currentEditorState,
-        })}
-        onMouseUp={closeTabOnMiddleClick(editorState)}
-      >
-        <PanelEntryDropZonePlaceholder
-          showPlaceholder={isBeingDragged}
-          placeholderContent={
-            <PanelEntryDropZonePlaceholderContent
-              label={editorState.headerName}
-              className="dnd__entry-dropzone__placeholder__content--borderless"
-            />
-          }
-          className="edit-panel__header__dnd__placeholder"
-        >
-          <ContextMenu
-            content={
-              <EditPanelHeaderTabContextMenu editorState={editorState} />
-            }
-            className="edit-panel__header__tab__content"
-          >
-            <button
-              className="edit-panel__header__tab__label"
-              tabIndex={-1}
-              onClick={openTab(editorState)}
-              title={
-                editorState instanceof ElementEditorState
-                  ? editorState.element.path
-                  : editorState instanceof EntityDiffViewState
-                  ? editorState.headerTooltip
-                  : editorState.headerName
-              }
-            >
-              {renderHeaderLabel(editorState)}
-            </button>
-            <button
-              className="edit-panel__header__tab__close-btn"
-              onClick={closeTab(editorState)}
-              tabIndex={-1}
-              title={'Close'}
-            >
-              <TimesIcon />
-            </button>
-          </ContextMenu>
-        </PanelEntryDropZonePlaceholder>
-      </div>
-    );
-  },
-);
-
-type EditorPanelDragSource = {
-  panel: EditorState;
-};
 
 export const EditPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -537,6 +370,26 @@ export const EditPanel = observer(() => {
     event.currentTarget.scrollBy(event.deltaY, 0);
   }
 
+  const openTabTest =
+    (newEditorState: EditorState): (() => void) =>
+    (): void => {
+      editorStore.openState(newEditorState);
+    };
+
+  const closeTabTest =
+    (newEditorState: EditorState): React.MouseEventHandler =>
+    (event): void => {
+      editorStore.closeState(newEditorState);
+    };
+
+  const closeTabOnMiddleClickTest =
+    (newEditorState: EditorState): React.MouseEventHandler =>
+    (event): void => {
+      if (event.nativeEvent.button === 1) {
+        editorStore.closeState(newEditorState);
+      }
+    };
+
   if (!currentEditorState) {
     return editorStore.isInViewerMode ? (
       <ViewerEditPanelSplashScreen />
@@ -556,12 +409,29 @@ export const EditPanel = observer(() => {
           onWheel={horizontalScroll}
         >
           {openedEditorStates.map((editorState) => (
-            <EditorMainTabEditor
-              key={editorState.uuid}
-              editorState={editorState}
-              renderHeaderLabel={renderHeaderLabel}
-              currentEditorState={currentEditorState}
-            />
+            <>
+              <GeneralTabEditor
+                key={editorState.uuid}
+                generalEditorState={editorState}
+                nameOfTabType="edit-panel"
+                placeholderContent={
+                  <PanelEntryDropZonePlaceholderContent
+                    label={editorState.headerName}
+                    className="dnd__entry-dropzone__placeholder__content--borderless"
+                  />
+                }
+                generalOpenedTabStates={editorStore.openedEditorStates}
+                DND_TYPE_NAME="EDITOR_STATE"
+                EditPanelHeaderTabContextMenu={
+                  <EditPanelHeaderTabContextMenu editorState={editorState} />
+                }
+                closeTab={closeTabTest}
+                openTab={openTabTest}
+                closeTabOnMiddleClick={closeTabOnMiddleClickTest}
+                renderHeaderLabel={renderHeaderLabel}
+                currentEditorState={currentEditorState}
+              />
+            </>
           ))}
         </div>
 

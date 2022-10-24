@@ -39,6 +39,10 @@ export class MappingElementState {
     this.editorStore = editorStore;
     this.mappingElement = mappingElement;
   }
+
+  get headerName(): string {
+    return this.mappingElement._PARENT.name;
+  }
 }
 
 export abstract class SetImplementationState extends MappingElementState {

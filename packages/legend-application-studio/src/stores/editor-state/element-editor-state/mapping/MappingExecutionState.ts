@@ -539,6 +539,10 @@ export class MappingExecutionState {
     );
   }
 
+  get headerName(): string {
+    return this.name;
+  }
+
   setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
   }

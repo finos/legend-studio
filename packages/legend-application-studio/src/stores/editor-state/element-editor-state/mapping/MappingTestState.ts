@@ -454,6 +454,10 @@ export class MappingTestState {
     );
   }
 
+  get headerName(): string {
+    return this.test.name;
+  }
+
   setIsRunningTest(val: boolean): void {
     this.isRunningTest = val;
   }

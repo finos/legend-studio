@@ -249,6 +249,7 @@ export class EditorStore implements CommandRegistrar {
       setMode: action,
 
       setCurrentEditorState: action,
+      swapTabs: action,
       setActiveAuxPanelMode: action,
       refreshCurrentEntityDiffEditorState: action,
       cleanUp: action,
