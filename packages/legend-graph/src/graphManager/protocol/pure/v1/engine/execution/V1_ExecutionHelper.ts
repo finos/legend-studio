@@ -20,22 +20,22 @@ import {
 } from '@finos/legend-shared';
 import {
   type ExecutionResult,
-  TdsRow,
+  TDSRow,
   INTERNAL__UnknownExecutionResult,
   ClassExecutionResult,
   JsonExecutionResult,
-  TdsExecutionResult,
-  TdsBuilder,
+  TDSExecutionResult,
+  TDSBuilder,
   TDSColumn,
   RawExecutionResult,
 } from '../../../../../../graphManager/action/execution/ExecutionResult.js';
 import {
   type V1_ExecutionResult,
-  type V1_TdsBuilder,
+  type V1_TDSBuilder,
   V1_ClassExecutionResult,
   V1_JsonExecutionResult,
   V1_INTERNAL__UnknownExecutionResult,
-  V1_TdsExecutionResult,
+  V1_TDSExecutionResult,
   V1_RawExecutionResult,
 } from './V1_ExecutionResult.js';
 
@@ -50,8 +50,8 @@ const buildJSONExecutionResult = (
   return metamodel;
 };
 
-const buildTDSBuilder = (protocol: V1_TdsBuilder): TdsBuilder => {
-  const builder = new TdsBuilder();
+const buildTDSBuilder = (protocol: V1_TDSBuilder): TDSBuilder => {
+  const builder = new TDSBuilder();
   builder.columns = protocol.columns.map((_column) => {
     const column = new TDSColumn();
     column.name = guaranteeNonNullable(
@@ -67,9 +67,9 @@ const buildTDSBuilder = (protocol: V1_TdsBuilder): TdsBuilder => {
 };
 
 const buildTDSExecutionResult = (
-  protocol: V1_TdsExecutionResult,
-): TdsExecutionResult => {
-  const metamodel = new TdsExecutionResult();
+  protocol: V1_TDSExecutionResult,
+): TDSExecutionResult => {
+  const metamodel = new TDSExecutionResult();
   metamodel.builder = buildTDSBuilder(
     guaranteeNonNullable(
       protocol.builder,
@@ -87,7 +87,7 @@ const buildTDSExecutionResult = (
       rows: { values: (string | number)[] }[];
     }
   ).rows.map((_row) => {
-    const row = new TdsRow();
+    const row = new TDSRow();
     row.values = _row.values;
     return row;
   });
@@ -111,7 +111,7 @@ export const V1_buildExecutionResult = (
 ): ExecutionResult => {
   if (protocol instanceof V1_ClassExecutionResult) {
     return buildClassExecutionResult(protocol);
-  } else if (protocol instanceof V1_TdsExecutionResult) {
+  } else if (protocol instanceof V1_TDSExecutionResult) {
     return buildTDSExecutionResult(protocol);
   } else if (protocol instanceof V1_JsonExecutionResult) {
     return buildJSONExecutionResult(protocol);

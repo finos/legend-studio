@@ -16,7 +16,7 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTdsOlapOperator.js';
+import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 

@@ -18,7 +18,7 @@ import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
 import { hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTdsOlapOperator.js';
+import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator.js';
 
 export class QueryBuilderTDSOlapRankOperator_DenseRank extends QueryBuilderTDSOlapOperator {
   getLabel(): string {

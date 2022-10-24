@@ -96,7 +96,7 @@ import {
   type QueryBuilderOlapColumnDragSource,
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByState.js';
-import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
   forwardRef<

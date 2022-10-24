@@ -42,7 +42,7 @@ export class QueryBuilderPostFilterOperator_IsEmpty
     return 'is empty';
   }
 
-  override getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
+  override getTDSColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return TDS_COLUMN_GETTER.IS_NULL;
   }
 
@@ -118,7 +118,7 @@ export class QueryBuilderPostFilterOperator_IsNotEmpty extends QueryBuilderPostF
     return `is not empty`;
   }
 
-  override getTdsColumnGetter(): TDS_COLUMN_GETTER | undefined {
+  override getTDSColumnGetter(): TDS_COLUMN_GETTER | undefined {
     return TDS_COLUMN_GETTER.IS_NOT_NULL;
   }
 

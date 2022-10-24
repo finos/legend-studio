@@ -49,7 +49,7 @@ import {
   RawLambda,
   stub_RawLambda,
 } from '@finos/legend-graph';
-import { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,
