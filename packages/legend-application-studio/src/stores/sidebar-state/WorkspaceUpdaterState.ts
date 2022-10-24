@@ -45,10 +45,10 @@ import {
 import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 
 export class WorkspaceUpdaterState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
-  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
+  committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   isUpdatingWorkspace = false;
   isRefreshingWorkspaceUpdater = false;
 

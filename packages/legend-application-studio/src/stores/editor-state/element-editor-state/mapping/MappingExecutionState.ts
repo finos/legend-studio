@@ -480,9 +480,10 @@ export class MappingExecutionRelationalInputDataState extends MappingExecutionIn
 
 export class MappingExecutionState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   name: string;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   queryState: MappingExecutionQueryState;
   inputDataState: MappingExecutionInputDataState;
   showServicePathModal = false;
@@ -539,18 +540,22 @@ export class MappingExecutionState {
     );
   }
 
-  setQueryState = (val: MappingExecutionQueryState): void => {
+  setQueryState(val: MappingExecutionQueryState): void {
     this.queryState = val;
-  };
-  setInputDataState = (val: MappingExecutionInputDataState): void => {
+  }
+
+  setInputDataState(val: MappingExecutionInputDataState): void {
     this.inputDataState = val;
-  };
-  setExecutionResultText = (val: string | undefined): void => {
+  }
+
+  setExecutionResultText(val: string | undefined): void {
     this.executionResultText = val;
-  };
-  setShowServicePathModal = (val: boolean): void => {
+  }
+
+  setShowServicePathModal(val: boolean): void {
     this.showServicePathModal = val;
-  };
+  }
+
   setPlanGenerationDebugText(val: string | undefined): void {
     this.planGenerationDebugText = val;
   }

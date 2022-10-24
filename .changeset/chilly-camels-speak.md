@@ -1,6 +1,4 @@
 ---
-'@finos/legend-application-studio': minor
-'@finos/legend-art': minor
+'@finos/legend-application-studio': patch
+'@finos/legend-art': patch
 ---
-
-Replaced usages of `makeAutoObservable` by `makeObservable`

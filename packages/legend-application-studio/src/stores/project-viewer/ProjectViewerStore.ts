@@ -280,9 +280,11 @@ export class ProjectViewerStore {
     this.editorStore.graphManagerState.dependenciesBuildState.setMessage(
       `Fetching dependencies...`,
     );
-    const dependencyEntitiesIndex = (yield flowResult(
-      this.editorStore.graphState.getIndexedDependencyEntities(),
-    )) as Map<string, Entity[]>;
+    const dependencyEntitiesIndex =
+      (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
+        string,
+        Entity[]
+      >;
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_DEPENDENCIES_FETCHED);
 
     return {

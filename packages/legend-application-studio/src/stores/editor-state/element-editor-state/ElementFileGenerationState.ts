@@ -31,18 +31,19 @@ import { handlePostCreateAction } from '../../editor/NewElementState.js';
 
 export class ElementFileGenerationState {
   readonly uuid = uuid();
-  editorStore: EditorStore;
-  fileGenerationType: string;
+  readonly editorStore: EditorStore;
+  readonly fileGenerationType: string;
+
   fileGenerationState: FileGenerationState;
   showNewFileGenerationModal = false;
 
   constructor(editorStore: EditorStore, fileGenerationType: string) {
     makeObservable(this, {
-      fileGenerationType: observable,
       fileGenerationState: observable,
       showNewFileGenerationModal: observable,
       setShowNewFileGenerationModal: action,
       promoteToFileGeneration: flow,
+      regenerate: flow,
     });
 
     this.editorStore = editorStore;

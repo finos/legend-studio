@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 export class PanelDisplayState {
-  _tempSize: number;
+  private readonly _initialDefaultSize: number;
+  private _tempSize: number;
+
   size: number;
-  _initialDefaultSize: number;
   defaultSize: number;
   snapSize?: number | undefined;
   maxSize?: number | undefined;
@@ -35,13 +36,15 @@ export class PanelDisplayState {
     this._initialDefaultSize = size.default;
     this.snapSize = size.snap;
 
-    makeObservable(this, {
+    makeObservable<PanelDisplayState, '_tempSize'>(this, {
       _tempSize: observable,
       size: observable,
-      _initialDefaultSize: observable,
       defaultSize: observable,
       snapSize: observable,
       maxSize: observable,
+      isOpen: computed,
+      isMaximizable: computed,
+      isMaximized: computed,
       // open/close
       setSize: action,
       open: action,

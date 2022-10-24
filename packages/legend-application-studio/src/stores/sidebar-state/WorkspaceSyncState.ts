@@ -366,8 +366,8 @@ class WorkspaceSyncConflictResolutionState extends AbstractConflictResolutionSta
 }
 
 export class WorkspaceSyncState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
 
   pullChangesState = ActionState.create();
   incomingRevisions: Revision[] = [];
@@ -378,10 +378,10 @@ export class WorkspaceSyncState {
       pullChangesState: observable,
       incomingRevisions: observable,
       workspaceSyncConflictResolutionState: observable,
-      fetchIncomingRevisions: flow,
-      setIncomingRevisions: action,
-      pullChanges: flow,
       resetConflictState: action,
+      setIncomingRevisions: action,
+      fetchIncomingRevisions: flow,
+      pullChanges: flow,
       loadChanges: flow,
       forcePull: flow,
       applyResolutionChanges: flow,

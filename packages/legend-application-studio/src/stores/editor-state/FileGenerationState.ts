@@ -57,8 +57,9 @@ import {
 } from '../shared/modifier/DSL_Generation_GraphModifierHelper.js';
 
 export class FileGenerationState {
-  editorStore: EditorStore;
-  fileGeneration: FileGenerationSpecification;
+  readonly editorStore: EditorStore;
+  readonly fileGeneration: FileGenerationSpecification;
+
   isGenerating = false;
   root: GenerationDirectory;
   directoryTreeData?: TreeData<GenerationTreeNodeData> | undefined;
@@ -78,7 +79,6 @@ export class FileGenerationState {
       resetFileGeneration: action,
       setIsGeneration: action,
       setDirectoryTreeData: action,
-      getOrCreateDirectory: action,
       processGenerationResult: action,
       reprocessNodeTree: action,
       setSelectedNode: action,
@@ -94,19 +94,27 @@ export class FileGenerationState {
     this.root = new GenerationDirectory(GENERATION_FILE_ROOT_NAME);
   }
 
+  getOrCreateDirectory(directoryName: string): GenerationDirectory {
+    return GenerationDirectory.getOrCreateDirectory(
+      this.root,
+      directoryName,
+      true,
+    );
+  }
+
   resetFileGeneration(): void {
     this.fileGeneration.configurationProperties = [];
   }
+
   setIsGeneration(isGenerating: boolean): void {
     this.isGenerating = isGenerating;
   }
+
   setDirectoryTreeData(
     directoryTreeData: TreeData<GenerationTreeNodeData>,
   ): void {
     this.directoryTreeData = directoryTreeData;
   }
-  getOrCreateDirectory = (directoryName: string): GenerationDirectory =>
-    GenerationDirectory.getOrCreateDirectory(this.root, directoryName, true);
 
   *generate(): GeneratorFn<void> {
     this.isGenerating = true;

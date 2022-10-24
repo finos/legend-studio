@@ -41,8 +41,9 @@ import {
 import { ActionAlertActionType } from '@finos/legend-application';
 
 export class WorkspaceReviewState {
-  editorStore: EditorStore;
-  sdlcState: EditorSDLCState;
+  readonly editorStore: EditorStore;
+  readonly sdlcState: EditorSDLCState;
+
   reviewTitle = '';
   committedReviewsBetweenWorkspaceBaseAndProjectLatest: Review[] = [];
   workspaceReview?: Review | undefined;
@@ -83,9 +84,9 @@ export class WorkspaceReviewState {
     this.sdlcState = sdlcState;
   }
 
-  setReviewTitle = (val: string): void => {
+  setReviewTitle(val: string): void {
     this.reviewTitle = val;
-  };
+  }
 
   openReviewChange(diff: EntityDiff): void {
     const fromEntityGetter = (

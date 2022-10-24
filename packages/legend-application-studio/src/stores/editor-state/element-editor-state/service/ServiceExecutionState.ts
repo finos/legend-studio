@@ -300,9 +300,10 @@ export class ServicePureExecutionQueryState extends LambdaEditorState {
         // or any of its dependencies
         ...Array.from(
           (
-            (yield flowResult(
-              this.editorStore.graphState.getIndexedDependencyEntities(),
-            )) as Map<string, Entity[]>
+            (yield this.editorStore.graphState.getIndexedDependencyEntities()) as Map<
+              string,
+              Entity[]
+            >
           ).keys(),
         ).map((coordinatesInText) => {
           const { groupId, artifactId } = parseGACoordinates(coordinatesInText);

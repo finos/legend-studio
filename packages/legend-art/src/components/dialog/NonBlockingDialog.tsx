@@ -25,26 +25,33 @@ import { action, makeObservable, observable } from 'mobx';
 import { clsx } from 'clsx';
 
 export class NonBlockingDialogState {
-  isOpen = false;
   private _suppressClickawayEventListener = false;
 
+  isOpen = false;
+
   constructor() {
-    makeObservable(this, {
-      isOpen: observable,
-      open: action,
-      close: action,
-      suppressClickawayEventListener: action,
-      handleClickaway: action,
-    });
+    makeObservable<NonBlockingDialogState, '_suppressClickawayEventListener'>(
+      this,
+      {
+        _suppressClickawayEventListener: observable,
+        isOpen: observable,
+        open: action,
+        close: action,
+        suppressClickawayEventListener: action,
+        handleClickaway: action,
+      },
+    );
   }
 
   open(): void {
     this.suppressClickawayEventListener();
     this.isOpen = true;
   }
+
   close(): void {
     this.isOpen = false;
   }
+
   suppressClickawayEventListener(): void {
     this._suppressClickawayEventListener = true;
   }

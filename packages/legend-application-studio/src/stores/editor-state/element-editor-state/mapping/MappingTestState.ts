@@ -386,9 +386,10 @@ export enum MAPPING_TEST_EDITOR_TAB_TYPE {
 
 export class MappingTestState {
   readonly uuid = uuid();
+  readonly editorStore: EditorStore;
+  readonly mappingEditorState: MappingEditorState;
+
   selectedTab = MAPPING_TEST_EDITOR_TAB_TYPE.SETUP;
-  editorStore: EditorStore;
-  mappingEditorState: MappingEditorState;
   result: TEST_RESULT = TEST_RESULT.NONE;
   test: MappingTest;
   runTime = 0;
@@ -462,9 +463,9 @@ export class MappingTestState {
     this.selectedTab = val;
   }
 
-  setTestRunPromise = (promise: Promise<ExecutionResult> | undefined): void => {
+  setTestRunPromise(promise: Promise<ExecutionResult> | undefined): void {
     this.testRunPromise = promise;
-  };
+  }
 
   buildQueryState(): MappingTestQueryState {
     const queryState = new MappingTestQueryState(
@@ -526,21 +527,26 @@ export class MappingTestState {
     this.runTime = 0;
     this.setResult(TEST_RESULT.NONE);
   }
+
   setResult(result: TEST_RESULT): void {
     this.result = result;
   }
+
   toggleSkipTest(): void {
     this.isSkipped = !this.isSkipped;
   }
-  setQueryState = (queryState: MappingTestQueryState): void => {
+
+  setQueryState(queryState: MappingTestQueryState): void {
     this.queryState = queryState;
-  };
-  setInputDataState = (inputDataState: MappingTestInputDataState): void => {
+  }
+
+  setInputDataState(inputDataState: MappingTestInputDataState): void {
     this.inputDataState = inputDataState;
-  };
-  setAssertionState = (assertionState: MappingTestAssertionState): void => {
+  }
+
+  setAssertionState(assertionState: MappingTestAssertionState): void {
     this.assertionState = assertionState;
-  };
+  }
 
   setInputDataStateBasedOnSource(
     source: MappingElementSource | undefined,

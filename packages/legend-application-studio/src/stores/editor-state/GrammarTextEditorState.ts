@@ -59,7 +59,8 @@ const getGrammarElementTypeLabelRegexString = (
     .replace(/\$/g, '\\$'); // replace special character $ by \\$
 
 export class GrammarTextEditorState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText = false;

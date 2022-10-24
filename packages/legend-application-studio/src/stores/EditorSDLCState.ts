@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import type { EditorStore } from './EditorStore.js';
 import {
   type PlainObject,
@@ -48,7 +55,8 @@ export const entityDiffSorter = (a: EntityDiff, b: EntityDiff): number =>
   );
 
 export class EditorSDLCState {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
   currentProject?: Project | undefined;
   currentWorkspace?: Workspace | undefined;
   remoteWorkspaceRevision?: Revision | undefined;
@@ -72,11 +80,15 @@ export class EditorSDLCState {
       isCheckingIfWorkspaceIsOutdated: observable,
       isFetchingProjectVersions: observable,
       isFetchingProject: observable,
+      activeProject: computed,
+      activeWorkspace: computed,
+      activeRevision: computed,
+      activeRemoteWorkspaceRevision: computed,
+      isWorkspaceOutOfSync: computed,
       setCurrentProject: action,
       setCurrentWorkspace: action,
       setCurrentRevision: action,
       setWorkspaceLatestRevision: action,
-      handleChangeDetectionRefreshIssue: action,
       fetchCurrentProject: flow,
       fetchCurrentWorkspace: flow,
       fetchProjectVersions: flow,
@@ -125,19 +137,39 @@ export class EditorSDLCState {
     return this.activeRemoteWorkspaceRevision.id !== this.activeRevision.id;
   }
 
-  setCurrentProject = (val: Project): void => {
+  setCurrentProject(val: Project): void {
     this.currentProject = val;
-  };
-  setCurrentWorkspace = (val: Workspace): void => {
-    this.currentWorkspace = val;
-  };
-  setCurrentRevision = (val: Revision): void => {
-    this.currentRevision = val;
-  };
+  }
 
-  setWorkspaceLatestRevision = (val: Revision): void => {
+  setCurrentWorkspace(val: Workspace): void {
+    this.currentWorkspace = val;
+  }
+
+  setCurrentRevision(val: Revision): void {
+    this.currentRevision = val;
+  }
+
+  setWorkspaceLatestRevision(val: Revision): void {
     this.remoteWorkspaceRevision = val;
-  };
+  }
+
+  handleChangeDetectionRefreshIssue(error: Error): void {
+    if (
+      !this.currentProject ||
+      !this.currentWorkspace ||
+      (error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.NOT_FOUND)
+    ) {
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: 'Current project or workspace no longer exists',
+        prompt: 'Please refresh the application',
+      });
+    } else {
+      this.editorStore.applicationStore.setBlockingAlert({
+        message: error.message,
+      });
+    }
+  }
 
   *fetchCurrentProject(
     projectId: string,
@@ -308,24 +340,6 @@ export class EditorSDLCState {
       this.editorStore.applicationStore.notifyError(error);
     } finally {
       this.isCheckingIfWorkspaceIsOutdated = false;
-    }
-  }
-
-  handleChangeDetectionRefreshIssue(error: Error): void {
-    if (
-      !this.currentProject ||
-      !this.currentWorkspace ||
-      (error instanceof NetworkClientError &&
-        error.response.status === HttpStatus.NOT_FOUND)
-    ) {
-      this.editorStore.applicationStore.setBlockingAlert({
-        message: 'Current project or workspace no longer exists',
-        prompt: 'Please refresh the application',
-      });
-    } else {
-      this.editorStore.applicationStore.setBlockingAlert({
-        message: error.message,
-      });
     }
   }
 

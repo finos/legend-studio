@@ -38,7 +38,8 @@ import { LEGEND_STUDIO_APP_EVENT } from '../LegendStudioAppEvent.js';
 import { TAB_SIZE } from '@finos/legend-application';
 
 export class WorkspaceReviewStore {
-  editorStore: EditorStore;
+  readonly editorStore: EditorStore;
+
   currentProjectId?: string | undefined;
   currentProject?: Project | undefined;
   currentReviewId?: string | undefined;
@@ -83,11 +84,18 @@ export class WorkspaceReviewStore {
   get projectId(): string {
     return guaranteeNonNullable(this.currentProjectId, 'Project ID must exist');
   }
+
   get reviewId(): string {
     return guaranteeNonNullable(this.currentReviewId, 'Review ID must exist');
   }
+
   get review(): Review {
     return guaranteeNonNullable(this.currentReview, 'Review must exist');
+  }
+
+  setProjectIdAndReviewId(projectId: string, reviewId: string): void {
+    this.currentProjectId = projectId;
+    this.currentReviewId = reviewId;
   }
 
   *initialize(): GeneratorFn<void> {
@@ -116,11 +124,6 @@ export class WorkspaceReviewStore {
       );
       this.editorStore.applicationStore.notifyError(error);
     }
-  }
-
-  setProjectIdAndReviewId(projectId: string, reviewId: string): void {
-    this.currentProjectId = projectId;
-    this.currentReviewId = reviewId;
   }
 
   *fetchReviewComparison(): GeneratorFn<void> {
