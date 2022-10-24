@@ -92,9 +92,9 @@ import { appendProjection } from './projection/QueryBuilderProjectionValueSpecif
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
 import { QueryBuilderOlapGroupByState } from './olapGroupBy/QueryBuilderOlapGroupByState.js';
-import type { QueryBuilderTDSOlapOperator } from './olapGroupBy/operators/QueryBuilderTdsOlapOperator.js';
+import type { QueryBuilderTDSOlapOperator } from './olapGroupBy/operators/QueryBuilderTDSOlapOperator_.js';
 import { getQueryBuilderCoreOlapGroupByOperators } from './olapGroupBy/QueryBuilderOlapGroupByOperatorLoader.js';
-import type { QueryBuilderTDSColumnState } from './QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState_.js';
 
 export class QueryBuilderTDSState
   extends QueryBuilderFetchStructureImplementationState

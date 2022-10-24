@@ -20,7 +20,7 @@ import {
   type ValueSpecification,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  TdsExecutionResult,
+  TDSExecutionResult,
   type RawLambda,
 } from '@finos/legend-graph';
 import { guaranteeType, isNonNullable, isString } from '@finos/legend-shared';
@@ -120,7 +120,7 @@ export const buildProjectionColumnTypeaheadQuery = (
 export const buildTypeaheadOptions = (result: ExecutionResult): string[] => {
   const tdsResult = guaranteeType(
     result,
-    TdsExecutionResult,
+    TDSExecutionResult,
     'Typeahead search is only supported for TDS result sets',
   );
   const options: string[] = [];

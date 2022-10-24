@@ -17,15 +17,15 @@
 import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+} from '../V1_ValueSpecification.js';
 import type { V1_Lambda } from './V1_Lambda.js';
 
-export class V1_TdsOlapRank extends V1_ValueSpecification {
+export class V1_TDSOlapRank extends V1_ValueSpecification {
   function!: V1_Lambda;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_TdsOlapRank(this);
+    return visitor.visit_TDSOlapRank(this);
   }
 }

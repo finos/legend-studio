@@ -33,7 +33,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderDerivationProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
 import { getTDSColumnState } from '../QueryBuilderTDSHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
@@ -108,7 +108,7 @@ export const buildPostFilterConditionState = (
   operator: QueryBuilderPostFilterOperator,
 ): PostFilterConditionState | undefined => {
   let postConditionState: PostFilterConditionState | undefined;
-  const tdsColumnGetter = operator.getTdsColumnGetter();
+  const tdsColumnGetter = operator.getTDSColumnGetter();
   if (
     tdsColumnGetter &&
     expression instanceof AbstractPropertyExpression &&

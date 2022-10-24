@@ -434,7 +434,7 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
-    'OlapGroupBy with tds groupBy -> post-filter -> olap groupBy',
+    'OlapGroupBy with TDS groupBy -> post-filter -> olap groupBy',
     postFilterCtx,
     TEST_DATA__GroupBy_postFilter_OlapGroupBy,
     undefined,

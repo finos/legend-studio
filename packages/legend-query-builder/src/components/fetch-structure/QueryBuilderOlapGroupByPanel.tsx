@@ -43,7 +43,7 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import type { QueryBuilderTDSOlapOperator } from '../../stores/fetch-structure/tds/olapGroupBy/operators/QueryBuilderTdsOlapOperator.js';
+import type { QueryBuilderTDSOlapOperator } from '../../stores/fetch-structure/tds/olapGroupBy/operators/QueryBuilderTDSOlapOperator_.js';
 import {
   type QueryBuilderOlapGroupByState,
   type QueryBuilderOlapDropTarget,
@@ -54,7 +54,7 @@ import {
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
 } from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByState.js';
 import { QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTdsColumnState.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState_.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
