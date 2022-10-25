@@ -16,10 +16,9 @@
 
 import { observer } from 'mobx-react-lite';
 import {
-  PanelSection,
-  PanelFormBooleanEditor,
+  PanelFormBooleanField,
   Panel,
-  PanelFormTextEditor,
+  PanelFormTextField,
   PanelForm,
 } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
@@ -44,33 +43,31 @@ export const DevTool = observer(() => {
   return (
     <Panel>
       <PanelForm>
-        <PanelSection>
-          <PanelFormBooleanEditor
-            name="Engine client request payload compression"
-            prompt="Specifies if request payload should be compressed"
-            value={engineConfig.useClientRequestPayloadCompression}
-            isReadOnly={false}
-            update={toggleEngineClientRequestPayloadCompression}
-          />
-          <PanelFormTextEditor
-            name="Engine client base URL"
-            value={engineConfig.baseUrl ?? ''}
-            isReadOnly={false}
-            update={(value: string | undefined): void =>
-              engineConfig.setBaseUrl(value === '' ? undefined : value)
-            }
-            errorMessage={
-              !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
-            }
-          />
-          <PanelFormBooleanEditor
-            name="Engine execution runner"
-            prompt="Use Base64 encoding for adhoc connection data URLs"
-            value={engineConfig.useClientRequestPayloadCompression}
-            isReadOnly={false}
-            update={toggleDataUrlEncoding}
-          />
-        </PanelSection>
+        <PanelFormBooleanField
+          name="Engine client request payload compression"
+          prompt="Specifies if request payload should be compressed"
+          value={engineConfig.useClientRequestPayloadCompression}
+          isReadOnly={false}
+          update={toggleEngineClientRequestPayloadCompression}
+        />
+        <PanelFormTextField
+          name="Engine client base URL"
+          value={engineConfig.baseUrl ?? ''}
+          isReadOnly={false}
+          update={(value: string | undefined): void =>
+            engineConfig.setBaseUrl(value === '' ? undefined : value)
+          }
+          errorMessage={
+            !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
+          }
+        />
+        <PanelFormBooleanField
+          name="Engine execution runner"
+          prompt="Use Base64 encoding for adhoc connection data URLs"
+          value={engineConfig.useClientRequestPayloadCompression}
+          isReadOnly={false}
+          update={toggleDataUrlEncoding}
+        />
       </PanelForm>
     </Panel>
   );
