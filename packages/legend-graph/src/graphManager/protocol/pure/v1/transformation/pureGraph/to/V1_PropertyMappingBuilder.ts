@@ -102,30 +102,46 @@ import { EnumerationMappingExplicitReference } from '../../../../../../../graph/
 import type { V1_FlatDataAssociationPropertyMapping } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataAssociationPropertyMapping.js';
 import { FlatDataAssociationPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/mapping/FlatDataAssociationPropertyMapping.js';
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/880
- *
- * @discrepancy graph-building
- */
 const TEMPORARY__getClassMappingByIdOrReturnUnresolved = (
   mapping: Mapping,
   id: string,
-): SetImplementation =>
-  returnUndefOnError(() => getClassMappingById(mapping, id)) ??
-  new TEMPORARY__UnresolvedSetImplementation(id, mapping);
+  context: V1_GraphBuilderContext,
+): SetImplementation => {
+  const classMapping = returnUndefOnError(() =>
+    getClassMappingById(mapping, id),
+  );
+
+  if (!classMapping) {
+    const message = `Can't find class mapping with ID '${id}' in mapping '${mapping.path}'`;
+    /**
+     * In strict-mode, graph builder will consider this as an error
+     * See https://github.com/finos/legend-studio/issues/880
+     * See https://github.com/finos/legend-studio/issues/941
+     *
+     * @discrepancy graph-building
+     */
+    if (context.options?.strict) {
+      throw new GraphBuilderError(message);
+    }
+    context.log.warn(LogEvent.create(message));
+    return new TEMPORARY__UnresolvedSetImplementation(id, mapping);
+  }
+
+  return classMapping;
+};
 
 const resolvePropertyMappingSource = (
   immediateParent: PropertyMappingsImplementation,
   value: V1_PropertyMapping,
   topParent: InstanceSetImplementation | undefined,
+  context: V1_GraphBuilderContext,
 ): SetImplementation | undefined => {
   if (immediateParent instanceof AssociationImplementation) {
     if (value.source) {
       return TEMPORARY__getClassMappingByIdOrReturnUnresolved(
         immediateParent._PARENT,
         value.source,
+        context,
       );
     }
     const property = getOwnProperty(
@@ -256,6 +272,7 @@ export class V1_PropertyMappingBuilder
           TEMPORARY__getClassMappingByIdOrReturnUnresolved(
             topParent._PARENT,
             protocol.target,
+            this.context,
           );
       } else {
         // NOTE: if no there is one non-root class mapping, auto-nominate that as the target set implementation
@@ -273,6 +290,7 @@ export class V1_PropertyMappingBuilder
       ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
           topParent._PARENT,
           protocol.source,
+          this.context,
         )
       : undefined;
     const purePropertyMapping = new PurePropertyMapping(
@@ -364,6 +382,7 @@ export class V1_PropertyMappingBuilder
         ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
             this.topParent._PARENT,
             protocol.target,
+            this.context,
           )
         : undefined;
     }
@@ -587,6 +606,7 @@ export class V1_PropertyMappingBuilder
           ? TEMPORARY__getClassMappingByIdOrReturnUnresolved(
               parentMapping,
               protocol.target,
+              this.context,
             )
           : undefined;
       } else {
@@ -603,6 +623,7 @@ export class V1_PropertyMappingBuilder
         this.immediateParent,
         protocol,
         this.topParent,
+        this.context,
       ),
     );
     const relationalPropertyMapping = new RelationalPropertyMapping(
@@ -728,6 +749,7 @@ export class V1_PropertyMappingBuilder
           TEMPORARY__getClassMappingByIdOrReturnUnresolved(
             parentMapping,
             protocol.target,
+            this.context,
           );
       } else {
         targetSetImplementation = getClassMappingsByClass(
@@ -741,6 +763,7 @@ export class V1_PropertyMappingBuilder
         this.immediateParent,
         protocol,
         this.topParent,
+        this.context,
       ),
     );
     const flatDataAssociationPropertyMapping =
@@ -838,6 +861,7 @@ export class V1_PropertyMappingBuilder
       TEMPORARY__getClassMappingByIdOrReturnUnresolved(
         topParent._PARENT,
         protocol.setImplementationId,
+        this.context,
       );
     return inline;
   }

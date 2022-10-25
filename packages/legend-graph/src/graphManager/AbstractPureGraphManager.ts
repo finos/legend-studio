@@ -87,6 +87,14 @@ export interface GraphBuilderOptions {
    * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex?: boolean;
+  /**
+   * If strict mode is enabled, certain validations, which, in normal mode, are often considered as warnings or non-problems,
+   * will be treated as error and will be thrown. This is to compensate for discrepancies in strictness between engine compilation
+   * and graph builder algorithm. Ideally, a lot of these errors will eventually be treated as errors by engine compilation.
+   *
+   * See https://github.com/finos/legend-studio/issues/941
+   */
+  strict?: boolean;
 }
 
 export interface ExecutionOptions {
