@@ -159,7 +159,6 @@ export class EditorGraphState {
       error: observable,
       mostRecentFormModeCompilationGraphHash: observable,
       mostRecentTextModeCompilationGraphHash: observable,
-      hasError: computed, // TODO-BEFORE-PR: remove this and compilation error in each element editor, make them refer to this
       problems: computed,
       areProblemsStale: computed,
       isApplicationUpdateOperationIsRunning: computed,
@@ -175,15 +174,6 @@ export class EditorGraphState {
 
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
-  }
-
-  get hasError(): boolean {
-    return (
-      Boolean(this.error) ||
-      this.editorStore.openedEditorStates
-        .filter(filterByType(ElementEditorState))
-        .some((editorState) => editorState.hasCompilationError)
-    );
   }
 
   get problems(): Problem[] {

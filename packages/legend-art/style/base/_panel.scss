@@ -46,10 +46,6 @@
     background: transparent;
     cursor: pointer;
     width: 2.8rem;
-
-    svg {
-      color: var(--color-light-grey-400);
-    }
   }
 
   &__header__action[disabled] svg {
