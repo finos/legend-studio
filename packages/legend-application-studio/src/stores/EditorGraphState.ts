@@ -142,6 +142,8 @@ export class EditorGraphState {
   private mostRecentTextModeCompilationGraphHash: string | undefined;
   private mostRecentFormModeCompilationGraphHash: string | undefined;
 
+  enableStrictMode = false;
+
   constructor(editorStore: EditorStore) {
     makeObservable<
       EditorGraphState,
@@ -159,10 +161,12 @@ export class EditorGraphState {
       error: observable,
       mostRecentFormModeCompilationGraphHash: observable,
       mostRecentTextModeCompilationGraphHash: observable,
+      enableStrictMode: observable,
       problems: computed,
       areProblemsStale: computed,
       isApplicationUpdateOperationIsRunning: computed,
       clearProblems: action,
+      setEnableStrictMode: action,
       buildGraph: flow,
       loadEntityChangesToGraph: flow,
       globalCompileInFormMode: flow,
@@ -174,6 +178,8 @@ export class EditorGraphState {
 
     this.editorStore = editorStore;
     this.graphGenerationState = new GraphGenerationState(this.editorStore);
+    this.enableStrictMode =
+      editorStore.applicationStore.config.options.enableGraphBuilderStrictMode;
   }
 
   get problems(): Problem[] {
@@ -289,6 +295,10 @@ export class EditorGraphState {
     this.warnings = [];
   }
 
+  setEnableStrictMode(val: boolean): void {
+    this.enableStrictMode = val;
+  }
+
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
     try {
       this.isInitializingGraph = true;
@@ -333,6 +343,7 @@ export class EditorGraphState {
             TEMPORARY__preserveSectionIndex:
               this.editorStore.applicationStore.config.options
                 .TEMPORARY__preserveSectionIndex,
+            strict: this.enableStrictMode,
           },
         )) as GraphBuilderReport;
 
@@ -932,6 +943,7 @@ export class EditorGraphState {
           TEMPORARY__preserveSectionIndex:
             this.editorStore.applicationStore.config.options
               .TEMPORARY__preserveSectionIndex,
+          strict: this.enableStrictMode,
         },
       );
 

@@ -39,6 +39,11 @@ export const DevTool = observer(() => {
     engineConfig.setUseBase64ForAdhocConnectionDataUrls(
       !engineConfig.useBase64ForAdhocConnectionDataUrls,
     );
+  // Graph Manager
+  const toggleStrictMode = (): void =>
+    editorStore.graphState.setEnableStrictMode(
+      !editorStore.graphState.enableStrictMode,
+    );
 
   return (
     <Panel>
@@ -67,6 +72,13 @@ export const DevTool = observer(() => {
           value={engineConfig.useClientRequestPayloadCompression}
           isReadOnly={false}
           update={toggleDataUrlEncoding}
+        />
+        <PanelFormBooleanField
+          name="Graph builder strict mode"
+          prompt="Use strict-mode when building the graph (some warnings will be treated as errors)"
+          value={editorStore.graphState.enableStrictMode}
+          isReadOnly={false}
+          update={toggleStrictMode}
         />
       </PanelForm>
     </Panel>
