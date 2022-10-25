@@ -15,12 +15,8 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-<<<<<<< HEAD
 import { action, makeObservable, observable } from 'mobx';
-=======
-import { action, makeAutoObservable, observable } from 'mobx';
->>>>>>> 71cd5708b (compilation warnings)
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
   type DSL_Mapping_PureGraphManagerPlugin_Extension,
@@ -46,8 +42,8 @@ import {
   ModelChainConnection,
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
-  type TextEditorPosition,
 } from '@finos/legend-graph';
+import type { TextEditorPosition } from '@finos/legend-art';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -71,23 +67,14 @@ export class GrammarTextEditorState {
   forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
-<<<<<<< HEAD
     makeObservable(this, {
       graphGrammarText: observable,
       currentElementLabelRegexString: observable,
       wrapText: observable,
-      error: observable,
-      setError: action,
-      setWarning: action,
-      setWarnings: action,
-=======
-    makeAutoObservable(this, {
-      editorStore: false,
       forcedCursorPosition: observable,
-      setForcedCursorPosition: action,
->>>>>>> 71cd5708b (compilation warnings)
       setGraphGrammarText: action,
       setWrapText: action,
+      setForcedCursorPosition: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
@@ -95,8 +82,8 @@ export class GrammarTextEditorState {
     this.editorStore = editorStore;
   }
 
-  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
-    this.forcedCursorPosition = position;
+  get currentTextGraphHash(): string {
+    return hashValue(this.graphGrammarText);
   }
 
   setGraphGrammarText(code: string): void {
@@ -105,6 +92,10 @@ export class GrammarTextEditorState {
 
   setWrapText(val: boolean): void {
     this.wrapText = val;
+  }
+
+  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
+    this.forcedCursorPosition = position;
   }
 
   resetCurrentElementLabelRegexString(): void {

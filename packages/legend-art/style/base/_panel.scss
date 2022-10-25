@@ -260,17 +260,9 @@
     .input-group__error-message {
       max-width: 45rem;
     }
-  }
 
-  &__icon {
-    margin-right: 0.5rem;
-
-    &--warning {
-      color: var(--color-yellow-200);
-    }
-
-    &--error {
-      color: var(--color-test--error);
+    & + & {
+      margin-top: 2rem;
     }
   }
 
@@ -279,7 +271,6 @@
 
     font-weight: 500;
     color: var(--color-light-grey-50);
-    margin-top: 1rem;
     margin-bottom: 0.5rem;
     line-height: 2rem;
     cursor: default;

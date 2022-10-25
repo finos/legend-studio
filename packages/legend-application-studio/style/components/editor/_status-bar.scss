@@ -43,20 +43,29 @@
     height: 100%;
   }
 
-  &__workspace__warning__btn {
+  &__problems {
     @include flexCenter;
 
     color: var(--color-light-grey-0);
     height: 100%;
     padding: 0 0.5rem;
-  }
 
-  &__workspace__warning__btn:hover {
-    background: var(--color-blue-50);
-  }
+    &:hover {
+      background: var(--color-blue-50);
+    }
 
-  &__workspace__warning__btn__label {
-    padding: 0 0.5rem;
+    &__icon {
+      @include flexCenter;
+
+      height: 100%;
+    }
+
+    &__counter {
+      @include flexCenter;
+
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+    }
   }
 
   &__workspace__status__btn {

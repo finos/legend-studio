@@ -20,6 +20,7 @@ import {
   PanelFormBooleanEditor,
   Panel,
   PanelFormTextEditor,
+  PanelForm,
 } from '@finos/legend-art';
 import { isValidUrl } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
@@ -42,33 +43,35 @@ export const DevTool = observer(() => {
 
   return (
     <Panel>
-      <PanelSection>
-        <PanelFormBooleanEditor
-          name="Engine client request payload compression"
-          prompt="Specifies if request payload should be compressed"
-          value={engineConfig.useClientRequestPayloadCompression}
-          isReadOnly={false}
-          update={toggleEngineClientRequestPayloadCompression}
-        />
-        <PanelFormTextEditor
-          name="Engine client base URL"
-          value={engineConfig.baseUrl ?? ''}
-          isReadOnly={false}
-          update={(value: string | undefined): void =>
-            engineConfig.setBaseUrl(value === '' ? undefined : value)
-          }
-          errorMessage={
-            !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
-          }
-        />
-        <PanelFormBooleanEditor
-          name="Engine execution runner"
-          prompt="Use Base64 encoding for adhoc connection data URLs"
-          value={engineConfig.useClientRequestPayloadCompression}
-          isReadOnly={false}
-          update={toggleDataUrlEncoding}
-        />
-      </PanelSection>
+      <PanelForm>
+        <PanelSection>
+          <PanelFormBooleanEditor
+            name="Engine client request payload compression"
+            prompt="Specifies if request payload should be compressed"
+            value={engineConfig.useClientRequestPayloadCompression}
+            isReadOnly={false}
+            update={toggleEngineClientRequestPayloadCompression}
+          />
+          <PanelFormTextEditor
+            name="Engine client base URL"
+            value={engineConfig.baseUrl ?? ''}
+            isReadOnly={false}
+            update={(value: string | undefined): void =>
+              engineConfig.setBaseUrl(value === '' ? undefined : value)
+            }
+            errorMessage={
+              !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
+            }
+          />
+          <PanelFormBooleanEditor
+            name="Engine execution runner"
+            prompt="Use Base64 encoding for adhoc connection data URLs"
+            value={engineConfig.useClientRequestPayloadCompression}
+            isReadOnly={false}
+            update={toggleDataUrlEncoding}
+          />
+        </PanelSection>
+      </PanelForm>
     </Panel>
   );
 });

@@ -16,7 +16,10 @@
 
 import { editor as monacoEditorAPI, MarkerSeverity } from 'monaco-editor';
 
-export const DUMMY_MARKER_OWNER = 'dummy_marker_owner';
+export type TextEditorPosition = {
+  lineNumber: number;
+  column: number;
+};
 
 /**
  * Normally `monaco-editor` worker disposes after 5 minutes staying idle, but we fasten
@@ -30,11 +33,13 @@ export const disposeEditor = (
   editor.getModel()?.dispose();
 };
 
-/**
- * This method eliminates CR '\r' character(s) in the provided text value.
- */
-export const normalizeLineEnding = (val: string): string =>
-  val.replace(/\r/g, '');
+export const disposeDiffEditor = (
+  editor: monacoEditorAPI.IStandaloneDiffEditor,
+): void => {
+  editor.dispose();
+  editor.getOriginalEditor().getModel()?.dispose();
+  editor.getModifiedEditor().getModel()?.dispose();
+};
 
 /**
  * Get the text value with LF line ending.
@@ -51,16 +56,8 @@ export const getEditorValue = (
 ): string =>
   editor.getModel()?.getValue(monacoEditorAPI.EndOfLinePreference.LF) ?? '';
 
-export const disposeDiffEditor = (
-  editor: monacoEditorAPI.IStandaloneDiffEditor,
-): void => {
-  editor.dispose();
-  editor.getOriginalEditor().getModel()?.dispose();
-  editor.getModifiedEditor().getModel()?.dispose();
-};
-
-export const baseTextEditorSettings: monacoEditorAPI.IStandaloneEditorConstructionOptions =
-  {
+export const getBaseTextEditorOptions =
+  (): monacoEditorAPI.IStandaloneEditorConstructionOptions => ({
     contextmenu: false,
     copyWithSyntaxHighlighting: false,
     // NOTE: These following font options are needed (and CSS font-size option `.monaco-editor * { font-size: ... }` as well)
@@ -77,77 +74,80 @@ export const baseTextEditorSettings: monacoEditorAPI.IStandaloneEditorConstructi
     fontLigatures: true,
     // Make sure hover or widget shown near boundary are not truncated by setting their position to `fixed`
     fixedOverflowWidgets: true,
-  };
+  });
 
-export const moveToPosition = (
+export const moveCursorToPosition = (
   editor: monacoEditorAPI.ICodeEditor,
-  line: number,
-  column: number,
+  position: TextEditorPosition,
 ): void => {
   if (!editor.hasTextFocus()) {
     editor.focus();
   } // focus the editor first so that it can shows the cursor
-  editor.revealPositionInCenter({ lineNumber: line, column: column }, 0);
-  editor.setPosition({ lineNumber: line, column: column });
+  editor.revealPositionInCenter(position, 0);
+  editor.setPosition(position);
 };
 
-export const revealError = (
-  editor: monacoEditorAPI.ICodeEditor,
-  startLine: number,
-  startColumn: number,
-): void => {
-  moveToPosition(editor, startLine, startColumn);
-};
+const INTERNAL__DUMMY_PROBLEM_MARKER_OWNER = 'dummy_problem_marker_owner';
 
-export const setErrorMarker = (
+export const setErrorMarkers = (
   editorModel: monacoEditorAPI.ITextModel,
-  message: string,
-  startLine: number,
-  startColumn: number,
-  endLine: number,
-  endColumn: number,
+  errors: {
+    message: string;
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  }[],
 ): void => {
-  monacoEditorAPI.setModelMarkers(editorModel, DUMMY_MARKER_OWNER, [
-    {
-      startLineNumber: startLine,
-      startColumn,
-      endColumn: endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
-      endLineNumber: endLine,
+  monacoEditorAPI.setModelMarkers(
+    editorModel,
+    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    errors.map((error) => ({
+      startLineNumber: error.startLineNumber,
+      startColumn: error.startColumn,
+      endLineNumber: error.endLineNumber,
+      endColumn: error.endColumn + 1, // add a 1 to endColumn as monaco editor range is not inclusive
       // NOTE: when the message is empty, no error tooltip is shown, we want to avoid this
-      message: message === '' ? '(no error message)' : message,
+      message: error.message === '' ? '(no error message)' : error.message,
       severity: MarkerSeverity.Error,
-    },
-  ]);
+    })),
+  );
 };
 
-export type TextEditorRange = {
-  startLineNumber: number;
-  startColumn: number;
-  endLineNumber: number;
-  endColumn: number;
-};
-
-export const setAllWarningMarkers = (
+export const setWarningMarkers = (
   editorModel: monacoEditorAPI.ITextModel,
-  allWarnings: { textEditorRange: TextEditorRange; message: string }[],
+  warnings: {
+    message: string;
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  }[],
 ): void => {
-  const markers = allWarnings.map((warning) => {
-    const marker = {
-      startLineNumber: warning.textEditorRange.startLineNumber,
-      startColumn: warning.textEditorRange.startColumn,
-      endColumn: warning.textEditorRange.endColumn,
-      endLineNumber: warning.textEditorRange.endLineNumber,
-      message: warning.message,
+  monacoEditorAPI.setModelMarkers(
+    editorModel,
+    INTERNAL__DUMMY_PROBLEM_MARKER_OWNER,
+    warnings.map((warning) => ({
+      startLineNumber: warning.startLineNumber,
+      startColumn: warning.startColumn,
+      endColumn: warning.endColumn,
+      endLineNumber: warning.endLineNumber,
+      message:
+        warning.message === '' ? '(no warning message)' : warning.message,
       severity: MarkerSeverity.Warning,
-    };
-    return marker;
-  });
-  monacoEditorAPI.setModelMarkers(editorModel, DUMMY_MARKER_OWNER, markers);
+    })),
+  );
 };
 
-export const clearProblemMarkers = (): void => {
-  monacoEditorAPI.removeAllMarkers(DUMMY_MARKER_OWNER);
+export const clearMarkers = (): void => {
+  monacoEditorAPI.removeAllMarkers(INTERNAL__DUMMY_PROBLEM_MARKER_OWNER);
 };
+
+/**
+ * This method eliminates CR '\r' character(s) in the provided text value.
+ */
+export const normalizeLineEnding = (val: string): string =>
+  val.replace(/\r/g, '');
 
 // We need to dynamically adjust the width of the line number gutter, otherwise as the document gets
 // larger, the left margin will start to shrink

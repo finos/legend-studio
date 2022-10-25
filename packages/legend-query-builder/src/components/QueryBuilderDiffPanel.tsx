@@ -22,7 +22,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import {
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   clsx,
   Dialog,
   disposeDiffEditor,
@@ -63,7 +63,7 @@ const TextDiffView = observer(
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           theme: applicationStore.TEMPORARY__isLightThemeEnabled
             ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
             : EDITOR_THEME.LEGEND,

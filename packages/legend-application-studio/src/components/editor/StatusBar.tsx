@@ -26,7 +26,8 @@ import {
   BrushIcon,
   CloudUploadIcon,
   AssistantIcon,
-  WarningOutlineIcon,
+  ErrorIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
@@ -96,7 +97,8 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
 
-  // Warnings
+  // Problems
+  const error = editorStore.graphState.error;
   const warnings = editorStore.graphState.warnings;
 
   // Conflict resolution
@@ -190,6 +192,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             }
           >
             {workspaceId}
+            {editorStore.localChangesState.hasUnpushedChanges ? '*' : ''}
           </button>
           {workspaceOutOfSync && (
             <button
@@ -216,16 +219,22 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             </button>
           )}
           <button
-            className="editor__status-bar__workspace__warning__btn"
+            className="editor__status-bar__problems"
             tabIndex={-1}
             onClick={showCompilationWarnings}
-            title={`Warnings: ${warnings ? warnings.length : 0}`}
+            title={`${error ? 'Error: 1, ' : ''}Warnings: ${warnings.length}`}
           >
-            <div className="editor__status-bar__workspace__icon">
-              <WarningOutlineIcon />
+            <div className="editor__status-bar__problems__icon">
+              <ErrorIcon />
             </div>
-            <div className="editor__status-bar__workspace__warning__btn__label">
-              {warnings ? warnings.length : 0}
+            <div className="editor__status-bar__problems__counter">
+              {error ? 1 : 0}
+            </div>
+            <div className="editor__status-bar__problems__icon">
+              <WarningIcon />
+            </div>
+            <div className="editor__status-bar__problems__counter">
+              {warnings.length}
             </div>
           </button>
         </div>

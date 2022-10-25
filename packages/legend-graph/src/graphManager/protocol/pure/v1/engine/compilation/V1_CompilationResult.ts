@@ -17,24 +17,10 @@
 import type { V1_PureModelContextData } from '../../model/context/V1_PureModelContextData.js';
 import type { V1_CompilationWarning } from './V1_CompilationWarning.js';
 
-export class V1_CompilationResult {
+export interface V1_CompilationResult {
   warnings: V1_CompilationWarning[] | undefined;
-
-  constructor(warnings: V1_CompilationWarning[] | undefined) {
-    this.warnings = warnings;
-  }
 }
 
-export class V1_TextCompilationResult extends V1_CompilationResult {
-  pureModelContext: V1_PureModelContextData;
-
-  constructor(
-    pureModelContext: V1_PureModelContextData,
-    warnings: V1_CompilationWarning[] | undefined,
-  ) {
-    super(warnings);
-
-    this.pureModelContext = pureModelContext;
-    this.warnings = warnings;
-  }
+export interface V1_TextCompilationResult extends V1_CompilationResult {
+  model: V1_PureModelContextData;
 }

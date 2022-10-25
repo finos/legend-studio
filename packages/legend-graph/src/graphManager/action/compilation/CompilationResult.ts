@@ -17,14 +17,10 @@
 import type { Entity } from '@finos/legend-storage';
 import type { CompilationWarning } from './CompilationWarning.js';
 
-export class TextCompilationResult {
+export interface CompilationResult {
+  warnings: CompilationWarning[] | undefined;
+}
+
+export interface TextCompilationResult extends CompilationResult {
   entities: Entity[];
-  engineWarnings: CompilationWarning[] | undefined;
-  constructor(
-    entities: Entity[],
-    engineWarnings: CompilationWarning[] | undefined,
-  ) {
-    this.entities = entities;
-    this.engineWarnings = engineWarnings;
-  }
 }

@@ -46,10 +46,9 @@ import {
   clsx,
   CustomSelectorInput,
   disposeEditor,
-  baseTextEditorSettings,
-  moveToPosition,
-  setErrorMarker,
-  revealError,
+  getBaseTextEditorOptions,
+  moveCursorToPosition,
+  setErrorMarkers,
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
@@ -57,6 +56,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   useResizeDetector,
+  clearMarkers,
 } from '@finos/legend-art';
 import { TextDiffView } from '../../../shared/DiffView.js';
 import { getPrettyLabelForRevision } from '../../../../stores/editor-state/entity-diff-editor-state/EntityDiffEditorState.js';
@@ -193,7 +193,7 @@ const MergeConflictEditor = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           language: EDITOR_LANGUAGE.PURE,
           minimap: { enabled: false },
@@ -376,16 +376,17 @@ const MergeConflictEditor = observer(
       if (editorModel) {
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         if (error?.sourceInformation) {
-          setErrorMarker(
-            editorModel,
-            error.message,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-            error.sourceInformation.endLine,
-            error.sourceInformation.endColumn,
-          );
+          setErrorMarkers(editorModel, [
+            {
+              message: error.message,
+              startLineNumber: error.sourceInformation.startLine,
+              startColumn: error.sourceInformation.startColumn,
+              endLineNumber: error.sourceInformation.endLine,
+              endColumn: error.sourceInformation.endColumn,
+            },
+          ]);
         } else {
-          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+          clearMarkers();
         }
       }
 
@@ -549,11 +550,10 @@ const MergeConflictEditor = observer(
     useEffect(() => {
       if (editor) {
         if (error?.sourceInformation) {
-          revealError(
-            editor,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-          );
+          moveCursorToPosition(editor, {
+            lineNumber: error.sourceInformation.startLine,
+            column: error.sourceInformation.startColumn,
+          });
         }
       }
     }, [editor, error, error?.sourceInformation]);
@@ -563,11 +563,11 @@ const MergeConflictEditor = observer(
         editor &&
         conflictEditorState.currentMergeEditorConflict !== undefined
       ) {
-        moveToPosition(
-          editor,
-          conflictEditorState.currentMergeEditorConflict.startHeader,
-          1,
-        );
+        moveCursorToPosition(editor, {
+          lineNumber:
+            conflictEditorState.currentMergeEditorConflict.startHeader,
+          column: 1,
+        });
       }
     }, [
       editor,

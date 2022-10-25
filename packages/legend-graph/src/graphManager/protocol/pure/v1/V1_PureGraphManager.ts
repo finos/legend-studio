@@ -252,8 +252,11 @@ import type {
 } from '../../../../graphManager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
 import type { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
-import { TextCompilationResult } from '../../../action/compilation/CompilationResult.js';
-import type { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
+import type {
+  CompilationResult,
+  TextCompilationResult,
+} from '../../../action/compilation/CompilationResult.js';
+import { CompilationWarning } from '../../../action/compilation/CompilationWarning.js';
 
 class V1_PureModelContextDataIndex {
   elements: V1_PackageableElement[] = [];
@@ -1501,8 +1504,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           keepSourceInformation?: boolean | undefined;
         }
       | undefined,
-  ): Promise<CompilationWarning[] | undefined> {
-    return this.engine.compilePureModelContextData(
+  ): Promise<CompilationResult> {
+    const compilationResult = await this.engine.compilePureModelContextData(
       this.getFullGraphModelData(graph, {
         keepSourceInformation: options?.keepSourceInformation,
       }),
@@ -1510,6 +1513,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
         onError: options?.onError,
       },
     );
+    return {
+      warnings: compilationResult.warnings?.map(
+        (warning) =>
+          new CompilationWarning(warning.message, warning.sourceInformation),
+      ),
+    };
   }
 
   async compileText(
@@ -1517,24 +1526,18 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
     options?: { onError?: () => void },
   ): Promise<TextCompilationResult> {
-    return new TextCompilationResult(
-      this.pureModelContextDataToEntities(
-        (
-          await this.engine.compileText(
-            graphGrammar,
-            this.getGraphCompileContext(graph),
-            options,
-          )
-        ).pureModelContext,
-      ),
-      (
-        await this.engine.compileText(
-          graphGrammar,
-          this.getGraphCompileContext(graph),
-          options,
-        )
-      ).warnings,
+    const compilationResult = await this.engine.compileText(
+      graphGrammar,
+      this.getGraphCompileContext(graph),
+      options,
     );
+    return {
+      entities: this.pureModelContextDataToEntities(compilationResult.model),
+      warnings: compilationResult.warnings?.map(
+        (warning) =>
+          new CompilationWarning(warning.message, warning.sourceInformation),
+      ),
+    };
   }
 
   getLambdaReturnType(

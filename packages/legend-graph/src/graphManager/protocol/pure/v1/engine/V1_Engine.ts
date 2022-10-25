@@ -92,8 +92,11 @@ import {
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import type { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
-import { V1_TextCompilationResult } from './compilation/V1_CompilationResult.js';
-import type { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
+import type {
+  V1_CompilationResult,
+  V1_TextCompilationResult,
+} from './compilation/V1_CompilationResult.js';
+import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -367,16 +370,20 @@ export class V1_Engine {
   async compilePureModelContextData(
     model: V1_PureModelContextData,
     options?: { onError?: (() => void) | undefined } | undefined,
-  ): Promise<V1_CompilationWarning[] | undefined> {
+  ): Promise<V1_CompilationResult> {
     try {
       const compilationResult = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
-      if (compilationResult.warnings) {
-        return compilationResult.warnings as V1_CompilationWarning[];
-      } else {
-        return undefined;
-      }
+      return {
+        warnings: (
+          compilationResult.warnings as
+            | PlainObject<V1_CompilationWarning>[]
+            | undefined
+        )?.map((warning) =>
+          V1_CompilationWarning.serialization.fromJson(warning),
+        ),
+      };
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();
@@ -414,18 +421,20 @@ export class V1_Engine {
       : mainGraph;
     try {
       await this.engineServerClient.compile(pureModelContextDataJson);
-      const entities = V1_deserializePureModelContextData(mainGraph);
+      const model = V1_deserializePureModelContextData(mainGraph);
       const compilationResult = await this.engineServerClient.compile(
         pureModelContextDataJson,
       );
-      if (compilationResult.warnings) {
-        return new V1_TextCompilationResult(
-          entities,
-          compilationResult.warnings as V1_CompilationWarning[],
-        );
-      } else {
-        return new V1_TextCompilationResult(entities, undefined);
-      }
+      return {
+        model,
+        warnings: (
+          compilationResult.warnings as
+            | PlainObject<V1_CompilationWarning>[]
+            | undefined
+        )?.map((warning) =>
+          V1_CompilationWarning.serialization.fromJson(warning),
+        ),
+      };
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();

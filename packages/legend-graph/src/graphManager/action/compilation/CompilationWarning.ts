@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
+import { uuid } from '@finos/legend-shared';
 import type { SourceInformation } from '../SourceInformation.js';
 
 export class CompilationWarning {
+  readonly uuid = uuid();
+
+  message: string;
   sourceInformation?: SourceInformation | undefined;
-  message: string | undefined;
 
   constructor(
     message: string,
     sourceInformation: SourceInformation | undefined,
   ) {
     this.message = message;
-
     this.sourceInformation = sourceInformation;
   }
 }

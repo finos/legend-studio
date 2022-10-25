@@ -35,7 +35,6 @@ import {
   hashObject,
   promisify,
   ActionState,
-  hashArray,
 } from '@finos/legend-shared';
 import type { EditorStore } from './EditorStore.js';
 import type { EditorGraphState } from './EditorGraphState.js';
@@ -338,23 +337,10 @@ export class ChangeDetectionState {
     this.observerContext = new ObserverContext(
       this.editorStore.pluginManager.getPureGraphManagerPlugins(),
     );
-
-    this.currentGraphHash = hashArray(
-      this.editorStore.graphManagerState.graph.allOwnElements,
-    );
   }
 
   setAggregatedProjectLatestChanges(diffs: EntityDiff[]): void {
     this.aggregatedProjectLatestChanges = diffs;
-  }
-
-  getCurrentGraphHash(): string {
-    return hashObject(
-      Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
-        // sort to ensure this array order does not affect change detection status
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([key, value]) => `${key}@${value}`),
-    );
   }
 
   setAggregatedWorkspaceRemoteChanges(diffs: EntityDiff[]): void {
@@ -369,6 +355,15 @@ export class ChangeDetectionState {
 
   setPotentialWorkspacePullConflicts(conflicts: EntityChangeConflict[]): void {
     this.potentialWorkspacePullConflicts = conflicts;
+  }
+
+  getCurrentGraphHash(): string {
+    return hashObject(
+      Array.from(this.snapshotLocalEntityHashesIndex(true).entries())
+        // sort to ensure this array order does not affect change detection status
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([key, value]) => `${key}@${value}`),
+    );
   }
 
   stop(force = false): void {
@@ -436,11 +431,15 @@ export class ChangeDetectionState {
       },
     );
 
+    // set initial current graph hash
+    this.currentGraphHash = this.getCurrentGraphHash();
+
     // dispose and remove the disposers for `keepAlive` computations for elements' hash code
     this.graphElementHashCodeKeepAliveComputationDisposers.forEach((disposer) =>
       disposer(),
     );
     this.graphElementHashCodeKeepAliveComputationDisposers = [];
+
     this.initState.pass();
   }
 

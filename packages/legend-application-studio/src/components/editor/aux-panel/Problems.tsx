@@ -18,79 +18,22 @@ import { observer } from 'mobx-react-lite';
 import {
   PanelList,
   PanelListItem,
-  WarningOutlineIcon,
   clsx,
-  PanelSection,
   Panel,
   ErrorIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { useEditorStore } from '../EditorStoreProvider.js';
-import type { CompilationWarning } from '@finos/legend-graph';
+import type { Problem } from '../../../stores/EditorGraphState.js';
+import { CompilationWarning, EngineError } from '@finos/legend-graph';
 
-export const ProblemItem = observer(
-  (props: {
-    problem: CompilationWarning;
-    textMode?: boolean;
-    isError?: boolean;
-    isStaleWarnings: boolean;
-  }) => {
-    const { problem, textMode, isError, isStaleWarnings } = props;
-
-    return (
-      <div className="auxiliary-panel__problem__label">
-        <PanelListItem>
-          {isError ? (
-            <ErrorIcon className="panel__content__form__icon panel__content__form__icon--error" />
-          ) : (
-            <WarningOutlineIcon className="panel__content__form__icon panel__content__form__icon--warning" />
-          )}
-          <div
-            className={clsx('auxiliary-panel__problem__label__message', {
-              'auxiliary-panel__problem__label__message--stale':
-                isStaleWarnings,
-            })}
-          >
-            {`${problem.message} `}
-          </div>
-          {problem.sourceInformation && (
-            <div
-              className={clsx('auxiliary-panel__problem__label__source', {
-                'auxiliary-panel__problem__label__source--stale':
-                  isStaleWarnings,
-              })}
-            >
-              {textMode &&
-                `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
-            </div>
-          )}
-        </PanelListItem>
-      </div>
-    );
-  },
-);
-
-export const Problems = observer(() => {
+const ProblemItem = observer((props: { problem: Problem }) => {
+  const { problem } = props;
   const editorStore = useEditorStore();
-  const warnings = editorStore.graphState.warnings;
-  const error = editorStore.graphState.error;
-
-  let isStaleWarnings: boolean;
-  if (editorStore.isInGrammarTextMode) {
-    isStaleWarnings = editorStore.graphState.isStaleTextWarnings;
-  } else {
-    if (
-      editorStore.graphState.mostRecentFormModeCompilationcurrentGraphHash ===
-      undefined
-    ) {
-      isStaleWarnings = true;
-    }
-    isStaleWarnings =
-      editorStore.graphState.mostRecentFormModeCompilationcurrentGraphHash !==
-      editorStore.graphState.currentGraphHash;
-  }
-
-  const setProblemCursorPosition = (problem: CompilationWarning): void => {
-    if (problem.sourceInformation) {
+  const isStale = editorStore.graphState.areProblemsStale;
+  const goToSource = (): void => {
+    // NOTE: in text mode, we allow click to go to position even when the problems might already be stale
+    if (editorStore.isInGrammarTextMode && problem.sourceInformation) {
       editorStore.grammarTextEditorState.setForcedCursorPosition({
         lineNumber: problem.sourceInformation.startLine,
         column: problem.sourceInformation.startColumn,
@@ -99,80 +42,62 @@ export const Problems = observer(() => {
   };
 
   return (
-    <Panel>
-      {error && <PanelSection> Error </PanelSection>}
-      {error && !editorStore.isInGrammarTextMode && (
-        <PanelList>
-          <ProblemItem
-            key={error.message}
-            problem={error as CompilationWarning}
-            isError={true}
-            isStaleWarnings={false}
-          />
-        </PanelList>
-      )}
-      {error && editorStore.isInGrammarTextMode && (
-        <PanelList>
-          <button
-            title={error.message}
-            key={error.message}
-            onClick={() =>
-              setProblemCursorPosition(error as CompilationWarning)
-            }
-            className="auxiliary-panel__problem__btn"
-          >
-            <ProblemItem
-              key={error.message}
-              problem={error as CompilationWarning}
-              isError={true}
-              textMode={true}
-              isStaleWarnings={false}
-            />
-          </button>
-        </PanelList>
-      )}
-      <PanelSection>
-        <div>
-          {editorStore.graphState.warnings === undefined &&
-            'Please compile (F9) to see possible problems'}
-          {!editorStore.graphState.warnings ||
-            (editorStore.graphState.warnings.length === 0 &&
-              'No warnings detected')}
-          {editorStore.graphState.warnings &&
-            editorStore.graphState.warnings.length > 0 &&
-            (isStaleWarnings
-              ? 'Stale warnings - please compile (F9) to reload latest possible problems'
-              : 'Warnings: ')}
+    <PanelListItem>
+      <button
+        className={clsx([
+          'auxiliary-panel__problem',
+          {
+            'auxiliary-panel__problem--stale': isStale,
+          },
+        ])}
+        title={problem.message}
+        onClick={goToSource}
+      >
+        {problem instanceof EngineError && (
+          <ErrorIcon className="auxiliary-panel__problem__icon auxiliary-panel__problem__icon--error" />
+        )}
+        {problem instanceof CompilationWarning && (
+          <WarningIcon className="auxiliary-panel__problem__icon auxiliary-panel__problem__icon--warning" />
+        )}
+        <div className="auxiliary-panel__problem__message">
+          {problem.message}
         </div>
-      </PanelSection>
-      <PanelList>
-        {warnings &&
-          !editorStore.isInGrammarTextMode &&
-          warnings.map((warning) => (
-            <ProblemItem
-              key={warning.message}
-              problem={warning}
-              isStaleWarnings={isStaleWarnings}
-            />
+        {problem.sourceInformation && (
+          <div className="auxiliary-panel__problem__source">
+            {editorStore.isInGrammarTextMode &&
+              `[Ln ${problem.sourceInformation.startLine}, Col ${problem.sourceInformation.startColumn}]`}
+          </div>
+        )}
+      </button>
+    </PanelListItem>
+  );
+});
+
+export const Problems = observer(() => {
+  const editorStore = useEditorStore();
+  const problems = editorStore.graphState.problems;
+  const isStale = editorStore.graphState.areProblemsStale;
+
+  return (
+    <Panel>
+      {isStale && (
+        <div className="auxiliary-panel__problems__stale-warning">
+          The following result might be stale - please run compilation (F9) to
+          check for the latest problems
+        </div>
+      )}
+      {problems.length === 0 && (
+        <div className="auxiliary-panel__problems__placeholder">
+          No problems have been detected in the workspace.
+        </div>
+      )}
+      {problems.length !== 0 && (
+        <PanelList>
+          {problems.map((problem) => (
+            <ProblemItem key={problem.uuid} problem={problem} />
           ))}
-        {warnings &&
-          editorStore.isInGrammarTextMode &&
-          warnings.map((warning) => (
-            <button
-              title={warning.message}
-              key={warning.message}
-              onClick={() => setProblemCursorPosition(warning)}
-              className="auxiliary-panel__problem__btn"
-            >
-              <ProblemItem
-                key={warning.message}
-                problem={warning}
-                textMode={true}
-                isStaleWarnings={isStaleWarnings}
-              />
-            </button>
-          ))}
-      </PanelList>
+        </PanelList>
+      )}
     </Panel>
   );
 });

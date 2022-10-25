@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { V1_CompilationWarning } from './V1_CompilationWarning.js';
+
 /**
  * NOTE: technically, this endpoint should be returning 204 (No Content), and 400 (Bad Request) when there are
  * compilation errors but for backward compatibility, we have to resort to return something, i.e. 200 (OK) with
@@ -22,4 +24,7 @@
  * On the other hand, we might want to keep this around since compilation API might change in the future to return
  * some state or meaningful results.
  */
-export type V1_CompileResult = { message: string };
+export type V1_CompileResult = {
+  message: string;
+  warnings?: V1_CompilationWarning[] | undefined;
+};

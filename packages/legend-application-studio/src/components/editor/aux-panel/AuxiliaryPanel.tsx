@@ -70,11 +70,7 @@ export const AuxiliaryPanel = observer(() => {
       name: 'PROBLEMS',
       icon: undefined,
       isVisible: true,
-      ...(editorStore.graphState.warnings?.length
-        ? {
-            counter: editorStore.graphState.warnings.length,
-          }
-        : { counter: 0 }),
+      counter: editorStore.graphState.problems.length,
     },
   };
 

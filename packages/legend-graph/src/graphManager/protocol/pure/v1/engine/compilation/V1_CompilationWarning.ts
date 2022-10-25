@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-import { createModelSchema, optional, primitive } from 'serializr';
+import { createModelSchema, primitive } from 'serializr';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { V1_EngineError } from '../../engine/V1_EngineError.js';
 import { V1_sourceInformationSerialization } from '../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
+import type { V1_SourceInformation } from '../../model/V1_SourceInformation.js';
 
-export class V1_CompilationWarning extends V1_EngineError {
-  static override readonly serialization = new SerializationFactory(
+export class V1_CompilationWarning {
+  message = '';
+  sourceInformation?: V1_SourceInformation | undefined;
+
+  static readonly serialization = new SerializationFactory(
     createModelSchema(V1_CompilationWarning, {
-      errorType: optional(primitive()),
       message: primitive(),
       sourceInformation: usingModelSchema(
         V1_sourceInformationSerialization.schema,

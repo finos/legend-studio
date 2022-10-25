@@ -1084,6 +1084,7 @@ const PostProcessorRelationalConnectionEditor = observer(
                               title={`Post-Processor ${idx + 1}`}
                             />
                             <Badge
+                              className="badge--right"
                               title={getPostProcessorLabel(postProcessor)}
                             />
                           </PanelListSelectorItem>
