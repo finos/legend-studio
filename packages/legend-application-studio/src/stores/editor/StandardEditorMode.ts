@@ -15,7 +15,7 @@
  */
 
 import type { EditorStore } from '../EditorStore.js';
-import { generateViewEntityRoute } from '../LegendStudioRouter.js';
+import { generateEditorRoute } from '../LegendStudioRouter.js';
 import { EditorMode } from './EditorMode.js';
 
 export class StandardEditorMode extends EditorMode {
@@ -27,8 +27,10 @@ export class StandardEditorMode extends EditorMode {
   }
 
   generateElementLink(elementPath: string): string {
-    return generateViewEntityRoute(
+    return generateEditorRoute(
       this.editorStore.sdlcState.activeProject.projectId,
+      this.editorStore.sdlcState.activeWorkspace.workspaceId,
+      this.editorStore.sdlcState.activeWorkspace.workspaceType,
       elementPath,
     );
   }

@@ -268,7 +268,7 @@ const ExplorerContextMenu = observer(
         );
       }
     };
-    const copyLinkToElementInViewerMode = (): void => {
+    const copyWorkspaceElementLink = (): void => {
       if (node) {
         applicationStore
           .copyTextToClipboard(
@@ -279,7 +279,9 @@ const ExplorerContextMenu = observer(
             ),
           )
           .then(() =>
-            applicationStore.notifySuccess('Copied element link to clipboard'),
+            applicationStore.notifySuccess(
+              'Copied workspace element link to clipboard',
+            ),
           )
           .catch(applicationStore.alertUnhandledError);
       }
@@ -333,7 +335,7 @@ const ExplorerContextMenu = observer(
                 View in Project
               </MenuContentItem>
             )}
-            <MenuContentItem onClick={copyLinkToElementInViewerMode}>
+            <MenuContentItem onClick={copyWorkspaceElementLink}>
               Copy Link
             </MenuContentItem>
           </>
