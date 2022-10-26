@@ -1,5 +1,21 @@
 # @finos/legend-application-studio
 
+## 20.0.0
+
+### Major Changes
+
+- [#1540](https://github.com/finos/legend-studio/pull/1540) [`d41811eb`](https://github.com/finos/legend-studio/commit/d41811ebff8177905ad37de45945bb12d8a8926d) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Removed `ElementEditorState.hasCompilationError()`, we now have the graph compilation error at a single place in `EditorGraphState.error`.
+
+### Minor Changes
+
+- [#1540](https://github.com/finos/legend-studio/pull/1540) [`d41811eb`](https://github.com/finos/legend-studio/commit/d41811ebff8177905ad37de45945bb12d8a8926d) ([@xannem](https://github.com/xannem)) - Show compilation warnings in the auxiliary panel ([#941](https://github.com/finos/legend-studio/issues/941)).
+
+- [#1540](https://github.com/finos/legend-studio/pull/1540) [`d41811eb`](https://github.com/finos/legend-studio/commit/d41811ebff8177905ad37de45945bb12d8a8926d) ([@xannem](https://github.com/xannem)) - Add a new core config option `enableGraphBuilderStrictMode` to enable strict-mode in graph builder ([#941](https://github.com/finos/legend-studio/issues/941)).
+
+### Patch Changes
+
+- [#1573](https://github.com/finos/legend-studio/pull/1573) [`6689b219`](https://github.com/finos/legend-studio/commit/6689b219d04cabd48a5ef59b8b52767737a9bde7) ([@akphi](https://github.com/akphi)) - Service editor: the default lambda created is now the basic lambda `|''` instead of the stubbed empty lambda ([#1588](https://github.com/finos/legend-studio/issues/1588)).
+
 ## 19.1.0
 
 ### Minor Changes
