@@ -17,11 +17,14 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  clsx,
   Dialog,
-  SquareIcon,
   PanelLoadingIndicator,
-  CheckSquareIcon,
+  Modal,
+  PanelFormActions,
+  PanelFormTextField,
+  PanelDivider,
+  PanelForm,
+  PanelFormBooleanField,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { type Project, WorkspaceType } from '@finos/legend-server-sdlc';
@@ -62,13 +65,7 @@ export const CreateWorkspaceModal = observer(
         ).catch(applicationStore.alertUnhandledError);
       }
     };
-    const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => setWorkspaceName(event.target.value);
-    const toggleGroupWorkspace = (
-      event: React.FormEvent<HTMLButtonElement>,
-    ): void => {
-      event.preventDefault();
+    const toggleGroupWorkspace = (): void => {
       setIsGroupWorkspace(!isGroupWorkspace);
     };
 
@@ -89,7 +86,10 @@ export const CreateWorkspaceModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark workspace-setup__create-workspace-modal">
+        <Modal
+          darkMode={true}
+          className="workspace-setup__create-workspace-modal"
+        >
           <div className="modal__title">
             Create Workspace
             <DocumentationLink
@@ -108,58 +108,38 @@ export const CreateWorkspaceModal = observer(
             <PanelLoadingIndicator
               isLoading={setupStore.createWorkspaceState.isInProgress}
             />
-            <div className="panel__content__form workspace-setup__create-workspace-modal__form workspace-setup__create-workspace-modal__form__workspace">
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Workspace Name
-                </div>
+            <PanelForm className="workspace-setup__create-workspace-modal__form workspace-setup__create-workspace-modal__form__workspace">
+              <PanelDivider />
+              <PanelFormTextField
+                ref={workspaceNameInputRef}
+                name="Workspace Name"
+                isReadOnly={
+                  setupStore.createWorkspaceState.isInProgress ||
+                  setupStore.createOrImportProjectState.isInProgress
+                }
+                placeholder="MyWorkspace"
+                fullWidth={true}
+                className="workspace-setup__create-workspace-modal__form__workspace-name__input"
+                value={workspaceName}
+                update={(val: string | undefined) =>
+                  setWorkspaceName(val ?? '')
+                }
+                errorMessage={
+                  workspaceAlreadyExists
+                    ? 'Workspace with same name already exists '
+                    : ''
+                }
+              />
 
-                <div className="input-group">
-                  <input
-                    className="input input--dark input-group__input workspace-setup__create-workspace-modal__form__workspace-name__input"
-                    ref={workspaceNameInputRef}
-                    spellCheck={false}
-                    disabled={
-                      setupStore.createWorkspaceState.isInProgress ||
-                      setupStore.createOrImportProjectState.isInProgress
-                    }
-                    placeholder="MyWorkspace"
-                    value={workspaceName}
-                    onChange={changeWorkspaceName}
-                  />
-                  {workspaceAlreadyExists && (
-                    <div className="input-group__error-message">
-                      Workspace with same name already exists
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="panel__content__form__section">
-                <div className="panel__content__form__section__header__label">
-                  Group Workspace
-                </div>
-                <div className="panel__content__form__section__toggler">
-                  <button
-                    onClick={toggleGroupWorkspace}
-                    type="button" // prevent this toggler being activated on form submission
-                    className={clsx(
-                      'panel__content__form__section__toggler__btn',
-                      {
-                        'panel__content__form__section__toggler__btn--toggled':
-                          isGroupWorkspace,
-                      },
-                    )}
-                    tabIndex={-1}
-                  >
-                    {isGroupWorkspace ? <CheckSquareIcon /> : <SquareIcon />}
-                  </button>
-                  <div className="panel__content__form__section__toggler__prompt">
-                    Group workspaces can be accessed by all users in the project
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="panel__content__form__actions">
+              <PanelFormBooleanField
+                name="Group Workspace"
+                prompt="Group workspaces can be accessed by all users in the project"
+                value={isGroupWorkspace}
+                isReadOnly={false}
+                update={toggleGroupWorkspace}
+              />
+            </PanelForm>
+            <PanelFormActions>
               <button
                 disabled={
                   setupStore.createWorkspaceState.isInProgress ||
@@ -170,9 +150,9 @@ export const CreateWorkspaceModal = observer(
               >
                 Create
               </button>
-            </div>
+            </PanelFormActions>
           </form>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

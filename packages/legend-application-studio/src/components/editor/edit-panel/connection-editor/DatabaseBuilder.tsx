@@ -34,6 +34,7 @@ import {
   CheckCircleIcon,
   EmptyCircleIcon,
   PanelContent,
+  Modal,
 } from '@finos/legend-art';
 import { useEffect } from 'react';
 import {
@@ -255,7 +256,7 @@ export const DatabaseBuilder = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark database-builder">
+        <Modal darkMode={true} className="database-builder">
           <div className="database-builder__heading">
             <div className="database-builder__heading__label">
               Build Database
@@ -348,7 +349,7 @@ export const DatabaseBuilder = observer(
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

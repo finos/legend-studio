@@ -23,6 +23,7 @@ import {
   V1_buildOlapGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
+  V1_buildWatermarkFunctionExpression,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,
@@ -90,6 +91,19 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           )
         ) {
           return V1_buildExistsFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+          )
+        ) {
+          return V1_buildWatermarkFunctionExpression(
             functionName,
             parameters,
             openVariables,

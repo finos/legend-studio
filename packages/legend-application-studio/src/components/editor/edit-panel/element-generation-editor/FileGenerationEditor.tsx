@@ -58,6 +58,7 @@ import {
   PanelDropZone,
   Panel,
   PanelContent,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type FileGenerationSourceDropTarget,
@@ -827,7 +828,7 @@ const GenerationArrayPropertyEditor = observer(
         }
       };
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {property.name}
         </div>
@@ -950,7 +951,7 @@ const GenerationArrayPropertyEditor = observer(
             </div>
           )}
         </div>
-      </div>
+      </PanelFormSection>
     );
   },
 );

@@ -25,12 +25,12 @@ import {
   clsx,
   PencilIcon,
   LockIcon,
-  CheckSquareIcon,
-  SquareIcon,
   TimesIcon,
   SaveIcon,
   InfoCircleIcon,
   ErrorIcon,
+  PanelFormBooleanField,
+  PanelForm,
 } from '@finos/legend-art';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
@@ -141,7 +141,7 @@ const ServiceGeneralEditor = observer(() => {
 
   return (
     <div className="panel__content__lists service-editor__general">
-      <div className="panel__content__form">
+      <PanelForm>
         <div className="panel__content__form__section service-editor__pattern">
           <div className="panel__content__form__section__header__label">
             URL Pattern
@@ -185,7 +185,7 @@ const ServiceGeneralEditor = observer(() => {
             </button>
           </div>
         </div>
-      </div>
+      </PanelForm>
       <div className="service-editor__pattern__parameters">
         <div className="service-editor__pattern__parameters__header">
           <div className="service-editor__pattern__parameters__header__label">
@@ -229,7 +229,7 @@ const ServiceGeneralEditor = observer(() => {
         </div>
       </div>
       {/* TODO: potentially we can have a button to go to the service */}
-      <div className="panel__content__form">
+      <PanelForm>
         <div className="panel__content__form__section">
           <div className="panel__content__form__section__header__label">
             Documentation
@@ -243,34 +243,16 @@ const ServiceGeneralEditor = observer(() => {
             onChange={changeDocumentation}
           />
         </div>
-      </div>
-      <div className="panel__content__form__section">
-        <div className="panel__content__form__section__header__label">
-          Auto Activate Updates
-        </div>
-        <div
-          className={clsx('panel__content__form__section__toggler', {
-            'panel__content__form__section__toggler--disabled': isReadOnly,
-          })}
-          onClick={toggleAutoActivateUpdates}
-        >
-          <button
-            className={clsx('panel__content__form__section__toggler__btn', {
-              'panel__content__form__section__toggler__btn--toggled':
-                service.autoActivateUpdates,
-            })}
-            disabled={isReadOnly}
-            tabIndex={-1}
-          >
-            {service.autoActivateUpdates ? <CheckSquareIcon /> : <SquareIcon />}
-          </button>
-          <div className="panel__content__form__section__toggler__prompt">
-            Specifies if the new generation should be automatically activated;
-            only valid when latest revision is selected upon service
-            registration
-          </div>
-        </div>
-      </div>
+      </PanelForm>
+      <PanelFormBooleanField
+        isReadOnly={isReadOnly}
+        value={service.autoActivateUpdates}
+        name="Auto Activate Updates"
+        prompt="Specifies if the new generation should be automatically activated;
+        only valid when latest revision is selected upon service
+        registration"
+        update={toggleAutoActivateUpdates}
+      />
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
           Owners

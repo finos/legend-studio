@@ -32,6 +32,10 @@ import {
   MenuContent,
   MenuContentItem,
   PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import { ExternalFormatSchema as Schema } from '@finos/legend-graph';
 import { flowResult } from 'mobx';
@@ -79,13 +83,9 @@ const SchemaLoader = observer(
           appear: false, // disable transition
         }}
       >
-        <div className="modal modal--dark modal--scrollable patch-loader">
-          <div className="modal__header">
-            <div className="modal__title">
-              <div className="modal__title__label">Schema Content Loader</div>
-            </div>
-          </div>
-          <div className="modal__body">
+        <Modal darkMode={true} className="modal--scrollable patch-loader">
+          <ModalHeader title="Schema Content Loader" />
+          <ModalBody>
             <PanelLoadingIndicator
               isLoading={importState.loadingSchemaContentState.isInProgress}
             />
@@ -129,8 +129,8 @@ const SchemaLoader = observer(
                 </div>
               </div>
             )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn btn--dark blocking-alert__action--standard"
               onClick={importSchemas}
@@ -138,8 +138,8 @@ const SchemaLoader = observer(
             >
               Import Schemas
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

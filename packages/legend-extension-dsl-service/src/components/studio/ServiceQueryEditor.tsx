@@ -38,6 +38,10 @@ import {
   CheckSquareIcon,
   SquareIcon,
   GitBranchIcon,
+  ModalTitle,
+  PanelForm,
+  PanelFormTextField,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
   type ProjectServiceQueryUpdaterPathParams,
@@ -86,13 +90,9 @@ const NewServiceModal = observer(() => {
     editorStore.graphManagerState.graph.allOwnElements
       .map((s) => s.path)
       .includes(servicePackagePath + ELEMENT_PATH_DELIMITER + serviceName);
-  const changeName: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-    setServiceName(event.target.value);
 
   // pattern
   const [pattern, setPattern] = useState<string>(`/${uuid()}`);
-  const changePattern: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-    setPattern(event.target.value);
   const patternValidationResult = validate_ServicePattern(pattern);
 
   // actions
@@ -162,49 +162,37 @@ const NewServiceModal = observer(() => {
         }}
         className="modal search-modal modal--dark"
       >
-        <div className="modal__title">Create New Service</div>
+        <ModalTitle title="Create New Service" />
         <Panel>
-          <div className="panel__content__form">
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Service Name
-              </div>
-              <div className="input-group">
-                <input
-                  ref={pathRef}
-                  className="input input--dark input-group__input"
-                  value={serviceName}
-                  spellCheck={false}
-                  onChange={changeName}
-                  placeholder={`Enter a name, use ${ELEMENT_PATH_DELIMITER} to create new package(s) for the service`}
-                />
-                {elementAlreadyExists && (
-                  <div className="input-group__error-message">
-                    Element with same path already exists
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Service URL Pattern
-              </div>
-              <div className="input-group">
-                <input
-                  className="input input--dark input-group__input"
-                  value={pattern}
-                  spellCheck={false}
-                  onChange={changePattern}
-                  placeholder="Enter as service URL pattern, e.g. /myService"
-                />
-                {patternValidationResult && (
-                  <div className="input-group__error-message">
-                    URL pattern is not valid
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <PanelForm>
+            <PanelFormTextField
+              name="Service Name"
+              ref={pathRef}
+              value={serviceName}
+              update={(value: string | undefined): void =>
+                setServiceName(value ?? '')
+              }
+              isReadOnly={false}
+              errorMessage={
+                elementAlreadyExists
+                  ? 'Element with same path already exists'
+                  : undefined
+              }
+            />
+            <PanelFormTextField
+              name="Service URL Pattern"
+              ref={pathRef}
+              value={pattern}
+              placeholder="Enter as service URL pattern, e.g. /myService"
+              update={(value: string | undefined): void =>
+                setPattern(value ?? '')
+              }
+              isReadOnly={false}
+              errorMessage={
+                patternValidationResult ? 'URL pattern is not valid' : undefined
+              }
+            />
+          </PanelForm>
         </Panel>
         <div className="search-modal__actions">
           <button
@@ -316,7 +304,7 @@ const RegisterServiceModal = observer(() => {
         }}
         className="modal search-modal modal--dark"
       >
-        <div className="modal__title">Register Service</div>
+        <ModalTitle title="Register Service" />
         <Panel>
           <div className="panel__content__form">
             <div className="panel__content__form__section">
@@ -337,7 +325,7 @@ const RegisterServiceModal = observer(() => {
                 }
               />
             </div>
-            <div className="panel__content__form__section">
+            <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 Service URL Pattern
               </div>
@@ -377,7 +365,7 @@ const RegisterServiceModal = observer(() => {
                   </div>
                 </div>
               </div>
-            </div>
+            </PanelFormSection>
           </div>
         </Panel>
         <div className="search-modal__actions">

@@ -72,6 +72,9 @@ import {
   AlignMiddleIcon,
   AlignBottomIcon,
   useResizeDetector,
+  Modal,
+  ModalBody,
+  ModalHeader,
 } from '@finos/legend-art';
 import {
   type Type,
@@ -156,11 +159,12 @@ const DiagramRendererHotkeyInfosModal = observer(
           paper: 'editor-modal__content--scrollable',
         }}
       >
-        <div className="modal modal--dark modal--scrollable diagram-editor__hotkeys__dialog">
-          <div className="modal__header">
-            <div className="modal__title">Diagram Hotkeys</div>
-          </div>
-          <div className="modal__body">
+        <Modal
+          darkMode={true}
+          className="modal--scrollable diagram-editor__hotkeys__dialog"
+        >
+          <ModalHeader title="Diagram Hotkeys" />
+          <ModalBody>
             <div className="diagram-editor__hotkey__groups">
               <div className="diagram-editor__hotkey__group">
                 <div className="diagram-editor__hotkey__annotation">
@@ -313,8 +317,8 @@ const DiagramRendererHotkeyInfosModal = observer(
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </ModalBody>
+        </Modal>
       </Dialog>
     );
   },

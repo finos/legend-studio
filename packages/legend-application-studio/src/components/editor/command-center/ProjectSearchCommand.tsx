@@ -25,6 +25,7 @@ import {
   CustomSelectorInput,
   MoreHorizontalIcon,
   CaretDownIcon,
+  Modal,
 } from '@finos/legend-art';
 import { getElementTypeIcon } from '../../shared/ElementIconUtils.js';
 import type { PackageableElement } from '@finos/legend-graph';
@@ -95,7 +96,7 @@ export const ProjectSearchCommand = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal search-modal modal--dark">
+      <Modal darkMode={true} className="search-modal">
         <div className="project-search-command">
           <DropdownMenu
             className="project-search-command__type"
@@ -147,7 +148,7 @@ export const ProjectSearchCommand = observer(() => {
             })}
           />
         </div>
-      </div>
+      </Modal>
     </NonBlockingDialog>
   );
 });

@@ -32,6 +32,9 @@ import {
   ExternalLinkIcon,
   Dialog,
   PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from '@finos/legend-art';
 import { PROJECT_OVERVIEW_ACTIVITY_MODE } from '../../../stores/sidebar-state/ProjectOverviewState.js';
 import {
@@ -92,9 +95,9 @@ const ShareProjectModal = observer(
 
     return (
       <Dialog onClose={closeModal} open={open}>
-        <div className="modal modal--dark modal--no-padding">
+        <Modal darkMode={true} className="modal--no-padding">
           <PanelLoadingIndicator isLoading={isDispatchingAction} />
-          <div className="modal__body">
+          <ModalBody>
             <div className="project-overview__share-project__modal__info-entry">
               <div className="project-overview__share-project__modal__info-entry__title">
                 Version:
@@ -133,8 +136,8 @@ const ShareProjectModal = observer(
                 </a>
               </div>
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn--wide btn--dark"
               disabled={isFetchingProject}
@@ -142,8 +145,8 @@ const ShareProjectModal = observer(
             >
               Copy Link
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

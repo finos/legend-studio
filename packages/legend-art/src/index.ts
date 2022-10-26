@@ -32,6 +32,7 @@ export * from './components/Badge.js';
 
 export * from './components/dialog/Dialog.js';
 export * from './components/dialog/NonBlockingDialog.js';
+export * from './components/dialog/Modal.js';
 
 export * from './components/menu/MenuContent.js';
 export * from './components/menu/ContextMenu.js';

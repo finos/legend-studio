@@ -19,6 +19,10 @@ import {
   clsx,
   CompareIcon,
   Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   PanelContent,
   PanelLoadingIndicator,
   RefreshIcon,
@@ -114,8 +118,8 @@ const EqualToJsonAssertFailViewer = observer(
               paper: 'editor-modal__content',
             }}
           >
-            <div className="modal modal--dark editor-modal">
-              <div className="modal__header">
+            <Modal darkMode={true} className="editor-modal">
+              <ModalHeader>
                 <div className="equal-to-json-result__diff__summary">
                   <div className="equal-to-json-result__diff__header__label">
                     expected
@@ -127,22 +131,22 @@ const EqualToJsonAssertFailViewer = observer(
                     actual
                   </div>
                 </div>
-              </div>
-              <div className="modal__body">
+              </ModalHeader>
+              <ModalBody>
                 <JsonDiffView
                   from={equalToJsonAssertFailState.status.expected}
                   to={equalToJsonAssertFailState.status.actual}
                 />
-              </div>
-              <div className="modal__footer">
+              </ModalBody>
+              <ModalFooter>
                 <button
                   className="btn modal__footer__close-btn"
                   onClick={close}
                 >
                   Close
                 </button>
-              </div>
-            </div>
+              </ModalFooter>
+            </Modal>
           </Dialog>
         )}
       </>

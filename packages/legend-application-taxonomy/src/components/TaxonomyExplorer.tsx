@@ -48,6 +48,7 @@ import {
   MenuIcon,
   Panel,
   useResizeDetector,
+  Modal,
 } from '@finos/legend-art';
 import { TaxonomyTree } from './TaxonomyTree.js';
 import { TaxonomyNodeViewer } from './TaxonomyNodeViewer.js';
@@ -361,7 +362,7 @@ export const TaxonomySearchCommand = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark search-modal">
+      <Modal darkMode={true} className="search-modal">
         <CustomSelectorInput
           ref={selectorRef}
           options={options}
@@ -370,7 +371,7 @@ export const TaxonomySearchCommand = observer(() => {
           escapeClearsValue={true}
           darkMode={true}
         />
-      </div>
+      </Modal>
     </NonBlockingDialog>
   );
 });

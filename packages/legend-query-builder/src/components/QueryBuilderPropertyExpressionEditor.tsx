@@ -21,6 +21,10 @@ import {
   PanelDropZone,
   InfoCircleIcon,
   PanelEntryDropZonePlaceholder,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -218,11 +222,12 @@ export const QueryBuilderPropertyExpressionEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder-property-editor">
-          <div className="modal__header">
-            <div className="modal__title">Derived Property</div>
-          </div>
-          <div className="modal__body query-builder-property-editor__content">
+        <Modal
+          darkMode={true}
+          className="editor-modal query-builder-property-editor"
+        >
+          <ModalHeader title="Derived Property" />
+          <ModalBody className="query-builder-property-editor__content">
             {propertyExpressionState.derivedPropertyExpressionStates.map(
               (pe) => (
                 <DerivedPropertyExpressionEditor
@@ -231,7 +236,7 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                 />
               ),
             )}
-            <div className="modal__body query-builder__parameters__modal__body">
+            <ModalBody className="query-builder__parameters__modal__body">
               <div className="panel__content__form__section__header__label">
                 List of available parameters
               </div>
@@ -250,17 +255,17 @@ export const QueryBuilderPropertyExpressionEditor = observer(
                   ),
                 )}
               </div>
-            </div>
-          </div>
-          <div className="modal__footer">
+            </ModalBody>
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={handleClose}
             >
               Done
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

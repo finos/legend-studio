@@ -570,6 +570,67 @@ export const V1_buildGroupByFunctionExpression = (
   return [expression, processedParams];
 };
 
+export const V1_buildWatermarkFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+  assertTrue(
+    parameters.length === 2,
+    `Can't build watermark() expression: watermark() expects 1 argument`,
+  );
+  const precedingExpression = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExpression.genericType,
+    `Can't build watermark() expression: preceding expression return type is missing`,
+  );
+
+  const lambda = parameters[1];
+  if (lambda instanceof V1_Lambda) {
+    lambda.parameters.forEach((variable): void => {
+      if (variable.name && !variable.class) {
+        const variableExpression = new VariableExpression(
+          variable.name,
+          precedingExpression.multiplicity,
+        );
+        variableExpression.genericType = precedingExpression.genericType;
+        processingContext.addInferredVariables(
+          variable.name,
+          variableExpression,
+        );
+      }
+    });
+  }
+
+  const processedParams = [
+    precedingExpression,
+    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    ),
+  ];
+
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    processedParams,
+    functionName,
+    compileContext,
+  );
+  return [expression, processedParams];
+};
+
 export const V1_buildOlapGroupByFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],

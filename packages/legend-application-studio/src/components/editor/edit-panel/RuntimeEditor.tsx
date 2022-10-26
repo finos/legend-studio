@@ -57,6 +57,11 @@ import {
   Panel,
   PanelContent,
   PanelHeader,
+  ModalHeader,
+  ModalTitle,
+  ModalHeaderActions,
+  ModalBody,
+  Modal,
 } from '@finos/legend-art';
 import { getElementIcon } from '../../shared/ElementIconUtils.js';
 import type { RuntimeExplorerTreeNodeData } from '../../../stores/shared/TreeUtils.js';
@@ -1079,31 +1084,26 @@ export const EmbeddedRuntimeEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal embedded-runtime-editor">
-          <div className="modal__header">
-            <div className="modal__title">
-              <div className="modal__title__icon">
-                <CogIcon />
-              </div>
-              <div className="modal__title__label">custom runtime</div>
-            </div>
-            <div className="modal__header__actions">
+        <Modal darkMode={true} className="editor-modal embedded-runtime-editor">
+          <ModalHeader>
+            <ModalTitle icon={<CogIcon />} title="custom runtime" />
+            <ModalHeaderActions>
               <button
-                className="modal__header__action"
+                className="modal__header__action-btn"
                 tabIndex={-1}
                 onClick={closeEditor}
               >
                 <TimesIcon />
               </button>
-            </div>
-          </div>
-          <div className="modal__body modal__body--footless">
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody className="modal__body--footless">
             <RuntimeEditor
               runtimeEditorState={runtimeEditorState}
               isReadOnly={isReadOnly}
             />
-          </div>
-        </div>
+          </ModalBody>
+        </Modal>
       </Dialog>
     );
   },

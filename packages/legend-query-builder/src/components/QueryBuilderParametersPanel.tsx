@@ -25,10 +25,14 @@ import {
   TimesIcon,
   DollarIcon,
   PlusIcon,
-  InputWithInlineValidation,
   DragPreviewLayer,
   useDragPreviewLayer,
   BlankPanelPlaceholder,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PanelFormTextField,
 } from '@finos/legend-art';
 import {
   type QueryBuilderParameterDragSource,
@@ -80,13 +84,6 @@ const VariableExpressionEditor = observer(
           ).length > 1)
       ? 'Parameter name already exists'
       : undefined;
-
-    // variable
-    const changeVariableName: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      variableExpression_setName(varState, event.target.value);
-    };
 
     // type
     const stringType =
@@ -164,30 +161,25 @@ const VariableExpressionEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder__parameters__modal">
-          <div className="modal__header">
-            <div className="modal__title">
-              {`${isCreating ? 'Create ' : 'Update '}`}Parameter
-            </div>
-          </div>
-          <div className="modal__body query-builder__parameters__modal__body">
+        <Modal
+          darkMode={true}
+          className="editor-modal query-builder__parameters__modal"
+        >
+          <ModalHeader
+            title={`${isCreating ? 'Create Parameter' : 'Update Parameter'}`}
+          />
+          <ModalBody className="query-builder__parameters__modal__body">
             <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Parameter Name
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                Name of the parameter. Should be descriptive of its purpose.
-              </div>
-              <div className="query-builder__parameters__parameter__name">
-                <InputWithInlineValidation
-                  className="query-builder__parameters__parameter__name__input input-group__input"
-                  spellCheck={false}
-                  value={varState.name}
-                  onChange={changeVariableName}
-                  placeholder="Parameter name"
-                  validationErrorMessage={validationMessage}
-                />
-              </div>
+              <PanelFormTextField
+                name="Parameter Name"
+                prompt="Name of the parameter. Should be descriptive of its purpose."
+                update={(value: string | undefined): void =>
+                  variableExpression_setName(varState, value ?? '')
+                }
+                value={varState.name}
+                errorMessage={validationMessage}
+                isReadOnly={false}
+              />
             </div>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
@@ -230,8 +222,8 @@ const VariableExpressionEditor = observer(
                 onChange={changeUpperBound}
               />
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             {isCreating && (
               <button
                 className="btn modal__footer__close-btn btn--dark"
@@ -244,8 +236,8 @@ const VariableExpressionEditor = observer(
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

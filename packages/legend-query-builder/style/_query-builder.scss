@@ -45,8 +45,20 @@
 
     height: 3.2rem;
     background: var(--color-dark-grey-100);
-    justify-content: flex-end;
     border-bottom: 0.1rem solid var(--color-dark-grey-80);
+  }
+
+  &__sub-header__content__icons {
+    @include flexVCenter;
+
+    justify-content: flex-start;
+  }
+
+  &__sub-header__content__actions {
+    @include flexVCenter;
+
+    justify-content: flex-end;
+    flex: 1;
   }
 
   &__sub-header__custom-action {
@@ -86,6 +98,14 @@
       font-size: 1rem;
       margin-left: 1rem;
     }
+  }
+
+  &__watermark__icon--active {
+    color: var(--color-blue-40) !important;
+  }
+
+  &__watermark__icon--active:hover {
+    color: var(--color-blue-150) !important;
   }
 
   .panel {

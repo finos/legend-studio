@@ -37,6 +37,7 @@ import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificati
 import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
+import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 
 const buildGetAllFunction = (
   _class: Class,
@@ -143,6 +144,15 @@ export const buildLambdaFunction = (
   );
   if (filterFunction) {
     lambdaFunction.expressionSequence[0] = filterFunction;
+  }
+
+  // build watermark
+  const watermarkFunction = buildWatermarkExpression(
+    queryBuilderState.watermarkState,
+    getAllFunction,
+  );
+  if (watermarkFunction) {
+    lambdaFunction.expressionSequence[0] = watermarkFunction;
   }
 
   // build fetch-structure

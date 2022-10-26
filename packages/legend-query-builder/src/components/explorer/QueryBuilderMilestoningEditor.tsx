@@ -34,7 +34,15 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
 import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
-import { Dialog, PanelEntryDropZonePlaceholder } from '@finos/legend-art';
+import {
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  PanelEntryDropZonePlaceholder,
+  PanelFormSection,
+} from '@finos/legend-art';
 import { generateDefaultValueForPrimitiveType } from '../../stores/QueryBuilderValueSpecificationHelper.js';
 import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
 import { instanceValue_setValues } from '../../stores/shared/ValueSpecificationModifierHelper.js';
@@ -152,7 +160,7 @@ const BiTemporalMilestoningEditor = observer(
     const { queryBuilderState } = props;
     return (
       <>
-        <div className="panel__content__form__section">
+        <PanelFormSection>
           <div className="panel__content__form__section__header__label">
             Processing Date
           </div>
@@ -160,8 +168,8 @@ const BiTemporalMilestoningEditor = observer(
             queryBuilderState={queryBuilderState}
             stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
           />
-        </div>
-        <div className="panel__content__form__section">
+        </PanelFormSection>
+        <PanelFormSection>
           <div className="panel__content__form__section__header__label">
             Business Date
           </div>
@@ -169,7 +177,7 @@ const BiTemporalMilestoningEditor = observer(
             queryBuilderState={queryBuilderState}
             stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
           />
-        </div>
+        </PanelFormSection>
       </>
     );
   },
@@ -179,7 +187,7 @@ const BusinessTemporalMilestoningEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           Business Date
         </div>
@@ -188,7 +196,7 @@ const BusinessTemporalMilestoningEditor = observer(
           queryBuilderState={queryBuilderState}
           stereotype={MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL}
         />
-      </div>
+      </PanelFormSection>
     );
   },
 );
@@ -197,7 +205,7 @@ const ProcessingTemporalMilestoningEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           Processing Date
         </div>
@@ -206,7 +214,7 @@ const ProcessingTemporalMilestoningEditor = observer(
           queryBuilderState={queryBuilderState}
           stereotype={MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL}
         />
-      </div>
+      </PanelFormSection>
     );
   },
 );
@@ -256,11 +264,12 @@ export const MilestoningParametersEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder__parameters__modal">
-          <div className="modal__header">
-            <div className="modal__title">Milestoning Parameters</div>
-          </div>
-          <div className="modal__body query-builder__parameters__modal__body">
+        <Modal
+          darkMode={true}
+          className="editor-modal query-builder__parameters__modal"
+        >
+          <ModalHeader title="Milestoning Parameters" />
+          <ModalBody className="query-builder__parameters__modal__body">
             <TemporalMilestoningEditor queryBuilderState={queryBuilderState} />
             <div className="panel__content__form__section__header__label">
               List of compatible milestoning parameters
@@ -288,13 +297,13 @@ export const MilestoningParametersEditor = observer(
                   />
                 ))}
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

@@ -34,6 +34,10 @@
   }
 }
 
+.input__small {
+  max-width: 45rem;
+}
+
 .input--dark {
   background: var(--color-dark-grey-100);
   color: var(--color-light-grey-150);

@@ -113,6 +113,10 @@
     }
   }
 
+  &-btn {
+    padding: 0.5rem;
+  }
+
   &__tab {
     @include flexCenter;
 

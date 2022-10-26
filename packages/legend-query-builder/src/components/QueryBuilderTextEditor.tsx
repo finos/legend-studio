@@ -16,7 +16,14 @@
 
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { clsx, Dialog } from '@finos/legend-art';
+import {
+  clsx,
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '@finos/legend-art';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import { QueryBuilderTextEditorMode } from '../stores/QueryBuilderTextEditorState.js';
 import { flowResult } from 'mobx';
@@ -57,25 +64,23 @@ export const QueryBuilderTextEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div
-          className={clsx(
-            'modal modal--dark editor-modal query-builder-text-mode__modal',
-            {
-              'query-builder-text-mode__modal--has-error': Boolean(
-                queryTextEditorState.parserError,
-              ),
-            },
-          )}
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal query-builder-text-mode__modal', {
+            'query-builder-text-mode__modal--has-error': Boolean(
+              queryTextEditorState.parserError,
+            ),
+          })}
         >
-          <div className="modal__header">
+          <ModalHeader>
             <div className="modal__title">Query</div>
             {queryTextEditorState.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse query
               </div>
             )}
-          </div>
-          <div className="modal__body">
+          </ModalHeader>
+          <ModalBody>
             <div
               className={clsx('query-builder-text-mode__modal__content', {
                 backdrop__element: Boolean(queryTextEditorState.parserError),
@@ -101,8 +106,8 @@ export const QueryBuilderTextEditor = observer(
                 />
               )}
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             {mode === QueryBuilderTextEditorMode.TEXT && (
               <button
                 className="btn btn--dark btn--caution"
@@ -118,8 +123,8 @@ export const QueryBuilderTextEditor = observer(
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

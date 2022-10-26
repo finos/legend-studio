@@ -23,6 +23,11 @@ import {
   CopyIcon,
   Dialog,
   InfoCircleIcon,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalHeaderActions,
+  ModalTitle,
   PluginIcon,
   TimesIcon,
   TreeView,
@@ -197,17 +202,12 @@ export const LegendStudioAppInfo: React.FC<{
 
   return (
     <Dialog onClose={closeModal} open={open}>
-      <div className="modal modal--scrollable modal--dark app__info">
-        <div className="modal__header">
-          <div className="modal__title">
-            <div className="modal__title__icon">
-              <InfoCircleIcon />
-            </div>
-            <div className="modal__title__label">About</div>
-          </div>
-          <div className="modal__header__actions">
+      <Modal darkMode={true} className="modal--scrollable app__info">
+        <ModalHeader>
+          <ModalTitle icon={<InfoCircleIcon />} title="About" />
+          <ModalHeaderActions>
             <button
-              className="modal__header__action"
+              className="modal__header__action-btn"
               tabIndex={-1}
               onClick={copyInfo}
               title="Copy application info"
@@ -215,15 +215,15 @@ export const LegendStudioAppInfo: React.FC<{
               <CopyIcon />
             </button>
             <button
-              className="modal__header__action"
+              className="modal__header__action-btn"
               tabIndex={-1}
               onClick={closeModal}
             >
               <TimesIcon />
             </button>
-          </div>
-        </div>
-        <div className="modal__body">
+          </ModalHeaderActions>
+        </ModalHeader>
+        <ModalBody>
           <div className="app__info__entry">
             <div className="app__info__entry__title">Environment:</div>
             <div className="app__info__entry__value">{config.env}</div>
@@ -305,8 +305,8 @@ export const LegendStudioAppInfo: React.FC<{
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </ModalBody>
+      </Modal>
     </Dialog>
   );
 };

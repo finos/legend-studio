@@ -27,6 +27,10 @@ import {
   Dialog,
   TimesIcon,
   ArrowRightIcon,
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalHeaderActions,
 } from '@finos/legend-art';
 import { generateGAVCoordinates } from '@finos/legend-storage';
 import { debounce } from '@finos/legend-shared';
@@ -151,19 +155,22 @@ export const DataSpaceAdvancedSearchModal = observer(
           onEnter: handleEnter,
         }}
       >
-        <div className="modal modal--dark editor-modal data-space-advanced-search__dialog">
-          <div className="data-space-advanced-search__dialog__header modal__header">
-            <div className="modal__title">Search for data space</div>
-            <div className="modal__header__actions">
+        <Modal
+          darkMode={true}
+          className="editor-modal data-space-advanced-search__dialog"
+        >
+          <ModalHeader className="data-space-advanced-search__dialog__header">
+            <ModalTitle title="Search for data space " />
+            <ModalHeaderActions>
               <button
-                className="modal__header__action"
+                className="modal__header__action-btn"
                 title="Close"
                 onClick={onClose}
               >
                 <TimesIcon />
               </button>
-            </div>
-          </div>
+            </ModalHeaderActions>
+          </ModalHeader>
           <div className="data-space-advanced-search__dialog__content">
             <div className="data-space-advanced-search__dialog__input">
               <div className="data-space-advanced-search__dialog__input__icon">
@@ -241,7 +248,7 @@ export const DataSpaceAdvancedSearchModal = observer(
               )}
             </div>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

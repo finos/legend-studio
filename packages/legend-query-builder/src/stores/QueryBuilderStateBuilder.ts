@@ -71,6 +71,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDSOlapGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByStateBuilder.js';
+import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -418,10 +419,19 @@ export class QueryBuilderValueSpecificationProcessor
     } else if (
       matchFunctionName(
         functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+      )
+    ) {
+      processWatermarkExpression(valueSpecification, this.queryBuilderState);
+      return;
+    } else if (
+      matchFunctionName(
+        functionName,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
       )
     ) {
       processTDSProjectExpression(valueSpecification, this.queryBuilderState);
+
       return;
     } else if (
       matchFunctionName(

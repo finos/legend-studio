@@ -24,6 +24,10 @@ import {
   SortDownAltIcon,
   SquareIcon,
   TimesIcon,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import {
   COLUMN_SORT_TYPE,
@@ -192,11 +196,9 @@ export const QueryResultModifierModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
-          <div className="modal__header">
-            <div className="modal__title">Result Set Modifier</div>
-          </div>
-          <div className="modal__body query-builder__projection__modal__body">
+        <Modal darkMode={true} className="editor-modal">
+          <ModalHeader title="Result Set Modifier" />
+          <ModalBody className="query-builder__projection__modal__body">
             <div className="query-builder__projection__options">
               <ColumnsSortEditor tdsState={tdsState} />
               <div className="panel__content__form__section">
@@ -241,13 +243,13 @@ export const QueryResultModifierModal = observer(
                 />
               </div>
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

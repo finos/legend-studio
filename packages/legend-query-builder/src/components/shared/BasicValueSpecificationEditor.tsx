@@ -196,7 +196,10 @@ const StringPrimitiveInstanceValueEditor = observer(
     } = props;
     const useSelector = Boolean(selectorConfig);
     const applicationStore = useApplicationStore();
-    const value = valueSpecification.values[0] as string;
+    const value =
+      valueSpecification.values.length > 0
+        ? (valueSpecification.values[0] as string)
+        : '';
     const updateValueSpec = (val: string): void => {
       instanceValue_setValue(valueSpecification, val, 0);
       setValueSpecification(valueSpecification);

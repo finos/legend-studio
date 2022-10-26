@@ -22,6 +22,7 @@ import {
   TimesIcon,
   WindowMaximizeIcon,
   EmptyWindowRestoreIcon,
+  Modal,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { noop } from '@finos/legend-shared';
@@ -76,11 +77,11 @@ const QueryBuilderDialog = observer(
             'editor-modal__content query-builder__dialog__container__content',
         }}
       >
-        <div
-          className={clsx(
-            'modal modal--dark editor-modal query-builder__dialog',
-            { 'query-builder__dialog--expanded': isMaximized },
-          )}
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal query-builder__dialog', {
+            'query-builder__dialog--expanded': isMaximized,
+          })}
         >
           <div className="query-builder__dialog__header">
             <div className="query-builder__dialog__header__actions">
@@ -112,7 +113,7 @@ const QueryBuilderDialog = observer(
           <div className="query-builder__dialog__content">
             <QueryBuilder queryBuilderState={queryBuilderState} />
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

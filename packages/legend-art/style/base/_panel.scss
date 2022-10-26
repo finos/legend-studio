@@ -253,13 +253,13 @@
   &__section {
     padding: 0 1rem;
 
-    .input-group__error-message {
-      max-width: 45rem;
-    }
-
     & + & {
       margin-top: 2rem;
     }
+  }
+
+  &__divider {
+    padding: 0.5rem 0;
   }
 
   &__section__header__label {
@@ -289,21 +289,15 @@
     cursor: default;
   }
 
-  &__section__input-group__error-message {
-    max-width: 45rem;
-  }
-
   &__section__input {
     width: 100%;
     min-width: 5rem;
-    max-width: 45rem;
     margin: 0;
-    background: var(--color-dark-grey-100);
-    color: var(--color-light-grey-200);
     padding: 1rem;
     border-radius: 0.1rem;
+    background: var(--color-dark-grey-100);
+    color: var(--color-light-grey-200);
     height: 2.8rem;
-    border: 0.1rem solid var(--color-dark-grey-100);
 
     &:focus {
       border: 0.1rem solid var(--color-blue-200);
@@ -563,6 +557,11 @@
     &:hover svg {
       color: var(--color-light-grey-100) !important;
     }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
   }
 }
 

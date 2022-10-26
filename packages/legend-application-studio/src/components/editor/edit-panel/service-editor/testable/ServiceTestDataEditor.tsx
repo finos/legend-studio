@@ -22,6 +22,9 @@ import {
   MaskIcon,
   MenuContent,
   MenuContentItem,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   PanelLoadingIndicator,
   PlusIcon,
   PURE_ConnectionIcon,
@@ -312,10 +315,8 @@ export const NewConnectionDataModal = observer(
           }}
           className="modal service-test-data-modal modal--dark"
         >
-          <div className="modal__header">
-            <div className="modal__title">Create a connection test data</div>
-          </div>
-          <div className="modal__body">
+          <ModalHeader title="Create A Connection Test Data" />
+          <ModalBody>
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Connection ID
@@ -369,8 +370,8 @@ export const NewConnectionDataModal = observer(
                 </div>
               </div>
             )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               type="button" // prevent this toggler being activated on form submission
               className="btn btn--dark"
@@ -381,7 +382,7 @@ export const NewConnectionDataModal = observer(
             <button className="btn btn--dark" disabled={isDisabled}>
               Create
             </button>
-          </div>
+          </ModalFooter>
         </form>
       </Dialog>
     );

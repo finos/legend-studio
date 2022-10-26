@@ -32,6 +32,10 @@ import {
   DropdownMenu,
   BlankPanelContent,
   PanelContent,
+  ModalHeader,
+  Modal,
+  ModalBody,
+  ModalFooter,
 } from '@finos/legend-art';
 import {
   addUniqueEntry,
@@ -489,11 +493,9 @@ export const ExecutionPlanViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
-          <div className="modal__header">
-            <div className="modal__title">Execution Plan</div>
-          </div>
-          <div className="modal__body">
+        <Modal className="editor-modal" darkMode={true}>
+          <ModalHeader title="Execution Plan" />
+          <ModalBody>
             {executionPlanState.debugText ? (
               <ResizablePanelGroup orientation="horizontal">
                 <ResizablePanel minSize={100}>
@@ -531,16 +533,16 @@ export const ExecutionPlanViewer = observer(
                 rawPlan={rawPlan}
               />
             )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closePlanViewer}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

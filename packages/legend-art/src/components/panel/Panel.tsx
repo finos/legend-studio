@@ -17,6 +17,7 @@
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { forwardRef } from 'react';
 import { CheckSquareIcon, SquareIcon } from '../CJS__Icon.cjs';
 import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
@@ -123,62 +124,93 @@ export const PanelForm = generateSimpleDIVComponent(
   'panel__content__form',
 );
 
+export const PanelDivider = generateSimpleDIVComponent(
+  'PanelDivider',
+  'panel__content__form__divider',
+);
+
 export const PanelFormDescription = generateSimpleDIVComponent(
   'PanelFormDescription',
   'panel__content__form__description',
 );
 
 export const PanelFormSection = generateSimpleDIVComponent(
-  'PanelSection',
+  'PanelFormSection',
   'panel__content__form__section',
 );
 
-export const PanelFormTextField = observer(
-  (props: {
+export const PanelFormTextField = forwardRef<
+  HTMLInputElement,
+  {
     name: string;
-    prompt?: string;
     value: string | undefined;
-    isReadOnly: boolean;
-    errorMessage?: string | undefined;
     update: (value: string | undefined) => void;
-  }) => {
-    const { errorMessage, value, name, prompt, isReadOnly, update } = props;
+    prompt?: string;
+    placeholder?: string;
+    errorMessage?: string | undefined;
+    isReadOnly?: boolean;
+    className?: string | undefined;
+    darkMode?: boolean;
+    fullWidth?: boolean;
+  }
+>(function PanelFormTextField(props, ref) {
+  const {
+    name,
+    value,
+    update,
+    prompt,
+    placeholder,
+    isReadOnly,
+    errorMessage,
+    className,
+    darkMode,
+    fullWidth,
+  } = props;
+  const displayValue = value ?? '';
+  const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    const stringValue = event.target.value;
+    const updatedValue = stringValue ? stringValue : undefined;
+    update(updatedValue);
+  };
 
-    const displayValue = value ?? '';
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      const stringValue = event.target.value;
-      const updatedValue = stringValue ? stringValue : undefined;
-      update(updatedValue);
-    };
-
-    return (
-      <PanelFormSection>
-        <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
-        </div>
-        <div className="panel__content__form__section__header__prompt">
-          {prompt}
-        </div>
-        <div className="input-group">
-          <input
-            className={clsx(
-              'input input--dark input-group__input panel__content__form__section__input',
-            )}
-            spellCheck={false}
-            disabled={isReadOnly}
-            value={displayValue}
-            onChange={changeValue}
-          />
-          {errorMessage && (
-            <div className="panel__content__form__section__input-group__error-message input-group__error-message">
-              {errorMessage}
-            </div>
+  return (
+    <PanelFormSection>
+      <div className="panel__content__form__section__header__label">
+        {capitalize(name)}
+      </div>
+      <div className="panel__content__form__section__header__prompt">
+        {prompt}
+      </div>
+      <div className="input-group">
+        <input
+          className={clsx(
+            'input  input-group__input panel__content__form__section__input',
+            className,
+            { 'input--dark': darkMode ? darkMode : true },
+            { input__small: !fullWidth },
           )}
-        </div>
-      </PanelFormSection>
-    );
-  },
-);
+          ref={ref}
+          spellCheck={false}
+          disabled={isReadOnly}
+          placeholder={placeholder}
+          value={displayValue}
+          onChange={changeValue}
+        />
+        {errorMessage && (
+          <div
+            className={clsx(
+              'panel__content__form__section__input-group__error-message input-group__error-message',
+              { input__small: !fullWidth },
+            )}
+          >
+            {errorMessage}
+          </div>
+        )}
+      </div>
+      {errorMessage && <PanelDivider />}
+    </PanelFormSection>
+  );
+});
 
 /**
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
@@ -186,7 +218,7 @@ export const PanelFormTextField = observer(
  */
 export const PanelFormBooleanField = observer(
   (props: {
-    name: string;
+    name?: string;
     prompt?: string;
     value: boolean | undefined;
     children?: React.ReactNode;
@@ -202,9 +234,11 @@ export const PanelFormBooleanField = observer(
 
     return (
       <PanelFormSection>
-        <div className="panel__content__form__section__header__label">
-          {capitalize(name)}
-        </div>
+        {name && (
+          <div className="panel__content__form__section__header__label">
+            {capitalize(name)}
+          </div>
+        )}
         <div
           className={clsx('panel__content__form__section__toggler', {
             'panel__content__form__section__toggler--disabled': isReadOnly,
@@ -228,3 +262,40 @@ export const PanelFormBooleanField = observer(
     );
   },
 );
+
+export const PanelFormListItems: React.FC<{
+  title?: string;
+  prompt?: string;
+  children: React.ReactNode;
+}> = (props) => {
+  const { children, title, prompt } = props;
+  return (
+    <PanelFormSection>
+      {title && (
+        <div className="panel__content__form__section__header__label">
+          {title}
+        </div>
+      )}
+      {prompt && (
+        <div className="panel__content__form__section__header__prompt">
+          {prompt}
+        </div>
+      )}
+      <div className="panel__content__form__section__list__items">
+        {children}
+      </div>
+    </PanelFormSection>
+  );
+};
+
+export const PanelFormActions: React.FC<{
+  children?: React.ReactNode;
+  className?: string;
+}> = (props) => {
+  const { children, className } = props;
+  return (
+    <div className={clsx('panel__content__form__actions', className)}>
+      {children}
+    </div>
+  );
+};

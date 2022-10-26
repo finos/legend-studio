@@ -23,6 +23,13 @@ import {
   PanelLoadingIndicator,
   PencilIcon,
   MarkdownTextViewer,
+  Modal,
+  PanelFormListItems,
+  PanelFormTextField,
+  PanelFormSection,
+  PanelFormActions,
+  PanelForm,
+  PanelDivider,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
 import { isNumber } from '@finos/legend-shared';
@@ -57,17 +64,6 @@ const CreateNewProjectTab = observer(() => {
     event,
   ) => {
     setDescription(event.target.value);
-  };
-  const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    setGroupId(event.target.value);
-  };
-  const changeProjectName: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setProjectName(event.target.value);
-  const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => {
-    setArtifactId(event.target.value);
   };
   // tags
   const [tagValue, setTagValue] = useState<string>('');
@@ -164,25 +160,22 @@ const CreateNewProjectTab = observer(() => {
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
-      <div className="workspace-setup__create-project-modal__form panel__content__form">
+      <PanelForm className="workspace-setup__create-project-modal__form">
         {documentation?.markdownText && (
           <div className="panel__content__form__section">
             <MarkdownTextViewer value={documentation.markdownText} />
           </div>
         )}
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Project Name
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            spellCheck={false}
-            placeholder="MyProject"
-            value={projectName}
-            onChange={changeProjectName}
-          />
-        </div>
-        <div className="panel__content__form__section">
+        <PanelFormTextField
+          name="Project Name"
+          placeholder="MyProject"
+          value={projectName}
+          update={(value: string | undefined): void =>
+            setProjectName(value ?? '')
+          }
+          isReadOnly={false}
+        />
+        <PanelFormSection>
           <div className="panel__content__form__section__header__label">
             Description
           </div>
@@ -190,54 +183,36 @@ const CreateNewProjectTab = observer(() => {
             className="panel__content__form__section__textarea"
             spellCheck={false}
             value={description}
+            placeholder="(optional)"
             onChange={changeDescription}
           />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Group ID
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The domain for artifacts generated as part of the project build
-            pipeline and published to an artifact repository
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            spellCheck={false}
-            placeholder={
-              applicationStore.config.options.projectCreationGroupIdSuggestion
-            }
-            value={groupId}
-            onChange={changeGroupId}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Artifact ID
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The identifier (within the domain specified by group ID) for
+        </PanelFormSection>
+        <PanelFormTextField
+          name="Group ID"
+          prompt="The domain for artifacts generated as part of the project build
+            pipeline and published to an artifact repository"
+          placeholder={
+            applicationStore.config.options.projectCreationGroupIdSuggestion
+          }
+          value={groupId}
+          update={(value: string | undefined): void => setGroupId(value ?? '')}
+        />
+        <PanelFormTextField
+          name="Artifact ID"
+          prompt="The identifier (within the domain specified by group ID) for
             artifacts generated as part of the project build pipeline and
-            published to an artifact repository
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            placeholder="my-project"
-            spellCheck={false}
-            value={artifactId}
-            onChange={changeArtifactId}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Tags
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            List of annotations to categorize projects
-          </div>
-          <div className="panel__content__form__section__list"></div>
+            published to an artifact repository"
+          placeholder="my-project"
+          value={artifactId}
+          update={(value: string | undefined): void =>
+            setArtifactId(value ?? '')
+          }
+        />
+        <PanelFormListItems
+          title="Tags"
+          prompt="List of annotations to categorize projects"
+        >
           <div
-            className="panel__content__form__section__list__items"
             data-testid={
               LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
             }
@@ -331,20 +306,20 @@ const CreateNewProjectTab = observer(() => {
               </div>
             )}
           </div>
-          {showEditTagValueInput !== true && (
-            <div className="panel__content__form__section__list__new-item__add">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={showAddTagInput}
-                tabIndex={-1}
-              >
-                Add Value
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="panel__content__form__actions">
+        </PanelFormListItems>
+        {showEditTagValueInput !== true && (
+          <div className="panel__content__form__section__list__new-item__add">
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={showAddTagInput}
+              tabIndex={-1}
+            >
+              Add Value
+            </button>
+          </div>
+        )}
+      </PanelForm>
+      <PanelFormActions>
         <button
           disabled={disableSubmit}
           className="btn btn--dark workspace-setup__create-project-modal__submit-btn"
@@ -352,7 +327,7 @@ const CreateNewProjectTab = observer(() => {
         >
           Create
         </button>
-      </div>
+      </PanelFormActions>
     </form>
   );
 });
@@ -372,17 +347,6 @@ const ImportProjectTab = observer(() => {
     event,
   ) => {
     setDescription(event.target.value);
-  };
-  const changeGroupId: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    setGroupId(event.target.value);
-  };
-  const changeProjectIdentifier: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setProjectIdentifier(event.target.value);
-  const changeArtifactId: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => {
-    setArtifactId(event.target.value);
   };
   // tags
   const [tagValue, setTagValue] = useState<string>('');
@@ -463,29 +427,28 @@ const ImportProjectTab = observer(() => {
       <PanelLoadingIndicator
         isLoading={setupStore.createOrImportProjectState.isInProgress}
       />
-      <div className="workspace-setup__create-project-modal__form panel__content__form">
+      <PanelForm className="workspace-setup__create-project-modal__form">
         {documentation?.markdownText && (
-          <div className="panel__content__form__section">
+          <PanelFormSection>
             <MarkdownTextViewer value={documentation.markdownText} />
-          </div>
+          </PanelFormSection>
         )}
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Project ID
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The ID of the project in the underlying version-control system
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            spellCheck={false}
+
+        <div>
+          <PanelFormTextField
+            name="Project ID"
+            prompt="The ID of the project in the underlying version-control system"
             placeholder="1234"
             value={projectIdentifier}
-            disabled={Boolean(importProjectSuccessReport)}
-            onChange={changeProjectIdentifier}
+            update={(value: string | undefined): void =>
+              setProjectIdentifier(value ?? '')
+            }
+            isReadOnly={Boolean(importProjectSuccessReport)}
           />
         </div>
-        <div className="panel__content__form__section">
+
+        <PanelDivider />
+        <PanelFormSection>
           <div className="panel__content__form__section__header__label">
             Description
           </div>
@@ -493,56 +456,38 @@ const ImportProjectTab = observer(() => {
             className="panel__content__form__section__textarea"
             spellCheck={false}
             value={description}
+            placeholder="(optional)"
             onChange={changeDescription}
           />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Group ID
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The domain for artifacts generated as part of the project build
-            pipeline and published to an artifact repository
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            spellCheck={false}
-            placeholder={
-              applicationStore.config.options.projectCreationGroupIdSuggestion
-            }
-            value={groupId}
-            disabled={Boolean(importProjectSuccessReport)}
-            onChange={changeGroupId}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Artifact ID
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            The identifier (within the domain specified by group ID) for
+        </PanelFormSection>
+        <PanelFormTextField
+          name="Group ID"
+          prompt="The domain for artifacts generated as part of the project build
+            pipeline and published to an artifact repository"
+          placeholder={
+            applicationStore.config.options.projectCreationGroupIdSuggestion
+          }
+          value={groupId}
+          update={(value: string | undefined): void => setGroupId(value ?? '')}
+          isReadOnly={Boolean(importProjectSuccessReport)}
+        />
+        <PanelFormTextField
+          name="Artifact ID"
+          prompt="The identifier (within the domain specified by group ID) for
             artifacts generated as part of the project build pipeline and
-            published to an artifact repository
-          </div>
-          <input
-            className="panel__content__form__section__input"
-            placeholder="my-project"
-            spellCheck={false}
-            value={artifactId}
-            disabled={Boolean(importProjectSuccessReport)}
-            onChange={changeArtifactId}
-          />
-        </div>
-        <div className="panel__content__form__section">
-          <div className="panel__content__form__section__header__label">
-            Tags
-          </div>
-          <div className="panel__content__form__section__header__prompt">
-            List of annotations to categorize projects
-          </div>
-          <div className="panel__content__form__section__list"></div>
+            published to an artifact repository"
+          placeholder="my-project"
+          value={artifactId}
+          update={(value: string | undefined): void =>
+            setArtifactId(value ?? '')
+          }
+          isReadOnly={Boolean(importProjectSuccessReport)}
+        />
+        <PanelFormListItems
+          title="Tags"
+          prompt="List of annotations to categorize projects"
+        >
           <div
-            className="panel__content__form__section__list__items"
             data-testid={
               LEGEND_STUDIO_TEST_ID.PANEL_CONTENT_FORM_SECTION_LIST_ITEMS
             }
@@ -636,18 +581,19 @@ const ImportProjectTab = observer(() => {
               </div>
             )}
           </div>
-          {showEditTagValueInput !== true && (
-            <div className="panel__content__form__section__list__new-item__add">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                onClick={showAddTagInput}
-                tabIndex={-1}
-              >
-                Add Value
-              </button>
-            </div>
-          )}
-        </div>
+        </PanelFormListItems>
+        {showEditTagValueInput !== true && (
+          <div className="panel__content__form__section__list__new-item__add">
+            <button
+              className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
+              onClick={showAddTagInput}
+              tabIndex={-1}
+            >
+              Add Value
+            </button>
+          </div>
+        )}
+
         {Boolean(importProjectSuccessReport) && (
           <div className="workspace-setup__create-project-modal__success">
             <div className="workspace-setup__create-project-modal__success__label">
@@ -666,8 +612,8 @@ const ImportProjectTab = observer(() => {
             </div>
           </div>
         )}
-      </div>
-      <div className="panel__content__form__actions">
+      </PanelForm>
+      <PanelFormActions>
         <button
           disabled={disableSubmit}
           className="btn btn--dark workspace-setup__create-project-modal__submit-btn"
@@ -675,7 +621,7 @@ const ImportProjectTab = observer(() => {
         >
           {importProjectSuccessReport ? 'Review' : 'Import'}
         </button>
-      </div>
+      </PanelFormActions>
     </form>
   );
 });
@@ -710,7 +656,7 @@ export const CreateProjectModal = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark workspace-setup__create-project-modal">
+      <Modal darkMode={true} className="workspace-setup__create-project-modal">
         <div className="workspace-setup__create-project-modal__header">
           <div className="workspace-setup__create-project-modal__header__label">
             Create Project
@@ -758,7 +704,7 @@ export const CreateProjectModal = observer(() => {
             <ImportProjectTab />
           )}
         </div>
-      </div>
+      </Modal>
     </Dialog>
   );
 });

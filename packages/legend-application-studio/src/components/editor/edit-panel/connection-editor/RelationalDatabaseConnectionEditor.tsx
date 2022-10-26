@@ -45,6 +45,8 @@ import {
   PanelListSelectorItemLabel,
   PanelFormBooleanField,
   PanelHeaderActions,
+  PanelDivider,
+  PanelFormSection,
 } from '@finos/legend-art';
 import { capitalize, prettyCONSTName } from '@finos/legend-shared';
 
@@ -147,7 +149,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
     const SQLValue = sourceSpec.testDataSetupSqls.join('\n');
 
     return (
-      <div className="panel__content__form__section">
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {capitalize('test data setup SQL')}
         </div>
@@ -164,7 +166,7 @@ const LocalH2DatasourceSpecificationEditor = observer(
             language={EDITOR_LANGUAGE.SQL}
           />
         </div>
-      </div>
+      </PanelFormSection>
     );
   },
 );
@@ -839,8 +841,8 @@ const RelationalConnectionStoreEditor = observer(
 
     return (
       <div className="relational-connection-editor">
-        <div className="panel__content relational-connection-editor__auth__content">
-          <div className="panel__content__form__section">
+        <PanelContent className="relational-connection-editor__auth__content">
+          <PanelFormSection>
             <div className="panel__content__form__section__header__label">
               Store
             </div>
@@ -852,13 +854,15 @@ const RelationalConnectionStoreEditor = observer(
               disabled={isReadOnly}
               hasError={isStoreEmpty}
             />
-          </div>
-          <div>
-            <button className="btn--dark" onClick={openDatabaseBuilder}>
+            <PanelDivider />
+            <button
+              className="relational-connection-editor-btn btn--dark"
+              onClick={openDatabaseBuilder}
+            >
               Build Database
             </button>
-          </div>
-        </div>
+          </PanelFormSection>
+        </PanelContent>
         <DatabaseBuilder
           databaseBuilderState={databaseBuilderState}
           isReadOnly={isReadOnly}
@@ -1357,9 +1361,8 @@ const RelationalConnectionGeneralEditor = observer(
           <ResizablePanel size={200} minSize={15}>
             <Panel>
               <PanelHeader title="general"></PanelHeader>
-
-              <div className="panel__content relational-connection-editor__general">
-                <div className="panel__content__form__section">
+              <PanelContent className="relational-connection-editor__general">
+                <PanelFormSection>
                   <div className="panel__content__form__section__header__label">
                     Database type
                   </div>
@@ -1369,7 +1372,7 @@ const RelationalConnectionGeneralEditor = observer(
                     value={selectedType}
                     darkMode={true}
                   />
-                </div>
+                </PanelFormSection>
                 <PanelFormBooleanField
                   isReadOnly={isReadOnly}
                   value={connection.quoteIdentifiers}
@@ -1379,7 +1382,7 @@ const RelationalConnectionGeneralEditor = observer(
                     dBConnection_setQuoteIdentifiers(connection, Boolean(value))
                   }
                 />
-              </div>
+              </PanelContent>
             </Panel>
           </ResizablePanel>
           <ResizablePanelSplitter />
@@ -1390,7 +1393,7 @@ const RelationalConnectionGeneralEditor = observer(
                   <div className="relational-connection-editor__auth">
                     <PanelHeader title="datasource spec"></PanelHeader>
                     <div className="panel__content relational-connection-editor__auth__content">
-                      <div className="panel__content__form__section">
+                      <PanelFormSection>
                         <div className="panel__content__form__section__header__label">
                           Datasource
                         </div>
@@ -1400,7 +1403,7 @@ const RelationalConnectionGeneralEditor = observer(
                           value={selectedSourceSpec}
                           darkMode={true}
                         />
-                      </div>
+                      </PanelFormSection>
                       <div className="relational-connection-editor__auth__properties">
                         {renderDatasourceSpecificationEditor(
                           connection,
@@ -1415,8 +1418,8 @@ const RelationalConnectionGeneralEditor = observer(
                 <ResizablePanel>
                   <div className="relational-connection-editor__source">
                     <PanelHeader title="authentication spec"></PanelHeader>
-                    <div className="panel__content relational-connection-editor__source__content">
-                      <div className="panel__content__form__section">
+                    <PanelContent className="relational-connection-editor__source__content">
+                      <PanelFormSection>
                         <div className="panel__content__form__section__header__label">
                           Authentication
                         </div>
@@ -1426,7 +1429,7 @@ const RelationalConnectionGeneralEditor = observer(
                           value={selectedAuth}
                           darkMode={true}
                         />
-                      </div>
+                      </PanelFormSection>
                       <div className="relational-connection-editor__source__properties">
                         {renderAuthenticationStrategyEditor(
                           connection,
@@ -1434,7 +1437,7 @@ const RelationalConnectionGeneralEditor = observer(
                           plugins,
                         )}
                       </div>
-                    </div>
+                    </PanelContent>
                   </div>
                 </ResizablePanel>
               </ResizablePanelGroup>

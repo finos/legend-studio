@@ -65,6 +65,8 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
   STD_DEV_SAMPLE = 'meta::pure::functions::math::stdDevSample',
   SUM = 'meta::pure::functions::math::sum',
   UNIQUE_VALUE_ONLY = 'meta::pure::functions::collection::uniqueValueOnly',
+  // watermark
+  WATERMARK = 'meta::datalake::functions::forWatermark',
   // OLAP
   OLAP_GROUPBY = 'meta::pure::tds::olapGroupBy',
   OLAP_RANK = 'meta::pure::functions::math::olap::rank',

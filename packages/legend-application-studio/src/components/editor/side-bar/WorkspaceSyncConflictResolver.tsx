@@ -27,6 +27,10 @@ import {
   TimesIcon,
   Dialog,
   PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import type {
   EntityChangeConflict,
@@ -104,11 +108,9 @@ export const WorkspaceSyncConflictResolver = observer(() => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark editor-modal query-builder__dialog">
-        <div className="modal__header">
-          <div className="modal__title">Resolve Merge Conflicts</div>
-        </div>
-        <div className="modal__body">
+      <Modal darkMode={true} className="editor-modal query-builder__dialog">
+        <ModalHeader title="Resolve Merge Conflicts" />
+        <ModalBody>
           <ResizablePanelGroup orientation="vertical">
             <ResizablePanel size={350} minSize={350}>
               <div className="panel explorer">
@@ -251,8 +253,8 @@ export const WorkspaceSyncConflictResolver = observer(() => {
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
-        </div>
-        <div className="modal__footer">
+        </ModalBody>
+        <ModalFooter>
           <button
             className="btn btn--dark"
             disabled={Boolean(conflicts.length)}
@@ -264,8 +266,8 @@ export const WorkspaceSyncConflictResolver = observer(() => {
           <button className="btn btn--dark" title="Aborts" onClick={abort}>
             Abort
           </button>
-        </div>
-      </div>
+        </ModalFooter>
+      </Modal>
     </Dialog>
   );
 });

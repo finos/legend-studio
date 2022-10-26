@@ -24,6 +24,7 @@ import {
   ContextMenu,
   Dialog,
   BlankPanelPlaceholder,
+  ModalTitle,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import type { ServiceTestSuite } from '@finos/legend-graph';
@@ -119,7 +120,7 @@ export const RenameModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Rename</div>
+          <ModalTitle title="Rename" />
           <div>
             <input
               className="panel__content__form__section__input"

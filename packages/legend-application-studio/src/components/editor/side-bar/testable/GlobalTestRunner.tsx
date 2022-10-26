@@ -35,6 +35,10 @@ import {
   CircleNotchIcon,
   EmptyCircleIcon,
   PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import {
   AssertFail,
@@ -159,14 +163,12 @@ const TestFailViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
+        <Modal darkMode={true} className="editor-modal">
           <PanelLoadingIndicator
             isLoading={globalTestRunnerState.isDispatchingAction}
           />
-          <div className="modal__header">
-            <div className="modal__title">{id}</div>
-          </div>
-          <div className="modal__body">
+          <ModalHeader title={id} />
+          <ModalBody>
             {failure instanceof TestError && (
               <TextInputEditor
                 inputValue={failure.error}
@@ -190,16 +192,16 @@ const TestFailViewer = observer(
                   language={EDITOR_LANGUAGE.TEXT}
                 />
               )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closeLogViewer}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

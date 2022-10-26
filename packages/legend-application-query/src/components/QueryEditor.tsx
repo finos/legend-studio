@@ -38,6 +38,11 @@ import {
   MenuContentItemIcon,
   CheckIcon,
   MenuContentItemLabel,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalTitle,
 } from '@finos/legend-art';
 import {
   debounce,
@@ -103,7 +108,7 @@ const QueryExportDialogContent = observer(
 
     return (
       <>
-        <div className="modal__body">
+        <ModalBody>
           <PanelLoadingIndicator
             isLoading={exportState.persistQueryState.isInProgress}
           />
@@ -114,8 +119,8 @@ const QueryExportDialogContent = observer(
             value={exportState.queryName}
             onChange={changeName}
           />
-        </div>
-        <div className="modal__footer">
+        </ModalBody>
+        <ModalFooter>
           {allowSave && (
             <button
               className="btn modal__footer__close-btn btn--dark"
@@ -133,7 +138,7 @@ const QueryExportDialogContent = observer(
           >
             Create
           </button>
-        </div>
+        </ModalFooter>
       </>
     );
   },
@@ -154,12 +159,10 @@ const QueryExport = observer(() => {
         paper: 'editor-modal__content',
       }}
     >
-      <div className="modal modal--dark query-export">
-        <div className="modal__header">
-          <div className="modal__title">Save Query</div>
-        </div>
+      <Modal darkMode={true} className="query-export">
+        <ModalHeader title="save query" />
         {exportState && <QueryExportDialogContent exportState={exportState} />}
-      </div>
+      </Modal>
     </Dialog>
   );
 });
@@ -246,8 +249,8 @@ const QueryLoader = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark search-modal">
-          <div className="modal__title">Load Query</div>
+        <Modal darkMode={true} className="search-modal">
+          <ModalTitle title="Load Query" />
           <div className="query-editor__query-loader__filter-section">
             <div className="query-editor__query-loader__filter-section__section__toggler">
               <button
@@ -371,7 +374,7 @@ const QueryLoader = observer(
               Close
             </button>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },
