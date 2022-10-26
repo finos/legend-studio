@@ -362,8 +362,18 @@ export const setupPureLanguageService = (
   // See https://github.com/microsoft/monaco-editor/issues/102#issuecomment-1282897640
   monacoEditorAPI.addKeybindingRules([
     {
+      // disable show command center
+      keybinding: KeyCode.F1,
+      command: null,
+    },
+    {
       // disable show error command
       keybinding: KeyCode.F8,
+      command: null,
+    },
+    {
+      // disable toggle debugger breakpoint
+      keybinding: KeyCode.F9,
       command: null,
     },
   ]);

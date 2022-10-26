@@ -71,11 +71,13 @@ const ShareProjectModal = observer(
       : applicationStore.navigator.generateAddress(
           generateViewProjectRoute(projectId),
         );
-    const copyProjectLink = (): void => {
+    const copyProjectElementLink = (): void => {
       applicationStore
         .copyTextToClipboard(projectLink)
         .then(() =>
-          applicationStore.notifySuccess('Copied project link to clipboard'),
+          applicationStore.notifySuccess(
+            'Copied project element link to clipboard',
+          ),
         )
         .catch(applicationStore.alertUnhandledError)
         .finally(() => closeModal());
@@ -136,7 +138,7 @@ const ShareProjectModal = observer(
             <button
               className="btn--wide btn--dark"
               disabled={isFetchingProject}
-              onClick={copyProjectLink}
+              onClick={copyProjectElementLink}
             >
               Copy Link
             </button>

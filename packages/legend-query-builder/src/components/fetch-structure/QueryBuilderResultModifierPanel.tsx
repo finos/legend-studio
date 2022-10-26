@@ -76,7 +76,10 @@ const ColumnSortEditor = observer(
         <CustomSelectorInput
           className="query-builder__projection__options__sort__dropdown"
           options={projectionOptions}
-          disabled={projectionOptions.length <= 1}
+          disabled={
+            projectionOptions.length < 1 ||
+            (projectionOptions.length === 1 && Boolean(value))
+          }
           onChange={onChange}
           value={value}
           darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}

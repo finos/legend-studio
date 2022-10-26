@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { describe, test, jest, expect } from '@jest/globals';
+import { describe, test, expect } from '@jest/globals';
 import { fireEvent, getByText, waitFor } from '@testing-library/react';
 import {
-  type TEMPORARY__JestMock,
   integrationTest,
   guaranteeNonNullable,
+  createMock,
 } from '@finos/legend-shared';
 import { MockedMonacoEditorInstance } from '@finos/legend-art';
 import { QUERY_BUILDER_TEST_ID } from '@finos/legend-query-builder';
@@ -94,14 +94,14 @@ describe(
           },
         );
 
-        const MockedGlobalCompileInFormModeFn = jest.fn<TEMPORARY__JestMock>();
+        const MockedGlobalCompileInFormModeFn = createMock();
         MOCK__editorStore.graphState.globalCompileInFormMode =
           MockedGlobalCompileInFormModeFn;
-        MockedGlobalCompileInFormModeFn.mockReturnValue(
-          Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+        MockedGlobalCompileInFormModeFn.mockResolvedValue(
+          FormModeCompilationOutcome.SUCCEEDED,
         );
         MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
-          jest.fn<TEMPORARY__JestMock>();
+          createMock();
         MockedMonacoEditorInstance.getValue.mockReturnValue('');
 
         await TEST__openElementFromExplorerTree(classPath, renderResult);

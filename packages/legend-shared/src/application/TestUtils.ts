@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { noop } from '../CommonUtils.js';
+import { noop, type SuperGenericFunction } from '../CommonUtils.js';
+import { jest } from '@jest/globals';
 
 /**
  * This is a pass through worker, it will post message, but do not ever reply so `onmessage` and `onerror` are never called
@@ -44,11 +45,22 @@ export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
 /**
  * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)
  * so we're stubbing this type for now.
- *
- * Also, the type of `jest.fn` is not compatible with a lot of mocks right now
- *
- * TODO: We will remove these when Jest sort this out
  * See https://github.com/facebook/jest/issues/12424
+ * See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/62037
  */
 export type TEMPORARY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
-export type TEMPORARY__JestMock = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * This is a more ergonomic way to type mocks produced by `jest.fn`
+ * See https://github.com/facebook/jest/issues/12479
+ */
+export const createMock = <T extends SuperGenericFunction>(
+  reference?: T,
+): jest.Mock<T> => jest.fn(reference);
+
+/**
+ * Since `jest.spyOn` has not been made global, this is just
+ * a more ergonomic version of it
+ * See https://github.com/jest-community/eslint-plugin-jest/issues/35#issuecomment-388386336
+ */
+export const createSpy = jest.spyOn;

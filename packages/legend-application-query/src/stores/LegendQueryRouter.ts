@@ -69,10 +69,16 @@ export const generateQuerySetupRoute = (
   addQueryParamsStringToUrl(
     generatePath(LEGEND_QUERY_ROUTE_PATTERN.SETUP, {}),
     stringifyQueryParams({
-      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]: showAllGroups,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]: showAllGroups
+        ? encodeURIComponent(showAllGroups)
+        : showAllGroups,
       [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]:
-        showAdvancedActions,
-      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]: tag,
+        showAdvancedActions
+          ? encodeURIComponent(showAdvancedActions)
+          : undefined,
+      [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]: tag
+        ? encodeURIComponent(tag)
+        : undefined,
     }),
   );
 
@@ -143,7 +149,9 @@ export const generateServiceQueryCreatorRoute = (
       [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: servicePath,
     }),
     stringifyQueryParams({
-      [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey,
+      [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]: executionKey
+        ? encodeURIComponent(executionKey)
+        : executionKey,
     }),
   );
 

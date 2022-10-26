@@ -27,6 +27,14 @@ import { NotificationManager } from './NotificationManager.js';
 const APP_CONTAINER_ID = 'app.container';
 const APP_BACKDROP_CONTAINER_ID = 'app.backdrop-container';
 
+const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
+  'F8', // Chrome: Developer Tools > Sources: Run or pause script
+  'F10', // Chrome: Developer Tools > Sources: Step over next function call
+  'F11', // Chrome: Developer Tools > Sources: Step into next function call
+  'Cmd+Shift+p', // Chrome: Developer Tools: Open Command Prompt inside developer tools
+  'Cmd+p', // Print
+];
+
 const buildReactHotkeysConfiguration = (
   commandKeyMap: Map<string, string | undefined>,
   handlerCreator: (
@@ -45,6 +53,16 @@ const buildReactHotkeysConfiguration = (
       handlers[commandKey] = handlerCreator(keyCombination);
     }
   });
+
+  // Disable platform native keyboard shortcuts
+  const PLATFORM_NATIVE_KEYBOARD_COMMAND =
+    'INTERNAL__PLATFORM_NATIVE_KEYBOARD_COMMAND';
+  keyMap[PLATFORM_NATIVE_KEYBOARD_COMMAND] = PLATFORM_NATIVE_KEYBOARD_SHORTCUTS;
+  handlers[PLATFORM_NATIVE_KEYBOARD_COMMAND] = (event?: KeyboardEvent) => {
+    // prevent default from potentially clashing key combinations
+    event?.preventDefault();
+  };
+
   return [keyMap, handlers];
 };
 
@@ -76,6 +94,10 @@ export const LegendApplicationComponentFrameworkProvider = observer(
     const [keyMap, hotkeyHandlerMap] = buildReactHotkeysConfiguration(
       applicationStore.keyboardShortcutsService.commandKeyMap,
       (keyCombination: string) => (event?: KeyboardEvent) => {
+        // prevent default from potentially clashing key combinations with platform native keyboard shortcuts
+        if (PLATFORM_NATIVE_KEYBOARD_SHORTCUTS.includes(keyCombination)) {
+          event?.preventDefault();
+        }
         // NOTE: Though tempting since it's a good way to simplify and potentially avoid conflicts,
         // we should not call `preventDefault()` because if we have any hotkey which is too short, such as `r`, `a`
         // we risk blocking some very common interaction, i.e. user typing, or even constructing longer

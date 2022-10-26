@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
   type PlainObject,
   type TEMPORARY__JestMatcher,
   unitTest,
   guaranteeNonNullable,
+  createSpy,
 } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
@@ -222,27 +223,21 @@ const testDependencyElements = async (
     ProjectConfiguration.serialization.fromJson(PROJECT_CONFIG),
   );
 
-  jest
-    .spyOn(
-      guaranteeNonNullable(editorStore.depotServerClient),
-      'collectDependencyEntities',
-    )
-    .mockReturnValue(Promise.resolve(dependencyEntities));
+  createSpy(
+    guaranteeNonNullable(editorStore.depotServerClient),
+    'collectDependencyEntities',
+  ).mockResolvedValue(dependencyEntities);
   if (projectsData) {
-    jest
-      .spyOn(
-        guaranteeNonNullable(editorStore.depotServerClient),
-        'getProjectById',
-      )
-      .mockReturnValue(Promise.resolve(projectsData));
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'getProjectById',
+    ).mockResolvedValue(projectsData);
   }
   if (dependencyInfo) {
-    jest
-      .spyOn(
-        guaranteeNonNullable(editorStore.depotServerClient),
-        'analyzeDependencyTree',
-      )
-      .mockReturnValue(Promise.resolve(dependencyInfo));
+    createSpy(
+      guaranteeNonNullable(editorStore.depotServerClient),
+      'analyzeDependencyTree',
+    ).mockResolvedValue(dependencyInfo);
   }
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);

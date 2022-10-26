@@ -187,7 +187,10 @@ export const QueryBuilderClassSelector = observer(
                   ? 'Choose a class...'
                   : noMatchMessage ?? 'No class found'
               }
-              disabled={classOptions.length <= 1}
+              disabled={
+                classOptions.length < 1 ||
+                (classOptions.length === 1 && Boolean(selectedClassOption))
+              }
               noMatchMessage={noMatchMessage}
               options={classOptions}
               onChange={changeClass}

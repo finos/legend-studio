@@ -24,5 +24,6 @@
  *
  * @workaround ESM
  * See https://github.com/microsoft/TypeScript/issues/49298
+ * See https://github.com/krisk/Fuse/pull/692
  */
 export { default as Fuse } from 'fuse.js';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import {
   type RenderResult,
   getByPlaceholderText,
@@ -29,6 +29,7 @@ import {
   type PlainObject,
   integrationTest,
   prettyCONSTName,
+  createSpy,
 } from '@finos/legend-shared';
 import {
   TEST_DATA__DefaultDepotInfo,
@@ -161,18 +162,14 @@ test(
       'id1',
     );
 
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'registerService',
-      )
-      .mockReturnValue(Promise.resolve(result));
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'activateService',
-      )
-      .mockReturnValue(Promise.resolve());
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(result);
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
 
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
@@ -264,18 +261,14 @@ test(
       'id1',
     );
 
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'registerService',
-      )
-      .mockReturnValue(Promise.resolve(result));
-    jest
-      .spyOn(
-        MOCK__editorStore.graphManagerState.graphManager,
-        'activateService',
-      )
-      .mockReturnValue(Promise.resolve());
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'registerService',
+    ).mockResolvedValue(result);
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'activateService',
+    ).mockResolvedValue();
 
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>

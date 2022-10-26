@@ -444,8 +444,9 @@ export const EnumerationMappingEditor = observer(
                   'mapping-element-editor__metadata__chunk',
                   'mapping-element-editor__metadata__driver-chunk',
                   'background--primitive',
+                  'mapping-element-editor__metadata__source-chunk--primitive',
                   {
-                    'mapping-element-editor__metadata__source--none':
+                    'mapping-element-editor__metadata__source-chunk--none':
                       !sourceType,
                   },
                 )}
