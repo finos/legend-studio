@@ -42,8 +42,7 @@ import {
   Dialog,
   Panel,
   PanelForm,
-  PanelSection,
-  PanelFormTextEditor,
+  PanelFormTextField,
   CheckSquareIcon,
   SquareIcon,
   ExclamationTriangleIcon,
@@ -150,29 +149,27 @@ const ProjectStructureEditor = observer(
         </div>
 
         <PanelForm>
-          <PanelSection>
-            <PanelFormTextEditor
-              isReadOnly={isReadOnly}
-              value={projectConfig.groupId}
-              name="Group ID"
-              prompt="The domain for artifacts generated as part of the project build
+          <PanelFormTextField
+            isReadOnly={isReadOnly}
+            value={projectConfig.groupId}
+            name="Group ID"
+            prompt="The domain for artifacts generated as part of the project build
               pipeline and published to an artifact repository"
-              update={(value: string | undefined): void =>
-                projectConfig.setGroupId(value ?? '')
-              }
-            />
-            <PanelFormTextEditor
-              isReadOnly={isReadOnly}
-              value={projectConfig.artifactId}
-              name="Artifact ID"
-              prompt="The identifier (within the domain specified by group ID) for
+            update={(value: string | undefined): void =>
+              projectConfig.setGroupId(value ?? '')
+            }
+          />
+          <PanelFormTextField
+            isReadOnly={isReadOnly}
+            value={projectConfig.artifactId}
+            name="Artifact ID"
+            prompt="The identifier (within the domain specified by group ID) for
               artifacts generated as part of the project build pipeline and
               published to an artifact repository"
-              update={(value: string | undefined): void =>
-                projectConfig.setArtifactId(value ?? '')
-              }
-            />
-          </PanelSection>
+            update={(value: string | undefined): void =>
+              projectConfig.setArtifactId(value ?? '')
+            }
+          />
         </PanelForm>
       </div>
     );

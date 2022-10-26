@@ -16,6 +16,7 @@
 
 import { forwardRef } from 'react';
 import { clsx } from 'clsx';
+import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
 export const MenuContent = forwardRef<
   HTMLDivElement,
@@ -48,24 +49,15 @@ export const MenuContentItem: React.FC<{
   );
 };
 
-export const MenuContentDivider: React.FC<{
-  className?: string;
-}> = (props) => {
-  const { className, ...otherProps } = props;
-  return <div className={clsx('menu__divider', className)} {...otherProps} />;
-};
+export const MenuContentDivider = generateSimpleDIVComponent(
+  'MenuContentDivider',
+  'menu__divider',
+);
 
-export const MenuContentItemIcon: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { className, children, ...otherProps } = props;
-  return (
-    <div className={clsx('menu__item__icon', className)} {...otherProps}>
-      {children}
-    </div>
-  );
-};
+export const MenuContentItemIcon = generateSimpleDIVComponent(
+  'MenuContentItemIcon',
+  'menu__item__icon',
+);
 
 export const MenuContentItemBlankIcon: React.FC<{
   className?: string;
@@ -76,14 +68,7 @@ export const MenuContentItemBlankIcon: React.FC<{
   );
 };
 
-export const MenuContentItemLabel: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { className, children, ...otherProps } = props;
-  return (
-    <div className={clsx('menu__item__label', className)} {...otherProps}>
-      {children}
-    </div>
-  );
-};
+export const MenuContentItemLabel = generateSimpleDIVComponent(
+  'MenuContentItemLabel',
+  'menu__item__label',
+);

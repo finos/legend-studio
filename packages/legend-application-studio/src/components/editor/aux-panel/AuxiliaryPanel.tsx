@@ -22,12 +22,17 @@ import {
   ChevronDownIcon,
   XIcon,
   PanelContent,
+  Badge,
+  PanelHeader,
+  PanelHeaderActions,
+  PanelHeaderActionItem,
 } from '@finos/legend-art';
 import { Console } from './Console.js';
 import { AUX_PANEL_MODE } from '../../../stores/EditorConfig.js';
 import { isNonNullable } from '@finos/legend-shared';
 import { DevTool } from './DevTool.js';
 import { useEditorStore } from '../EditorStoreProvider.js';
+import { Problems } from './Problems.js';
 
 export const AuxiliaryPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -45,6 +50,7 @@ export const AuxiliaryPanel = observer(() => {
       name: string;
       icon?: React.ReactNode;
       isVisible: boolean;
+      counter?: number;
     };
   } = {
     [AUX_PANEL_MODE.CONSOLE]: {
@@ -58,6 +64,13 @@ export const AuxiliaryPanel = observer(() => {
       name: 'DEVELOPER TOOLS',
       icon: undefined,
       isVisible: true,
+    },
+    [AUX_PANEL_MODE.PROBLEMS]: {
+      mode: AUX_PANEL_MODE.PROBLEMS,
+      name: 'PROBLEMS',
+      icon: undefined,
+      isVisible: true,
+      counter: editorStore.graphState.problems.length,
     },
   };
 
@@ -75,7 +88,7 @@ export const AuxiliaryPanel = observer(() => {
 
   return (
     <div className="panel auxiliary-panel">
-      <div className="panel__header">
+      <PanelHeader>
         <div className="auxiliary-panel__header__tabs">
           {tabsToShow
             .map((tab) => auxTabMap[tab])
@@ -97,15 +110,20 @@ export const AuxiliaryPanel = observer(() => {
                 )}
                 <div className="auxiliary-panel__header__tab__title">
                   {tab.name}
+                  {tab.counter !== undefined && (
+                    <Badge
+                      title={tab.counter.toString()}
+                      className="auxiliary-panel__header__tab__title__problem__count"
+                    />
+                  )}
                 </div>
               </button>
             ))}
         </div>
-        <div className="auxiliary-panel__header__actions">
-          <button
+        <PanelHeaderActions>
+          <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={toggleExpandAuxPanel}
-            tabIndex={-1}
             title="Toggle expand/collapse"
           >
             {editorStore.auxPanelDisplayState.isMaximized ? (
@@ -113,18 +131,22 @@ export const AuxiliaryPanel = observer(() => {
             ) : (
               <ChevronUpIcon />
             )}
-          </button>
-          <button
+          </PanelHeaderActionItem>
+          <PanelHeaderActionItem
             className="auxiliary-panel__header__action"
             onClick={closePanel}
-            tabIndex={-1}
             title="Close"
           >
             <XIcon />
-          </button>
-        </div>
-      </div>
+          </PanelHeaderActionItem>
+        </PanelHeaderActions>
+      </PanelHeader>
       <PanelContent>
+        {isTabVisible(AUX_PANEL_MODE.PROBLEMS) && (
+          <div className="auxiliary-panel__content__tab">
+            <Problems />
+          </div>
+        )}
         {isTabVisible(AUX_PANEL_MODE.CONSOLE) && (
           <div className="auxiliary-panel__content__tab">
             <Console />

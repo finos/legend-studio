@@ -68,6 +68,10 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from './action/analytics/MappingModelCoverageAnalysis.js';
 import type { SchemaSet } from '../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
+import type {
+  CompilationResult,
+  TextCompilationResult,
+} from './action/compilation/CompilationResult.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -83,6 +87,14 @@ export interface GraphBuilderOptions {
    * See https://github.com/finos/legend-studio/issues/1067
    */
   TEMPORARY__preserveSectionIndex?: boolean;
+  /**
+   * If strict mode is enabled, certain validations, which, in normal mode, are often considered as warnings or non-problems,
+   * will be treated as error and will be thrown. This is to compensate for discrepancies in strictness between engine compilation
+   * and graph builder algorithm. Ideally, a lot of these errors will eventually be treated as errors by engine compilation.
+   *
+   * See https://github.com/finos/legend-studio/issues/941
+   */
+  strict?: boolean;
 }
 
 export interface ExecutionOptions {
@@ -238,13 +250,16 @@ export abstract class AbstractPureGraphManager {
   abstract compileEntities(entities: Entity[]): Promise<void>;
   abstract compileGraph(
     graph: PureModel,
-    options?: { onError?: () => void; keepSourceInformation?: boolean },
-  ): Promise<void>;
+    options?: {
+      onError?: () => void;
+      keepSourceInformation?: boolean;
+    },
+  ): Promise<CompilationResult>;
   abstract compileText(
     graphGrammar: string,
     graph: PureModel,
     options?: { onError?: () => void },
-  ): Promise<Entity[]>;
+  ): Promise<TextCompilationResult>;
   abstract getLambdaReturnType(
     lambda: RawLambda,
     graph: PureModel,

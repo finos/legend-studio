@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type SuperGenericFunction, printObject } from '../CommonUtils.js';
+import {
+  type SuperGenericFunction,
+  printObject,
+  uuid,
+} from '../CommonUtils.js';
 
 /**
  * A generic error that can be used for building other errors in the application
@@ -29,6 +33,8 @@ import { type SuperGenericFunction, printObject } from '../CommonUtils.js';
  * See https://github.com/microsoft/TypeScript/issues/13219
  */
 export abstract class ApplicationError extends Error {
+  readonly uuid = uuid();
+
   constructor(message: string | undefined) {
     super();
     this.message =

@@ -18,12 +18,20 @@
 
 .badge {
   color: var(--color-dark-grey-250);
+  height: 1.6rem;
+  line-height: 1.6rem;
   background: var(--color-dark-grey-400);
   border-radius: 0.2rem;
   font-size: 1rem;
   font-weight: 500;
   padding: 0 0.5rem;
-  padding: 0.2rem 0.4rem;
-  margin: 0 0.5rem 0 1rem;
   white-space: nowrap;
+}
+
+.badge--right {
+  margin-left: 0.5rem;
+}
+
+.badge--left {
+  margin-right: 0.5rem;
 }

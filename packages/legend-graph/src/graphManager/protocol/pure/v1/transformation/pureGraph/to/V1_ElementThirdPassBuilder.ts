@@ -118,18 +118,17 @@ export class V1_ElementThirdPassBuilder
     const uniqueProperties = new Set<string>();
     element.properties.forEach((property) => {
       if (uniqueProperties.has(property.name)) {
+        const message = `Found duplicated property '${property.name}' in class '${_class.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated property '${property.name}' in class '${_class.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       _class.properties.push(V1_buildProperty(property, this.context, _class));
       uniqueProperties.add(property.name);
@@ -148,18 +147,17 @@ export class V1_ElementThirdPassBuilder
     const first = guaranteeNonNullable(element.properties[0]);
     const second = guaranteeNonNullable(element.properties[1]);
     if (first.name === second.name) {
+      const message = `Found duplicated property '${element.properties[0]?.name}' in association '${element.path}'`;
       /**
-       * This test is skipped because we want to temporarily relax graph building algorithm
-       * to ease Pure -> Legend migration push.
-       * See https://github.com/finos/legend-studio/issues/660
+       * In strict-mode, graph builder will consider this as an error
+       * See https://github.com/finos/legend-studio/issues/941
        *
        * @discrepancy graph-building
        */
-      this.context.log.warn(
-        LogEvent.create(
-          `Found duplicated property '${element.properties[0]?.name}' in association '${element.name}'`,
-        ),
-      );
+      if (this.context.options?.strict) {
+        throw new GraphBuilderError(message);
+      }
+      this.context.log.warn(LogEvent.create(message));
     }
     association.properties = [
       V1_buildAssociationProperty(first, second, this.context, association),

@@ -85,6 +85,7 @@ import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSL_Mapping_Helpe
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
+import { GraphBuilderError } from '../../../../../../GraphManagerUtils.js';
 
 export class V1_ElementSecondPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -108,18 +109,17 @@ export class V1_ElementSecondPassBuilder
     const uniqueStereotypes = new Set<string>();
     profile.p_stereotypes = element.stereotypes.map((stereotype) => {
       if (uniqueStereotypes.has(stereotype)) {
+        const message = `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated stereotype '${stereotype}' in profile '${element.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       uniqueStereotypes.add(stereotype);
       return new Stereotype(profile, stereotype);
@@ -127,18 +127,17 @@ export class V1_ElementSecondPassBuilder
     const uniqueTags = new Set<string>();
     profile.p_tags = element.tags.map((tag) => {
       if (uniqueTags.has(tag)) {
+        const message = `Found duplicated tag '${tag}' in profile '${element.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated tag '${tag}' in profile '${element.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       uniqueTags.add(tag);
       return new Tag(profile, tag);
@@ -162,18 +161,17 @@ export class V1_ElementSecondPassBuilder
         `Enum value 'value' field is missing or empty`,
       );
       if (uniqueEnumValues.has(enumValue.value)) {
+        const message = `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`;
         /**
-         * This test is skipped because we want to temporarily relax graph building algorithm
-         * to ease Pure -> Legend migration push.
-         * See https://github.com/finos/legend-studio/issues/660
+         * In strict-mode, graph builder will consider this as an error
+         * See https://github.com/finos/legend-studio/issues/941
          *
          * @discrepancy graph-building
          */
-        this.context.log.warn(
-          LogEvent.create(
-            `Found duplicated value '${enumValue.value}' in enumeration '${enumeration.path}'`,
-          ),
-        );
+        if (this.context.options?.strict) {
+          throw new GraphBuilderError(message);
+        }
+        this.context.log.warn(LogEvent.create(message));
       }
       const _enum = new Enum(enumValue.value, enumeration);
       _enum.stereotypes = enumValue.stereotypes

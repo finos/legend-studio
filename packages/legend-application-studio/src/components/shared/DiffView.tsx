@@ -26,7 +26,7 @@ import {
 } from '@finos/legend-application';
 import {
   disposeDiffEditor,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   useResizeDetector,
 } from '@finos/legend-art';
 import {
@@ -64,7 +64,7 @@ export const TextDiffView = observer(
       if (!editor && editorRef.current) {
         const element = editorRef.current;
         const _editor = monacoEditorAPI.createDiffEditor(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           theme: EDITOR_THEME.LEGEND,
           readOnly: true,
         });

@@ -22,7 +22,7 @@ import {
 } from 'monaco-editor';
 import {
   disposeEditor,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   resetLineNumberGutterWidth,
   getEditorValue,
   normalizeLineEnding,
@@ -90,7 +90,7 @@ export const TextInputEditor: React.FC<{
     if (!editor && textInputRef.current) {
       const element = textInputRef.current;
       const _editor = monacoEditorAPI.create(element, {
-        ...baseTextEditorSettings,
+        ...getBaseTextEditorOptions(),
         theme: applicationStore.TEMPORARY__isLightThemeEnabled
           ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
           : EDITOR_THEME.LEGEND,

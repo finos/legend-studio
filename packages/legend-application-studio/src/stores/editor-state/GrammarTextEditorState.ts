@@ -16,10 +16,9 @@
 
 import type { EditorStore } from '../EditorStore.js';
 import { action, makeObservable, observable } from 'mobx';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+import { hashValue, UnsupportedOperationError } from '@finos/legend-shared';
 import {
   type PackageableElement,
-  type EngineError,
   type DSL_Mapping_PureGraphManagerPlugin_Extension,
   Profile,
   Enumeration,
@@ -44,6 +43,7 @@ import {
   PURE_ELEMENT_NAME,
   PURE_CONNECTION_NAME,
 } from '@finos/legend-graph';
+import type { TextEditorPosition } from '@finos/legend-art';
 
 const getGrammarElementTypeLabelRegexString = (
   typeLabel: string,
@@ -64,17 +64,17 @@ export class GrammarTextEditorState {
   graphGrammarText = '';
   currentElementLabelRegexString?: string | undefined;
   wrapText = false;
-  error?: EngineError | undefined;
+  forcedCursorPosition?: TextEditorPosition | undefined;
 
   constructor(editorStore: EditorStore) {
     makeObservable(this, {
       graphGrammarText: observable,
       currentElementLabelRegexString: observable,
       wrapText: observable,
-      error: observable,
-      setError: action,
+      forcedCursorPosition: observable,
       setGraphGrammarText: action,
       setWrapText: action,
+      setForcedCursorPosition: action,
       resetCurrentElementLabelRegexString: action,
       setCurrentElementLabelRegexString: action,
     });
@@ -82,8 +82,8 @@ export class GrammarTextEditorState {
     this.editorStore = editorStore;
   }
 
-  setError(error: EngineError | undefined): void {
-    this.error = error;
+  get currentTextGraphHash(): string {
+    return hashValue(this.graphGrammarText);
   }
 
   setGraphGrammarText(code: string): void {
@@ -92,6 +92,10 @@ export class GrammarTextEditorState {
 
   setWrapText(val: boolean): void {
     this.wrapText = val;
+  }
+
+  setForcedCursorPosition(position: TextEditorPosition | undefined): void {
+    this.forcedCursorPosition = position;
   }
 
   resetCurrentElementLabelRegexString(): void {

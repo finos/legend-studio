@@ -92,7 +92,7 @@ export class EmbeddedQueryBuilderState {
           }
         }
       }
-      if (!this.editorStore.graphState.hasCompilationError) {
+      if (!this.editorStore.graphState.error) {
         this.queryBuilderState = config.setupQueryBuilderState();
         this.actionConfigs = config.actionConfigs;
         this.editorStore.applicationStore.setBackdropContainerElementID(

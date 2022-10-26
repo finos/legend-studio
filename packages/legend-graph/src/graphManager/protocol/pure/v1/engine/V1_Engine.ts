@@ -92,6 +92,11 @@ import {
   V1_MappingModelCoverageAnalysisResult,
 } from './analytics/V1_MappingModelCoverageAnalysis.js';
 import type { ServiceExecutionMode } from '../../../../action/service/ServiceExecutionMode.js';
+import type {
+  V1_CompilationResult,
+  V1_TextCompilationResult,
+} from './compilation/V1_CompilationResult.js';
+import { V1_CompilationWarning } from './compilation/V1_CompilationWarning.js';
 
 class V1_EngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_Engine;
@@ -365,11 +370,20 @@ export class V1_Engine {
   async compilePureModelContextData(
     model: V1_PureModelContextData,
     options?: { onError?: (() => void) | undefined } | undefined,
-  ): Promise<void> {
+  ): Promise<V1_CompilationResult> {
     try {
-      await this.engineServerClient.compile(
+      const compilationResult = await this.engineServerClient.compile(
         this.serializePureModelContextData(model),
       );
+      return {
+        warnings: (
+          compilationResult.warnings as
+            | PlainObject<V1_CompilationWarning>[]
+            | undefined
+        )?.map((warning) =>
+          V1_CompilationWarning.serialization.fromJson(warning),
+        ),
+      };
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();
@@ -390,8 +404,8 @@ export class V1_Engine {
   async compileText(
     graphText: string,
     compileContext?: V1_PureModelContextData,
-    options?: { onError?: () => void },
-  ): Promise<V1_PureModelContextData> {
+    options?: { onError?: () => void; getCompilationWarnings?: boolean },
+  ): Promise<V1_TextCompilationResult> {
     const mainGraph = await this.pureCodeToPureModelContextDataJSON(graphText, {
       ...options,
       // NOTE: we need to return source information here so we can locate the compilation
@@ -407,7 +421,20 @@ export class V1_Engine {
       : mainGraph;
     try {
       await this.engineServerClient.compile(pureModelContextDataJson);
-      return V1_deserializePureModelContextData(mainGraph);
+      const model = V1_deserializePureModelContextData(mainGraph);
+      const compilationResult = await this.engineServerClient.compile(
+        pureModelContextDataJson,
+      );
+      return {
+        model,
+        warnings: (
+          compilationResult.warnings as
+            | PlainObject<V1_CompilationWarning>[]
+            | undefined
+        )?.map((warning) =>
+          V1_CompilationWarning.serialization.fromJson(warning),
+        ),
+      };
     } catch (error) {
       assertErrorThrown(error);
       options?.onError?.();

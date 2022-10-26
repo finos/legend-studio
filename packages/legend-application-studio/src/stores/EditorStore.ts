@@ -1035,7 +1035,7 @@ export class EditorStore implements CommandRegistrar {
 
   setGraphEditMode(graphEditor: GRAPH_EDITOR_MODE): void {
     this.graphEditMode = graphEditor;
-    this.graphState.clearCompilationError();
+    this.graphState.clearProblems();
   }
 
   setActiveActivity(

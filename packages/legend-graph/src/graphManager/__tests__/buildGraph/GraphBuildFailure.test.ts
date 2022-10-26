@@ -132,114 +132,84 @@ test(unitTest('Missing class mapping'), async () => {
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/880
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Missing class mapping with ID'), async () => {
+test(unitTest('STRICT-MODE: Missing class mapping with ID'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__MissingClassMappingWithTargetId as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Can't find class mapping with ID 'notFound' in mapping 'ui::myMap'`,
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/660
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Duplicate enumeration values'), async () => {
+test(unitTest('STRICT-MODE: Duplicate enumeration values'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__DuplicateEnumerationValues as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Found duplicated value 'enum_value' in enumeration 'test::enum'`,
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/660
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Duplicate profile tags'), async () => {
+test(unitTest('STRICT-MODE: Duplicate profile tags'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__DuplicateProfileTags as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Found duplicated tag 'tag1' in profile 'test::profile1'`,
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/660
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Duplicate profile stereotypes'), async () => {
+test(unitTest('STRICT-MODE: Duplicate profile stereotypes'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__DuplicateProfileStereotypes as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Found duplicated stereotype 'stereotype1' in profile 'test::profile2'`,
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/660
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Duplicate class properties'), async () => {
+test(unitTest('STRICT-MODE: Duplicate class properties'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__DuplicateClassProperties as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Found duplicated property 'abc' in class 'test::class'`,
   );
 });
 
-/**
- * This test is skipped because we want to temporarily relax graph building algorithm
- * to ease Pure -> Legend migration push.
- * See https://github.com/finos/legend-studio/issues/660
- *
- * @discrepancy graph-building
- */
-test.skip(unitTest('Duplicate association properties'), async () => {
+test(unitTest('STRICT-MODE: Duplicate association properties'), async () => {
   await expect(() =>
-    graphManagerState.graphManager.buildGraph(
-      graphManagerState.graph,
+    TEST__buildGraphWithEntities(
+      graphManagerState,
       TEST_DATA__DuplicateAssociationProperties as Entity[],
-      graphManagerState.graphBuildState,
+      {
+        strict: true,
+      },
     ),
   ).rejects.toThrowError(
     `Found duplicated property 'abc' in association 'test::association'`,

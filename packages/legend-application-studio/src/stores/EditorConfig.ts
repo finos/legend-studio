@@ -37,6 +37,7 @@ export enum ACTIVITY_MODE {
 export enum AUX_PANEL_MODE {
   CONSOLE = 'COMPILE',
   DEV_TOOL = 'DEV_TOOL',
+  PROBLEMS = 'PROBLEMS',
 }
 
 export enum ELEMENT_NATIVE_VIEW_MODE {

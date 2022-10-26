@@ -26,9 +26,11 @@ import {
   BrushIcon,
   CloudUploadIcon,
   AssistantIcon,
+  ErrorIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../LegendStudioTestID.js';
-import { ACTIVITY_MODE } from '../../stores/EditorConfig.js';
+import { ACTIVITY_MODE, AUX_PANEL_MODE } from '../../stores/EditorConfig.js';
 import {
   generateSetupRoute,
   type WorkspaceEditorPathParams,
@@ -62,12 +64,14 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
         ? ACTIVITY_MODE.CONFLICT_RESOLUTION
         : ACTIVITY_MODE.WORKSPACE_UPDATER,
     );
+
   const goToLocalChanges = (): void =>
     editorStore.setActiveActivity(ACTIVITY_MODE.LOCAL_CHANGES);
   // Change Detection
   const changes =
     editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
       .length;
+
   const configurationState = editorStore.projectConfigurationEditorState;
   const pushLocalChanges = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.localChangesState.pushLocalChanges()),
@@ -92,6 +96,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
       : 'no changes detected';
   const workspaceOutOfSync =
     !actionsDisabled && editorStore.sdlcState.isWorkspaceOutOfSync;
+
+  // Problems
+  const error = editorStore.graphState.error;
+  const warnings = editorStore.graphState.warnings;
+
   // Conflict resolution
   const conflicts = editorStore.conflictResolutionState.conflicts.length;
   const acceptConflictResolution = applicationStore.guardUnhandledError(() =>
@@ -118,6 +127,12 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
 
   // Other actions
   const toggleAuxPanel = (): void => editorStore.auxPanelDisplayState.toggle();
+
+  const showCompilationWarnings = (): void => {
+    editorStore.auxPanelDisplayState.open();
+    editorStore.setActiveAuxPanelMode(AUX_PANEL_MODE.PROBLEMS);
+  };
+
   const handleTextModeClick = applicationStore.guardUnhandledError(() =>
     flowResult(editorStore.toggleTextMode()),
   );
@@ -177,10 +192,11 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
             }
           >
             {workspaceId}
+            {editorStore.localChangesState.hasUnpushedChanges ? '*' : ''}
           </button>
           {workspaceOutOfSync && (
             <button
-              className="editor__status-bar__workspace__status"
+              className="editor__status-bar__workspace__status__btn"
               tabIndex={-1}
               onClick={goToLocalChanges}
               title={
@@ -192,7 +208,7 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
           )}
           {editorStore.sdlcState.isWorkspaceOutdated && !workspaceOutOfSync && (
             <button
-              className="editor__status-bar__workspace__status"
+              className="editor__status-bar__workspace__status__btn"
               tabIndex={-1}
               onClick={goToWorkspaceUpdater}
               title={
@@ -202,6 +218,25 @@ export const StatusBar = observer((props: { actionsDisabled: boolean }) => {
               OUTDATED
             </button>
           )}
+          <button
+            className="editor__status-bar__problems"
+            tabIndex={-1}
+            onClick={showCompilationWarnings}
+            title={`${error ? 'Error: 1, ' : ''}Warnings: ${warnings.length}`}
+          >
+            <div className="editor__status-bar__problems__icon">
+              <ErrorIcon />
+            </div>
+            <div className="editor__status-bar__problems__counter">
+              {error ? 1 : 0}
+            </div>
+            <div className="editor__status-bar__problems__icon">
+              <WarningIcon />
+            </div>
+            <div className="editor__status-bar__problems__counter">
+              {warnings.length}
+            </div>
+          </button>
         </div>
       </div>
       <div

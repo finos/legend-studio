@@ -17,49 +17,40 @@
 import { capitalize, prettyCONSTName, toTitleCase } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
 import { CheckSquareIcon, SquareIcon } from '../CJS__Icon.cjs';
+import { generateSimpleDIVComponent } from '../ComponentCreatorUtils.js';
 
-export const Panel: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return <div className={clsx('panel', className)}>{children}</div>;
-};
-
-export const PanelFullContent: React.FC<{
-  children?: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-  return <div className="panel__content--full">{children}</div>;
-};
+export const Panel = generateSimpleDIVComponent('Panel', 'panel');
+export const PanelFullContent = generateSimpleDIVComponent(
+  'PanelFullContent',
+  'panel__content--full',
+);
 
 export const PanelHeader: React.FC<{
-  title: string;
+  title?: string;
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
   const { title, children } = props;
   return (
     <div className="panel__header">
-      <div className="panel__header__title">
-        <div className="panel__header__title__label">{title.toLowerCase()}</div>
-      </div>
+      {title && (
+        <div className="panel__header__title">
+          <div className="panel__header__title__label">
+            {title.toLowerCase()}
+          </div>
+        </div>
+      )}
+
       {children}
     </div>
   );
 };
 
-export const PanelHeaderActions: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return (
-    <div className={clsx('panel__header__actions', className)}>{children}</div>
-  );
-};
+export const PanelHeaderActions = generateSimpleDIVComponent(
+  'PanelHeaderActions',
+  'panel__header__actions',
+);
 
 export const PanelHeaderActionItem: React.FC<{
   title: string;
@@ -75,6 +66,7 @@ export const PanelHeaderActionItem: React.FC<{
       disabled={Boolean(disabled)}
       onClick={onClick}
       title={title}
+      tabIndex={-1}
     >
       {children}
     </button>
@@ -111,84 +103,37 @@ export const PanelTabs: React.FC<{
   );
 };
 
-export const PanelForm: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { className, children } = props;
-  return (
-    <div className={clsx('panel__content__form', className)}>{children}</div>
-  );
-};
+export const PanelContent = generateSimpleDIVComponent(
+  'PanelContent',
+  'panel__content',
+);
 
-export const PanelFormDescription: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children } = props;
-  return <div className="panel__content__form__description">{children}</div>;
-};
+export const PanelList = generateSimpleDIVComponent(
+  'PanelList',
+  'panel__content__form__list',
+);
 
-export const PanelSection: React.FC<{
-  children: React.ReactNode;
-}> = (props) => {
-  const { children } = props;
-  const addElementSections = (
-    sectionChildren: React.ReactNode,
-  ): JSX.Element[] | JSX.Element => {
-    const section = React.Children.map(sectionChildren, (child) => {
-      if (React.isValidElement(child)) {
-        const elementChild: React.ReactElement = child;
-        return (
-          <div className="panel__content__form__section">{elementChild}</div>
-        );
-      } else {
-        return <></>;
-      }
-    });
-    if (section) {
-      return section;
-    } else {
-      return <></>;
-    }
-  };
+export const PanelListItem = generateSimpleDIVComponent(
+  'PanelListItem',
+  'panel__content__form__list__item',
+);
 
-  return <> {addElementSections(children)} </>;
-};
+export const PanelForm = generateSimpleDIVComponent(
+  'PanelForm',
+  'panel__content__form',
+);
 
-export const PanelContent: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return <div className={clsx('panel__content', className)}>{children}</div>;
-};
+export const PanelFormDescription = generateSimpleDIVComponent(
+  'PanelFormDescription',
+  'panel__content__form__description',
+);
 
-export const PanelList: React.FC<{
-  className?: string;
-  children: React.ReactNode;
-}> = (props) => {
-  const { children, className } = props;
-  return (
-    <div className={clsx('panel__content__form__list', className)}>
-      {children}
-    </div>
-  );
-};
+export const PanelFormSection = generateSimpleDIVComponent(
+  'PanelSection',
+  'panel__content__form__section',
+);
 
-export const PanelListItem: React.FC<{
-  className?: string;
-  children: React.ReactNode;
-}> = (props) => {
-  const { children, className } = props;
-  return (
-    <div className={clsx('panel__content__form__list__item', className)}>
-      {children}
-    </div>
-  );
-};
-
-export const PanelFormTextEditor = observer(
+export const PanelFormTextField = observer(
   (props: {
     name: string;
     prompt?: string;
@@ -207,7 +152,7 @@ export const PanelFormTextEditor = observer(
     };
 
     return (
-      <>
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {capitalize(name)}
         </div>
@@ -230,7 +175,7 @@ export const PanelFormTextEditor = observer(
             </div>
           )}
         </div>
-      </>
+      </PanelFormSection>
     );
   },
 );
@@ -239,7 +184,7 @@ export const PanelFormTextEditor = observer(
  * NOTE: this is a WIP we did to quickly assemble a modular UI for relational database connection editor
  * This is subjected to change and review, especially in terms in UX.
  */
-export const PanelFormBooleanEditor = observer(
+export const PanelFormBooleanField = observer(
   (props: {
     name: string;
     prompt?: string;
@@ -256,7 +201,7 @@ export const PanelFormBooleanEditor = observer(
     };
 
     return (
-      <>
+      <PanelFormSection>
         <div className="panel__content__form__section__header__label">
           {capitalize(name)}
         </div>
@@ -279,7 +224,7 @@ export const PanelFormBooleanEditor = observer(
             {prompt} {children}
           </div>
         </div>
-      </>
+      </PanelFormSection>
     );
   },
 );

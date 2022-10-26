@@ -252,6 +252,14 @@
 
   &__section {
     padding: 0 1rem;
+
+    .input-group__error-message {
+      max-width: 45rem;
+    }
+
+    & + & {
+      margin-top: 2rem;
+    }
   }
 
   &__section__header__label {
@@ -259,7 +267,6 @@
 
     font-weight: 500;
     color: var(--color-light-grey-50);
-    margin-top: 1rem;
     margin-bottom: 0.5rem;
     line-height: 2rem;
     cursor: default;

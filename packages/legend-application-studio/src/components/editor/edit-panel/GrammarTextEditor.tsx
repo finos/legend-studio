@@ -23,10 +23,8 @@ import {
 } from 'monaco-editor';
 import {
   ContextMenu,
-  revealError,
-  setErrorMarkers,
   disposeEditor,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   resetLineNumberGutterWidth,
   clsx,
   WordWrapIcon,
@@ -36,6 +34,10 @@ import {
   HackerIcon,
   PanelContent,
   useResizeDetector,
+  setWarningMarkers,
+  clearMarkers,
+  setErrorMarkers,
+  moveCursorToPosition,
 } from '@finos/legend-art';
 import {
   TAB_SIZE,
@@ -779,7 +781,9 @@ export const GrammarTextEditor = observer(() => {
   const grammarTextEditorState = editorStore.grammarTextEditorState;
   const currentElementLabelRegexString =
     grammarTextEditorState.currentElementLabelRegexString;
-  const error = grammarTextEditorState.error;
+  const error = editorStore.graphState.error;
+
+  const forcedCursorPosition = grammarTextEditorState.forcedCursorPosition;
   const value = normalizeLineEnding(grammarTextEditorState.graphGrammarText);
   const textEditorRef = useRef<HTMLDivElement>(null);
   const hoverProviderDisposer = useRef<IDisposable | undefined>(undefined);
@@ -804,15 +808,15 @@ export const GrammarTextEditor = observer(() => {
     if (!editor && textEditorRef.current) {
       const element = textEditorRef.current;
       const _editor = monacoEditorAPI.create(element, {
-        ...baseTextEditorSettings,
+        ...getBaseTextEditorOptions(),
         language: EDITOR_LANGUAGE.PURE,
         theme: EDITOR_THEME.LEGEND,
         renderValidationDecorations: 'on',
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getEditorValue(_editor));
-        editorStore.graphState.clearCompilationError();
-        // we can technically can reset the current element label regex string here
+        clearMarkers();
+        // NOTE: we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element
         // also, it's better to place that logic in an effect that watches for the regex string
       });
@@ -882,17 +886,42 @@ export const GrammarTextEditor = observer(() => {
     const editorModel = editor.getModel();
     if (editorModel) {
       editorModel.updateOptions({ tabSize: TAB_SIZE });
-      if (error?.sourceInformation) {
-        setErrorMarkers(
+      if (
+        !editorStore.graphState.areProblemsStale &&
+        error?.sourceInformation
+      ) {
+        setErrorMarkers(editorModel, [
+          {
+            message: error.message,
+            startLineNumber: error.sourceInformation.startLine,
+            startColumn: error.sourceInformation.startColumn,
+            endLineNumber: error.sourceInformation.endLine,
+            endColumn: error.sourceInformation.endColumn,
+          },
+        ]);
+      }
+
+      if (
+        !editorStore.graphState.areProblemsStale &&
+        editorStore.graphState.warnings.length
+      ) {
+        setWarningMarkers(
           editorModel,
-          error.message,
-          error.sourceInformation.startLine,
-          error.sourceInformation.startColumn,
-          error.sourceInformation.endLine,
-          error.sourceInformation.endColumn,
+          editorStore.graphState.warnings
+            .map((warning) => {
+              if (!warning.sourceInformation) {
+                return undefined;
+              }
+              return {
+                message: warning.message,
+                startLineNumber: warning.sourceInformation.startLine,
+                startColumn: warning.sourceInformation.startColumn,
+                endLineNumber: warning.sourceInformation.endLine,
+                endColumn: warning.sourceInformation.endColumn,
+              };
+            })
+            .filter(isNonNullable),
         );
-      } else {
-        monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
       }
     }
     // Disable editing if user is in viewer mode
@@ -1124,28 +1153,11 @@ export const GrammarTextEditor = observer(() => {
       },
     });
 
-  /**
-   * Reveal error has to be in an effect like this because, we want to reveal the error.
-   * For this to happen, the editor needs to gain focus. However, if the user clicks on the
-   * exit hackermode button, the editor loses focus, and the blocking modal pops up. This modal
-   * in turn traps the focus and preventing the editor from gaining the focus to reveal the error.
-   * As such we want to dismiss the modal before revealing the error, however, as of the current flow
-   * dismissing the modal is called when we set the parser/compiler error. So if this logic belongs to
-   * the normal rendering logic, and not an effect, it might happen just when the modal is still present
-   * to make sure the modal is dismissed, we should place this logic in an effect to make sure it happens
-   * slightly later, also it's better to have this as part of an effect in response to change in the errors
-   */
   useEffect(() => {
-    if (editor) {
-      if (error?.sourceInformation) {
-        revealError(
-          editor,
-          error.sourceInformation.startLine,
-          error.sourceInformation.startColumn,
-        );
-      }
+    if (editor && forcedCursorPosition) {
+      moveCursorToPosition(editor, forcedCursorPosition);
     }
-  }, [editor, error, error?.sourceInformation]);
+  }, [editor, forcedCursorPosition]);
 
   /**
    * This effect helps to navigate to the currently selected element in the explorer tree

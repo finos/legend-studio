@@ -25,6 +25,4 @@ export class ParserError extends EngineError {}
 
 export class CompilationError extends EngineError {}
 
-export class ExternalFormatError extends CompilationError {
-  schemaSourceInformation?: SourceInformation | undefined;
-}
+export class ExternalFormatError extends CompilationError {}

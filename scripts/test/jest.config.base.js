@@ -56,10 +56,10 @@ export const baseJestConfig = {
     // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
   },
-  modulePathIgnorePatterns: ['packages/.*/lib', 'packages/.*/build'],
+  modulePathIgnorePatterns: ['packages/.*/lib/', 'packages/.*/build/'],
   testPathIgnorePatterns: [
     ...baseConfig.testPathIgnorePatterns,
-    '/packages/.*/lib',
+    '/packages/.*/lib/',
   ],
   collectCoverageFrom: [
     '<rootDir>/packages/*/**/*.[jt]s?(x)',
@@ -84,9 +84,9 @@ export const baseJestConfig = {
     '<rootDir>/packages/.*/lib',
     '<rootDir>/packages/.*/dist',
     '<rootDir>/packages/.*/dev',
-    '<rootDir>/build',
-    '<rootDir>/docs',
-    '<rootDir>/temp',
+    '<rootDir>/build/',
+    '<rootDir>/docs/',
+    '<rootDir>/temp/',
   ],
 };
 

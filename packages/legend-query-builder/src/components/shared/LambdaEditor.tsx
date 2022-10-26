@@ -19,9 +19,8 @@ import { editor as monacoEditorAPI, type IDisposable } from 'monaco-editor';
 import { observer } from 'mobx-react-lite';
 import {
   clsx,
-  setErrorMarkers,
   disposeEditor,
-  baseTextEditorSettings,
+  getBaseTextEditorOptions,
   getEditorValue,
   normalizeLineEnding,
   FilledWindowMaximizeIcon,
@@ -29,6 +28,8 @@ import {
   LongArrowAltUpIcon,
   Dialog,
   useResizeDetector,
+  clearMarkers,
+  setErrorMarkers,
 } from '@finos/legend-art';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
@@ -178,7 +179,7 @@ const LambdaEditorInline = observer(
                 scrollbar: { vertical: 'hidden' },
               };
         const _editor = monacoEditorAPI.create(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: applicationStore.TEMPORARY__isLightThemeEnabled
             ? EDITOR_THEME.TEMPORARY__VSCODE_LIGHT
@@ -309,16 +310,17 @@ const LambdaEditorInline = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(
-            editorModel,
-            error.message,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-            error.sourceInformation.endLine,
-            error.sourceInformation.endColumn,
-          );
+          setErrorMarkers(editorModel, [
+            {
+              message: error.message,
+              startLineNumber: error.sourceInformation.startLine,
+              startColumn: error.sourceInformation.startColumn,
+              endLineNumber: error.sourceInformation.endLine,
+              endColumn: error.sourceInformation.endColumn,
+            },
+          ]);
         } else {
-          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+          clearMarkers();
         }
       }
     }
@@ -461,7 +463,7 @@ const LambdaEditorPopUp = observer(
       if (!editor && textInputRef.current) {
         const element = textInputRef.current;
         const _editor = monacoEditorAPI.create(element, {
-          ...baseTextEditorSettings,
+          ...getBaseTextEditorOptions(),
           language: EDITOR_LANGUAGE.PURE,
           theme: EDITOR_THEME.LEGEND,
         });
@@ -544,16 +546,17 @@ const LambdaEditorPopUp = observer(
         editorModel.updateOptions({ tabSize: TAB_SIZE });
         const error = parserError ?? compilationError;
         if (error?.sourceInformation) {
-          setErrorMarkers(
-            editorModel,
-            error.message,
-            error.sourceInformation.startLine,
-            error.sourceInformation.startColumn,
-            error.sourceInformation.endLine,
-            error.sourceInformation.endColumn,
-          );
+          setErrorMarkers(editorModel, [
+            {
+              message: error.message,
+              startLineNumber: error.sourceInformation.startLine,
+              startColumn: error.sourceInformation.startColumn,
+              endLineNumber: error.sourceInformation.endLine,
+              endColumn: error.sourceInformation.endColumn,
+            },
+          ]);
         } else {
-          monacoEditorAPI.setModelMarkers(editorModel, 'Error', []);
+          clearMarkers();
         }
       }
     }

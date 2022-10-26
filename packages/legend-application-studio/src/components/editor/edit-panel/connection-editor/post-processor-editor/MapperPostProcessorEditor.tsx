@@ -19,7 +19,7 @@ import {
   ResizablePanel,
   PlusIcon,
   ResizablePanelSplitter,
-  PanelFormTextEditor,
+  PanelFormTextField,
   PanelForm,
   ContextMenu,
   MenuContent,
@@ -32,7 +32,6 @@ import {
   PanelHeader,
   PanelContent,
   PanelListSelectorItemLabel,
-  PanelSection,
   PanelHeaderActions,
 } from '@finos/legend-art';
 import {
@@ -232,28 +231,25 @@ export const MapperPostProcessorEditor = observer(
                   )}
                   {selectedMapper && (
                     <PanelForm>
-                      <PanelSection>
-                        <PanelFormTextEditor
-                          isReadOnly={isReadOnly}
-                          value={selectedMapper.from}
-                          name="From"
-                          update={(value: string | undefined): void =>
-                            mapper_setFrom(selectedMapper, value ?? '')
-                          }
-                        />
-                        <PanelFormTextEditor
-                          isReadOnly={isReadOnly}
-                          value={selectedMapper.to}
-                          name="To"
-                          update={(value: string | undefined): void =>
-                            mapper_setTo(selectedMapper, value ?? '')
-                          }
-                        />
-                      </PanelSection>
-
+                      <PanelFormTextField
+                        isReadOnly={isReadOnly}
+                        value={selectedMapper.from}
+                        name="From"
+                        update={(value: string | undefined): void =>
+                          mapper_setFrom(selectedMapper, value ?? '')
+                        }
+                      />
+                      <PanelFormTextField
+                        isReadOnly={isReadOnly}
+                        value={selectedMapper.to}
+                        name="To"
+                        update={(value: string | undefined): void =>
+                          mapper_setTo(selectedMapper, value ?? '')
+                        }
+                      />
                       {selectedSchemaNameMapper && (
-                        <PanelSection>
-                          <PanelFormTextEditor
+                        <>
+                          <PanelFormTextField
                             isReadOnly={isReadOnly}
                             value={selectedSchemaNameMapper.from}
                             name="Schema - From"
@@ -264,7 +260,7 @@ export const MapperPostProcessorEditor = observer(
                               );
                             }}
                           />
-                          <PanelFormTextEditor
+                          <PanelFormTextField
                             isReadOnly={isReadOnly}
                             value={selectedSchemaNameMapper.to}
                             name="Schema - To"
@@ -275,7 +271,7 @@ export const MapperPostProcessorEditor = observer(
                               )
                             }
                           />
-                        </PanelSection>
+                        </>
                       )}
                     </PanelForm>
                   )}

@@ -187,11 +187,11 @@ export const TEST__checkGraphHashUnchanged = async (
 ): Promise<void> => {
   const originalHashesIndex =
     await graphManagerState.graphManager.buildHashesIndex(entities);
-  const graphHashesIndex = new Map<string, string>();
+  const currentGraphHashesIndex = new Map<string, string>();
   await Promise.all<void>(
     graphManagerState.graph.allOwnElements.map((element) =>
       promisify(() => {
-        graphHashesIndex.set(element.path, element.hashCode);
+        currentGraphHashesIndex.set(element.path, element.hashCode);
       }),
     ),
   );
@@ -202,7 +202,7 @@ export const TEST__checkGraphHashUnchanged = async (
       ),
     ) as TEMPORARY__JestMatcher
   ).toIncludeSameMembers(
-    Array.from(graphHashesIndex.entries()).filter(
+    Array.from(currentGraphHashesIndex.entries()).filter(
       (entry) => entry[0] !== SECTION_INDEX_ELEMENT_PATH,
     ),
   );

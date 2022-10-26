@@ -51,6 +51,12 @@ export class ServiceRegistrationEnvironmentConfig {
 }
 
 class LegendStudioApplicationCoreOptions {
+  /**
+   * Indicates if we should enable strict-mode for graph builder
+   *
+   * Default to `false`
+   */
+  enableGraphBuilderStrictMode = false;
   projectCreationGroupIdSuggestion = 'org.finos.legend.*';
   /**
    * Indicates if we should keep section index and do not rewrite/flatten the paths shortened by section
@@ -74,6 +80,7 @@ class LegendStudioApplicationCoreOptions {
 
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendStudioApplicationCoreOptions, {
+      enableGraphBuilderStrictMode: optional(primitive()),
       projectCreationGroupIdSuggestion: optional(primitive()),
       TEMPORARY__preserveSectionIndex: optional(primitive()),
       TEMPORARY__serviceRegistrationConfig: list(

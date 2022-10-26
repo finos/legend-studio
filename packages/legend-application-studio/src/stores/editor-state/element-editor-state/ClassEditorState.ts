@@ -47,7 +47,6 @@ export class ClassEditorState extends UMLEditorState {
       classState: observable,
       selectedProperty: observable,
       class: computed,
-      hasCompilationError: computed,
       reprocess: override,
       setSelectedProperty: action,
     });
@@ -107,17 +106,6 @@ export class ClassEditorState extends UMLEditorState {
       );
     }
     return false;
-  }
-
-  override get hasCompilationError(): boolean {
-    return (
-      this.classState.constraintStates.some((state) =>
-        Boolean(state.compilationError),
-      ) ||
-      this.classState.derivedPropertyStates.some((state) =>
-        Boolean(state.compilationError),
-      )
-    );
   }
 
   override clearCompilationError(): void {

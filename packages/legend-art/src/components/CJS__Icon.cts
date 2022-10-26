@@ -165,7 +165,6 @@ export {
   MdEdit as EditIcon, // to be reviewed
   MdSubject as SubjectIcon,
   MdViewHeadline as ViewHeadlineIcon,
-  MdWarning as WarningIcon,
   MdAssistant as AssistantIcon,
   MdSettingsEthernet as SettingsEthernetIcon,
   MdLink as LinkIcon,
@@ -174,6 +173,7 @@ export {
 } from 'react-icons/md';
 export {
   VscError as ErrorIcon,
+  VscWarning as WarningIcon,
   VscWordWrap as WordWrapIcon,
   VscGoToFile as GoToFileIcon,
   VscClose as CloseIcon,

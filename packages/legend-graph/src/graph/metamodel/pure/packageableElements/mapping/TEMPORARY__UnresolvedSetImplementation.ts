@@ -25,9 +25,8 @@ import {
 } from './SetImplementation.js';
 
 /**
- * When set implementation cannot be resolved by ID,
- * we try to avoid failing graph building for now
- * instead, we will leave this loose end unresolved.
+ * When set implementation cannot be resolved by ID, we try to avoid failing graph building
+ * for now instead, we will leave this loose end unresolved.
  *
  * NOTE: this is just a temporary solutions until we make this a hard-fail post migration.
  *
