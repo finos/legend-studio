@@ -118,6 +118,11 @@
     color: var(--color-light-grey-50);
     background: var(--color-blue-150);
 
+    &--primitive {
+      color: var(--color-light-grey-50);
+      padding: 0 1rem;
+    }
+
     &--none {
       padding: 0 1rem;
       background: var(--color-dark-grey-300);

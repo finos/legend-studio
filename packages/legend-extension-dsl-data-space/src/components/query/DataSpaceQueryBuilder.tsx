@@ -306,7 +306,11 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
                 placeholder="Choose an execution context..."
                 options={executionContextOptions}
-                disabled={executionContextOptions.length <= 1}
+                disabled={
+                  executionContextOptions.length < 1 ||
+                  (executionContextOptions.length === 1 &&
+                    Boolean(selectedExecutionContextOption))
+                }
                 onChange={onExecutionContextOptionChange}
                 value={selectedExecutionContextOption}
                 darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
