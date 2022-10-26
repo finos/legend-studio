@@ -97,8 +97,8 @@ describe(
         const MockedGlobalCompileInFormModeFn = createMock();
         MOCK__editorStore.graphState.globalCompileInFormMode =
           MockedGlobalCompileInFormModeFn;
-        MockedGlobalCompileInFormModeFn.mockReturnValue(
-          Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+        MockedGlobalCompileInFormModeFn.mockResolvedValue(
+          FormModeCompilationOutcome.SUCCEEDED,
         );
         MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
           createMock();

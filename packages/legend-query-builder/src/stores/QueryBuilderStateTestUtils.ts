@@ -78,11 +78,9 @@ export const TEST__setUpQueryBuilderState = async (
     createSpy(
       queryBuilderState.graphManagerState.graphManager,
       'analyzeMappingModelCoverage',
-    ).mockReturnValue(
-      Promise.resolve(
-        queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-          rawMappingModelCoverageAnalysisResult,
-        ),
+    ).mockResolvedValue(
+      queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+        rawMappingModelCoverageAnalysisResult,
       ),
     );
   }

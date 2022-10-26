@@ -141,27 +141,27 @@ export const TEST__setUpQueryEditor = async (
   );
   query.content = 'some content';
 
-  createSpy(MOCK__editorStore.depotServerClient, 'getProject').mockReturnValue(
-    Promise.resolve(projectData),
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProject',
+  ).mockResolvedValue(projectData);
+  createSpy(graphManagerState.graphManager, 'getLightQuery').mockResolvedValue(
+    lightQuery,
   );
-  createSpy(graphManagerState.graphManager, 'getLightQuery').mockReturnValue(
-    Promise.resolve(lightQuery),
-  );
-  createSpy(graphManagerState.graphManager, 'pureCodeToLambda').mockReturnValue(
-    Promise.resolve(new RawLambda(lambda.parameters, lambda.body)),
-  );
-  createSpy(graphManagerState.graphManager, 'getQuery').mockReturnValue(
-    Promise.resolve(query),
+  createSpy(
+    graphManagerState.graphManager,
+    'pureCodeToLambda',
+  ).mockResolvedValue(new RawLambda(lambda.parameters, lambda.body));
+  createSpy(graphManagerState.graphManager, 'getQuery').mockResolvedValue(
+    query,
   );
   if (rawMappingModelCoverageAnalysisResult) {
     createSpy(
       graphManagerState.graphManager,
       'analyzeMappingModelCoverage',
-    ).mockReturnValue(
-      Promise.resolve(
-        graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-          rawMappingModelCoverageAnalysisResult,
-        ),
+    ).mockResolvedValue(
+      graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+        rawMappingModelCoverageAnalysisResult,
       ),
     );
   }

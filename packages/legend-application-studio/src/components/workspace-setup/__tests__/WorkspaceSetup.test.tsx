@@ -40,8 +40,8 @@ beforeEach(() => {
 
 test(integrationTest('Shows project searcher properly'), async () => {
   createSpy(sdlcServerClient, 'getProjects')
-    .mockReturnValueOnce(Promise.resolve([TEST_DATA__DefaultSDLCInfo.project]))
-    .mockReturnValueOnce(Promise.resolve([]));
+    .mockResolvedValueOnce([TEST_DATA__DefaultSDLCInfo.project])
+    .mockResolvedValueOnce([]);
 
   TEST__provideMockedWebApplicationNavigator();
 

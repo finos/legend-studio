@@ -203,8 +203,8 @@ test(integrationTest('Open query builder by querying a class'), async () => {
   const MockedGlobalCompileInFormModeFn = createMock();
   MOCK__editorStore.graphState.globalCompileInFormMode =
     MockedGlobalCompileInFormModeFn;
-  MockedGlobalCompileInFormModeFn.mockReturnValue(
-    Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+  MockedGlobalCompileInFormModeFn.mockResolvedValue(
+    FormModeCompilationOutcome.SUCCEEDED,
   );
   MOCK__editorStore.graphManagerState.graphManager.analyzeMappingModelCoverage =
     createMock();
@@ -240,8 +240,8 @@ test(
     const MockedGlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockReturnValue(
-      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();
@@ -279,8 +279,8 @@ test(
     const MockedGlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockReturnValue(
-      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();
@@ -311,8 +311,8 @@ test(
     const MockedGlobalCompileInFormModeFn = createMock();
     MOCK__editorStore.graphState.globalCompileInFormMode =
       MockedGlobalCompileInFormModeFn;
-    MockedGlobalCompileInFormModeFn.mockReturnValue(
-      Promise.resolve(FormModeCompilationOutcome.SUCCEEDED),
+    MockedGlobalCompileInFormModeFn.mockResolvedValue(
+      FormModeCompilationOutcome.SUCCEEDED,
     );
     MOCK__editorStore.graphManagerState.graphManager.lambdasToPureCode =
       createMock();

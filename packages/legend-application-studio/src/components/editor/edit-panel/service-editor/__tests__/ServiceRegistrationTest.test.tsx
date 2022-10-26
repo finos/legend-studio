@@ -165,11 +165,11 @@ test(
     createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
       'registerService',
-    ).mockReturnValue(Promise.resolve(result));
+    ).mockResolvedValue(result);
     createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
       'activateService',
-    ).mockReturnValue(Promise.resolve());
+    ).mockResolvedValue();
 
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>
@@ -264,11 +264,11 @@ test(
     createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
       'registerService',
-    ).mockReturnValue(Promise.resolve(result));
+    ).mockResolvedValue(result);
     createSpy(
       MOCK__editorStore.graphManagerState.graphManager,
       'activateService',
-    ).mockReturnValue(Promise.resolve());
+    ).mockResolvedValue();
 
     await TEST__openElementFromExplorerTree('test::myService', renderResult);
     const editPanelHeader = await waitFor(() =>

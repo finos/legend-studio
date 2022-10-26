@@ -226,18 +226,18 @@ const testDependencyElements = async (
   createSpy(
     guaranteeNonNullable(editorStore.depotServerClient),
     'collectDependencyEntities',
-  ).mockReturnValue(Promise.resolve(dependencyEntities));
+  ).mockResolvedValue(dependencyEntities);
   if (projectsData) {
     createSpy(
       guaranteeNonNullable(editorStore.depotServerClient),
       'getProjectById',
-    ).mockReturnValue(Promise.resolve(projectsData));
+    ).mockResolvedValue(projectsData);
   }
   if (dependencyInfo) {
     createSpy(
       guaranteeNonNullable(editorStore.depotServerClient),
       'analyzeDependencyTree',
-    ).mockReturnValue(Promise.resolve(dependencyInfo));
+    ).mockResolvedValue(dependencyInfo);
   }
   await editorStore.graphManagerState.initializeSystem();
   const dependencyManager = new DependencyManager([]);

@@ -47,23 +47,20 @@ test(
   async () => {
     const sdlcServerClient = TEST__provideMockedSDLCServerClient();
 
-    createSpy(sdlcServerClient, 'isAuthorized').mockReturnValueOnce(
-      Promise.resolve(true),
-    );
-    createSpy(sdlcServerClient, 'getCurrentUser').mockReturnValueOnce(
-      Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
-    );
+    createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(true);
+    createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
+      name: 'testUser',
+      userId: 'testUserId',
+    });
     createSpy(
       sdlcServerClient,
       'hasAcceptedTermsOfService',
-    ).mockReturnValueOnce(Promise.resolve(['stubUrl']));
-    createSpy(sdlcServerClient, 'getProjects').mockReturnValue(
-      Promise.resolve([]),
-    );
+    ).mockResolvedValueOnce(['stubUrl']);
+    createSpy(sdlcServerClient, 'getProjects').mockResolvedValue([]);
     createSpy(
       sdlcServerClient,
       'fetchServerFeaturesConfiguration',
-    ).mockReturnValue(Promise.resolve());
+    ).mockResolvedValue();
 
     TEST__provideMockedWebApplicationNavigator();
 
@@ -100,12 +97,11 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
 
-  createSpy(sdlcServerClient, 'isAuthorized').mockReturnValueOnce(
-    Promise.resolve(false),
-  );
-  createSpy(sdlcServerClient, 'getCurrentUser').mockReturnValueOnce(
-    Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
-  );
+  createSpy(sdlcServerClient, 'isAuthorized').mockResolvedValueOnce(false);
+  createSpy(sdlcServerClient, 'getCurrentUser').mockResolvedValueOnce({
+    name: 'testUser',
+    userId: 'testUserId',
+  });
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
   const navigationActionSpy = createSpy(

@@ -247,37 +247,41 @@ export const TEST__setUpEditor = async (
   } = data;
 
   // SDLC
-  createSpy(MOCK__editorStore.sdlcServerClient, 'getProject').mockReturnValue(
-    Promise.resolve(project),
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getProject').mockResolvedValue(
+    project,
   );
-  createSpy(MOCK__editorStore.sdlcServerClient, 'getWorkspace').mockReturnValue(
-    Promise.resolve(workspace),
-  );
-  createSpy(MOCK__editorStore.sdlcServerClient, 'getVersions').mockReturnValue(
-    Promise.resolve(projectVersions),
-  );
-  createSpy(MOCK__editorStore.sdlcServerClient, 'getRevision').mockReturnValue(
-    Promise.resolve(curentRevision),
-  );
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getWorkspace',
+  ).mockResolvedValue(workspace);
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getVersions',
+  ).mockResolvedValue(projectVersions);
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getRevision',
+  ).mockResolvedValue(curentRevision);
   createSpy(
     MOCK__editorStore.sdlcServerClient,
     'checkIfWorkspaceIsInConflictResolutionMode',
-  ).mockReturnValue(Promise.resolve(false));
+  ).mockResolvedValue(false);
   createSpy(
     MOCK__editorStore.sdlcServerClient,
     'isWorkspaceOutdated',
-  ).mockReturnValue(Promise.resolve(false));
-  createSpy(MOCK__editorStore.sdlcServerClient, 'getEntities').mockReturnValue(
-    Promise.resolve(entities),
-  );
+  ).mockResolvedValue(false);
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getEntities',
+  ).mockResolvedValue(entities);
   createSpy(
     MOCK__editorStore.sdlcServerClient,
     'getConfiguration',
-  ).mockReturnValue(Promise.resolve(projectConfiguration));
+  ).mockResolvedValue(projectConfiguration);
   createSpy(
     MOCK__editorStore.sdlcServerClient,
     'getLatestProjectStructureVersion',
-  ).mockReturnValue(Promise.resolve(latestProjectStructureVersion));
+  ).mockResolvedValue(latestProjectStructureVersion);
   MOCK__editorStore.sdlcServerClient._setFeatures(
     SDLCServerFeaturesConfiguration.serialization.fromJson({
       canCreateProject: true,
@@ -286,21 +290,22 @@ export const TEST__setUpEditor = async (
   );
 
   // depot
-  createSpy(MOCK__editorStore.depotServerClient, 'getProjects').mockReturnValue(
-    Promise.resolve(projects),
-  );
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProjects',
+  ).mockResolvedValue(projects);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'getProjectById',
-  ).mockReturnValue(Promise.resolve(projectData));
+  ).mockResolvedValue(projectData);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'collectDependencyEntities',
-  ).mockReturnValue(Promise.resolve(projectDependency));
+  ).mockResolvedValue(projectDependency);
   createSpy(
     MOCK__editorStore.depotServerClient,
     'analyzeDependencyTree',
-  ).mockReturnValue(Promise.resolve(projectDependencyInfo));
+  ).mockResolvedValue(projectDependencyInfo);
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
@@ -308,7 +313,7 @@ export const TEST__setUpEditor = async (
   createSpy(
     graphManagerState.graphManager,
     'getAvailableGenerationConfigurationDescriptions',
-  ).mockReturnValue(Promise.resolve(availableGenerationDescriptions));
+  ).mockResolvedValue(availableGenerationDescriptions);
 
   // mock change detections (since we do not test them now)
   MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
