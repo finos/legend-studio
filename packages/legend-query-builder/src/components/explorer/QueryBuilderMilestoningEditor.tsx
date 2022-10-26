@@ -244,13 +244,12 @@ export const MilestoningParametersEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
     const milestoningState = queryBuilderState.milestoningState;
-    const closeMilestoningEditor = (): void =>
-      milestoningState.setShowMilestoningEditor(false);
+    const close = (): void => milestoningState.setShowMilestoningEditor(false);
 
     return (
       <Dialog
         open={milestoningState.showMilestoningEditor}
-        onClose={closeMilestoningEditor}
+        onClose={close}
         classes={{
           root: 'editor-modal__root-container',
           container: 'editor-modal__container',
