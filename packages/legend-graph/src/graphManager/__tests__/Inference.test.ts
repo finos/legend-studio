@@ -30,8 +30,6 @@ import {
 } from '../GraphManagerTestUtils.js';
 import { getTag } from '../../graph/helpers/DomainHelper.js';
 
-declare interface JestExpect {}
-
 test(unitTest('Infer default mapping element ID'), async () => {
   const graphManagerState = TEST__getTestGraphManagerState();
   await TEST__buildGraphWithEntities(
