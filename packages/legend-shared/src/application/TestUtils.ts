@@ -46,6 +46,7 @@ export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
  * Currently, `jest-extended` augments the matchers from @types/jest instead of expect (or @jest/expect)
  * so we're stubbing this type for now.
  * See https://github.com/facebook/jest/issues/12424
+ * See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/62037
  */
 export type TEMPORARY__JestMatcher = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
