@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { jest } from '@jest/globals';
 import { type RenderResult, render, waitFor } from '@testing-library/react';
-import { Log } from '@finos/legend-shared';
+import { createSpy, Log } from '@finos/legend-shared';
 import {
   type RawMappingModelCoverageAnalysisResult,
   type RawLambda,
@@ -82,15 +81,16 @@ export const TEST__setUpQueryBuilder = async (
   );
 
   if (rawMappingModelCoverageAnalysisResult) {
-    jest
-      .spyOn(graphManagerState.graphManager, 'analyzeMappingModelCoverage')
-      .mockReturnValue(
-        Promise.resolve(
-          graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-            rawMappingModelCoverageAnalysisResult,
-          ),
+    createSpy(
+      graphManagerState.graphManager,
+      'analyzeMappingModelCoverage',
+    ).mockReturnValue(
+      Promise.resolve(
+        graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+          rawMappingModelCoverageAnalysisResult,
         ),
-      );
+      ),
+    );
   }
 
   const history = createMemoryHistory();

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { jest, expect } from '@jest/globals';
+import { expect } from '@jest/globals';
 import {
   type LoggerPlugin,
   type TEMPORARY__JestMatcher,
   Log,
   AbstractPluginManager,
   promisify,
+  createMock,
 } from '@finos/legend-shared';
 import type { PureGraphManagerPlugin } from './PureGraphManagerPlugin.js';
 import { GraphManagerState } from './GraphManagerState.js';
@@ -93,7 +94,7 @@ export const TEST__provideMockedGraphManagerState = (customization?: {
     customization?.mock ??
     TEST__getTestGraphManagerState(customization?.pluginManager);
   const MockedGraphManagerStateProvider = require('./GraphManagerStateProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedGraphManagerStateProvider.useGraphManagerState = jest.fn();
+  MockedGraphManagerStateProvider.useGraphManagerState = createMock();
   MockedGraphManagerStateProvider.useGraphManagerState.mockReturnValue(value);
   return value;
 };

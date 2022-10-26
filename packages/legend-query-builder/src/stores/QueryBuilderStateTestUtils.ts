@@ -25,8 +25,8 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '@finos/legend-graph';
+import { createSpy } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
-import { jest } from '@jest/globals';
 import { flowResult } from 'mobx';
 import { QueryBuilder_GraphManagerPreset } from '../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
@@ -75,18 +75,16 @@ export const TEST__setUpQueryBuilderState = async (
   }
 
   if (rawMappingModelCoverageAnalysisResult) {
-    jest
-      .spyOn(
-        queryBuilderState.graphManagerState.graphManager,
-        'analyzeMappingModelCoverage',
-      )
-      .mockReturnValue(
-        Promise.resolve(
-          queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
-            rawMappingModelCoverageAnalysisResult,
-          ),
+    createSpy(
+      queryBuilderState.graphManagerState.graphManager,
+      'analyzeMappingModelCoverage',
+    ).mockReturnValue(
+      Promise.resolve(
+        queryBuilderState.graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+          rawMappingModelCoverageAnalysisResult,
         ),
-      );
+      ),
+    );
   }
 
   if (rawMappingModelCoverageAnalysisResult) {

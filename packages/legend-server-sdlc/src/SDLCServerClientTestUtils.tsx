@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { jest } from '@jest/globals';
+import { createMock } from '@finos/legend-shared';
 import { SDLCServerClient } from './SDLCServerClient.js';
 import { SDLCServerClientProvider } from './SDLCServerClientProvider.js';
 
@@ -29,7 +29,7 @@ export const TEST__provideMockedSDLCServerClient = (customization?: {
 }): SDLCServerClient => {
   const value = customization?.mock ?? TEST__getTestSDLCServerClient();
   const MockedSDLCServerClientProvider = require('./SDLCServerClientProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedSDLCServerClientProvider.useSDLCServerClient = jest.fn();
+  MockedSDLCServerClientProvider.useSDLCServerClient = createMock();
   MockedSDLCServerClientProvider.useSDLCServerClient.mockReturnValue(value);
   return value;
 };

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { test, jest, expect } from '@jest/globals';
+import { test, expect } from '@jest/globals';
 import { LegendStudioApplicationRoot } from '../LegendStudioApplication.js';
 import {
+  type TEMPORARY__JestMatcher,
   integrationTest,
   noop,
-  type TEMPORARY__JestMock,
+  createSpy,
 } from '@finos/legend-shared';
 import {
   WebApplicationNavigator,
@@ -46,23 +47,23 @@ test(
   async () => {
     const sdlcServerClient = TEST__provideMockedSDLCServerClient();
 
-    jest
-      .spyOn(sdlcServerClient, 'isAuthorized')
-      .mockReturnValueOnce(Promise.resolve(true));
-    jest
-      .spyOn(sdlcServerClient, 'getCurrentUser')
-      .mockReturnValueOnce(
-        Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
-      );
-    jest
-      .spyOn(sdlcServerClient, 'hasAcceptedTermsOfService')
-      .mockReturnValueOnce(Promise.resolve(['stubUrl']));
-    jest
-      .spyOn(sdlcServerClient, 'getProjects')
-      .mockReturnValue(Promise.resolve([]));
-    jest
-      .spyOn(sdlcServerClient, 'fetchServerFeaturesConfiguration')
-      .mockReturnValue(Promise.resolve());
+    createSpy(sdlcServerClient, 'isAuthorized').mockReturnValueOnce(
+      Promise.resolve(true),
+    );
+    createSpy(sdlcServerClient, 'getCurrentUser').mockReturnValueOnce(
+      Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
+    );
+    createSpy(
+      sdlcServerClient,
+      'hasAcceptedTermsOfService',
+    ).mockReturnValueOnce(Promise.resolve(['stubUrl']));
+    createSpy(sdlcServerClient, 'getProjects').mockReturnValue(
+      Promise.resolve([]),
+    );
+    createSpy(
+      sdlcServerClient,
+      'fetchServerFeaturesConfiguration',
+    ).mockReturnValue(Promise.resolve());
 
     TEST__provideMockedWebApplicationNavigator();
 
@@ -99,22 +100,21 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   const sdlcServerClient = TEST__provideMockedSDLCServerClient();
   const stubURL = 'stubUrl';
 
-  jest
-    .spyOn(sdlcServerClient, 'isAuthorized')
-    .mockReturnValueOnce(Promise.resolve(false));
-  jest
-    .spyOn(sdlcServerClient, 'getCurrentUser')
-    .mockReturnValueOnce(
-      Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
-    );
+  createSpy(sdlcServerClient, 'isAuthorized').mockReturnValueOnce(
+    Promise.resolve(false),
+  );
+  createSpy(sdlcServerClient, 'getCurrentUser').mockReturnValueOnce(
+    Promise.resolve({ name: 'testUser', userId: 'testUserId' }),
+  );
   const navigator = new WebApplicationNavigator(createMemoryHistory());
   applicationStore.navigator = navigator;
-  const navigationActionSpy = jest
-    .spyOn(navigator, 'goToAddress')
-    .mockImplementation(noop);
-  jest
-    .spyOn(navigator, 'getCurrentAddress')
-    .mockImplementationOnce(() => stubURL);
+  const navigationActionSpy = createSpy(
+    navigator,
+    'goToAddress',
+  ).mockImplementation(noop);
+  createSpy(navigator, 'getCurrentAddress').mockImplementationOnce(
+    () => stubURL,
+  );
 
   TEST__provideMockedWebApplicationNavigator();
 
@@ -138,7 +138,7 @@ test(integrationTest('Failed to authorize SDLC will redirect'), async () => {
   );
 
   await waitFor(() =>
-    expect(navigationActionSpy as TEMPORARY__JestMock).toHaveBeenCalledWith(
+    expect(navigationActionSpy as TEMPORARY__JestMatcher).toHaveBeenCalledWith(
       SDLCServerClient.authorizeCallbackUrl(
         applicationStore.config.sdlcServerUrl,
         stubURL,

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { test, jest, expect, beforeEach } from '@jest/globals';
+import { test, expect, beforeEach } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { WorkspaceSetup } from '../WorkspaceSetup.js';
-import { integrationTest } from '@finos/legend-shared';
+import { createSpy, integrationTest } from '@finos/legend-shared';
 import { TEST_DATA__DefaultSDLCInfo } from '../../EditorComponentTestUtils.js';
 import {
   type SDLCServerClient,
@@ -39,8 +39,7 @@ beforeEach(() => {
 });
 
 test(integrationTest('Shows project searcher properly'), async () => {
-  jest
-    .spyOn(sdlcServerClient, 'getProjects')
+  createSpy(sdlcServerClient, 'getProjects')
     .mockReturnValueOnce(Promise.resolve([TEST_DATA__DefaultSDLCInfo.project]))
     .mockReturnValueOnce(Promise.resolve([]));
 

@@ -15,19 +15,7 @@
  */
 
 import { fastify } from 'fastify';
-/**
- * Previously, these exports rely on ES module interop to expose `default` export
- * properly. But since we use `ESM` for Typescript resolution now, we lose this
- *
- * TODO: remove these when the package properly work with Typescript's nodenext
- * module resolution
- *
- * @workaround ESM
- * See https://github.com/microsoft/TypeScript/issues/49298
- * See https://github.com/microsoft/TypeScript/issues/50690
- * See https://github.com/fastify/fastify-cors/pull/231
- */
-import { default as FastifyCORS } from '@fastify/cors';
+import { fastifyCors } from '@fastify/cors';
 import TAXONOMY_TREE_DATA from './TEST_DATA__TaxonomyTreeData.json' assert { type: 'json' };
 import DOCUMENTATION_DATA from './DummyDocumentationData.json' assert { type: 'json' };
 
@@ -40,7 +28,7 @@ const server = fastify({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-server.register(FastifyCORS.default, {
+server.register(fastifyCors, {
   methods: ['OPTIONS'],
   origin: [/localhost/],
   credentials: true,

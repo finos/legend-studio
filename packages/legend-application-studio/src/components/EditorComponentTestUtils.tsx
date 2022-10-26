@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { jest, expect } from '@jest/globals';
+import { expect } from '@jest/globals';
 import {
   type RenderResult,
   render,
@@ -29,7 +29,7 @@ import {
   generateEditorRoute,
   LEGEND_STUDIO_ROUTE_PATTERN,
 } from '../stores/LegendStudioRouter.js';
-import type { PlainObject, TEMPORARY__JestMock } from '@finos/legend-shared';
+import { createMock, createSpy, type PlainObject } from '@finos/legend-shared';
 import { LegendStudioPluginManager } from '../application/LegendStudioPluginManager.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -165,7 +165,7 @@ export const TEST__provideMockedEditorStore = (customization?: {
         TEST__getTestGraphManagerState(customization?.pluginManager),
     );
   const MockedEditorStoreProvider = require('./editor/EditorStoreProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-  MockedEditorStoreProvider.useEditorStore = jest.fn();
+  MockedEditorStoreProvider.useEditorStore = createMock();
   MockedEditorStoreProvider.useEditorStore.mockReturnValue(value);
   return value;
 };
@@ -247,39 +247,37 @@ export const TEST__setUpEditor = async (
   } = data;
 
   // SDLC
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getProject')
-    .mockReturnValue(Promise.resolve(project));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getWorkspace')
-    .mockReturnValue(Promise.resolve(workspace));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getVersions')
-    .mockReturnValue(Promise.resolve(projectVersions));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getRevision')
-    .mockReturnValue(Promise.resolve(curentRevision));
-  jest
-    .spyOn(
-      MOCK__editorStore.sdlcServerClient,
-      'checkIfWorkspaceIsInConflictResolutionMode',
-    )
-    .mockReturnValue(Promise.resolve(false));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'isWorkspaceOutdated')
-    .mockReturnValue(Promise.resolve(false));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getEntities')
-    .mockReturnValue(Promise.resolve(entities));
-  jest
-    .spyOn(MOCK__editorStore.sdlcServerClient, 'getConfiguration')
-    .mockReturnValue(Promise.resolve(projectConfiguration));
-  jest
-    .spyOn(
-      MOCK__editorStore.sdlcServerClient,
-      'getLatestProjectStructureVersion',
-    )
-    .mockReturnValue(Promise.resolve(latestProjectStructureVersion));
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getProject').mockReturnValue(
+    Promise.resolve(project),
+  );
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getWorkspace').mockReturnValue(
+    Promise.resolve(workspace),
+  );
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getVersions').mockReturnValue(
+    Promise.resolve(projectVersions),
+  );
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getRevision').mockReturnValue(
+    Promise.resolve(curentRevision),
+  );
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'checkIfWorkspaceIsInConflictResolutionMode',
+  ).mockReturnValue(Promise.resolve(false));
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'isWorkspaceOutdated',
+  ).mockReturnValue(Promise.resolve(false));
+  createSpy(MOCK__editorStore.sdlcServerClient, 'getEntities').mockReturnValue(
+    Promise.resolve(entities),
+  );
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getConfiguration',
+  ).mockReturnValue(Promise.resolve(projectConfiguration));
+  createSpy(
+    MOCK__editorStore.sdlcServerClient,
+    'getLatestProjectStructureVersion',
+  ).mockReturnValue(Promise.resolve(latestProjectStructureVersion));
   MOCK__editorStore.sdlcServerClient._setFeatures(
     SDLCServerFeaturesConfiguration.serialization.fromJson({
       canCreateProject: true,
@@ -288,40 +286,41 @@ export const TEST__setUpEditor = async (
   );
 
   // depot
-  jest
-    .spyOn(MOCK__editorStore.depotServerClient, 'getProjects')
-    .mockReturnValue(Promise.resolve(projects));
-  jest
-    .spyOn(MOCK__editorStore.depotServerClient, 'getProjectById')
-    .mockReturnValue(Promise.resolve(projectData));
-  jest
-    .spyOn(MOCK__editorStore.depotServerClient, 'collectDependencyEntities')
-    .mockReturnValue(Promise.resolve(projectDependency));
-  jest
-    .spyOn(MOCK__editorStore.depotServerClient, 'analyzeDependencyTree')
-    .mockReturnValue(Promise.resolve(projectDependencyInfo));
+  createSpy(MOCK__editorStore.depotServerClient, 'getProjects').mockReturnValue(
+    Promise.resolve(projects),
+  );
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'getProjectById',
+  ).mockReturnValue(Promise.resolve(projectData));
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'collectDependencyEntities',
+  ).mockReturnValue(Promise.resolve(projectDependency));
+  createSpy(
+    MOCK__editorStore.depotServerClient,
+    'analyzeDependencyTree',
+  ).mockReturnValue(Promise.resolve(projectDependencyInfo));
 
   // TODO: we need to think of how we will mock these calls when we modularize
   const graphManagerState = MOCK__editorStore.graphManagerState;
-  graphManagerState.graphManager.initialize = jest.fn<TEMPORARY__JestMock>();
-  jest
-    .spyOn(
-      graphManagerState.graphManager,
-      'getAvailableGenerationConfigurationDescriptions',
-    )
-    .mockReturnValue(Promise.resolve(availableGenerationDescriptions));
+  graphManagerState.graphManager.initialize = createMock();
+  createSpy(
+    graphManagerState.graphManager,
+    'getAvailableGenerationConfigurationDescriptions',
+  ).mockReturnValue(Promise.resolve(availableGenerationDescriptions));
 
   // mock change detections (since we do not test them now)
   MOCK__editorStore.changeDetectionState.workspaceLocalLatestRevisionState.buildEntityHashesIndex =
-    jest.fn<TEMPORARY__JestMock>();
+    createMock();
   MOCK__editorStore.sdlcState.buildWorkspaceBaseRevisionEntityHashesIndex =
-    jest.fn<TEMPORARY__JestMock>();
+    createMock();
   MOCK__editorStore.sdlcState.buildProjectLatestRevisionEntityHashesIndex =
-    jest.fn<TEMPORARY__JestMock>();
+    createMock();
   MOCK__editorStore.workspaceReviewState.fetchCurrentWorkspaceReview =
-    jest.fn<TEMPORARY__JestMock>();
+    createMock();
   MOCK__editorStore.workspaceUpdaterState.fetchLatestCommittedReviews =
-    jest.fn<TEMPORARY__JestMock>();
+    createMock();
 
   const history = createMemoryHistory({
     initialEntries: [
