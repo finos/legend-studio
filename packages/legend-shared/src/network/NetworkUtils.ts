@@ -29,6 +29,7 @@ import {
   stringify as _stringifyQueryParams,
 } from 'query-string';
 import { returnUndefOnError } from '../error/ErrorUtils.js';
+import { sanitizeUrl } from '@braintree/sanitize-url';
 
 /**
  * Unlike the download call (GET requests) which is gziped, the upload call send uncompressed data which is in megabytes realms
@@ -554,3 +555,5 @@ export const buildUrl = (parts: string[]): string =>
   parts
     .map((part) => part.replaceAll(/^\/+/g, '').replaceAll(/\/+$/g, ''))
     .join(URL_SEPARATOR);
+
+export const sanitizeURL = (val: string): string => sanitizeUrl(val);

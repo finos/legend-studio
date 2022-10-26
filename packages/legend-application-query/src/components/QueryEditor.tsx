@@ -39,7 +39,11 @@ import {
   CheckIcon,
   MenuContentItemLabel,
 } from '@finos/legend-art';
-import { debounce, getQueryParameters } from '@finos/legend-shared';
+import {
+  debounce,
+  getQueryParameters,
+  sanitizeURL,
+} from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -645,7 +649,7 @@ export const ServiceQueryCreator = observer(() => {
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
   const executionKey = getQueryParameters<ServiceQueryCreatorQueryParams>(
-    applicationStore.navigator.getCurrentAddress(),
+    sanitizeURL(applicationStore.navigator.getCurrentAddress()),
     true,
   )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
 

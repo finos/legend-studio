@@ -1547,6 +1547,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@braintree/sanitize-url@npm:6.0.1":
+  version: 6.0.1
+  resolution: "@braintree/sanitize-url@npm:6.0.1"
+  checksum: 6f9221299aac0c841a17ecb1ebc60eb43c794f05b5136ca9b87116c8472b7e96f21e56ba2da8369f964112c6055fab791a37015bbea4bd5a189cc38206d214ad
+  languageName: node
+  linkType: hard
+
 "@changesets/apply-release-plan@npm:^6.1.1":
   version: 6.1.1
   resolution: "@changesets/apply-release-plan@npm:6.1.1"
@@ -2987,6 +2994,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-shared@workspace:packages/legend-shared"
   dependencies:
+    "@braintree/sanitize-url": 6.0.1
     "@finos/legend-dev-utils": "workspace:*"
     "@jest/globals": 29.2.2
     "@types/lodash-es": 4.17.6

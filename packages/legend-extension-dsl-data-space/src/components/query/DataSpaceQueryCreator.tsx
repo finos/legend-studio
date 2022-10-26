@@ -15,7 +15,7 @@
  */
 
 import { observer, useLocalObservable } from 'mobx-react-lite';
-import { getQueryParameters } from '@finos/legend-shared';
+import { getQueryParameters, sanitizeURL } from '@finos/legend-shared';
 import { useApplicationStore, useParams } from '@finos/legend-application';
 import { useDepotServerClient } from '@finos/legend-server-depot';
 import {
@@ -82,7 +82,7 @@ export const DataSpaceQueryCreator = observer(() => {
     params[DATA_SPACE_QUERY_CREATOR_PATH_PARAM_TOKEN.EXECUTION_CONTEXT];
   const runtimePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH];
   const classPath = getQueryParameters<DataSpaceQueryEditorQueryParams>(
-    applicationStore.navigator.getCurrentAddress(),
+    sanitizeURL(applicationStore.navigator.getCurrentAddress()),
     true,
   )[DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH];
 
