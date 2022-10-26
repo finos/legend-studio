@@ -31,7 +31,11 @@ import {
   CheckIcon,
   MenuContentDivider,
 } from '@finos/legend-art';
-import { getQueryParameters, guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  getQueryParameters,
+  guaranteeNonNullable,
+  sanitizeURL,
+} from '@finos/legend-shared';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import React, { createContext, useContext, useEffect } from 'react';
 import {
@@ -251,7 +255,7 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
     const setupStore = useQuerySetupLandingPageStore();
     const applicationStore = useLegendQueryApplicationStore();
     const params = getQueryParameters<QuerySetupQueryParams>(
-      applicationStore.navigator.getCurrentAddress(),
+      sanitizeURL(applicationStore.navigator.getCurrentAddress()),
       true,
     );
     const showAdvancedActions =
