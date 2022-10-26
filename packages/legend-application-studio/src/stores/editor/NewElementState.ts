@@ -72,7 +72,6 @@ import {
   DefaultH2AuthenticationStrategy,
   ModelGenerationSpecification,
   DataElement,
-  stub_RawLambda,
   stub_Database,
   Measure,
 } from '@finos/legend-graph';
@@ -467,7 +466,12 @@ export class NewServiceDriver extends NewElementDriver<Service> {
     }
     service_setExecution(
       service,
-      new PureSingleExecution(stub_RawLambda(), service, mapping, runtimeValue),
+      new PureSingleExecution(
+        this.editorStore.graphManagerState.graphManager.createDefaultBasicRawLambda(),
+        service,
+        mapping,
+        runtimeValue,
+      ),
       this.editorStore.changeDetectionState.observerContext,
     );
     service_initNewService(service);
