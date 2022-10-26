@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 6.2.0
+
+### Minor Changes
+
+- [#1592](https://github.com/finos/legend-studio/pull/1592) [`6f8aa5ce`](https://github.com/finos/legend-studio/commit/6f8aa5ce7c485dffd55f29d3ac7e4bf01f91b7ae) ([@akphi](https://github.com/akphi)) - Add `sanitizeURL` utility.
+
 ## 6.1.5
 
 ## 6.1.4

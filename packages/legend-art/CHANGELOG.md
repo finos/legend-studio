@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.0
+
+### Major Changes
+
+- [#1540](https://github.com/finos/legend-studio/pull/1540) [`d41811eb`](https://github.com/finos/legend-studio/commit/d41811ebff8177905ad37de45945bb12d8a8926d) ([@xannem](https://github.com/xannem)) - **BREAKING CHANGE:** Renamed `PanelSection` to `PanelFormSection`, `PanelFormTextEditor` and `PanelFormBooleanEditor` are not renamed to `PanelFormTextField` and `PanelFormBooleanField` respectively and are now wrapped with a `PanelFormSection`.
+
 ## 4.1.0
 
 ### Minor Changes

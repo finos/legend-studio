@@ -1,5 +1,17 @@
 # @finos/legend-query-builder
 
+## 0.3.0
+
+### Minor Changes
+
+- [#1530](https://github.com/finos/legend-studio/pull/1530) [`fb50367a`](https://github.com/finos/legend-studio/commit/fb50367a32a06c3ecb73a685c73875bc586b80ed) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add OLAP groupBy support in query builder ([#1527](https://github.com/finos/legend-studio/issues/1527)).
+
+### Patch Changes
+
+- [#1573](https://github.com/finos/legend-studio/pull/1573) [`6689b219`](https://github.com/finos/legend-studio/commit/6689b219d04cabd48a5ef59b8b52767737a9bde7) ([@akphi](https://github.com/akphi)) - Fix a bug where milestoning editor modal cannot be closed ([#1589](https://github.com/finos/legend-studio/issues/1589)).
+
+- [#1573](https://github.com/finos/legend-studio/pull/1573) [`6689b219`](https://github.com/finos/legend-studio/commit/6689b219d04cabd48a5ef59b8b52767737a9bde7) ([@akphi](https://github.com/akphi)) - Fix a problem where query builder setup panels do not allow selection when there is only one option and no selected option ([#1590](https://github.com/finos/legend-studio/issues/1590)).
+
 ## 0.2.3
 
 ## 0.2.2
