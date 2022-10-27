@@ -272,8 +272,19 @@ const QueryBuilderGridResultContextMenu = observer(
           );
     };
 
+    const handleCopy = applicationStore.guardUnhandledError(() =>
+      applicationStore.copyTextToClipboard(event?.value),
+    );
+
     return (
       <MenuContent ref={ref}>
+        <MenuContentItem
+          onClick={(): void => {
+            handleCopy();
+          }}
+        >
+          Copy
+        </MenuContentItem>
         <MenuContentItem
           onClick={(): void => {
             filterByOrOut(true);
