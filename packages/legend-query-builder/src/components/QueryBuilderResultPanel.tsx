@@ -272,18 +272,29 @@ const QueryBuilderGridResultContextMenu = observer(
           );
     };
 
-    const handleCopy = applicationStore.guardUnhandledError(() =>
+    const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
       applicationStore.copyTextToClipboard(event?.value),
+    );
+
+    const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
+      applicationStore.copyTextToClipboard(JSON.stringify(event?.data)),
     );
 
     return (
       <MenuContent ref={ref}>
         <MenuContentItem
           onClick={(): void => {
-            handleCopy();
+            handleCopyCellValue();
           }}
         >
-          Copy
+          Copy Cell Value
+        </MenuContentItem>
+        <MenuContentItem
+          onClick={(): void => {
+            handleCopyRowValue();
+          }}
+        >
+          Copy Row Value
         </MenuContentItem>
         <MenuContentItem
           onClick={(): void => {
