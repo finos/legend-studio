@@ -15,7 +15,7 @@
  */
 
 import { EnrichedError } from './ErrorUtils.js';
-import type { GenericClazz } from '../CommonUtils.js';
+import type { GenericClazz, PlainObject } from '../CommonUtils.js';
 
 export class AssertionError extends EnrichedError {
   constructor(error: string | Error | undefined, message?: string) {
@@ -106,7 +106,7 @@ export const isNumber = (val: unknown): val is number =>
   typeof val === 'number' && !isNaN(val);
 export const isBoolean = (val: unknown): val is boolean =>
   typeof val === 'boolean';
-export const isObject = (val: unknown): val is object =>
+export const isObject = (val: unknown): val is PlainObject =>
   typeof val === 'object';
 
 export function assertIsString(
@@ -117,10 +117,6 @@ export function assertIsString(
     throw new AssertionError(message || `Value is expected to be a string`);
   }
 }
-export const guaranteeIsString = (val: unknown, message = ''): string => {
-  assertIsString(val, message);
-  return val;
-};
 export function assertIsNumber(
   val: unknown,
   message = '',
@@ -129,7 +125,23 @@ export function assertIsNumber(
     throw new AssertionError(message || `Value is expected to be a number`);
   }
 }
+export function assertIsBoolean(
+  val: unknown,
+  message = '',
+): asserts val is boolean {
+  if (!isBoolean(val)) {
+    throw new AssertionError(message || `Value is expected to be a boolean`);
+  }
+}
+export const guaranteeIsString = (val: unknown, message = ''): string => {
+  assertIsString(val, message);
+  return val;
+};
 export const guaranteeIsNumber = (val: unknown, message = ''): number => {
   assertIsNumber(val, message);
+  return val;
+};
+export const guaranteeIsBoolean = (val: unknown, message = ''): boolean => {
+  assertIsBoolean(val, message);
   return val;
 };

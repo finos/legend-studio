@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecificationVisitor } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
-import { V1_GraphFetchTree } from './V1_GraphFetchTree.js';
+import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
+import { V1_ValueSpecification } from '../V1_ValueSpecification.js';
 
-export class V1_RootGraphFetchTree extends V1_GraphFetchTree {
-  class!: string;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_RootGraphFetchTree(this);
-  }
+/**
+ * Similar to class instances, but these constructs are too fundamental for the system
+ * so we group them as **core** class instances.
+ */
+export abstract class V1_CoreClassInstance extends V1_ValueSpecification {
+  readonly multiplicity = V1_Multiplicity.ONE;
 }

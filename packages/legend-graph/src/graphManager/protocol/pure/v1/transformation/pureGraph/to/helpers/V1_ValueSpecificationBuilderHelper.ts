@@ -15,7 +15,6 @@
  */
 
 import {
-  Pair,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
@@ -45,7 +44,6 @@ import {
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
-  PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 import { ValueSpecification } from '../../../../../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
@@ -59,8 +57,6 @@ import {
   InstanceValue,
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  PairInstanceValue,
-  PureListInstanceValue,
   CollectionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
 import type { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
@@ -78,13 +74,12 @@ import { V1_ProcessingContext } from './V1_ProcessingContext.js';
 import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext.js';
 import { V1_BaseExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext.js';
 import { V1_AnalyticsExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext.js';
-import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
+import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
 import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity.js';
-import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
-import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/graph/V1_GraphFetchTree.js';
+import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
+import type { V1_GraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
-import type { V1_AggregateValue } from '../../../../model/valueSpecification/raw/V1_AggregateValue.js';
 import type { V1_CBoolean } from '../../../../model/valueSpecification/raw/V1_CBoolean.js';
 import type { V1_CDateTime } from '../../../../model/valueSpecification/raw/V1_CDateTime.js';
 import type { V1_CStrictTime } from '../../../../model/valueSpecification/raw/V1_CStrictTime.js';
@@ -96,32 +91,19 @@ import type { V1_Collection } from '../../../../model/valueSpecification/raw/V1_
 import type { V1_CStrictDate } from '../../../../model/valueSpecification/raw/V1_CStrictDate.js';
 import { V1_CString } from '../../../../model/valueSpecification/raw/V1_CString.js';
 import type { V1_EnumValue } from '../../../../model/valueSpecification/raw/V1_EnumValue.js';
-import type { V1_ExecutionContextInstance } from '../../../../model/valueSpecification/raw/V1_ExecutionContextInstance.js';
 import type { V1_KeyExpression } from '../../../../model/valueSpecification/raw/V1_KeyExpression.js';
-import type { V1_Pair } from '../../../../model/valueSpecification/raw/V1_Pair.js';
-import type { V1_Path } from '../../../../model/valueSpecification/raw/path/V1_Path.js';
-import type { V1_PrimitiveType } from '../../../../model/valueSpecification/raw/V1_PrimitiveType.js';
-import type { V1_PureList } from '../../../../model/valueSpecification/raw/V1_PureList.js';
-import type { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/V1_RuntimeInstance.js';
-import type { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/V1_SerializationConfig.js';
-import type { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/V1_TDSAggregateValue.js';
-import type { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/V1_TDSColumnInformation.js';
-import type { V1_TDSOlapAggregation } from '../../../../model/valueSpecification/raw/V1_TDSOlapAggregation_.js';
-import type { V1_TDSOlapRank } from '../../../../model/valueSpecification/raw/V1_TDSOlapRank_.js';
-import type { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/V1_TDSSortInformation.js';
-import type { V1_UnitInstance } from '../../../../model/valueSpecification/raw/V1_UnitInstance.js';
-import type { V1_UnitType } from '../../../../model/valueSpecification/raw/V1_UnitType.js';
 import { V1_getAppliedProperty } from './V1_DomainBuilderHelper.js';
 import { Enumeration } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import { EnumValueExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/EnumValueReference.js';
 import type { V1_PackageableElementPtr } from '../../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
-import type { V1_HackedClass } from '../../../../model/valueSpecification/raw/V1_HackedClass.js';
-import type { V1_HackedUnit } from '../../../../model/valueSpecification/raw/V1_HackedUnit.js';
 import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
 import { INTERNAL__UnknownValueSpecification } from '../../../../../../../../graph/metamodel/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
 import { GraphBuilderError } from '../../../../../../../../graphManager/GraphManagerUtils.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
 import { matchFunctionName } from '../../../../../../../../graph/MetaModelUtils.js';
+import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
+import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
+import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -163,8 +145,6 @@ export class V1_ValueSpecificationBuilder
     return metamodel;
   }
 
-  // --------------------------------------------- Function ---------------------------------------------
-
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
     if (variable.class && variable.multiplicity) {
@@ -188,17 +168,25 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_Lambda(valueSpecification: V1_Lambda): ValueSpecification {
-    const lambda = V1_buildLambdaBody(
-      valueSpecification.body,
-      valueSpecification.parameters,
-      this.context,
-      this.processingContext.clone(), // clone the context for lambda
-    );
-    const instance = new LambdaFunctionInstanceValue(
+    const instanceValue = new LambdaFunctionInstanceValue(
       this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
-    instance.values = [lambda];
-    return instance;
+    instanceValue.values = [
+      V1_buildLambdaBody(
+        valueSpecification.body,
+        valueSpecification.parameters,
+        this.context,
+        this.processingContext.clone(), // clone the context for lambda
+      ),
+    ];
+    return instanceValue;
+  }
+
+  visit_KeyExpression(
+    valueSpecification: V1_KeyExpression,
+  ): ValueSpecification {
+    // TODO
+    throw new UnsupportedOperationError();
   }
 
   visit_AppliedFunction(
@@ -217,9 +205,10 @@ export class V1_ValueSpecificationBuilder
           ),
         ),
       );
-      const letName = guaranteeNonNullable(
-        guaranteeType(appliedFunction.parameters[0], V1_CString).values[0],
-      );
+      const letName = guaranteeType(
+        appliedFunction.parameters[0],
+        V1_CString,
+      ).value;
       const firstParam = guaranteeNonNullable(parameters[0]);
       const variableExpression = new VariableExpression(
         letName,
@@ -251,68 +240,37 @@ export class V1_ValueSpecificationBuilder
     );
   }
 
-  // --------------------------------------------- Core ---------------------------------------------
+  visit_PackageableElementPtr(
+    valueSpecification: V1_PackageableElementPtr,
+  ): ValueSpecification {
+    const instanceValue = new InstanceValue(
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      this.context.resolveGenericType(valueSpecification.fullPath),
+    );
+    instanceValue.values = [
+      this.context.resolveElement(valueSpecification.fullPath, false),
+    ];
+    return instanceValue;
+  }
+
+  visit_GenericTypeInstance(
+    valueSpecification: V1_GenericTypeInstance,
+  ): ValueSpecification {
+    const instanceValue = new InstanceValue(
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      this.context.resolveGenericType(valueSpecification.fullPath),
+    );
+    return instanceValue;
+  }
 
   visit_Collection(valueSpecification: V1_Collection): ValueSpecification {
-    const transformed = valueSpecification.values.map((v) =>
-      v.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          this.context,
-          this.processingContext,
-          this.openVariables,
-        ),
-      ),
-    );
-    const instance = new CollectionInstanceValue(
+    const instanceValue = new CollectionInstanceValue(
       this.context.graph.getMultiplicity(
         valueSpecification.multiplicity.lowerBound,
         valueSpecification.multiplicity.upperBound,
       ),
     );
-    instance.values = transformed;
-    // NOTE: Engine applies a more sophisticated `findMostCommon()` algorithm to find the collection's generic type. Here we only handle the case where the collection has one type.
-    const typeValues = uniq(
-      instance.values
-        .map((v) => v.genericType?.value.rawType)
-        .filter(isNonNullable),
-    );
-    if (typeValues.length === 1) {
-      instance.genericType = GenericTypeExplicitReference.create(
-        new GenericType(guaranteeNonNullable(typeValues[0])),
-      );
-    }
-    return instance;
-  }
-
-  visit_Pair(valueSpecification: V1_Pair): ValueSpecification {
-    const f = valueSpecification.first.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        this.context,
-        this.processingContext,
-        [],
-      ),
-    );
-    const s = valueSpecification.second.accept_ValueSpecificationVisitor(
-      new V1_ValueSpecificationBuilder(
-        this.context,
-        this.processingContext,
-        [],
-      ),
-    );
-    const fv = guaranteeType(f, InstanceValue).values[0];
-    const sv = guaranteeType(s, InstanceValue).values[0];
-    const instance = new PairInstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
-    instance.values = [new Pair(fv, sv)];
-    return instance;
-  }
-
-  visit_PureList(valueSpecification: V1_PureList): ValueSpecification {
-    const instance = new PureListInstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
-    instance.values = valueSpecification.values.map((v) =>
+    instanceValue.values = valueSpecification.values.map((v) =>
       v.accept_ValueSpecificationVisitor(
         new V1_ValueSpecificationBuilder(
           this.context,
@@ -321,42 +279,18 @@ export class V1_ValueSpecificationBuilder
         ),
       ),
     );
-    return instance;
-  }
-
-  visit_Path(valueSpecification: V1_Path): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  // --------------------------------------------- Instance Value ---------------------------------------------
-
-  visit_PackageableElementPtr(
-    valueSpecification: V1_PackageableElementPtr,
-  ): ValueSpecification {
-    const instance = new InstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-      this.context.resolveGenericType(valueSpecification.fullPath),
+    // NOTE: Engine applies a more sophisticated `findMostCommon()` algorithm to find the collection's generic type. Here we only handle the case where the collection has one type.
+    const typeValues = uniq(
+      instanceValue.values
+        .map((v) => v.genericType?.value.rawType)
+        .filter(isNonNullable),
     );
-    instance.values = [
-      this.context.resolveElement(valueSpecification.fullPath, false),
-    ];
-    return instance;
-  }
-
-  visit_HackedClass(valueSpecification: V1_HackedClass): ValueSpecification {
-    const instance = new InstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-      this.context.resolveGenericType(valueSpecification.fullPath),
-    );
-    return instance;
-  }
-
-  visit_HackedUnit(valueSpecification: V1_HackedUnit): ValueSpecification {
-    const instance = new InstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-      this.context.resolveGenericType(valueSpecification.unitType),
-    );
-    return instance;
+    if (typeValues.length === 1) {
+      instanceValue.genericType = GenericTypeExplicitReference.create(
+        new GenericType(guaranteeNonNullable(typeValues[0])),
+      );
+    }
+    return instanceValue;
   }
 
   visit_EnumValue(valueSpecification: V1_EnumValue): ValueSpecification {
@@ -373,101 +307,75 @@ export class V1_ValueSpecificationBuilder
     return instance;
   }
 
-  // --------------------------------------------- Primitive Type ---------------------------------------------
-
   visit_CInteger(valueSpecification: V1_CInteger): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.INTEGER,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CDecimal(valueSpecification: V1_CDecimal): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DECIMAL,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CString(valueSpecification: V1_CString): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRING,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CBoolean(valueSpecification: V1_CBoolean): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.BOOLEAN,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CFloat(valueSpecification: V1_CFloat): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.FLOAT,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CDateTime(valueSpecification: V1_CDateTime): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.DATETIME,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CStrictDate(valueSpecification: V1_CStrictDate): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTDATE,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
   visit_CStrictTime(valueSpecification: V1_CStrictTime): ValueSpecification {
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRICTTIME,
-      valueSpecification.values,
+      [valueSpecification.value],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
+      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -476,124 +384,63 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.LATESTDATE,
       [],
       this.context,
-      this.context.graph.getMultiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      ),
-    );
-  }
-
-  // --------------------------------------------- Graph Fetch Tree ---------------------------------------------
-
-  visit_RootGraphFetchTree(
-    valueSpecification: V1_RootGraphFetchTree,
-  ): ValueSpecification {
-    const tree = V1_buildGraphFetchTree(
-      valueSpecification,
-      this.context,
-      this.context.resolveClass(valueSpecification.class).value,
-      this.openVariables,
-      this.processingContext,
-    ) as RootGraphFetchTree;
-    const instance = new RootGraphFetchTreeInstanceValue(
       this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
-    instance.values = [tree];
-    return instance;
   }
 
-  visit_PropertyGraphFetchTree(
-    valueSpecification: V1_PropertyGraphFetchTree,
+  visit_ClassInstance(
+    valueSpecification: V1_ClassInstance,
   ): ValueSpecification {
-    const tree = V1_buildGraphFetchTree(
-      valueSpecification,
-      this.context,
-      undefined,
-      this.openVariables,
-      this.processingContext,
-    ) as PropertyGraphFetchTree;
-    const instance = new PropertyGraphFetchTreeInstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
-    instance.values = [tree];
-    return instance;
-  }
-
-  // --------------------------------------------- TODO ---------------------------------------------
-
-  visit_RuntimeInstance(
-    valueSpecification: V1_RuntimeInstance,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_AggregateValue(
-    valueSpecification: V1_AggregateValue,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_SerializationConfig(
-    valueSpecification: V1_SerializationConfig,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_UnitType(valueSpecification: V1_UnitType): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_UnitInstance(valueSpecification: V1_UnitInstance): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_KeyExpression(
-    valueSpecification: V1_KeyExpression,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_ExecutionContextInstance(
-    valueSpecification: V1_ExecutionContextInstance,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PrimitiveType(
-    valueSpecification: V1_PrimitiveType,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  // Not Supported For NOW
-  visit_TDSAggregateValue(
-    valueSpecification: V1_TDSAggregateValue,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_TDSColumnInformation(
-    valueSpecification: V1_TDSColumnInformation,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_TDSSortInformation(
-    valueSpecification: V1_TDSSortInformation,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_TDSOlapRank(valueSpecification: V1_TDSOlapRank): ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_TDSOlapAggregation(
-    valueSpecification: V1_TDSOlapAggregation,
-  ): ValueSpecification {
-    throw new UnsupportedOperationError();
+    switch (valueSpecification.type) {
+      case V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE: {
+        const instanceValue = new RootGraphFetchTreeInstanceValue(
+          this.context.graph.getTypicalMultiplicity(
+            TYPICAL_MULTIPLICITY_TYPE.ONE,
+          ),
+        );
+        const protocol = guaranteeType(
+          valueSpecification.value,
+          V1_RootGraphFetchTree,
+        );
+        const tree = V1_buildGraphFetchTree(
+          protocol,
+          this.context,
+          this.context.resolveClass(protocol.class).value,
+          this.openVariables,
+          this.processingContext,
+        ) as RootGraphFetchTree;
+        instanceValue.values = [tree];
+        return instanceValue;
+      }
+      default: {
+        const builders = this.context.extensions.plugins.flatMap(
+          (plugin) => plugin.V1_getExtraClassInstanceValueBuilders?.() ?? [],
+        );
+        for (const builder of builders) {
+          const value = builder(
+            valueSpecification.value,
+            valueSpecification.type,
+            this.context,
+          );
+          if (value) {
+            const instanceValue = new InstanceValue(
+              this.context.graph.getTypicalMultiplicity(
+                TYPICAL_MULTIPLICITY_TYPE.ONE,
+              ),
+            );
+            instanceValue.values = [value];
+            return instanceValue;
+          }
+        }
+        throw new UnsupportedOperationError(
+          `Can't build class instance value of type '${valueSpecification.type}': no compatible builder available from plugins`,
+        );
+      }
+    }
   }
 }
+
+// --------------------------------------------- Generic Constructs ---------------------------------------------
 
 export function V1_buildLambdaBody(
   expressions: V1_ValueSpecification[],
@@ -645,195 +492,7 @@ export function V1_buildValueSpecification(
   );
 }
 
-// --------------------------------------------- Graph Builder ---------------------------------------------
-
-export function V1_buildGraphFetchTree(
-  graphFetchTree: V1_GraphFetchTree,
-  context: V1_GraphBuilderContext,
-  parentClass: Class | undefined,
-  openVariables: string[],
-  processingContext: V1_ProcessingContext,
-): GraphFetchTree {
-  if (graphFetchTree instanceof V1_PropertyGraphFetchTree) {
-    return buildPropertyGraphFetchTree(
-      graphFetchTree,
-      context,
-      guaranteeNonNullable(parentClass),
-      openVariables,
-      processingContext,
-    );
-  } else if (graphFetchTree instanceof V1_RootGraphFetchTree) {
-    return buildRootGraphFetchTree(
-      graphFetchTree,
-      context,
-      openVariables,
-      processingContext,
-    );
-  }
-  throw new UnsupportedOperationError(
-    `Can't build graph fetch tree`,
-    graphFetchTree,
-  );
-}
-
-// --------------------------------------------- Graph Fetch Tree ---------------------------------------------
-
-const createThisVariableForClass = (
-  context: V1_GraphBuilderContext,
-  classPackageString: string,
-): VariableExpression => {
-  const _classGenericType = context.resolveGenericType(classPackageString);
-  const _var = new VariableExpression(
-    'this',
-    context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
-  _var.genericType = _classGenericType;
-  return _var;
-};
-
-function buildPropertyGraphFetchTree(
-  propertyGraphFetchTree: V1_PropertyGraphFetchTree,
-  context: V1_GraphBuilderContext,
-  parentClass: Class,
-  openVariables: string[],
-  processingContext: V1_ProcessingContext,
-): PropertyGraphFetchTree {
-  let property: AbstractProperty;
-  let pureParameters: ValueSpecification[] = [];
-  if (propertyGraphFetchTree.parameters.length) {
-    const thisVariable = new V1_Variable();
-    thisVariable.name = 'this';
-    thisVariable.class = parentClass.path;
-    const _multiplicity = new V1_Multiplicity();
-    _multiplicity.lowerBound = 1;
-    _multiplicity.upperBound = 1;
-    thisVariable.multiplicity = _multiplicity;
-    const parameters: V1_ValueSpecification[] =
-      propertyGraphFetchTree.parameters.concat([thisVariable]);
-    property = V1_getAppliedProperty(
-      parentClass,
-      parameters,
-      propertyGraphFetchTree.property,
-    );
-    processingContext.push('Creating graph-fetch property tree');
-    processingContext.addInferredVariables(
-      'this',
-      createThisVariableForClass(context, parentClass.path),
-    );
-    pureParameters = propertyGraphFetchTree.parameters.map((x) =>
-      x.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          context,
-          processingContext,
-          openVariables,
-        ),
-      ),
-    );
-    processingContext.flushVariable('this');
-    processingContext.pop();
-  } else {
-    property = V1_getAppliedProperty(
-      parentClass,
-      undefined,
-      propertyGraphFetchTree.property,
-    );
-  }
-  const _subType = propertyGraphFetchTree.subType
-    ? context.resolveClass(propertyGraphFetchTree.subType)
-    : undefined;
-  const _returnType = _subType?.value ?? property.genericType.value.rawType;
-  let children: GraphFetchTree[] = [];
-  if (propertyGraphFetchTree.subTrees.length) {
-    const _returnTypeClasss = guaranteeType(
-      _returnType,
-      Class,
-      'To have subtrees the type of the property must be complex',
-    );
-    children = propertyGraphFetchTree.subTrees.map((subTree) =>
-      V1_buildGraphFetchTree(
-        subTree,
-        context,
-        _returnTypeClasss,
-        openVariables,
-        processingContext,
-      ),
-    );
-  }
-  const _propertyGraphFetchTree = new PropertyGraphFetchTree(
-    PropertyExplicitReference.create(property),
-    undefined,
-  );
-  _propertyGraphFetchTree.parameters = pureParameters;
-  _propertyGraphFetchTree.alias = propertyGraphFetchTree.alias;
-  _propertyGraphFetchTree.subType = _subType;
-  _propertyGraphFetchTree.subTrees = children;
-  return _propertyGraphFetchTree;
-}
-
-function buildRootGraphFetchTree(
-  rootGraphFetchTree: V1_RootGraphFetchTree,
-  context: V1_GraphBuilderContext,
-  openVariables: string[],
-  processingContext: V1_ProcessingContext,
-): RootGraphFetchTree {
-  const _class = context.resolveClass(rootGraphFetchTree.class);
-  const children = rootGraphFetchTree.subTrees.map((subTree) =>
-    V1_buildGraphFetchTree(
-      subTree,
-      context,
-      _class.value,
-      openVariables,
-      processingContext,
-    ),
-  );
-  const _rootGraphFetchTree = new RootGraphFetchTree(
-    PackageableElementExplicitReference.create(_class.value),
-  );
-  _rootGraphFetchTree.subTrees = children;
-  return _rootGraphFetchTree;
-}
-
-// --------------------------------------------- Execution Context ---------------------------------------------
-
-export function V1_processExecutionContext(
-  executionContext: V1_ExecutionContext,
-  context: V1_GraphBuilderContext,
-): ExecutionContext {
-  if (executionContext instanceof V1_BaseExecutionContext) {
-    const _executioncontext = new BaseExecutionContext();
-    _executioncontext.enableConstraints = executionContext.enableConstraints;
-    _executioncontext.queryTimeOutInSeconds =
-      executionContext.queryTimeOutInSeconds;
-    return _executioncontext;
-  } else if (executionContext instanceof V1_AnalyticsExecutionContext) {
-    const vs =
-      executionContext.toFlowSetFunction.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          context,
-          new V1_ProcessingContext(''),
-          [],
-        ),
-      );
-    const instance = guaranteeType(vs, InstanceValue);
-    const lambdaFunc = guaranteeType(instance.values[0], LambdaFunction);
-    const _analyticsExecutionContext = new AnalyticsExecutionContext(
-      executionContext.useAnalytics,
-      lambdaFunc,
-    );
-    _analyticsExecutionContext.enableConstraints =
-      executionContext.enableConstraints;
-    _analyticsExecutionContext.queryTimeOutInSeconds =
-      executionContext.queryTimeOutInSeconds;
-    return _analyticsExecutionContext;
-  }
-  // TODO add processor
-  throw new UnsupportedOperationError(
-    `Can't build execution context`,
-    executionContext,
-  );
-}
-
-// ------------------------------------------ PROPERTY -----------------------------------------
+// ------------------------------------------ Property -----------------------------------------
 
 export function V1_processProperty(
   context: V1_GraphBuilderContext,
@@ -1064,5 +723,188 @@ export function V1_resolvePropertyExpressionTypeInference(
   }
   throw new UnsupportedOperationError(
     `Can't infer type for variable '${inferredVariable}': no compatible property expression type inferrer available from plugins`,
+  );
+}
+
+// --------------------------------------------- Graph Fetch Tree ---------------------------------------------
+
+export function V1_buildGraphFetchTree(
+  graphFetchTree: V1_GraphFetchTree,
+  context: V1_GraphBuilderContext,
+  parentClass: Class | undefined,
+  openVariables: string[],
+  processingContext: V1_ProcessingContext,
+): GraphFetchTree {
+  if (graphFetchTree instanceof V1_PropertyGraphFetchTree) {
+    return buildPropertyGraphFetchTree(
+      graphFetchTree,
+      context,
+      guaranteeNonNullable(parentClass),
+      openVariables,
+      processingContext,
+    );
+  } else if (graphFetchTree instanceof V1_RootGraphFetchTree) {
+    return buildRootGraphFetchTree(
+      graphFetchTree,
+      context,
+      openVariables,
+      processingContext,
+    );
+  }
+  throw new UnsupportedOperationError(
+    `Can't build graph fetch tree`,
+    graphFetchTree,
+  );
+}
+
+const createThisVariableForClass = (
+  context: V1_GraphBuilderContext,
+  classPackageString: string,
+): VariableExpression => {
+  const _classGenericType = context.resolveGenericType(classPackageString);
+  const _var = new VariableExpression(
+    'this',
+    context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+  );
+  _var.genericType = _classGenericType;
+  return _var;
+};
+
+function buildPropertyGraphFetchTree(
+  propertyGraphFetchTree: V1_PropertyGraphFetchTree,
+  context: V1_GraphBuilderContext,
+  parentClass: Class,
+  openVariables: string[],
+  processingContext: V1_ProcessingContext,
+): PropertyGraphFetchTree {
+  let property: AbstractProperty;
+  let pureParameters: ValueSpecification[] = [];
+  if (propertyGraphFetchTree.parameters.length) {
+    const thisVariable = new V1_Variable();
+    thisVariable.name = 'this';
+    thisVariable.class = parentClass.path;
+    thisVariable.multiplicity = V1_Multiplicity.ONE;
+    const parameters: V1_ValueSpecification[] =
+      propertyGraphFetchTree.parameters.concat([thisVariable]);
+    property = V1_getAppliedProperty(
+      parentClass,
+      parameters,
+      propertyGraphFetchTree.property,
+    );
+    processingContext.push('Creating graph-fetch property tree');
+    processingContext.addInferredVariables(
+      'this',
+      createThisVariableForClass(context, parentClass.path),
+    );
+    pureParameters = propertyGraphFetchTree.parameters.map((x) =>
+      x.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          context,
+          processingContext,
+          openVariables,
+        ),
+      ),
+    );
+    processingContext.flushVariable('this');
+    processingContext.pop();
+  } else {
+    property = V1_getAppliedProperty(
+      parentClass,
+      undefined,
+      propertyGraphFetchTree.property,
+    );
+  }
+  const _subType = propertyGraphFetchTree.subType
+    ? context.resolveClass(propertyGraphFetchTree.subType)
+    : undefined;
+  const _returnType = _subType?.value ?? property.genericType.value.rawType;
+  let children: GraphFetchTree[] = [];
+  if (propertyGraphFetchTree.subTrees.length) {
+    const _returnTypeClasss = guaranteeType(
+      _returnType,
+      Class,
+      'To have subtrees the type of the property must be complex',
+    );
+    children = propertyGraphFetchTree.subTrees.map((subTree) =>
+      V1_buildGraphFetchTree(
+        subTree,
+        context,
+        _returnTypeClasss,
+        openVariables,
+        processingContext,
+      ),
+    );
+  }
+  const _propertyGraphFetchTree = new PropertyGraphFetchTree(
+    PropertyExplicitReference.create(property),
+    undefined,
+  );
+  _propertyGraphFetchTree.parameters = pureParameters;
+  _propertyGraphFetchTree.alias = propertyGraphFetchTree.alias;
+  _propertyGraphFetchTree.subType = _subType;
+  _propertyGraphFetchTree.subTrees = children;
+  return _propertyGraphFetchTree;
+}
+
+function buildRootGraphFetchTree(
+  rootGraphFetchTree: V1_RootGraphFetchTree,
+  context: V1_GraphBuilderContext,
+  openVariables: string[],
+  processingContext: V1_ProcessingContext,
+): RootGraphFetchTree {
+  const _class = context.resolveClass(rootGraphFetchTree.class);
+  const children = rootGraphFetchTree.subTrees.map((subTree) =>
+    V1_buildGraphFetchTree(
+      subTree,
+      context,
+      _class.value,
+      openVariables,
+      processingContext,
+    ),
+  );
+  const _rootGraphFetchTree = new RootGraphFetchTree(
+    PackageableElementExplicitReference.create(_class.value),
+  );
+  _rootGraphFetchTree.subTrees = children;
+  return _rootGraphFetchTree;
+}
+
+// --------------------------------------------- Execution Context ---------------------------------------------
+
+export function V1_processExecutionContext(
+  executionContext: V1_ExecutionContext,
+  context: V1_GraphBuilderContext,
+): ExecutionContext {
+  if (executionContext instanceof V1_BaseExecutionContext) {
+    const _executioncontext = new BaseExecutionContext();
+    _executioncontext.enableConstraints = executionContext.enableConstraints;
+    _executioncontext.queryTimeOutInSeconds =
+      executionContext.queryTimeOutInSeconds;
+    return _executioncontext;
+  } else if (executionContext instanceof V1_AnalyticsExecutionContext) {
+    const vs =
+      executionContext.toFlowSetFunction.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationBuilder(
+          context,
+          new V1_ProcessingContext(''),
+          [],
+        ),
+      );
+    const instance = guaranteeType(vs, InstanceValue);
+    const lambdaFunc = guaranteeType(instance.values[0], LambdaFunction);
+    const _analyticsExecutionContext = new AnalyticsExecutionContext(
+      executionContext.useAnalytics,
+      lambdaFunc,
+    );
+    _analyticsExecutionContext.enableConstraints =
+      executionContext.enableConstraints;
+    _analyticsExecutionContext.queryTimeOutInSeconds =
+      executionContext.queryTimeOutInSeconds;
+    return _analyticsExecutionContext;
+  }
+  // TODO add processor
+  throw new UnsupportedOperationError(
+    `Can't build execution context`,
+    executionContext,
   );
 }

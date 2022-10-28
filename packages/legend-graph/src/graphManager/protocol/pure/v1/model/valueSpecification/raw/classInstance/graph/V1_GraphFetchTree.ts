@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-import type { V1_Runtime } from '../../../model/packageableElements/runtime/V1_Runtime.js';
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_PropertyGraphFetchTree } from './V1_PropertyGraphFetchTree.js';
+import type { V1_RootGraphFetchTree } from './V1_RootGraphFetchTree.js';
 
-export class V1_RuntimeInstance extends V1_ValueSpecification {
-  runtime!: V1_Runtime;
+export interface V1_GraphFetchTreeVisitor<T> {
+  visit_RootGraphFetchTree(valueSpecification: V1_RootGraphFetchTree): T;
+  visit_PropertyGraphFetchTree(
+    valueSpecification: V1_PropertyGraphFetchTree,
+  ): T;
+}
 
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_RuntimeInstance(this);
-  }
+export abstract class V1_GraphFetchTree {
+  subTrees: V1_GraphFetchTree[] = [];
+
+  abstract accept_GraphFetchTreeVisitor<T>(
+    visitor: V1_GraphFetchTreeVisitor<T>,
+  ): T;
 }

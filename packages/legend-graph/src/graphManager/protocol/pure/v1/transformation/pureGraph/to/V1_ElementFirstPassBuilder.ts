@@ -253,7 +253,7 @@ export class V1_ElementFirstPassBuilder
         '',
       ),
       this.context.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
+        TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
       ),
     );
     const path = V1_buildFullPath(element.package, name);

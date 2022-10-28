@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Lambda } from '../V1_Lambda.js';
 
-export class V1_UnitType extends V1_ValueSpecification {
-  unitType!: string;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_UnitType(this);
-  }
+export class V1_TDSAggregateValue {
+  name!: string;
+  pmapFn!: V1_Lambda;
+  aggregateFn!: V1_Lambda;
 }

@@ -121,15 +121,15 @@ export class CoreModel extends BasicModel {
       new Multiplicity(1, 1),
     );
     this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
+      TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
       new Multiplicity(0, 1),
     );
     this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ONEMANY,
+      TYPICAL_MULTIPLICITY_TYPE.ONE_MANY,
       new Multiplicity(1, undefined),
     );
     this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
+      TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
       new Multiplicity(0, undefined),
     );
   }
@@ -588,15 +588,15 @@ export class PureModel extends BasicModel {
       multiplicity = this.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE);
     } else if (lowerBound === 0 && upperBound === 1) {
       multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
+        TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
       );
     } else if (lowerBound === 0 && upperBound === undefined) {
       multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
+        TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
       );
     } else if (lowerBound === 1 && upperBound === undefined) {
       multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONEMANY,
+        TYPICAL_MULTIPLICITY_TYPE.ONE_MANY,
       );
     } else if (lowerBound === 0 && upperBound === 0) {
       multiplicity = this.getTypicalMultiplicity(

@@ -20,11 +20,14 @@ import { ELEMENT_PATH_DELIMITER } from '../../../../../../../graph/MetaModelCons
 
 export class V1_MappingInclude implements Hashable {
   includedMapping?: string | undefined;
-  // TODO: the below two are for backward compatability
-  includedMappingName?: string | undefined;
-  includedMappingPackage?: string | undefined;
   sourceDatabasePath?: string | undefined;
   targetDatabasePath?: string | undefined;
+  /**
+   * The below 2 fields are kept for backward compatibility
+   * @backwardCompatibility
+   */
+  includedMappingName?: string | undefined;
+  includedMappingPackage?: string | undefined;
 
   get hashCode(): string {
     return hashArray([

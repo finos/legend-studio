@@ -1749,7 +1749,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     graph: PureModel,
   ): ValueSpecification {
     return V1_buildValueSpecification(
-      V1_deserializeValueSpecification(json),
+      V1_deserializeValueSpecification(
+        json,
+        this.pluginManager.getPureProtocolProcessorPlugins(),
+      ),
       new V1_GraphBuilderContextBuilder(
         graph,
         graph,
@@ -1764,6 +1767,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Record<PropertyKey, unknown> {
     return V1_serializeValueSpecification(
       V1_transformRootValueSpecification(valueSpecification),
+      this.pluginManager.getPureProtocolProcessorPlugins(),
     ) as Record<PropertyKey, unknown>;
   }
 

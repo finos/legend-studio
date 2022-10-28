@@ -315,37 +315,34 @@ export class V1_GraphBuilderContext {
   };
 
   resolveOwnProperty = (
-    propertyPtr: V1_PropertyPointer,
+    pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      propertyPtr.class,
+      pointer.class,
       `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
-      propertyPtr.property,
+      pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = getOwnClassProperty(
-      ownerReference.value,
-      propertyPtr.property,
-    );
+    const ownerReference = this.resolveClass(pointer.class);
+    const value = getOwnClassProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
   resolveProperty = (
-    propertyPtr: V1_PropertyPointer,
+    pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      propertyPtr.class,
+      pointer.class,
       `Property pointer 'class' field is missing or empty`,
     );
     assertNonEmptyString(
-      propertyPtr.property,
+      pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(propertyPtr.class);
-    const value = getClassProperty(ownerReference.value, propertyPtr.property);
+    const ownerReference = this.resolveClass(pointer.class);
+    const value = getClassProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 

@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
+import type { V1_ValueSpecification } from '../../../V1_ValueSpecification.js';
 import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+  V1_GraphFetchTree,
+  type V1_GraphFetchTreeVisitor,
+} from './V1_GraphFetchTree.js';
 
-export class V1_Pair extends V1_ValueSpecification {
-  first!: V1_ValueSpecification;
-  second!: V1_ValueSpecification;
+export class V1_PropertyGraphFetchTree extends V1_GraphFetchTree {
+  property!: string;
+  parameters: V1_ValueSpecification[] = [];
+  alias?: string | undefined;
+  subType?: string | undefined;
 
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_Pair(this);
+  accept_GraphFetchTreeVisitor<T>(visitor: V1_GraphFetchTreeVisitor<T>): T {
+    return visitor.visit_PropertyGraphFetchTree(this);
   }
 }

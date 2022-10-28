@@ -62,6 +62,7 @@
     "test": "jest",
     "test:ci": "jest --coverage --maxWorkers=100%",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
+    "test:report-failure": "jest 2>&1 | grep 'FAIL'",
     "test:watch": "jest --watch"
   },
   "lint-staged": {

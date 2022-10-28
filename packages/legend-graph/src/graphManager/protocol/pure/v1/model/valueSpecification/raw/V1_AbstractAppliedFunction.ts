@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
+import { V1_ValueSpecification } from '../V1_ValueSpecification.js';
 
-export class V1_PureList extends V1_ValueSpecification {
-  values: V1_ValueSpecification[] = [];
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PureList(this);
-  }
+export abstract class V1_AbstractAppliedFunction extends V1_ValueSpecification {
+  readonly multiplicity = V1_Multiplicity.ONE;
 }

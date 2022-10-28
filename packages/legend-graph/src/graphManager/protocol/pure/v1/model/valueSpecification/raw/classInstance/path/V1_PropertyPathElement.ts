@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_ValueSpecification } from '../../../V1_ValueSpecification.js';
+import { V1_PathElement } from './V1_PathElement.js';
 
-export class V1_TDSSortInformation extends V1_ValueSpecification {
-  column!: string;
-  direction!: string;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_TDSSortInformation(this);
-  }
+export class V1_PropertyPathElement extends V1_PathElement {
+  property!: string;
+  parameters: V1_ValueSpecification[] = [];
 }

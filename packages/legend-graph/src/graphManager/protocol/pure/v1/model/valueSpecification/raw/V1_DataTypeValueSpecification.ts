@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../V1_ValueSpecification.js';
-import type { V1_Lambda } from './V1_Lambda.js';
+import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
+import { V1_ValueSpecification } from '../V1_ValueSpecification.js';
 
-export class V1_TDSOlapAggregation extends V1_ValueSpecification {
-  function!: V1_Lambda;
-  columnName!: string;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_TDSOlapAggregation(this);
-  }
+export abstract class V1_DataTypeValueSpecification extends V1_ValueSpecification {
+  readonly multiplicity = V1_Multiplicity.ONE;
 }

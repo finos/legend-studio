@@ -16,6 +16,9 @@
 
 import {
   filterByType,
+  guaranteeIsBoolean,
+  guaranteeIsNumber,
+  guaranteeIsString,
   guaranteeNonNullable,
   guaranteeType,
   UnsupportedOperationError,
@@ -69,20 +72,21 @@ import { V1_CStrictTime } from '../../../model/valueSpecification/raw/V1_CStrict
 import { V1_CLatestDate } from '../../../model/valueSpecification/raw/V1_CLatestDate.js';
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import { V1_EnumValue } from '../../../model/valueSpecification/raw/V1_EnumValue.js';
-import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_PropertyGraphFetchTree.js';
-import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_RootGraphFetchTree.js';
-import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/graph/V1_GraphFetchTree.js';
+import { V1_PropertyGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
+import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
+import type { V1_GraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_GraphFetchTree.js';
 import { V1_Collection } from '../../../model/valueSpecification/raw/V1_Collection.js';
 import { V1_PackageableElementPtr } from '../../../model/valueSpecification/raw/V1_PackageableElementPtr.js';
 import { PackageableElementReference } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { Unit } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Measure.js';
 import { Class } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
-import { V1_HackedUnit } from '../../../model/valueSpecification/raw/V1_HackedUnit.js';
-import { V1_HackedClass } from '../../../model/valueSpecification/raw/V1_HackedClass.js';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import type { INTERNAL__UnknownValueSpecification } from '../../../../../../../graph/metamodel/pure/valueSpecification/INTERNAL__UnknownValueSpecification.js';
 import { V1_INTERNAL__UnknownValueSpecification } from '../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
 import type { INTERNAL__PropagatedValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/INTERNAL__PropagatedValue.js';
+import { V1_GenericTypeInstance } from '../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
+import { V1_ClassInstance } from '../../../model/valueSpecification/raw/V1_ClassInstance.js';
+import { V1_ClassInstanceType } from '../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 
 class V1_ValueSpecificationTransformer
   implements ValueSpecificationVisitor<V1_ValueSpecification>
@@ -115,97 +119,69 @@ class V1_ValueSpecificationTransformer
   visit_RootGraphFetchTreeInstanceValue(
     valueSpecification: RootGraphFetchTreeInstanceValue,
   ): V1_ValueSpecification {
-    return V1_transformGraphFetchTree(
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE;
+    classInstance.value = V1_transformGraphFetchTree(
       guaranteeNonNullable(valueSpecification.values[0]),
       this.inScope,
       this.open,
       this.isParameter,
       this.useAppliedFunction,
     );
-  }
-
-  visit_PropertyGraphFetchTreeInstanceValue(
-    valueSpecification: PropertyGraphFetchTreeInstanceValue,
-  ): V1_ValueSpecification {
-    return V1_transformGraphFetchTree(
-      guaranteeNonNullable(valueSpecification.values[0]),
-      this.inScope,
-      this.open,
-      this.isParameter,
-      this.useAppliedFunction,
-    );
-  }
-
-  visit_AlloySerializationConfigInstanceValue(
-    valueSpecification: AlloySerializationConfigInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
+    return classInstance;
   }
 
   visit_PrimitiveInstanceValue(
     valueSpecification: PrimitiveInstanceValue,
   ): V1_ValueSpecification {
     const type = valueSpecification.genericType.value.rawType;
-    const multiplicity = new V1_Multiplicity();
-    multiplicity.lowerBound = valueSpecification.multiplicity.lowerBound;
-    multiplicity.upperBound = valueSpecification.multiplicity.upperBound;
     switch (type.name) {
       case PRIMITIVE_TYPE.INTEGER: {
         const cInteger = new V1_CInteger();
-        cInteger.values = valueSpecification.values as number[];
-        cInteger.multiplicity = multiplicity;
+        cInteger.value = guaranteeIsNumber(valueSpecification.values?.[0]);
         return cInteger;
       }
       case PRIMITIVE_TYPE.FLOAT: {
         const cFloat = new V1_CFloat();
-        cFloat.values = valueSpecification.values as number[];
-        cFloat.multiplicity = multiplicity;
+        cFloat.value = guaranteeIsNumber(valueSpecification.values?.[0]);
         return cFloat;
       }
       // since we don't have a corresponding protocol for abstract type `Number`, we will default to use `Decimal`
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL: {
         const cDecimal = new V1_CDecimal();
-        cDecimal.values = valueSpecification.values as number[];
-        cDecimal.multiplicity = multiplicity;
+        cDecimal.value = guaranteeIsNumber(valueSpecification.values?.[0]);
         return cDecimal;
       }
       case PRIMITIVE_TYPE.STRING: {
         const cString = new V1_CString();
-        cString.values = valueSpecification.values as string[];
-        cString.multiplicity = multiplicity;
+        cString.value = guaranteeIsString(valueSpecification.values?.[0]);
         return cString;
       }
       case PRIMITIVE_TYPE.BOOLEAN: {
         const cBoolean = new V1_CBoolean();
-        cBoolean.values = valueSpecification.values as boolean[];
-        cBoolean.multiplicity = multiplicity;
+        cBoolean.value = guaranteeIsBoolean(valueSpecification.values?.[0]);
         return cBoolean;
       }
       // since we don't have a corresponding protocol for abstract type `Date`, we will default to use `DateTime`
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.DATETIME: {
         const cDateTime = new V1_CDateTime();
-        cDateTime.values = valueSpecification.values as string[];
-        cDateTime.multiplicity = multiplicity;
+        cDateTime.value = guaranteeIsString(valueSpecification.values?.[0]);
         return cDateTime;
       }
       case PRIMITIVE_TYPE.STRICTDATE: {
         const cStrictDate = new V1_CStrictDate();
-        cStrictDate.values = valueSpecification.values as string[];
-        cStrictDate.multiplicity = multiplicity;
+        cStrictDate.value = guaranteeIsString(valueSpecification.values?.[0]);
         return cStrictDate;
       }
       case PRIMITIVE_TYPE.STRICTTIME: {
         const cStrictTime = new V1_CStrictTime();
-        cStrictTime.values = valueSpecification.values as string[];
-        cStrictTime.multiplicity = multiplicity;
+        cStrictTime.value = guaranteeIsString(valueSpecification.values?.[0]);
         return cStrictTime;
       }
       case PRIMITIVE_TYPE.LATESTDATE: {
-        const cPrimitiveType = new V1_CLatestDate();
-        cPrimitiveType.multiplicity = multiplicity;
-        return cPrimitiveType;
+        return new V1_CLatestDate();
       }
       default:
         throw new UnsupportedOperationError(
@@ -229,23 +205,15 @@ class V1_ValueSpecificationTransformer
       return protocol;
     } else if (
       valueSpecification.values.length === 0 &&
-      valueSpecification.genericType
+      valueSpecification.genericType &&
+      (valueSpecification.genericType.value.rawType instanceof Unit ||
+        valueSpecification.genericType.value.rawType instanceof Class)
     ) {
-      if (valueSpecification.genericType.value.rawType instanceof Unit) {
-        const protocol = new V1_HackedUnit();
-        protocol.unitType =
-          valueSpecification.genericType.ownerReference.valueForSerialization ??
-          '';
-        return protocol;
-      } else if (
-        valueSpecification.genericType.value.rawType instanceof Class
-      ) {
-        const protocol = new V1_HackedClass();
-        protocol.fullPath =
-          valueSpecification.genericType.ownerReference.valueForSerialization ??
-          '';
-        return protocol;
-      }
+      const protocol = new V1_GenericTypeInstance();
+      protocol.fullPath =
+        valueSpecification.genericType.ownerReference.valueForSerialization ??
+        '';
+      return protocol;
     }
     throw new UnsupportedOperationError(
       `Can't transform instance value`,
@@ -263,39 +231,14 @@ class V1_ValueSpecificationTransformer
     return _enumValue;
   }
 
-  visit_RuntimeInstanceValue(
-    valueSpecification: RuntimeInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PairInstanceValue(
-    valueSpecification: PairInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_MappingInstanceValue(
-    valueSpecification: MappingInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PureListInstanceValue(
-    valueSpecification: PureListInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
   visit_CollectionInstanceValue(
     valueSpecification: CollectionInstanceValue,
   ): V1_ValueSpecification {
     const collection = new V1_Collection();
-    collection.multiplicity = new V1_Multiplicity();
-    collection.multiplicity.lowerBound =
-      valueSpecification.multiplicity.lowerBound;
-    collection.multiplicity.upperBound =
-      valueSpecification.multiplicity.upperBound;
+    collection.multiplicity = new V1_Multiplicity(
+      valueSpecification.multiplicity.lowerBound,
+      valueSpecification.multiplicity.upperBound,
+    );
     collection.values = valueSpecification.values
       .filter(filterByType(ValueSpecification))
       .map((value) =>
@@ -354,9 +297,10 @@ class V1_ValueSpecificationTransformer
     _variable.name = valueSpecification.name;
     const genericType = valueSpecification.genericType;
     if (this.isParameter && genericType) {
-      const multiplicity = new V1_Multiplicity();
-      multiplicity.lowerBound = valueSpecification.multiplicity.lowerBound;
-      multiplicity.upperBound = valueSpecification.multiplicity.upperBound;
+      const multiplicity = new V1_Multiplicity(
+        valueSpecification.multiplicity.lowerBound,
+        valueSpecification.multiplicity.upperBound,
+      );
       _variable.multiplicity = multiplicity;
       _variable.class = genericType.value.rawType.path;
     }
@@ -389,6 +333,46 @@ class V1_ValueSpecificationTransformer
 
   visit_INTERNAL__PropagatedValue(
     valueSpecification: INTERNAL__PropagatedValue,
+  ): V1_ValueSpecification {
+    // NOTE: this is an synthetic construct which is to be created adhocly in the application
+    // this MUST NOT be transformed, serialized, and stored at all
+    throw new UnsupportedOperationError(
+      `Can't transform propagated value: propagated value leakage detected`,
+    );
+  }
+
+  visit_PropertyGraphFetchTreeInstanceValue(
+    valueSpecification: PropertyGraphFetchTreeInstanceValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_AlloySerializationConfigInstanceValue(
+    valueSpecification: AlloySerializationConfigInstanceValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_RuntimeInstanceValue(
+    valueSpecification: RuntimeInstanceValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_PairInstanceValue(
+    valueSpecification: PairInstanceValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_MappingInstanceValue(
+    valueSpecification: MappingInstanceValue,
+  ): V1_ValueSpecification {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_PureListInstanceValue(
+    valueSpecification: PureListInstanceValue,
   ): V1_ValueSpecification {
     throw new UnsupportedOperationError();
   }

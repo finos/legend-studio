@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-export const TEST_DATA__roundtrip = [
+export const TEST_DATA__roundtrip_case1 = [
   {
-    path: 'org::dxl::Zoo',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -24,49 +23,35 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
           type: 'String',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'zookeeper',
           type: 'org::dxl::Person',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'owner',
           type: 'org::dxl::Person',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'admin',
           type: 'org::dxl::Person',
         },
         {
-          multiplicity: {
-            lowerBound: 0,
-          },
+          multiplicity: { lowerBound: 0 },
           name: 'animals',
           type: 'org::dxl::Animal',
         },
       ],
     },
+    path: 'org::dxl::Zoo',
   },
   {
-    path: 'org::dxl::Person',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -74,34 +59,25 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
           type: 'String',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'effectiveDateFrom',
           type: 'DateTime',
         },
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'effectiveDateThru',
           type: 'DateTime',
         },
       ],
     },
+    path: 'org::dxl::Person',
   },
   {
-    path: 'org::dxl::Animal',
     classifierPath: 'meta::pure::metamodel::type::Class',
     content: {
       _type: 'class',
@@ -109,18 +85,15 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       properties: [
         {
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
           name: 'name',
           type: 'String',
         },
       ],
     },
+    path: 'org::dxl::Animal',
   },
   {
-    path: 'org::dxl::ZooBinding',
     classifierPath: 'meta::external::shared::format::binding::Binding',
     content: {
       _type: 'binding',
@@ -134,10 +107,10 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       schemaSet: undefined,
     },
+    path: 'org::dxl::ZooBinding',
   },
   {
     classifierPath: 'meta::relational::metamodel::Database',
-    path: 'org::dxl::ZooDb',
     content: {
       _type: 'relational',
       filters: [],
@@ -147,9 +120,9 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       schemas: [],
     },
+    path: 'org::dxl::ZooDb',
   },
   {
-    path: 'org::dxl::Mapping',
     classifierPath: 'meta::pure::mapping::Mapping',
     content: {
       _type: 'mapping',
@@ -160,9 +133,9 @@ export const TEST_DATA__roundtrip = [
       package: 'org::dxl',
       tests: [],
     },
+    path: 'org::dxl::Mapping',
   },
   {
-    path: 'org::dxl::ZooService',
     classifierPath: 'meta::legend::service::metamodel::Service',
     content: {
       _type: 'service',
@@ -175,12 +148,7 @@ export const TEST_DATA__roundtrip = [
           body: [
             {
               _type: 'property',
-              parameters: [
-                {
-                  _type: 'var',
-                  name: 'src',
-                },
-              ],
+              parameters: [{ _type: 'var', name: 'src' }],
               property: 'name',
             },
           ],
@@ -188,10 +156,7 @@ export const TEST_DATA__roundtrip = [
             {
               _type: 'var',
               class: 'org::dxl::Zoo',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              multiplicity: { lowerBound: 1, upperBound: 1 },
               name: 'src',
             },
           ],
@@ -200,48 +165,35 @@ export const TEST_DATA__roundtrip = [
         runtime: {
           _type: 'engineRuntime',
           connections: [],
-          mappings: [
-            {
-              path: 'org::dxl::Mapping',
-              type: 'MAPPING',
-            },
-          ],
+          mappings: [{ path: 'org::dxl::Mapping', type: 'MAPPING' }],
         },
       },
       name: 'ZooService',
       owners: [],
       package: 'org::dxl',
       pattern: 'test',
-      test: {
-        _type: 'singleExecutionTest',
-        asserts: [],
-        data: 'test',
-      },
+      test: { _type: 'singleExecutionTest', asserts: [], data: 'test' },
     },
+    path: 'org::dxl::ZooService',
   },
   {
     classifierPath: 'meta::pure::runtime::PackageableConnection',
-    path: 'org::dxl::ZooDbConnection',
     content: {
       _type: 'connection',
       connectionValue: {
         _type: 'RelationalDatabaseConnection',
-        authenticationStrategy: {
-          _type: 'h2Default',
-        },
+        authenticationStrategy: { _type: 'h2Default' },
         databaseType: 'H2',
-        datasourceSpecification: {
-          _type: 'h2Local',
-        },
+        datasourceSpecification: { _type: 'h2Local' },
         element: 'org::dxl::ZooDb',
         type: 'H2',
       },
       name: 'ZooDbConnection',
       package: 'org::dxl',
     },
+    path: 'org::dxl::ZooDbConnection',
   },
   {
-    path: 'org::dxl::ZooPersistence',
     classifierPath: 'meta::pure::persistence::metamodel::Persistence',
     content: {
       _type: 'persistence',
@@ -249,14 +201,8 @@ export const TEST_DATA__roundtrip = [
       name: 'ZooPersistence',
       notifier: {
         notifyees: [
-          {
-            _type: 'emailNotifyee',
-            address: 'abc@xyz.com',
-          },
-          {
-            _type: 'pagerDutyNotifyee',
-            url: 'https://xyz.com',
-          },
+          { _type: 'emailNotifyee', address: 'abc@xyz.com' },
+          { _type: 'pagerDutyNotifyee', url: 'https://xyz.com' },
         ],
       },
       package: 'org::dxl',
@@ -287,18 +233,13 @@ export const TEST_DATA__roundtrip = [
             },
           },
         },
-        sink: {
-          _type: 'objectStorageSink',
-          binding: 'org::dxl::ZooBinding',
-        },
+        sink: { _type: 'objectStorageSink', binding: 'org::dxl::ZooBinding' },
         targetShape: {
           _type: 'multiFlatTarget',
           modelClass: 'org::dxl::Zoo',
           parts: [
             {
-              deduplicationStrategy: {
-                _type: 'noDeduplicationStrategy',
-              },
+              deduplicationStrategy: { _type: 'noDeduplicationStrategy' },
               modelProperty: 'zookeeper',
               partitionFields: [],
               targetName: 'PersonDataset1',
@@ -326,22 +267,18 @@ export const TEST_DATA__roundtrip = [
         },
       },
       service: 'org::dxl::ZooService',
-      trigger: {
-        _type: 'manualTrigger',
-      },
+      trigger: { _type: 'manualTrigger' },
     },
+    path: 'org::dxl::ZooPersistence',
   },
   {
-    path: 'org::dxl::ZooPersistenceContext',
     classifierPath: 'meta::pure::persistence::metamodel::PersistenceContext',
     content: {
       _type: 'persistenceContext',
       name: 'ZooPersistenceContext',
       package: 'org::dxl',
       persistence: 'org::dxl::ZooPersistence',
-      platform: {
-        _type: 'default',
-      },
+      platform: { _type: 'default' },
       serviceParameters: [
         {
           name: 'connection',
@@ -357,62 +294,38 @@ export const TEST_DATA__roundtrip = [
           name: 'foo',
           value: {
             _type: 'primitiveTypeValue',
-            primitiveType: {
-              _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Hello'],
-            },
+            primitiveType: { _type: 'string', value: 'Hello' },
           },
         },
         {
           name: 'bar',
           value: {
             _type: 'primitiveTypeValue',
-            primitiveType: {
-              _type: 'integer',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: [29],
-            },
+            primitiveType: { _type: 'integer', value: 29 },
           },
         },
         {
           name: 'qux',
           value: {
             _type: 'primitiveTypeValue',
-            primitiveType: {
-              _type: 'float',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: [27.5],
-            },
+            primitiveType: { _type: 'float', value: 27.5 },
           },
         },
       ],
       sinkConnection: {
         _type: 'RelationalDatabaseConnection',
-        authenticationStrategy: {
-          _type: 'h2Default',
-        },
+        authenticationStrategy: { _type: 'h2Default' },
         databaseType: 'H2',
-        datasourceSpecification: {
-          _type: 'h2Local',
-        },
+        datasourceSpecification: { _type: 'h2Local' },
         element: 'org::dxl::ZooDb',
         type: 'H2',
       },
     },
+    path: 'org::dxl::ZooPersistenceContext',
   },
 ];
 
-export const TEST_DATA__roundtrip_test = [
+export const TEST_DATA__roundtrip_case2 = [
   {
     path: 'org::dxl::Zoo',
     classifierPath: 'meta::pure::metamodel::type::Class',

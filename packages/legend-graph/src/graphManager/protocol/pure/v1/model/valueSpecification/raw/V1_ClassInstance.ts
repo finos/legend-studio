@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
+import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
 import {
-  type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+  type V1_ValueSpecificationVisitor,
+} from '../V1_ValueSpecification.js';
 
-export class V1_SerializationConfig extends V1_ValueSpecification {
-  includeType?: boolean | undefined;
-  typeKeyName!: string;
-  includeEnumType?: boolean | undefined;
-  removePropertiesWithNullValues?: boolean | undefined;
-  removePropertiesWithEmptySets?: boolean | undefined;
-  fullyQualifiedTypePath?: boolean | undefined;
-  includeObjectReference?: boolean | undefined;
+/**
+ * This is the mechanism by which we scale the system. Pretty much any constructs like
+ * graph-fetch, path, etc, which have the need to store some data and manifest in value
+ * specification space can be wrapped in form of a class instance. Here, we also keep
+ * track of the type in order to interpret the value for processing.
+ */
+export class V1_ClassInstance extends V1_ValueSpecification {
+  readonly multiplicity = V1_Multiplicity.ONE;
+  type!: string;
+  value!: unknown;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_SerializationConfig(this);
+    return visitor.visit_ClassInstance(this);
   }
 }

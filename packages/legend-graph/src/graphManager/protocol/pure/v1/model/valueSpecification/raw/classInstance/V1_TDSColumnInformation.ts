@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_ExecutionContext } from './executionContext/V1_ExecutionContext.js';
+import type { V1_Lambda } from '../V1_Lambda.js';
 
-export class V1_ExecutionContextInstance extends V1_ValueSpecification {
-  executionContext!: V1_ExecutionContext;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_ExecutionContextInstance(this);
-  }
+export class V1_TDSColumnInformation {
+  name!: string;
+  columnFn!: V1_Lambda;
 }

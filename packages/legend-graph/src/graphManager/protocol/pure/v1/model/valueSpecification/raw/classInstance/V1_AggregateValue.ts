@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_Lambda } from './V1_Lambda.js';
+import type { V1_Lambda } from '../V1_Lambda.js';
 
-export class V1_TDSColumnInformation extends V1_ValueSpecification {
-  name!: string;
-  columnFn!: V1_Lambda;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_TDSColumnInformation(this);
-  }
+export class V1_AggregateValue {
+  mapFn!: V1_Lambda;
+  aggregateFn!: V1_Lambda;
 }

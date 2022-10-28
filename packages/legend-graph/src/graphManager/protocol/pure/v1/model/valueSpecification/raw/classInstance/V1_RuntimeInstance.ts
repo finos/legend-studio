@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Runtime } from '../../../../model/packageableElements/runtime/V1_Runtime.js';
 
-export class V1_PrimitiveType extends V1_ValueSpecification {
-  name!: string;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PrimitiveType(this);
-  }
+export class V1_RuntimeInstance {
+  runtime!: V1_Runtime;
 }

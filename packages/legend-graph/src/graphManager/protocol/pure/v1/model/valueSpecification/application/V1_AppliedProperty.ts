@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
+import type {
+  V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_AbstractAppliedFunction } from '../raw/V1_AbstractAppliedFunction.js';
 
-export class V1_AppliedProperty extends V1_ValueSpecification {
+export class V1_AppliedProperty extends V1_AbstractAppliedFunction {
   class?: string | undefined;
   property!: string;
   parameters: V1_ValueSpecification[] = [];

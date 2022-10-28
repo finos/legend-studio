@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
-import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
+import type { V1_PathElement } from './V1_PathElement.js';
 
-export class V1_Collection extends V1_ValueSpecification {
-  multiplicity = V1_Multiplicity.ONE_MANY;
-  values: V1_ValueSpecification[] = [];
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_Collection(this);
-  }
+export class V1_Path {
+  name!: string;
+  startType!: string;
+  path: V1_PathElement[] = [];
 }

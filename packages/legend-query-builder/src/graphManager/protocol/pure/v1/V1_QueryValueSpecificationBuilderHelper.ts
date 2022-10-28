@@ -168,7 +168,10 @@ const buildAggregationExpression = (
       ),
     ) ??
     new INTERNAL__UnknownValueSpecification(
-      V1_serializeValueSpecification(columnLambda),
+      V1_serializeValueSpecification(
+        columnLambda,
+        compileContext.extensions.plugins,
+      ),
     );
 
   // aggregate lambda
@@ -408,7 +411,10 @@ export const V1_buildProjectFunctionExpression = (
       );
     } catch {
       return new INTERNAL__UnknownValueSpecification(
-        V1_serializeValueSpecification(value),
+        V1_serializeValueSpecification(
+          value,
+          compileContext.extensions.plugins,
+        ),
       );
     }
   });
@@ -528,7 +534,10 @@ export const V1_buildGroupByFunctionExpression = (
       );
     } catch {
       return new INTERNAL__UnknownValueSpecification(
-        V1_serializeValueSpecification(value),
+        V1_serializeValueSpecification(
+          value,
+          compileContext.extensions.plugins,
+        ),
       );
     }
   });

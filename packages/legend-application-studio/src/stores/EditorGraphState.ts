@@ -1222,9 +1222,12 @@ export class EditorGraphState {
   ): Promise<ProjectDependencyCoordinates[]> {
     return Promise.all(
       projectDependencies.map((dep) => {
-        // legacyDependencies
-        // We do this for backward compatible reasons as we expect current dependency ids to be in the format of {groupId}:{artifactId}.
-        // For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
+        /**
+         * We expect current dependency ids to be in the format of {groupId}:{artifactId}.
+         * For the legacy dependency we must fetch the corresponding coordinates (group, artifact ids) from the depot server
+         *
+         * @backwardCompatibility
+         */
         if (dep.isLegacyDependency) {
           return this.editorStore.depotServerClient
             .getProjectById(dep.projectId)

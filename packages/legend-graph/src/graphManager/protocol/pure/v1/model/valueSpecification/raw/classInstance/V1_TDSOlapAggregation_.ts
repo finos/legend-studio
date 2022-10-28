@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_Lambda } from '../V1_Lambda.js';
 
-export abstract class V1_GraphFetchTree extends V1_ValueSpecification {
-  subTrees: V1_GraphFetchTree[] = [];
+export class V1_TDSOlapAggregation {
+  function!: V1_Lambda;
+  columnName!: string;
 }

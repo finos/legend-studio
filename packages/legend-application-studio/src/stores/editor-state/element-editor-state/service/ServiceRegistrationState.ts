@@ -338,8 +338,8 @@ export class ServiceRegistrationState {
     // validate service parameter multiplicities
     const supportedServiceParamMultiplicties = [
       TYPICAL_MULTIPLICITY_TYPE.ONE,
-      TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
-      TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
+      TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
+      TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
     ].map((p) =>
       this.editorStore.graphManagerState.graph.getTypicalMultiplicity(p),
     );

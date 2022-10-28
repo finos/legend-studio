@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../V1_ValueSpecification.js';
-import type { V1_Lambda } from './V1_Lambda.js';
+import type { V1_ValueSpecification } from '../../V1_ValueSpecification.js';
 
-export class V1_TDSOlapRank extends V1_ValueSpecification {
-  function!: V1_Lambda;
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_TDSOlapRank(this);
-  }
+export class V1_PureList {
+  values: V1_ValueSpecification[] = [];
 }

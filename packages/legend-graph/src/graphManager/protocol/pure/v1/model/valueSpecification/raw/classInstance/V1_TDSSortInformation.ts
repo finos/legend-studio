@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../../model/valueSpecification/V1_ValueSpecification.js';
-import type { V1_PathElement } from './V1_PathElement.js';
-
-export class V1_Path extends V1_ValueSpecification {
-  name!: string;
-  startType!: string;
-  path: V1_PathElement[] = [];
-
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_Path(this);
-  }
+export class V1_TDSSortInformation {
+  column!: string;
+  direction!: string;
 }

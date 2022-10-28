@@ -17,8 +17,8 @@
 import { test } from '@jest/globals';
 import { DSL_Persistence_GraphManagerPreset } from '../../DSL_Persistence_Extension.js';
 import {
-  TEST_DATA__roundtrip,
-  TEST_DATA__roundtrip_test,
+  TEST_DATA__roundtrip_case1,
+  TEST_DATA__roundtrip_case2,
 } from './TEST_DATA__DSL_Persistence_Roundtrip.js';
 import {
   DSL_ExternalFormat_GraphPreset,
@@ -38,14 +38,11 @@ pluginManager
 
 test(unitTest('DSL Persistence roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
-    TEST_DATA__roundtrip as Entity[],
+    TEST_DATA__roundtrip_case1 as Entity[],
     pluginManager,
   );
-});
-
-test(unitTest('DSL Persistence roundtrip'), async () => {
   await TEST__checkBuildingElementsRoundtrip(
-    TEST_DATA__roundtrip_test as Entity[],
+    TEST_DATA__roundtrip_case2 as Entity[],
     pluginManager,
   );
 });

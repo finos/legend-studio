@@ -61,11 +61,11 @@ export enum PRIMITIVE_TYPE {
 }
 
 export enum TYPICAL_MULTIPLICITY_TYPE {
-  ONE = 'one',
-  ZEROONE = 'zeroone',
-  ZEROMANY = 'zeromany',
-  ONEMANY = 'onemany',
-  ZERO = 'zero',
+  ZERO = '0',
+  ZERO_ONE = '0..1',
+  ZERO_MANY = '0..*',
+  ONE = '1',
+  ONE_MANY = '1..*',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,

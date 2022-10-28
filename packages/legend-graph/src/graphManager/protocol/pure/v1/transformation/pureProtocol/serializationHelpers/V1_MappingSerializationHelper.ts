@@ -580,17 +580,17 @@ const aggregateSpecificationModelSchema = createModelSchema(
   },
 );
 
-const aggregateSetImplementationContainer = createModelSchema(
-  V1_AggregateSetImplementationContainer,
-  {
+const aggregateSetImplementationContainer = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AggregateSetImplementationContainer> =>
+  createModelSchema(V1_AggregateSetImplementationContainer, {
     aggregateSpecification: usingModelSchema(aggregateSpecificationModelSchema),
     index: primitive(),
     setImplementation: custom(
-      (val) => V1_serializeClassMapping(val),
-      (val) => V1_deserializeClassMapping(val),
+      (val) => V1_serializeClassMapping(val, plugins),
+      (val) => V1_deserializeClassMapping(val, plugins),
     ),
-  },
-);
+  });
 
 function V1_serializeAggregationAwarePropertyMapping(
   protocol: V1_AggregationAwarePropertyMapping,
@@ -612,19 +612,20 @@ function V1_deserializeAggregationAwarePropertyMapping(
   }
 }
 
-const aggregationAwareClassMappingModelSchema = createModelSchema(
-  V1_AggregationAwareClassMapping,
-  {
+const aggregationAwareClassMappingModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_AggregationAwareClassMapping> =>
+  createModelSchema(V1_AggregationAwareClassMapping, {
     _type: usingConstantValueSchema(V1_ClassMappingType.AGGREGATION_AWARE),
     aggregateSetImplementations: list(
-      usingModelSchema(aggregateSetImplementationContainer),
+      usingModelSchema(aggregateSetImplementationContainer(plugins)),
     ),
     class: primitive(),
     extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
     mainSetImplementation: custom(
-      (val) => V1_serializeClassMapping(val),
-      (val) => V1_deserializeClassMapping(val),
+      (val) => V1_serializeClassMapping(val, plugins),
+      (val) => V1_deserializeClassMapping(val, plugins),
     ),
     propertyMappings: list(
       custom(
@@ -633,14 +634,13 @@ const aggregationAwareClassMappingModelSchema = createModelSchema(
       ),
     ),
     root: primitive(),
-  },
-);
+  });
 
 // ------------------------------------- Class Mapping -------------------------------------
 
 function V1_serializeClassMapping(
   value: V1_ClassMapping,
-  plugins?: PureProtocolProcessorPlugin[] | undefined,
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_ClassMapping {
   if (value instanceof V1_MergeOperationClassMapping) {
     return serialize(mergeOperationClassMappingModelSchema, value);
@@ -655,7 +655,7 @@ function V1_serializeClassMapping(
   } else if (value instanceof V1_RelationalClassMapping) {
     return serialize(relationalClassMappingModelSchema, value);
   } else if (value instanceof V1_AggregationAwareClassMapping) {
-    return serialize(aggregationAwareClassMappingModelSchema, value);
+    return serialize(aggregationAwareClassMappingModelSchema(plugins), value);
   }
   if (plugins) {
     const extraClassMappingSerializers = plugins.flatMap(
@@ -679,7 +679,7 @@ function V1_serializeClassMapping(
 
 function V1_deserializeClassMapping(
   json: PlainObject<V1_ClassMapping>,
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): V1_ClassMapping {
   switch (json._type) {
     case V1_ClassMappingType.MERGE_OPERATION:
@@ -695,7 +695,10 @@ function V1_deserializeClassMapping(
     case V1_ClassMappingType.RELATIONAL:
       return deserialize(relationalClassMappingModelSchema, json);
     case V1_ClassMappingType.AGGREGATION_AWARE:
-      return deserialize(aggregationAwareClassMappingModelSchema, json);
+      return deserialize(
+        aggregationAwareClassMappingModelSchema(plugins),
+        json,
+      );
     default: {
       if (plugins) {
         const extraClassMappingDeserializers = plugins.flatMap(
@@ -1109,7 +1112,7 @@ const V1_mappingIncludeModelSchema = createModelSchema(V1_MappingInclude, {
 });
 
 export const V1_mappingModelSchema = (
-  plugins?: PureProtocolProcessorPlugin[],
+  plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_Mapping> =>
   createModelSchema(V1_Mapping, {
     _type: usingConstantValueSchema(V1_MAPPING_ELEMENT_PROTOCOL_TYPE),

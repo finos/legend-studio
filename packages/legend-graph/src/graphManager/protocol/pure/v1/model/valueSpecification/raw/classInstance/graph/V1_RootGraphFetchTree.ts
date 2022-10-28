@@ -15,17 +15,14 @@
  */
 
 import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+  V1_GraphFetchTree,
+  type V1_GraphFetchTreeVisitor,
+} from './V1_GraphFetchTree.js';
 
-export class V1_UnitInstance extends V1_ValueSpecification {
-  unitType!: string;
-  unitValue!: number;
+export class V1_RootGraphFetchTree extends V1_GraphFetchTree {
+  class!: string;
 
-  accept_ValueSpecificationVisitor<T>(
-    visitor: V1_ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_UnitInstance(this);
+  accept_GraphFetchTreeVisitor<T>(visitor: V1_GraphFetchTreeVisitor<T>): T {
+    return visitor.visit_RootGraphFetchTree(this);
   }
 }

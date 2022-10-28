@@ -18,8 +18,13 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.j
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class V1_Multiplicity implements Hashable {
-  lowerBound = 0;
-  upperBound?: number | undefined;
+  readonly lowerBound: number = 0;
+  readonly upperBound?: number | undefined;
+
+  constructor(lowerBound: number, upperBound: number | undefined) {
+    this.lowerBound = lowerBound;
+    this.upperBound = upperBound;
+  }
 
   get hashCode(): string {
     return hashArray([
@@ -28,4 +33,11 @@ export class V1_Multiplicity implements Hashable {
       this.upperBound?.toString() ?? '',
     ]);
   }
+
+  // common multiplicities
+  static readonly ZERO = new V1_Multiplicity(0, 0);
+  static readonly ZERO_ONE = new V1_Multiplicity(0, 1);
+  static readonly ZERO_MANY = new V1_Multiplicity(0, undefined);
+  static readonly ONE = new V1_Multiplicity(1, 1);
+  static readonly ONE_MANY = new V1_Multiplicity(1, undefined);
 }

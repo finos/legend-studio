@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
-import { V1_PathElement } from './V1_PathElement.js';
+import type { V1_ValueSpecification } from '../../V1_ValueSpecification.js';
 
-export class V1_PropertyPathElement extends V1_PathElement {
-  property!: string;
-  parameters: V1_ValueSpecification[] = [];
+export class V1_Pair {
+  first!: V1_ValueSpecification;
+  second!: V1_ValueSpecification;
 }

@@ -79,6 +79,28 @@ export type V1_PropertyExpressionTypeInferrer = (
   variable: ValueSpecification | undefined,
 ) => Type | undefined;
 
+export type V1_ClassInstanceValueBuilder = (
+  protocol: unknown,
+  type: string,
+  context: V1_GraphBuilderContext,
+) => unknown | undefined;
+
+export type V1_ClassInstanceValueTransformer = (
+  metamodel: unknown,
+  context: V1_GraphTransformerContext,
+) => unknown | undefined;
+
+export type V1_ClassInstanceValueProtocolSerializer = (
+  protocol: unknown,
+  plugins: PureProtocolProcessorPlugin[],
+) => PlainObject | undefined;
+
+export type V1_ClassInstanceValueProtocolDeserializer = (
+  protocol: PlainObject,
+  type: string,
+  plugins: PureProtocolProcessorPlugin[],
+) => unknown | undefined;
+
 /**
  * Plugins for protocol processors. Technically, this is a sub-part of `PureGraphManagerPlugin`
  * but due to the way we encapsulate the protocol code and the way we organize graph managers,
@@ -107,31 +129,30 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * we should consider having a backend exposed an end point to collect these models.
    */
   V1_getExtraSystemModels?(): PlainObject<V1_PureModelContextData>[];
-
-  /**
-   * Get the list of builders for a packageable element: i.e. protocol model -> metamodel.
-   */
-  V1_getExtraElementBuilders?(): V1_ElementBuilder<V1_PackageableElement>[];
-
   /**
    * Get the list of methods to derive the classifier path of a packageable element.
    */
   V1_getExtraElementClassifierPathGetters?(): V1_ElementProtocolClassifierPathGetter[];
 
   /**
-   * Get the list of serializers for a packageable element: i.e. protocol model -> JSON.
+   * Get the list of builders for packageable element: i.e. protocol model -> metamodel.
+   */
+  V1_getExtraElementBuilders?(): V1_ElementBuilder<V1_PackageableElement>[];
+
+  /**
+   * Get the list of transformers for packageable element: i.e. metamodel -> protocol model.
+   */
+  V1_getExtraElementTransformers?(): V1_ElementTransformer[];
+
+  /**
+   * Get the list of serializers for packageable element: i.e. protocol model -> JSON.
    */
   V1_getExtraElementProtocolSerializers?(): V1_ElementProtocolSerializer[];
 
   /**
-   * Get the list of de-serializers for a packageable element: i.e. JSON -> protocol model.
+   * Get the list of de-serializers for packageable element: i.e. JSON -> protocol model.
    */
   V1_getExtraElementProtocolDeserializers?(): V1_ElementProtocolDeserializer[];
-
-  /**
-   * Get the list of transformers for a packageable element: i.e. metamodel -> protocol model.
-   */
-  V1_getExtraElementTransformers?(): V1_ElementTransformer[];
 
   /**
    * Get the list of builders for function expression.
@@ -161,4 +182,24 @@ export abstract class PureProtocolProcessorPlugin extends AbstractPlugin {
    * Get the list of type inferrers for property expression.
    */
   V1_getExtraPropertyExpressionTypeInferrers?(): V1_PropertyExpressionTypeInferrer[];
+
+  /**
+   * Get the list of builders for class instance value.
+   */
+  V1_getExtraClassInstanceValueBuilders?(): V1_ClassInstanceValueBuilder[];
+
+  /**
+   * Get the list of transformers for class instance value.
+   */
+  V1_getExtraClassInstanceValueTransformers?(): V1_ClassInstanceValueTransformer[];
+
+  /**
+   * Get the list of serializers for class instance value.
+   */
+  V1_getExtraClassInstanceValueProtocolDeserializers?(): V1_ClassInstanceValueProtocolDeserializer[];
+
+  /**
+   * Get the list of deserializers for class instance value.
+   */
+  V1_getExtraClassInstanceValueProtocolSerializers?(): V1_ClassInstanceValueProtocolSerializer[];
 }
