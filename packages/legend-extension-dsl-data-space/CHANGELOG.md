@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 9.0.3
+
+### Patch Changes
+
+- [#1597](https://github.com/finos/legend-studio/pull/1597) [`5b61c844`](https://github.com/finos/legend-studio/commit/5b61c844362b1ff60c4025ab9b93220e938399b0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable fetching project dependencies if dataspace cache analysis is found
+
 ## 9.0.2
 
 ## 9.0.1

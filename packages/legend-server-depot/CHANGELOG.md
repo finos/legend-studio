@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 4.1.4
+
+### Patch Changes
+
+- [#1597](https://github.com/finos/legend-studio/pull/1597) [`5b61c844`](https://github.com/finos/legend-studio/commit/5b61c844362b1ff60c4025ab9b93220e938399b0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove usage of `latest` version alias in `DepotServerClient` in favor of directly using `MASTER_SNAPSHOT_ALIAS`
+
 ## 4.1.3
 
 ## 4.1.2
