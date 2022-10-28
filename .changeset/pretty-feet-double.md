@@ -3,4 +3,4 @@
 '@finos/legend-extension-dsl-data-space': patch
 ---
 
-disable fetching project dependencies if dataspace cache analysis is found 
+Disable fetching project dependencies if dataspace cache analysis is found

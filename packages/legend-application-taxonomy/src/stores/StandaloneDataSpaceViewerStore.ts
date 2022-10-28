@@ -20,14 +20,14 @@ import {
   DataSpaceViewerState,
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
-  retrieveDependencyEntities,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import { BasicGraphManagerState } from '@finos/legend-graph';
-import { type Entity, parseGAVCoordinates } from '@finos/legend-storage';
+import { parseGAVCoordinates } from '@finos/legend-storage';
 import {
   type DepotServerClient,
   ProjectData,
+  retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -104,30 +104,20 @@ export class StandaloneDataSpaceViewerStore {
           this.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.initState.setMessage(`Fetching entities...`);
-      const entities = (yield this.depotServerClient.getEntities(
-        project,
-        versionId,
-      )) as Entity[];
-
       // analyze data space
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpacePath,
-        entities,
         () =>
-          retrieveDependencyEntities(
+          retrieveProjectEntitiesWithDependencies(
             project,
             versionId,
             this.depotServerClient,
           ),
         () =>
           retrieveAnalyticsResultCache(
-            project.groupId,
-            project.artifactId,
+            project,
             versionId,
             dataSpacePath,
             this.depotServerClient,

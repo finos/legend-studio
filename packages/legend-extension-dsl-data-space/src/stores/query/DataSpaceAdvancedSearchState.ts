@@ -16,12 +16,12 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class, GraphManagerState } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
 import {
   type StoredEntity,
+  type DepotServerClient,
   DepotScope,
   ProjectData,
-  type DepotServerClient,
+  retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -40,10 +40,7 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import {
-  retrieveAnalyticsResultCache,
-  retrieveDependencyEntities,
-} from '../../graphManager/action/analytics/DataSpaceAnalysisHelper.js';
+import { retrieveAnalyticsResultCache } from '../../graphManager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export class DataSpaceAdvancedSearchState {
@@ -167,30 +164,20 @@ export class DataSpaceAdvancedSearchState {
           ),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.loadDataSpaceState.setMessage(`Fetching entities...`);
-      const entities = (yield this.depotServerClient.getEntities(
-        project,
-        dataSpace.versionId,
-      )) as Entity[];
-
       // analyze data space
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,
-        entities,
         () =>
-          retrieveDependencyEntities(
+          retrieveProjectEntitiesWithDependencies(
             project,
             dataSpace.versionId,
             this.depotServerClient,
           ),
         () =>
           retrieveAnalyticsResultCache(
-            dataSpace.groupId,
-            dataSpace.artifactId,
+            project,
             dataSpace.versionId,
             dataSpace.path,
             this.depotServerClient,

@@ -69,8 +69,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   async analyzeDataSpace(
     dataSpacePath: string,
-    entities: Entity[],
-    dependencyEntitiesRetriever: () => Promise<Map<string, Entity[]>>,
+    entitiesRetriever: () => Promise<Entity[]>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult> {
@@ -78,7 +77,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     if (cacheRetriever) {
       try {
         actionState?.setMessage(
-          'Fetching Cached Data Space Analysis Result...',
+          'Fetching data space analysis result from cache...',
         );
         cachResult = await cacheRetriever();
       } catch (error) {
@@ -94,9 +93,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     if (cachResult) {
       analysisResult = cachResult;
     } else {
-      actionState?.setMessage('Fetching dependencies...');
-      const dependencyEntitiesIndex = await dependencyEntitiesRetriever();
-      actionState?.setMessage('Analyzing data space......');
+      actionState?.setMessage('Fetching project entities and dependencies...');
+      const entities = await entitiesRetriever();
+      actionState?.setMessage('Analyzing data space...');
       analysisResult = await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
@@ -107,10 +106,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           dataSpace: dataSpacePath,
           model: {
             _type: V1_PureModelContextType.DATA,
-            elements: Array.from(dependencyEntitiesIndex.values())
-              .flat()
-              .concat(entities)
-              .map((entity) => entity.content),
+            elements: entities.map((entity) => entity.content),
           },
         },
         {},

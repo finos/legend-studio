@@ -20,30 +20,20 @@ import type {
   ProjectData,
 } from '@finos/legend-server-depot';
 import type { PlainObject } from '@finos/legend-shared';
-import type { Entity } from '@finos/legend-storage';
 import type { DataSpaceAnalysisResult } from './DataSpaceAnalysis.js';
 
 const DATASPACE_ANALYTICS_FILE_NAME = 'AnalyticsResult.json';
 const V1_DATASPACE_ANALYTICS_ARTIFACT_EXTENSION_KEY = 'dataSpace-analytics';
 
-export const retrieveDependencyEntities = async (
-  project: ProjectData,
-  versionId: string,
-  depotServerClient: DepotServerClient,
-): Promise<Map<string, Entity[]>> =>
-  depotServerClient.getIndexedDependencyEntities(project, versionId);
-
 export const retrieveAnalyticsResultCache = async (
-  groupId: string,
-  artifactId: string,
+  project: ProjectData,
   versionId: string,
   dataSpacePath: string,
   depotServerClient: DepotServerClient,
 ): Promise<PlainObject<DataSpaceAnalysisResult>> =>
   JSON.parse(
     await depotServerClient.getGenerationContentByPath(
-      groupId,
-      artifactId,
+      project,
       versionId,
       getExpectedArtifactGenerationExtensionOutputPath(
         dataSpacePath,

@@ -29,8 +29,7 @@ import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAn
 export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(
     dataSpacePath: string,
-    entities: Entity[],
-    dependencyEntitiesRetriever: () => Promise<Map<string, Entity[]>>,
+    entitiesRetriever: () => Promise<Entity[]>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
     actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult>;
