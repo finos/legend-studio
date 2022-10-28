@@ -69,7 +69,7 @@ export const DevTool = observer(() => {
         <PanelFormBooleanField
           name="Engine execution runner"
           prompt="Use Base64 encoding for adhoc connection data URLs"
-          value={engineConfig.useClientRequestPayloadCompression}
+          value={engineConfig.useBase64ForAdhocConnectionDataUrls}
           isReadOnly={false}
           update={toggleDataUrlEncoding}
         />
