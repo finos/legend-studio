@@ -25,13 +25,12 @@ import {
   ModalFooter,
   ModalHeader,
   PanelFormListItems,
+  PanelFormSection,
 } from '@finos/legend-art';
 import {
-  isSuperType,
-  PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
+  TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
-  type VariableExpression,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -49,13 +48,12 @@ import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecification
 
 const WatermarkValueEditor = observer(
   (props: {
+    watermarkValue: ValueSpecification;
     watermarkState: QueryBuilderWatermarkState;
-    queryBuilderState: QueryBuilderState;
   }) => {
-    const { watermarkState } = props;
-    const variable = watermarkState.value as VariableExpression;
+    const { watermarkValue, watermarkState } = props;
+
     const graph = watermarkState.queryBuilderState.graphManagerState.graph;
-    const parameterType = watermarkState.value?.genericType?.value.rawType;
 
     const handleDrop = useCallback(
       (item: QueryBuilderParameterDragSource): void => {
@@ -75,11 +73,12 @@ const WatermarkValueEditor = observer(
           const itemType = item.variable.parameter.genericType?.value.rawType;
           if (
             !monitor.didDrop() &&
-            // Doing a type check, which only allows dragging and dropping parameters of the same type or of child types
-            itemType &&
-            parameterType &&
-            (isSuperType(parameterType, itemType) ||
-              parameterType.name === itemType.name)
+            // Only allows parameters with muliplicity 1 and type string
+            item.variable.parameter.multiplicity ===
+              graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE) &&
+            item.variable.parameter.genericType?.value.rawType.name ===
+              'String' &&
+            itemType
           ) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
@@ -94,41 +93,31 @@ const WatermarkValueEditor = observer(
     );
 
     return (
-      <>
-        {watermarkState.value && (
-          <div key={variable.name} className="panel__content__form__section">
-            <div className="panel__content__form__section__header__label">
-              {variable.name}
-            </div>
-            <div className="query-builder__parameter-editor">
-              <PanelDropZone
-                isDragOver={isParameterValueDragOver}
-                dropTargetConnector={dropTargetConnector}
-              >
-                <BasicValueSpecificationEditor
-                  valueSpecification={guaranteeNonNullable(
-                    watermarkState.value,
-                  )}
-                  setValueSpecification={(val: ValueSpecification): void => {
-                    watermarkState.setValue(val);
-                  }}
-                  graph={graph}
-                  obseverContext={
-                    watermarkState.queryBuilderState.observableContext
-                  }
-                  typeCheckOption={{
-                    expectedType: graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-                    match:
-                      parameterType ===
-                      graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-                  }}
-                  resetValue={(): void => watermarkState.setValue(undefined)}
-                />
-              </PanelDropZone>
-            </div>
-          </div>
-        )}
-      </>
+      <PanelFormSection>
+        <div className="query-builder__parameter-editor">
+          <PanelDropZone
+            isDragOver={isParameterValueDragOver}
+            dropTargetConnector={dropTargetConnector}
+          >
+            <BasicValueSpecificationEditor
+              valueSpecification={guaranteeNonNullable(watermarkValue)}
+              setValueSpecification={(val: ValueSpecification): void => {
+                watermarkState.setValue(val);
+              }}
+              graph={graph}
+              obseverContext={
+                watermarkState.queryBuilderState.observableContext
+              }
+              typeCheckOption={{
+                expectedType: graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+              }}
+              resetValue={(): void => {
+                watermarkState.resetValue();
+              }}
+            />
+          </PanelDropZone>
+        </div>
+      </PanelFormSection>
     );
   },
 );
@@ -140,15 +129,6 @@ export const QueryBuilderWatermarkEditor = observer(
     const watermarkState = queryBuilderState.watermarkState;
 
     const handleClose = (): void => {
-      if (watermarkState.value instanceof PrimitiveInstanceValue) {
-        if (watermarkState.value.values.length < 1) {
-          watermarkState.setValue(undefined);
-        } else {
-          if ((watermarkState.value.values[0] as string).length === 0) {
-            watermarkState.setValue(undefined);
-          }
-        }
-      }
       queryBuilderState.setIsEditingWatermark(false);
     };
 
@@ -176,14 +156,31 @@ export const QueryBuilderWatermarkEditor = observer(
                 <>
                   <WatermarkValueEditor
                     watermarkState={watermarkState}
-                    queryBuilderState={queryBuilderState}
+                    watermarkValue={watermarkState.value}
                   />
                   <PanelDivider />
                   <PanelFormListItems title="List of available parameters">
                     {queryBuilderState.parametersState.parameterStates
-                      .length === 0 && <> No parameters in query </>}
-                    {queryBuilderState.parametersState.parameterStates.map(
-                      (parameter) => (
+                      .length === 0 && <> No available parameters in query </>}
+                    {queryBuilderState.parametersState.parameterStates
+                      .filter((pState) => {
+                        const isMuliplicityOne =
+                          pState.parameter.multiplicity ===
+                          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+                            TYPICAL_MULTIPLICITY_TYPE.ONE,
+                          );
+
+                        const isString =
+                          pState.parameter.genericType?.value.rawType.name ===
+                          'String';
+
+                        if (isString && isMuliplicityOne) {
+                          return true;
+                        } else {
+                          return false;
+                        }
+                      })
+                      .map((parameter) => (
                         <VariableExpressionViewer
                           key={parameter.uuid}
                           queryBuilderState={queryBuilderState}
@@ -191,8 +188,7 @@ export const QueryBuilderWatermarkEditor = observer(
                           isReadOnly={true}
                           hideActions={true}
                         />
-                      ),
-                    )}
+                      ))}
                   </PanelFormListItems>
                 </>
               )}

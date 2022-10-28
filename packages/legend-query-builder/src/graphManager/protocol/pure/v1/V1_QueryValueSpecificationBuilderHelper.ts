@@ -579,7 +579,7 @@ export const V1_buildWatermarkFunctionExpression = (
 ): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
   assertTrue(
     parameters.length === 2,
-    `Can't build watermark() expression: watermark() expects 1 argument`,
+    `Can't build forWatermark() expression: forWatermark() expects 1 argument`,
   );
   const precedingExpression = (
     parameters[0] as V1_ValueSpecification
@@ -592,7 +592,7 @@ export const V1_buildWatermarkFunctionExpression = (
   );
   assertNonNullable(
     precedingExpression.genericType,
-    `Can't build watermark() expression: preceding expression return type is missing`,
+    `Can't build forWatermark() expression: preceding expression return type is missing`,
   );
 
   const lambda = parameters[1];
@@ -623,11 +623,19 @@ export const V1_buildWatermarkFunctionExpression = (
     ),
   ];
 
+  assertTrue(
+    processedParams[1]?.genericType?.value.rawType.name === 'String',
+    `Can't build forWatermark() expression: watermark parameter  value is not string`,
+  );
+
   const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
     compileContext,
   );
+
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
   return [expression, processedParams];
 };
 

@@ -411,9 +411,16 @@ export class QueryBuilderValueSpecificationProcessor
           this.queryBuilderState,
         );
         return;
+      } else if (
+        matchFunctionName(precedingExpression.functionName, [
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+        ])
+      ) {
+        processFilterExpression(valueSpecification, this.queryBuilderState);
+        return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or project()/groupBy()/olapGroupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/groupBy()/olapGroupBy()`,
         );
       }
     } else if (
@@ -431,7 +438,6 @@ export class QueryBuilderValueSpecificationProcessor
       )
     ) {
       processTDSProjectExpression(valueSpecification, this.queryBuilderState);
-
       return;
     } else if (
       matchFunctionName(

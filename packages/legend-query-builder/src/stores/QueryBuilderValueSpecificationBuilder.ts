@@ -137,15 +137,6 @@ export const buildLambdaFunction = (
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;
 
-  // build filter
-  const filterFunction = buildFilterExpression(
-    queryBuilderState.filterState,
-    getAllFunction,
-  );
-  if (filterFunction) {
-    lambdaFunction.expressionSequence[0] = filterFunction;
-  }
-
   // build watermark
   const watermarkFunction = buildWatermarkExpression(
     queryBuilderState.watermarkState,
@@ -153,6 +144,15 @@ export const buildLambdaFunction = (
   );
   if (watermarkFunction) {
     lambdaFunction.expressionSequence[0] = watermarkFunction;
+  }
+
+  // build filter
+  const filterFunction = buildFilterExpression(
+    queryBuilderState.filterState,
+    watermarkFunction ?? getAllFunction,
+  );
+  if (filterFunction) {
+    lambdaFunction.expressionSequence[0] = filterFunction;
   }
 
   // build fetch-structure

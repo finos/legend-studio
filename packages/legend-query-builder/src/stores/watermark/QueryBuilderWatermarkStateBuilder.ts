@@ -31,7 +31,7 @@ export const processWatermarkExpression = (
   const precedingExpression = guaranteeType(
     expression.parametersValues[0],
     SimpleFunctionExpression,
-    `Can't process watermark() expression: only support watermark() immediately following an expression`,
+    `Can't process forWatermark() expression: only support forWatermark() immediately following an expression`,
   );
 
   assertTrue(
@@ -39,7 +39,7 @@ export const processWatermarkExpression = (
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
     ]),
-    `Can't process watermark() expression: only support watermark() immediately following either getAll() or filter()`,
+    `Can't process forWatermark() expression: only support forWatermark() immediately following either getAll() or filter()`,
   );
 
   QueryBuilderValueSpecificationProcessor.process(
@@ -47,6 +47,6 @@ export const processWatermarkExpression = (
     queryBuilderState,
   );
 
-  const watermarkLambda = expression.parametersValues[1];
-  queryBuilderState.watermarkState.setValue(watermarkLambda);
+  const watermarkValue = expression.parametersValues[1];
+  queryBuilderState.watermarkState.setValue(watermarkValue);
 };

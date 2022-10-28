@@ -103,6 +103,8 @@ import {
 } from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
+  TEST_DATA_lambda_watermark_filter_Constant,
+  TEST_DATA_lambda_watermark_olap,
   TEST_DATA_lambda_watermark_Parameter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
 
@@ -283,15 +285,28 @@ const cases: RoundtripTestCase[] = [
   ],
   // watermark
   [
-    'Watermark with constant',
+    'Watermark with constant value',
     forWatermarkCtx,
     TEST_DATA_lambda_watermark_Constant,
     undefined,
   ],
   [
-    'Watermark with parameter',
+    'Watermark with parameter value',
     forWatermarkCtx,
     TEST_DATA_lambda_watermark_Parameter,
+    undefined,
+  ],
+  [
+    'Watermark on filter',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_filter_Constant,
+    undefined,
+  ],
+  [
+    'Watermark on olap',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_olap,
+    // ,
     undefined,
   ],
   [

@@ -36,6 +36,7 @@ export class QueryBuilderWatermarkState implements Hashable {
     makeObservable(this, {
       value: observable,
       setValue: action,
+      resetValue: action,
       toogleWatermark: action,
       hashCode: computed,
     });
@@ -43,23 +44,29 @@ export class QueryBuilderWatermarkState implements Hashable {
     this.queryBuilderState = queryBuilderState;
   }
 
+  resetValue(): void {
+    const watermarkConstant = new PrimitiveInstanceValue(
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
+            PRIMITIVE_TYPE.STRING,
+          ),
+        ),
+      ),
+      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
+        TYPICAL_MULTIPLICITY_TYPE.ONE,
+      ),
+    );
+
+    watermarkConstant.values = ['watermarkValue'];
+    this.setValue(watermarkConstant);
+  }
+
   toogleWatermark(): void {
     if (this.value) {
       this.setValue(undefined);
     } else {
-      const watermarkConstant = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
-          ),
-        ),
-        this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ONE,
-        ),
-      );
-      this.setValue(watermarkConstant);
+      this.resetValue();
     }
   }
 

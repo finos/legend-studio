@@ -36,9 +36,9 @@ export const ModalTitle: React.FC<{
   icon?: React.ReactNode;
   className?: string;
 }> = (props) => {
-  const { title, icon } = props;
+  const { title, icon, className } = props;
   return (
-    <div className="modal__title">
+    <div className={clsx('modal__title', className)}>
       {icon && <div className="modal__title__icon">{icon}</div>}
       <div className="modal__title__label">{toTitleCase(title)}</div>
     </div>
