@@ -94,7 +94,7 @@
     "@finos/eslint-plugin-legend-studio": "workspace:*",
     "@finos/legend-dev-utils": "workspace:*",
     "@finos/stylelint-config-legend-studio": "workspace:*",
-    "@types/node": "18.11.6",
+    "@types/node": "18.11.7",
     "chalk": "5.1.2",
     "cross-env": "7.0.3",
     "envinfo": "7.8.1",
@@ -112,7 +112,7 @@
     "semver": "7.3.8",
     "sort-package-json": "2.0.0",
     "stylelint": "14.14.0",
-    "typedoc": "0.23.18",
+    "typedoc": "0.23.19",
     "typescript": "4.8.4",
     "yargs": "17.6.0"
   },
