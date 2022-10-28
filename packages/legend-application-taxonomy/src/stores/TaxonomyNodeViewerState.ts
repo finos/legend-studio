@@ -21,8 +21,10 @@ import {
   retrieveAnalyticsResultCache,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
-import type { Entity } from '@finos/legend-storage';
-import { ProjectData } from '@finos/legend-server-depot';
+import {
+  ProjectData,
+  retrieveProjectEntitiesWithDependencies,
+} from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -124,39 +126,25 @@ export class TaxonomyNodeViewerState {
           this.explorerStore.depotServerClient.getProject(groupId, artifactId),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.initDataSpaceViewerState.setMessage(`Fetching entities...`);
-      const entities = (yield this.explorerStore.depotServerClient.getEntities(
-        project,
-        versionId,
-      )) as Entity[];
-
-      // fetch dependencies
-      this.initDataSpaceViewerState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.explorerStore.depotServerClient.getIndexedDependencyEntities(
-          project,
-          versionId,
-        ),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.initDataSpaceViewerState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.explorerStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpaceTaxonomyContext.path,
-        entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            versionId,
+            this.explorerStore.depotServerClient,
+          ),
         () =>
           retrieveAnalyticsResultCache(
-            project.groupId,
-            project.artifactId,
+            project,
             versionId,
             dataSpaceTaxonomyContext.path,
             this.explorerStore.depotServerClient,
           ),
+        this.initDataSpaceViewerState,
       )) as DataSpaceAnalysisResult;
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.explorerStore.applicationStore,

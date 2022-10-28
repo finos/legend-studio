@@ -16,12 +16,12 @@
 
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Class, GraphManagerState } from '@finos/legend-graph';
-import type { Entity } from '@finos/legend-storage';
 import {
   type StoredEntity,
+  type DepotServerClient,
   DepotScope,
   ProjectData,
-  type DepotServerClient,
+  retrieveProjectEntitiesWithDependencies,
 } from '@finos/legend-server-depot';
 import {
   type GeneratorFn,
@@ -164,39 +164,25 @@ export class DataSpaceAdvancedSearchState {
           ),
         )) as PlainObject<ProjectData>,
       );
-
-      // fetch entities
-      this.loadDataSpaceState.setMessage(`Fetching entities...`);
-      const entities = (yield this.depotServerClient.getEntities(
-        project,
-        dataSpace.versionId,
-      )) as Entity[];
-
-      // fetch dependencies
-      this.loadDataSpaceState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.depotServerClient.getIndexedDependencyEntities(
-          project,
-          dataSpace.versionId,
-        ),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.loadDataSpaceState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,
-        entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveProjectEntitiesWithDependencies(
+            project,
+            dataSpace.versionId,
+            this.depotServerClient,
+          ),
         () =>
           retrieveAnalyticsResultCache(
-            dataSpace.groupId,
-            dataSpace.artifactId,
+            project,
             dataSpace.versionId,
             dataSpace.path,
             this.depotServerClient,
           ),
+        this.loadDataSpaceState,
       )) as DataSpaceAnalysisResult;
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.applicationStore,

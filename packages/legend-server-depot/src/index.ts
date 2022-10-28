@@ -26,3 +26,5 @@ export * from './DepotServerClientProvider.js';
 export * from './DepotServerClientTestUtils.js';
 
 export * from './DepotVersionAliases.js';
+
+export * from './DepotEntityHelper.js';

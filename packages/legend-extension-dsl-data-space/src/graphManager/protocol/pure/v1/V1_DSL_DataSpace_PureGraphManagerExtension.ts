@@ -69,13 +69,16 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
 
   async analyzeDataSpace(
     dataSpacePath: string,
-    entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    entitiesRetriever: () => Promise<Entity[]>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult> {
     let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     if (cacheRetriever) {
       try {
+        actionState?.setMessage(
+          'Fetching data space analysis result from cache...',
+        );
         cachResult = await cacheRetriever();
       } catch (error) {
         assertErrorThrown(error);
@@ -86,9 +89,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       }
     }
     const engineClient = this.graphManager.engine.getEngineServerClient();
-    const analysisResult =
-      cachResult ??
-      (await engineClient.postWithTracing<
+    let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
+    if (cachResult) {
+      analysisResult = cachResult;
+    } else {
+      actionState?.setMessage('Fetching project entities and dependencies...');
+      const entities = await entitiesRetriever();
+      actionState?.setMessage('Analyzing data space...');
+      analysisResult = await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
         engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
@@ -98,17 +106,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           dataSpace: dataSpacePath,
           model: {
             _type: V1_PureModelContextType.DATA,
-            elements: Array.from(dependencyEntitiesIndex.values())
-              .flat()
-              .concat(entities)
-              .map((entity) => entity.content),
+            elements: entities.map((entity) => entity.content),
           },
         },
         {},
         undefined,
         undefined,
         { enableCompression: true },
-      ));
+      );
+    }
     return this.buildDataSpaceAnalytics(
       V1_DataSpaceAnalysisResult.serialization.fromJson(analysisResult),
     );

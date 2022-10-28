@@ -21,10 +21,7 @@ import {
   HttpHeader,
   ContentType,
 } from '@finos/legend-shared';
-import {
-  LATEST_VERSION_ALIAS,
-  SNAPSHOT_VERSION_ALIAS,
-} from './DepotVersionAliases.js';
+import { resolveProjectVersion } from './DepotVersionAliases.js';
 import type { DepotScope } from './models/DepotScope.js';
 import type { ProjectData } from './models/ProjectData.js';
 import {
@@ -69,8 +66,6 @@ export class DepotServerClient extends AbstractServerClient {
 
   private _versions = (groupId: string, artifactId: string): string =>
     `${this._project(groupId, artifactId)}/versions`;
-  private _revisions = (groupId: string, artifactId: string): string =>
-    `${this._project(groupId, artifactId)}/revisions`;
   private _version = (
     groupId: string,
     artifactId: string,
@@ -85,26 +80,14 @@ export class DepotServerClient extends AbstractServerClient {
   ): Promise<PlainObject<Entity>[]> =>
     this.get(this._version(groupId, artifactId, version));
 
-  getLatestRevisionEntities = (
-    groupId: string,
-    artifactId: string,
-  ): Promise<PlainObject<Entity>[]> =>
-    this.get(`${this._revisions(groupId, artifactId)}/latest`);
-
   getEntities(
     project: ProjectData,
     versionId: string,
   ): Promise<PlainObject<Entity>[]> {
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      return this.getLatestRevisionEntities(
-        project.groupId,
-        project.artifactId,
-      );
-    }
     return this.getVersionEntities(
       project.groupId,
       project.artifactId,
-      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      resolveProjectVersion(project, versionId),
     );
   }
 
@@ -122,34 +105,15 @@ export class DepotServerClient extends AbstractServerClient {
       )}/entities/${encodeURIComponent(entityPath)}`,
     );
 
-  getLatestRevisionEntity = (
-    groupId: string,
-    artifactId: string,
-    entityPath: string,
-  ): Promise<PlainObject<Entity>> =>
-    this.get(
-      `${this._revisions(
-        groupId,
-        artifactId,
-      )}/latest/entities/${encodeURIComponent(entityPath)}`,
-    );
-
   getEntity(
     project: ProjectData,
     versionId: string,
     entityPath: string,
   ): Promise<PlainObject<Entity>> {
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      return this.getLatestRevisionEntity(
-        project.groupId,
-        project.artifactId,
-        entityPath,
-      );
-    }
     return this.getVersionEntity(
       project.groupId,
       project.artifactId,
-      versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
+      resolveProjectVersion(project, versionId),
       entityPath,
     );
   }
@@ -202,51 +166,18 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
-  getLatestRevisionDependencyEntities = (
-    groupId: string,
-    artifactId: string,
-    /**
-     * Flag indicating if transitive dependencies should be returned.
-     */
-    transitive: boolean,
-    /**
-     * Flag indicating whether to return the root of the dependency tree.
-     */
-    includeOrigin: boolean,
-  ): Promise<PlainObject<ProjectVersionEntities>[]> =>
-    this.get(
-      `${this._revisions(groupId, artifactId)}/latest/dependants`,
-      undefined,
-      undefined,
-      {
-        transitive,
-        includeOrigin,
-        versioned: false, // we don't need to add version prefix to entity path
-      },
-    );
-
   async getIndexedDependencyEntities(
     project: ProjectData,
     versionId: string,
   ): Promise<Map<string, Entity[]>> {
     const dependencyEntitiesIndex = new Map<string, Entity[]>();
-    let dependencies: PlainObject<ProjectVersionEntities>[] = [];
-    if (versionId === SNAPSHOT_VERSION_ALIAS) {
-      dependencies = await this.getLatestRevisionDependencyEntities(
-        project.groupId,
-        project.artifactId,
-        true,
-        false,
-      );
-    } else {
-      dependencies = await this.getDependencyEntities(
-        project.groupId,
-        project.artifactId,
-        versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
-        true,
-        false,
-      );
-    }
+    const dependencies = await this.getDependencyEntities(
+      project.groupId,
+      project.artifactId,
+      resolveProjectVersion(project, versionId),
+      true,
+      false,
+    );
     dependencies
       .map((v) => ProjectVersionEntities.serialization.fromJson(v))
       .forEach((dependencyInfo) => {
@@ -306,16 +237,15 @@ export class DepotServerClient extends AbstractServerClient {
     )}`;
 
   getGenerationContentByPath = (
-    groupId: string,
-    artifactId: string,
+    project: ProjectData,
     versionId: string,
     filePath: string,
   ): Promise<string> =>
     this.get(
       `${this._generationContentByGAV(
-        groupId,
-        artifactId,
-        versionId,
+        project.groupId,
+        project.artifactId,
+        resolveProjectVersion(project, versionId),
       )}/file/${encodeURIComponent(filePath)}`,
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },

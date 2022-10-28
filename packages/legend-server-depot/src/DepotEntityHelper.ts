@@ -15,22 +15,23 @@
  */
 
 import type { ProjectData } from './models/ProjectData.js';
+import type { Entity } from '@finos/legend-storage';
+import type { DepotServerClient } from './DepotServerClient.js';
+import type { PlainObject } from '@finos/legend-shared';
 
-/**
- * NOTE: `HEAD` alias does not exist in depot server
- * instead, it uses `master-SNAPSHOT` which to us is not generic enough.
- */
-export const SNAPSHOT_VERSION_ALIAS = 'HEAD';
-export const LATEST_VERSION_ALIAS = 'latest';
-export const MASTER_SNAPSHOT_ALIAS = 'master-SNAPSHOT';
-
-export const resolveVersion = (versionId: string): string =>
-  versionId === SNAPSHOT_VERSION_ALIAS ? MASTER_SNAPSHOT_ALIAS : versionId;
-
-export const resolveProjectVersion = (
+export const retrieveProjectEntitiesWithDependencies = async (
   project: ProjectData,
   versionId: string,
-): string =>
-  resolveVersion(
-    versionId === LATEST_VERSION_ALIAS ? project.latestVersion : versionId,
-  );
+  depotServerClient: DepotServerClient,
+): Promise<Entity[]> => {
+  const [entities, dependencyEntitiesIndex]: [
+    PlainObject<Entity>[],
+    Map<string, Entity[]>,
+  ] = await Promise.all([
+    depotServerClient.getEntities(project, versionId),
+    depotServerClient.getIndexedDependencyEntities(project, versionId),
+  ]);
+  return Array.from(dependencyEntitiesIndex.values())
+    .flat()
+    .concat(entities as unknown as Entity[]);
+};

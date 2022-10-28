@@ -19,15 +19,19 @@ import {
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  type ActionState,
+  type PlainObject,
+} from '@finos/legend-shared';
 import type { DataSpaceAnalysisResult } from '../../action/analytics/DataSpaceAnalysis.js';
 
 export abstract class DSL_DataSpace_PureGraphManagerExtension extends AbstractPureGraphManagerExtension {
   abstract analyzeDataSpace(
     dataSpacePath: string,
-    entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    entitiesRetriever: () => Promise<Entity[]>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult>;
 }
 
