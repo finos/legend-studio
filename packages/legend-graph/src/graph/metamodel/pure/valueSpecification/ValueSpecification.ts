@@ -16,19 +16,11 @@
 
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
-import type { AlloySerializationConfigInstanceValue } from './AlloySerializationConfig.js';
-import type {
-  RootGraphFetchTreeInstanceValue,
-  PropertyGraphFetchTreeInstanceValue,
-} from './GraphFetchTree.js';
+import type { RootGraphFetchTreeInstanceValue } from './GraphFetchTree.js';
 import type {
   InstanceValue,
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  RuntimeInstanceValue,
-  MappingInstanceValue,
-  PairInstanceValue,
-  PureListInstanceValue,
   CollectionInstanceValue,
 } from './InstanceValue.js';
 import type { LambdaFunctionInstanceValue } from './LambdaFunction.js';
@@ -50,17 +42,6 @@ export interface ValueSpecificationVisitor<T> {
     valueSpecification: INTERNAL__PropagatedValue,
   ): T;
 
-  visit_InstanceValue(valueSpecification: InstanceValue): T;
-  visit_LambdaFunctionInstanceValue(
-    valueSpecification: LambdaFunctionInstanceValue,
-  ): T;
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
-  ): T;
-  visit_EnumValueInstanceValue(valueSpecification: EnumValueInstanceValue): T;
-  visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
-  visit_PrimitiveInstanceValue(valueSpecification: PrimitiveInstanceValue): T;
-
   visit_FunctionExpression(valueSpecification: FunctionExpression): T;
   visit_SimpleFunctionExpression(
     valueSpecification: SimpleFunctionExpression,
@@ -70,17 +51,16 @@ export interface ValueSpecificationVisitor<T> {
     valueSpecification: AbstractPropertyExpression,
   ): T;
 
-  // TO BE DELETED
-  visit_PropertyGraphFetchTreeInstanceValue(
-    valueSpecification: PropertyGraphFetchTreeInstanceValue,
+  visit_InstanceValue(valueSpecification: InstanceValue): T;
+  visit_CollectionInstanceValue(valueSpecification: CollectionInstanceValue): T;
+  visit_EnumValueInstanceValue(valueSpecification: EnumValueInstanceValue): T;
+  visit_PrimitiveInstanceValue(valueSpecification: PrimitiveInstanceValue): T;
+  visit_LambdaFunctionInstanceValue(
+    valueSpecification: LambdaFunctionInstanceValue,
   ): T;
-  visit_AlloySerializationConfigInstanceValue(
-    valueSpecification: AlloySerializationConfigInstanceValue,
+  visit_RootGraphFetchTreeInstanceValue(
+    valueSpecification: RootGraphFetchTreeInstanceValue,
   ): T;
-  visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): T;
-  visit_PairInstanceValue(valueSpecification: PairInstanceValue): T;
-  visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): T;
-  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): T;
 }
 
 export abstract class ValueSpecification implements Hashable {

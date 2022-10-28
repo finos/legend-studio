@@ -110,13 +110,8 @@ export {
   LambdaFunction,
   LambdaFunctionInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/LambdaFunction.js';
-export { AlloySerializationConfigInstanceValue } from './graph/metamodel/pure/valueSpecification/AlloySerializationConfig.js';
 export {
   EnumValueInstanceValue,
-  MappingInstanceValue,
-  PairInstanceValue,
-  PureListInstanceValue,
-  RuntimeInstanceValue,
   InstanceValue,
   CollectionInstanceValue,
   PrimitiveInstanceValue,
@@ -131,7 +126,6 @@ export {
   PropertyGraphFetchTree,
   RootGraphFetchTree,
   GraphFetchTreeInstanceValue,
-  PropertyGraphFetchTreeInstanceValue,
   RootGraphFetchTreeInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 export { V1_PureGraphManager } from './graphManager/protocol/pure/v1/V1_PureGraphManager.js';

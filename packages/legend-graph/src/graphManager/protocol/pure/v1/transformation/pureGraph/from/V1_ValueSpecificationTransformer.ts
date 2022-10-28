@@ -24,10 +24,8 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
-import type { AlloySerializationConfigInstanceValue } from '../../../../../../../graph/metamodel/pure/valueSpecification/AlloySerializationConfig.js';
 import {
   type GraphFetchTree,
-  type PropertyGraphFetchTreeInstanceValue,
   type RootGraphFetchTreeInstanceValue,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
@@ -35,10 +33,6 @@ import {
 import type {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
-  RuntimeInstanceValue,
-  PairInstanceValue,
-  MappingInstanceValue,
-  PureListInstanceValue,
   CollectionInstanceValue,
   InstanceValue,
 } from '../../../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
@@ -116,19 +110,149 @@ class V1_ValueSpecificationTransformer
     return protocol;
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
   ): V1_ValueSpecification {
-    const classInstance = new V1_ClassInstance();
-    classInstance.type = V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE;
-    classInstance.value = V1_transformGraphFetchTree(
-      guaranteeNonNullable(valueSpecification.values[0]),
-      this.inScope,
-      this.open,
-      this.isParameter,
-      this.useAppliedFunction,
+    // NOTE: this is an synthetic construct which is to be created adhocly in the application
+    // this MUST NOT be transformed, serialized, and stored at all
+    throw new UnsupportedOperationError(
+      `Can't transform propagated value: propagated value leakage detected`,
     );
-    return classInstance;
+  }
+
+  visit_FunctionExpression(
+    valueSpecification: FunctionExpression,
+  ): V1_ValueSpecification {
+    const appliedFunc = new V1_AppliedFunction();
+    appliedFunc.function = valueSpecification.functionName;
+    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          this.inScope,
+          this.open,
+          this.isParameter,
+          this.useAppliedFunction,
+        ),
+      ),
+    );
+    return appliedFunc;
+  }
+
+  visit_SimpleFunctionExpression(
+    valueSpecification: SimpleFunctionExpression,
+  ): V1_ValueSpecification {
+    const appliedFunc = new V1_AppliedFunction();
+    appliedFunc.function = valueSpecification.functionName;
+    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          this.inScope,
+          this.open,
+          this.isParameter,
+          this.useAppliedFunction,
+        ),
+      ),
+    );
+    return appliedFunc;
+  }
+
+  visit_VariableExpression(
+    valueSpecification: VariableExpression,
+  ): V1_ValueSpecification {
+    const _variable = new V1_Variable();
+    _variable.name = valueSpecification.name;
+    const genericType = valueSpecification.genericType;
+    if (this.isParameter && genericType) {
+      const multiplicity = new V1_Multiplicity(
+        valueSpecification.multiplicity.lowerBound,
+        valueSpecification.multiplicity.upperBound,
+      );
+      _variable.multiplicity = multiplicity;
+      _variable.class = genericType.value.rawType.path;
+    }
+    return _variable;
+  }
+
+  visit_AbstractPropertyExpression(
+    valueSpecification: AbstractPropertyExpression,
+  ): V1_ValueSpecification {
+    const _property = new V1_AppliedProperty();
+    _property.property = valueSpecification.func.value.name;
+    _property.parameters = valueSpecification.parametersValues.map((value) =>
+      value.accept_ValueSpecificationVisitor(
+        new V1_ValueSpecificationTransformer(
+          this.inScope,
+          this.open,
+          this.isParameter,
+          this.useAppliedFunction,
+        ),
+      ),
+    );
+    return _property;
+  }
+
+  visit_InstanceValue(
+    valueSpecification: InstanceValue,
+  ): V1_ValueSpecification {
+    if (
+      valueSpecification.values.length === 1 &&
+      valueSpecification.values[0] instanceof PackageableElementReference
+    ) {
+      const protocol = new V1_PackageableElementPtr();
+      protocol.fullPath = (
+        valueSpecification
+          .values[0] as PackageableElementReference<PackageableElement>
+      ).value.path;
+      return protocol;
+    } else if (
+      valueSpecification.values.length === 0 &&
+      valueSpecification.genericType &&
+      (valueSpecification.genericType.value.rawType instanceof Unit ||
+        valueSpecification.genericType.value.rawType instanceof Class)
+    ) {
+      const protocol = new V1_GenericTypeInstance();
+      protocol.fullPath =
+        valueSpecification.genericType.ownerReference.valueForSerialization ??
+        '';
+      return protocol;
+    }
+    throw new UnsupportedOperationError(
+      `Can't transform instance value`,
+      valueSpecification,
+    );
+  }
+
+  visit_CollectionInstanceValue(
+    valueSpecification: CollectionInstanceValue,
+  ): V1_ValueSpecification {
+    const collection = new V1_Collection();
+    collection.multiplicity = new V1_Multiplicity(
+      valueSpecification.multiplicity.lowerBound,
+      valueSpecification.multiplicity.upperBound,
+    );
+    collection.values = valueSpecification.values
+      .filter(filterByType(ValueSpecification))
+      .map((value) =>
+        value.accept_ValueSpecificationVisitor(
+          new V1_ValueSpecificationTransformer(
+            this.inScope,
+            this.open,
+            this.isParameter,
+            this.useAppliedFunction,
+          ),
+        ),
+      );
+    return collection;
+  }
+
+  visit_EnumValueInstanceValue(
+    valueSpecification: EnumValueInstanceValue,
+  ): V1_ValueSpecification {
+    const _enumValue = new V1_EnumValue();
+    const _enum = guaranteeNonNullable(valueSpecification.values[0]).value;
+    _enumValue.value = _enum.name;
+    _enumValue.fullPath = _enum._OWNER.path;
+    return _enumValue;
   }
 
   visit_PrimitiveInstanceValue(
@@ -190,191 +314,25 @@ class V1_ValueSpecificationTransformer
     }
   }
 
-  visit_InstanceValue(
-    valueSpecification: InstanceValue,
-  ): V1_ValueSpecification {
-    if (
-      valueSpecification.values.length === 1 &&
-      valueSpecification.values[0] instanceof PackageableElementReference
-    ) {
-      const protocol = new V1_PackageableElementPtr();
-      protocol.fullPath = (
-        valueSpecification
-          .values[0] as PackageableElementReference<PackageableElement>
-      ).value.path;
-      return protocol;
-    } else if (
-      valueSpecification.values.length === 0 &&
-      valueSpecification.genericType &&
-      (valueSpecification.genericType.value.rawType instanceof Unit ||
-        valueSpecification.genericType.value.rawType instanceof Class)
-    ) {
-      const protocol = new V1_GenericTypeInstance();
-      protocol.fullPath =
-        valueSpecification.genericType.ownerReference.valueForSerialization ??
-        '';
-      return protocol;
-    }
-    throw new UnsupportedOperationError(
-      `Can't transform instance value`,
-      valueSpecification,
-    );
-  }
-
-  visit_EnumValueInstanceValue(
-    valueSpecification: EnumValueInstanceValue,
-  ): V1_ValueSpecification {
-    const _enumValue = new V1_EnumValue();
-    const _enum = guaranteeNonNullable(valueSpecification.values[0]).value;
-    _enumValue.value = _enum.name;
-    _enumValue.fullPath = _enum._OWNER.path;
-    return _enumValue;
-  }
-
-  visit_CollectionInstanceValue(
-    valueSpecification: CollectionInstanceValue,
-  ): V1_ValueSpecification {
-    const collection = new V1_Collection();
-    collection.multiplicity = new V1_Multiplicity(
-      valueSpecification.multiplicity.lowerBound,
-      valueSpecification.multiplicity.upperBound,
-    );
-    collection.values = valueSpecification.values
-      .filter(filterByType(ValueSpecification))
-      .map((value) =>
-        value.accept_ValueSpecificationVisitor(
-          new V1_ValueSpecificationTransformer(
-            this.inScope,
-            this.open,
-            this.isParameter,
-            this.useAppliedFunction,
-          ),
-        ),
-      );
-    return collection;
-  }
-
-  visit_FunctionExpression(
-    valueSpecification: FunctionExpression,
-  ): V1_ValueSpecification {
-    const appliedFunc = new V1_AppliedFunction();
-    appliedFunc.function = valueSpecification.functionName;
-    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
-      value.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationTransformer(
-          this.inScope,
-          this.open,
-          this.isParameter,
-          this.useAppliedFunction,
-        ),
-      ),
-    );
-    return appliedFunc;
-  }
-
-  visit_SimpleFunctionExpression(
-    valueSpecification: SimpleFunctionExpression,
-  ): V1_ValueSpecification {
-    const appliedFunc = new V1_AppliedFunction();
-    appliedFunc.function = valueSpecification.functionName;
-    appliedFunc.parameters = valueSpecification.parametersValues.map((value) =>
-      value.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationTransformer(
-          this.inScope,
-          this.open,
-          this.isParameter,
-          this.useAppliedFunction,
-        ),
-      ),
-    );
-    return appliedFunc;
-  }
-
-  visit_VariableExpression(
-    valueSpecification: VariableExpression,
-  ): V1_ValueSpecification {
-    const _variable = new V1_Variable();
-    _variable.name = valueSpecification.name;
-    const genericType = valueSpecification.genericType;
-    if (this.isParameter && genericType) {
-      const multiplicity = new V1_Multiplicity(
-        valueSpecification.multiplicity.lowerBound,
-        valueSpecification.multiplicity.upperBound,
-      );
-      _variable.multiplicity = multiplicity;
-      _variable.class = genericType.value.rawType.path;
-    }
-    return _variable;
-  }
-
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): V1_ValueSpecification {
     return V1_transformLambdaFunctionInstanceValue(valueSpecification);
   }
 
-  visit_AbstractPropertyExpression(
-    valueSpecification: AbstractPropertyExpression,
+  visit_RootGraphFetchTreeInstanceValue(
+    valueSpecification: RootGraphFetchTreeInstanceValue,
   ): V1_ValueSpecification {
-    const _property = new V1_AppliedProperty();
-    _property.property = valueSpecification.func.value.name;
-    _property.parameters = valueSpecification.parametersValues.map((value) =>
-      value.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationTransformer(
-          this.inScope,
-          this.open,
-          this.isParameter,
-          this.useAppliedFunction,
-        ),
-      ),
+    const classInstance = new V1_ClassInstance();
+    classInstance.type = V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE;
+    classInstance.value = V1_transformGraphFetchTree(
+      guaranteeNonNullable(valueSpecification.values[0]),
+      this.inScope,
+      this.open,
+      this.isParameter,
+      this.useAppliedFunction,
     );
-    return _property;
-  }
-
-  visit_INTERNAL__PropagatedValue(
-    valueSpecification: INTERNAL__PropagatedValue,
-  ): V1_ValueSpecification {
-    // NOTE: this is an synthetic construct which is to be created adhocly in the application
-    // this MUST NOT be transformed, serialized, and stored at all
-    throw new UnsupportedOperationError(
-      `Can't transform propagated value: propagated value leakage detected`,
-    );
-  }
-
-  visit_PropertyGraphFetchTreeInstanceValue(
-    valueSpecification: PropertyGraphFetchTreeInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_AlloySerializationConfigInstanceValue(
-    valueSpecification: AlloySerializationConfigInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_RuntimeInstanceValue(
-    valueSpecification: RuntimeInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PairInstanceValue(
-    valueSpecification: PairInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_MappingInstanceValue(
-    valueSpecification: MappingInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PureListInstanceValue(
-    valueSpecification: PureListInstanceValue,
-  ): V1_ValueSpecification {
-    throw new UnsupportedOperationError();
+    return classInstance;
   }
 }
 

@@ -23,15 +23,9 @@ import {
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
-  type AlloySerializationConfigInstanceValue,
   type EnumValueInstanceValue,
   type FunctionExpression,
-  type MappingInstanceValue,
-  type PairInstanceValue,
-  type PropertyGraphFetchTreeInstanceValue,
-  type PureListInstanceValue,
   type RootGraphFetchTreeInstanceValue,
-  type RuntimeInstanceValue,
   type ValueSpecificationVisitor,
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
@@ -278,65 +272,13 @@ export class QueryBuilderValueSpecificationProcessor
     );
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
-  ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PropertyGraphFetchTreeInstanceValue(
-    valueSpecification: PropertyGraphFetchTreeInstanceValue,
-  ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_AlloySerializationConfigInstanceValue(
-    valueSpecification: AlloySerializationConfigInstanceValue,
-  ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PrimitiveInstanceValue(
-    valueSpecification: PrimitiveInstanceValue,
-  ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_EnumValueInstanceValue(
-    valueSpecification: EnumValueInstanceValue,
-  ): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_RuntimeInstanceValue(valueSpecification: RuntimeInstanceValue): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PairInstanceValue(valueSpecification: PairInstanceValue): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_MappingInstanceValue(valueSpecification: MappingInstanceValue): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_PureListInstanceValue(valueSpecification: PureListInstanceValue): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_CollectionInstanceValue(
-    valueSpecification: CollectionInstanceValue,
+  visit_INTERNAL__PropagatedValue(
+    valueSpecification: INTERNAL__PropagatedValue,
   ): void {
     throw new UnsupportedOperationError();
   }
 
   visit_FunctionExpression(valueSpecification: FunctionExpression): void {
-    throw new UnsupportedOperationError();
-  }
-
-  visit_INTERNAL__PropagatedValue(
-    valueSpecification: INTERNAL__PropagatedValue,
-  ): void {
     throw new UnsupportedOperationError();
   }
 
@@ -532,21 +474,6 @@ export class QueryBuilderValueSpecificationProcessor
     throw new UnsupportedOperationError();
   }
 
-  visit_LambdaFunctionInstanceValue(
-    valueSpecification: LambdaFunctionInstanceValue,
-  ): void {
-    valueSpecification.values.forEach((value) =>
-      value.expressionSequence.forEach((expression) =>
-        expression.accept_ValueSpecificationVisitor(
-          new QueryBuilderValueSpecificationProcessor(
-            this.queryBuilderState,
-            this.parentExpression,
-          ),
-        ),
-      ),
-    );
-  }
-
   visit_AbstractPropertyExpression(
     valueSpecification: AbstractPropertyExpression,
   ): void {
@@ -575,6 +502,45 @@ export class QueryBuilderValueSpecificationProcessor
   }
 
   visit_InstanceValue(valueSpecification: InstanceValue): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_CollectionInstanceValue(
+    valueSpecification: CollectionInstanceValue,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_EnumValueInstanceValue(
+    valueSpecification: EnumValueInstanceValue,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_PrimitiveInstanceValue(
+    valueSpecification: PrimitiveInstanceValue,
+  ): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_LambdaFunctionInstanceValue(
+    valueSpecification: LambdaFunctionInstanceValue,
+  ): void {
+    valueSpecification.values.forEach((value) =>
+      value.expressionSequence.forEach((expression) =>
+        expression.accept_ValueSpecificationVisitor(
+          new QueryBuilderValueSpecificationProcessor(
+            this.queryBuilderState,
+            this.parentExpression,
+          ),
+        ),
+      ),
+    );
+  }
+
+  visit_RootGraphFetchTreeInstanceValue(
+    valueSpecification: RootGraphFetchTreeInstanceValue,
+  ): void {
     throw new UnsupportedOperationError();
   }
 }

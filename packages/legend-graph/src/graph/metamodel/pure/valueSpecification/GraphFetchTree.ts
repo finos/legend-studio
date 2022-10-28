@@ -86,28 +86,6 @@ export abstract class GraphFetchTreeInstanceValue
   override values: GraphFetchTree[] = [];
 }
 
-export class PropertyGraphFetchTreeInstanceValue
-  extends GraphFetchTreeInstanceValue
-  implements Hashable
-{
-  override values: PropertyGraphFetchTree[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.PROPERTY_GRAPH_FETCH_TREE_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashArray(this.values),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PropertyGraphFetchTreeInstanceValue(this);
-  }
-}
-
 export class RootGraphFetchTreeInstanceValue
   extends GraphFetchTreeInstanceValue
   implements Hashable

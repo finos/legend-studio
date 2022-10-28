@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type Hashable, hashArray, type Pair } from '@finos/legend-shared';
+import { type Hashable, hashArray } from '@finos/legend-shared';
 import {
   type ValueSpecificationVisitor,
   ValueSpecification,
@@ -22,9 +22,6 @@ import {
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference.js';
-import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
-import type { EngineRuntime } from '../packageableElements/runtime/Runtime.js';
-import type { Mapping } from '../packageableElements/mapping/Mapping.js';
 import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
@@ -103,82 +100,6 @@ export class EnumValueInstanceValue extends InstanceValue implements Hashable {
     visitor: ValueSpecificationVisitor<T>,
   ): T {
     return visitor.visit_EnumValueInstanceValue(this);
-  }
-}
-
-export class RuntimeInstanceValue extends InstanceValue implements Hashable {
-  override values: EngineRuntime[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.RUNTIME_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashArray(this.values),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_RuntimeInstanceValue(this);
-  }
-}
-
-export class PairInstanceValue extends InstanceValue implements Hashable {
-  override values: Pair<unknown, unknown>[] = []; // TODO: both of these entries might be ValueSpecification
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.PAIR_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashObjectWithoutSourceInformation(this.values),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PairInstanceValue(this);
-  }
-}
-
-export class MappingInstanceValue extends InstanceValue implements Hashable {
-  override values: PackageableElementReference<Mapping>[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.MAPPING_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashArray(this.values.map((value) => value.valueForSerialization ?? '')),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_MappingInstanceValue(this);
-  }
-}
-
-export class PureListInstanceValue extends InstanceValue implements Hashable {
-  override values: ValueSpecification[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.PURE_LIST_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashArray(this.values),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PureListInstanceValue(this);
   }
 }
 

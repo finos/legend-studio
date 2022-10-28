@@ -32,11 +32,6 @@ import {
   FunctionType,
   LambdaFunctionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/LambdaFunction.js';
-import {
-  type ExecutionContext,
-  BaseExecutionContext,
-  AnalyticsExecutionContext,
-} from '../../../../../../../../graph/metamodel/pure/valueSpecification/ExecutionContext.js';
 import { VariableExpression } from '../../../../../../../../graph/metamodel/pure/valueSpecification/VariableExpression.js';
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
 import type { AbstractProperty } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
@@ -71,9 +66,6 @@ import type { V1_GraphBuilderContext } from '../../../../transformation/pureGrap
 import type { V1_Lambda } from '../../../../model/valueSpecification/raw/V1_Lambda.js';
 import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
 import { V1_ProcessingContext } from './V1_ProcessingContext.js';
-import type { V1_ExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_ExecutionContext.js';
-import { V1_BaseExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_BaseExecutionContext.js';
-import { V1_AnalyticsExecutionContext } from '../../../../model/valueSpecification/raw/executionContext/V1_AnalyticsExecutionContext.js';
 import { V1_PropertyGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_PropertyGraphFetchTree.js';
 import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1_Multiplicity.js';
 import { V1_RootGraphFetchTree } from '../../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
@@ -867,44 +859,4 @@ function buildRootGraphFetchTree(
   );
   _rootGraphFetchTree.subTrees = children;
   return _rootGraphFetchTree;
-}
-
-// --------------------------------------------- Execution Context ---------------------------------------------
-
-export function V1_processExecutionContext(
-  executionContext: V1_ExecutionContext,
-  context: V1_GraphBuilderContext,
-): ExecutionContext {
-  if (executionContext instanceof V1_BaseExecutionContext) {
-    const _executioncontext = new BaseExecutionContext();
-    _executioncontext.enableConstraints = executionContext.enableConstraints;
-    _executioncontext.queryTimeOutInSeconds =
-      executionContext.queryTimeOutInSeconds;
-    return _executioncontext;
-  } else if (executionContext instanceof V1_AnalyticsExecutionContext) {
-    const vs =
-      executionContext.toFlowSetFunction.accept_ValueSpecificationVisitor(
-        new V1_ValueSpecificationBuilder(
-          context,
-          new V1_ProcessingContext(''),
-          [],
-        ),
-      );
-    const instance = guaranteeType(vs, InstanceValue);
-    const lambdaFunc = guaranteeType(instance.values[0], LambdaFunction);
-    const _analyticsExecutionContext = new AnalyticsExecutionContext(
-      executionContext.useAnalytics,
-      lambdaFunc,
-    );
-    _analyticsExecutionContext.enableConstraints =
-      executionContext.enableConstraints;
-    _analyticsExecutionContext.queryTimeOutInSeconds =
-      executionContext.queryTimeOutInSeconds;
-    return _analyticsExecutionContext;
-  }
-  // TODO add processor
-  throw new UnsupportedOperationError(
-    `Can't build execution context`,
-    executionContext,
-  );
 }
