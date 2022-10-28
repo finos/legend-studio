@@ -19,6 +19,7 @@ import {
   DataSpaceViewerState,
   DSL_DataSpace_getGraphManagerExtension,
   retrieveAnalyticsResultCache,
+  retrieveDependencyEntities,
 } from '@finos/legend-extension-dsl-data-space';
 import type { ClassView } from '@finos/legend-extension-dsl-diagram';
 import type { Entity } from '@finos/legend-storage';
@@ -131,24 +132,18 @@ export class TaxonomyNodeViewerState {
         project,
         versionId,
       )) as Entity[];
-
-      // fetch dependencies
-      this.initDataSpaceViewerState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.explorerStore.depotServerClient.getIndexedDependencyEntities(
-          project,
-          versionId,
-        ),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.initDataSpaceViewerState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.explorerStore.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpaceTaxonomyContext.path,
         entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveDependencyEntities(
+            project,
+            versionId,
+            this.explorerStore.depotServerClient,
+          ),
         () =>
           retrieveAnalyticsResultCache(
             project.groupId,
@@ -157,6 +152,7 @@ export class TaxonomyNodeViewerState {
             dataSpaceTaxonomyContext.path,
             this.explorerStore.depotServerClient,
           ),
+        this.initDataSpaceViewerState,
       )) as DataSpaceAnalysisResult;
       const dataSpaceViewerState = new DataSpaceViewerState(
         this.explorerStore.applicationStore,

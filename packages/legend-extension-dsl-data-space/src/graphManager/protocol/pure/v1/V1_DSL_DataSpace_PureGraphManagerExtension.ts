@@ -70,12 +70,16 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
   async analyzeDataSpace(
     dataSpacePath: string,
     entities: Entity[],
-    dependencyEntitiesIndex: Map<string, Entity[]>,
+    dependencyEntitiesRetriever: () => Promise<Map<string, Entity[]>>,
     cacheRetriever?: () => Promise<PlainObject<DataSpaceAnalysisResult>>,
+    actionState?: ActionState,
   ): Promise<DataSpaceAnalysisResult> {
     let cachResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     if (cacheRetriever) {
       try {
+        actionState?.setMessage(
+          'Fetching Cached Data Space Analysis Result...',
+        );
         cachResult = await cacheRetriever();
       } catch (error) {
         assertErrorThrown(error);
@@ -86,9 +90,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       }
     }
     const engineClient = this.graphManager.engine.getEngineServerClient();
-    const analysisResult =
-      cachResult ??
-      (await engineClient.postWithTracing<
+    let analysisResult: PlainObject<V1_DataSpaceAnalysisResult>;
+    if (cachResult) {
+      analysisResult = cachResult;
+    } else {
+      actionState?.setMessage('Fetching dependencies...');
+      const dependencyEntitiesIndex = await dependencyEntitiesRetriever();
+      actionState?.setMessage('Analyzing data space......');
+      analysisResult = await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
         engineClient.getTraceData(ANALYZE_DATA_SPACE_TRACE),
@@ -108,7 +117,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         undefined,
         undefined,
         { enableCompression: true },
-      ));
+      );
+    }
     return this.buildDataSpaceAnalytics(
       V1_DataSpaceAnalysisResult.serialization.fromJson(analysisResult),
     );

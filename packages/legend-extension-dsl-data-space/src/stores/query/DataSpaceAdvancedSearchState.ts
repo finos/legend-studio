@@ -40,7 +40,10 @@ import {
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
-import { retrieveAnalyticsResultCache } from '../../graphManager/action/analytics/DataSpaceAnalysisHelper.js';
+import {
+  retrieveAnalyticsResultCache,
+  retrieveDependencyEntities,
+} from '../../graphManager/action/analytics/DataSpaceAnalysisHelper.js';
 import type { DataSpaceAnalysisResult } from '../../graphManager/action/analytics/DataSpaceAnalysis.js';
 
 export class DataSpaceAdvancedSearchState {
@@ -172,23 +175,18 @@ export class DataSpaceAdvancedSearchState {
         dataSpace.versionId,
       )) as Entity[];
 
-      // fetch dependencies
-      this.loadDataSpaceState.setMessage(`Fetching dependencies...`);
-      const dependencyEntitiesIndex = (yield flowResult(
-        this.depotServerClient.getIndexedDependencyEntities(
-          project,
-          dataSpace.versionId,
-        ),
-      )) as Map<string, Entity[]>;
-
       // analyze data space
-      this.loadDataSpaceState.setMessage(`Analyzing data space...`);
       const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
         this.graphManagerState.graphManager,
       ).analyzeDataSpace(
         dataSpace.path,
         entities,
-        dependencyEntitiesIndex,
+        () =>
+          retrieveDependencyEntities(
+            project,
+            dataSpace.versionId,
+            this.depotServerClient,
+          ),
         () =>
           retrieveAnalyticsResultCache(
             dataSpace.groupId,
@@ -197,6 +195,7 @@ export class DataSpaceAdvancedSearchState {
             dataSpace.path,
             this.depotServerClient,
           ),
+        this.loadDataSpaceState,
       )) as DataSpaceAnalysisResult;
       this.dataSpaceViewerState = new DataSpaceViewerState(
         this.applicationStore,
