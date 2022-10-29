@@ -25,7 +25,7 @@ import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
   type EnumValueInstanceValue,
   type FunctionExpression,
-  type RootGraphFetchTreeInstanceValue,
+  type GraphFetchTreeInstanceValue,
   type ValueSpecificationVisitor,
   type InstanceValue,
   type INTERNAL__UnknownValueSpecification,
@@ -538,8 +538,8 @@ export class QueryBuilderValueSpecificationProcessor
     );
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_GraphFetchTreeInstanceValue(
+    valueSpecification: GraphFetchTreeInstanceValue,
   ): void {
     throw new UnsupportedOperationError();
   }

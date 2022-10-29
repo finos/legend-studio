@@ -664,7 +664,7 @@ export class DiagramRenderer {
           ): PropertyView | undefined => {
             const property = new Property(
               `property_${startClassView.class.value.properties.length + 1}`,
-              new Multiplicity(1, 1),
+              Multiplicity.ONE,
               GenericTypeExplicitReference.create(
                 new GenericType(targetClassView.class.value),
               ),

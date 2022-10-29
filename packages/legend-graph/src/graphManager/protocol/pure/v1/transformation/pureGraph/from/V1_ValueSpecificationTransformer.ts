@@ -26,7 +26,7 @@ import {
 import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 import {
   type GraphFetchTree,
-  type RootGraphFetchTreeInstanceValue,
+  type GraphFetchTreeInstanceValue,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
 } from '../../../../../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
@@ -320,8 +320,8 @@ class V1_ValueSpecificationTransformer
     return V1_transformLambdaFunctionInstanceValue(valueSpecification);
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_GraphFetchTreeInstanceValue(
+    valueSpecification: GraphFetchTreeInstanceValue,
   ): V1_ValueSpecification {
     const classInstance = new V1_ClassInstance();
     classInstance.type = V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE;

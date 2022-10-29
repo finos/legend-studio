@@ -17,7 +17,7 @@
 import { filterByType } from '@finos/legend-shared';
 import { computed, makeObservable, observable, override } from 'mobx';
 import {
-  type RootGraphFetchTreeInstanceValue,
+  type GraphFetchTreeInstanceValue,
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
@@ -148,11 +148,11 @@ export const observe_RootGraphFetchTree = skipObservedWithContext(
   observe_Abstract_GraphFetchTree,
 );
 
-export const observe_RootGraphFetchTreeInstanceValue = skipObservedWithContext(
+export const observe_GraphFetchTreeInstanceValue = skipObservedWithContext(
   (
-    metamodel: RootGraphFetchTreeInstanceValue,
+    metamodel: GraphFetchTreeInstanceValue,
     context,
-  ): RootGraphFetchTreeInstanceValue => {
+  ): GraphFetchTreeInstanceValue => {
     observe_Abstract_InstanceValue(metamodel, context);
     makeObservable(metamodel, {
       hashCode: override,
@@ -299,10 +299,10 @@ class ValueSpecificationObserver implements ValueSpecificationVisitor<void> {
     );
   }
 
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_GraphFetchTreeInstanceValue(
+    valueSpecification: GraphFetchTreeInstanceValue,
   ): void {
-    observe_RootGraphFetchTreeInstanceValue(
+    observe_GraphFetchTreeInstanceValue(
       valueSpecification,
       this.observerContext,
     );

@@ -506,7 +506,7 @@ export const getQueryBuilderSubTypeNodeData = (
       ? parentNode.property.multiplicity
       : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
       ? parentNode.multiplicity
-      : new Multiplicity(1, 1),
+      : Multiplicity.ONE,
   );
   subTypeNode.childrenIds =
     generateExplorerTreeClassNodeChildrenIDs(subTypeNode);

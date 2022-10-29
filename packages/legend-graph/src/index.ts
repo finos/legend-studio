@@ -126,7 +126,6 @@ export {
   PropertyGraphFetchTree,
   RootGraphFetchTree,
   GraphFetchTreeInstanceValue,
-  RootGraphFetchTreeInstanceValue,
 } from './graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 export { V1_PureGraphManager } from './graphManager/protocol/pure/v1/V1_PureGraphManager.js';
 

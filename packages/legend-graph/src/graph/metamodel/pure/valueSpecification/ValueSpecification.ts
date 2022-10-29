@@ -16,7 +16,7 @@
 
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
-import type { RootGraphFetchTreeInstanceValue } from './GraphFetchTree.js';
+import type { GraphFetchTreeInstanceValue } from './GraphFetchTree.js';
 import type {
   InstanceValue,
   PrimitiveInstanceValue,
@@ -58,8 +58,8 @@ export interface ValueSpecificationVisitor<T> {
   visit_LambdaFunctionInstanceValue(
     valueSpecification: LambdaFunctionInstanceValue,
   ): T;
-  visit_RootGraphFetchTreeInstanceValue(
-    valueSpecification: RootGraphFetchTreeInstanceValue,
+  visit_GraphFetchTreeInstanceValue(
+    valueSpecification: GraphFetchTreeInstanceValue,
   ): T;
 }
 

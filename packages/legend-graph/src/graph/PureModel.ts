@@ -114,23 +114,23 @@ export class CoreModel extends BasicModel {
   initializeMultiplicities(): void {
     this.multiplicitiesIndex.set(
       TYPICAL_MULTIPLICITY_TYPE.ZERO,
-      new Multiplicity(0, 0),
+      Multiplicity.ZERO,
     );
     this.multiplicitiesIndex.set(
       TYPICAL_MULTIPLICITY_TYPE.ONE,
-      new Multiplicity(1, 1),
+      Multiplicity.ONE,
     );
     this.multiplicitiesIndex.set(
       TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
-      new Multiplicity(0, 1),
+      Multiplicity.ZERO_ONE,
     );
     this.multiplicitiesIndex.set(
       TYPICAL_MULTIPLICITY_TYPE.ONE_MANY,
-      new Multiplicity(1, undefined),
+      Multiplicity.ONE_MANY,
     );
     this.multiplicitiesIndex.set(
       TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
-      new Multiplicity(0, undefined),
+      Multiplicity.ZERO_MANY,
     );
   }
 }

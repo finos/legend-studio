@@ -39,7 +39,7 @@ import {
   type GraphFetchTree,
   PropertyGraphFetchTree,
   RootGraphFetchTree,
-  RootGraphFetchTreeInstanceValue,
+  GraphFetchTreeInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/GraphFetchTree.js';
 import { ValueSpecification } from '../../../../../../../../graph/metamodel/pure/valueSpecification/ValueSpecification.js';
 import {
@@ -385,7 +385,7 @@ export class V1_ValueSpecificationBuilder
   ): ValueSpecification {
     switch (valueSpecification.type) {
       case V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE: {
-        const instanceValue = new RootGraphFetchTreeInstanceValue(
+        const instanceValue = new GraphFetchTreeInstanceValue(
           this.context.graph.getTypicalMultiplicity(
             TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),

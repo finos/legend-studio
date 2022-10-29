@@ -25,7 +25,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
   type LambdaFunction,
-  RootGraphFetchTreeInstanceValue,
+  GraphFetchTreeInstanceValue,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
@@ -119,9 +119,7 @@ export const appendGraphFetch = (
     graphFetchTreeState.treeData &&
     !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
   ) {
-    const graphFetchInstance = new RootGraphFetchTreeInstanceValue(
-      multiplicityOne,
-    );
+    const graphFetchInstance = new GraphFetchTreeInstanceValue(multiplicityOne);
     graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
     const serializeFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),

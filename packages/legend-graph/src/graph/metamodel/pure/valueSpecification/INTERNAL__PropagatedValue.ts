@@ -34,7 +34,7 @@ export class INTERNAL__PropagatedValue
   readonly getValue!: () => ValueSpecification;
 
   constructor(getValue: () => ValueSpecification) {
-    super(new Multiplicity(0, 0));
+    super(Multiplicity.ZERO);
 
     this.getValue = getValue;
   }
