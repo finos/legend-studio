@@ -29,7 +29,6 @@ import {
   observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
@@ -108,9 +107,6 @@ const MilestoningParameterEditor = observer(
                 PRIMITIVE_TYPE.STRICTDATE,
               ),
             ),
-          ),
-          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
           ),
         ),
         queryBuilderState.observableContext,

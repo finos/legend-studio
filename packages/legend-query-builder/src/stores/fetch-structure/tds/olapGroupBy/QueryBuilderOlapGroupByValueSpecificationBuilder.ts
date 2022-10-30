@@ -23,8 +23,8 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
@@ -43,16 +43,12 @@ const appendOlapGroupByColumnState = (
   const graph =
     olapGroupByColumnState.olapState.tdsState.queryBuilderState
       .graphManagerState.graph;
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
 
   // create window cols expression
   const windowColumns = olapGroupByColumnState.windowColumns.map((column) => {
     const stringInstance = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(typeString)),
-      multiplicityOne,
     );
     stringInstance.values = [column.columnName];
     return stringInstance;
@@ -69,11 +65,9 @@ const appendOlapGroupByColumnState = (
     const sortByState = olapGroupByColumnState.sortByState;
     sortByFunction = new SimpleFunctionExpression(
       getFunctionNameFromTDSSortColumn(sortByState.sortType),
-      multiplicityOne,
     );
     const sortColInstance = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(typeString)),
-      multiplicityOne,
     );
     sortColInstance.values = [sortByState.columnState.columnName];
     sortByFunction.parametersValues[0] = sortColInstance;
@@ -82,12 +76,12 @@ const appendOlapGroupByColumnState = (
   // create olap operation expression
   const operationState = olapGroupByColumnState.operationState;
   const olapFunc = extractElementNameFromPath(operationState.operator.pureFunc);
-  const olapFuncExpression = new SimpleFunctionExpression(
-    olapFunc,
-    multiplicityOne,
-  );
+  const olapFuncExpression = new SimpleFunctionExpression(olapFunc);
   olapFuncExpression.parametersValues = [
-    new VariableExpression(operationState.lambdaParameterName, multiplicityOne),
+    new VariableExpression(
+      operationState.lambdaParameterName,
+      Multiplicity.ONE,
+    ),
   ];
   const olapLambdaFuncInstance = buildGenericLambdaFunctionInstanceValue(
     operationState.lambdaParameterName,
@@ -99,13 +93,11 @@ const appendOlapGroupByColumnState = (
     // column param
     const olapAggregateColumn = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(typeString)),
-      multiplicityOne,
     );
     olapAggregateColumn.values = [operationState.columnState.columnName];
     // build `meta::pure::tds::func`
     olapAggregationExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FUNC),
-      multiplicityOne,
     );
     olapAggregationExpression.parametersValues = [
       olapAggregateColumn,
@@ -115,17 +107,15 @@ const appendOlapGroupByColumnState = (
   const olapOperationExpression =
     olapAggregationExpression ?? olapLambdaFuncInstance;
 
-  // OLAP column nam expression
+  // OLAP column name expression
   const olapColumn = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(new GenericType(typeString)),
-    multiplicityOne,
   );
   olapColumn.values = [olapGroupByColumnState.columnName];
 
   // create main expression
   const olapExpression = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY),
-    multiplicityOne,
   );
   const currentExpression = guaranteeNonNullable(lambda.expressionSequence[0]);
   olapExpression.parametersValues = [

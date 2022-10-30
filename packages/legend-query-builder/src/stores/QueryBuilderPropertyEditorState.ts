@@ -31,8 +31,6 @@ import {
   type Enum,
   type ValueSpecification,
   type PureModel,
-  TYPICAL_MULTIPLICITY_TYPE,
-  CollectionInstanceValue,
   AbstractPropertyExpression,
   DerivedProperty,
   Enumeration,
@@ -56,8 +54,12 @@ import {
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
   PropertyExplicitReference,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
+import {
+  createNullishValue,
+  generateDefaultValueForPrimitiveType,
+} from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
@@ -369,28 +371,18 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
+/**
+ * TODO: this currently ignores the multiplicity of the parameters
+ * we should check for the multiplicity and adaptively produce
+ * either simple primitive/enum instance value or collection
+ */
 export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
 ): ValueSpecification => {
   if (parameter.genericType) {
     const type = parameter.genericType.value.rawType;
-    if (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-          PRIMITIVE_TYPE.LATESTDATE,
-        ] as string[]
-      ).includes(type.name)
-    ) {
+    if (type instanceof PrimitiveType) {
       const primitiveInstanceValue = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
           new GenericType(
@@ -402,7 +394,6 @@ export const generateValueSpecificationForParameter = (
               : type,
           ),
         ),
-        parameter.multiplicity,
       );
       if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
         instanceValue_setValues(primitiveInstanceValue, [
@@ -413,7 +404,6 @@ export const generateValueSpecificationForParameter = (
     } else if (type instanceof Enumeration) {
       const enumValueInstanceValue = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(type)),
-        parameter.multiplicity,
       );
       if (type.values.length) {
         const enumValueRef = EnumValueExplicitReference.create(
@@ -426,9 +416,7 @@ export const generateValueSpecificationForParameter = (
   }
   // for arguments of types we don't support, we will fill them with `[]`
   // which in Pure is equivalent to `null` in other languages
-  return new CollectionInstanceValue(
-    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
-  );
+  return createNullishValue(graph);
 };
 
 const fillDerivedPropertyParameterValues = (

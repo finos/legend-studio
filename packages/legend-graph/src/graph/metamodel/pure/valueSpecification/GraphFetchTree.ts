@@ -24,6 +24,7 @@ import type {
 import { InstanceValue } from './InstanceValue.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 
 export abstract class GraphFetchTree implements Hashable {
   subTrees: GraphFetchTree[] = [];
@@ -84,6 +85,10 @@ export class GraphFetchTreeInstanceValue
   implements Hashable
 {
   override values: RootGraphFetchTree[] = [];
+
+  constructor() {
+    super(Multiplicity.ONE);
+  }
 
   override get hashCode(): string {
     return hashArray([

@@ -16,7 +16,6 @@
 
 import { guaranteeType } from '@finos/legend-shared';
 import type { GraphManagerState } from '../GraphManagerState.js';
-import { TYPICAL_MULTIPLICITY_TYPE } from '../../graph/MetaModelConst.js';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type LambdaFunction,
@@ -39,12 +38,7 @@ export const buildRawLambdaFromLambdaFunction = (
   lambdaFunction: LambdaFunction,
   graphManagerState: GraphManagerState,
 ): RawLambda => {
-  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue(
-    graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    ),
-    undefined,
-  );
+  const lambdaFunctionInstanceValue = new LambdaFunctionInstanceValue();
   lambdaFunctionInstanceValue.values = [lambdaFunction];
   return guaranteeType(
     graphManagerState.graphManager.buildRawValueSpecification(

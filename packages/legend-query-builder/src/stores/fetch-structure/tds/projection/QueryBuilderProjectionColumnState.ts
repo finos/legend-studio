@@ -43,11 +43,11 @@ import {
   PRIMITIVE_TYPE,
   buildSourceInformationSourceId,
   ParserError,
-  TYPICAL_MULTIPLICITY_TYPE,
   RawVariableExpression,
   Enumeration,
   RawLambda,
   stub_RawLambda,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -294,16 +294,13 @@ export class QueryBuilderDerivationProjectionColumnState
     assertTrue(Array.isArray(this.lambda.parameters));
     const projectionParameter = this.lambda.parameters as object[];
     const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
-    const multiplicityOne = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
     assertTrue(projectionParameter.length === 1);
     const variable = projectionParameter[0] as VariableExpression;
     assertNonEmptyString(variable.name);
     // assign variable to query class
     const rawVariableExpression = new RawVariableExpression(
       variable.name,
-      multiplicityOne,
+      Multiplicity.ONE,
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.tdsState.queryBuilderState.class),
       ),

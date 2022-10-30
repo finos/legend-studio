@@ -20,12 +20,12 @@ import {
   type ValueSpecification,
   SimpleFunctionExpression,
   VariableExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   extractElementNameFromPath,
   matchFunctionName,
   PRIMITIVE_TYPE,
   type Type,
   Enumeration,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -83,19 +83,14 @@ export class QueryBuilderAggregateOperator_DistinctCount
     variableName: string,
     graph: PureModel,
   ): ValueSpecification {
-    const multiplicityOne = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
     const distinctExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.DISTINCT),
-      multiplicityOne,
     );
     distinctExpression.parametersValues.push(
-      new VariableExpression(variableName, multiplicityOne),
+      new VariableExpression(variableName, Multiplicity.ONE),
     );
     const distinctCountExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.COUNT),
-      multiplicityOne,
     );
     distinctCountExpression.parametersValues.push(distinctExpression);
     return distinctCountExpression;

@@ -45,7 +45,6 @@ import {
   type Connection,
   type PureModelConnection,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,
   Package,
   Class,
@@ -74,6 +73,7 @@ import {
   DataElement,
   stub_Database,
   Measure,
+  Multiplicity,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -791,9 +791,7 @@ export class NewElementState {
               PRIMITIVE_TYPE.STRING,
             ),
           ),
-          this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          Multiplicity.ONE,
         );
         // default to empty string
         fn.expressionSequence =

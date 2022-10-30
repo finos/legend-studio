@@ -117,8 +117,6 @@ export class QueryBuilderFilterOperator_IsNotEmpty extends QueryBuilderFilterOpe
   ): ValueSpecification {
     return buildNotExpression(
       super.buildFilterConditionExpression(filterConditionState),
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
     );
   }
 

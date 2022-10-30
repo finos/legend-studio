@@ -23,9 +23,9 @@ import {
   MILESTONING_STEREOTYPE,
   observe_ValueSpecification,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   type ValueSpecification,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
@@ -138,9 +138,7 @@ export class QueryBuilderMilestoningState implements Hashable {
   buildMilestoningParameter(parameterName: string): ValueSpecification {
     const milestoningParameter = new VariableExpression(
       parameterName,
-      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
+      Multiplicity.ONE,
       GenericTypeExplicitReference.create(
         new GenericType(
           this.queryBuilderState.parametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(

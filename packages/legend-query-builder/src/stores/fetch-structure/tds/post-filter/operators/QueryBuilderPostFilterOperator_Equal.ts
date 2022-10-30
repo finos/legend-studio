@@ -27,7 +27,6 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
 } from '@finos/legend-graph';
 import {
@@ -131,15 +130,10 @@ export class QueryBuilderPostFilterOperator_Equal
       default:
         if (propertyType instanceof Enumeration) {
           if (propertyType.values.length > 0) {
-            const multiplicityOne =
-              postFilterConditionState.postFilterState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              );
             const enumValueInstanceValue = new EnumValueInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(propertyType),
               ),
-              multiplicityOne,
             );
             instanceValue_setValues(enumValueInstanceValue, [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
@@ -208,13 +202,7 @@ export class QueryBuilderPostFilterOperator_NotEqual extends QueryBuilderPostFil
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
     );
-    return expression
-      ? buildNotExpression(
-          expression,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-        )
-      : undefined;
+    return expression ? buildNotExpression(expression) : undefined;
   }
 
   override buildPostFilterConditionState(

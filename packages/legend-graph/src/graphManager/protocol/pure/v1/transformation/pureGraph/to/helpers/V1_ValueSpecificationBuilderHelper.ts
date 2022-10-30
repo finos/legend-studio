@@ -23,7 +23,6 @@ import {
   returnUndefOnError,
 } from '@finos/legend-shared';
 import {
-  TYPICAL_MULTIPLICITY_TYPE,
   PRIMITIVE_TYPE,
   SUPPORTED_FUNCTIONS,
 } from '../../../../../../../../graph/MetaModelConst.js';
@@ -54,7 +53,6 @@ import {
   EnumValueInstanceValue,
   CollectionInstanceValue,
 } from '../../../../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
-import type { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { Type } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { PropertyExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PropertyReference.js';
 import { PackageableElementExplicitReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
@@ -96,6 +94,7 @@ import { matchFunctionName } from '../../../../../../../../graph/MetaModelUtils.
 import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/V1_ClassInstance.js';
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 const LET_FUNCTION = 'letFunction';
 
@@ -103,10 +102,9 @@ const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
   values: unknown[],
   context: V1_GraphBuilderContext,
-  multiplicity: Multiplicity,
 ): PrimitiveInstanceValue => {
   const _genericType = context.resolveGenericType(type);
-  const instance = new PrimitiveInstanceValue(_genericType, multiplicity);
+  const instance = new PrimitiveInstanceValue(_genericType);
   instance.values = values;
   return instance;
 };
@@ -160,9 +158,7 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_Lambda(valueSpecification: V1_Lambda): ValueSpecification {
-    const instanceValue = new LambdaFunctionInstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
+    const instanceValue = new LambdaFunctionInstanceValue();
     instanceValue.values = [
       V1_buildLambdaBody(
         valueSpecification.body,
@@ -236,7 +232,7 @@ export class V1_ValueSpecificationBuilder
     valueSpecification: V1_PackageableElementPtr,
   ): ValueSpecification {
     const instanceValue = new InstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      Multiplicity.ONE,
       this.context.resolveGenericType(valueSpecification.fullPath),
     );
     instanceValue.values = [
@@ -249,7 +245,7 @@ export class V1_ValueSpecificationBuilder
     valueSpecification: V1_GenericTypeInstance,
   ): ValueSpecification {
     const instanceValue = new InstanceValue(
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+      Multiplicity.ONE,
       this.context.resolveGenericType(valueSpecification.fullPath),
     );
     return instanceValue;
@@ -288,7 +284,6 @@ export class V1_ValueSpecificationBuilder
   visit_EnumValue(valueSpecification: V1_EnumValue): ValueSpecification {
     const instance = new EnumValueInstanceValue(
       this.context.resolveGenericType(valueSpecification.fullPath),
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
     instance.values = [
       this.context.resolveEnumValue(
@@ -304,7 +299,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.INTEGER,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -313,7 +307,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.DECIMAL,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -322,7 +315,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRING,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -331,7 +323,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.BOOLEAN,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -340,7 +331,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.FLOAT,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -349,7 +339,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.DATETIME,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -358,7 +347,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRICTDATE,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -367,7 +355,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.STRICTTIME,
       [valueSpecification.value],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -376,7 +363,6 @@ export class V1_ValueSpecificationBuilder
       PRIMITIVE_TYPE.LATESTDATE,
       [],
       this.context,
-      this.context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
   }
 
@@ -385,11 +371,7 @@ export class V1_ValueSpecificationBuilder
   ): ValueSpecification {
     switch (valueSpecification.type) {
       case V1_ClassInstanceType.ROOT_GRAPH_FETCH_TREE: {
-        const instanceValue = new GraphFetchTreeInstanceValue(
-          this.context.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
-        );
+        const instanceValue = new GraphFetchTreeInstanceValue();
         const protocol = guaranteeType(
           valueSpecification.value,
           V1_RootGraphFetchTree,
@@ -415,11 +397,7 @@ export class V1_ValueSpecificationBuilder
             this.context,
           );
           if (value) {
-            const instanceValue = new InstanceValue(
-              this.context.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              ),
-            );
+            const instanceValue = new InstanceValue(Multiplicity.ONE);
             instanceValue.values = [value];
             return instanceValue;
           }
@@ -517,10 +495,7 @@ export function V1_processProperty(
       ? inferredVariable.func.value.genericType.value.rawType
       : V1_resolvePropertyExpressionTypeInference(inferredVariable, context);
   if (inferredType instanceof Class) {
-    const processedProperty = new AbstractPropertyExpression(
-      '',
-      context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    );
+    const processedProperty = new AbstractPropertyExpression('');
     processedProperty.func = PropertyExplicitReference.create(
       V1_getAppliedProperty(inferredType, undefined, property),
     );
@@ -529,7 +504,6 @@ export function V1_processProperty(
   } else if (inferredType instanceof Enumeration) {
     const enumValueInstanceValue = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(inferredType)),
-      context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
     );
     enumValueInstanceValue.values = [
       EnumValueExplicitReference.create(getEnumValue(inferredType, property)),
@@ -546,10 +520,7 @@ export const V1_buildBaseSimpleFunctionExpression = (
   functionName: string,
   compileContext: V1_GraphBuilderContext,
 ): SimpleFunctionExpression => {
-  const expression = new SimpleFunctionExpression(
-    functionName,
-    compileContext.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
+  const expression = new SimpleFunctionExpression(functionName);
   const func = returnUndefOnError(() =>
     compileContext.resolveFunction(functionName),
   );
@@ -754,10 +725,7 @@ const createThisVariableForClass = (
   classPackageString: string,
 ): VariableExpression => {
   const _classGenericType = context.resolveGenericType(classPackageString);
-  const _var = new VariableExpression(
-    'this',
-    context.graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
+  const _var = new VariableExpression('this', Multiplicity.ONE);
   _var.genericType = _classGenericType;
   return _var;
 };

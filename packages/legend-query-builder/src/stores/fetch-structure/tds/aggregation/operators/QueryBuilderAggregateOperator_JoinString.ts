@@ -22,12 +22,12 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   extractElementNameFromPath,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
   PRIMITIVE_TYPE,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -72,24 +72,19 @@ export class QueryBuilderAggregateOperator_JoinString
     variableName: string,
     graph: PureModel,
   ): ValueSpecification {
-    const multiplicityOne = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
       ),
-      multiplicityOne,
     );
     const delimiter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
       ),
-      multiplicityOne,
     );
     delimiter.values = [';'];
     expression.parametersValues.push(
-      new VariableExpression(variableName, multiplicityOne),
+      new VariableExpression(variableName, Multiplicity.ONE),
       delimiter,
     );
     return expression;

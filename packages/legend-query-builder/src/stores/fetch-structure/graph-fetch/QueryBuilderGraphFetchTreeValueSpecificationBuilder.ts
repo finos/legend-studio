@@ -22,7 +22,6 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
   type LambdaFunction,
   GraphFetchTreeInstanceValue,
@@ -41,10 +40,6 @@ const appendTakeLimit = (
   if (!previewLimit) {
     return lambda;
   }
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   if (lambda.expressionSequence.length === 1) {
     const func = lambda.expressionSequence[0];
     if (func instanceof SimpleFunctionExpression) {
@@ -62,12 +57,10 @@ const appendTakeLimit = (
               ),
             ),
           ),
-          multiplicityOne,
         );
         limit.values = [previewLimit];
         const takeFunction = new SimpleFunctionExpression(
           extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TAKE),
-          multiplicityOne,
         );
 
         // NOTE: `take()` does not work on `graphFetch()` or `serialize()` so we need to
@@ -109,21 +102,16 @@ export const appendGraphFetch = (
     lambdaFunction.expressionSequence[0],
     `Can't build graph-fetch tree expression: preceding expression is not defined`,
   );
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
 
   // build graph-fetch tree
   if (
     graphFetchTreeState.treeData &&
     !isGraphFetchTreeDataEmpty(graphFetchTreeState.treeData)
   ) {
-    const graphFetchInstance = new GraphFetchTreeInstanceValue(multiplicityOne);
+    const graphFetchInstance = new GraphFetchTreeInstanceValue();
     graphFetchInstance.values = [graphFetchTreeState.treeData.tree];
     const serializeFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SERIALIZE),
-      multiplicityOne,
     );
     const graphFetchFunc = new SimpleFunctionExpression(
       graphFetchTreeState.isChecked
@@ -133,7 +121,6 @@ export const appendGraphFetch = (
         : extractElementNameFromPath(
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.GRAPH_FETCH,
           ),
-      multiplicityOne,
     );
     graphFetchFunc.parametersValues = [precedingExpression, graphFetchInstance];
     serializeFunction.parametersValues = [graphFetchFunc, graphFetchInstance];

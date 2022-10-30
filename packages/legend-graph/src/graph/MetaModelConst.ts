@@ -60,14 +60,6 @@ export enum PRIMITIVE_TYPE {
   LATESTDATE = 'LatestDate',
 }
 
-export enum TYPICAL_MULTIPLICITY_TYPE {
-  ZERO = '0',
-  ZERO_ONE = '0..1',
-  ZERO_MANY = '0..*',
-  ONE = '1',
-  ONE_MANY = '1..*',
-}
-
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
 // this includes a more extensive list of packges which contain native functions, classes, etc.
 // See https://github.com/finos/legend-pure/blob/master/legend-pure-m3-core/src/main/resources/platform/pure/m3.pure
@@ -104,6 +96,7 @@ export const AUTO_IMPORTS = [
 
 export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
+  NIL = 'meta::pure::metamodel::type::Nil',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',
   PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',

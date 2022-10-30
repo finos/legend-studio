@@ -32,11 +32,11 @@ import {
   type PropertyReference,
   GenericTypeExplicitReference,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   Property,
   GenericType,
   PropertyExplicitReference,
   isElementReadOnly,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   type EditorStore,
@@ -393,9 +393,7 @@ export class DiagramEditorState
           _class,
           new Property(
             `property_${_class.properties.length + 1}`,
-            this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
-              TYPICAL_MULTIPLICITY_TYPE.ONE,
-            ),
+            Multiplicity.ONE,
             GenericTypeExplicitReference.create(
               new GenericType(
                 this.editorStore.graphManagerState.graph.getPrimitiveType(

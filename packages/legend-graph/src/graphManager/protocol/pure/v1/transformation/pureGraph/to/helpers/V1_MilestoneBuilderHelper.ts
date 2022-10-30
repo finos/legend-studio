@@ -25,7 +25,6 @@ import {
   PRIMITIVE_TYPE,
   MILESTONING_START_DATE_PARAMETER_NAME,
   BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '../../../../../../../../graph/MetaModelConst.js';
 import type { PropertyOwner } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
@@ -38,6 +37,7 @@ import type { V1_ValueSpecification } from '../../../../model/valueSpecification
 import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
 import { V1_serializeValueSpecification } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
+import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 const buildMilestoningParameter = (
   parameterName: string,
@@ -58,7 +58,7 @@ const V1_TEMPORARY_buildMilestoningDateProperty = (
 ): Property =>
   new Property(
     propertyName,
-    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
+    Multiplicity.ONE,
     GenericTypeExplicitReference.create(
       new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATE)),
     ),

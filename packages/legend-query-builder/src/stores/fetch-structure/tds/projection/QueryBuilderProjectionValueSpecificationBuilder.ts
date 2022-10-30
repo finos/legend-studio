@@ -23,7 +23,6 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
   INTERNAL__UnknownValueSpecification,
   V1_serializeRawValueSpecification,
@@ -54,17 +53,12 @@ import { appendPostFilter } from '../post-filter/QueryBuilderPostFilterValueSpec
 const buildSortExpression = (
   sortColumnState: SortColumnState,
 ): SimpleFunctionExpression => {
-  const multiplicityOne =
-    sortColumnState.columnState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   const sortColumnFunction = new SimpleFunctionExpression(
     extractElementNameFromPath(
       sortColumnState.sortType === COLUMN_SORT_TYPE.ASC
         ? QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_ASC
         : QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DESC,
     ),
-    multiplicityOne,
   );
   const sortColumnName = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
@@ -74,7 +68,6 @@ const buildSortExpression = (
         ),
       ),
     ),
-    multiplicityOne,
   );
   sortColumnName.values = [sortColumnState.columnState.columnName];
   sortColumnFunction.parametersValues[0] = sortColumnName;
@@ -90,10 +83,6 @@ const appendResultSetModifier = (
       }
     | undefined,
 ): LambdaFunction => {
-  const multiplicityOne =
-    resultModifierState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   if (lambdaFunction.expressionSequence.length === 1) {
     const func = lambdaFunction.expressionSequence[0];
     if (func instanceof SimpleFunctionExpression) {
@@ -112,7 +101,6 @@ const appendResultSetModifier = (
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_DISTINCT,
             ),
-            multiplicityOne,
           );
           distinctFunction.parametersValues[0] = currentExpression;
           currentExpression = distinctFunction;
@@ -124,7 +112,6 @@ const appendResultSetModifier = (
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_SORT,
             ),
-            multiplicityOne,
           );
           const multiplicity =
             resultModifierState.tdsState.queryBuilderState.graphManagerState.graph.getMultiplicity(
@@ -152,7 +139,6 @@ const appendResultSetModifier = (
                 ),
               ),
             ),
-            multiplicityOne,
           );
           limit.values = [
             Math.min(
@@ -164,7 +150,6 @@ const appendResultSetModifier = (
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_TAKE,
             ),
-            multiplicityOne,
           );
           takeFunction.parametersValues[0] = currentExpression;
           takeFunction.parametersValues[1] = limit;
@@ -195,10 +180,6 @@ export const appendProjection = (
     lambdaFunction.expressionSequence[0],
     `Can't build projection expression: preceding expression is not defined`,
   );
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
     PRIMITIVE_TYPE.STRING,
   );
@@ -210,7 +191,6 @@ export const appendProjection = (
       extractElementNameFromPath(
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
       ),
-      multiplicityOne,
     );
 
     const colLambdas = new CollectionInstanceValue(
@@ -237,7 +217,6 @@ export const appendProjection = (
       // column alias
       const colAlias = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(typeString)),
-        multiplicityOne,
       );
       colAlias.values.push(projectionColumnState.columnName);
       colAliases.values.push(colAlias);
@@ -292,7 +271,6 @@ export const appendProjection = (
       if (aggregateColumnState) {
         const aggregateFunctionExpression = new SimpleFunctionExpression(
           extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_AGG),
-          multiplicityOne,
         );
         const aggregateLambda = buildGenericLambdaFunctionInstanceValue(
           aggregateColumnState.lambdaParameterName,
@@ -324,7 +302,6 @@ export const appendProjection = (
     // projection
     const projectFunction = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT),
-      multiplicityOne,
     );
     const colLambdas = new CollectionInstanceValue(
       queryBuilderState.graphManagerState.graph.getMultiplicity(
@@ -342,7 +319,6 @@ export const appendProjection = (
       // column alias
       const colAlias = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(typeString)),
-        multiplicityOne,
       );
       colAlias.values.push(projectionColumnState.columnName);
       colAliases.values.push(colAlias);

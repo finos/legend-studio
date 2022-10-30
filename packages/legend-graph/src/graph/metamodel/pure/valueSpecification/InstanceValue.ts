@@ -19,7 +19,7 @@ import {
   type ValueSpecificationVisitor,
   ValueSpecification,
 } from './ValueSpecification.js';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import type { EnumValueReference } from '../packageableElements/domain/EnumValueReference.js';
 import {
@@ -28,10 +28,13 @@ import {
 } from '../../../Core_HashUtils.js';
 
 /**
- * NOTE: {@link InstanceValue} is the only metamodel available in Pure.
- * Its subtypes are created in Studio so that we can narrow down the types of `values`.
- * Also, right now, we haven't done the full build/transform flow for value specification
- * we use the subtypes to make it easier to transform metamodel back into protocol.
+ * NOTE: Theoretically {@link InstanceValue} is the only metamodel available in Pure.
+ * Its subtypes are created in Studio so that we can narrow down the types of `values`
+ * since we don't have powerful type matching like in Pure. Also, due to that, these
+ * subtypes of {@link InstanceValue}  make it easier to transform metamodel back into protocol.
+ * See https://github.com/finos/legend-engine/blob/94cd0aff3b314e568e830773f7200c8245baa09b/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/protocol/vX_X_X/transfers/valueSpecification.pure#L254
+ *
+ * @discrepancy model
  */
 export class InstanceValue extends ValueSpecification implements Hashable {
   values: unknown[] = [];
@@ -55,8 +58,8 @@ export class InstanceValue extends ValueSpecification implements Hashable {
 export class PrimitiveInstanceValue extends InstanceValue implements Hashable {
   override genericType: GenericTypeReference;
 
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, genericType);
+  constructor(genericType: GenericTypeReference) {
+    super(Multiplicity.ONE, genericType);
     this.genericType = genericType;
   }
 
@@ -79,8 +82,8 @@ export class PrimitiveInstanceValue extends InstanceValue implements Hashable {
 export class EnumValueInstanceValue extends InstanceValue implements Hashable {
   override values: EnumValueReference[] = [];
 
-  constructor(genericType: GenericTypeReference, multiplicity: Multiplicity) {
-    super(multiplicity, genericType);
+  constructor(genericType: GenericTypeReference) {
+    super(Multiplicity.ONE, genericType);
   }
 
   override get hashCode(): string {

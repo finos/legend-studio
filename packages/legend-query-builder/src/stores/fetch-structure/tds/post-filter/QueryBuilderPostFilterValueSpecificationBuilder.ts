@@ -17,7 +17,6 @@
 import {
   extractElementNameFromPath,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   type LambdaFunction,
   type ValueSpecification,
 } from '@finos/legend-graph';
@@ -41,13 +40,8 @@ const buildPostFilterExpression = (
       node.condition,
     );
   } else if (node instanceof QueryBuilderPostFilterTreeGroupNodeData) {
-    const multiplicityOne =
-      postFilterState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
     const func = new SimpleFunctionExpression(
       extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-      multiplicityOne,
     );
     const clauses = node.childrenIds
       .map((e) => postFilterState.nodes.get(e))
@@ -72,7 +66,6 @@ const buildPostFilterExpression = (
         const clause2 = currentClause;
         const groupClause = new SimpleFunctionExpression(
           extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-          multiplicityOne,
         );
         groupClause.parametersValues = [clause1, clause2];
         currentClause = groupClause;
@@ -100,10 +93,6 @@ export const appendPostFilter = (
   ) {
     return lambdaFunction;
   }
-  const multiplicityOne =
-    postFilterState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   const filterLambda = buildGenericLambdaFunctionInstanceValue(
     postFilterState.lambdaParameterName,
     postFilterConditionExpressions,
@@ -112,7 +101,6 @@ export const appendPostFilter = (
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER),
-    multiplicityOne,
   );
   const currentExpression = guaranteeNonNullable(
     lambdaFunction.expressionSequence[0],

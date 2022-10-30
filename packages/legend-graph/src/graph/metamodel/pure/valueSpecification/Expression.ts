@@ -15,7 +15,7 @@
  */
 
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import {
   type ValueSpecificationVisitor,
@@ -54,8 +54,8 @@ export class FunctionExpression extends Expression implements Hashable {
   parametersValues: ValueSpecification[] = [];
   func?: unknown | undefined;
 
-  constructor(functionName: string, multiplicity: Multiplicity) {
-    super(multiplicity, undefined);
+  constructor(functionName: string) {
+    super(Multiplicity.ONE, undefined);
     this.functionName = functionName;
   }
 

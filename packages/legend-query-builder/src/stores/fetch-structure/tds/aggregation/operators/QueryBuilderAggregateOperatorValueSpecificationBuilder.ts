@@ -21,7 +21,7 @@ import {
   extractElementNameFromPath,
   matchFunctionName,
   VariableExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { guaranteeType, assertTrue } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
@@ -33,15 +33,11 @@ export const buildAggregateExpression = (
   variableName: string,
   graph: PureModel,
 ): ValueSpecification => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const expression = new SimpleFunctionExpression(
     extractElementNameFromPath(operatorFunctionFullPath),
-    multiplicityOne,
   );
   expression.parametersValues.push(
-    new VariableExpression(variableName, multiplicityOne),
+    new VariableExpression(variableName, Multiplicity.ONE),
   );
   return expression;
 };

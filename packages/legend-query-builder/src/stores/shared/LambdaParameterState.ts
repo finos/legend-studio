@@ -27,13 +27,13 @@ import {
   PRIMITIVE_TYPE,
   VariableExpression,
   LambdaFunction,
-  TYPICAL_MULTIPLICITY_TYPE,
   CORE_PURE_PATH,
   FunctionType,
   SimpleFunctionExpression,
   SUPPORTED_FUNCTIONS,
   extractElementNameFromPath,
   PackageableElementExplicitReference,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -65,15 +65,12 @@ export const buildParametersLetLambdaFunc = (
   graph: PureModel,
   lambdaParametersStates: LambdaParameterState[],
 ): LambdaFunction => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
-  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
   const letlambdaFunction = new LambdaFunction(
     new FunctionType(
-      PackageableElementExplicitReference.create(typeAny),
-      multiplicityOne,
+      PackageableElementExplicitReference.create(
+        graph.getType(CORE_PURE_PATH.ANY),
+      ),
+      Multiplicity.ONE,
     ),
   );
   letlambdaFunction.expressionSequence = lambdaParametersStates
@@ -81,11 +78,11 @@ export const buildParametersLetLambdaFunc = (
       if (queryParamState.value) {
         const letFunc = new SimpleFunctionExpression(
           extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
-          multiplicityOne,
         );
         const letVar = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(new GenericType(typeString)),
-          multiplicityOne,
+          GenericTypeExplicitReference.create(
+            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
+          ),
         );
         letVar.values = [queryParamState.variableName];
         letFunc.parametersValues.push(letVar);

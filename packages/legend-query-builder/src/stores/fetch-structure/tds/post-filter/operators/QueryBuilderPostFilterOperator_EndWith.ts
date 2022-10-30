@@ -128,13 +128,7 @@ export class QueryBuilderPostFilterOperator_NotEndWith extends QueryBuilderPostF
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
     );
-    return expression
-      ? buildNotExpression(
-          expression,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-        )
-      : undefined;
+    return expression ? buildNotExpression(expression) : undefined;
   }
 
   override buildPostFilterConditionState(

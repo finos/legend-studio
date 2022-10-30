@@ -17,7 +17,7 @@
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type Class,
-  type Multiplicity,
+  Multiplicity,
   getMilestoneTemporalStereotype,
   extractElementNameFromPath,
   InstanceValue,
@@ -28,7 +28,6 @@ import {
   GenericTypeExplicitReference,
   LambdaFunction,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   MILESTONING_STEREOTYPE,
 } from '@finos/legend-graph';
 import type { QueryBuilderState } from './QueryBuilderState.js';
@@ -45,7 +44,6 @@ const buildGetAllFunction = (
 ): SimpleFunctionExpression => {
   const _func = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL),
-    multiplicity,
   );
   const classInstance = new InstanceValue(
     multiplicity,
@@ -75,22 +73,17 @@ export const buildLambdaFunction = (
     queryBuilderState.class,
     'Class is required to build query',
   );
-  const multiplicityOne =
-    queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
-  const typeAny = queryBuilderState.graphManagerState.graph.getType(
-    CORE_PURE_PATH.ANY,
-  );
   const lambdaFunction = new LambdaFunction(
     new FunctionType(
-      PackageableElementExplicitReference.create(typeAny),
-      multiplicityOne,
+      PackageableElementExplicitReference.create(
+        queryBuilderState.graphManagerState.graph.getType(CORE_PURE_PATH.ANY),
+      ),
+      Multiplicity.ONE,
     ),
   );
 
   // build getAll()
-  const getAllFunction = buildGetAllFunction(_class, multiplicityOne);
+  const getAllFunction = buildGetAllFunction(_class, Multiplicity.ONE);
 
   // build milestoning parameter(s) for getAll()
   const milestoningStereotype = getMilestoneTemporalStereotype(

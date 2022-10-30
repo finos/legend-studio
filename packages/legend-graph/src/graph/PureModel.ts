@@ -17,7 +17,6 @@
 import {
   PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
-  TYPICAL_MULTIPLICITY_TYPE,
   AUTO_IMPORTS,
 } from '../graph/MetaModelConst.js';
 import {
@@ -75,7 +74,6 @@ export class CoreModel extends BasicModel {
    */
   modelStore: ModelStore;
   primitiveTypesIndex = new Map<string, PrimitiveType>();
-  multiplicitiesIndex = new Map<string, Multiplicity>();
 
   get primitiveTypes(): PrimitiveType[] {
     return Array.from(this.primitiveTypesIndex.values());
@@ -83,7 +81,6 @@ export class CoreModel extends BasicModel {
 
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.CORE, extensionElementClasses);
-    this.initializeMultiplicities();
     this.initializePrimitiveTypes();
     // initialize ModelStore
     this.modelStore = new ModelStore();
@@ -103,35 +100,6 @@ export class CoreModel extends BasicModel {
       this.primitiveTypesIndex.set(type, primitiveType);
       this.setOwnType(type, primitiveType);
     });
-  }
-
-  /**
-   * Create pointers for the most common use case of multiplicity, other abnormal use cases such as 5..6 will
-   * be left as is, but for these, we want to optimize by using singletons
-   * NOTE: in the execution server, we put create packageable multiplicity objects and put them in the package tree,
-   * here we haven't yet seen a reason to do that
-   */
-  initializeMultiplicities(): void {
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZERO,
-      Multiplicity.ZERO,
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-      Multiplicity.ONE,
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
-      Multiplicity.ZERO_ONE,
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ONE_MANY,
-      Multiplicity.ONE_MANY,
-    );
-    this.multiplicitiesIndex.set(
-      TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
-      Multiplicity.ZERO_MANY,
-    );
   }
 }
 
@@ -570,38 +538,21 @@ export class PureModel extends BasicModel {
     return element;
   }
 
-  /**
-   * We cache some typical/frequently-used multiplicity.
-   */
-  getTypicalMultiplicity = (name: TYPICAL_MULTIPLICITY_TYPE): Multiplicity =>
-    guaranteeNonNullable(
-      this.coreModel.multiplicitiesIndex.get(name),
-      `Can't find typical multiplicity with name ${name}`,
-    );
-
   getMultiplicity(
     lowerBound: number,
     upperBound: number | undefined,
   ): Multiplicity {
     let multiplicity: Multiplicity | undefined;
     if (lowerBound === 1 && upperBound === 1) {
-      multiplicity = this.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE);
+      multiplicity = Multiplicity.ONE;
     } else if (lowerBound === 0 && upperBound === 1) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZERO_ONE,
-      );
+      multiplicity = Multiplicity.ZERO_ONE;
     } else if (lowerBound === 0 && upperBound === undefined) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZERO_MANY,
-      );
+      multiplicity = Multiplicity.ZERO_MANY;
     } else if (lowerBound === 1 && upperBound === undefined) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE_MANY,
-      );
+      multiplicity = Multiplicity.ONE_MANY;
     } else if (lowerBound === 0 && upperBound === 0) {
-      multiplicity = this.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ZERO,
-      );
+      multiplicity = Multiplicity.ZERO;
     }
     return multiplicity ?? new Multiplicity(lowerBound, upperBound);
   }

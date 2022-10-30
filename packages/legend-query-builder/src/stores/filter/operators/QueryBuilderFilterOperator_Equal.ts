@@ -27,7 +27,6 @@ import {
   EnumValueInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  TYPICAL_MULTIPLICITY_TYPE,
   EnumValueExplicitReference,
   Enumeration,
   PRIMITIVE_TYPE,
@@ -132,15 +131,10 @@ export class QueryBuilderFilterOperator_Equal
       default:
         if (propertyType instanceof Enumeration) {
           if (propertyType.values.length > 0) {
-            const multiplicityOne =
-              filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-                TYPICAL_MULTIPLICITY_TYPE.ONE,
-              );
             const enumValueInstanceValue = new EnumValueInstanceValue(
               GenericTypeExplicitReference.create(
                 new GenericType(propertyType),
               ),
-              multiplicityOne,
             );
             instanceValue_setValues(enumValueInstanceValue, [
               EnumValueExplicitReference.create(propertyType.values[0] as Enum),
@@ -207,8 +201,6 @@ export class QueryBuilderFilterOperator_NotEqual extends QueryBuilderFilterOpera
   ): ValueSpecification {
     return buildNotExpression(
       super.buildFilterConditionExpression(filterConditionState),
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
     );
   }
 

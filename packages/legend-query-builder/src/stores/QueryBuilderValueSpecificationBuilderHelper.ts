@@ -23,7 +23,6 @@ import {
   matchFunctionName,
   MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -142,11 +141,7 @@ export const buildPropertyExpressionChain = (
    */
   TEMPORARY__disableDatePropagation?: boolean,
 ): ValueSpecification => {
-  const graph = queryBuilderState.graphManagerState.graph;
-  const newPropertyExpression = new AbstractPropertyExpression(
-    '',
-    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-  );
+  const newPropertyExpression = new AbstractPropertyExpression('');
   newPropertyExpression.func = propertyExpression.func;
   newPropertyExpression.parametersValues = [
     ...propertyExpression.parametersValues,
@@ -159,10 +154,7 @@ export const buildPropertyExpressionChain = (
       currentExpression.parametersValues,
     );
     if (nextExpression instanceof AbstractPropertyExpression) {
-      const parameterValue = new AbstractPropertyExpression(
-        '',
-        graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-      );
+      const parameterValue = new AbstractPropertyExpression('');
       parameterValue.func = nextExpression.func;
       parameterValue.parametersValues = [...nextExpression.parametersValues];
       nextExpression = parameterValue;

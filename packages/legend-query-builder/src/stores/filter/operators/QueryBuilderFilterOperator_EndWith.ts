@@ -129,8 +129,6 @@ export class QueryBuilderFilterOperator_NotEndWith extends QueryBuilderFilterOpe
   ): ValueSpecification {
     return buildNotExpression(
       super.buildFilterConditionExpression(filterConditionState),
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
     );
   }
 
