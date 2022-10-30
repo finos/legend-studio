@@ -97,7 +97,6 @@ export {
   V1_PACKAGEABLE_RUNTIME_ELEMENT_PROTOCOL_TYPE,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_RuntimeSerializationHelper.js';
 export { MappingInclude } from './graph/metamodel/pure/packageableElements/mapping/MappingInclude.js';
-export { V1_getIncludedMappingPath } from './graphManager/protocol/pure/v1/helpers/V1_DSL_Mapping_Helper.js';
 export { V1_buildConnection } from './graphManager/protocol/pure/v1/transformation/pureGraph/to/helpers/V1_ConnectionBuilderHelper.js';
 export {
   V1_deserializeConnectionValue,

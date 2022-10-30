@@ -67,7 +67,6 @@ import {
 } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
-import { V1_getIncludedMappingPath } from '../../../../helpers/V1_DSL_Mapping_Helper.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -183,7 +182,7 @@ export const V1_buildMappingInclude = (
 ): MappingInclude => {
   const includedMapping = new MappingInclude(
     parentMapping,
-    context.resolveMapping(V1_getIncludedMappingPath(mappingInclude)),
+    context.resolveMapping(mappingInclude.includedMapping),
   );
   if (mappingInclude.sourceDatabasePath && mappingInclude.targetDatabasePath) {
     includedMapping.storeSubstitutions.push(

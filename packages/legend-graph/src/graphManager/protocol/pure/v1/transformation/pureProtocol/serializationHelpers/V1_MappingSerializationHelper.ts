@@ -41,7 +41,10 @@ import {
   usingModelSchema,
   optionalCustom,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
+import {
+  ELEMENT_PATH_DELIMITER,
+  PRIMITIVE_TYPE,
+} from '../../../../../../../graph/MetaModelConst.js';
 import type { V1_InputData } from '../../../model/packageableElements/mapping/V1_InputData.js';
 import { V1_Mapping } from '../../../model/packageableElements/mapping/V1_Mapping.js';
 import { V1_MappingTest } from '../../../model/packageableElements/mapping/V1_MappingTest.js';
@@ -1100,9 +1103,7 @@ const V1_enumerationMappingModelSchema = createModelSchema(
 export const V1_MAPPING_ELEMENT_PROTOCOL_TYPE = 'mapping';
 
 const V1_mappingIncludeModelSchema = createModelSchema(V1_MappingInclude, {
-  includedMapping: optional(primitive()),
-  includedMappingName: optional(primitive()),
-  includedMappingPackage: optional(primitive()),
+  includedMapping: primitive(),
   sourceDatabasePath: optional(primitive()),
   targetDatabasePath: optional(primitive()),
 });
@@ -1141,7 +1142,21 @@ export const V1_mappingModelSchema = (
     enumerationMappings: list(
       usingModelSchema(V1_enumerationMappingModelSchema),
     ),
-    includedMappings: list(usingModelSchema(V1_mappingIncludeModelSchema)),
+    includedMappings: list(
+      custom(
+        (val) => serialize(V1_mappingIncludeModelSchema, val),
+        (val) =>
+          deserialize(V1_mappingIncludeModelSchema, {
+            ...val,
+            /**
+             * @backwardCompatibility
+             */
+            includedMapping:
+              val.includedMapping ??
+              `${val.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${val.includedMappingName}`,
+          }),
+      ),
+    ),
     name: primitive(),
     package: primitive(),
     tests: list(usingModelSchema(V1_mappingTestModelSchema)),

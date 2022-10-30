@@ -18,7 +18,6 @@ import {
   EngineRuntime,
   GraphBuilderError,
   MappingInclude,
-  V1_getIncludedMappingPath,
   V1_GraphBuilderContextBuilder,
   V1_Mapping,
   V1_MAPPING_ELEMENT_PROTOCOL_TYPE,
@@ -95,12 +94,12 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
         const mapping = mappings.find((e) => e.path === element.path);
         if (mapping) {
           mapping.includes = element.includedMappings.map(
-            (i) =>
+            (mappingInclude) =>
               new MappingInclude(
                 mapping,
                 context.resolveMapping(
                   guaranteeNonEmptyString(
-                    V1_getIncludedMappingPath(i),
+                    mappingInclude.includedMapping,
                     `Mapping include path is missing or empty`,
                   ),
                 ),
@@ -201,7 +200,7 @@ export class V1_QueryBuilder_PureGraphManagerExtension extends QueryBuilder_Pure
                 mapping,
                 context.resolveMapping(
                   guaranteeNonEmptyString(
-                    V1_getIncludedMappingPath(include),
+                    include.includedMapping,
                     `Mapping include path is missing or empty`,
                   ),
                 ),
