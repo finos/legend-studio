@@ -386,8 +386,6 @@ export const V1_classSchema = createModelSchema(V1_Class, {
 export const V1_associationSchema = createModelSchema(V1_Association, {
   _type: usingConstantValueSchema(V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
-  package: primitive(),
-  properties: list(usingModelSchema(V1_propertySchema)),
   /**
    * Omit this information during protocol transformation as it can be
    * interpreted while building the graph; and will help grammar-roundtrip
@@ -407,6 +405,8 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
         skipIfEmpty: false,
       }),
   ),
+  package: primitive(),
+  properties: list(usingModelSchema(V1_propertySchema)),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(

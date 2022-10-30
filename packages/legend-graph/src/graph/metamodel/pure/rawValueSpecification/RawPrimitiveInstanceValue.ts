@@ -15,7 +15,7 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
 import type { Type } from '../packageableElements/domain/Type.js';
 import {
@@ -28,19 +28,17 @@ export class RawPrimitiveInstanceValue
   extends RawValueSpecification
   implements Hashable
 {
+  readonly multiplicity = Multiplicity.ONE;
   type: PackageableElementReference<Type>;
-  multiplicity: Multiplicity;
-  values?: (string | number)[] | undefined;
+  value?: string | number | boolean | undefined;
 
   constructor(
     type: PackageableElementReference<Type>,
-    multiplicity: Multiplicity,
-    values: (string | number)[] | undefined,
+    value: string | number | boolean | undefined,
   ) {
     super();
     this.type = type;
-    this.multiplicity = multiplicity;
-    this.values = values;
+    this.value = value;
   }
 
   get hashCode(): string {
@@ -48,9 +46,7 @@ export class RawPrimitiveInstanceValue
       CORE_HASH_STRUCTURE.RAW_INSTANCE_VALUE,
       this.type.valueForSerialization ?? '',
       this.multiplicity,
-      this.values
-        ? hashArray(this.values.map((value) => value.toString()))
-        : '',
+      this.value ?? '',
     ]);
   }
 

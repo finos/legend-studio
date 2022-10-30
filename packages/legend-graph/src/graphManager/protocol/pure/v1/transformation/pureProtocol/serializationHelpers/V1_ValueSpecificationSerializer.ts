@@ -345,6 +345,9 @@ const CBooleanModelSchema = createModelSchema(V1_CBoolean, {
   value: primitive(),
 });
 
+/**
+ * @backwardCompatibility
+ */
 const deserializePrimitiveValueSpecification = <
   T extends V1_PrimitiveValueSpecification,
 >(

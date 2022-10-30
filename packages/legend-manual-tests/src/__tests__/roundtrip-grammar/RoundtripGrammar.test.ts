@@ -82,8 +82,10 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'embedded-relational-mapping.pure': SKIP,
   'nested-embedded-relational-mapping.pure': SKIP,
   'relational-mapping-filter.pure': SKIP,
-  // TODO: remove these when Engine composer handles empty `preConstraints`/`postConstraints`.
+  // TODO: unskip when Engine composer handles empty `preConstraints`/`postConstraints`.
   'basic-function-overloading.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  // TODO: unskip when we handle Service test `assertForKeys` field
+  'DSL_Service-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
 };
 
 type GrammarRoundtripOptions = {
