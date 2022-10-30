@@ -657,18 +657,16 @@ function V1_serializeClassMapping(
   } else if (value instanceof V1_AggregationAwareClassMapping) {
     return serialize(aggregationAwareClassMappingModelSchema(plugins), value);
   }
-  if (plugins) {
-    const extraClassMappingSerializers = plugins.flatMap(
-      (plugin) =>
-        (
-          plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
-        ).V1_getExtraClassMappingSerializers?.() ?? [],
-    );
-    for (const serializer of extraClassMappingSerializers) {
-      const json = serializer(value);
-      if (json) {
-        return json;
-      }
+  const extraClassMappingSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraClassMappingSerializers?.() ?? [],
+  );
+  for (const serializer of extraClassMappingSerializers) {
+    const json = serializer(value);
+    if (json) {
+      return json;
     }
   }
   throw new UnsupportedOperationError(
@@ -700,18 +698,16 @@ function V1_deserializeClassMapping(
         json,
       );
     default: {
-      if (plugins) {
-        const extraClassMappingDeserializers = plugins.flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
-            ).V1_getExtraClassMappingDeserializers?.() ?? [],
-        );
-        for (const deserializer of extraClassMappingDeserializers) {
-          const protocol = deserializer(json);
-          if (protocol) {
-            return protocol;
-          }
+      const extraClassMappingDeserializers = plugins.flatMap(
+        (plugin) =>
+          (
+            plugin as DSL_Mapping_PureProtocolProcessorPlugin_Extension
+          ).V1_getExtraClassMappingDeserializers?.() ?? [],
+      );
+      for (const deserializer of extraClassMappingDeserializers) {
+        const protocol = deserializer(json);
+        if (protocol) {
+          return protocol;
         }
       }
       throw new UnsupportedOperationError(

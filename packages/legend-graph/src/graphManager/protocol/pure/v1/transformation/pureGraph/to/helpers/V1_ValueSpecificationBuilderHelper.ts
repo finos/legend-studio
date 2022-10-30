@@ -137,7 +137,7 @@ export class V1_ValueSpecificationBuilder
 
   visit_Variable(variable: V1_Variable): ValueSpecification {
     this.openVariables.push(variable.name);
-    if (variable.class && variable.multiplicity) {
+    if (variable.class) {
       const multiplicity = this.context.graph.getMultiplicity(
         variable.multiplicity.lowerBound,
         variable.multiplicity.upperBound,

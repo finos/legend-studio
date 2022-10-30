@@ -360,7 +360,7 @@ export const extractNullableNumberFromInstanceValue = (
 /**
  * NOTE: Pure doesn't have a nullish value, rather we use empty collection of type Nil
  */
-export const createNullishValue = (graph: PureModel) =>
+export const createNullishValue = (graph: PureModel): CollectionInstanceValue =>
   new CollectionInstanceValue(
     Multiplicity.ZERO,
     GenericTypeExplicitReference.create(

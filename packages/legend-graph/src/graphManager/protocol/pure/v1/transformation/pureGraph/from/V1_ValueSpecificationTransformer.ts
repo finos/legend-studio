@@ -262,46 +262,46 @@ class V1_ValueSpecificationTransformer
     switch (type.name) {
       case PRIMITIVE_TYPE.INTEGER: {
         const cInteger = new V1_CInteger();
-        cInteger.value = guaranteeIsNumber(valueSpecification.values?.[0]);
+        cInteger.value = guaranteeIsNumber(valueSpecification.values[0]);
         return cInteger;
       }
       case PRIMITIVE_TYPE.FLOAT: {
         const cFloat = new V1_CFloat();
-        cFloat.value = guaranteeIsNumber(valueSpecification.values?.[0]);
+        cFloat.value = guaranteeIsNumber(valueSpecification.values[0]);
         return cFloat;
       }
       // since we don't have a corresponding protocol for abstract type `Number`, we will default to use `Decimal`
       case PRIMITIVE_TYPE.NUMBER:
       case PRIMITIVE_TYPE.DECIMAL: {
         const cDecimal = new V1_CDecimal();
-        cDecimal.value = guaranteeIsNumber(valueSpecification.values?.[0]);
+        cDecimal.value = guaranteeIsNumber(valueSpecification.values[0]);
         return cDecimal;
       }
       case PRIMITIVE_TYPE.STRING: {
         const cString = new V1_CString();
-        cString.value = guaranteeIsString(valueSpecification.values?.[0]);
+        cString.value = guaranteeIsString(valueSpecification.values[0]);
         return cString;
       }
       case PRIMITIVE_TYPE.BOOLEAN: {
         const cBoolean = new V1_CBoolean();
-        cBoolean.value = guaranteeIsBoolean(valueSpecification.values?.[0]);
+        cBoolean.value = guaranteeIsBoolean(valueSpecification.values[0]);
         return cBoolean;
       }
       // since we don't have a corresponding protocol for abstract type `Date`, we will default to use `DateTime`
       case PRIMITIVE_TYPE.DATE:
       case PRIMITIVE_TYPE.DATETIME: {
         const cDateTime = new V1_CDateTime();
-        cDateTime.value = guaranteeIsString(valueSpecification.values?.[0]);
+        cDateTime.value = guaranteeIsString(valueSpecification.values[0]);
         return cDateTime;
       }
       case PRIMITIVE_TYPE.STRICTDATE: {
         const cStrictDate = new V1_CStrictDate();
-        cStrictDate.value = guaranteeIsString(valueSpecification.values?.[0]);
+        cStrictDate.value = guaranteeIsString(valueSpecification.values[0]);
         return cStrictDate;
       }
       case PRIMITIVE_TYPE.STRICTTIME: {
         const cStrictTime = new V1_CStrictTime();
-        cStrictTime.value = guaranteeIsString(valueSpecification.values?.[0]);
+        cStrictTime.value = guaranteeIsString(valueSpecification.values[0]);
         return cStrictTime;
       }
       case PRIMITIVE_TYPE.LATESTDATE: {
