@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.4.0
+
+### Minor Changes
+
+- [#1587](https://github.com/finos/legend-studio/pull/1587) [`086b3bcc`](https://github.com/finos/legend-studio/commit/086b3bcc528c86c835434cca21cb7a97ce7c8673) ([@xannem](https://github.com/xannem)) - Add support for function `forWatermark()` ([#1564](https://github.com/finos/legend-studio/issues/1564))
+
+- [#1596](https://github.com/finos/legend-studio/pull/1596) [`55d83b7f`](https://github.com/finos/legend-studio/commit/55d83b7fa5edb060cecaea3f6020435c3be662a9) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Support copy cell and row value in the result grid ([#1595](https://github.com/finos/legend-studio/issues/1595)).
+
 ## 0.3.1
 
 ## 0.3.0
