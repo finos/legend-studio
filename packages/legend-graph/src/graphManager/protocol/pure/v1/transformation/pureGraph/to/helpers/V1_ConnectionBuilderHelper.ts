@@ -21,7 +21,6 @@ import {
   assertType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { MODEL_STORE_NAME } from '../../../../../../../../graph/MetaModelConst.js';
 import {
   type DatabaseType,
   RelationalDatabaseConnection,
@@ -113,13 +112,13 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       );
     } else {
       assertTrue(
-        connection.store === undefined || connection.store === MODEL_STORE_NAME,
+        connection.store === undefined || connection.store === ModelStore.NAME,
         `Model chain connection store must be 'ModelStore'`,
       );
     }
     const modelConnection = new ModelChainConnection(
       PackageableElementImplicitReference.create(
-        this.context.graph.modelStore,
+        ModelStore.INSTANCE,
         connection.store,
       ),
     );
@@ -138,7 +137,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       );
     } else {
       assertTrue(
-        connection.store === undefined || connection.store === MODEL_STORE_NAME,
+        connection.store === undefined || connection.store === ModelStore.NAME,
         `JSON model connection store must be 'ModelStore'`,
       );
     }
@@ -152,7 +151,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     );
     return new JsonModelConnection(
       PackageableElementImplicitReference.create(
-        this.context.graph.modelStore,
+        ModelStore.INSTANCE,
         connection.store,
       ),
       this.context.resolveClass(connection.class),
@@ -169,7 +168,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
       );
     } else {
       assertTrue(
-        connection.store === undefined || connection.store === MODEL_STORE_NAME,
+        connection.store === undefined || connection.store === ModelStore.NAME,
         `XML model connection store must be 'ModelStore'`,
       );
     }
@@ -183,7 +182,7 @@ class V1_ConnectionBuilder implements V1_ConnectionVisitor<Connection> {
     );
     return new XmlModelConnection(
       PackageableElementImplicitReference.create(
-        this.context.graph.modelStore,
+        ModelStore.INSTANCE,
         connection.store,
       ),
       this.context.resolveClass(connection.class),

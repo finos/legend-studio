@@ -68,11 +68,6 @@ import type { SectionIndex } from '../graph/metamodel/pure/packageableElements/s
  * as we rebuild the graph.
  */
 export class CoreModel extends BasicModel {
-  /**
-   * ModelStore is technically not a real store and for referential equality check, it is much better to
-   * have it as a singleton. As such, we make ModelStore part of CoreModel
-   */
-  modelStore: ModelStore;
   primitiveTypesIndex = new Map<string, PrimitiveType>();
 
   get primitiveTypes(): PrimitiveType[] {
@@ -82,9 +77,8 @@ export class CoreModel extends BasicModel {
   constructor(extensionElementClasses: Clazz<PackageableElement>[]) {
     super(ROOT_PACKAGE_NAME.CORE, extensionElementClasses);
     this.initializePrimitiveTypes();
-    // initialize ModelStore
-    this.modelStore = new ModelStore();
-    this.setOwnStore(this.modelStore.path, this.modelStore);
+    // index model store singleton
+    this.setOwnStore(ModelStore.NAME, ModelStore.INSTANCE);
   }
 
   override get allOwnElements(): PackageableElement[] {
@@ -160,10 +154,6 @@ export class PureModel extends BasicModel {
     this.systemModel = systemModel;
     this.generationModel = new GenerationModel(extensionElementClasses);
     this.dependencyManager = new DependencyManager(extensionElementClasses);
-  }
-
-  get modelStore(): ModelStore {
-    return this.coreModel.modelStore;
   }
 
   get autoImports(): Package[] {

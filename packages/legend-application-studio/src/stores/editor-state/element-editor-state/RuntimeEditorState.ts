@@ -85,7 +85,7 @@ export const getClassMappingStore = (
     editorStore.pluginManager.getApplicationPlugins(),
   );
   if (sourceElement instanceof Class) {
-    return editorStore.graphManagerState.graph.modelStore;
+    return ModelStore.INSTANCE;
   } else if (sourceElement instanceof RootFlatDataRecordType) {
     return sourceElement._OWNER._OWNER;
   } else if (sourceElement instanceof TableAlias) {
@@ -186,9 +186,7 @@ export const decorateRuntimeWithNewMapping = (
         new IdentifiedConnection(
           generateIdentifiedConnectionId(runtimeValue),
           new JsonModelConnection(
-            PackageableElementExplicitReference.create(
-              editorStore.graphManagerState.graph.modelStore,
-            ),
+            PackageableElementExplicitReference.create(ModelStore.INSTANCE),
             PackageableElementExplicitReference.create(_class),
           ),
         ),
@@ -597,9 +595,7 @@ export class IdentifiedConnectionsPerClassEditorTabState extends IdentifiedConne
 
   createDefaultConnection(): Connection {
     return new JsonModelConnection(
-      PackageableElementExplicitReference.create(
-        this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      PackageableElementExplicitReference.create(ModelStore.INSTANCE),
       PackageableElementExplicitReference.create(this.class),
     );
   }

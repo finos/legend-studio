@@ -41,7 +41,7 @@ import {
   type PackageableElement,
   type Runtime,
   type Store,
-  type ModelStore,
+  ModelStore,
   type Connection,
   type PureModelConnection,
   PRIMITIVE_TYPE,
@@ -414,9 +414,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     const connection = new PackageableConnection(name);
     packageableConnection_setConnectionValue(
       connection,
-      this.newConnectionValueDriver.createConnection(
-        this.store ?? this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      this.newConnectionValueDriver.createConnection(ModelStore.INSTANCE),
       this.editorStore.changeDetectionState.observerContext,
     ); // default to model store
     return connection;

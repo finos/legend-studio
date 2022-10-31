@@ -17,11 +17,17 @@
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { Store } from '../../Store.js';
 import type { PackageableElementVisitor } from '../../../PackageableElement.js';
-import { MODEL_STORE_NAME } from '../../../../../../MetaModelConst.js';
 
+/**
+ * NOTE: Since this is a dummy store used for model connections, we can have this
+ * as a singleton.
+ */
 export class ModelStore extends Store {
-  constructor() {
-    super(MODEL_STORE_NAME);
+  static readonly NAME = 'ModelStore';
+  static readonly INSTANCE = new ModelStore();
+
+  private constructor() {
+    super(ModelStore.NAME);
   }
 
   accept_PackageableElementVisitor<T>(

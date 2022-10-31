@@ -98,6 +98,7 @@ import {
   TestData,
   ConnectionTestData,
   DEFAULT_TEST_SUITE_PREFIX,
+  ModelStore,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -301,9 +302,7 @@ export class MappingExecutionObjectInputDataState extends MappingExecutionInputD
     return createRuntimeForExecution(
       this.mapping,
       new JsonModelConnection(
-        PackageableElementExplicitReference.create(
-          this.editorStore.graphManagerState.graph.modelStore,
-        ),
+        PackageableElementExplicitReference.create(ModelStore.INSTANCE),
         PackageableElementExplicitReference.create(
           guaranteeNonNullable(this.inputData.sourceClass.value),
         ),

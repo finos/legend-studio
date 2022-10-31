@@ -76,6 +76,7 @@ import {
   stub_Class,
   generateIdentifiedConnectionId,
   DEPRECATED__validate_MappingTest,
+  ModelStore,
 } from '@finos/legend-graph';
 import { ExecutionPlanState, TAB_SIZE } from '@finos/legend-application';
 import { flatData_setData } from '../../../shared/modifier/STO_FlatData_GraphModifierHelper.js';
@@ -233,9 +234,7 @@ export class MappingTestObjectInputDataState extends MappingTestInputDataState {
       PackageableElementExplicitReference.create(this.mapping),
     );
     const connection = new JsonModelConnection(
-      PackageableElementExplicitReference.create(
-        this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      PackageableElementExplicitReference.create(ModelStore.INSTANCE),
       PackageableElementExplicitReference.create(
         this.inputData.sourceClass.value,
       ),
