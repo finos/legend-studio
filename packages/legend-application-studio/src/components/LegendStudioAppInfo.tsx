@@ -207,7 +207,7 @@ export const LegendStudioAppInfo: React.FC<{
           <ModalTitle icon={<InfoCircleIcon />} title="About" />
           <ModalHeaderActions>
             <button
-              className="modal__header__action-btn"
+              className="modal__header__action"
               tabIndex={-1}
               onClick={copyInfo}
               title="Copy application info"
@@ -215,7 +215,7 @@ export const LegendStudioAppInfo: React.FC<{
               <CopyIcon />
             </button>
             <button
-              className="modal__header__action-btn"
+              className="modal__header__action"
               tabIndex={-1}
               onClick={closeModal}
             >

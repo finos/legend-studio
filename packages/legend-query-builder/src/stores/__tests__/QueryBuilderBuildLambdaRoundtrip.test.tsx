@@ -104,7 +104,7 @@ import {
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
-  TEST_DATA_lambda_watermark_olap,
+  TEST_DATA_lambda_watermark_olapGroupBy,
   TEST_DATA_lambda_watermark_Parameter,
 } from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
 
@@ -297,18 +297,18 @@ const cases: RoundtripTestCase[] = [
     undefined,
   ],
   [
-    'Watermark on filter',
+    'Watermark with filter()',
     forWatermarkCtx,
     TEST_DATA_lambda_watermark_filter_Constant,
     undefined,
   ],
   [
-    'Watermark on olap',
+    'Watermark with project() and olapGroupBy()',
     forWatermarkCtx,
-    TEST_DATA_lambda_watermark_olap,
-    // ,
+    TEST_DATA_lambda_watermark_olapGroupBy,
     undefined,
   ],
+  // filter
   [
     'Filter with not() operator',
     relationalFilterCtx,

@@ -227,7 +227,7 @@ const WorkflowJobLogsViewer = observer(
             <ModalTitle title={`Logs for ${job.name} #${job.id}`} />
             <ModalHeaderActions>
               <button
-                className="modal__header__action-btn"
+                className="modal__header__action"
                 disabled={!jobIsInProgress}
                 title="Refresh"
                 onClick={refreshLogs}

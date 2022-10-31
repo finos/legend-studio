@@ -50,16 +50,16 @@ export const ModalHeader: React.FC<{
   children?: React.ReactNode;
   className?: string;
 }> = (props) => {
-  const { title, children } = props;
+  const { title, children, className } = props;
 
   if (!children && title) {
     return (
-      <div className="modal__header">
+      <div className={clsx('modal__header', className)}>
         <ModalTitle title={title} />
       </div>
     );
   }
-  return <div className="modal__header">{children}</div>;
+  return <div className={clsx('modal__header', className)}>{children}</div>;
 };
 
 export const ModalHeaderActions = generateSimpleDIVComponent(

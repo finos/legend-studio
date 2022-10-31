@@ -19,6 +19,7 @@ import {
   assertTrue,
   assertType,
   filterByType,
+  guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -49,6 +50,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   CORE_PURE_PATH,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilderSupportedFunctions.js';
 
@@ -325,6 +327,7 @@ export const V1_buildFilterFunctionExpression = (
       ),
     ),
   ];
+
   const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
@@ -623,9 +626,13 @@ export const V1_buildWatermarkFunctionExpression = (
     ),
   ];
 
+  const watermarkValueParam = guaranteeNonNullable(processedParams[1]);
+  const watermarkValueParamType =
+    watermarkValueParam.genericType?.value.rawType;
   assertTrue(
-    processedParams[1]?.genericType?.value.rawType.name === 'String',
-    `Can't build forWatermark() expression: watermark parameter  value is not string`,
+    compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING) ===
+      watermarkValueParamType,
+    "Can't build forWatermark() expression: watermark parameter is expected to be of type string.",
   );
 
   const expression = V1_buildBaseSimpleFunctionExpression(

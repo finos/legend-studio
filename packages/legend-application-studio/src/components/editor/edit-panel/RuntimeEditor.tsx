@@ -1089,7 +1089,7 @@ export const EmbeddedRuntimeEditor = observer(
             <ModalTitle icon={<CogIcon />} title="custom runtime" />
             <ModalHeaderActions>
               <button
-                className="modal__header__action-btn"
+                className="modal__header__action"
                 tabIndex={-1}
                 onClick={closeEditor}
               >

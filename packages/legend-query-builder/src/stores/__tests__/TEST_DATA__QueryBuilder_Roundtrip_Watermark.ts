@@ -163,7 +163,7 @@ export const TEST_DATA_lambda_watermark_filter_Constant = {
   parameters: [],
 };
 
-export const TEST_DATA_lambda_watermark_olap = {
+export const TEST_DATA_lambda_watermark_olapGroupBy = {
   _type: 'lambda',
   body: [
     {

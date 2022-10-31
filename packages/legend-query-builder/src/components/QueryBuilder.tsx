@@ -243,24 +243,27 @@ export const QueryBuilder = observer(
         data-testid={QUERY_BUILDER_TEST_ID.QUERY_BUILDER}
         className="query-builder"
       >
-        {queryBuilderState.isEditingWatermark && (
-          <QueryBuilderWatermarkEditor queryBuilderState={queryBuilderState} />
-        )}
-
         <BackdropContainer elementID={QUERY_BUILDER_BACKDROP_CONTAINER_ID} />
         <div className="query-builder__body">
           <div className="query-builder__content">
             <div className="query-builder__sub-header">
               <div className="query-builder__sub-header__content__icons">
                 {queryBuilderState.watermarkState.value && (
-                  <button
-                    className="panel__header__action"
-                    onClick={openWatermark}
-                    tabIndex={-1}
-                    title="Edit Watermark"
-                  >
-                    <WaterDropIcon />
-                  </button>
+                  <>
+                    <button
+                      className="panel__header__action"
+                      onClick={openWatermark}
+                      tabIndex={-1}
+                      title="Edit Watermark"
+                    >
+                      <WaterDropIcon />
+                    </button>
+                  </>
+                )}
+                {queryBuilderState.isEditingWatermark && (
+                  <QueryBuilderWatermarkEditor
+                    queryBuilderState={queryBuilderState}
+                  />
                 )}
               </div>
               <div className="query-builder__sub-header__content__actions">

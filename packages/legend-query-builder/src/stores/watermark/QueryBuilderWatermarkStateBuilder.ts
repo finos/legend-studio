@@ -33,13 +33,11 @@ export const processWatermarkExpression = (
     SimpleFunctionExpression,
     `Can't process forWatermark() expression: only support forWatermark() immediately following an expression`,
   );
-
   assertTrue(
     matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
-      QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
     ]),
-    `Can't process forWatermark() expression: only support forWatermark() immediately following either getAll() or filter()`,
+    `Can't process forWatermark() expression: only support forWatermark() immediately following getAll()`,
   );
 
   QueryBuilderValueSpecificationProcessor.process(

@@ -163,7 +163,7 @@ export const DataSpaceAdvancedSearchModal = observer(
             <ModalTitle title="Search for data space " />
             <ModalHeaderActions>
               <button
-                className="modal__header__action-btn"
+                className="modal__header__action"
                 title="Close"
                 onClick={onClose}
               >

@@ -27,16 +27,10 @@ import {
   PanelFormListItems,
   PanelFormSection,
 } from '@finos/legend-art';
-import {
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
-  type ValueSpecification,
-} from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { PRIMITIVE_TYPE, type ValueSpecification } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { useDrop } from 'react-dnd';
-
 import {
   type QueryBuilderParameterDragSource,
   QUERY_BUILDER_PARAMETER_DND_TYPE,
@@ -70,15 +64,12 @@ const WatermarkValueEditor = observer(
       () => ({
         accept: [QUERY_BUILDER_PARAMETER_DND_TYPE],
         drop: (item, monitor): void => {
-          const itemType = item.variable.parameter.genericType?.value.rawType;
           if (
             !monitor.didDrop() &&
             // Only allows parameters with muliplicity 1 and type string
-            item.variable.parameter.multiplicity ===
-              graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE) &&
-            item.variable.parameter.genericType?.value.rawType.name ===
-              'String' &&
-            itemType
+            watermarkState.isParamaterCompatibleWithWaterMark(
+              item.variable.parameter,
+            )
           ) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
@@ -100,7 +91,7 @@ const WatermarkValueEditor = observer(
             dropTargetConnector={dropTargetConnector}
           >
             <BasicValueSpecificationEditor
-              valueSpecification={guaranteeNonNullable(watermarkValue)}
+              valueSpecification={watermarkValue}
               setValueSpecification={(val: ValueSpecification): void => {
                 watermarkState.setValue(val);
               }}
@@ -125,12 +116,14 @@ const WatermarkValueEditor = observer(
 export const QueryBuilderWatermarkEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
-
     const watermarkState = queryBuilderState.watermarkState;
-
     const handleClose = (): void => {
       queryBuilderState.setIsEditingWatermark(false);
     };
+    const compatibleParameters =
+      queryBuilderState.parametersState.parameterStates.filter((p) =>
+        watermarkState.isParamaterCompatibleWithWaterMark(p.parameter),
+      );
 
     return (
       <Dialog
@@ -149,8 +142,8 @@ export const QueryBuilderWatermarkEditor = observer(
               <PanelFormBooleanField
                 isReadOnly={false}
                 value={watermarkState.value !== undefined}
-                prompt="Add a watermark"
-                update={(): void => watermarkState.toogleWatermark()}
+                prompt="Enable watermark"
+                update={(): void => watermarkState.enableWatermark()}
               />
               {watermarkState.value && (
                 <>
@@ -160,35 +153,18 @@ export const QueryBuilderWatermarkEditor = observer(
                   />
                   <PanelDivider />
                   <PanelFormListItems title="List of available parameters">
-                    {queryBuilderState.parametersState.parameterStates
-                      .length === 0 && <> No available parameters in query </>}
-                    {queryBuilderState.parametersState.parameterStates
-                      .filter((pState) => {
-                        const isMuliplicityOne =
-                          pState.parameter.multiplicity ===
-                          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-                            TYPICAL_MULTIPLICITY_TYPE.ONE,
-                          );
-
-                        const isString =
-                          pState.parameter.genericType?.value.rawType.name ===
-                          'String';
-
-                        if (isString && isMuliplicityOne) {
-                          return true;
-                        } else {
-                          return false;
-                        }
-                      })
-                      .map((parameter) => (
-                        <VariableExpressionViewer
-                          key={parameter.uuid}
-                          queryBuilderState={queryBuilderState}
-                          variableExpressionState={parameter}
-                          isReadOnly={true}
-                          hideActions={true}
-                        />
-                      ))}
+                    {compatibleParameters.length === 0 && (
+                      <> No available parameters in query </>
+                    )}
+                    {compatibleParameters.map((parameter) => (
+                      <VariableExpressionViewer
+                        key={parameter.uuid}
+                        queryBuilderState={queryBuilderState}
+                        variableExpressionState={parameter}
+                        isReadOnly={true}
+                        hideActions={true}
+                      />
+                    ))}
                   </PanelFormListItems>
                 </>
               )}

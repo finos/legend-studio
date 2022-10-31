@@ -187,7 +187,7 @@ export const PanelFormTextField = forwardRef<
             'input  input-group__input panel__content__form__section__input',
             className,
             { 'input--dark': darkMode ? darkMode : true },
-            { input__small: !fullWidth },
+            { 'input--small': !fullWidth },
           )}
           ref={ref}
           spellCheck={false}
@@ -200,7 +200,7 @@ export const PanelFormTextField = forwardRef<
           <div
             className={clsx(
               'panel__content__form__section__input-group__error-message input-group__error-message',
-              { input__small: !fullWidth },
+              { 'input--small': !fullWidth },
             )}
           >
             {errorMessage}
@@ -288,14 +288,7 @@ export const PanelFormListItems: React.FC<{
   );
 };
 
-export const PanelFormActions: React.FC<{
-  children?: React.ReactNode;
-  className?: string;
-}> = (props) => {
-  const { children, className } = props;
-  return (
-    <div className={clsx('panel__content__form__actions', className)}>
-      {children}
-    </div>
-  );
-};
+export const PanelFormActions = generateSimpleDIVComponent(
+  'PanelFormActions',
+  'panel__content__form__actions',
+);
