@@ -803,6 +803,8 @@ export const TEST_DATA__FunctionRoundtrip = [
           name: 's1',
         },
       ],
+      postConstraints: [],
+      preConstraints: [],
       returnMultiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -952,7 +954,7 @@ export const TEST_DATA__MeasureRoundtrip = [
   },
 ];
 
-export const TEST_DATA_OverloadedFunctionsRoundtrip = [
+export const TEST_DATA__OverloadedFunctionsRoundtrip = [
   {
     path: 'model::test_Boolean_1__String_1_',
     content: {
@@ -980,6 +982,8 @@ export const TEST_DATA_OverloadedFunctionsRoundtrip = [
           name: 'param1',
         },
       ],
+      postConstraints: [],
+      preConstraints: [],
       returnMultiplicity: {
         lowerBound: 1,
         upperBound: 1,
@@ -1016,6 +1020,8 @@ export const TEST_DATA_OverloadedFunctionsRoundtrip = [
           name: 'param1',
         },
       ],
+      postConstraints: [],
+      preConstraints: [],
       returnMultiplicity: {
         lowerBound: 1,
         upperBound: 1,

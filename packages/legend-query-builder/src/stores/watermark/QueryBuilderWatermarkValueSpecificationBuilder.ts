@@ -17,7 +17,6 @@
 import {
   SimpleFunctionExpression,
   extractElementNameFromPath,
-  type VariableExpression,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graphManager/QueryBuilderSupportedFunctions.js';
 import type { QueryBuilderWatermarkState } from './QueryBuilderWatermarkState.js';
@@ -33,7 +32,6 @@ export const buildWatermarkExpression = (
   // main filter expression
   const watermarkExpression = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK),
-    (watermarkState.value as VariableExpression).multiplicity,
   );
 
   // param [0]

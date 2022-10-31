@@ -27,7 +27,13 @@ import {
   PanelFormListItems,
   PanelFormSection,
 } from '@finos/legend-art';
-import { PRIMITIVE_TYPE, type ValueSpecification } from '@finos/legend-graph';
+import {
+  areMultiplicitiesEqual,
+  Multiplicity,
+  PrimitiveType,
+  type VariableExpression,
+  type ValueSpecification,
+} from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { useDrop } from 'react-dnd';
@@ -39,6 +45,12 @@ import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import type { QueryBuilderWatermarkState } from '../../stores/watermark/QueryBuilderWatermarkState.js';
 import { VariableExpressionViewer } from '../QueryBuilderParametersPanel.js';
 import { BasicValueSpecificationEditor } from '../shared/BasicValueSpecificationEditor.js';
+
+const isParamaterCompatibleWithWaterMark = (
+  parameter: VariableExpression,
+): boolean =>
+  PrimitiveType.STRING === parameter.genericType?.value.rawType &&
+  areMultiplicitiesEqual(parameter.multiplicity, Multiplicity.ONE);
 
 const WatermarkValueEditor = observer(
   (props: {
@@ -67,9 +79,7 @@ const WatermarkValueEditor = observer(
           if (
             !monitor.didDrop() &&
             // Only allows parameters with muliplicity 1 and type string
-            watermarkState.isParamaterCompatibleWithWaterMark(
-              item.variable.parameter,
-            )
+            isParamaterCompatibleWithWaterMark(item.variable.parameter)
           ) {
             handleDrop(item);
           } // prevent drop event propagation to accomondate for nested DnD
@@ -100,7 +110,7 @@ const WatermarkValueEditor = observer(
                 watermarkState.queryBuilderState.observableContext
               }
               typeCheckOption={{
-                expectedType: graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+                expectedType: PrimitiveType.STRING,
               }}
               resetValue={(): void => {
                 watermarkState.resetValue();
@@ -122,7 +132,7 @@ export const QueryBuilderWatermarkEditor = observer(
     };
     const compatibleParameters =
       queryBuilderState.parametersState.parameterStates.filter((p) =>
-        watermarkState.isParamaterCompatibleWithWaterMark(p.parameter),
+        isParamaterCompatibleWithWaterMark(p.parameter),
       );
 
     return (
