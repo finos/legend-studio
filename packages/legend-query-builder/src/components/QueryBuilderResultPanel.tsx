@@ -28,6 +28,7 @@ import {
   PauseCircleIcon,
   ExclamationTriangleIcon,
   PanelContent,
+  MenuContentDivider,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
@@ -272,6 +273,16 @@ const QueryBuilderGridResultContextMenu = observer(
           );
     };
 
+    const handleCopyCellValue = applicationStore.guardUnhandledError(() =>
+      applicationStore.copyTextToClipboard(event?.value),
+    );
+
+    const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
+      applicationStore.copyTextToClipboard(
+        Object.values(event?.data).toString(),
+      ),
+    );
+
     return (
       <MenuContent ref={ref}>
         <MenuContentItem
@@ -287,6 +298,13 @@ const QueryBuilderGridResultContextMenu = observer(
           }}
         >
           Filter Out
+        </MenuContentItem>
+        <MenuContentDivider />
+        <MenuContentItem onClick={handleCopyCellValue}>
+          Copy Cell Value
+        </MenuContentItem>
+        <MenuContentItem onClick={handleCopyRowValue}>
+          Copy Row Value
         </MenuContentItem>
       </MenuContent>
     );
