@@ -278,7 +278,9 @@ const QueryBuilderGridResultContextMenu = observer(
     );
 
     const handleCopyRowValue = applicationStore.guardUnhandledError(() =>
-      applicationStore.copyTextToClipboard(JSON.stringify(event?.data)),
+      applicationStore.copyTextToClipboard(
+        Object.values(event?.data).toString(),
+      ),
     );
 
     return (
