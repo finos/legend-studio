@@ -1,0 +1,60 @@
+###Pure
+Class other::Person
+{
+  name: String[1];
+  firm: other::Firm[1];
+  address: other::Address[0..1];
+}
+
+Class other::Firm
+{
+  legalName: String[1];
+  employees: other::Person[1];
+  address: other::Address[1];
+}
+
+Class other::Address
+{
+  line1: String[1];
+}
+
+
+###Relational
+Database mapping::db
+(
+  Table employeeFirmDenormTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    firmId INTEGER,
+    legalName VARCHAR(200),
+    address VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping mappingPackage::myMapping
+(
+  other::Person: Relational
+  {
+    ~primaryKey
+    (
+      [mapping::db]employeeFirmDenormTable.id
+    )
+    ~mainTable [mapping::db]employeeFirmDenormTable
+    name: [mapping::db]employeeFirmDenormTable.name,
+    firm
+    (
+      legalName: [mapping::db]employeeFirmDenormTable.legalName,
+      address
+      (
+        line1: [mapping::db]employeeFirmDenormTable.address
+      )
+    ),
+    address
+    (
+      line1: [mapping::db]employeeFirmDenormTable.address
+    )
+  }
+)

@@ -471,6 +471,8 @@ export const V1_functionSchema = createModelSchema(
     name: primitive(),
     package: primitive(),
     parameters: list(usingModelSchema(V1_rawVariableModelSchema)),
+    preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
+    postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
     returnType: primitive(),
     stereotypes: custom(
