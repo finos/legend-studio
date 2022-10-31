@@ -20,6 +20,7 @@ import {
   formatDate,
   Randomizer,
   UnsupportedOperationError,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
 import {
@@ -85,19 +86,14 @@ export const createMockClassInstance = (
   _class: Class,
   traverseNonRequiredProperties = false,
   depth = 0,
-): Record<PropertyKey, unknown> => {
+): PlainObject => {
   const properties = traverseNonRequiredProperties
     ? getAllClassProperties(_class)
     : getAllClassProperties(_class).filter((p) => p.multiplicity.lowerBound);
   const mockData: Record<string, object | string | number | boolean> = {};
   properties.forEach((property) => {
     const propertyType = property.genericType.value.rawType;
-    let propertyMockData:
-      | Record<PropertyKey, unknown>
-      | string
-      | number
-      | boolean
-      | undefined;
+    let propertyMockData: PlainObject | string | number | boolean | undefined;
     switch (getClassPropertyType(propertyType)) {
       case CLASS_PROPERTY_TYPE.PRIMITIVE:
         propertyMockData = createMockPrimitiveProperty(
@@ -163,7 +159,7 @@ export const createMockDataForClass = (
   element: Class,
   maxDepth = 100,
   depthForCycle = 3,
-): Record<PropertyKey, unknown> => {
+): PlainObject => {
   const depth = classHasCycle(element, true, new Set<string>())
     ? Math.max(depthForCycle, 0)
     : Math.max(maxDepth, 0);

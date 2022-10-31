@@ -498,9 +498,7 @@ const transformRelationalPropertyMapping = (
   propertyMapping.relationalOperation = (
     context.keepSourceInformation
       ? element.relationalOperation
-      : pruneSourceInformation(
-          element.relationalOperation as Record<PropertyKey, unknown>,
-        )
+      : pruneSourceInformation(element.relationalOperation)
   ) as V1_RawRelationalOperationElement;
   propertyMapping.source =
     element.sourceSetImplementation.valueForSerialization;

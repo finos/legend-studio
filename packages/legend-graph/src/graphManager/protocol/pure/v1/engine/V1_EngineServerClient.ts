@@ -122,10 +122,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.currentUserId = value;
   };
 
-  getTraceData = (
-    name: string,
-    tracingTags?: Record<PropertyKey, unknown>,
-  ): TraceData => ({
+  getTraceData = (name: string, tracingTags?: PlainObject): TraceData => ({
     name,
     tags: {
       env: this.env ?? '(unknown)',

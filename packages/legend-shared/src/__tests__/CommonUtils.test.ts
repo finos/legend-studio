@@ -25,7 +25,7 @@ import {
 import { unitTest } from '../application/TestUtils.js';
 
 test(unitTest('Recursive omit'), () => {
-  const obj: Record<PropertyKey, unknown> = { a: '', b: { c: '', d: '' } };
+  const obj = { a: '', b: { c: '', d: '' } };
   expect(recursiveOmit(obj, () => true)).toEqual({});
   expect(recursiveOmit(obj, () => false)).not.toBe(obj); // make sure we return a different object
   expect(

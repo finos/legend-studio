@@ -150,8 +150,8 @@ export const deserializeMap = <T>(
 export const serializeMap = <T>(
   val: Map<string, T>,
   itemSerializer: (val: T) => T extends object ? PlainObject<T> : T,
-): Record<PropertyKey, unknown> => {
-  const result: Record<PropertyKey, unknown> = {};
+): PlainObject => {
+  const result: PlainObject = {};
   val.forEach((v, key) => {
     result[key] = itemSerializer(v);
   });

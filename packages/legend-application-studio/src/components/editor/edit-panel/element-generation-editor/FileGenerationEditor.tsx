@@ -29,6 +29,7 @@ import {
   UnsupportedOperationError,
   debounce,
   guaranteeNonNullable,
+  type PlainObject,
 } from '@finos/legend-shared';
 import {
   type TreeNodeContainerProps,
@@ -584,7 +585,7 @@ const GenerationStringPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -595,10 +596,7 @@ const GenerationStringPropertyEditor = observer(
     const value =
       (getConfigValue(property.name) as string | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      update(
-        property,
-        event.target.value as unknown as Record<PropertyKey, unknown>,
-      );
+      update(property, event.target.value as unknown as PlainObject);
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -625,7 +623,7 @@ const GenerationIntegerPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -636,10 +634,7 @@ const GenerationIntegerPropertyEditor = observer(
     const value =
       (getConfigValue(property.name) as number | undefined) ?? defaultValue;
     const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) =>
-      update(
-        property,
-        event.target.value as unknown as Record<PropertyKey, unknown>,
-      );
+      update(property, event.target.value as unknown as PlainObject);
     return (
       <div className="panel__content__form__section">
         <div className="panel__content__form__section__header__label">
@@ -667,7 +662,7 @@ const GenerationBooleanPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -679,7 +674,7 @@ const GenerationBooleanPropertyEditor = observer(
       (getConfigValue(property.name) as boolean | undefined) ?? defaultValue;
     const toggle = (): void => {
       if (!isReadOnly) {
-        update(property, !value as unknown as Record<PropertyKey, unknown>);
+        update(property, !value as unknown as PlainObject);
       }
     };
     return (
@@ -717,7 +712,7 @@ const GenerationEnumPropertyEditor = observer(
     isReadOnly: boolean;
     update: (
       AbstractGenerationProperty: GenerationProperty,
-      newValue: Record<PropertyKey, unknown>,
+      newValue: PlainObject,
     ) => void;
     getConfigValue: (name: string) => unknown | undefined;
   }) => {
@@ -735,7 +730,7 @@ const GenerationEnumPropertyEditor = observer(
       property.defaultValue;
     const onChange = (val: { label: string; value: string } | null): void => {
       if (val !== null && val.value !== value) {
-        update(property, val.value as unknown as Record<PropertyKey, unknown>);
+        update(property, val.value as unknown as PlainObject);
       }
     };
     return (

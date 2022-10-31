@@ -31,8 +31,8 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
   guaranteeIsString,
-  isObject,
   isString,
+  isPlainObject,
 } from '@finos/legend-shared';
 import { V1_Variable } from '../../../model/valueSpecification/V1_Variable.js';
 import { V1_RootGraphFetchTree } from '../../../model/valueSpecification/raw/classInstance/graph/V1_RootGraphFetchTree.js';
@@ -989,7 +989,7 @@ export function V1_deserializeValueSpecification(
       if (
         Array.isArray(json.values) &&
         !json.values.length &&
-        isObject(json.multiplicity) &&
+        isPlainObject(json.multiplicity) &&
         json.multiplicity.upperBound === 1
       ) {
         const result = new V1_CString();

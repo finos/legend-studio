@@ -17,6 +17,7 @@
 import {
   guaranteeNonEmptyString,
   guaranteeNonNullable,
+  type ExtensionsConfigurationData,
 } from '@finos/legend-shared';
 import type { LegendApplicationConfigurationInput } from './LegendApplication.js';
 import {
@@ -47,7 +48,7 @@ export interface LegendApplicationConfigurationData {
   // TODO: when we support vault-like settings, we could support `settingOverrides`
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
-  extensions?: Record<PropertyKey, unknown>;
+  extensions?: ExtensionsConfigurationData;
 }
 
 export abstract class LegendApplicationConfig {

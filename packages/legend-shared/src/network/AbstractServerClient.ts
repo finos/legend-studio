@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '../CommonUtils.js';
 import { guaranteeNonNullable } from '../error/AssertionUtils.js';
 import {
   type Parameters,
@@ -29,7 +30,7 @@ import type { TraceData, TracerService } from './TracerService.js';
 
 export interface ServerClientConfig {
   baseUrl?: string;
-  networkClientOptions?: Record<PropertyKey, unknown>;
+  networkClientOptions?: PlainObject;
   enableCompression?: boolean;
   baseHeaders?: RequestHeaders | undefined;
   /**

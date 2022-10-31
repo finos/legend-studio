@@ -46,6 +46,7 @@ import type {
 import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 import {
   ActionState,
+  PlainObject,
   type Log,
   type ServerClientConfig,
   type TracerService,
@@ -283,19 +284,19 @@ export abstract class AbstractPureGraphManager {
   // ------------------------------------------- Value Specification  -------------------------------------------
 
   abstract buildValueSpecification(
-    valueSpecificationJson: Record<PropertyKey, unknown>,
+    json: PlainObject,
     graph: PureModel,
   ): ValueSpecification;
   abstract serializeValueSpecification(
     valueSpecification: ValueSpecification,
-  ): Record<PropertyKey, unknown>;
+  ): PlainObject;
   abstract buildRawValueSpecification(
     valueSpecification: ValueSpecification,
     graph: PureModel,
   ): RawValueSpecification;
   abstract serializeRawValueSpecification(
     rawValueSpecification: RawValueSpecification,
-  ): Record<PropertyKey, unknown>;
+  ): PlainObject;
 
   // These methods are utilities that we could use to quickly construct compilable
   // raw lambdas.

@@ -27,6 +27,7 @@ import {
   mergeWith,
   toNumber,
   type DebouncedFunc,
+  isObject,
 } from 'lodash-es';
 import { UnsupportedOperationError } from './error/ErrorUtils.js';
 import { format as prettyPrintObject } from 'pretty-format';
@@ -131,25 +132,30 @@ export const noop = (): (() => void) => (): void => {
 /**
  * Recursively omit keys from an object
  */
-export const recursiveOmit = (
-  obj: PlainObject,
+export const recursiveOmit = <T extends object>(
+  obj: T,
   /**
    * Checker function which returns `true` if the object field should be omit
    */
-  checker: (object: PlainObject, propKey: PropertyKey) => boolean,
-): PlainObject => {
+  checker: (object: object, propKey: PropertyKey) => boolean,
+): T => {
   const newObj = deepClone(obj);
   const omit = (
-    _obj: PlainObject,
-    _checker: (object: PlainObject, propKey: string) => boolean,
+    _obj: object,
+    _checker: (object: object, propKey: string) => boolean,
   ): void => {
-    for (const propKey in _obj) {
-      if (Object.prototype.hasOwnProperty.call(_obj, propKey)) {
-        const value = _obj[propKey] as PlainObject;
-        if (_checker(_obj, propKey)) {
-          delete _obj[propKey];
-        } else if (typeof value === 'object') {
-          omit(value, _checker);
+    if (Array.isArray(_obj)) {
+      _obj.forEach((o) => omit(o, _checker));
+    } else {
+      const o = _obj as PlainObject;
+      for (const propKey in o) {
+        if (Object.prototype.hasOwnProperty.call(_obj, propKey)) {
+          const value = o[propKey];
+          if (_checker(_obj, propKey)) {
+            delete o[propKey];
+          } else if (isObject(value)) {
+            omit(value, _checker);
+          }
         }
       }
     }

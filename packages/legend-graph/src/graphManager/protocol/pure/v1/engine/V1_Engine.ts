@@ -575,7 +575,7 @@ export class V1_Engine {
   }
 
   async generateFile(
-    configs: Record<PropertyKey, unknown>,
+    configs: PlainObject,
     type: string,
     generationMode: GenerationMode,
     model: V1_PureModelContextData,

@@ -117,7 +117,7 @@ export class SDLCServerClient extends AbstractServerClient {
 
   private getTraceData = (
     name: SDLC_ACTIVITY_TRACE,
-    tracingTags?: Record<PropertyKey, unknown>,
+    tracingTags?: PlainObject,
   ): TraceData => ({
     name,
     tags: {

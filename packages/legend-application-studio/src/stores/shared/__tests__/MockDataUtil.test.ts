@@ -17,7 +17,11 @@
 import { test, expect, beforeAll } from '@jest/globals';
 import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.json';
 import { classHasCycle, createMockClassInstance } from '../MockDataUtils.js';
-import { type TEMPORARY__JestMatcher, unitTest } from '@finos/legend-shared';
+import {
+  type TEMPORARY__JestMatcher,
+  unitTest,
+  PlainObject,
+} from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
 import { TEST__buildGraphWithEntities } from '@finos/legend-graph';
@@ -83,7 +87,7 @@ test(unitTest('Test mock data with classes cycle'), () => {
   );
   const applicantInstance = (
     applicationInstance as {
-      applicant: Record<PropertyKey, unknown>;
+      applicant: PlainObject;
     }
   ).applicant;
   // 2nd level
@@ -96,7 +100,7 @@ test(unitTest('Test mock data with classes cycle'), () => {
   ]);
   const secondApplicationInstance = (
     applicantInstance as {
-      previousApplication: Record<PropertyKey, unknown>;
+      previousApplication: PlainObject;
     }
   ).previousApplication;
   (
@@ -105,7 +109,7 @@ test(unitTest('Test mock data with classes cycle'), () => {
   // 3rd level
   const secondApplicantInstance = (
     secondApplicationInstance as {
-      applicant: Record<PropertyKey, unknown>;
+      applicant: PlainObject;
     }
   ).applicant;
   (expect(secondApplicantInstance) as TEMPORARY__JestMatcher).toContainKeys([

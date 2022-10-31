@@ -106,8 +106,10 @@ export const isNumber = (val: unknown): val is number =>
   typeof val === 'number' && !isNaN(val);
 export const isBoolean = (val: unknown): val is boolean =>
   typeof val === 'boolean';
-export const isObject = (val: unknown): val is PlainObject =>
-  typeof val === 'object';
+export const isObject = (val: unknown): val is object =>
+  typeof val === 'object' && val !== null;
+export const isPlainObject = (val: unknown): val is PlainObject =>
+  isObject(val) && val.constructor.name === 'Object';
 
 export function assertIsString(
   val: unknown,

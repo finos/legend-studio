@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import { GRAPH_MANAGER_EVENT } from './GraphManagerEvent.js';
 
 export class GraphBuilderReport {
@@ -27,5 +28,5 @@ export class GraphBuilderReport {
   } = {
     total: 0,
   };
-  otherStats: Record<PropertyKey, unknown> = {};
+  otherStats: PlainObject = {};
 }

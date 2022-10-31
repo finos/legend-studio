@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, raw, optional, primitive } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import { PlainObject, SerializationFactory } from '@finos/legend-shared';
 
 export enum EntityChangeType {
   CREATE = 'CREATE',
@@ -31,7 +31,7 @@ export class EntityChange {
   entityPath!: string;
   classifierPath?: string;
   newEntityPath?: string;
-  content?: Record<PropertyKey, unknown>;
+  content?: PlainObject;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(EntityChange, {

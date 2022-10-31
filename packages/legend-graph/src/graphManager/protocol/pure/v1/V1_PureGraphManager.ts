@@ -1574,14 +1574,14 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     generationMode: GenerationMode,
     graph: PureModel,
   ): Promise<GenerationOutput[]> {
-    const config: Record<PropertyKey, unknown> = {};
+    const config: PlainObject = {};
     config.scopeElements = fileGeneration.scopeElements.map((element) =>
       element instanceof PackageableElementReference
         ? element.value.path
         : element,
     );
     fileGeneration.configurationProperties.forEach((property) => {
-      config[property.name] = property.value as Record<PropertyKey, unknown>;
+      config[property.name] = property.value as PlainObject;
     });
     return (
       await this.engine.generateFile(
@@ -1745,7 +1745,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   // ------------------------------------------- Value Specification -------------------------------------------
 
   buildValueSpecification(
-    json: Record<PropertyKey, unknown>,
+    json: PlainObject,
     graph: PureModel,
   ): ValueSpecification {
     return V1_buildValueSpecification(
@@ -1764,11 +1764,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   serializeValueSpecification(
     valueSpecification: ValueSpecification,
-  ): Record<PropertyKey, unknown> {
+  ): PlainObject {
     return V1_serializeValueSpecification(
       V1_transformRootValueSpecification(valueSpecification),
       this.pluginManager.getPureProtocolProcessorPlugins(),
-    ) as Record<PropertyKey, unknown>;
+    ) as PlainObject;
   }
 
   buildRawValueSpecification(
@@ -1793,7 +1793,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   serializeRawValueSpecification(
     metamodel: RawValueSpecification,
-  ): Record<PropertyKey, unknown> {
+  ): PlainObject {
     return V1_serializeRawValueSpecification(
       metamodel.accept_RawValueSpecificationVisitor(
         new V1_RawValueSpecificationTransformer(
@@ -1852,9 +1852,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     configurationProperties: ConfigurationProperty[],
     graph: PureModel,
   ): Promise<string> {
-    const config: Record<PropertyKey, unknown> = {};
+    const config: PlainObject = {};
     configurationProperties.forEach((property) => {
-      config[property.name] = property.value as Record<PropertyKey, unknown>;
+      config[property.name] = property.value as PlainObject;
     });
     const model = this.getFullGraphModelData(graph);
     const input = new V1_ExternalFormatModelGenerationInput(
@@ -2462,7 +2462,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.elementToProtocol<V1_PackageableElement>(element),
     );
     if (options?.pruneSourceInformation) {
-      entity.content = pruneSourceInformation(entity.content);
+      entity.content = pruneSourceInformation(entity.content) as PlainObject;
     }
     return entity;
   };

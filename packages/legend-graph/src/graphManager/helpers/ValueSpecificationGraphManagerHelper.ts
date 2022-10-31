@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeType } from '@finos/legend-shared';
+import { guaranteeType, PlainObject } from '@finos/legend-shared';
 import type { GraphManagerState } from '../GraphManagerState.js';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
@@ -29,7 +29,7 @@ export const buildLambdaVariableExpressions = (
 ): ValueSpecification[] =>
   ((rawLambda.parameters ?? []) as object[]).map((param) =>
     graphManagerState.graphManager.buildValueSpecification(
-      param as Record<PropertyKey, unknown>,
+      param as PlainObject,
       graphManagerState.graph,
     ),
   );
