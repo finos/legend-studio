@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, raw, optional, primitive } from 'serializr';
-import { PlainObject, SerializationFactory } from '@finos/legend-shared';
+import { type PlainObject, SerializationFactory } from '@finos/legend-shared';
 
 export enum EntityChangeType {
   CREATE = 'CREATE',

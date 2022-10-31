@@ -156,6 +156,7 @@ const deserializePrimitiveInstanceValue = (
 ): V1_RawValueSpecification =>
   deserialize(V1_rawPrimitiveInstanceValueSchema, {
     ...json,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     value:
       Array.isArray(json.values) && json.values.length === 1
         ? json.values[0]

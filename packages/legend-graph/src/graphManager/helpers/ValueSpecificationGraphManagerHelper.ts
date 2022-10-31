@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { guaranteeType, PlainObject } from '@finos/legend-shared';
+import { guaranteeType, type PlainObject } from '@finos/legend-shared';
 import type { GraphManagerState } from '../GraphManagerState.js';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {

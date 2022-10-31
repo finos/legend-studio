@@ -1151,6 +1151,7 @@ export const V1_mappingModelSchema = (
             /**
              * @backwardCompatibility
              */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             includedMapping:
               val.includedMapping ??
               `${val.includedMappingPackage}${ELEMENT_PATH_DELIMITER}${val.includedMappingName}`,

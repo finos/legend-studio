@@ -41,9 +41,9 @@ import {
   filterByType,
   guaranteeNonNullable,
   isNonNullable,
-  PlainObject,
   returnUndefOnError,
   uuid,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
 import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';

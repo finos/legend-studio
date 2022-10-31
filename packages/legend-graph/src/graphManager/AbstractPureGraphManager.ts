@@ -46,7 +46,7 @@ import type {
 import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/ExecutionNode.js';
 import {
   ActionState,
-  PlainObject,
+  type PlainObject,
   type Log,
   type ServerClientConfig,
   type TracerService,

@@ -26,6 +26,8 @@ export class V1_MappingInclude implements Hashable {
     return hashArray([
       CORE_HASH_STRUCTURE.MAPPING_INCLUDE,
       this.includedMapping,
+      this.sourceDatabasePath ?? '',
+      this.targetDatabasePath ?? '',
     ]);
   }
 }

@@ -29,7 +29,7 @@ import {
   HttpHeader,
   ContentType,
   CHARSET,
-  PlainObject,
+  type PlainObject,
 } from '@finos/legend-shared';
 
 type ZipkinTracerPluginConfigData = {

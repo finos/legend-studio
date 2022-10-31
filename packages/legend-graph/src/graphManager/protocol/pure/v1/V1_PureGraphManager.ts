@@ -2462,7 +2462,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.elementToProtocol<V1_PackageableElement>(element),
     );
     if (options?.pruneSourceInformation) {
-      entity.content = pruneSourceInformation(entity.content) as PlainObject;
+      entity.content = pruneSourceInformation(entity.content);
     }
     return entity;
   };

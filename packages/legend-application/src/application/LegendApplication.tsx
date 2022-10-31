@@ -261,7 +261,7 @@ export abstract class LegendApplication {
         versionData,
         baseUrl,
       }),
-      (configData.extensions ?? {}) as ExtensionsConfigurationData,
+      configData.extensions ?? {},
     ];
   }
 

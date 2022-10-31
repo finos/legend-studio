@@ -19,8 +19,8 @@ import TEST_DATA__completeGraphEntities from './TEST_DATA__MockDataGeneration.js
 import { classHasCycle, createMockClassInstance } from '../MockDataUtils.js';
 import {
   type TEMPORARY__JestMatcher,
+  type PlainObject,
   unitTest,
-  PlainObject,
 } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../../EditorStoreTestUtils.js';
 import type { Entity } from '@finos/legend-storage';

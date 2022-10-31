@@ -15,7 +15,7 @@
  */
 
 import { ChevronDownIcon, ChevronRightIcon } from './CJS__Icon.cjs';
-import { isNonNullable, PlainObject } from '@finos/legend-shared';
+import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 
 const DEFAULT_STEP_PADDING_IN_REM = 1;
