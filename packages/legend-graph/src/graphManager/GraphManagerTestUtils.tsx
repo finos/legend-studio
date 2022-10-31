@@ -114,7 +114,7 @@ export const TEST__GraphManagerStateProvider: React.FC<{
 export const TEST__excludeSectionIndex = (entities: Entity[]): Entity[] =>
   entities.filter((entity) => entity.path !== SECTION_INDEX_ELEMENT_PATH);
 
-export const TEST_DEBUG__expectToIncludeSameMembers = (
+export const TEST_DEBUG__expectToIncludeSameEntities = (
   expected: Entity[],
   actual: Entity[],
 ): void => {

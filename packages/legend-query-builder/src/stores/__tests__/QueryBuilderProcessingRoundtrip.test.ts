@@ -183,7 +183,7 @@ const cases: RoundtripTestCase[] = [
   ],
 ];
 
-describe(unitTest('Lambda processing roundtrip test'), () => {
+describe(unitTest('Lambda processing roundtrip'), () => {
   test.each(cases)(
     '%s',
     async (

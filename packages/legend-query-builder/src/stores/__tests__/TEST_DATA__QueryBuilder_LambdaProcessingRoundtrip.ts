@@ -173,11 +173,8 @@ export const TEST_DATA__simpleFilterFunc = {
                 },
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['PersonA'],
+
+                  value: 'PersonA',
                 },
               ],
             },
@@ -251,11 +248,8 @@ export const TEST_DATA__simpleProjection = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['firstName'],
+
+              value: 'firstName',
             },
           ],
         },
@@ -342,19 +336,13 @@ export const TEST_DATA__projectWithCols = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['firstName'],
+
+              value: 'firstName',
             },
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Last Name S'],
+
+              value: 'Last Name S',
             },
           ],
         },
@@ -404,11 +392,8 @@ export const TEST_DATA__simpleProjectionWithFilter = {
                     },
                     {
                       _type: 'string',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                      values: ['Person'],
+
+                      value: 'Person',
                     },
                   ],
                 },
@@ -461,11 +446,8 @@ export const TEST_DATA__simpleProjectionWithFilter = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['firstName'],
+
+              value: 'firstName',
             },
           ],
         },
@@ -804,11 +786,8 @@ export const TEST_DATA__temporalModel = [
                 body: [
                   {
                     _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['name'],
+
+                    value: 'name',
                   },
                 ],
                 parameters: [],
@@ -833,11 +812,8 @@ export const TEST_DATA__temporalModel = [
                 body: [
                   {
                     _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['name'],
+
+                    value: 'name',
                   },
                 ],
                 parameters: [],
@@ -862,11 +838,8 @@ export const TEST_DATA__temporalModel = [
                 body: [
                   {
                     _type: 'string',
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
-                    values: ['name'],
+
+                    value: 'name',
                   },
                 ],
                 parameters: [],
@@ -908,30 +881,46 @@ export const TEST_DATA__simpleGraphFetch = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'demo::other::NPerson',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'fullName',
-                  subTrees: [],
-                },
-              ],
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'demo::other::NPerson',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'fullName',
+                    subTrees: [],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'demo::other::NPerson',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'fullName',
-              subTrees: [],
-            },
-          ],
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'demo::other::NPerson',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'fullName',
+                subTrees: [],
+              },
+            ],
+          },
         },
       ],
     },
@@ -961,68 +950,84 @@ export const TEST_DATA__firmPersonGraphFetch = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'demo::other::NFirm',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'nEmployees',
-                  subTrees: [
-                    {
-                      _type: 'propertyGraphFetchTree',
-                      parameters: [],
-                      property: 'fullName',
-                      subTrees: [],
-                    },
-                  ],
-                },
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'incType',
-                  subTrees: [],
-                },
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'name',
-                  subTrees: [],
-                },
-              ],
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'demo::other::NFirm',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'nEmployees',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'fullName',
+                        subTrees: [],
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'incType',
+                    subTrees: [],
+                  },
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'name',
+                    subTrees: [],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'demo::other::NFirm',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'nEmployees',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'fullName',
-                  subTrees: [],
-                },
-              ],
-            },
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'incType',
-              subTrees: [],
-            },
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'name',
-              subTrees: [],
-            },
-          ],
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'demo::other::NFirm',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'nEmployees',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'fullName',
+                    subTrees: [],
+                  },
+                ],
+              },
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'incType',
+                subTrees: [],
+              },
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'name',
+                subTrees: [],
+              },
+            ],
+          },
         },
       ],
     },
@@ -1052,56 +1057,72 @@ export const TEST_DATA__graphFetchWithDerivedProperty = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'demo::other::NFirm',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'firstEmployee',
-                  subTrees: [
-                    {
-                      _type: 'propertyGraphFetchTree',
-                      parameters: [],
-                      property: 'age',
-                      subTrees: [],
-                    },
-                    {
-                      _type: 'propertyGraphFetchTree',
-                      parameters: [],
-                      property: 'fullName',
-                      subTrees: [],
-                    },
-                  ],
-                },
-              ],
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'demo::other::NFirm',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'firstEmployee',
+                    subTrees: [
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'age',
+                        subTrees: [],
+                      },
+                      {
+                        _type: 'propertyGraphFetchTree',
+                        parameters: [],
+                        property: 'fullName',
+                        subTrees: [],
+                      },
+                    ],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'demo::other::NFirm',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'firstEmployee',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'age',
-                  subTrees: [],
-                },
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'fullName',
-                  subTrees: [],
-                },
-              ],
-            },
-          ],
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'demo::other::NFirm',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'firstEmployee',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'age',
+                    subTrees: [],
+                  },
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'fullName',
+                    subTrees: [],
+                  },
+                ],
+              },
+            ],
+          },
         },
       ],
     },
@@ -1131,64 +1152,64 @@ export const TEST_DATA__graphFetchWithDerivedPropertyWithParameter = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'demo::other::NFirm',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [
-                    {
-                      _type: 'string',
-                      values: ['My name is '],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'demo::other::NFirm',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [
+                      {
+                        _type: 'string',
+                        value: 'My name is ',
                       },
-                    },
-                    {
-                      _type: 'string',
-                      values: ['.'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
+                      {
+                        _type: 'string',
+                        value: '.',
                       },
-                    },
-                  ],
-                  property: 'myName',
-                  subTrees: [],
-                },
-              ],
+                    ],
+                    property: 'myName',
+                    subTrees: [],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'demo::other::NFirm',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [
-                {
-                  _type: 'string',
-                  values: ['My name is '],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'demo::other::NFirm',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [
+                  {
+                    _type: 'string',
+                    value: 'My name is ',
                   },
-                },
-                {
-                  _type: 'string',
-                  values: ['.'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
+                  {
+                    _type: 'string',
+                    value: '.',
                   },
-                },
-              ],
-              property: 'myName',
-              subTrees: [],
-            },
-          ],
+                ],
+                property: 'myName',
+                subTrees: [],
+              },
+            ],
+          },
         },
       ],
     },
@@ -1306,19 +1327,11 @@ export const TEST_DATA__personWithParameter = {
           values: [
             {
               _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'First Name',
             },
             {
               _type: 'string',
-              values: ['Last Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name',
             },
           ],
           multiplicity: {
@@ -1377,7 +1390,7 @@ export const TEST_DATA__personWithSubType = {
                           name: 'x',
                         },
                         {
-                          _type: 'hackedClass',
+                          _type: 'genericTypeInstance',
                           fullPath: 'test::Person',
                         },
                       ],
@@ -1401,20 +1414,16 @@ export const TEST_DATA__personWithSubType = {
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
       ],
     },
@@ -1471,11 +1480,7 @@ export const TEST_DATA__M2MModel = [
                   },
                   {
                     _type: 'integer',
-                    values: [2],
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
+                    value: 2,
                   },
                 ],
               },
@@ -1597,11 +1602,7 @@ export const TEST_DATA__M2MModel = [
                   },
                   {
                     _type: 'string',
-                    values: ['MC'],
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
+                    value: 'MC',
                   },
                 ],
               },
@@ -1707,19 +1708,13 @@ export const TEST_DATA__M2MModel = [
             {
               _type: 'var',
               class: 'String',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+
               name: 'suffix',
             },
             {
               _type: 'var',
               class: 'String',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+
               name: 'prefix',
             },
           ],
@@ -1808,11 +1803,7 @@ export const TEST_DATA__M2MModel = [
                           },
                           {
                             _type: 'string',
-                            values: [' '],
-                            multiplicity: {
-                              lowerBound: 1,
-                              upperBound: 1,
-                            },
+                            value: ' ',
                           },
                           {
                             _type: 'property',
@@ -2087,36 +2078,24 @@ export const TEST_DATA__simpleGroupBy = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 3,
+            upperBound: 3,
+          },
           values: [
             {
               _type: 'string',
-              values: ['Last Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name',
             },
             {
               _type: 'string',
-              values: ['Last Name2'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name2',
             },
             {
               _type: 'string',
-              values: ['Last Name3'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name3',
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
       ],
     },
@@ -2178,11 +2157,7 @@ export const TEST_DATA_dateCompabilityForFilterAndPostFilter = {
                             },
                             {
                               _type: 'integer',
-                              values: [7],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 7,
                             },
                             {
                               _type: 'enumValue',
@@ -2260,19 +2235,11 @@ export const TEST_DATA_dateCompabilityForFilterAndPostFilter = {
               values: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'string',
-                  values: ['My Date Time'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Date Time',
                 },
               ],
               multiplicity: {
@@ -2298,11 +2265,7 @@ export const TEST_DATA_dateCompabilityForFilterAndPostFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['My Date Time'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'My Date Time',
                     },
                   ],
                   property: 'getDateTime',

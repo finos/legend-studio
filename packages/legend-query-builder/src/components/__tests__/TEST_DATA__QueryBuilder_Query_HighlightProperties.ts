@@ -139,13 +139,13 @@ export const TEST_DATA__projectionWithNestedSubtype = {
                               property: 'address',
                             },
                             {
-                              _type: 'hackedClass',
+                              _type: 'genericTypeInstance',
                               fullPath: 'model::AddressType1',
                             },
                           ],
                         },
                         {
-                          _type: 'hackedClass',
+                          _type: 'genericTypeInstance',
                           fullPath: 'model::AddressType2',
                         },
                       ],

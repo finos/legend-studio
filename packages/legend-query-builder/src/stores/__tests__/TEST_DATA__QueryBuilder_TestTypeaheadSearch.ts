@@ -72,8 +72,7 @@ export const TEST_DATA__lambda_expected_typeahead_filter = {
                       values: [
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: ['demographics.state'],
+                          value: 'demographics.state',
                         },
                       ],
                     },
@@ -92,19 +91,14 @@ export const TEST_DATA__lambda_expected_typeahead_filter = {
                             { _type: 'var', name: 'row' },
                             {
                               _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['demographics.state'],
+                              value: 'demographics.state',
                             },
                           ],
                           property: 'getString',
                         },
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: ['NY'],
+                          value: 'NY',
                         },
                       ],
                     },
@@ -117,8 +111,7 @@ export const TEST_DATA__lambda_expected_typeahead_filter = {
         },
         {
           _type: 'integer',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [10],
+          value: 10,
         },
       ],
     },
@@ -175,11 +168,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation = {
                                   values: [
                                     {
                                       _type: 'string',
-                                      multiplicity: {
-                                        lowerBound: 1,
-                                        upperBound: 1,
-                                      },
-                                      values: ['my full name is: '],
+                                      value: 'my full name is: ',
                                     },
                                     {
                                       _type: 'property',
@@ -201,8 +190,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation = {
                       values: [
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: ['greeting'],
+                          value: 'greeting',
                         },
                       ],
                     },
@@ -221,19 +209,14 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation = {
                             { _type: 'var', name: 'row' },
                             {
                               _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['greeting'],
+                              value: 'greeting',
                             },
                           ],
                           property: 'getString',
                         },
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: ['my full name is: Bob'],
+                          value: 'my full name is: Bob',
                         },
                       ],
                     },
@@ -246,8 +229,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter_with_derivation = {
         },
         {
           _type: 'integer',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [10],
+          value: 10,
         },
       ],
     },
@@ -307,8 +289,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter = {
                       values: [
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: ['Full Name'],
+                          value: 'Full Name',
                         },
                       ],
                     },
@@ -327,19 +308,14 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter = {
                             { _type: 'var', name: 'row' },
                             {
                               _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['Full Name'],
+                              value: 'Full Name',
                             },
                           ],
                           property: 'getString',
                         },
                         {
                           _type: 'string',
-                          multiplicity: { lowerBound: 1, upperBound: 1 },
-                          values: [''],
+                          value: '',
                         },
                       ],
                     },
@@ -352,8 +328,7 @@ export const TEST_DATA__lambda_expected_typeahead_postFilter = {
         },
         {
           _type: 'integer',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [10],
+          value: 10,
         },
       ],
     },
@@ -421,11 +396,7 @@ export const TEST_DATA__lambda_typeahead_simple_postFilter = {
               values: [
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['Full Name'],
+                  value: 'Full Name',
                 },
               ],
             },
@@ -447,22 +418,14 @@ export const TEST_DATA__lambda_typeahead_simple_postFilter = {
                     },
                     {
                       _type: 'string',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                      values: ['Full Name'],
+                      value: 'Full Name',
                     },
                   ],
                   property: 'getString',
                 },
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: [''],
+                  value: '',
                 },
               ],
             },

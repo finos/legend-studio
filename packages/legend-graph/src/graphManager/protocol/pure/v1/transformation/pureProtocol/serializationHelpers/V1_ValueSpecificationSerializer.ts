@@ -172,7 +172,6 @@ const lambdaModelSchema = (
         (val) => V1_deserializeValueSpecification(val, plugins),
       ),
     ),
-    // multiplicity: usingModelSchema(V1_multiplicitySchema),
     parameters: list(usingModelSchema(variableModelSchema)),
   });
 
@@ -190,7 +189,6 @@ const keyExpressionModelSchema = (
       (val) => V1_serializeValueSpecification(val, plugins),
       (val) => V1_deserializeValueSpecification(val, plugins),
     ),
-    // multiplicity: usingModelSchema(V1_multiplicitySchema),
   });
 
 const appliedFunctionModelSchema = (
@@ -199,7 +197,6 @@ const appliedFunctionModelSchema = (
   createModelSchema(V1_AppliedFunction, {
     _type: usingConstantValueSchema(V1_ValueSpecificationType.APPLIED_FUNCTION),
     function: primitive(),
-    // multiplicity: usingModelSchema(V1_multiplicitySchema),
     parameters: list(
       custom(
         (val) => V1_serializeValueSpecification(val, plugins),
@@ -214,7 +211,6 @@ const appliedPropertyModelSchema = (
   createModelSchema(V1_AppliedProperty, {
     _type: usingConstantValueSchema(V1_ValueSpecificationType.APPLIED_PROPERTY),
     class: optional(primitive()),
-    // multiplicity: usingModelSchema(V1_multiplicitySchema),
     parameters: list(
       custom(
         (val) => V1_serializeValueSpecification(val, plugins),
@@ -231,7 +227,6 @@ const packageableElementPtrSchema = createModelSchema(
       V1_ValueSpecificationType.PACKAGEABLE_ELEMENT_PTR,
     ),
     fullPath: primitive(),
-    // multiplicity: usingModelSchema(V1_multiplicitySchema),
   },
 );
 
@@ -240,7 +235,6 @@ const genericTypeInstanceSchema = createModelSchema(V1_GenericTypeInstance, {
     V1_ValueSpecificationType.GENERIC_TYPE_INSTANCE,
   ),
   fullPath: primitive(),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
 });
 
 /**
@@ -288,60 +282,50 @@ const collectionModelSchema = (
 const enumValueModelSchema = createModelSchema(V1_EnumValue, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.ENUM_VALUE),
   fullPath: primitive(),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CDecimalModelSchema = createModelSchema(V1_CDecimal, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CDECIMAL),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CIntegerModelSchema = createModelSchema(V1_CInteger, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CINTEGER),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CStringModelSchema = createModelSchema(V1_CString, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRING),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CFloatModelSchema = createModelSchema(V1_CFloat, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CFLOAT),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CDateTimeModelSchema = createModelSchema(V1_CDateTime, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CDATETIME),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CStrictTimeModelSchema = createModelSchema(V1_CStrictTime, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRICTTIME),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CStrictDateModelSchema = createModelSchema(V1_CStrictDate, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRICTDATE),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
 const CLatestDateModelSchema = createModelSchema(V1_CLatestDate, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CLATESTDATE),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
 });
 
 const CBooleanModelSchema = createModelSchema(V1_CBoolean, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CBOOLEAN),
-  // multiplicity: usingModelSchema(V1_multiplicitySchema),
   value: primitive(),
 });
 
@@ -833,7 +817,7 @@ class V1_ValueSpecificationSerializer
   visit_GenericTypeInstance(
     valueSpecification: V1_GenericTypeInstance,
   ): PlainObject<V1_ValueSpecification> {
-    throw serialize(genericTypeInstanceSchema, valueSpecification);
+    return serialize(genericTypeInstanceSchema, valueSpecification);
   }
 
   visit_AppliedFunction(

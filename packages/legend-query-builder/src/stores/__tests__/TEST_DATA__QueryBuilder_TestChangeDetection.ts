@@ -70,11 +70,7 @@ export const TEST_DATA__TestChangeDetectionWithSimpleProject = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Legal Name'],
+              value: 'Legal Name',
             },
           ],
         },
