@@ -185,6 +185,10 @@
   }
 }
 
+.input--small {
+  max-width: 45rem;
+}
+
 .panel__list-selector {
   &__item {
     display: flex;

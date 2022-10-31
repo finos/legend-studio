@@ -118,7 +118,7 @@ export const QueryBuilderWatermarkEditor = observer(
     const { queryBuilderState } = props;
     const watermarkState = queryBuilderState.watermarkState;
     const handleClose = (): void => {
-      queryBuilderState.setIsEditingWatermark(false);
+      watermarkState.setIsEditingWatermark(false);
     };
     const compatibleParameters =
       queryBuilderState.parametersState.parameterStates.filter((p) =>
@@ -127,7 +127,7 @@ export const QueryBuilderWatermarkEditor = observer(
 
     return (
       <Dialog
-        open={Boolean(queryBuilderState.isEditingWatermark)}
+        open={Boolean(watermarkState.isEditingWatermark)}
         onClose={handleClose}
         classes={{
           root: 'editor-modal__root-container',
@@ -154,7 +154,7 @@ export const QueryBuilderWatermarkEditor = observer(
                   <PanelDivider />
                   <PanelFormListItems title="List of available parameters">
                     {compatibleParameters.length === 0 && (
-                      <> No available parameters in query </>
+                      <> No available parameters </>
                     )}
                     {compatibleParameters.map((parameter) => (
                       <VariableExpressionViewer

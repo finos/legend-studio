@@ -31,15 +31,18 @@ import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHas
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 
 export class QueryBuilderWatermarkState implements Hashable {
-  queryBuilderState: QueryBuilderState;
+  readonly queryBuilderState: QueryBuilderState;
   value?: ValueSpecification | undefined;
+  isEditingWatermark = false;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
       value: observable,
+      isEditingWatermark: observable,
       setValue: action,
       resetValue: action,
       enableWatermark: action,
+      setIsEditingWatermark: action,
       hashCode: computed,
     });
 
@@ -79,6 +82,10 @@ export class QueryBuilderWatermarkState implements Hashable {
 
     watermarkConstant.values = ['watermarkValue'];
     this.setValue(watermarkConstant);
+  }
+
+  setIsEditingWatermark(val: boolean): void {
+    this.isEditingWatermark = val;
   }
 
   enableWatermark(): void {

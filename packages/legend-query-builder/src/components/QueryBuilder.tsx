@@ -203,7 +203,7 @@ export const QueryBuilder = observer(
     };
 
     const openWatermark = (): void => {
-      queryBuilderState.setIsEditingWatermark(true);
+      queryBuilderState.watermarkState.setIsEditingWatermark(true);
     };
 
     useCommands(queryBuilderState);
@@ -260,7 +260,7 @@ export const QueryBuilder = observer(
                     </button>
                   </>
                 )}
-                {queryBuilderState.isEditingWatermark && (
+                {queryBuilderState.watermarkState.isEditingWatermark && (
                   <QueryBuilderWatermarkEditor
                     queryBuilderState={queryBuilderState}
                   />
