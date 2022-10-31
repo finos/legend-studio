@@ -23,6 +23,7 @@ import {
   Enumeration,
   PRIMITIVE_TYPE,
   observe_ValueSpecification,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -127,23 +128,23 @@ export const getTypeFromDerivedProperty = (
 ): Type | undefined => {
   switch (derivedProperty) {
     case TDS_COLUMN_GETTER.GET_STRING:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
+      return PrimitiveType.STRING;
     case TDS_COLUMN_GETTER.GET_NUMBER:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER);
+      return PrimitiveType.NUMBER;
     case TDS_COLUMN_GETTER.GET_INTEGER:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER);
+      return PrimitiveType.INTEGER;
     case TDS_COLUMN_GETTER.GET_FLOAT:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.FLOAT);
+      return PrimitiveType.FLOAT;
     case TDS_COLUMN_GETTER.GET_DECIMAL:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.DECIMAL);
+      return PrimitiveType.DECIMAL;
     case TDS_COLUMN_GETTER.GET_DATE:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
+      return PrimitiveType.DATE;
     case TDS_COLUMN_GETTER.GET_DATETIME:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
+      return PrimitiveType.DATETIME;
     case TDS_COLUMN_GETTER.GET_STRICTDATE:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
+      return PrimitiveType.STRICTDATE;
     case TDS_COLUMN_GETTER.GET_BOOLEAN:
-      return graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN);
+      return PrimitiveType.BOOLEAN;
     default:
       return undefined;
   }

@@ -15,7 +15,7 @@
  */
 
 import {
-  PRIMITIVE_TYPE,
+  type PRIMITIVE_TYPE,
   ROOT_PACKAGE_NAME,
   AUTO_IMPORTS,
 } from '../graph/MetaModelConst.js';
@@ -89,10 +89,22 @@ export class CoreModel extends BasicModel {
    * NOTE: primitive types are special, they are not put in any package (i.e. they are not linked to `Root` package at all)
    */
   initializePrimitiveTypes(): void {
-    Object.values(PRIMITIVE_TYPE).forEach((type) => {
-      const primitiveType = new PrimitiveType(type);
-      this.primitiveTypesIndex.set(type, primitiveType);
-      this.setOwnType(type, primitiveType);
+    [
+      PrimitiveType.STRING,
+      PrimitiveType.BOOLEAN,
+      PrimitiveType.BINARY,
+      PrimitiveType.NUMBER,
+      PrimitiveType.INTEGER,
+      PrimitiveType.FLOAT,
+      PrimitiveType.DECIMAL,
+      PrimitiveType.DATE,
+      PrimitiveType.STRICTDATE,
+      PrimitiveType.DATETIME,
+      PrimitiveType.STRICTTIME,
+      PrimitiveType.LATESTDATE,
+    ].forEach((primitiveType) => {
+      this.primitiveTypesIndex.set(primitiveType.path, primitiveType);
+      this.setOwnType(primitiveType.path, primitiveType);
     });
   }
 }

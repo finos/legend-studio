@@ -46,11 +46,10 @@ import {
   type PurePropertyMapping,
   type ObjectInputData,
   type ObserverContext,
+  type Type,
   PackageableElementExplicitReference,
   Enumeration,
-  PRIMITIVE_TYPE,
   SourceValue,
-  Type,
   getOwnClassMappingsByClass,
   observe_SetImplementation,
   observe_EnumerationMapping,
@@ -76,6 +75,7 @@ import {
   observe_EnumerationMappingReference,
   type EnumerationMappingReference,
   type SourceValueType,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -255,7 +255,7 @@ export const enumValueMapping_updateSourceValue = action(
       // Here we update the source values depending on the source type.
       sourceValue_setValue(
         sourceValue,
-        sourceType instanceof Type && sourceType.name === PRIMITIVE_TYPE.INTEGER
+        sourceType === PrimitiveType.INTEGER
           ? parseInt(val as string, 10)
           : val,
       );

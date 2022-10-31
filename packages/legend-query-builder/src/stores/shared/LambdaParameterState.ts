@@ -24,7 +24,6 @@ import {
   observe_ValueSpecification,
   observe_VariableExpression,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   VariableExpression,
   LambdaFunction,
   CORE_PURE_PATH,
@@ -34,6 +33,7 @@ import {
   extractElementNameFromPath,
   PackageableElementExplicitReference,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -81,7 +81,7 @@ export const buildParametersLetLambdaFunc = (
         );
         const letVar = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(
-            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
+            new GenericType(PrimitiveType.STRING),
           ),
         );
         letVar.values = [queryParamState.variableName];

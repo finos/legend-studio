@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PRIMITIVE_TYPE, type PureModel, type Type } from '@finos/legend-graph';
+import { PrimitiveType, type PureModel, type Type } from '@finos/legend-graph';
 import { type Hashable, uuid } from '@finos/legend-shared';
 import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState_.js';
 
@@ -34,7 +34,7 @@ export abstract class QueryBuilderTDSOlapOperator implements Hashable {
   }
 
   getOperatorReturnType(graph: PureModel): Type {
-    return graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER);
+    return PrimitiveType.NUMBER;
   }
 
   isCompatibleWithColumn(column: QueryBuilderTDSColumnState): boolean {

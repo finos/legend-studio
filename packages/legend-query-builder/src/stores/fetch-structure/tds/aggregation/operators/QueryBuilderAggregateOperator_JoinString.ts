@@ -26,8 +26,8 @@ import {
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  PRIMITIVE_TYPE,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -58,11 +58,12 @@ export class QueryBuilderAggregateOperator_JoinString
     if (
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
-      const propertyType =
-        projectionColumnState.propertyExpressionState.propertyExpression.func
-          .value.genericType.value.rawType;
       // NOTE: Engine does not support Enumerations at the moment.
-      return PRIMITIVE_TYPE.STRING === propertyType.path;
+      return (
+        PrimitiveType.STRING ===
+        projectionColumnState.propertyExpressionState.propertyExpression.func
+          .value.genericType.value.rawType
+      );
     }
     return true;
   }
@@ -79,7 +80,7 @@ export class QueryBuilderAggregateOperator_JoinString
     );
     const delimiter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
+        new GenericType(PrimitiveType.STRING),
       ),
     );
     delimiter.values = [';'];
@@ -151,10 +152,7 @@ export class QueryBuilderAggregateOperator_JoinString
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    const graph =
-      aggregateColumnState.aggregationState.tdsState.queryBuilderState
-        .graphManagerState.graph;
-    return graph.getType(PRIMITIVE_TYPE.STRING);
+    return PrimitiveType.STRING;
   }
 
   get hashCode(): string {

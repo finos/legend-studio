@@ -20,20 +20,18 @@ import {
   GenericTypeExplicitReference,
   matchFunctionName,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   type ValueSpecification,
   type LambdaFunction,
   GraphFetchTreeInstanceValue,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
-import type { QueryBuilderState } from '../../QueryBuilderState.js';
 import type { QueryBuilderGraphFetchTreeState } from './QueryBuilderGraphFetchTreeState.js';
 import { isGraphFetchTreeDataEmpty } from './QueryBuilderGraphFetchTreeUtil.js';
 
 const appendTakeLimit = (
-  queryBuilderState: QueryBuilderState,
   lambda: LambdaFunction,
   previewLimit?: number | undefined,
 ): LambdaFunction => {
@@ -51,11 +49,7 @@ const appendTakeLimit = (
       ) {
         const limit = new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(
-            new GenericType(
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.INTEGER,
-              ),
-            ),
+            new GenericType(PrimitiveType.INTEGER),
           ),
         );
         limit.values = [previewLimit];
@@ -129,10 +123,6 @@ export const appendGraphFetch = (
 
   // build result set modifier: i.e. preview limit
   if (options?.isBuildingExecutionQuery) {
-    appendTakeLimit(
-      queryBuilderState,
-      lambdaFunction,
-      queryBuilderState.resultState.previewLimit,
-    );
+    appendTakeLimit(lambdaFunction, queryBuilderState.resultState.previewLimit);
   }
 };

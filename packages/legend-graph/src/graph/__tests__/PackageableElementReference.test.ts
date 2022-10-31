@@ -19,7 +19,6 @@ import { unitTest } from '@finos/legend-shared';
 import { addElementToPackage } from '../helpers/DomainHelper.js';
 import { Class } from '../metamodel/pure/packageableElements/domain/Class.js';
 import { Package } from '../metamodel/pure/packageableElements/domain/Package.js';
-import { PrimitiveType } from '../metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import {
   PackageableElementExplicitReference,
   PackageableElementImplicitReference,
@@ -37,7 +36,6 @@ test(
     addElementToPackage(rootPackage, _package);
     const class1 = new Class('Class1');
     const class2 = new Class('Class2');
-    const primitiveType1 = new PrimitiveType('PrimitiveType1');
     addElementToPackage(_package, class1);
 
     // test explicit reference
@@ -46,11 +44,7 @@ test(
     ).toEqual('model::Class1');
 
     const explicitReference =
-      PackageableElementExplicitReference.create(primitiveType1);
-    expect(explicitReference.valueForSerialization).toEqual(
-      primitiveType1.path,
-    );
-    explicitReference.value = class1;
+      PackageableElementExplicitReference.create(class1);
     expect(explicitReference.valueForSerialization).toEqual(class1.path);
 
     // test implicit reference that skips section check

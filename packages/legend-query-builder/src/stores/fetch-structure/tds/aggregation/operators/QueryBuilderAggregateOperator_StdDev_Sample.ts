@@ -22,6 +22,7 @@ import {
   type VariableExpression,
   type AbstractPropertyExpression,
   type PureModel,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import type { QueryBuilderAggregateColumnState } from '../QueryBuilderAggregationState.js';
 import { QueryBuilderAggregateOperator } from '../QueryBuilderAggregateOperator.js';
@@ -95,10 +96,7 @@ export class QueryBuilderAggregateOperator_StdDev_Sample
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    const graph =
-      aggregateColumnState.projectionColumnState.tdsState.queryBuilderState
-        .graphManagerState.graph;
-    return graph.getType(PRIMITIVE_TYPE.NUMBER);
+    return PrimitiveType.NUMBER;
   }
 
   get hashCode(): string {

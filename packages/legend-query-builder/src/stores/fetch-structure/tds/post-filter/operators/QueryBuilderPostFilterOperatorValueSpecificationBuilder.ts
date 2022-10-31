@@ -21,13 +21,13 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   VariableExpression,
   getAllClassDerivedProperties,
   CORE_PURE_PATH,
   PropertyExplicitReference,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -75,9 +75,7 @@ export const buildPostFilterConditionExpression = (
     Multiplicity.ONE,
   );
   const colInstanceValue = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
-    ),
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
   );
   colInstanceValue.values = [colState.columnName];
   tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];

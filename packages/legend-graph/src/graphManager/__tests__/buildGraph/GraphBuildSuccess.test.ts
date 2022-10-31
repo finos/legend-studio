@@ -27,6 +27,7 @@ import type { OperationSetImplementation } from '../../../graph/metamodel/pure/p
 import type { PureInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/store/modelToModel/mapping/PureInstanceSetImplementation.js';
 import { fromElementPathToMappingElementId } from '../../../graph/MetaModelUtils.js';
 import { Enum } from '../../../graph/metamodel/pure/packageableElements/domain/Enum.js';
+import { PrimitiveType } from '../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const graphManagerState = TEST__getTestGraphManagerState();
 
@@ -77,7 +78,7 @@ test(unitTest('Class is loaded properly'), () => {
   expect(personWithoutConstraints.derivedProperties.length).toBe(1);
   expect(
     personWithoutConstraints.derivedProperties[0]?.genericType.value.rawType,
-  ).toEqual(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING));
+  ).toEqual(PrimitiveType.STRING);
   const degree = personWithoutConstraints.properties.find(
     (property) =>
       property.genericType.value.rawType ===

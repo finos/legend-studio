@@ -44,7 +44,6 @@ import {
   ModelStore,
   type Connection,
   type PureModelConnection,
-  PRIMITIVE_TYPE,
   ELEMENT_PATH_DELIMITER,
   Package,
   Class,
@@ -74,6 +73,7 @@ import {
   stub_Database,
   Measure,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -784,11 +784,7 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
         const fn = new ConcreteFunctionDefinition(
           name,
-          PackageableElementExplicitReference.create(
-            this.editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
-          ),
+          PackageableElementExplicitReference.create(PrimitiveType.STRING),
           Multiplicity.ONE,
         );
         // default to empty string

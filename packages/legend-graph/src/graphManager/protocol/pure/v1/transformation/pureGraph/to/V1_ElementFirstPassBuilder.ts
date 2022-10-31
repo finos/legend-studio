@@ -15,7 +15,6 @@
  */
 
 import { assertNonEmptyString } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../graph/MetaModelConst.js';
 import type { PackageableElement } from '../../../../../../../graph/metamodel/pure/packageableElements/PackageableElement.js';
 import { Profile } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Profile.js';
 import { Enumeration } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -66,6 +65,7 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export class V1_ElementFirstPassBuilder
   implements V1_PackageableElementVisitor<PackageableElement>
@@ -246,10 +246,7 @@ export class V1_ElementFirstPassBuilder
     const func = new ConcreteFunctionDefinition(
       name,
       // This is just a stub to fill in when we first create the function
-      PackageableElementImplicitReference.create(
-        this.context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-        '',
-      ),
+      PackageableElementImplicitReference.create(PrimitiveType.STRING, ''),
       Multiplicity.ZERO_MANY,
     );
     const path = V1_buildFullPath(element.package, name);

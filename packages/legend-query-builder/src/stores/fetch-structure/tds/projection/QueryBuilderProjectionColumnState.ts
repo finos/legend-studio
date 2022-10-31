@@ -40,7 +40,6 @@ import {
   type VariableExpression,
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
-  PRIMITIVE_TYPE,
   buildSourceInformationSourceId,
   ParserError,
   RawVariableExpression,
@@ -48,6 +47,7 @@ import {
   RawLambda,
   stub_RawLambda,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -320,10 +320,9 @@ export class QueryBuilderDerivationProjectionColumnState
       )) as string;
     const resolvedType = graph.getType(type);
     assertTrue(
-      Object.values(PRIMITIVE_TYPE).includes(
-        resolvedType.path as PRIMITIVE_TYPE,
-      ) || resolvedType instanceof Enumeration,
-      'projection column must have primitive return type',
+      resolvedType instanceof PrimitiveType ||
+        resolvedType instanceof Enumeration,
+      'Projection column must have return type of either primitve type or enumeration',
     );
     this.setReturnType(resolvedType);
   }

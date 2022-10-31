@@ -64,7 +64,6 @@ import {
   type EmbeddedSetImplementation,
   getAllClassMappings,
   GRAPH_MANAGER_EVENT,
-  PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   extractSourceInformationCoordinates,
   getAllEnumerationMappings,
@@ -98,6 +97,7 @@ import {
   InferableMappingElementRootExplicitValue,
   stub_Class,
   findPropertyMapping,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import type {
   DSL_Mapping_LegendStudioApplicationPlugin_Extension,
@@ -1099,9 +1099,7 @@ export class MappingEditorState extends ElementEditorState {
             this.mapping,
             suggestedId,
             spec.target,
-            this.editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
+            PrimitiveType.STRING,
           );
         }
         // NOTE: we don't support association now, nor do we support this for class

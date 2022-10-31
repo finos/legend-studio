@@ -79,12 +79,12 @@ import {
   RootFlatDataRecordType,
   Table,
   Database,
-  PRIMITIVE_TYPE,
   TableAlias,
   TableExplicitReference,
   ViewExplicitReference,
   getAllRecordTypes,
   getAllClassProperties,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../../stores/EditorStore.js';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../../stores/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
@@ -411,9 +411,7 @@ const MappingFilterEditor = observer(
             forceBackdrop={!!filterState.parserError}
             forceExpansion={false}
             lambdaEditorState={filterState}
-            expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.BOOLEAN,
-            )}
+            expectedType={PrimitiveType.BOOLEAN}
           />
         </div>
       </div>

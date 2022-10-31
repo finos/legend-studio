@@ -22,9 +22,8 @@ import {
   assertType,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../../graph/MetaModelConst.js';
 import { fromElementPathToMappingElementId } from '../../../../../../../../graph/MetaModelUtils.js';
-import { Type } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
+import type { Type } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import type { Mapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/Mapping.js';
 import { EnumerationMapping } from '../../../../../../../../graph/metamodel/pure/packageableElements/mapping/EnumerationMapping.js';
 import { Enumeration } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
@@ -67,6 +66,7 @@ import {
 } from '../../../../../../../../graph/helpers/DSL_Mapping_Helper.js';
 import { getRelationalInputType } from '../../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import { getEnumValue } from '../../../../../../../../graph/helpers/DomainHelper.js';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export const V1_getInferredClassMappingId = (
   _class: Class,
@@ -98,9 +98,8 @@ const buildEnumValueMapping = (
   // there is no indicator of what enumeration the enum value belongs to
   if (
     sourceType === undefined ||
-    (sourceType instanceof Type &&
-      (sourceType.name === PRIMITIVE_TYPE.INTEGER ||
-        sourceType.name === PRIMITIVE_TYPE.STRING))
+    sourceType === PrimitiveType.INTEGER ||
+    sourceType === PrimitiveType.STRING
   ) {
     enumValueMapping.sourceValues = srcEnumValueMapping.sourceValues.map(
       (sourceValue) => new SourceValue(sourceValue.value as string | number),

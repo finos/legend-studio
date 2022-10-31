@@ -389,13 +389,11 @@ export const generateValueSpecificationForParameter = (
             // NOTE: since the default generated value for type Date is a StrictDate
             // we need to adjust the generic type accordingly
             // See https://github.com/finos/legend-studio/issues/1391
-            type.name === PRIMITIVE_TYPE.DATE
-              ? graph.getType(PRIMITIVE_TYPE.STRICTDATE)
-              : type,
+            type === PrimitiveType.DATE ? PrimitiveType.STRICTDATE : type,
           ),
         ),
       );
-      if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+      if (type !== PrimitiveType.LATESTDATE) {
         instanceValue_setValues(primitiveInstanceValue, [
           generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
         ]);
@@ -517,8 +515,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
         // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
         if (
           isRequired &&
-          paramValue.genericType?.value.rawType.name !==
-            PRIMITIVE_TYPE.LATESTDATE &&
+          paramValue.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
           !paramValue.values.length
         ) {
           return false;

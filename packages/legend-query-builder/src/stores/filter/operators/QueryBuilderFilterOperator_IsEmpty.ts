@@ -22,8 +22,8 @@ import { QueryBuilderFilterOperator } from '../QueryBuilderFilterOperator.js';
 import {
   type ValueSpecification,
   type SimpleFunctionExpression,
-  PRIMITIVE_TYPE,
   Enumeration,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
@@ -60,11 +60,9 @@ export class QueryBuilderFilterOperator_IsEmpty
     ) {
       return false;
     }
-    if (propertyType instanceof Enumeration) {
-      return true;
-    }
-    return (Object.values(PRIMITIVE_TYPE) as string[]).includes(
-      propertyType.path,
+    return (
+      propertyType instanceof Enumeration ||
+      propertyType instanceof PrimitiveType
     );
   }
 

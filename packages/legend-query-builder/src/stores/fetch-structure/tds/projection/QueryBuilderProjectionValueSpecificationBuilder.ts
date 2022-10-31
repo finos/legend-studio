@@ -21,7 +21,6 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   type ValueSpecification,
   INTERNAL__UnknownValueSpecification,
@@ -29,6 +28,7 @@ import {
   V1_transformRawLambda,
   V1_GraphTransformerContextBuilder,
   matchFunctionName,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -61,13 +61,7 @@ const buildSortExpression = (
     ),
   );
   const sortColumnName = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(
-      new GenericType(
-        sortColumnState.columnState.tdsState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-          PRIMITIVE_TYPE.STRING,
-        ),
-      ),
-    ),
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
   );
   sortColumnName.values = [sortColumnState.columnState.columnName];
   sortColumnFunction.parametersValues[0] = sortColumnName;
@@ -133,11 +127,7 @@ const appendResultSetModifier = (
         if (resultModifierState.limit || options?.overridingLimit) {
           const limit = new PrimitiveInstanceValue(
             GenericTypeExplicitReference.create(
-              new GenericType(
-                resultModifierState.tdsState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.INTEGER,
-                ),
-              ),
+              new GenericType(PrimitiveType.INTEGER),
             ),
           );
           limit.values = [
@@ -180,9 +170,6 @@ export const appendProjection = (
     lambdaFunction.expressionSequence[0],
     `Can't build projection expression: preceding expression is not defined`,
   );
-  const typeString = queryBuilderState.graphManagerState.graph.getPrimitiveType(
-    PRIMITIVE_TYPE.STRING,
-  );
 
   // build projection
   if (tdsState.aggregationState.columns.length) {
@@ -216,7 +203,9 @@ export const appendProjection = (
     tdsState.projectionColumns.forEach((projectionColumnState) => {
       // column alias
       const colAlias = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(new GenericType(typeString)),
+        GenericTypeExplicitReference.create(
+          new GenericType(PrimitiveType.STRING),
+        ),
       );
       colAlias.values.push(projectionColumnState.columnName);
       colAliases.values.push(colAlias);
@@ -318,7 +307,9 @@ export const appendProjection = (
     tdsState.projectionColumns.forEach((projectionColumnState) => {
       // column alias
       const colAlias = new PrimitiveInstanceValue(
-        GenericTypeExplicitReference.create(new GenericType(typeString)),
+        GenericTypeExplicitReference.create(
+          new GenericType(PrimitiveType.STRING),
+        ),
       );
       colAlias.values.push(projectionColumnState.columnName);
       colAliases.values.push(colAlias);

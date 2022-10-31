@@ -107,8 +107,8 @@ export const generateVariableExpressionMockValue = (
   if (varType instanceof PrimitiveType) {
     const primitiveInstanceValue = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        varType.name === PRIMITIVE_TYPE.DATE
-          ? new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE))
+        varType === PrimitiveType.DATE
+          ? new GenericType(PrimitiveType.STRICTDATE)
           : new GenericType(varType),
       ),
     );

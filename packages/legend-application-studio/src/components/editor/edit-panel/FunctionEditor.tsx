@@ -63,7 +63,6 @@ import {
   type TaggedValue,
   type RawVariableExpression,
   Profile,
-  PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Unit,
   Type,
@@ -623,16 +622,13 @@ export const FunctionMainEditor = observer(
   }) => {
     const editorStore = useEditorStore();
     const applicationStore = useApplicationStore();
-    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
     const { functionElement, isReadOnly, functionEditorState } = props;
     const lambdaEditorState = functionEditorState.functionBodyEditorState;
     // Parameters
     const addParameter = (): void => {
       function_addParameter(
         functionElement,
-        stub_RawVariableExpression(defaultType),
+        stub_RawVariableExpression(PrimitiveType.STRING),
       );
       updateFunctionName(editorStore, applicationStore, functionElement);
     };

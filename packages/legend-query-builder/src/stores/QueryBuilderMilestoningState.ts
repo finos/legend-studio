@@ -22,10 +22,10 @@ import {
   getMilestoneTemporalStereotype,
   MILESTONING_STEREOTYPE,
   observe_ValueSpecification,
-  PRIMITIVE_TYPE,
   VariableExpression,
   type ValueSpecification,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
@@ -139,13 +139,7 @@ export class QueryBuilderMilestoningState implements Hashable {
     const milestoningParameter = new VariableExpression(
       parameterName,
       Multiplicity.ONE,
-      GenericTypeExplicitReference.create(
-        new GenericType(
-          this.queryBuilderState.parametersState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.DATE,
-          ),
-        ),
-      ),
+      GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
     );
     if (
       !this.queryBuilderState.parametersState.parameterStates.find(

@@ -30,7 +30,7 @@ import {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
   SimpleFunctionExpression,
-  type PrimitiveType,
+  PrimitiveType,
   type Enumeration,
   extractElementNameFromPath,
   AbstractPropertyExpression,
@@ -82,19 +82,13 @@ export const getCollectionValueSpecificationType = (
       const primitiveType = val.genericType.value.rawType;
       switch (primitiveType.path) {
         case PRIMITIVE_TYPE.STRING:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-          );
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.STRING);
           break;
         case PRIMITIVE_TYPE.INTEGER:
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT:
         case PRIMITIVE_TYPE.NUMBER:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER),
-          );
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.NUMBER);
           break;
         default:
           valuePrimitiveTypes.push(undefined);

@@ -54,7 +54,6 @@ import {
 } from '../../../../stores/editor-state/element-editor-state/mapping/MappingElementDecorator.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
-  PRIMITIVE_TYPE,
   Type,
   Enum,
   Enumeration,
@@ -64,6 +63,7 @@ import {
   type PackageableElementReference,
   getEnumValueNames,
   PackageableElementExplicitReference,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   enumerationMapping_updateSourceType,
@@ -85,14 +85,7 @@ const EnumerationMappingSourceSelectorModal = observer(
   }) => {
     const { enumerationMapping, closeModal, open } = props;
     const editorStore = useEditorStore();
-    const options = [
-      editorStore.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.INTEGER,
-      ),
-      editorStore.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.STRING,
-      ),
-    ]
+    const options = [PrimitiveType.INTEGER, PrimitiveType.STRING]
       .map(buildElementOption)
       .concat(
         editorStore.graphManagerState.usableEnumerations.map(
@@ -177,8 +170,6 @@ export const SourceValueInput = observer(
       expectedType,
       isReadOnly,
     } = props;
-    const inputType =
-      expectedType?.name === PRIMITIVE_TYPE.INTEGER ? 'number' : 'text';
     const value =
       sourceValue.value instanceof Enum
         ? sourceValue.value.name
@@ -248,7 +239,7 @@ export const SourceValueInput = observer(
           onChange={onChange}
           onBlur={onBlur}
           placeholder="Source value"
-          type={inputType}
+          type={expectedType === PrimitiveType.INTEGER ? 'number' : 'text'}
         />
         <div className="enumeration-mapping-editor__enum-value__source-value__info">
           <div className="enumeration-mapping-editor__enum-value__source-value__expected-return-type">

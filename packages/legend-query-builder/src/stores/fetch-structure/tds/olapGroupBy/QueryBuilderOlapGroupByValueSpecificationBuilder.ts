@@ -21,10 +21,10 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
   VariableExpression,
   Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/QueryBuilderSupportedFunctions.js';
@@ -43,12 +43,13 @@ const appendOlapGroupByColumnState = (
   const graph =
     olapGroupByColumnState.olapState.tdsState.queryBuilderState
       .graphManagerState.graph;
-  const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
 
   // create window cols expression
   const windowColumns = olapGroupByColumnState.windowColumns.map((column) => {
     const stringInstance = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(typeString)),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
     );
     stringInstance.values = [column.columnName];
     return stringInstance;
@@ -67,7 +68,9 @@ const appendOlapGroupByColumnState = (
       getFunctionNameFromTDSSortColumn(sortByState.sortType),
     );
     const sortColInstance = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(typeString)),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
     );
     sortColInstance.values = [sortByState.columnState.columnName];
     sortByFunction.parametersValues[0] = sortColInstance;
@@ -92,7 +95,9 @@ const appendOlapGroupByColumnState = (
   if (operationState instanceof QueryBuilderTDSOlapAggreationOperatorState) {
     // column param
     const olapAggregateColumn = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(new GenericType(typeString)),
+      GenericTypeExplicitReference.create(
+        new GenericType(PrimitiveType.STRING),
+      ),
     );
     olapAggregateColumn.values = [operationState.columnState.columnName];
     // build `meta::pure::tds::func`
@@ -109,7 +114,7 @@ const appendOlapGroupByColumnState = (
 
   // OLAP column name expression
   const olapColumn = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(typeString)),
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
   );
   olapColumn.values = [olapGroupByColumnState.columnName];
 

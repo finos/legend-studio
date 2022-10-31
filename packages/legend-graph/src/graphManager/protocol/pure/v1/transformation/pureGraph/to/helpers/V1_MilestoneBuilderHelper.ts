@@ -38,6 +38,7 @@ import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js
 import { V1_serializeValueSpecification } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const buildMilestoningParameter = (
   parameterName: string,
@@ -59,9 +60,7 @@ const V1_TEMPORARY_buildMilestoningDateProperty = (
   new Property(
     propertyName,
     Multiplicity.ONE,
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATE)),
-    ),
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
     owner,
   );
 

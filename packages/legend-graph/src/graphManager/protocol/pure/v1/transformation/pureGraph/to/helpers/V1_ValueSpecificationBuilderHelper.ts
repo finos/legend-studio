@@ -95,8 +95,7 @@ import type { V1_ClassInstance } from '../../../../model/valueSpecification/raw/
 import type { V1_GenericTypeInstance } from '../../../../model/valueSpecification/raw/V1_GenericTypeInstance.js';
 import { V1_ClassInstanceType } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
 import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
-
-const LET_FUNCTION = 'letFunction';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -183,7 +182,7 @@ export class V1_ValueSpecificationBuilder
     this.processingContext.push(
       `Applying function '${appliedFunction.function}'`,
     );
-    if (appliedFunction.function === LET_FUNCTION) {
+    if (matchFunctionName(appliedFunction.function, SUPPORTED_FUNCTIONS.LET)) {
       const parameters = appliedFunction.parameters.map((expression) =>
         expression.accept_ValueSpecificationVisitor(
           new V1_ValueSpecificationBuilder(
@@ -595,9 +594,7 @@ export function V1_buildFunctionExpression(
       processingContext,
     );
     expression[0].genericType = GenericTypeExplicitReference.create(
-      new GenericType(
-        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-      ),
+      new GenericType(PrimitiveType.STRICTDATE),
     );
     return expression;
   } else if (matchFunctionName(functionName, SUPPORTED_FUNCTIONS.NOW)) {
@@ -609,9 +606,7 @@ export function V1_buildFunctionExpression(
       processingContext,
     );
     expression[0].genericType = GenericTypeExplicitReference.create(
-      new GenericType(
-        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-      ),
+      new GenericType(PrimitiveType.DATETIME),
     );
     return expression;
   } else if (
@@ -631,9 +626,7 @@ export function V1_buildFunctionExpression(
       processingContext,
     );
     expression[0].genericType = GenericTypeExplicitReference.create(
-      new GenericType(
-        compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
-      ),
+      new GenericType(PrimitiveType.DATE),
     );
     return expression;
   } else if (

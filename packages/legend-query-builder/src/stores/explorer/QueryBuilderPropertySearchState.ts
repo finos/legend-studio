@@ -343,10 +343,7 @@ export class QueryBuilderPropertySearchState {
       if (
         this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.STRING)
       ) {
-        if (
-          node.type instanceof PrimitiveType &&
-          node.type.name === PRIMITIVE_TYPE.STRING
-        ) {
+        if (node.type === PrimitiveType.STRING) {
           return true;
         }
       }
@@ -370,10 +367,7 @@ export class QueryBuilderPropertySearchState {
       if (
         this.typeFilters.includes(QUERY_BUILDER_PROPERTY_SEARCH_TYPE.BOOLEAN)
       ) {
-        if (
-          node.type instanceof PrimitiveType &&
-          node.type.name === PRIMITIVE_TYPE.BOOLEAN
-        ) {
+        if (node.type === PrimitiveType.BOOLEAN) {
           return true;
         }
       }
