@@ -30,9 +30,9 @@ import {
 } from '@finos/legend-shared';
 import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
 import type { QueryBuilderDerivedPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
-import { QueryBuilderMilestoningBuilderHelper } from './QueryBuilderMilestoningBuilderHelper.js';
+import { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
 
-export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilderMilestoningBuilderHelper {
+export class QueryBuilderBitemporalMilestoningImplementation extends QueryBuilderMilestoningImplementation {
   getMilestoningDate(index?: number): ValueSpecification | undefined {
     if (index === 0) {
       return this.milestoningState.processingDate;
@@ -40,11 +40,13 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
       return this.milestoningState.businessDate;
     }
   }
+
   getMilestoningToolTipText(): string {
     return `Processing Date: ${getParameterValue(
       this.getMilestoningDate(0),
     )}, Business Date: ${getParameterValue(this.getMilestoningDate(1))}`;
   }
+
   initializeMilestoningParameters(force?: boolean): void {
     if (!this.milestoningState.processingDate || force) {
       this.milestoningState.setProcessingDate(
@@ -61,6 +63,7 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
       );
     }
   }
+
   processGetAllParamaters(parameterValues: ValueSpecification[]): void {
     assertTrue(
       parameterValues.length === 3,
@@ -69,6 +72,7 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
     this.milestoningState.setProcessingDate(parameterValues[1]);
     this.milestoningState.setBusinessDate(parameterValues[2]);
   }
+
   buildGetAllParameters(getAllFunction: SimpleFunctionExpression): void {
     getAllFunction.parametersValues.push(
       guaranteeNonNullable(
@@ -83,6 +87,7 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
       ),
     );
   }
+
   generateMilestoningDate(
     isDatePropagationSupported: boolean,
     hasDefaultMilestoningDate: boolean,
@@ -117,6 +122,9 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
         parameter = new INTERNAL__PropagatedValue(() =>
           guaranteeNonNullable(this.getMilestoningDate(idx)),
         );
+        parameter.isPropagatedValue = hasDefaultMilestoningDate
+          ? false
+          : isDatePropagationSupported;
       }
       return parameter;
     } else {
@@ -147,6 +155,9 @@ export class QueryBuilderBitemporalMilestoningBuilderHelper extends QueryBuilder
         parameter = new INTERNAL__PropagatedValue(() =>
           guaranteeNonNullable(this.getMilestoningDate(idx)),
         );
+        parameter.isPropagatedValue = hasDefaultMilestoningDate
+          ? false
+          : isDatePropagationSupported;
       }
       return parameter;
     }

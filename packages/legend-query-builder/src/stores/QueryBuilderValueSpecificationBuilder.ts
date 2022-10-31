@@ -91,7 +91,7 @@ export const buildLambdaFunction = (
   );
   if (milestoningStereotype) {
     queryBuilderState.milestoningState
-      .getMilestoningBuilderHelper(milestoningStereotype)
+      .getMilestoningImplementation(milestoningStereotype)
       .buildGetAllParameters(getAllFunction);
   }
   lambdaFunction.expressionSequence[0] = getAllFunction;

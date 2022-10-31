@@ -1,5 +1,4 @@
 ---
-'@finos/legend-query-builder': minor
+'@finos/legend-query-builder': patch
+'@finos/legend-graph': patch
 ---
-
-Refactor milestoning code

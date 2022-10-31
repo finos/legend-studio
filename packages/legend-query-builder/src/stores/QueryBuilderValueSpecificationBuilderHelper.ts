@@ -28,11 +28,21 @@ import {
   guaranteeType,
 } from '@finos/legend-shared';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import {
-  checkIfInternalPropagatedValueCanBeRemoved,
-  getValueOfInternalPropagatedValue,
-} from './milestoning/QueryBuilderMilestoningHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
+
+/**
+ * Gets the value of ValueSpecification given INTERNAL__PropagatedValue is pointing to.
+ */
+const getValueOfInternalPropagatedValue = (
+  valueSpec: INTERNAL__PropagatedValue,
+): ValueSpecification => {
+  if (valueSpec.getValue() instanceof INTERNAL__PropagatedValue) {
+    return getValueOfInternalPropagatedValue(
+      guaranteeType(valueSpec.getValue(), INTERNAL__PropagatedValue),
+    );
+  }
+  return valueSpec.getValue();
+};
 
 export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
@@ -75,13 +85,7 @@ export const buildPropertyExpressionChain = (
           // Replace with argumentless derived property expression only when default date propagation is supported
           if (
             !TEMPORARY__disableDatePropagation &&
-            checkIfInternalPropagatedValueCanBeRemoved(
-              guaranteeType(currentExpression, AbstractPropertyExpression),
-              queryBuilderState,
-              index,
-              parameterValue.getValue(),
-              nextExpression,
-            )
+            parameterValue.isPropagatedValue
           ) {
             // NOTE: For `bitemporal` property check if the property expression has parameters which are not instance of
             // `INTERNAL_PropagatedValue` then pass the parameters as user explicitly changed values of either of the parameters.
@@ -92,7 +96,9 @@ export const buildPropertyExpressionChain = (
                 currentPropertyExpression.parametersValues.length === 3 &&
                 !(
                   currentPropertyExpression.parametersValues[2] instanceof
-                  INTERNAL__PropagatedValue
+                    INTERNAL__PropagatedValue &&
+                  currentPropertyExpression.parametersValues[2]
+                    .isPropagatedValue === true
                 ))
             ) {
               currentPropertyExpression.parametersValues[index + 1] =

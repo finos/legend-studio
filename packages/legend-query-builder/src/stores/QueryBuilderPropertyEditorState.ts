@@ -38,7 +38,7 @@ import {
   EnumValueInstanceValue,
   InstanceValue,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
+  type PRIMITIVE_TYPE,
   VariableExpression,
   SimpleFunctionExpression,
   matchFunctionName,
@@ -235,10 +235,12 @@ export class QueryBuilderDerivedPropertyExpressionState {
   readonly propertyExpression: AbstractPropertyExpression;
   readonly derivedProperty: DerivedProperty;
   readonly parameters: VariableExpression[] = [];
+  readonly propertyExpressionState: QueryBuilderPropertyExpressionState;
 
   constructor(
     queryBuilderState: QueryBuilderState,
     propertyExpression: AbstractPropertyExpression,
+    propertyExpressionState: QueryBuilderPropertyExpressionState,
   ) {
     this.path = getPropertyPath(propertyExpression);
     this.title = getPropertyChainName(propertyExpression, true);
@@ -251,6 +253,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
       propertyExpression.func.value,
       DerivedProperty,
     );
+    this.propertyExpressionState = propertyExpressionState;
     // build the parameters of the derived properties
     if (Array.isArray(this.derivedProperty.parameters)) {
       this.parameters = this.derivedProperty.parameters.map((parameter) =>
@@ -392,6 +395,7 @@ export class QueryBuilderPropertyExpressionState implements Hashable {
           new QueryBuilderDerivedPropertyExpressionState(
             this.queryBuilderState,
             currentExpression,
+            this,
           );
         result.push(derivedPropertyExpressionState);
       }

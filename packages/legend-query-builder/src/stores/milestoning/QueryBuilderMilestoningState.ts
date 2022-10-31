@@ -28,24 +28,20 @@ import {
 import {
   type Hashable,
   hashArray,
-  UnsupportedOperationError,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../graphManager/QueryBuilderHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
 import { LambdaParameterState } from '../shared/LambdaParameterState.js';
-import { QueryBuilderBitemporalMilestoningBuilderHelper } from './QueryBuilderBitempralMilestoningBuilderHelper.js';
-import { QueryBuilderBusinessTemporalMilestoningBuilderHelper } from './QueryBuilderBusinessTemporalMilestoningBuilderHelper.js';
-import type { QueryBuilderMilestoningBuilderHelper } from './QueryBuilderMilestoningBuilderHelper.js';
-import { QueryBuilderProcessingTemporalMilestoningBuilderHelper } from './QueryBuilderProcessingTemporalMilestoningBuilderHelper.js';
+import { QueryBuilderBitemporalMilestoningImplementation } from './QueryBuilderBitemporalMilestoningImplementation.js';
+import { QueryBuilderBusinessTemporalMilestoningImplementation } from './QueryBuilderBusinessTemporalMilestoningImplementation.js';
+import type { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
+import { QueryBuilderProcessingTemporalMilestoningImplementation } from './QueryBuilderProcessingTemporalMilestoningImplementation.js';
 
 export class QueryBuilderMilestoningState implements Hashable {
-  readonly businessTemporalHelper =
-    new QueryBuilderBusinessTemporalMilestoningBuilderHelper(this);
-  readonly processingTemporalHelper =
-    new QueryBuilderProcessingTemporalMilestoningBuilderHelper(this);
-  readonly bitemporalHelper =
-    new QueryBuilderBitemporalMilestoningBuilderHelper(this);
+  readonly milestoningImplementations: QueryBuilderMilestoningImplementation[] =
+    [];
 
   queryBuilderState: QueryBuilderState;
 
@@ -68,6 +64,24 @@ export class QueryBuilderMilestoningState implements Hashable {
     });
 
     this.queryBuilderState = queryBuilderState;
+    this.milestoningImplementations.push(
+      new QueryBuilderBusinessTemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL,
+      ),
+    );
+    this.milestoningImplementations.push(
+      new QueryBuilderProcessingTemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL,
+      ),
+    );
+    this.milestoningImplementations.push(
+      new QueryBuilderBitemporalMilestoningImplementation(
+        this,
+        MILESTONING_STEREOTYPE.BITEMPORAL,
+      ),
+    );
   }
 
   get isMilestonedQuery(): boolean {
@@ -78,10 +92,20 @@ export class QueryBuilderMilestoningState implements Hashable {
     this.showMilestoningEditor = val;
   }
 
+  getMilestoningImplementation(
+    stereotype: MILESTONING_STEREOTYPE,
+  ): QueryBuilderMilestoningImplementation {
+    return guaranteeNonNullable(
+      this.milestoningImplementations.find(
+        (imp) => imp.stereotype === stereotype,
+      ),
+    );
+  }
+
   private initializeQueryMilestoningParameters(
     stereotype: MILESTONING_STEREOTYPE,
   ): void {
-    this.getMilestoningBuilderHelper(
+    this.getMilestoningImplementation(
       stereotype,
     ).initializeMilestoningParameters(true);
   }
@@ -141,23 +165,6 @@ export class QueryBuilderMilestoningState implements Hashable {
       this.queryBuilderState.parametersState.addParameter(variableState);
     }
     return milestoningParameter;
-  }
-
-  getMilestoningBuilderHelper(
-    stereotype: MILESTONING_STEREOTYPE,
-  ): QueryBuilderMilestoningBuilderHelper {
-    switch (stereotype) {
-      case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
-        return this.businessTemporalHelper;
-      case MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL:
-        return this.processingTemporalHelper;
-      case MILESTONING_STEREOTYPE.BITEMPORAL:
-        return this.bitemporalHelper;
-      default:
-        throw new UnsupportedOperationError(
-          `Unsupported milestoning stereotype ${stereotype}`,
-        );
-    }
   }
 
   get hashCode(): string {

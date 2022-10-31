@@ -74,14 +74,8 @@ const DerivedPropertyParameterValueEditor = observer(
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
     variable: VariableExpression;
     idx: number;
-    checkToResetNextExpression: () => void;
   }) => {
-    const {
-      derivedPropertyExpressionState,
-      variable,
-      idx,
-      checkToResetNextExpression,
-    } = props;
+    const { derivedPropertyExpressionState, variable, idx } = props;
     const graph =
       derivedPropertyExpressionState.queryBuilderState.graphManagerState.graph;
     const parameterType = guaranteeNonNullable(
@@ -125,6 +119,76 @@ const DerivedPropertyParameterValueEditor = observer(
       }),
       [handleDrop],
     );
+    const queryBuilderState = derivedPropertyExpressionState.queryBuilderState;
+    // Resets the next property expression in the property chain for milestoned properties when the user changes
+    // the milestoned dates of current property expression and it propagates those dates to next property expression.
+    const resetNextExpression = (
+      nextExpression: AbstractPropertyExpression,
+    ): void => {
+      const milestoningStereotype = getMilestoneTemporalStereotype(
+        guaranteeType(
+          nextExpression.func.value.genericType.value.rawType,
+          Class,
+        ),
+        queryBuilderState.graphManagerState.graph,
+      );
+      nextExpression.parametersValues.slice(1).forEach((parameter, index) => {
+        if (
+          milestoningStereotype &&
+          parameter instanceof INTERNAL__PropagatedValue &&
+          !matchMilestoningParameterValue(
+            milestoningStereotype,
+            index,
+            parameter.getValue(),
+            queryBuilderState.milestoningState,
+          )
+        ) {
+          const newParameterValue = new INTERNAL__PropagatedValue(() =>
+            guaranteeNonNullable(
+              queryBuilderState.milestoningState
+                .getMilestoningImplementation(milestoningStereotype)
+                .getMilestoningDate(index),
+            ),
+          );
+          newParameterValue.isPropagatedValue = false;
+          functionExpression_setParameterValue(
+            guaranteeType(nextExpression, AbstractPropertyExpression),
+            guaranteeNonNullable(newParameterValue),
+            index + 1,
+            queryBuilderState.observableContext,
+          );
+        }
+      });
+    };
+    const checkDatePropagation = (
+      nextExpression: ValueSpecification | undefined,
+    ): void => {
+      if (
+        nextExpression instanceof AbstractPropertyExpression &&
+        isDefaultDatePropagationSupported(nextExpression, queryBuilderState) &&
+        nextExpression.func.value.genericType.value.rawType instanceof Class
+      ) {
+        queryBuilderState.applicationStore.setActionAlertInfo({
+          message:
+            'You have just changed a milestoning date in the property expression chain, this date will be propagated down the rest of the chain. Do you want to proceed? Otherwise, you can choose to propagate the default milestoning dates instead.',
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Proceed',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              default: true,
+            },
+            {
+              label: 'Propagate default milestoning date(s)',
+              type: ActionAlertActionType.PROCEED,
+              handler: queryBuilderState.applicationStore.guardUnhandledError(
+                async () => resetNextExpression(nextExpression),
+              ),
+            },
+          ],
+        });
+      }
+    };
     const resetParameterValue = (): void => {
       functionExpression_setParameterValue(
         derivedPropertyExpressionState.propertyExpression,
@@ -140,7 +204,19 @@ const DerivedPropertyParameterValueEditor = observer(
         idx + 1,
         derivedPropertyExpressionState.queryBuilderState.observableContext,
       );
-      checkToResetNextExpression();
+      const derivedPropertyExpressionStates =
+        derivedPropertyExpressionState.propertyExpressionState
+          .derivedPropertyExpressionStates;
+      const currentDerivedPropertyStateindex =
+        derivedPropertyExpressionStates.indexOf(derivedPropertyExpressionState);
+      checkDatePropagation(
+        currentDerivedPropertyStateindex + 1 <
+          derivedPropertyExpressionStates.length
+          ? derivedPropertyExpressionStates[
+              currentDerivedPropertyStateindex + 1
+            ]?.propertyExpression
+          : undefined,
+      );
     };
 
     return (
@@ -191,10 +267,8 @@ const DerivedPropertyParameterValueEditor = observer(
 const DerivedPropertyExpressionEditor = observer(
   (props: {
     derivedPropertyExpressionState: QueryBuilderDerivedPropertyExpressionState;
-    checkToResetNextExpression: () => void;
   }) => {
-    const { derivedPropertyExpressionState, checkToResetNextExpression } =
-      props;
+    const { derivedPropertyExpressionState } = props;
     const parameterValues = derivedPropertyExpressionState.parameterValues;
     const parameters = derivedPropertyExpressionState.parameters;
 
@@ -214,7 +288,6 @@ const DerivedPropertyExpressionEditor = observer(
             derivedPropertyExpressionState={derivedPropertyExpressionState}
             variable={variable}
             idx={idx}
-            checkToResetNextExpression={checkToResetNextExpression}
           />
         ))}
       </div>
@@ -227,75 +300,6 @@ export const QueryBuilderPropertyExpressionEditor = observer(
     const { propertyExpressionState } = props;
     const handleClose = (): void =>
       propertyExpressionState.setIsEditingDerivedProperty(false);
-    const queryBuilderState = propertyExpressionState.queryBuilderState;
-    // Resets the next property expression in the property chain for milestoned properties when the user changes to
-    // change the milestoned dates of current proeprty expression and it propagates those dates to next property expression.
-    const resetNextExpression = (
-      nextExpression: AbstractPropertyExpression,
-    ): void => {
-      const milestoningStereotype = getMilestoneTemporalStereotype(
-        guaranteeType(
-          nextExpression.func.value.genericType.value.rawType,
-          Class,
-        ),
-        queryBuilderState.graphManagerState.graph,
-      );
-      nextExpression.parametersValues.slice(1).forEach((parameter, index) => {
-        if (
-          milestoningStereotype &&
-          parameter instanceof INTERNAL__PropagatedValue &&
-          !matchMilestoningParameterValue(
-            milestoningStereotype,
-            index,
-            parameter.getValue(),
-            queryBuilderState.milestoningState,
-          )
-        ) {
-          const newParameterValue = queryBuilderState.milestoningState
-            .getMilestoningBuilderHelper(milestoningStereotype)
-            .getMilestoningDate(index);
-          functionExpression_setParameterValue(
-            guaranteeType(nextExpression, AbstractPropertyExpression),
-            guaranteeNonNullable(newParameterValue),
-            index + 1,
-            queryBuilderState.observableContext,
-          );
-        }
-      });
-    };
-    const checkToResetNextExpression =
-      (nextExpression: ValueSpecification | undefined): (() => void) =>
-      (): void => {
-        if (
-          nextExpression instanceof AbstractPropertyExpression &&
-          isDefaultDatePropagationSupported(
-            nextExpression,
-            queryBuilderState,
-          ) &&
-          nextExpression.func.value.genericType.value.rawType instanceof Class
-        ) {
-          queryBuilderState.applicationStore.setActionAlertInfo({
-            message:
-              'Doing this would pass in global milestoning dates to the next property expression. Do you still want to proceed?',
-
-            type: ActionAlertType.CAUTION,
-            actions: [
-              {
-                label: 'Proceed',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                handler: queryBuilderState.applicationStore.guardUnhandledError(
-                  async () => resetNextExpression(nextExpression),
-                ),
-              },
-              {
-                label: 'Cancel',
-                type: ActionAlertActionType.PROCEED,
-                default: true,
-              },
-            ],
-          });
-        }
-      };
 
     return (
       <Dialog
@@ -316,19 +320,10 @@ export const QueryBuilderPropertyExpressionEditor = observer(
           <ModalHeader title="Derived Property" />
           <ModalBody className="query-builder-property-editor__content">
             {propertyExpressionState.derivedPropertyExpressionStates.map(
-              (pe, index) => (
+              (pe) => (
                 <DerivedPropertyExpressionEditor
                   key={pe.path}
                   derivedPropertyExpressionState={pe}
-                  checkToResetNextExpression={checkToResetNextExpression(
-                    index + 1 <
-                      propertyExpressionState.derivedPropertyExpressionStates
-                        .length
-                      ? propertyExpressionState.derivedPropertyExpressionStates[
-                          index + 1
-                        ]?.propertyExpression
-                      : undefined,
-                  )}
                 />
               ),
             )}

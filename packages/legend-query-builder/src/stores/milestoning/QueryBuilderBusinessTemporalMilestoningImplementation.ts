@@ -24,15 +24,17 @@ import {
 } from '@finos/legend-graph';
 import { assertTrue, guaranteeNonNullable } from '@finos/legend-shared';
 import { getParameterValue } from '../../components/QueryBuilderSideBar.js';
-import { QueryBuilderMilestoningBuilderHelper } from './QueryBuilderMilestoningBuilderHelper.js';
+import { QueryBuilderMilestoningImplementation } from './QueryBuilderMilestoningImplementation.js';
 
-export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryBuilderMilestoningBuilderHelper {
+export class QueryBuilderBusinessTemporalMilestoningImplementation extends QueryBuilderMilestoningImplementation {
   getMilestoningDate(): ValueSpecification | undefined {
     return this.milestoningState.businessDate;
   }
+
   getMilestoningToolTipText(): string {
     return `Business Date: ${getParameterValue(this.getMilestoningDate())}`;
   }
+
   initializeMilestoningParameters(force?: boolean): void {
     if (!this.milestoningState.businessDate || force) {
       this.milestoningState.setBusinessDate(
@@ -42,6 +44,7 @@ export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryB
       );
     }
   }
+
   processGetAllParamaters(parameterValues: ValueSpecification[]): void {
     assertTrue(
       parameterValues.length === 2,
@@ -49,6 +52,7 @@ export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryB
     );
     this.milestoningState.setBusinessDate(parameterValues[1]);
   }
+
   buildGetAllParameters(getAllFunction: SimpleFunctionExpression): void {
     getAllFunction.parametersValues.push(
       guaranteeNonNullable(
@@ -57,6 +61,7 @@ export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryB
       ),
     );
   }
+
   generateMilestoningDate(
     isDatePropagationSupported: boolean,
     hasDefaultMilestoningDate: boolean,
@@ -79,9 +84,13 @@ export class QueryBuilderBusinessTemporalMilestoningBuilderHelper extends QueryB
         );
       }
     } else {
-      return new INTERNAL__PropagatedValue(() =>
+      const milestoningDate = new INTERNAL__PropagatedValue(() =>
         guaranteeNonNullable(this.getMilestoningDate()),
       );
+      milestoningDate.isPropagatedValue = hasDefaultMilestoningDate
+        ? false
+        : isDatePropagationSupported;
+      return milestoningDate;
     }
   }
 }

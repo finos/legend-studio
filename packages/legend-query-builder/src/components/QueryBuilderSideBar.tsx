@@ -88,7 +88,7 @@ const generateClassLabel = (
   let milestoningTooltipText: string | undefined;
   if (milestoneStereotype) {
     milestoningTooltipText = queryBuilderState.milestoningState
-      .getMilestoningBuilderHelper(milestoneStereotype)
+      .getMilestoningImplementation(milestoneStereotype)
       .getMilestoningToolTipText();
   }
 

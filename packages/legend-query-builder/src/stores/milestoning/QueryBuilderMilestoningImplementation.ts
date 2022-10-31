@@ -23,11 +23,16 @@ import type {
 import type { QueryBuilderDerivedPropertyExpressionState } from '../QueryBuilderPropertyEditorState.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 
-export abstract class QueryBuilderMilestoningBuilderHelper {
+export abstract class QueryBuilderMilestoningImplementation {
   milestoningState: QueryBuilderMilestoningState;
+  readonly stereotype: MILESTONING_STEREOTYPE;
 
-  constructor(queryBuilderMilestoningState: QueryBuilderMilestoningState) {
+  constructor(
+    queryBuilderMilestoningState: QueryBuilderMilestoningState,
+    stereotype: MILESTONING_STEREOTYPE,
+  ) {
     this.milestoningState = queryBuilderMilestoningState;
+    this.stereotype = stereotype;
   }
 
   /**

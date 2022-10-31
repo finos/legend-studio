@@ -88,7 +88,7 @@ const processGetAllExpression = (
   );
   if (stereotype) {
     queryBuilderState.milestoningState
-      .getMilestoningBuilderHelper(stereotype)
+      .getMilestoningImplementation(stereotype)
       .processGetAllParamaters(expression.parametersValues);
   } else {
     assertTrue(

@@ -20,7 +20,6 @@ import {
   Class,
   MILESTONING_STEREOTYPE,
   getMilestoneTemporalStereotype,
-  INTERNAL__PropagatedValue,
   type ValueSpecification,
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
@@ -135,20 +134,6 @@ export const isDefaultDatePropagationSupported = (
 };
 
 /**
- * Gets the value of ValueSpecification given INTERNAL__PropagatedValue is pointing to.
- */
-export const getValueOfInternalPropagatedValue = (
-  valueSpec: INTERNAL__PropagatedValue,
-): ValueSpecification => {
-  if (valueSpec.getValue() instanceof INTERNAL__PropagatedValue) {
-    return getValueOfInternalPropagatedValue(
-      guaranteeType(valueSpec.getValue(), INTERNAL__PropagatedValue),
-    );
-  }
-  return valueSpec.getValue();
-};
-
-/**
  * Check if the parameter value of the milestoned property is
  * the same as those specified in global scope, so that we can
  * potentially replace them with propgated value.
@@ -199,57 +184,6 @@ export const matchMilestoningParameterValue = (
     case MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL:
       return checkIfEquivalent(parameterValue, milestoningDate.businessDate);
     default:
-  }
-  return false;
-};
-
-/**
- * Checks if INTERNAL_PropagatedValue we passed for milestoned properties can be removed or not.
- * We try to make analysis on whether date propagations is supported for this particular property or not:
- * 1. If it is supported we check if the value it has is same as global milestoning dates
- *    (i) Yes -> We replace it with actual ValueSpecification (We assune that here it is not pointing to the preceeding property so date
- *        propagation cannot be done).
- *    (ii) No -> We just remove it.
- * 2. If not supported we replace it with the actual ValueSpecification.
- */
-export const checkIfInternalPropagatedValueCanBeRemoved = (
-  currentExpression: AbstractPropertyExpression,
-  queryBuilderState: QueryBuilderState,
-  index: number,
-  parameter: ValueSpecification,
-  prevExpression: ValueSpecification | undefined,
-): boolean => {
-  const isDefaultDatePropSupported = isDefaultDatePropagationSupported(
-    currentExpression,
-    queryBuilderState,
-    prevExpression instanceof AbstractPropertyExpression
-      ? prevExpression
-      : undefined,
-  );
-  if (
-    isDefaultDatePropSupported &&
-    !(prevExpression && prevExpression instanceof AbstractPropertyExpression)
-  ) {
-    return true;
-  } else if (
-    prevExpression instanceof AbstractPropertyExpression &&
-    isDefaultDatePropSupported
-  ) {
-    const property = currentExpression.func.value;
-    if (property.genericType.value.rawType instanceof Class) {
-      const targetStereotype = getMilestoneTemporalStereotype(
-        property.genericType.value.rawType,
-        queryBuilderState.graphManagerState.graph,
-      );
-      if (targetStereotype) {
-        return !matchMilestoningParameterValue(
-          targetStereotype,
-          index,
-          parameter,
-          queryBuilderState.milestoningState,
-        );
-      }
-    }
   }
   return false;
 };
@@ -331,7 +265,7 @@ export const generateMilestonedPropertyParameterValue = (
     prevPropertyExpression,
   );
   return milestoningState
-    .getMilestoningBuilderHelper(temporalTarget)
+    .getMilestoningImplementation(temporalTarget)
     .generateMilestoningDate(
       isDatePropagationSupported,
       hasDefaultMilestoningDate ?? false,
