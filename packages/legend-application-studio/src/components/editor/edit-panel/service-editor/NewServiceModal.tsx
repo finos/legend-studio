@@ -17,7 +17,7 @@
 import { useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { guaranteeType } from '@finos/legend-shared';
-import { Dialog } from '@finos/legend-art';
+import { Dialog, ModalTitle } from '@finos/legend-art';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -83,7 +83,7 @@ export const NewServiceModal = observer(
           }}
           className="modal search-modal modal--dark"
         >
-          <div className="modal__title">Promote to Service</div>
+          <ModalTitle title="Promot to Service" />
           <div className="input-group">
             <input
               ref={nameRef}

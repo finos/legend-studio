@@ -36,6 +36,12 @@ import {
   PauseCircleIcon,
   BanIcon,
   PanelContent,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalHeaderActions,
+  ModalTitle,
+  Modal,
 } from '@finos/legend-art';
 import { LEGEND_STUDIO_TEST_ID } from '../../LegendStudioTestID.js';
 import { flowResult } from 'mobx';
@@ -213,13 +219,13 @@ const WorkflowJobLogsViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
+        <Modal darkMode={true} className="editor-modal">
           <PanelLoadingIndicator
             isLoading={logState.fetchJobLogState.isInProgress}
           />
-          <div className="modal__header">
-            <div className="modal__title">{`Logs for ${job.name} #${job.id}`}</div>
-            <div className="modal__header__actions">
+          <ModalHeader>
+            <ModalTitle title={`Logs for ${job.name} #${job.id}`} />
+            <ModalHeaderActions>
               <button
                 className="modal__header__action"
                 disabled={!jobIsInProgress}
@@ -228,25 +234,25 @@ const WorkflowJobLogsViewer = observer(
               >
                 <RefreshIcon />
               </button>
-            </div>
-          </div>
-          <div className="modal__body">
+            </ModalHeaderActions>
+          </ModalHeader>
+          <ModalBody>
             <TextInputEditor
               inputValue={logs}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.TEXT}
               showMiniMap={true}
             />
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closeLogViewer}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

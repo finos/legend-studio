@@ -48,6 +48,7 @@ import {
   Dialog,
   GitBranchIcon,
   Panel,
+  PanelFormTextField,
   PanelFullContent,
   PanelLoadingIndicator,
   PlusIcon,
@@ -118,10 +119,6 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
       ).catch(applicationStore.alertUnhandledError);
     }
   };
-  const changeWorkspaceName: React.ChangeEventHandler<HTMLInputElement> = (
-    event,
-  ) => setWorkspaceName(event.target.value);
-
   const handleEnter = (): void => {
     workspaceNameInputRef.current?.focus();
   };
@@ -152,22 +149,19 @@ const CreateWorkspaceModal = observer((props: { selectedProject: Project }) => {
             isLoading={setupStore.createWorkspaceState.isInProgress}
           />
           <PanelFullContent>
-            <div className="input-group">
-              <input
-                className="input input--dark input-group__input"
-                ref={workspaceNameInputRef}
-                spellCheck={false}
-                disabled={setupStore.createWorkspaceState.isInProgress}
-                placeholder="MyWorkspace"
-                value={workspaceName}
-                onChange={changeWorkspaceName}
-              />
-              {workspaceAlreadyExists && (
-                <div className="input-group__error-message">
-                  Workspace with same name already exists
-                </div>
-              )}
-            </div>
+            <PanelFormTextField
+              ref={workspaceNameInputRef}
+              name="Workspace Name"
+              isReadOnly={setupStore.createWorkspaceState.isInProgress}
+              placeholder="MyWorkspace"
+              value={workspaceName}
+              update={(val: string | undefined) => setWorkspaceName(val ?? '')}
+              errorMessage={
+                workspaceAlreadyExists
+                  ? 'Workspace with same name already exists '
+                  : ''
+              }
+            />
           </PanelFullContent>
         </Panel>
         <div className="search-modal__actions">

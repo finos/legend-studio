@@ -40,6 +40,8 @@ import {
   PanelDropZone,
   PencilIcon,
   PanelContent,
+  Modal,
+  ModalTitle,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import {
@@ -146,8 +148,8 @@ export const ClassMappingSelectorModal = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a class mapping</div>
+        <Modal className="search-modal">
+          <ModalTitle title="Choose a class mapping" />
           <CustomSelectorInput
             ref={classMappingSelectorRef}
             options={classMappingOptions}
@@ -157,7 +159,7 @@ export const ClassMappingSelectorModal = observer(
             filterOption={filterOption}
             isClearable={true}
           />
-        </div>
+        </Modal>
       </Dialog>
     );
   },

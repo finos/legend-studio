@@ -31,6 +31,10 @@ import {
   ResizablePanelSplitterLine,
   CloudUploadIcon,
   PanelContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import { EntityDiffViewState } from '../../../stores/editor-state/entity-diff-editor-state/EntityDiffViewState.js';
 import { EntityDiffSideBarItem } from '../../editor/edit-panel/diff-editor/EntityDiffView.js';
@@ -66,13 +70,9 @@ const PatchLoader = observer(() => {
     patchState.deleteChange(change);
   return (
     <Dialog onClose={onClose} open={patchState.showModal}>
-      <div className="modal modal--dark modal--scrollable patch-loader">
-        <div className="modal__header">
-          <div className="modal__title">
-            <div className="modal__title__label">Patch Loader</div>
-          </div>
-        </div>
-        <div className="modal__body">
+      <Modal darkMode={true} className="modal--scrollable patch-loader">
+        <ModalHeader title="Patch Loader" />
+        <ModalBody>
           <PanelLoadingIndicator isLoading={patchState.isLoadingChanges} />
           <div>
             <input
@@ -116,8 +116,8 @@ const PatchLoader = observer(() => {
               </div>
             </div>
           )}
-        </div>
-        <div className="modal__footer">
+        </ModalBody>
+        <ModalFooter>
           <button
             className="btn btn--dark blocking-alert__action--standard"
             onClick={upload}
@@ -125,8 +125,8 @@ const PatchLoader = observer(() => {
           >
             Apply Patch
           </button>
-        </div>
-      </div>
+        </ModalFooter>
+      </Modal>
     </Dialog>
   );
 });

@@ -48,6 +48,10 @@ import {
   PanelLoadingIndicator,
   DragPreviewLayer,
   useDragPreviewLayer,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import {
   type QueryBuilderExplorerTreeDragSource,
@@ -208,13 +212,14 @@ const QueryBuilderExplorerPreviewDataModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal query-builder__explorer__preview-data-modal">
-          <div className="modal__header">
-            <div className="modal__title">
-              {prettyPropertyName(previewDataState.propertyName)}
-            </div>
-          </div>
-          <div className="modal__body query-builder__explorer__preview-data-modal__body">
+        <Modal
+          darkMode={true}
+          className="editor-modal query-builder__explorer__preview-data-modal"
+        >
+          <ModalHeader
+            title={prettyPropertyName(previewDataState.propertyName)}
+          />
+          <ModalBody className="query-builder__explorer__preview-data-modal__body">
             {previewDataState.previewData && (
               <table className="table">
                 <thead>
@@ -242,13 +247,13 @@ const QueryBuilderExplorerPreviewDataModal = observer(
                 </tbody>
               </table>
             )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

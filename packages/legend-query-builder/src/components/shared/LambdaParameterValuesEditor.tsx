@@ -15,7 +15,13 @@
  */
 
 import { useApplicationStore } from '@finos/legend-application';
-import { Dialog } from '@finos/legend-art';
+import {
+  Dialog,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '@finos/legend-art';
 import {
   type PureModel,
   type ValueSpecification,
@@ -55,11 +61,12 @@ export const LambdaParameterValuesEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal lambda-parameter-values__modal">
-          <div className="modal__header">
-            <div className="modal__title">Set Parameter Values</div>
-          </div>
-          <div className="modal__body lambda-parameter-values__modal__body">
+        <Modal
+          darkMode={true}
+          className="editor-modal lambda-parameter-values__modal"
+        >
+          <ModalHeader title="Set Parameter Values" />
+          <ModalBody className="lambda-parameter-values__modal__body">
             {lambdaParametersState.parameterStates.map((paramState) => {
               const stringType = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
               const variableType = paramState.variableType ?? stringType;
@@ -99,8 +106,8 @@ export const LambdaParameterValuesEditor = observer(
                 </div>
               );
             })}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             {submitAction && (
               <button
                 className="btn modal__footer__close-btn"
@@ -113,8 +120,8 @@ export const LambdaParameterValuesEditor = observer(
             <button className="btn modal__footer__close-btn" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

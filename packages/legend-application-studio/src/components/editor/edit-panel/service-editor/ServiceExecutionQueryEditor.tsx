@@ -35,6 +35,11 @@ import {
   MenuContentItem,
   PauseCircleIcon,
   PencilIcon,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from '@finos/legend-art';
 import { assertErrorThrown, debounce } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
@@ -75,27 +80,25 @@ const ServiceExecutionResultViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
-          <div className="modal__header">
-            <div className="modal__title">Execution Result</div>
-          </div>
-          <div className="modal__body">
+        <Modal>
+          <ModalHeader title="Execution Result" />
+          <ModalBody>
             <TextInputEditor
               inputValue={executionResultText ?? ''}
               isReadOnly={true}
               language={EDITOR_LANGUAGE.JSON}
               showMiniMap={true}
             />
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closeExecutionResultViewer}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },
@@ -189,8 +192,8 @@ const ServiceExecutionQueryImporter = observer(
         classes={{ container: 'search-modal__container' }}
         PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
       >
-        <div className="modal modal--dark search-modal">
-          <div className="modal__title">Import Query</div>
+        <Modal darkMode={true} className="search-modal">
+          <ModalTitle title="Import Query" />
           <CustomSelectorInput
             ref={queryFinderRef}
             options={queryOptions}
@@ -230,7 +233,7 @@ const ServiceExecutionQueryImporter = observer(
               Import
             </button>
           </div>
-        </div>
+        </Modal>
       </Dialog>
     );
   },

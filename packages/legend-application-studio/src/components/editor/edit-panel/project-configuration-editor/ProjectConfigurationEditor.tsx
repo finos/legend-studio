@@ -50,6 +50,10 @@ import {
   CaretDownIcon,
   MenuContentItem,
   MenuContent,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import {
@@ -206,11 +210,9 @@ const ProjectDependencyInfoModal = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark editor-modal">
-          <div className="modal__header">
-            <div className="modal__title">{prettyCONSTName(type)}</div>
-          </div>
-          <div className="modal__body">
+        <Modal darkMode={true} className="editor-modal">
+          <ModalHeader title={type} />
+          <ModalBody>
             {type === DEPENDENCY_INFO_TYPE.DEPENDENCY_TREE ? (
               <TextInputEditor
                 inputValue={getDependencyTreeStringFromInfo(info)}
@@ -226,16 +228,16 @@ const ProjectDependencyInfoModal = observer(
                 showMiniMap={true}
               />
             )}
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn modal__footer__close-btn"
               onClick={closeModal}
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

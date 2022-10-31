@@ -81,8 +81,9 @@ export const processTDSProjectExpression = (
     matchFunctionName(precedingExpression.functionName, [
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.GET_ALL,
       QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
     ]),
-    `Can't process project() expression: only support project() immediately following either getAll() or filter()`,
+    `Can't process project() expression: only support project() immediately following either getAll(), filter(), or forWatermark()`,
   );
   QueryBuilderValueSpecificationProcessor.process(
     precedingExpression,

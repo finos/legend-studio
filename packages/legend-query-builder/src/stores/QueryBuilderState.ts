@@ -75,6 +75,7 @@ import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionS
 import { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
+import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 
 export abstract class QueryBuilderState implements CommandRegistrar {
   applicationStore: GenericLegendApplicationStore;
@@ -87,6 +88,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   milestoningState: QueryBuilderMilestoningState;
   fetchStructureState: QueryBuilderFetchStructureState;
   filterState: QueryBuilderFilterState;
+  watermarkState: QueryBuilderWatermarkState;
   filterOperators: QueryBuilderFilterOperator[] =
     getQueryBuilderCoreFilterOperators();
   resultState: QueryBuilderResultState;
@@ -97,6 +99,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   queryCompileState = ActionState.create();
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
+  isEditingWatermark = false;
 
   class?: Class | undefined;
   mapping?: Mapping | undefined;
@@ -116,11 +119,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       functionsExplorerState: observable,
       fetchStructureState: observable,
       filterState: observable,
+      watermarkState: observable,
       resultState: observable,
       textEditorState: observable,
       unsupportedQueryState: observable,
       showFunctionsExplorerPanel: observable,
       showParametersPanel: observable,
+      isEditingWatermark: observable,
       changeDetectionState: observable,
       class: observable,
       mapping: observable,
@@ -132,6 +137,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
       setShowFunctionsExplorerPanel: action,
       setShowParametersPanel: action,
+      setIsEditingWatermark: action,
       setClass: action,
       setMapping: action,
       setRuntimeValue: action,
@@ -156,6 +162,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.watermarkState = new QueryBuilderWatermarkState(this);
     this.resultState = new QueryBuilderResultState(this);
     this.textEditorState = new QueryBuilderTextEditorState(this);
     this.unsupportedQueryState = new QueryBuilderUnsupportedQueryState(this);
@@ -199,6 +206,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setShowParametersPanel(val: boolean): void {
     this.showParametersPanel = val;
+  }
+
+  setIsEditingWatermark(val: boolean): void {
+    this.isEditingWatermark = val;
   }
 
   setClass(val: Class | undefined): void {
@@ -249,6 +260,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.parametersState = new QueryBuilderParametersState(this);
     this.functionsExplorerState = new QueryFunctionsExplorerState(this);
     this.filterState = new QueryBuilderFilterState(this, this.filterOperators);
+    this.watermarkState = new QueryBuilderWatermarkState(this);
+
     const currentFetchStructureImplementationType =
       this.fetchStructureState.implementation.type;
     this.fetchStructureState = new QueryBuilderFetchStructureState(this);
@@ -482,6 +495,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.milestoningState,
       this.parametersState,
       this.filterState,
+      this.watermarkState,
       this.fetchStructureState.implementation,
     ]);
   }

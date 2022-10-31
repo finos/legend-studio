@@ -56,6 +56,7 @@ import {
   Dialog,
   ErrorIcon,
   GitBranchIcon,
+  ModalTitle,
   Panel,
   PanelFullContent,
   PanelLoadingIndicator,
@@ -163,7 +164,7 @@ const CreateWorkspaceModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Create New Workspace</div>
+          <ModalTitle title="Create New Workspace" />
           <Panel>
             <PanelLoadingIndicator
               isLoading={setupStore.createWorkspaceState.isInProgress}

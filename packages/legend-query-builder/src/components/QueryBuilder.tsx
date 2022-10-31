@@ -30,6 +30,7 @@ import {
   CheckIcon,
   CaretDownIcon,
   DiffIcon,
+  WaterDropIcon,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from './filter/QueryBuilderFilterPanel.js';
 import { QueryBuilderExplorerPanel } from './explorer/QueryBuilderExplorerPanel.js';
@@ -54,6 +55,7 @@ import { QueryBuilderDiffViewPanel } from './QueryBuilderDiffPanel.js';
 import { guaranteeType } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
 import { QueryBuilderPostTDSPanel } from './fetch-structure/QueryBuilderPostTDSPanel.js';
+import { QueryBuilderWatermarkEditor } from './watermark/QueryBuilderWatermark.js';
 
 export const QUERY_BUILDER_BACKDROP_CONTAINER_ID =
   'query-builder.backdrop-container';
@@ -200,6 +202,10 @@ export const QueryBuilder = observer(
       }
     };
 
+    const openWatermark = (): void => {
+      queryBuilderState.watermarkState.setIsEditingWatermark(true);
+    };
+
     useCommands(queryBuilderState);
     const toggleShowOlapGroupByPanel = (): void => {
       if (isTDSState) {
@@ -241,127 +247,153 @@ export const QueryBuilder = observer(
         <div className="query-builder__body">
           <div className="query-builder__content">
             <div className="query-builder__sub-header">
-              <div className="query-builder__sub-header__actions">
-                <DropdownMenu
-                  className="query-builder__sub-header__custom-action"
-                  title="Show Advanced Menu..."
-                  content={
-                    <MenuContent>
-                      <MenuContentItem
-                        onClick={toggleShowFunctionPanel}
-                        disabled={!queryBuilderState.isQuerySupported}
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.showFunctionsExplorerPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show Function(s)
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      {/* TODO?: consider hiding this menu option when the fetch-structure is not TDS */}
-                      {!queryBuilderState.isParameterSupportDisabled && (
+              <div className="query-builder__sub-header__content__icons">
+                {queryBuilderState.watermarkState.value && (
+                  <>
+                    <button
+                      className="panel__header__action"
+                      onClick={openWatermark}
+                      tabIndex={-1}
+                      title="Edit Watermark"
+                    >
+                      <WaterDropIcon />
+                    </button>
+                  </>
+                )}
+                {queryBuilderState.watermarkState.isEditingWatermark && (
+                  <QueryBuilderWatermarkEditor
+                    queryBuilderState={queryBuilderState}
+                  />
+                )}
+              </div>
+              <div className="query-builder__sub-header__content__actions">
+                <div className="query-builder__sub-header__actions">
+                  <DropdownMenu
+                    className="query-builder__sub-header__custom-action"
+                    title="Show Advanced Menu..."
+                    content={
+                      <MenuContent>
                         <MenuContentItem
-                          onClick={toggleShowParameterPanel}
-                          disabled={
-                            !queryBuilderState.isQuerySupported ||
-                            queryBuilderState.parametersState.parameterStates
-                              .length > 0
-                          }
+                          onClick={toggleShowFunctionPanel}
+                          disabled={!queryBuilderState.isQuerySupported}
                         >
                           <MenuContentItemIcon>
-                            {queryBuilderState.showParametersPanel ? (
+                            {queryBuilderState.showFunctionsExplorerPanel ? (
                               <CheckIcon />
                             ) : null}
                           </MenuContentItemIcon>
                           <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                            Show Parameter(s)
+                            Show Function(s)
                           </MenuContentItemLabel>
                         </MenuContentItem>
-                      )}
-                      <MenuContentItem
-                        onClick={toggleShowFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          Array.from(
-                            queryBuilderState.filterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.filterState.showPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show Filter
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleShowOlapGroupByPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          queryBuilderState.fetchStructureState.implementation
-                            .olapGroupByState.olapColumns.length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {isTDSState &&
-                          guaranteeType(
-                            queryBuilderState.fetchStructureState
-                              .implementation,
-                            QueryBuilderTDSState,
-                          ).showOlapGroupByPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show OLAP GroupBy
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                      <MenuContentItem
-                        onClick={toggleShowPostFilterPanel}
-                        disabled={
-                          !queryBuilderState.isQuerySupported ||
-                          !(
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState
-                          ) ||
-                          Array.from(
-                            queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
-                          ).length > 0
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          {queryBuilderState.fetchStructureState
-                            .implementation instanceof QueryBuilderTDSState &&
-                          queryBuilderState.fetchStructureState.implementation
-                            .showPostFilterPanel ? (
-                            <CheckIcon />
-                          ) : null}
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel className="query-builder__sub-header__menu-content">
-                          Show Post-Filter
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
-                    </MenuContent>
-                  }
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                    transformOrigin: { vertical: 'top', horizontal: 'right' },
-                    elevation: 7,
-                  }}
-                >
-                  <div className="query-builder__sub-header__custom-action__label">
-                    Advanced
-                  </div>
-                  <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
-                </DropdownMenu>
+                        {!queryBuilderState.isParameterSupportDisabled && (
+                          <MenuContentItem
+                            onClick={toggleShowParameterPanel}
+                            disabled={
+                              !queryBuilderState.isQuerySupported ||
+                              queryBuilderState.parametersState.parameterStates
+                                .length > 0
+                            }
+                          >
+                            <MenuContentItemIcon>
+                              {queryBuilderState.showParametersPanel ? (
+                                <CheckIcon />
+                              ) : null}
+                            </MenuContentItemIcon>
+                            <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                              Show Parameter(s)
+                            </MenuContentItemLabel>
+                          </MenuContentItem>
+                        )}
+                        <MenuContentItem
+                          onClick={toggleShowFilterPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            Array.from(
+                              queryBuilderState.filterState.nodes.values(),
+                            ).length > 0
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            {queryBuilderState.filterState.showPanel ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Filter
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem
+                          onClick={toggleShowOlapGroupByPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            !(
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof QueryBuilderTDSState
+                            ) ||
+                            queryBuilderState.fetchStructureState.implementation
+                              .olapGroupByState.olapColumns.length > 0
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            {isTDSState &&
+                            guaranteeType(
+                              queryBuilderState.fetchStructureState
+                                .implementation,
+                              QueryBuilderTDSState,
+                            ).showOlapGroupByPanel ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show OLAP GroupBy
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem
+                          onClick={toggleShowPostFilterPanel}
+                          disabled={
+                            !queryBuilderState.isQuerySupported ||
+                            !(
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof QueryBuilderTDSState
+                            ) ||
+                            Array.from(
+                              queryBuilderState.fetchStructureState.implementation.postFilterState.nodes.values(),
+                            ).length > 0
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            {queryBuilderState.fetchStructureState
+                              .implementation instanceof QueryBuilderTDSState &&
+                            queryBuilderState.fetchStructureState.implementation
+                              .showPostFilterPanel ? (
+                              <CheckIcon />
+                            ) : null}
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Show Post-Filter
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                        <MenuContentItem onClick={openWatermark}>
+                          <MenuContentItemIcon>{null}</MenuContentItemIcon>
+                          <MenuContentItemLabel className="query-builder__sub-header__menu-content">
+                            Edit Watermark
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      </MenuContent>
+                    }
+                    menuProps={{
+                      anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                      transformOrigin: { vertical: 'top', horizontal: 'right' },
+                      elevation: 7,
+                    }}
+                  >
+                    <div className="query-builder__sub-header__custom-action__label">
+                      Advanced
+                    </div>
+                    <CaretDownIcon className="query-builder__sub-header__custom-action__icon" />
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
             <div className="query-builder__main">

@@ -71,6 +71,7 @@ import {
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
 import { processTDSOlapGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByStateBuilder.js';
+import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 
 const processGetAllExpression = (
   expression: SimpleFunctionExpression,
@@ -410,11 +411,26 @@ export class QueryBuilderValueSpecificationProcessor
           this.queryBuilderState,
         );
         return;
+      } else if (
+        matchFunctionName(precedingExpression.functionName, [
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+        ])
+      ) {
+        processFilterExpression(valueSpecification, this.queryBuilderState);
+        return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or project()/groupBy()/olapGroupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/groupBy()/olapGroupBy()`,
         );
       }
+    } else if (
+      matchFunctionName(
+        functionName,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+      )
+    ) {
+      processWatermarkExpression(valueSpecification, this.queryBuilderState);
+      return;
     } else if (
       matchFunctionName(
         functionName,

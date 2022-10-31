@@ -30,6 +30,11 @@ import {
   useResizeDetector,
   clearMarkers,
   setErrorMarkers,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from '@finos/legend-art';
 import type { LambdaEditorState } from '../../stores/shared/LambdaEditorState.js';
 import {
@@ -589,25 +594,23 @@ const LambdaEditorPopUp = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div
-          className={clsx(
-            'modal modal--dark editor-modal lambda-editor__popup__modal',
-            {
-              'lambda-editor__popup__modal--has-error': Boolean(
-                lambdaEditorState.parserError,
-              ),
-            },
-          )}
+        <Modal
+          darkMode={true}
+          className={clsx('editor-modal lambda-editor__popup__modal', {
+            'lambda-editor__popup__modal--has-error': Boolean(
+              lambdaEditorState.parserError,
+            ),
+          })}
         >
-          <div className="modal__header">
-            <div className="modal__title">Edit Lambda</div>
+          <ModalHeader>
+            <ModalTitle title="Edit Lambda" />
             {lambdaEditorState.parserError && (
               <div className="modal__title__error-badge">
                 Failed to parse lambda
               </div>
             )}
-          </div>
-          <div className="modal__body">
+          </ModalHeader>
+          <ModalBody>
             <div className={clsx('lambda-editor__popup__content', className)}>
               <div
                 ref={ref}
@@ -617,8 +620,8 @@ const LambdaEditorPopUp = observer(
                 <div className="text-editor__body" ref={textInputRef} />
               </div>
             </div>
-          </div>
-          <div className="modal__footer">
+          </ModalBody>
+          <ModalFooter>
             <button
               className="btn btn--dark btn--caution"
               onClick={discardChanges}
@@ -632,8 +635,8 @@ const LambdaEditorPopUp = observer(
             >
               Close
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

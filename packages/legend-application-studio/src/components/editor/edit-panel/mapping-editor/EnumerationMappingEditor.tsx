@@ -33,6 +33,8 @@ import {
   PanelDropZone,
   Panel,
   PanelContent,
+  ModalTitle,
+  Modal,
 } from '@finos/legend-art';
 import { MappingEditorState } from '../../../../stores/editor-state/element-editor-state/mapping/MappingEditorState.js';
 import { TypeTree } from '../../../shared/TypeTree.js';
@@ -142,8 +144,8 @@ const EnumerationMappingSourceSelectorModal = observer(
           },
         }}
       >
-        <div className="modal search-modal">
-          <div className="modal__title">Choose a source</div>
+        <Modal className="search-modal">
+          <ModalTitle title="Choose a Source" />
           <CustomSelectorInput
             ref={sourceSelectorRef}
             options={options}
@@ -154,7 +156,7 @@ const EnumerationMappingSourceSelectorModal = observer(
             filterOption={filterOption}
             formatOptionLabel={getPackageableElementOptionFormatter({})}
           />
-        </div>
+        </Modal>
       </Dialog>
     );
   },

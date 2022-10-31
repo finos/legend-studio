@@ -19,6 +19,7 @@ import { generateReviewRoute } from '@finos/legend-application-studio';
 import {
   Dialog,
   ExternalLinkSquareIcon,
+  ModalTitle,
   Panel,
   PanelFullContent,
   PanelLoadingIndicator,
@@ -72,7 +73,7 @@ const NewReviewModal = observer(() => {
         }}
         className="modal search-modal modal--dark"
       >
-        <div className="modal__title">Submit for Review</div>
+        <ModalTitle title="Submit for Review" />
         <Panel>
           <PanelLoadingIndicator
             isLoading={

@@ -101,6 +101,12 @@ import {
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
   TEST_DATA__GroupBy_postFilter_OlapGroupBy,
 } from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
+import {
+  TEST_DATA_lambda_watermark_Constant,
+  TEST_DATA_lambda_watermark_filter_Constant,
+  TEST_DATA_lambda_watermark_olapGroupBy,
+  TEST_DATA_lambda_watermark_Parameter,
+} from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
 
 type RoundtripTestCase = [
   string,
@@ -133,6 +139,10 @@ const m2mFilterCtx = {
 
 const postFilterCtx = {
   entities: TEST_DATA__PostFilterModel,
+};
+
+const forWatermarkCtx = {
+  entities: TEST_DATA__ComplexRelationalModel,
 };
 
 const olapGroupbyCtx = {
@@ -273,6 +283,32 @@ const cases: RoundtripTestCase[] = [
     TEST_DATA__lambda_setOperatorFilter,
     undefined,
   ],
+  // watermark
+  [
+    'Watermark with constant value',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_Constant,
+    undefined,
+  ],
+  [
+    'Watermark with parameter value',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_Parameter,
+    undefined,
+  ],
+  [
+    'Watermark with filter()',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_filter_Constant,
+    undefined,
+  ],
+  [
+    'Watermark with project() and olapGroupBy()',
+    forWatermarkCtx,
+    TEST_DATA_lambda_watermark_olapGroupBy,
+    undefined,
+  ],
+  // filter
   [
     'Filter with not() operator',
     relationalFilterCtx,

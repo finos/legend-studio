@@ -38,6 +38,10 @@ import {
   WindowIcon,
   BasePopover,
   EditIcon,
+  ModalHeader,
+  Modal,
+  ModalFooter,
+  PanelFormSection,
 } from '@finos/legend-art';
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -260,16 +264,16 @@ const QueryBuilderOlapColumnModalEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <div className="modal modal--dark query-builder__olap__modal">
-          <div className="modal__header">
-            <div className="modal__title">
-              {createNewOlap
+        <Modal darkMode={true} className="query-builder__olap__modal">
+          <ModalHeader
+            title={
+              createNewOlap
                 ? 'Create OLAP GroupBy Column'
-                : 'Update OLAP GroupByColumn'}
-            </div>
-          </div>
+                : 'Update OLAP GroupByColumn'
+            }
+          />
           <div className="query-builder__olap__modal__body">
-            <div className="panel__content__form__section">
+            <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 OLAP Column Name
               </div>
@@ -285,8 +289,8 @@ const QueryBuilderOlapColumnModalEditor = observer(
                   isDuplicatedColumnName ? 'Duplicated column' : undefined
                 }
               />
-            </div>
-            <div className="panel__content__form__section">
+            </PanelFormSection>
+            <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 OLAP Operator
               </div>
@@ -371,8 +375,8 @@ const QueryBuilderOlapColumnModalEditor = observer(
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="panel__content__form__section">
+            </PanelFormSection>
+            <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 Window Columns
               </div>
@@ -407,8 +411,8 @@ const QueryBuilderOlapColumnModalEditor = observer(
                   </button>
                 </div>
               </div>
-            </div>
-            <div className="panel__content__form__section">
+            </PanelFormSection>
+            <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 Sort By
               </div>
@@ -497,9 +501,9 @@ const QueryBuilderOlapColumnModalEditor = observer(
                   </DropdownMenu>
                 </div>
               </div>
-            </div>
+            </PanelFormSection>
           </div>
-          <div className="modal__footer">
+          <ModalFooter>
             {createNewOlap ? (
               <button className="btn modal__footer__close-btn" onClick={create}>
                 Create
@@ -509,8 +513,8 @@ const QueryBuilderOlapColumnModalEditor = observer(
                 Close
               </button>
             )}
-          </div>
-        </div>
+          </ModalFooter>
+        </Modal>
       </Dialog>
     );
   },

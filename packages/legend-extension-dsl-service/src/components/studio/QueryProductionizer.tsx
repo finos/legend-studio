@@ -42,6 +42,8 @@ import {
   EyeIcon,
   FunctionIcon,
   GitBranchIcon,
+  Modal,
+  ModalTitle,
   Panel,
   PanelFullContent,
   PanelLoadingIndicator,
@@ -115,8 +117,8 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
       classes={{ container: 'search-modal__container' }}
       PaperProps={{ classes: { root: 'search-modal__inner-container' } }}
     >
-      <div className="modal modal--dark search-modal">
-        <div className="modal__title">Query Preview</div>
+      <Modal darkMode={true} className="search-modal">
+        <ModalTitle title="Query Preview" />
         <Panel>
           <PanelFullContent>
             <div className="query-preview__field">
@@ -157,7 +159,7 @@ const QueryPreviewModal = observer((props: { queryInfo: QueryInfo }) => {
             Close
           </button>
         </div>
-      </div>
+      </Modal>
     </Dialog>
   );
 });

@@ -19,6 +19,7 @@ import {
   assertTrue,
   assertType,
   filterByType,
+  guaranteeNonNullable,
   guaranteeType,
   returnUndefOnError,
 } from '@finos/legend-shared';
@@ -49,6 +50,7 @@ import {
   TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   CORE_PURE_PATH,
+  PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilderSupportedFunctions.js';
 
@@ -325,6 +327,7 @@ export const V1_buildFilterFunctionExpression = (
       ),
     ),
   ];
+
   const expression = V1_buildBaseSimpleFunctionExpression(
     processedParams,
     functionName,
@@ -567,6 +570,79 @@ export const V1_buildGroupByFunctionExpression = (
   expression.genericType = GenericTypeExplicitReference.create(
     new GenericType(compileContext.resolveType(CORE_PURE_PATH.TDS_ROW).value),
   );
+  return [expression, processedParams];
+};
+
+export const V1_buildWatermarkFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): [SimpleFunctionExpression, ValueSpecification[]] | undefined => {
+  assertTrue(
+    parameters.length === 2,
+    `Can't build forWatermark() expression: forWatermark() expects 1 argument`,
+  );
+  const precedingExpression = (
+    parameters[0] as V1_ValueSpecification
+  ).accept_ValueSpecificationVisitor(
+    new V1_ValueSpecificationBuilder(
+      compileContext,
+      processingContext,
+      openVariables,
+    ),
+  );
+  assertNonNullable(
+    precedingExpression.genericType,
+    `Can't build forWatermark() expression: preceding expression return type is missing`,
+  );
+
+  const lambda = parameters[1];
+  if (lambda instanceof V1_Lambda) {
+    lambda.parameters.forEach((variable): void => {
+      if (variable.name && !variable.class) {
+        const variableExpression = new VariableExpression(
+          variable.name,
+          precedingExpression.multiplicity,
+        );
+        variableExpression.genericType = precedingExpression.genericType;
+        processingContext.addInferredVariables(
+          variable.name,
+          variableExpression,
+        );
+      }
+    });
+  }
+
+  const processedParams = [
+    precedingExpression,
+    (parameters[1] as V1_ValueSpecification).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    ),
+  ];
+
+  const watermarkValueParam = guaranteeNonNullable(processedParams[1]);
+  const watermarkValueParamType =
+    watermarkValueParam.genericType?.value.rawType;
+  assertTrue(
+    compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING) ===
+      watermarkValueParamType,
+    "Can't build forWatermark() expression: watermark parameter is expected to be of type string.",
+  );
+
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    processedParams,
+    functionName,
+    compileContext,
+  );
+
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
   return [expression, processedParams];
 };
 

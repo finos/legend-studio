@@ -57,6 +57,7 @@ import {
   PanelDropZone,
   Panel,
   PanelContent,
+  ModalTitle,
 } from '@finos/legend-art';
 import { ServiceExecutionQueryEditor } from '../../../editor/edit-panel/service-editor/ServiceExecutionQueryEditor.js';
 import { useEditorStore } from '../../EditorStoreProvider.js';
@@ -572,7 +573,7 @@ export const NewExecutionParameterModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">New Execution Context</div>
+          <ModalTitle title="New Execution Context" />
           <div className="service-execution-editor__change__modal">
             <InputWithInlineValidation
               className="service-execution-editor__input input-group__input"
@@ -625,7 +626,7 @@ const RenameModal = observer(
           }}
           className="modal modal--dark search-modal"
         >
-          <div className="modal__title">Rename</div>
+          <ModalTitle title="Rename" />
           <input
             className="panel__content__form__section__input"
             spellCheck={false}
