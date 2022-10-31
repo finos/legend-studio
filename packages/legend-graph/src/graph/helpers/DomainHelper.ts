@@ -574,7 +574,7 @@ export const getMultiplicityDescription = (
   }`;
 };
 
-export const multiplicityComparator = (
+export const areMultiplicitiesEqual = (
   mul1: Multiplicity,
   mul2: Multiplicity,
 ): boolean =>

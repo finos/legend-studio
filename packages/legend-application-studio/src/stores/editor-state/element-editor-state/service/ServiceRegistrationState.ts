@@ -41,7 +41,7 @@ import {
   buildLambdaVariableExpressions,
   VariableExpression,
   generateMultiplicityString,
-  multiplicityComparator,
+  areMultiplicitiesEqual,
   Multiplicity,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../application/LegendStudioApplicationConfig.js';
@@ -349,7 +349,7 @@ export class ServiceRegistrationState {
       .filter(
         (p) =>
           !SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES.some((m) =>
-            multiplicityComparator(m, p.multiplicity),
+            areMultiplicitiesEqual(m, p.multiplicity),
           ),
       );
     assertTrue(
