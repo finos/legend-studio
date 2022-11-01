@@ -192,15 +192,19 @@ const StaticDatasourceSpecificationEditor = observer(
             staticDatasourceSpecification_setHost(sourceSpec, value ?? '')
           }
         />
-        <div className="panel__content__form__section__header__label">port</div>
-        <input
-          className="panel__content__form__section__input panel__content__form__section__number-input"
-          spellCheck={false}
-          type="number"
-          disabled={isReadOnly}
-          value={sourceSpec.port}
-          onChange={changePort}
-        />
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            port
+          </div>
+          <input
+            className="panel__content__form__section__input panel__content__form__section__number-input"
+            spellCheck={false}
+            type="number"
+            disabled={isReadOnly}
+            value={sourceSpec.port}
+            onChange={changePort}
+          />
+        </PanelFormSection>
         <PanelFormTextField
           isReadOnly={isReadOnly}
           value={sourceSpec.databaseName}
@@ -1392,7 +1396,7 @@ const RelationalConnectionGeneralEditor = observer(
                 <ResizablePanel size={450} minSize={50}>
                   <div className="relational-connection-editor__auth">
                     <PanelHeader title="datasource spec"></PanelHeader>
-                    <div className="panel__content relational-connection-editor__auth__content">
+                    <PanelContent className="relational-connection-editor__auth__content">
                       <PanelFormSection>
                         <div className="panel__content__form__section__header__label">
                           Datasource
@@ -1404,6 +1408,7 @@ const RelationalConnectionGeneralEditor = observer(
                           darkMode={true}
                         />
                       </PanelFormSection>
+                      <PanelDivider />
                       <div className="relational-connection-editor__auth__properties">
                         {renderDatasourceSpecificationEditor(
                           connection,
@@ -1411,7 +1416,7 @@ const RelationalConnectionGeneralEditor = observer(
                           plugins,
                         )}
                       </div>
-                    </div>
+                    </PanelContent>
                   </div>
                 </ResizablePanel>
                 <ResizablePanelSplitter />
@@ -1430,6 +1435,7 @@ const RelationalConnectionGeneralEditor = observer(
                           darkMode={true}
                         />
                       </PanelFormSection>
+                      <PanelDivider />
                       <div className="relational-connection-editor__source__properties">
                         {renderAuthenticationStrategyEditor(
                           connection,

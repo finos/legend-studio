@@ -186,6 +186,28 @@ export class EditorGraphState {
     return [this.error, ...this.warnings].filter(isNonNullable);
   }
 
+  /**
+   * This function is temporary. There is no good way to detect if a problem not coming from
+   * the main graph at the moment. In text mode, we can rely on the fact that the source information
+   * has line 0 column 0. But this is not the case for form mode, so this is just temporary
+   * to help with text-mode.
+   */
+  TEMPORARY__removeDependencyProblems(
+    problems: Problem[] | CompilationWarning[],
+  ): Problem[] | CompilationWarning[] {
+    return problems.filter((problem) => {
+      if (problem.sourceInformation) {
+        return !(
+          problem.sourceInformation.startLine === 0 &&
+          problem.sourceInformation.startColumn === 0 &&
+          problem.sourceInformation.endLine === 0 &&
+          problem.sourceInformation.endColumn === 0
+        );
+      }
+      return true;
+    });
+  }
+
   get areProblemsStale(): boolean {
     return (
       (this.editorStore.isInFormMode &&
@@ -550,7 +572,10 @@ export class EditorGraphState {
           },
         )) as CompilationResult;
 
-      this.warnings = compilationResult.warnings ?? [];
+      this.warnings = compilationResult.warnings
+        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+        : [];
+
       this.mostRecentFormModeCompilationGraphHash = currentGraphHash;
 
       if (!options?.disableNotificationOnSuccess) {
@@ -688,7 +713,9 @@ export class EditorGraphState {
 
       const entities = compilationResult.entities;
       this.mostRecentTextModeCompilationGraphHash = currentGraphHash;
-      this.warnings = compilationResult.warnings ?? [];
+      this.warnings = compilationResult.warnings
+        ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+        : [];
 
       if (!options?.disableNotificationOnSuccess) {
         if (this.warnings.length) {
@@ -759,7 +786,9 @@ export class EditorGraphState {
             },
           )) as TextCompilationResult;
 
-        this.warnings = compilationResult.warnings ?? [];
+        this.warnings = compilationResult.warnings
+          ? this.TEMPORARY__removeDependencyProblems(compilationResult.warnings)
+          : [];
         this.editorStore.applicationStore.setBlockingAlert({
           message: 'Leaving text mode and rebuilding graph...',
           showLoading: true,
