@@ -186,7 +186,12 @@ export class EditorGraphState {
     return [this.error, ...this.warnings].filter(isNonNullable);
   }
 
-  //TODO: remove once engine changes are added with better source information
+  /**
+   * This function is temporary. There is no good way to detect if a problem not coming from
+   * the main graph at the moment. In text mode, we can rely on the fact that the source information
+   * has line 0 column 0. But this is not the case for form mode, so this is just temporary
+   * to help with text-mode.
+   */
   TEMPORARY__removeDependencyProblems(
     problems: Problem[] | CompilationWarning[],
   ): Problem[] | CompilationWarning[] {
