@@ -30,6 +30,7 @@ import { resolveFullTsConfig } from '@finos/legend-dev-utils/TypescriptConfigUti
 import fsExtra from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { loadJSModule, loadJSON } from '@finos/legend-dev-utils/DevUtils';
+import rimraf from 'rimraf';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -50,26 +51,28 @@ const preparePublishContent = async () => {
 
   try {
     const publishContentDir =
-      packageJson?.publishConfig?.directory ?? workspaceDir;
+      packageJson?.publishConfig?.directory ??
+      `${resolve(workspaceDir, 'build/publishContent')}`;
 
-    // If the directory for staging publish content is not there, create it
-    // and populate it with publish content
-    if (!existsSync(publishContentDir)) {
-      fsExtra.mkdirs(publishContentDir);
-      // Copy the content of the workspace (including build artifacts) to the staging area
-      readdirSync(workspaceDir).forEach((fileOrDir) => {
-        if (['build', 'dev', 'temp'].includes(fileOrDir)) {
-          return;
-        }
-        fsExtra.copySync(
-          resolve(workspaceDir, fileOrDir),
-          resolve(publishContentDir, fileOrDir),
-        );
-      });
-      console.log(
-        chalk.green(`\u2713 Moved basic content to publish staging area`),
-      );
+    // Attempt to clean the publish content directory
+    if (existsSync(publishContentDir)) {
+      rimraf.sync(publishContentDir);
     }
+    fsExtra.mkdirs(publishContentDir);
+
+    // Copy the content of the workspace (including build artifacts) to the staging area
+    readdirSync(workspaceDir).forEach((fileOrDir) => {
+      if (['build', 'dev', 'temp'].includes(fileOrDir)) {
+        return;
+      }
+      fsExtra.copySync(
+        resolve(workspaceDir, fileOrDir),
+        resolve(publishContentDir, fileOrDir),
+      );
+    });
+    console.log(
+      chalk.green(`\u2713 Moved basic content to publish staging area`),
+    );
 
     // If there is no LICENSE file, copy the LICENSE file from root
     if (!existsSync(resolve(publishContentDir, 'LICENSE'))) {
