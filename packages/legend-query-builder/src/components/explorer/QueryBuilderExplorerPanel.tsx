@@ -440,8 +440,10 @@ const QueryBuilderExplorerTreeNodeContainer = observer(
           />
         }
         disabled={
-          !(node instanceof QueryBuilderExplorerTreePropertyNodeData) ||
-          applicationStore.showBackdrop
+          !(
+            node instanceof QueryBuilderExplorerTreePropertyNodeData ||
+            node instanceof QueryBuilderExplorerTreeRootNodeData
+          ) || applicationStore.showBackdrop
         }
         menuProps={{ elevation: 7 }}
         onOpen={onContextMenuOpen}
