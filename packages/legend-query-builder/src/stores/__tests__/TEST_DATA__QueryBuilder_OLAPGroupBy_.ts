@@ -1395,7 +1395,9 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
   parameters: [],
 };
 
-export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
+export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc = (
+  aggFunc: string,
+): { parameters?: object; body?: object; _type: string } => ({
   _type: 'lambda',
   body: [
     {
@@ -1537,7 +1539,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
               body: [
                 {
                   _type: 'func',
-                  function: 'sum',
+                  function: aggFunc,
                   parameters: [
                     {
                       _type: 'var',
@@ -1563,7 +1565,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
     },
   ],
   parameters: [],
-};
+});
 
 export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
   _type: 'lambda',

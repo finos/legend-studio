@@ -16,24 +16,24 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator_.js';
+import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 
-export class QueryBuilderTDSOlapOperator_Average extends QueryBuilderTDSOlapOperator {
+export class QueryBuilderTDS_OLAPOperator_Max extends QueryBuilderTDS_OLAPOperator {
   override isColumnAggregator(): boolean {
     return true;
   }
 
   getLabel(): string {
-    return 'avg';
+    return 'max';
   }
   get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.AVERAGE;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.MAX;
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.OLAP_OPERATOR_AVERAGE]);
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_MAX]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {

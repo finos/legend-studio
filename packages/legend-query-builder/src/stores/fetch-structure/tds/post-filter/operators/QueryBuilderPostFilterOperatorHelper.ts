@@ -17,16 +17,16 @@
 import { Multiplicity } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import { QueryBuilderAggregateColumnState } from '../../aggregation/QueryBuilderAggregationState.js';
-import { QueryBuilderOlapGroupByColumnState } from '../../olapGroupBy/QueryBuilderOlapGroupByState.js';
+import { QueryBuilderOLAPGroupByColumnState } from '../../olapGroupBy/QueryBuilderOLAPGroupByState_.js';
 import { QueryBuilderSimpleProjectionColumnState } from '../../projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState_.js';
+import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
 
 export const getColumnMultiplicity = (
   columnState: QueryBuilderTDSColumnState | QueryBuilderAggregateColumnState,
 ): Multiplicity => {
   if (
     columnState instanceof QueryBuilderAggregateColumnState ||
-    columnState instanceof QueryBuilderOlapGroupByColumnState
+    columnState instanceof QueryBuilderOLAPGroupByColumnState
   ) {
     return Multiplicity.ONE;
   } else if (columnState instanceof QueryBuilderSimpleProjectionColumnState) {

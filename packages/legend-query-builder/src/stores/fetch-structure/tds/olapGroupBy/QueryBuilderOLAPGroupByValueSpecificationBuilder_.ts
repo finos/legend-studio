@@ -31,13 +31,13 @@ import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../graphManager/Quer
 import { buildGenericLambdaFunctionInstanceValue } from '../../../QueryBuilderValueSpecificationHelper.js';
 import { getFunctionNameFromTDSSortColumn } from '../QueryBuilderTDSHelper.js';
 import {
-  type QueryBuilderOlapGroupByColumnState,
-  type QueryBuilderOlapGroupByState,
-  QueryBuilderTDSOlapAggreationOperatorState,
-} from './QueryBuilderOlapGroupByState.js';
+  type QueryBuilderOLAPGroupByColumnState,
+  type QueryBuilderOLAPGroupByState,
+  QueryBuilderTDS_OLAPAggreationOperatorState,
+} from './QueryBuilderOLAPGroupByState_.js';
 
-const appendOlapGroupByColumnState = (
-  olapGroupByColumnState: QueryBuilderOlapGroupByColumnState,
+const appendOLAPGroupByColumnState = (
+  olapGroupByColumnState: QueryBuilderOLAPGroupByColumnState,
   lambda: LambdaFunction,
 ): LambdaFunction => {
   const graph =
@@ -92,7 +92,7 @@ const appendOlapGroupByColumnState = (
     graph,
   );
   let olapAggregationExpression: SimpleFunctionExpression | undefined;
-  if (operationState instanceof QueryBuilderTDSOlapAggreationOperatorState) {
+  if (operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState) {
     // column param
     const olapAggregateColumn = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
@@ -132,12 +132,12 @@ const appendOlapGroupByColumnState = (
   return lambda;
 };
 
-export const appendOlapGroupByState = (
-  olapGroupByState: QueryBuilderOlapGroupByState,
+export const appendOLAPGroupByState = (
+  olapGroupByState: QueryBuilderOLAPGroupByState,
   lambda: LambdaFunction,
 ): LambdaFunction => {
   olapGroupByState.olapColumns.forEach((c) =>
-    appendOlapGroupByColumnState(c, lambda),
+    appendOLAPGroupByColumnState(c, lambda),
   );
   return lambda;
 };

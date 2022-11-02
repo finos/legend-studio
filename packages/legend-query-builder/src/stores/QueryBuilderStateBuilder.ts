@@ -64,7 +64,7 @@ import {
 } from './fetch-structure/tds/projection/QueryBuilderProjectionStateBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { LambdaParameterState } from './shared/LambdaParameterState.js';
-import { processTDSOlapGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByStateBuilder.js';
+import { processTDS_OLAPGroupByExpression } from './fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByStateBuilder_.js';
 import { processWatermarkExpression } from './watermark/QueryBuilderWatermarkStateBuilder.js';
 
 const processGetAllExpression = (
@@ -440,7 +440,7 @@ export class QueryBuilderValueSpecificationProcessor
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
       )
     ) {
-      processTDSOlapGroupByExpression(
+      processTDS_OLAPGroupByExpression(
         valueSpecification,
         this.queryBuilderState,
       );

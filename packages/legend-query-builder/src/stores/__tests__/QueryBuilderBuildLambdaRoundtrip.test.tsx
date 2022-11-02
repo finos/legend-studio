@@ -91,13 +91,13 @@ import {
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn,
   TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy,
-  TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+  TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc,
   TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName,
   TEST_DATA__GroupBy_postFilter_OlapGroupBy,
-} from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
+} from './TEST_DATA__QueryBuilder_OLAPGroupBy_.js';
 import {
   TEST_DATA_lambda_watermark_Constant,
   TEST_DATA_lambda_watermark_filter_Constant,
@@ -439,7 +439,31 @@ const cases: RoundtripTestCase[] = [
   [
     'OlapGroupBy with sum agg operation',
     olapGroupbyCtx,
-    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('sum'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with count agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('count'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with max agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('max'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with min agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('min'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with average agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('average'),
     undefined,
   ],
   [

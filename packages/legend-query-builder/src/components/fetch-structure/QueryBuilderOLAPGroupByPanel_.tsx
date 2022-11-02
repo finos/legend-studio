@@ -47,18 +47,18 @@ import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { type DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import type { QueryBuilderTDSOlapOperator } from '../../stores/fetch-structure/tds/olapGroupBy/operators/QueryBuilderTDSOlapOperator_.js';
+import type { QueryBuilderTDS_OLAPOperator } from '../../stores/fetch-structure/tds/olapGroupBy/operators/QueryBuilderTDS_OLAPOperator.js';
 import {
-  type QueryBuilderOlapGroupByState,
-  type QueryBuilderOlapDropTarget,
-  type QueryBuilderOlapColumnDragSource,
-  QueryBuilderOlapGroupByColumnState,
-  QueryBuilderTDSOlapRankOperatorState,
-  QueryBuilderTDSOlapAggreationOperatorState,
+  type QueryBuilderOLAPGroupByState,
+  type QueryBuilderOLAPDropTarget,
+  type QueryBuilderOLAPColumnDragSource,
+  QueryBuilderOLAPGroupByColumnState,
+  QueryBuilderTDS_OLAPRankOperatorState,
+  QueryBuilderTDS_OLAPAggreationOperatorState,
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByState.js';
+} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState_.js';
 import { QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState_.js';
+import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { COLUMN_SORT_TYPE } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
 import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
@@ -67,7 +67,7 @@ import { QUERY_BUILDER_TEST_ID } from '../QueryBuilder_TestID.js';
 const createOlapColumnState = (
   columnState: QueryBuilderTDSColumnState,
   tdsState: QueryBuilderTDSState,
-): QueryBuilderOlapGroupByColumnState => {
+): QueryBuilderOLAPGroupByColumnState => {
   const operator = tdsState.olapGroupByState.operators.filter(
     (o) =>
       o.isColumnAggregator() &&
@@ -79,12 +79,12 @@ const createOlapColumnState = (
     )[0],
   );
   if (operator) {
-    const opState = new QueryBuilderTDSOlapAggreationOperatorState(
+    const opState = new QueryBuilderTDS_OLAPAggreationOperatorState(
       tdsState.olapGroupByState,
       operator,
       columnState,
     );
-    return new QueryBuilderOlapGroupByColumnState(
+    return new QueryBuilderOLAPGroupByColumnState(
       tdsState.olapGroupByState,
       [],
       undefined,
@@ -92,11 +92,11 @@ const createOlapColumnState = (
       `${operator.getLabel()} ${columnState.columnName}`,
     );
   } else {
-    return new QueryBuilderOlapGroupByColumnState(
+    return new QueryBuilderOLAPGroupByColumnState(
       tdsState.olapGroupByState,
       [columnState],
       undefined,
-      new QueryBuilderTDSOlapRankOperatorState(
+      new QueryBuilderTDS_OLAPRankOperatorState(
         tdsState.olapGroupByState,
         nonColoperator,
       ),
@@ -109,7 +109,7 @@ const QueryBuilderOlapGroupByColumnContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      columnState: QueryBuilderOlapGroupByColumnState;
+      columnState: QueryBuilderOLAPGroupByColumnState;
     }
   >(function QueryBuilderOlapGroupByColumnContextMenu(props, ref) {
     const { columnState } = props;
@@ -178,8 +178,8 @@ const TDSColumnSelectorEditor = observer(
 
 const QueryBuilderOlapColumnModalEditor = observer(
   (props: {
-    olapGroupByState: QueryBuilderOlapGroupByState;
-    olapColumnState: QueryBuilderOlapGroupByColumnState;
+    olapGroupByState: QueryBuilderOLAPGroupByState;
+    olapColumnState: QueryBuilderOLAPGroupByColumnState;
   }) => {
     const { olapGroupByState, olapColumnState } = props;
     const createNewOlap =
@@ -209,14 +209,14 @@ const QueryBuilderOlapColumnModalEditor = observer(
     const operators = olapGroupByState.operators;
     const operationState = olapColumnState.operationState;
     const olapOpColumn =
-      operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+      operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
         ? operationState.columnState
         : undefined;
     const changeOperatorCol = (
       val: { label: string; value: QueryBuilderTDSColumnState } | null,
     ): void => {
       if (
-        operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+        operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
       ) {
         if (val !== null) {
           operationState.setColumnState(val.value);
@@ -224,7 +224,7 @@ const QueryBuilderOlapColumnModalEditor = observer(
       }
     };
     const changeOperator =
-      (olapOp: QueryBuilderTDSOlapOperator) => (): void => {
+      (olapOp: QueryBuilderTDS_OLAPOperator) => (): void => {
         olapColumnState.changeOperator(olapOp);
       };
     // window
@@ -232,7 +232,7 @@ const QueryBuilderOlapColumnModalEditor = observer(
       (e) => !olapColumnState.windowColumns.includes(e),
     );
     const create = (): void => {
-      olapGroupByState.addOlapColumn(olapColumnState);
+      olapGroupByState.addOLAPColumn(olapColumnState);
       close();
     };
     const addWindowValue = (): void => {
@@ -264,7 +264,16 @@ const QueryBuilderOlapColumnModalEditor = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal darkMode={true} className="query-builder__olap__modal">
+        <Modal
+          darkMode={true}
+          className={clsx([
+            'query-builder__olap__modal',
+            {
+              'query-editor--light':
+                applicationStore.TEMPORARY__isLightThemeEnabled,
+            },
+          ])}
+        >
           <ModalHeader
             title={
               createNewOlap
@@ -273,23 +282,6 @@ const QueryBuilderOlapColumnModalEditor = observer(
             }
           />
           <div className="query-builder__olap__modal__body">
-            <PanelFormSection>
-              <div className="panel__content__form__section__header__label">
-                OLAP Column Name
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                Name of OLAP Column that will be part of TDS Result
-              </div>
-              <InputWithInlineValidation
-                className="query-builder__olap__column__name__input input-group__input"
-                spellCheck={false}
-                value={olapColumnState.columnName}
-                onChange={changeColumnName}
-                validationErrorMessage={
-                  isDuplicatedColumnName ? 'Duplicated column' : undefined
-                }
-              />
-            </PanelFormSection>
             <PanelFormSection>
               <div className="panel__content__form__section__header__label">
                 OLAP Operator
@@ -478,7 +470,7 @@ const QueryBuilderOlapColumnModalEditor = observer(
                       elevation: 7,
                     }}
                   >
-                    <button
+                    <div
                       className={clsx(
                         'query-builder__olap__column__sortby__operator__badge',
                         {
@@ -490,17 +482,35 @@ const QueryBuilderOlapColumnModalEditor = observer(
                       title="Choose OLAP SortBy Operator..."
                     >
                       <SortIcon />
-                    </button>
-                    <button
+                    </div>
+                    <div
                       className="query-builder__olap__column__sortby__operator__dropdown__trigger"
                       tabIndex={-1}
                       title="Choose OLAP SortBy Operator..."
                     >
                       <CaretDownIcon />
-                    </button>
+                    </div>
                   </DropdownMenu>
                 </div>
               </div>
+            </PanelFormSection>
+
+            <PanelFormSection>
+              <div className="panel__content__form__section__header__label">
+                OLAP Column Name
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Name of OLAP Column that will be part of TDS Result
+              </div>
+              <InputWithInlineValidation
+                className="query-builder__olap__column__name__input input-group__input"
+                spellCheck={false}
+                value={olapColumnState.columnName}
+                onChange={changeColumnName}
+                validationErrorMessage={
+                  isDuplicatedColumnName ? 'Duplicated column' : undefined
+                }
+              />
             </PanelFormSection>
           </div>
           <ModalFooter>
@@ -524,16 +534,48 @@ const TDSColumnReferenceEditor = observer(
   (props: {
     tdsColumn: QueryBuilderTDSColumnState;
     handleChange: (val: QueryBuilderTDSColumnState) => void;
+    selectionEditor?: {
+      options: QueryBuilderTDSColumnState[];
+    };
   }) => {
-    const { handleChange, tdsColumn } = props;
+    const { handleChange, tdsColumn, selectionEditor } = props;
+    const applicationStore = useApplicationStore();
+    const [opAnchor, setOpAnchor] = useState<HTMLButtonElement | null>(null);
+    const openOpAnchor = (event: React.MouseEvent<HTMLButtonElement>): void => {
+      if (selectionEditor) {
+        setOpAnchor(event.currentTarget);
+      }
+    };
+    const closeOpAnchor = (): void => {
+      setOpAnchor(null);
+    };
+
+    const value = {
+      label: tdsColumn.columnName,
+      value: tdsColumn,
+    };
+
+    const options =
+      selectionEditor?.options.map((col) => ({
+        label: col.columnName,
+        value: col,
+      })) ?? [];
+    const onChange = (
+      val: { label: string; value: QueryBuilderTDSColumnState } | null,
+    ): void => {
+      if (val !== null) {
+        handleChange(val.value);
+      }
+    };
+
     const handleDrop = useCallback(
-      (item: QueryBuilderOlapColumnDragSource): void => {
+      (item: QueryBuilderOLAPColumnDragSource): void => {
         handleChange(item.columnState);
       },
       [handleChange],
     );
     const [{ isDragOver }, dropOpConnector] = useDrop<
-      QueryBuilderOlapColumnDragSource,
+      QueryBuilderOLAPColumnDragSource,
       void,
       { isDragOver: boolean }
     >(
@@ -555,50 +597,85 @@ const TDSColumnReferenceEditor = observer(
     );
 
     return (
-      <div className="query-builder__olap__tds__column">
-        <div
-          ref={dropOpConnector}
-          className="query-builder__olap__tds__column-badge"
+      <>
+        <button
+          onClick={openOpAnchor}
+          className="query-builder__olap__tds__column"
         >
-          <PanelEntryDropZonePlaceholder
-            showPlaceholder={isDragOver}
-            label="Change Column"
-            className="query-builder__dnd__placeholder"
+          <div
+            ref={dropOpConnector}
+            className="query-builder__olap__tds__column-badge"
           >
-            <div className="query-builder__olap__tds__column-badge__content">
-              <div
-                className="query-builder__olap__tds__column-badge__property"
-                title={`${tdsColumn.columnName}`}
-              >
-                {tdsColumn.columnName}
+            <PanelEntryDropZonePlaceholder
+              showPlaceholder={isDragOver}
+              label="Change Column"
+              className="query-builder__dnd__placeholder"
+            >
+              <div className="query-builder__olap__tds__column-badge__content">
+                <div
+                  className="query-builder__olap__tds__column-badge__property"
+                  title={`${tdsColumn.columnName}`}
+                >
+                  {tdsColumn.columnName}
+                </div>
+              </div>
+            </PanelEntryDropZonePlaceholder>
+          </div>
+        </button>
+        {selectionEditor && (
+          <BasePopover
+            open={Boolean(opAnchor)}
+            anchorEl={opAnchor}
+            onClose={closeOpAnchor}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+          >
+            <div className="query-builder__olap__column__window__popover">
+              <div className="panel__content__form__section__list__item query-builder__olap__tds__column__options">
+                <CustomSelectorInput
+                  className="query-builder__projection__options__sort__dropdown"
+                  options={options}
+                  disabled={options.length < 1}
+                  onChange={onChange}
+                  value={value}
+                  darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
+                />
               </div>
             </div>
-          </PanelEntryDropZonePlaceholder>
-        </div>
-      </div>
+          </BasePopover>
+        )}
+      </>
     );
   },
 );
 
 const QueryBuilderOlapGroupByColumnEditor = observer(
-  (props: { olapColumnState: QueryBuilderOlapGroupByColumnState }) => {
+  (props: { olapColumnState: QueryBuilderOLAPGroupByColumnState }) => {
     const { olapColumnState } = props;
     const olapState = olapColumnState.olapState;
     const tdsState = olapState.tdsState;
     const operators = olapState.operators;
     // state
     const ref = useRef<HTMLDivElement>(null);
-    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
-      useState(false);
+    const [windowAnchor, setWindowAnchor] = useState<HTMLButtonElement | null>(
+      null,
+    );
     const openWindowPopover = (
       event: React.MouseEvent<HTMLButtonElement>,
     ): void => {
-      setAnchorEl(event.currentTarget);
+      setWindowAnchor(event.currentTarget);
     };
     const closeWindowPopover = (): void => {
-      setAnchorEl(null);
+      setWindowAnchor(null);
     };
+    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
+      useState(false);
     const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
     const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
 
@@ -622,12 +699,12 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
     // operator
     const operationState = olapColumnState.operationState;
     const aggregateColumn =
-      operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+      operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
         ? operationState.columnState
         : undefined;
 
     const changeOperator =
-      (olapOp: QueryBuilderTDSOlapOperator) => (): void => {
+      (olapOp: QueryBuilderTDS_OLAPOperator) => (): void => {
         olapColumnState.changeOperator(olapOp);
       };
 
@@ -649,7 +726,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
     // Drag and Drop
     const handleHover = useCallback(
       (
-        item: QueryBuilderOlapColumnDragSource,
+        item: QueryBuilderOLAPColumnDragSource,
         monitor: DropTargetMonitor,
       ): void => {
         const dragIndex = tdsState.olapGroupByState.olapColumns.findIndex(
@@ -678,7 +755,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
       },
       [olapColumnState, olapState, tdsState.olapGroupByState.olapColumns],
     );
-    const [, dropConnector] = useDrop<QueryBuilderOlapColumnDragSource>(
+    const [, dropConnector] = useDrop<QueryBuilderOLAPColumnDragSource>(
       () => ({
         accept: [QUERY_BUILDER_OLAP_COLUMN_DND_TYPE],
         hover: (item, monitor): void => handleHover(item, monitor),
@@ -687,12 +764,10 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
     );
     const [{ olapColumnBeingDragged }, dragConnector, dragPreviewConnector] =
       useDrag<
-        QueryBuilderOlapColumnDragSource,
+        QueryBuilderOLAPColumnDragSource,
         void,
         {
-          olapColumnBeingDragged:
-            | QueryBuilderOlapGroupByColumnState
-            | undefined;
+          olapColumnBeingDragged: QueryBuilderTDSColumnState | undefined;
         }
       >(
         () => ({
@@ -706,7 +781,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
              */
             olapColumnBeingDragged:
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-              (monitor.getItem() as QueryBuilderOlapColumnDragSource | null)
+              (monitor.getItem() as QueryBuilderOLAPColumnDragSource | null)
                 ?.columnState,
           }),
         }),
@@ -718,7 +793,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
 
     const handleOpDrop = (val: QueryBuilderTDSColumnState): void => {
       if (
-        operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+        operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
       ) {
         operationState.setColumnState(val);
       }
@@ -729,7 +804,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
       }
     };
     const handleWindowDrop = useCallback(
-      (item: QueryBuilderOlapColumnDragSource): void => {
+      (item: QueryBuilderOLAPColumnDragSource): void => {
         const colState = item.columnState;
         if (
           olapColumnState.possibleReferencedColumns.includes(colState) &&
@@ -741,7 +816,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
       [olapColumnState],
     );
     const [{ isDragOver }, dropOpConnector] = useDrop<
-      QueryBuilderOlapColumnDragSource,
+      QueryBuilderOLAPColumnDragSource,
       void,
       { isDragOver: boolean }
     >(
@@ -804,6 +879,9 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
                   <TDSColumnReferenceEditor
                     tdsColumn={aggregateColumn}
                     handleChange={handleOpDrop}
+                    selectionEditor={{
+                      options: olapColumnState.possibleReferencedColumns,
+                    }}
                   />
                 )}
                 <DropdownMenu
@@ -875,8 +953,8 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
                 </PanelEntryDropZonePlaceholder>
               </button>
               <BasePopover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
+                open={Boolean(windowAnchor)}
+                anchorEl={windowAnchor}
                 onClose={closeWindowPopover}
                 anchorOrigin={{
                   vertical: 'bottom',
@@ -929,6 +1007,9 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
                   <TDSColumnReferenceEditor
                     tdsColumn={sortByState.columnState}
                     handleChange={handleSortDrop}
+                    selectionEditor={{
+                      options: olapColumnState.possibleReferencedColumns,
+                    }}
                   />
                 )}
                 {!sortByState && (
@@ -1029,7 +1110,7 @@ const QueryBuilderOlapGroupByColumnEditor = observer(
 );
 
 export const QueryBuilderOlapGroupByPanel = observer(
-  (props: { olapGroupByState: QueryBuilderOlapGroupByState }) => {
+  (props: { olapGroupByState: QueryBuilderOLAPGroupByState }) => {
     const { olapGroupByState } = props;
     const applicationStore = useApplicationStore();
     const createOlapGroupBy = (): void => {
@@ -1044,13 +1125,13 @@ export const QueryBuilderOlapGroupByPanel = observer(
     };
     // Drag and Drop
     const handleDrop = useCallback(
-      async (item: QueryBuilderOlapDropTarget): Promise<void> => {
+      async (item: QueryBuilderOLAPDropTarget): Promise<void> => {
         try {
           const newOlapState = createOlapColumnState(
             item.columnState,
             olapGroupByState.tdsState,
           );
-          olapGroupByState.addOlapColumn(newOlapState);
+          olapGroupByState.addOLAPColumn(newOlapState);
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notifyError(error.message);
@@ -1060,7 +1141,7 @@ export const QueryBuilderOlapGroupByPanel = observer(
       [applicationStore, olapGroupByState],
     );
     const [{ isDragOver }, dropTargetConnector] = useDrop<
-      QueryBuilderOlapDropTarget,
+      QueryBuilderOLAPDropTarget,
       void,
       { isDragOver: boolean }
     >(

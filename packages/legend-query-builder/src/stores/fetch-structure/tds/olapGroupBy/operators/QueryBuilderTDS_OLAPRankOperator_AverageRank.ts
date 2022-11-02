@@ -18,19 +18,21 @@ import { PRIMITIVE_TYPE, type Type } from '@finos/legend-graph';
 import { hashArray } from '@finos/legend-shared';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator_.js';
+import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
 
-export class QueryBuilderTDSOlapRankOperator_Rank extends QueryBuilderTDSOlapOperator {
+export class QueryBuilderTDS_OLAPRankOperator_AverageRank extends QueryBuilderTDS_OLAPOperator {
   getLabel(): string {
-    return 'rank';
+    return 'average rank';
   }
 
   get pureFunc(): string {
-    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_RANK;
+    return QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_AVERAGE_RANK;
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.OLAP_OPERATOR_RANK]);
+    return hashArray([
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_DENSE_RANK,
+    ]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {

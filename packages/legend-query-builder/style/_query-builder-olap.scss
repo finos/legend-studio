@@ -68,7 +68,7 @@
 
     margin-left: 0 0.5rem 0 0.5rem;
     height: 3.4rem;
-    width: calc(100% - 15rem);
+    width: calc(100% - 20rem);
     min-width: 10rem;
 
     &__input {
@@ -131,6 +131,7 @@
       color: var(--color-light-grey-100);
 
       svg {
+        font-size: 1.8rem;
         color: var(--color-dark-grey-280);
       }
     }
@@ -157,15 +158,18 @@
   }
 
   &__column__actions {
+    @include flexConstantDimension;
     @include flexVCenter;
 
     height: 100%;
     width: 3.4rem;
+    margin-right: 0.5rem;
   }
 
   &__column__action {
-    @include flexCenter;
+    @include flexVCenter;
 
+    padding-left: 0.5rem;
     height: 3.4rem;
     width: 3.4rem;
 
@@ -248,7 +252,6 @@
       width: 2.8rem;
       background: var(--color-dark-grey-280);
       color: var(--color-light-grey-100);
-      border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
         font-size: 1.8rem;
@@ -260,6 +263,7 @@
       background: var(--color-purple-50);
 
       svg {
+        font-size: 1.8rem;
         color: var(--color-dark-grey-280);
       }
     }
@@ -317,6 +321,7 @@
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
+        font-size: 1.8rem;
         color: var(--color-dark-grey-280);
       }
     }
@@ -339,8 +344,8 @@
 
         width: 100%;
         height: 2.8rem;
-        border-radius: 0.2rem;
         background: var(--color-dark-grey-100);
+        color: var(--color-light-grey-0);
       }
 
       &__property {

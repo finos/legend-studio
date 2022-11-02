@@ -20,7 +20,7 @@ import {
   V1_buildFilterFunctionExpression,
   V1_buildGetAllFunctionExpression,
   V1_buildGroupByFunctionExpression,
-  V1_buildOlapGroupByFunctionExpression,
+  V1_buildOLAPGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
   V1_buildWatermarkFunctionExpression,
@@ -142,7 +142,7 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
           )
         ) {
-          return V1_buildOlapGroupByFunctionExpression(
+          return V1_buildOLAPGroupByFunctionExpression(
             functionName,
             parameters,
             openVariables,
