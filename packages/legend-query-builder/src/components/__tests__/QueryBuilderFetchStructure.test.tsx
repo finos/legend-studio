@@ -421,6 +421,24 @@ test(
     );
     await waitFor(() => getByText(explorerPanel, '@Firm'));
 
+    //check that you can add properties to fetch structure for sub-class
+    fireEvent.click(getByText(explorerPanel, '@Firm'));
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    const subNodeElement = getByText(explorerPanel, 'Employees');
+    fireEvent.contextMenu(subNodeElement);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+
+    //check that you can add properties to fetch structure for root class
+    fireEvent.click(getByText(explorerPanel, 'LegalEntity'));
+    await waitFor(() => getByText(explorerPanel, 'LegalEntity'));
+    const rootNodeElement = getByText(explorerPanel, 'LegalEntity');
+    fireEvent.contextMenu(rootNodeElement);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+
     // simpleProjection with subType
     await act(async () => {
       queryBuilderState.initializeWithQuery(
