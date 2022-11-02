@@ -1032,6 +1032,10 @@ export const TEST_DATA__ModelCoverageAnalysisResult_SimpleSubtype = {
           name: 'firm',
           subType: 'model::Firm',
         },
+        {
+          _type: 'MappedProperty',
+          name: 'Name',
+        },
       ],
     },
     {

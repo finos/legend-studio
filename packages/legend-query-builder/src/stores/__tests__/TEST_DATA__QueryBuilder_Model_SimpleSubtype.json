@@ -13,6 +13,14 @@
           },
           "name": "legalName",
           "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "Name",
+          "type": "String"
         }
       ]
     },
@@ -221,6 +229,24 @@
                   }
                 ]
               },
+              "target": "model_Person"
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "model::LegalEntity",
+                "property": "Name"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "model::Test",
+                    "name": "FirmPerson"
+                  }
+                ]
+              },
+              "source": "model_Firm",
               "target": "model_Person"
             }
           ],

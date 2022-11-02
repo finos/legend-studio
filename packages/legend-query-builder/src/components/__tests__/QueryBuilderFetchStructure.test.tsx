@@ -421,6 +421,31 @@ test(
     );
     await waitFor(() => getByText(explorerPanel, '@Firm'));
 
+    //check that you can add properties to fetch structure for sub-class
+    fireEvent.click(getByText(explorerPanel, '@Firm'));
+    await waitFor(() => getByText(explorerPanel, 'Employees'));
+    const subNodeElement = getByText(explorerPanel, 'Employees');
+    fireEvent.contextMenu(subNodeElement);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    const tdsStateOne = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(2);
+
+    //check that you can add properties to fetch structure for root class
+    fireEvent.click(getByText(explorerPanel, 'LegalEntity'));
+    await waitFor(() => getByText(explorerPanel, 'LegalEntity'));
+    const rootNodeElement = getByText(explorerPanel, 'LegalEntity');
+    fireEvent.contextMenu(rootNodeElement);
+    fireEvent.click(
+      renderResult.getByText('Add Properties to Fetch Structure'),
+    );
+    expect(tdsStateOne.projectionColumns.length).toBe(3);
+    expect(tdsStateOne.projectionColumns[2]?.columnName).toBe('Name');
+
     // simpleProjection with subType
     await act(async () => {
       queryBuilderState.initializeWithQuery(
@@ -432,11 +457,11 @@ test(
     });
 
     // check fetch-structure
-    const tdsState = guaranteeType(
+    const tdsStateTwo = guaranteeType(
       queryBuilderState.fetchStructureState.implementation,
       QueryBuilderTDSState,
     );
-    expect(tdsState.projectionColumns.length).toBe(1);
+    expect(tdsStateTwo.projectionColumns.length).toBe(1);
   },
 );
 

@@ -166,18 +166,16 @@ const VariableExpressionEditor = observer(
             title={`${isCreating ? 'Create Parameter' : 'Update Parameter'}`}
           />
           <ModalBody className="query-builder__parameters__modal__body">
-            <div className="panel__content__form__section">
-              <PanelFormTextField
-                name="Parameter Name"
-                prompt="Name of the parameter. Should be descriptive of its purpose."
-                update={(value: string | undefined): void =>
-                  variableExpression_setName(varState, value ?? '')
-                }
-                value={varState.name}
-                errorMessage={validationMessage}
-                isReadOnly={false}
-              />
-            </div>
+            <PanelFormTextField
+              name="Parameter Name"
+              prompt="Name of the parameter. Should be descriptive of its purpose."
+              update={(value: string | undefined): void =>
+                variableExpression_setName(varState, value ?? '')
+              }
+              value={varState.name}
+              errorMessage={validationMessage}
+              isReadOnly={false}
+            />
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
                 Type
