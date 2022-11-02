@@ -29,7 +29,7 @@ import {
   Multiplicity,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
-import { type PlainObject, integrationTest } from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
 
 type QueryPropertyParameterTestCase = [
