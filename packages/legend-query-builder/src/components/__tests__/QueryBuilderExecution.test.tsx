@@ -25,9 +25,8 @@ import {
   stub_RawLambda,
   create_RawLambda,
   ParameterValue,
+  PrimitiveType,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   GenericType,
   GenericTypeExplicitReference,
 } from '@finos/legend-graph';
@@ -99,21 +98,12 @@ describe(integrationTest(`test query execution with parameters`), () => {
           parameterValue.value = p.value;
           return parameterValue;
         });
-      const multiplicityOne =
-        queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-          TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
-        );
       queryBuilderState.parametersState.parameterStates.forEach(
         (queryParamState) => {
           queryParamState.value = new PrimitiveInstanceValue(
             GenericTypeExplicitReference.create(
-              new GenericType(
-                queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.INTEGER,
-                ),
-              ),
+              new GenericType(PrimitiveType.INTEGER),
             ),
-            multiplicityOne,
           );
           (queryParamState.value as PrimitiveInstanceValue).values = [20];
         },
