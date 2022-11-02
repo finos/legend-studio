@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 20.0.4
+
+### Patch Changes
+
+- [#1572](https://github.com/finos/legend-studio/pull/1572) [`cb6451c3`](https://github.com/finos/legend-studio/commit/cb6451c33e0e747ced31b631c6f5e3ba0ac6c53a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Leverage engine to execute queries with parameters ([#1535](https://github.com/finos/legend-studio/issues/1535)).
+
 ## 20.0.3
 
 ## 20.0.2
