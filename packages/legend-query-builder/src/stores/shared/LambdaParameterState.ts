@@ -23,17 +23,7 @@ import {
   GenericTypeExplicitReference,
   observe_ValueSpecification,
   observe_VariableExpression,
-  PrimitiveInstanceValue,
   VariableExpression,
-  LambdaFunction,
-  CORE_PURE_PATH,
-  FunctionType,
-  SimpleFunctionExpression,
-  SUPPORTED_FUNCTIONS,
-  extractElementNameFromPath,
-  PackageableElementExplicitReference,
-  Multiplicity,
-  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -41,7 +31,6 @@ import {
   type Hashable,
   hashArray,
   IllegalStateError,
-  isNonNullable,
   uuid,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -60,41 +49,6 @@ enum LAMABA_PARAMETER_HASH_STRUCTURE {
   LAMBDA_PARAMETER_STATE = 'LAMBDA_PARAMETER_STATE',
   LAMBDA_PARAMETERS_STATE = 'LAMBDA_PARAMETERS_STATE',
 }
-
-export const buildParametersLetLambdaFunc = (
-  graph: PureModel,
-  lambdaParametersStates: LambdaParameterState[],
-): LambdaFunction => {
-  const letlambdaFunction = new LambdaFunction(
-    new FunctionType(
-      PackageableElementExplicitReference.create(
-        graph.getType(CORE_PURE_PATH.ANY),
-      ),
-      Multiplicity.ONE,
-    ),
-  );
-  letlambdaFunction.expressionSequence = lambdaParametersStates
-    .map((queryParamState) => {
-      if (queryParamState.value) {
-        const letFunc = new SimpleFunctionExpression(
-          extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
-        );
-        const letVar = new PrimitiveInstanceValue(
-          GenericTypeExplicitReference.create(
-            new GenericType(PrimitiveType.STRING),
-          ),
-        );
-        letVar.values = [queryParamState.variableName];
-        letFunc.parametersValues.push(letVar);
-        letFunc.parametersValues.push(queryParamState.value);
-        return letFunc;
-      }
-      return undefined;
-    })
-    .filter(isNonNullable);
-  return letlambdaFunction;
-};
-
 export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;

@@ -79,7 +79,7 @@ const transformConnectionTestData = (
   return connectionTestData;
 };
 
-const transformParameterValue = (
+export const V1_transformParameterValue = (
   element: ParameterValue,
 ): V1_ParameterValue => {
   const parameterValue = new V1_ParameterValue();
@@ -107,7 +107,7 @@ export const V1_transformServiceTest = (
   serviceTest.id = element.id;
   serviceTest.serializationFormat = element.serializationFormat;
   serviceTest.parameters = element.parameters.map((parameter) =>
-    transformParameterValue(parameter),
+    V1_transformParameterValue(parameter),
   );
   serviceTest.assertions = element.assertions.map((assertion) =>
     V1_transformTestAssertion(assertion),

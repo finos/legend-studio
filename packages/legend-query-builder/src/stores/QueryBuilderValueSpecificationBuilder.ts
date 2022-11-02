@@ -35,7 +35,6 @@ import { buildFilterExpression } from './filter/QueryBuilderFilterValueSpecifica
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
 import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
-import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
 
 const buildGetAllFunction = (
@@ -160,25 +159,8 @@ export const buildLambdaFunction = (
     !queryBuilderState.isParameterSupportDisabled &&
     queryBuilderState.parametersState.parameterStates.length
   ) {
-    // NOTE: if we are executing:
-    // 1. set the parameters to empty
-    // 2. add let statements for each parameter
-    if (options?.isBuildingExecutionQuery) {
-      lambdaFunction.functionType.parameters = [];
-      const letsFuncs = buildParametersLetLambdaFunc(
-        queryBuilderState.graphManagerState.graph,
-        queryBuilderState.parametersState.parameterStates,
-      );
-      lambdaFunction.expressionSequence = [
-        ...letsFuncs.expressionSequence,
-        ...lambdaFunction.expressionSequence,
-      ];
-    } else {
-      lambdaFunction.functionType.parameters =
-        queryBuilderState.parametersState.parameterStates.map(
-          (e) => e.parameter,
-        );
-    }
+    lambdaFunction.functionType.parameters =
+      queryBuilderState.parametersState.parameterStates.map((e) => e.parameter);
   }
 
   return lambdaFunction;
