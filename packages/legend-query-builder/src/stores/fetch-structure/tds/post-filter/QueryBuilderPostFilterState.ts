@@ -67,7 +67,7 @@ import {
 import { QUERY_BUILDER_GROUP_OPERATION } from '../../../QueryBuilderGroupOperationHelper.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
-import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 
 export enum QUERY_BUILDER_POST_FILTER_DND_TYPE {
   GROUP_CONDITION = 'GROUP_CONDITION',

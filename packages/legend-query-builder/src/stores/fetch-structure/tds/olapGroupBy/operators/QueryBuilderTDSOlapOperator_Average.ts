@@ -16,7 +16,7 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator_.js';
+import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 
@@ -33,7 +33,7 @@ export class QueryBuilderTDSOlapOperator_Average extends QueryBuilderTDSOlapOper
   }
 
   get hashCode(): string {
-    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.OLAP_OPERATOR_AVERAGE]);
+    return hashArray([QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_OPERATOR_AVERAGE]);
   }
 
   isCompatibleWithType(type: Type | undefined): boolean {

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator_.js';
-import { QueryBuilderTDSOlapRankOperator_AverageRank } from './operators/QueryBuilderTDSOlapRankOperator_AverageRank_.js';
-import { QueryBuilderTDSOlapRankOperator_DenseRank } from './operators/QueryBuilderTDSOlapRankOperator_DenseRank_.js';
-import { QueryBuilderTDSOlapRankOperator_Rank } from './operators/QueryBuilderTDSOlapRankOperator_Rank_.js';
-import { QueryBuilderTDSOlapRankOperator_RowNumber } from './operators/QueryBuilderTDSOlapRankOperator_RowNumber_.js';
+import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator.js';
+import { QueryBuilderTDSOlapRankOperator_AverageRank } from './operators/QueryBuilderTDSOlapRankOperator_AverageRank.js';
+import { QueryBuilderTDSOlapRankOperator_DenseRank } from './operators/QueryBuilderTDSOlapRankOperator_DenseRank.js';
+import { QueryBuilderTDSOlapRankOperator_Rank } from './operators/QueryBuilderTDSOlapRankOperator_Rank.js';
+import { QueryBuilderTDSOlapRankOperator_RowNumber } from './operators/QueryBuilderTDSOlapRankOperator_RowNumber.js';
 import { QueryBuilderTDSOlapOperator_Sum } from './operators/QueryBuilderTDSOlapOperator_Sum.js';
 import { QueryBuilderTDSOlapOperator_Count } from './operators/QueryBuilderTDSOlapOperator_Count.js';
 import { QueryBuilderTDSOlapOperator_Max } from './operators/QueryBuilderTDSOlapOperator_Max.js';

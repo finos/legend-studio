@@ -91,7 +91,7 @@ import {
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn,
   TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy,
-  TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+  TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc,
   TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation,
   TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank,
@@ -439,7 +439,31 @@ const cases: RoundtripTestCase[] = [
   [
     'OlapGroupBy with sum agg operation',
     olapGroupbyCtx,
-    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('sum'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with count agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('count'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with max agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('max'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with min agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('min'),
+    undefined,
+  ],
+  [
+    'OlapGroupBy with average agg operation',
+    olapGroupbyCtx,
+    TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregationFunc('average'),
     undefined,
   ],
   [

@@ -49,7 +49,7 @@ import {
   Multiplicity,
   PrimitiveType,
 } from '@finos/legend-graph';
-import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
   DEFAULT_LAMBDA_VARIABLE_NAME,

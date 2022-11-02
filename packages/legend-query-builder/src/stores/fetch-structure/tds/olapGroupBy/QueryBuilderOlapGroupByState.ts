@@ -27,15 +27,15 @@ import { action, makeObservable, observable } from 'mobx';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../graphManager/QueryBuilderHashUtils.js';
 import { DEFAULT_LAMBDA_VARIABLE_NAME } from '../../../QueryBuilderConfig.js';
 import type { QueryBuilderProjectionColumnDragSource } from '../projection/QueryBuilderProjectionColumnState.js';
-import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
+import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { COLUMN_SORT_TYPE } from '../QueryResultSetModifierState.js';
-import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator_.js';
+import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator.js';
 
 export const QUERY_BUILDER_OLAP_COLUMN_DND_TYPE = 'OLAP_COLUMN';
 
 export interface QueryBuilderOlapColumnDragSource {
-  columnState: QueryBuilderOlapGroupByColumnState;
+  columnState: QueryBuilderTDSColumnState;
 }
 
 export type QueryBuilderOlapDropTarget =
@@ -71,7 +71,7 @@ export class OlapGroupByColumnSortByState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.OLAP_GROUPBY_COLUMN_SORTBY_STATE,
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_GROUPBY_COLUMN_SORTBY_STATE,
       this.sortType,
       this.columnState.columnName,
     ]);
@@ -101,7 +101,7 @@ export abstract class QueryBuilderTDSOlapOperatorState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.OLAP_GROUPBY_OPERATION_STATE,
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_GROUPBY_OPERATION_STATE,
       this.lambdaParameterName,
       this.operator,
     ]);
@@ -142,7 +142,7 @@ export class QueryBuilderTDSOlapAggreationOperatorState extends QueryBuilderTDSO
 
   override get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.OLAP_GROUPBY_AGG_OPERATION_STATE,
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_GROUPBY_AGG_OPERATION_STATE,
       this.lambdaParameterName,
       this.operator,
       this.columnState.columnName,
@@ -304,7 +304,7 @@ export class QueryBuilderOlapGroupByColumnState
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.OLAP_GROUPBY_COLUMN_STATE,
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_GROUPBY_COLUMN_STATE,
       hashArray(this.windowColumns),
       this.sortByState ?? '',
       this.operationState,
@@ -370,7 +370,7 @@ export class QueryBuilderOlapGroupByState implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      QUERY_BUILDER_HASH_STRUCTURE.OLAP_GROUPBY_STATE,
+      QUERY_BUILDER_HASH_STRUCTURE.TDS_OLAP_GROUPBY_STATE,
       hashArray(this.olapColumns),
     ]);
   }

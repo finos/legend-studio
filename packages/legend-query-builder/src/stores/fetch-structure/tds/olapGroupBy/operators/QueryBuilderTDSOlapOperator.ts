@@ -16,7 +16,7 @@
 
 import { PrimitiveType, type PureModel, type Type } from '@finos/legend-graph';
 import { type Hashable, uuid } from '@finos/legend-shared';
-import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState_.js';
+import type { QueryBuilderTDSColumnState } from '../../QueryBuilderTDSColumnState.js';
 
 export abstract class QueryBuilderTDSOlapOperator implements Hashable {
   readonly uuid = uuid();

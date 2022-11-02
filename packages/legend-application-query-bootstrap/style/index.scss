@@ -538,7 +538,8 @@
     text-transform: capitalize;
   }
 
-  .query-builder__projection__column__drag-handle {
+  .query-builder__projection__column__drag-handle,
+  .query-builder__olap__column__drag-handle {
     background: var(--color-light-grey-180);
 
     svg {
@@ -685,7 +686,8 @@
   }
 
   .query-builder__projection__column__action .query-builder__icon,
-  .query-builder__projection__column__action {
+  .query-builder__projection__column__action,
+  .query-builder__olap__column__action {
     &:hover svg {
       color: var(--color-dark-grey-350);
     }
@@ -695,12 +697,15 @@
     background: var(--color-legacy-light-blue-100);
   }
 
-  .query-builder__projection__column__aggregate__operator__badge {
+  .query-builder__projection__column__aggregate__operator__badge,
+  .query-builder__olap__column__sortby__operator__badge {
     background: var(--color-dark-grey-400);
     color: var(--color-light-grey-100);
   }
 
-  .query-builder__projection__column__aggregate__operator__dropdown__trigger {
+  .query-builder__projection__column__aggregate__operator__dropdown__trigger,
+  .query-builder__olap__column__sortby__operator__dropdown__trigger,
+  .query-builder__olap__column__operation__operator__dropdown__trigger {
     background: var(--color-dark-grey-350);
 
     svg {
@@ -708,7 +713,8 @@
     }
   }
 
-  .query-builder__projection__column__aggregate__operator__badge--activated {
+  .query-builder__projection__column__aggregate__operator__badge--activated,
+  .query-builder__olap__column__sortby__operator__badge--activated {
     background: var(--color-legacy-light-blue-200);
 
     svg {
@@ -850,6 +856,32 @@
 
   .query-builder-post-filter-tree__expand-icon svg {
     color: var(--color-legacy-dark-grey-200);
+  }
+
+  // ------------------------------------ OLAP Panel ---------------------------------------
+  .query-builder__olap__column__sortby__none,
+  .query-builder__olap__column__window__content__label {
+    background: var(--color-dark-grey-300);
+  }
+
+  .query-builder__olap__column__sortby__operator__label,
+  .query-builder__olap__column__operation__operator__label {
+    background: var(--color-dark-grey-400);
+    color: var(--color-light-grey-100);
+  }
+
+  .query-builder__olap__column__window__operator__badge,
+  .query-builder__olap__column__operation__operator__badge {
+    background: var(--color-legacy-light-blue-200);
+    color: var(--color-light-grey-100);
+
+    svg {
+      color: var(--color-legacy-light-grey-100);
+    }
+  }
+
+  .query-builder__olap__tds__column-badge__content {
+    background: var(--color-blue-50);
   }
 
   // ------------------------------------ Result Panel ---------------------------------------

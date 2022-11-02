@@ -33,7 +33,7 @@ import {
   UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { QueryBuilderDerivationProjectionColumnState } from '../projection/QueryBuilderProjectionColumnState.js';
-import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
+import type { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import { getTDSColumnState } from '../QueryBuilderTDSHelper.js';
 import type { QueryBuilderPostFilterOperator } from './QueryBuilderPostFilterOperator.js';
 import {
