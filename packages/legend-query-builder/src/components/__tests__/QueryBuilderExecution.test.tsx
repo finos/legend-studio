@@ -16,10 +16,7 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { act } from '@testing-library/react';
-import {
-  TEST_DATA_QueryExecution_ExecutionInput,
-  TEST_DATA_QueryExecution_ExecutionResult,
-} from './TEST_DATA_QueryBuilder_Query_Execution.js';
+import { TEST_DATA_QueryExecution_ExecutionInput } from './TEST_DATA_QueryBuilder_Query_Execution.js';
 import TEST_DATA_QueryBuilder_QueryExecution_Entities from './TEST_DATA_QueryBuilder_QueryExecution_Entities.json';
 import {
   stub_RawLambda,
@@ -29,6 +26,7 @@ import {
   PrimitiveInstanceValue,
   GenericType,
   GenericTypeExplicitReference,
+  Multiplicity,
 } from '@finos/legend-graph';
 import type { Entity } from '@finos/legend-storage';
 import { type PlainObject, integrationTest } from '@finos/legend-shared';
@@ -43,7 +41,6 @@ type QueryPropertyParameterTestCase = [
     rawLambda: { parameters?: object; body?: object };
     expectedNumberOfParameter: number;
     expectedNumberOfParameterValues: number;
-    executionResult: PlainObject<unknown>;
   },
 ];
 
@@ -57,7 +54,6 @@ const QUERY_PROPERTY_PARAMETER_CASES: QueryPropertyParameterTestCase[] = [
       rawLambda: TEST_DATA_QueryExecution_ExecutionInput.function,
       expectedNumberOfParameter: 1,
       expectedNumberOfParameterValues: 1,
-      executionResult: TEST_DATA_QueryExecution_ExecutionResult,
     },
   ],
 ];
@@ -102,15 +98,18 @@ describe(integrationTest(`test query execution with parameters`), () => {
         (queryParamState) => {
           queryParamState.value = new PrimitiveInstanceValue(
             GenericTypeExplicitReference.create(
-              new GenericType(PrimitiveType.INTEGER),
+              new GenericType(PrimitiveType.STRING),
             ),
           );
-          (queryParamState.value as PrimitiveInstanceValue).values = [20];
+          queryParamState.value.multiplicity = Multiplicity.ZERO_ONE;
+          (queryParamState.value as PrimitiveInstanceValue).values = ['GS_LTD'];
         },
       );
       const parameterValues =
         queryBuilderState.resultState.buildExecutionParameterValues();
-      expect(parameterValues).toEqual(expectedParameterValues);
+      expect(JSON.stringify(parameterValues)).toEqual(
+        JSON.stringify(expectedParameterValues),
+      );
       expect(parameterValues.length).toBe(expectedNumberOfParameterValues);
     },
   );

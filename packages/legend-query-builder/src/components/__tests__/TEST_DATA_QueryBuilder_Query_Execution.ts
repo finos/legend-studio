@@ -37,7 +37,7 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                     parameters: [
                       {
                         _type: 'packageableElementPtr',
-                        fullPath: 'model::Person',
+                        fullPath: 'model::Firm',
                       },
                     ],
                   },
@@ -46,14 +46,14 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                     body: [
                       {
                         _type: 'func',
-                        function: 'in',
+                        function: 'equal',
                         parameters: [
                           {
                             _type: 'property',
                             parameters: [{ _type: 'var', name: 'x' }],
-                            property: 'age',
+                            property: 'legalName',
                           },
-                          { _type: 'var', name: 'var' },
+                          { _type: 'var', name: 'var_1' },
                         ],
                       },
                     ],
@@ -71,7 +71,7 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                       {
                         _type: 'property',
                         parameters: [{ _type: 'var', name: 'x' }],
-                        property: 'age',
+                        property: 'legalName',
                       },
                     ],
                     parameters: [{ _type: 'var', name: 'x' }],
@@ -81,30 +81,20 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
               {
                 _type: 'collection',
                 multiplicity: { lowerBound: 1, upperBound: 1 },
-                values: [
-                  {
-                    _type: 'string',
-                    multiplicity: { lowerBound: 1, upperBound: 1 },
-                    values: ['Age'],
-                  },
-                ],
+                values: [{ _type: 'string', value: 'Legal Name' }],
               },
             ],
           },
-          {
-            _type: 'integer',
-            multiplicity: { lowerBound: 1, upperBound: 1 },
-            values: [1000],
-          },
+          { _type: 'integer', value: 1000 },
         ],
       },
     ],
     parameters: [
       {
         _type: 'var',
-        class: 'Integer',
+        class: 'String',
         multiplicity: { lowerBound: 0, upperBound: 1 },
-        name: 'var',
+        name: 'var_1',
       },
     ],
   },
@@ -127,18 +117,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
       },
       {
         _type: 'class',
-        name: 'LegalEntity',
-        package: 'model',
-        properties: [
-          {
-            multiplicity: { lowerBound: 1, upperBound: 1 },
-            name: 'legalName',
-            type: 'String',
-          },
-        ],
-      },
-      {
-        _type: 'class',
         constraints: [
           {
             functionDefinition: {
@@ -150,13 +128,13 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                   parameters: [
                     {
                       _type: 'property',
-                      parameters: [{ _type: 'var', name: 'this' }],
                       property: 'legalName',
+                      parameters: [{ _type: 'var', name: 'this' }],
                     },
                     {
                       _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
                       values: ['_'],
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
                     },
                   ],
                 },
@@ -194,13 +172,8 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                 parameters: [
                   {
                     _type: 'property',
-                    parameters: [
-                      {
-                        _type: 'var',
-                        name: 'this',
-                      },
-                    ],
                     property: 'employees',
+                    parameters: [{ _type: 'var', name: 'this' }],
                   },
                 ],
               },
@@ -235,11 +208,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
             name: 'lastName',
             type: 'String',
           },
-          {
-            multiplicity: { lowerBound: 1, upperBound: 1 },
-            name: 'age',
-            type: 'Integer',
-          },
         ],
         qualifiedProperties: [
           {
@@ -250,34 +218,24 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                 parameters: [
                   {
                     _type: 'collection',
-                    multiplicity: { lowerBound: 3, upperBound: 3 },
                     values: [
                       {
                         _type: 'property',
-                        parameters: [
-                          {
-                            _type: 'var',
-                            name: 'this',
-                          },
-                        ],
                         property: 'firstName',
+                        parameters: [{ _type: 'var', name: 'this' }],
                       },
                       {
                         _type: 'string',
-                        multiplicity: { lowerBound: 1, upperBound: 1 },
                         values: [' '],
+                        multiplicity: { lowerBound: 1, upperBound: 1 },
                       },
                       {
                         _type: 'property',
-                        parameters: [
-                          {
-                            _type: 'var',
-                            name: 'this',
-                          },
-                        ],
                         property: 'lastName',
+                        parameters: [{ _type: 'var', name: 'this' }],
                       },
                     ],
+                    multiplicity: { lowerBound: 3, upperBound: 3 },
                   },
                 ],
               },
@@ -286,6 +244,18 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
             parameters: [],
             returnMultiplicity: { lowerBound: 1, upperBound: 1 },
             returnType: 'String',
+          },
+        ],
+      },
+      {
+        _type: 'class',
+        name: 'LegalEntity',
+        package: 'model',
+        properties: [
+          {
+            multiplicity: { lowerBound: 1, upperBound: 1 },
+            name: 'legalName',
+            type: 'String',
           },
         ],
       },
@@ -369,7 +339,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                     nullable: true,
                     type: { _type: 'Varchar', size: 200 },
                   },
-                  { name: 'age', nullable: true, type: { _type: 'Integer' } },
                 ],
                 name: 'PersonTable',
                 primaryKey: ['id'],
@@ -549,22 +518,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
                   tableAlias: 'PersonTable',
                 },
               },
-              {
-                _type: 'relationalPropertyMapping',
-                property: { class: 'model::Person', property: 'age' },
-                relationalOperation: {
-                  _type: 'column',
-                  column: 'age',
-                  table: {
-                    _type: 'Table',
-                    database: 'model::MyDatabase',
-                    mainTableDb: 'model::MyDatabase',
-                    schema: 'default',
-                    table: 'PersonTable',
-                  },
-                  tableAlias: 'PersonTable',
-                },
-              },
             ],
             root: true,
           },
@@ -624,10 +577,11 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
           datasourceSpecification: {
             _type: 'h2Local',
             testDataSetupSqls: [
-              "Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200), Inc VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), age INT);\nInsert into FirmTable (id, Legal_Name, Inc) values (1, 'Finos', 'CORP');\nInsert into FirmTable (id, Legal_Name, Inc) values (2, 'Apple', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (3, 'GS', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (4, 'Google', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (5, 'Alphabet', 'LLC');\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (1, 3, 'X1', 'Mauricio', 10);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (2, 3, 'X2', 'An', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (3, 3, 'X3', 'Anne', 30);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (4, 3, 'X4', 'Gayathri', 40);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (5, 3, 'X5', 'Yannan', 50);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (6, 3, 'X6', 'Dave', 60);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (7, 3, 'X7', 'Mo', 70);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (8, 3, 'X9', 'Teddy', 80);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (9, 2, 'X8', 'Teddy', 90);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 2, 'X8', 'Teddy', 100);\n\n",
+              "Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200), Inc VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), age INT);\nInsert into FirmTable (id, Legal_Name, Inc) values (1, 'Finos', 'CORP');\nInsert into FirmTable (id, Legal_Name, Inc) values (2, 'Apple', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (3, 'GS', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (4, 'Google', 'Corp');\nInsert into FirmTable (id, Legal_Name, Inc) values (5, 'Alphabet', 'LLC');\nInsert into FirmTable (id, Legal_Name, Inc) values (6, 'Alphabet', 'LLC');\nInsert into FirmTable (id, Legal_Name, Inc) values (7, 'Twitter', 'LLC');\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (1, 3, 'X1', 'Mauricio', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (2, 3, 'X2', 'An', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (3, 3, 'X3', 'Anne', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (4, 3, 'X4', 'Gayathri', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (5, 3, 'X5', 'Yannan', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (6, 3, 'X6', 'Dave', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (7, 3, 'X7', 'Mo', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (8, 3, 'X8', 'Teddy', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (9, 7, 'X8', 'Test1', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (10, 7, 'X8', 'Test2', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (11, 7, 'X8', 'Test2', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (12, 7, 'X8', 'Test3', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (13, 7, 'X8', 'Test4', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (14, 7, 'X8', 'Test5', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (15, 7, 'X8', 'Test6', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (16, 7, 'X8', 'Test7', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (17, 7, 'X8', 'Test8', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (18, 7, 'X8', 'Test9', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (19, 7, 'X8', 'Test10', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (20, 7, 'X8', 'Test11', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (21, 7, 'X8', 'Test12', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (22, 7, 'X8', 'Test13', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (23, 7, 'X8', 'Test14', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (24, 7, 'X8', 'Test15', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (25, 7, 'X8', 'Test16', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (26, 7, 'X8', 'Test17', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (27, 7, 'X8', 'Test18', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (28, 7, 'X8', 'Test19', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (29, 7, 'X8', 'Test20', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (30, 7, 'X8', 'Test21', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (31, 7, 'X8', 'Test22', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (32, 7, 'X8', 'Test23', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (33, 7, 'X8', 'Test24', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (34, 7, 'X8', 'Test25', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (35, 7, 'X8', 'Test26', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (36, 7, 'X8', 'Test27', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (37, 7, 'X8', 'Test28', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (38, 7, 'X8', 'Test29', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (39, 7, 'X8', 'Test30', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (40, 7, 'X8', 'Test31', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (41, 7, 'X8', 'Test32', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (42, 7, 'X8', 'Test33', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (43, 7, 'X8', 'Test34', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (44, 7, 'X8', 'Test35', 20);\nInsert into PersonTable (id, firm_id, lastName, firstName, age) values (45, 7, 'X8', 'Test36', 20);\n\n\n",
             ],
           },
           element: 'model::MyDatabase',
+          quoteIdentifiers: false,
           type: 'H2',
         },
         name: 'MyConnection',
@@ -642,27 +596,6 @@ export const TEST_DATA_QueryExecution_ExecutionInput = {
     enableConstraints: true,
   },
   parameterValues: [
-    {
-      name: 'var',
-      value: {
-        _type: 'integer',
-        multiplicity: { lowerBound: 0, upperBound: 1 },
-        values: [20],
-      },
-    },
+    { name: 'var_1', value: { _type: 'string', value: 'GS_LTD' } },
   ],
-};
-
-export const TEST_DATA_QueryExecution_ExecutionResult = {
-  builder: {
-    _type: 'tdsBuilder',
-    columns: [{ name: 'Age', type: 'Integer', relationalType: 'INTEGER' }],
-  },
-  activities: [
-    {
-      _type: 'relational',
-      sql: 'select top 1000 "root".age as "Age" from PersonTable as "root" where "root".age in (20)',
-    },
-  ],
-  result: { columns: ['Age'], rows: [{ values: [20] }] },
 };
