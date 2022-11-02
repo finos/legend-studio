@@ -52,8 +52,8 @@ import { V1_RuntimeInstance } from '../../../../model/valueSpecification/raw/cla
 import { V1_SerializationConfig } from '../../../../model/valueSpecification/raw/classInstance/V1_SerializationConfig.js';
 import { V1_TDSAggregateValue } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSAggregateValue.js';
 import { V1_TDSColumnInformation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSColumnInformation.js';
-import { V1_TDSOlapAggregation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation_.js';
-import { V1_TDSOlapRank } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapRank_.js';
+import { V1_TDSOlapAggregation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapAggregation.js';
+import { V1_TDSOlapRank } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSOlapRank.js';
 import { V1_TDSSortInformation } from '../../../../model/valueSpecification/raw/classInstance/V1_TDSSortInformation.js';
 import type { V1_INTERNAL__UnknownValueSpecification } from '../../../../model/valueSpecification/V1_INTERNAL__UnknownValueSpecfication.js';
 import type {

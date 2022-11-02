@@ -39,14 +39,14 @@ import {
 } from '../QueryBuilderTDSHelper.js';
 import { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import {
-  type QueryBuilderTDSOlapOperatorState,
-  OlapGroupByColumnSortByState,
-  QueryBuilderOlapGroupByColumnState,
-  QueryBuilderTDSOlapAggreationOperatorState,
-  QueryBuilderTDSOlapRankOperatorState,
-} from './QueryBuilderOlapGroupByState.js';
+  type QueryBuilderTDS_OLAPOperatorState,
+  OLAPGroupByColumnSortByState,
+  QueryBuilderOLAPGroupByColumnState,
+  QueryBuilderTDS_OLAPAggreationOperatorState,
+  QueryBuilderTDS_OLAPRankOperatorState,
+} from './QueryBuilderOLAPGroupByState_.js';
 
-export const processTDSOlapGroupByExpression = (
+export const processTDS_OLAPGroupByExpression = (
   expression: SimpleFunctionExpression,
   queryBuilderState: QueryBuilderState,
 ): void => {
@@ -116,7 +116,7 @@ export const processTDSOlapGroupByExpression = (
   });
 
   // process sortBy
-  let sortByState: OlapGroupByColumnSortByState | undefined;
+  let sortByState: OLAPGroupByColumnSortByState | undefined;
   if (containsSortByExpression) {
     const sortByExpression = guaranteeType(
       sortByValueSpec,
@@ -134,10 +134,10 @@ export const processTDSOlapGroupByExpression = (
       'Can`t process OLAP sort column: OLAP sort column should be a string primitive instance value',
     );
     const sortColState = getTDSColumnState(tdsState, colSortVal);
-    sortByState = new OlapGroupByColumnSortByState(sortColState, colSortType);
+    sortByState = new OLAPGroupByColumnSortByState(sortColState, colSortType);
   }
   // process olap operation
-  let operatorState: QueryBuilderTDSOlapOperatorState;
+  let operatorState: QueryBuilderTDS_OLAPOperatorState;
   if (olapOperationExpression instanceof SimpleFunctionExpression) {
     assertTrue(
       matchFunctionName(olapOperationExpression.functionName, [
@@ -172,7 +172,7 @@ export const processTDSOlapGroupByExpression = (
       tdsState.olapGroupByState.findOperator(operationFunctionExp.functionName),
       `olapGroupBy() operator '${operationFunctionExp.functionName}' not supported`,
     );
-    operatorState = new QueryBuilderTDSOlapAggreationOperatorState(
+    operatorState = new QueryBuilderTDS_OLAPAggreationOperatorState(
       tdsState.olapGroupByState,
       operation,
       oppColumnState,
@@ -203,7 +203,7 @@ export const processTDSOlapGroupByExpression = (
       !operation.isColumnAggregator(),
       `Operator '${operation.getLabel()}' expects a TDS column to aggregate against`,
     );
-    operatorState = new QueryBuilderTDSOlapRankOperatorState(
+    operatorState = new QueryBuilderTDS_OLAPRankOperatorState(
       tdsState.olapGroupByState,
       operation,
     );
@@ -225,13 +225,13 @@ export const processTDSOlapGroupByExpression = (
     ).values[0],
     'Can`t process OLAP column: OLAP column should be a string primitive instance value',
   );
-  const olapGroupByColumnState = new QueryBuilderOlapGroupByColumnState(
+  const olapGroupByColumnState = new QueryBuilderOLAPGroupByColumnState(
     tdsState.olapGroupByState,
     windowColumns,
     sortByState,
     operatorState,
     olapColumnValue,
   );
-  tdsState.olapGroupByState.addOlapColumn(olapGroupByColumnState);
+  tdsState.olapGroupByState.addOLAPColumn(olapGroupByColumnState);
   tdsState.setShowOlapGroupByPanel(true);
 };

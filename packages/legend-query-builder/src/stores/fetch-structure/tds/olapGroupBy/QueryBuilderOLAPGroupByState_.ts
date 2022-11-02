@@ -30,19 +30,19 @@ import type { QueryBuilderProjectionColumnDragSource } from '../projection/Query
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
 import type { COLUMN_SORT_TYPE } from '../QueryResultSetModifierState.js';
-import type { QueryBuilderTDSOlapOperator } from './operators/QueryBuilderTDSOlapOperator.js';
+import type { QueryBuilderTDS_OLAPOperator } from './operators/QueryBuilderTDS_OLAPOperator.js';
 
 export const QUERY_BUILDER_OLAP_COLUMN_DND_TYPE = 'OLAP_COLUMN';
 
-export interface QueryBuilderOlapColumnDragSource {
+export interface QueryBuilderOLAPColumnDragSource {
   columnState: QueryBuilderTDSColumnState;
 }
 
-export type QueryBuilderOlapDropTarget =
+export type QueryBuilderOLAPDropTarget =
   | QueryBuilderProjectionColumnDragSource
-  | QueryBuilderOlapColumnDragSource;
+  | QueryBuilderOLAPColumnDragSource;
 
-export class OlapGroupByColumnSortByState implements Hashable {
+export class OLAPGroupByColumnSortByState implements Hashable {
   columnState: QueryBuilderTDSColumnState;
   sortType: COLUMN_SORT_TYPE;
 
@@ -78,14 +78,14 @@ export class OlapGroupByColumnSortByState implements Hashable {
   }
 }
 
-export abstract class QueryBuilderTDSOlapOperatorState implements Hashable {
-  readonly olapState: QueryBuilderOlapGroupByState;
+export abstract class QueryBuilderTDS_OLAPOperatorState implements Hashable {
+  readonly olapState: QueryBuilderOLAPGroupByState;
   lambdaParameterName: string = DEFAULT_LAMBDA_VARIABLE_NAME;
-  operator: QueryBuilderTDSOlapOperator;
+  operator: QueryBuilderTDS_OLAPOperator;
 
   constructor(
-    olapState: QueryBuilderOlapGroupByState,
-    operator: QueryBuilderTDSOlapOperator,
+    olapState: QueryBuilderOLAPGroupByState,
+    operator: QueryBuilderTDS_OLAPOperator,
   ) {
     this.olapState = olapState;
     this.operator = operator;
@@ -95,7 +95,7 @@ export abstract class QueryBuilderTDSOlapOperatorState implements Hashable {
     this.lambdaParameterName = paramName;
   }
 
-  setOperator(val: QueryBuilderTDSOlapOperator): void {
+  setOperator(val: QueryBuilderTDS_OLAPOperator): void {
     this.operator = val;
   }
 
@@ -108,10 +108,10 @@ export abstract class QueryBuilderTDSOlapOperatorState implements Hashable {
   }
 }
 
-export class QueryBuilderTDSOlapRankOperatorState extends QueryBuilderTDSOlapOperatorState {
+export class QueryBuilderTDS_OLAPRankOperatorState extends QueryBuilderTDS_OLAPOperatorState {
   constructor(
-    olapState: QueryBuilderOlapGroupByState,
-    operator: QueryBuilderTDSOlapOperator,
+    olapState: QueryBuilderOLAPGroupByState,
+    operator: QueryBuilderTDS_OLAPOperator,
   ) {
     super(olapState, operator);
     makeObservable(this, {
@@ -120,11 +120,11 @@ export class QueryBuilderTDSOlapRankOperatorState extends QueryBuilderTDSOlapOpe
   }
 }
 
-export class QueryBuilderTDSOlapAggreationOperatorState extends QueryBuilderTDSOlapOperatorState {
+export class QueryBuilderTDS_OLAPAggreationOperatorState extends QueryBuilderTDS_OLAPOperatorState {
   columnState: QueryBuilderTDSColumnState;
   constructor(
-    olapState: QueryBuilderOlapGroupByState,
-    operator: QueryBuilderTDSOlapOperator,
+    olapState: QueryBuilderOLAPGroupByState,
+    operator: QueryBuilderTDS_OLAPOperator,
     columnState: QueryBuilderTDSColumnState,
   ) {
     super(olapState, operator);
@@ -150,21 +150,21 @@ export class QueryBuilderTDSOlapAggreationOperatorState extends QueryBuilderTDSO
   }
 }
 
-export class QueryBuilderOlapGroupByColumnState
+export class QueryBuilderOLAPGroupByColumnState
   extends QueryBuilderTDSColumnState
   implements Hashable
 {
-  readonly olapState: QueryBuilderOlapGroupByState;
+  readonly olapState: QueryBuilderOLAPGroupByState;
   windowColumns: QueryBuilderTDSColumnState[] = [];
-  sortByState: OlapGroupByColumnSortByState | undefined;
-  operationState: QueryBuilderTDSOlapOperatorState;
+  sortByState: OLAPGroupByColumnSortByState | undefined;
+  operationState: QueryBuilderTDS_OLAPOperatorState;
   columnName: string;
 
   constructor(
-    olapState: QueryBuilderOlapGroupByState,
+    olapState: QueryBuilderOLAPGroupByState,
     windowColumns: QueryBuilderTDSColumnState[],
-    sortType: OlapGroupByColumnSortByState | undefined,
-    operationState: QueryBuilderTDSOlapOperatorState,
+    sortType: OLAPGroupByColumnSortByState | undefined,
+    operationState: QueryBuilderTDS_OLAPOperatorState,
     columnName: string,
   ) {
     super();
@@ -189,7 +189,7 @@ export class QueryBuilderOlapGroupByColumnState
     this.columnName = columnName;
   }
 
-  get columnOlapGroupIdx(): number {
+  get columnOLAPGroupIdx(): number {
     return this.olapState.olapColumns.findIndex((e) => e === this);
   }
 
@@ -204,7 +204,7 @@ export class QueryBuilderOlapGroupByColumnState
 
   get referencedTDSColumns(): QueryBuilderTDSColumnState[] {
     const operatorReference =
-      this.operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+      this.operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
         ? [this.operationState.columnState]
         : [];
     const soryByReference = this.sortByState
@@ -223,11 +223,11 @@ export class QueryBuilderOlapGroupByColumnState
     this.columnName = val;
   }
 
-  setOperatorState(op: QueryBuilderTDSOlapOperatorState): void {
+  setOperatorState(op: QueryBuilderTDS_OLAPOperatorState): void {
     this.operationState = op;
   }
 
-  setSortBy(val: OlapGroupByColumnSortByState | undefined): void {
+  setSortBy(val: OLAPGroupByColumnSortByState | undefined): void {
     this.sortByState = val;
   }
 
@@ -244,7 +244,7 @@ export class QueryBuilderOlapGroupByColumnState
   }
 
   possibleAggregatedColumns(
-    op: QueryBuilderTDSOlapOperator,
+    op: QueryBuilderTDS_OLAPOperator,
   ): QueryBuilderTDSColumnState[] {
     if (op.isColumnAggregator()) {
       return this.possibleReferencedColumns.filter((col) =>
@@ -254,10 +254,10 @@ export class QueryBuilderOlapGroupByColumnState
     return [];
   }
 
-  changeOperator(olapOp: QueryBuilderTDSOlapOperator): void {
+  changeOperator(olapOp: QueryBuilderTDS_OLAPOperator): void {
     const currentOperator = this.operationState.operator;
     const currentAggregateColumn =
-      this.operationState instanceof QueryBuilderTDSOlapAggreationOperatorState
+      this.operationState instanceof QueryBuilderTDS_OLAPAggreationOperatorState
         ? this.operationState.columnState
         : undefined;
     if (currentOperator !== olapOp) {
@@ -269,7 +269,7 @@ export class QueryBuilderOlapGroupByColumnState
             : this.possibleAggregatedColumns(olapOp)[0];
         if (compatibleAggCol) {
           this.setOperatorState(
-            new QueryBuilderTDSOlapAggreationOperatorState(
+            new QueryBuilderTDS_OLAPAggreationOperatorState(
               this.olapState,
               olapOp,
               compatibleAggCol,
@@ -278,7 +278,7 @@ export class QueryBuilderOlapGroupByColumnState
         }
       } else {
         this.setOperatorState(
-          new QueryBuilderTDSOlapRankOperatorState(this.olapState, olapOp),
+          new QueryBuilderTDS_OLAPRankOperatorState(this.olapState, olapOp),
         );
       }
     }
@@ -290,7 +290,7 @@ export class QueryBuilderOlapGroupByColumnState
       if (sortOp) {
         const sortInfoOpState =
           sortByState ??
-          new OlapGroupByColumnSortByState(
+          new OLAPGroupByColumnSortByState(
             guaranteeNonNullable(this.possibleReferencedColumns[0]),
             sortOp,
           );
@@ -313,20 +313,20 @@ export class QueryBuilderOlapGroupByColumnState
   }
 }
 
-export class QueryBuilderOlapGroupByState implements Hashable {
+export class QueryBuilderOLAPGroupByState implements Hashable {
   readonly tdsState: QueryBuilderTDSState;
-  olapColumns: QueryBuilderOlapGroupByColumnState[] = [];
-  operators: QueryBuilderTDSOlapOperator[];
-  editColumn: QueryBuilderOlapGroupByColumnState | undefined;
+  olapColumns: QueryBuilderOLAPGroupByColumnState[] = [];
+  operators: QueryBuilderTDS_OLAPOperator[];
+  editColumn: QueryBuilderOLAPGroupByColumnState | undefined;
 
   constructor(
     tdsState: QueryBuilderTDSState,
-    operators: QueryBuilderTDSOlapOperator[],
+    operators: QueryBuilderTDS_OLAPOperator[],
   ) {
     makeObservable(this, {
       olapColumns: observable,
       editColumn: observable,
-      addOlapColumn: action,
+      addOLAPColumn: action,
       removeColumn: action,
       moveColumn: action,
       setEditColumn: action,
@@ -343,19 +343,19 @@ export class QueryBuilderOlapGroupByState implements Hashable {
     return uniq(this.olapColumns.map((c) => c.referencedTDSColumns).flat());
   }
 
-  setEditColumn(col: QueryBuilderOlapGroupByColumnState | undefined): void {
+  setEditColumn(col: QueryBuilderOLAPGroupByColumnState | undefined): void {
     this.editColumn = col;
   }
 
-  findOperator(func: string): QueryBuilderTDSOlapOperator | undefined {
+  findOperator(func: string): QueryBuilderTDS_OLAPOperator | undefined {
     return this.operators.find((o) => matchFunctionName(func, o.pureFunc));
   }
 
-  addOlapColumn(olapGroupByCol: QueryBuilderOlapGroupByColumnState): void {
+  addOLAPColumn(olapGroupByCol: QueryBuilderOLAPGroupByColumnState): void {
     addUniqueEntry(this.olapColumns, olapGroupByCol);
   }
 
-  removeColumn(column: QueryBuilderOlapGroupByColumnState): void {
+  removeColumn(column: QueryBuilderOLAPGroupByColumnState): void {
     deleteEntry(this.olapColumns, column);
   }
 

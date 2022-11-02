@@ -56,7 +56,7 @@ import {
   TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter,
   TEST_DATA__OlapGroupBy_entities,
   TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc,
-} from './TEST_DATA__QueryBuilder_OlapGroupBy.js';
+} from './TEST_DATA__QueryBuilder_OLAPGroupBy_.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
 pluginManager.usePresets([new QueryBuilder_GraphManagerPreset()]).install();

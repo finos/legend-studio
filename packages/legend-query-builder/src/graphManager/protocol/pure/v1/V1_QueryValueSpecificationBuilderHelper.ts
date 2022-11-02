@@ -652,7 +652,7 @@ export const V1_buildWatermarkFunctionExpression = (
   return [expression, processedParams];
 };
 
-export const V1_buildOlapGroupByFunctionExpression = (
+export const V1_buildOLAPGroupByFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],
   openVariables: string[],

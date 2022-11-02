@@ -93,9 +93,9 @@ import {
   renderPropertyTypeIcon,
 } from './QueryBuilderTDSComponentHelper.js';
 import {
-  type QueryBuilderOlapColumnDragSource,
+  type QueryBuilderOLAPColumnDragSource,
   QUERY_BUILDER_OLAP_COLUMN_DND_TYPE,
-} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOlapGroupByState.js';
+} from '../../stores/fetch-structure/tds/olapGroupBy/QueryBuilderOLAPGroupByState_.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 
 const QueryBuilderPostFilterConditionContextMenu = observer(
@@ -492,7 +492,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
           const columnState = (
             item as
               | QueryBuilderProjectionColumnDragSource
-              | QueryBuilderOlapColumnDragSource
+              | QueryBuilderOLAPColumnDragSource
           ).columnState as QueryBuilderTDSColumnState;
           let conditionState: PostFilterConditionState;
           try {

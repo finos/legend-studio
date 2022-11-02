@@ -91,9 +91,9 @@ import type { LambdaFunctionBuilderOption } from '../../QueryBuilderValueSpecifi
 import { appendProjection } from './projection/QueryBuilderProjectionValueSpecificationBuilder.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../graphManager/QueryBuilderSupportedFunctions.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../graphManager/QueryBuilderHashUtils.js';
-import { QueryBuilderOlapGroupByState } from './olapGroupBy/QueryBuilderOlapGroupByState.js';
-import type { QueryBuilderTDSOlapOperator } from './olapGroupBy/operators/QueryBuilderTDSOlapOperator.js';
-import { getQueryBuilderCoreOlapGroupByOperators } from './olapGroupBy/QueryBuilderOlapGroupByOperatorLoader.js';
+import { QueryBuilderOLAPGroupByState } from './olapGroupBy/QueryBuilderOLAPGroupByState_.js';
+import type { QueryBuilderTDS_OLAPOperator } from './olapGroupBy/operators/QueryBuilderTDS_OLAPOperator.js';
+import { getQueryBuilderCoreOLAPGroupByOperators } from './olapGroupBy/QueryBuilderOLAPGroupByOperatorLoader_.js';
 import type { QueryBuilderTDSColumnState } from './QueryBuilderTDSColumnState.js';
 
 export class QueryBuilderTDSState
@@ -102,7 +102,7 @@ export class QueryBuilderTDSState
 {
   readonly aggregationState: QueryBuilderAggregationState;
   readonly postFilterState: QueryBuilderPostFilterState;
-  readonly olapGroupByState: QueryBuilderOlapGroupByState;
+  readonly olapGroupByState: QueryBuilderOLAPGroupByState;
   readonly resultSetModifierState: QueryResultSetModifierState;
   projectionColumns: QueryBuilderProjectionColumnState[] = [];
   isConvertDerivationProjectionObjects = false;
@@ -113,8 +113,8 @@ export class QueryBuilderTDSState
     getQueryBuilderCorePostFilterOperators();
   aggregationOperators: QueryBuilderAggregateOperator[] =
     getQueryBuilderCoreAggregrationOperators();
-  olapGroupByOperators: QueryBuilderTDSOlapOperator[] =
-    getQueryBuilderCoreOlapGroupByOperators();
+  olapGroupByOperators: QueryBuilderTDS_OLAPOperator[] =
+    getQueryBuilderCoreOLAPGroupByOperators();
 
   constructor(
     queryBuilderState: QueryBuilderState,
@@ -147,7 +147,7 @@ export class QueryBuilderTDSState
       this,
       this.aggregationOperators,
     );
-    this.olapGroupByState = new QueryBuilderOlapGroupByState(
+    this.olapGroupByState = new QueryBuilderOLAPGroupByState(
       this,
       this.olapGroupByOperators,
     );

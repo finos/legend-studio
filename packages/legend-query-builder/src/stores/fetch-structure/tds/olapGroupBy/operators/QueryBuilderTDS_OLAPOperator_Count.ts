@@ -16,11 +16,11 @@
 
 import { hashArray } from '@finos/legend-shared';
 import { type Type, PRIMITIVE_TYPE } from '@finos/legend-graph';
-import { QueryBuilderTDSOlapOperator } from './QueryBuilderTDSOlapOperator.js';
+import { QueryBuilderTDS_OLAPOperator } from './QueryBuilderTDS_OLAPOperator.js';
 import { QUERY_BUILDER_HASH_STRUCTURE } from '../../../../../graphManager/QueryBuilderHashUtils.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../../../graphManager/QueryBuilderSupportedFunctions.js';
 
-export class QueryBuilderTDSOlapOperator_Count extends QueryBuilderTDSOlapOperator {
+export class QueryBuilderTDS_OLAPOperator_Count extends QueryBuilderTDS_OLAPOperator {
   override isColumnAggregator(): boolean {
     return true;
   }

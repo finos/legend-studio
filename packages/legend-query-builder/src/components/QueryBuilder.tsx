@@ -207,7 +207,7 @@ export const QueryBuilder = observer(
     };
 
     useCommands(queryBuilderState);
-    const toggleShowOlapGroupByPanel = (): void => {
+    const toggleShowOLAPGroupByPanel = (): void => {
       if (isTDSState) {
         const tdsState = guaranteeType(
           queryBuilderState.fetchStructureState.implementation,
@@ -324,7 +324,7 @@ export const QueryBuilder = observer(
                           </MenuContentItemLabel>
                         </MenuContentItem>
                         <MenuContentItem
-                          onClick={toggleShowOlapGroupByPanel}
+                          onClick={toggleShowOLAPGroupByPanel}
                           disabled={
                             !queryBuilderState.isQuerySupported ||
                             !(

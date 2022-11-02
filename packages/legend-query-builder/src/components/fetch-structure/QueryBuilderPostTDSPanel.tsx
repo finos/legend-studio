@@ -21,7 +21,7 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import { QueryBuilderFilterPanel } from '../filter/QueryBuilderFilterPanel.js';
-import { QueryBuilderOlapGroupByPanel } from './QueryBuilderOlapGroupByPanel.js';
+import { QueryBuilderOlapGroupByPanel } from './QueryBuilderOLAPGroupByPanel_.js';
 import { QueryBuilderPostFilterPanel } from './QueryBuilderPostFilterPanel.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 
@@ -29,7 +29,7 @@ export const QueryBuilderPostTDSPanel = observer(
   (props: { tdsState: QueryBuilderTDSState }) => {
     const { tdsState } = props;
     const showFilterPanel = tdsState.queryBuilderState.filterState.showPanel;
-    const showOlapGroupByPanel = tdsState.showOlapGroupByPanel;
+    const showOLAPGroupByPanel = tdsState.showOlapGroupByPanel;
     const showPostFilterPanel = tdsState.showPostFilterPanel;
     if (!tdsState.TEMPORARY__showPostFetchStructurePanel) {
       return null;
@@ -43,17 +43,17 @@ export const QueryBuilderPostTDSPanel = observer(
             />
           </ResizablePanel>
         )}
-        {showFilterPanel && (showOlapGroupByPanel || showPostFilterPanel) && (
+        {showFilterPanel && (showOLAPGroupByPanel || showPostFilterPanel) && (
           <ResizablePanelSplitter />
         )}
-        {showOlapGroupByPanel && (
+        {showOLAPGroupByPanel && (
           <ResizablePanel minSize={40}>
             <QueryBuilderOlapGroupByPanel
               olapGroupByState={tdsState.olapGroupByState}
             />
           </ResizablePanel>
         )}
-        {showOlapGroupByPanel && showPostFilterPanel && (
+        {showOLAPGroupByPanel && showPostFilterPanel && (
           <ResizablePanelSplitter />
         )}
         {showPostFilterPanel && (
