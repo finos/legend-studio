@@ -24,7 +24,6 @@ import {
   isString,
   guaranteeType,
 } from '@finos/legend-shared';
-import { PRIMITIVE_TYPE } from '../../../../../../../../graph/MetaModelConst.js';
 import { FlatDataSection } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/flatData/model/FlatDataSection.js';
 import {
   type FlatDataDataType,
@@ -61,6 +60,7 @@ import {
   V1_RootFlatDataRecordType,
 } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataDataType.js';
 import type { V1_FlatDataProperty } from '../../../../model/packageableElements/store/flatData/model/V1_FlatDataProperty.js';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const buildFlatDataDataType = (
   type: V1_FlatDataDataType,
@@ -91,47 +91,29 @@ const buildFlatDataDataType = (
     return recordField;
   };
   if (type instanceof V1_FlatDataString) {
-    return new FlatDataString(
-      context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-    );
+    return new FlatDataString(PrimitiveType.STRING);
   } else if (type instanceof V1_FlatDataBoolean) {
-    const booleanType = new FlatDataBoolean(
-      context.graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN),
-    );
+    const booleanType = new FlatDataBoolean(PrimitiveType.BOOLEAN);
     booleanType.trueString = type.trueString;
     booleanType.falseString = type.falseString;
     return booleanType;
   } else if (type instanceof V1_FlatDataNumber) {
     if (type instanceof V1_FlatDataInteger) {
-      return new FlatDataInteger(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
-      );
+      return new FlatDataInteger(PrimitiveType.INTEGER);
     } else if (type instanceof V1_FlatDataDecimal) {
-      return new FlatDataDecimal(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DECIMAL),
-      );
+      return new FlatDataDecimal(PrimitiveType.DECIMAL);
     } else if (type instanceof V1_FlatDataFloat) {
-      return new FlatDataFloat(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.FLOAT),
-      );
+      return new FlatDataFloat(PrimitiveType.FLOAT);
     }
-    return new FlatDataNumber(
-      context.graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER),
-    );
+    return new FlatDataNumber(PrimitiveType.NUMBER);
   } else if (type instanceof V1_FlatDataDate) {
     let timeType: FlatDataDate;
     if (type instanceof V1_FlatDataStrictDate) {
-      timeType = new FlatDataStrictDate(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE),
-      );
+      timeType = new FlatDataStrictDate(PrimitiveType.STRICTDATE);
     } else if (type instanceof V1_FlatDataDateTime) {
-      timeType = new FlatDataDateTime(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
-      );
+      timeType = new FlatDataDateTime(PrimitiveType.DATETIME);
     } else {
-      timeType = new FlatDataDate(
-        context.graph.getPrimitiveType(PRIMITIVE_TYPE.DATE),
-      );
+      timeType = new FlatDataDate(PrimitiveType.DATE);
     }
     timeType.dateFormat = type.dateFormat;
     timeType.timeZone = type.timeZone;

@@ -56,7 +56,11 @@ export const baseJestConfig = {
     // See https://github.com/finos/legend-studio/issues/502
     '^lodash-es$': 'lodash',
   },
-  modulePathIgnorePatterns: ['packages/.*/lib/', 'packages/.*/build/'],
+  modulePathIgnorePatterns: [
+    'packages/.*/lib/',
+    'packages/.*/build/',
+    'packages/.*/build/publishContent/',
+  ],
   testPathIgnorePatterns: [
     ...baseConfig.testPathIgnorePatterns,
     '/packages/.*/lib/',

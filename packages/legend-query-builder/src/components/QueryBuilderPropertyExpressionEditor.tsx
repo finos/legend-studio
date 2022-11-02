@@ -52,7 +52,6 @@ import {
   Class,
   Enumeration,
   PrimitiveType,
-  PRIMITIVE_TYPE,
   isSuperType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -159,9 +158,7 @@ const DerivedPropertyParameterValueEditor = observer(
               }
               typeCheckOption={{
                 expectedType: parameterType,
-                match:
-                  parameterType ===
-                  graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+                match: parameterType === PrimitiveType.DATETIME,
               }}
               resetValue={resetParameterValue}
             />

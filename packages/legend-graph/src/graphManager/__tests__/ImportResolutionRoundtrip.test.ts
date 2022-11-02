@@ -29,7 +29,7 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
-  TEST_DATA_OverloadedFunctionsRoundtrip,
+  TEST_DATA__OverloadedFunctionsRoundtrip,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import {
   testConnectionRoundtrip,
@@ -94,6 +94,10 @@ describe(unitTest('Domain import resolution roundtrip'), () => {
     ['Enumeration', TEST_DATA__EnumerationRoundtrip],
     ['Association', TEST_DATA__AssociationRoundtrip],
     ['Function', TEST_DATA__FunctionRoundtrip],
+    [
+      'Overloaded functions import resolution roundtrip',
+      TEST_DATA__OverloadedFunctionsRoundtrip,
+    ],
     ['Measure', TEST_DATA__MeasureRoundtrip],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
@@ -218,15 +222,6 @@ describe(unitTest('Service import resolution roundtrip'), () => {
 
 describe(unitTest('DSL Data import resolution roundtrip'), () => {
   test.each([['Simple data', TEST_DATA__DataRoundtrip]])(
-    '%s',
-    async (testName, entities) => {
-      await TEST__checkBuildingElementsRoundtrip(entities);
-    },
-  );
-});
-
-describe(unitTest('Overloaded functions import resolution roundtrip'), () => {
-  test.each([['Simple data', TEST_DATA_OverloadedFunctionsRoundtrip]])(
     '%s',
     async (testName, entities) => {
       await TEST__checkBuildingElementsRoundtrip(entities);

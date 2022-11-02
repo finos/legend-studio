@@ -34,11 +34,11 @@ import {
   EnumValueExplicitReference,
   EnumValueInstanceValue,
   matchFunctionName,
-  TYPICAL_MULTIPLICITY_TYPE,
   SUPPORTED_FUNCTIONS,
   DAY_OF_WEEK,
   DURATION_UNIT,
   type ObserverContext,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -241,26 +241,18 @@ const buildPureDateFunctionExpression = (
   graph: PureModel,
   observerContext: ObserverContext,
 ): SimpleFunctionExpression => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const strictDate = graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE);
-  const date = graph.getPrimitiveType(PRIMITIVE_TYPE.DATE);
-  const dateTime = graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME);
   if (datePickerOption instanceof CustomPreviousDayOfWeekOption) {
     const previousFridaySFE = new SimpleFunctionExpression(
       SUPPORTED_FUNCTIONS.PREVIOUS_DAY_OF_WEEK,
-      multiplicityOne,
     );
     valueSpecification_setGenericType(
       previousFridaySFE,
-      GenericTypeExplicitReference.create(new GenericType(date)),
+      GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
     );
     const dayOfWeekEnumIntanceValue = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(
         new GenericType(graph.getType(DAY_OF_WEEK)),
       ),
-      multiplicityOne,
     );
     instanceValue_setValues(dayOfWeekEnumIntanceValue, [
       ...dayOfWeekEnumIntanceValue.values,
@@ -283,44 +275,48 @@ const buildPureDateFunctionExpression = (
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfYearSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfYearSFE;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfQuarterSFE,
-          GenericTypeExplicitReference.create(new GenericType(strictDate)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          ),
         );
         return firstDayOfQuarterSFE;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfMonthSFE;
       }
       case CUSTOM_DATE_FIRST_DAY_OF_UNIT.WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfWeekSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfWeekSFE;
       }
@@ -334,66 +330,70 @@ const buildPureDateFunctionExpression = (
       case CUSTOM_DATE_PICKER_OPTION.TODAY: {
         const todaySFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.TODAY,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           todaySFE,
-          GenericTypeExplicitReference.create(new GenericType(strictDate)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          ),
         );
         return todaySFE;
       }
       case CUSTOM_DATE_PICKER_OPTION.NOW: {
-        const nowSFE = new SimpleFunctionExpression(
-          SUPPORTED_FUNCTIONS.NOW,
-          multiplicityOne,
-        );
+        const nowSFE = new SimpleFunctionExpression(SUPPORTED_FUNCTIONS.NOW);
         valueSpecification_setGenericType(
           nowSFE,
-          GenericTypeExplicitReference.create(new GenericType(dateTime)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATETIME),
+          ),
         );
         return nowSFE;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_YEAR: {
         const firstDayOfYearSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_YEAR,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfYearSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfYearSFE;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_QUARTER: {
         const firstDayOfQuarterSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_QUARTER,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfQuarterSFE,
-          GenericTypeExplicitReference.create(new GenericType(strictDate)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          ),
         );
         return firstDayOfQuarterSFE;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_MONTH: {
         const firstDayOfMonthSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_MONTH,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfMonthSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfMonthSFE;
       }
       case CUSTOM_DATE_OPTION_REFERENCE_MOMENT.FIRST_DAY_OF_WEEK: {
         const firstDayOfWeekSFE = new SimpleFunctionExpression(
           SUPPORTED_FUNCTIONS.FIRST_DAY_OF_WEEK,
-          multiplicityOne,
         );
         valueSpecification_setGenericType(
           firstDayOfWeekSFE,
-          GenericTypeExplicitReference.create(new GenericType(date)),
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.DATE),
+          ),
         );
         return firstDayOfWeekSFE;
       }
@@ -437,12 +437,8 @@ const buildPureAdjustDateFunction = (
   graph: PureModel,
   observerContext: ObserverContext,
 ): SimpleFunctionExpression => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const dateAdjustSimpleFunctionExpression = new SimpleFunctionExpression(
     SUPPORTED_FUNCTIONS.ADJUST,
-    multiplicityOne,
   );
   functionExpression_addParameterValue(
     dateAdjustSimpleFunctionExpression,
@@ -457,10 +453,7 @@ const buildPureAdjustDateFunction = (
     observerContext,
   );
   if (customDateOption.direction === CUSTOM_DATE_OPTION_DIRECTION.BEFORE) {
-    const minusFunc = new SimpleFunctionExpression(
-      SUPPORTED_FUNCTIONS.MINUS,
-      multiplicityOne,
-    );
+    const minusFunc = new SimpleFunctionExpression(SUPPORTED_FUNCTIONS.MINUS);
     functionExpression_addParameterValue(
       minusFunc,
       buildPrimitiveInstanceValue(
@@ -491,7 +484,6 @@ const buildPureAdjustDateFunction = (
     GenericTypeExplicitReference.create(
       new GenericType(graph.getType(DURATION_UNIT)),
     ),
-    multiplicityOne,
   );
   instanceValue_setValues(durationUnitEnumIntanceValue, [
     ...durationUnitEnumIntanceValue.values,
@@ -511,9 +503,7 @@ const buildPureAdjustDateFunction = (
   );
   valueSpecification_setGenericType(
     dateAdjustSimpleFunctionExpression,
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATE)),
-    ),
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
   );
   return dateAdjustSimpleFunctionExpression;
 };
@@ -747,7 +737,7 @@ const AbsoluteDateValueSpecificationEditor: React.FC<{
         valueSpecification_setGenericType(
           valueSpecification,
           GenericTypeExplicitReference.create(
-            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE)),
+            new GenericType(PrimitiveType.STRICTDATE),
           ),
         );
       }
@@ -816,7 +806,7 @@ const AbsoluteTimeValueSpecificationEditor: React.FC<{
         valueSpecification_setGenericType(
           valueSpecification,
           GenericTypeExplicitReference.create(
-            new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME)),
+            new GenericType(PrimitiveType.DATETIME),
           ),
         );
       }

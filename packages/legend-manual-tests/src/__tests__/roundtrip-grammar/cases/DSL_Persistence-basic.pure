@@ -177,13 +177,3 @@ Persistence org::legend::ZooPersistence
 
   ]
 }
-
-PersistenceContext org::legend::ZooPersistenceContext
-{
-  persistence: org::legend::ZooPersistence;
-  serviceParameters:
-  [
-    connection=org::legend::ZooDbConnection
-  ];
-  sinkConnection: org::legend::ZooDbConnection;
-}

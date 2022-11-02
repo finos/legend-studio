@@ -22,7 +22,7 @@ import {
   VariableExpression,
   AbstractPropertyExpression,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   guaranteeType,
@@ -68,10 +68,6 @@ const buildFilterConditionExpressionWithExists = (
   filterConditionState: FilterConditionState,
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
-  const multiplicityOne =
-    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   assertTrue(
     filterConditionState.propertyExpressionState.requiresExistsHandling,
   );
@@ -95,10 +91,9 @@ const buildFilterConditionExpressionWithExists = (
     if (currentPropertyExpression instanceof SimpleFunctionExpression) {
       exp = new SimpleFunctionExpression(
         extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
-        multiplicityOne,
       );
     } else {
-      exp = new AbstractPropertyExpression('', multiplicityOne);
+      exp = new AbstractPropertyExpression('');
       exp.func = currentPropertyExpression.func;
     }
     // NOTE: we must retain the rest of the parameters as those are derived property parameters
@@ -155,7 +150,7 @@ const buildFilterConditionExpressionWithExists = (
       existsLambdaPropertyChains.push(
         new VariableExpression(
           existsLambdaParamNames[currentParamNameIndex] as string,
-          multiplicityOne,
+          Multiplicity.ONE,
         ),
       );
       currentParamNameIndex++;
@@ -167,7 +162,6 @@ const buildFilterConditionExpressionWithExists = (
   for (let i = 0; i < existsLambdaPropertyChains.length - 1; ++i) {
     const simpleFunctionExpression = new SimpleFunctionExpression(
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.EXISTS),
-      multiplicityOne,
     );
     simpleFunctionExpression.parametersValues.push(
       existsLambdaPropertyChains[i] as ValueSpecification,
@@ -177,7 +171,6 @@ const buildFilterConditionExpressionWithExists = (
   // build the leaf simple function expression which uses the operator
   const operatorEpression = new SimpleFunctionExpression(
     extractElementNameFromPath(operatorFunctionFullPath),
-    multiplicityOne,
   );
   operatorEpression.parametersValues.push(
     existsLambdaPropertyChains[
@@ -220,10 +213,6 @@ export const buildFilterConditionExpression = (
   filterConditionState: FilterConditionState,
   operatorFunctionFullPath: string,
 ): ValueSpecification => {
-  const multiplicityOne =
-    filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   if (filterConditionState.propertyExpressionState.requiresExistsHandling) {
     return buildFilterConditionExpressionWithExists(
       filterConditionState,
@@ -232,7 +221,6 @@ export const buildFilterConditionExpression = (
   }
   const expression = new SimpleFunctionExpression(
     extractElementNameFromPath(operatorFunctionFullPath),
-    multiplicityOne,
   );
   const propertyExpression = buildPropertyExpressionChain(
     filterConditionState.propertyExpressionState.propertyExpression,
@@ -333,18 +321,11 @@ const buildFilterConditionStateWithExists = (
     }
 
     // 2. Build the property expression
-    const multiplicityOne =
-      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
     const initialPropertyExpression = guaranteeType(
       parentExpression.parametersValues[0],
       AbstractPropertyExpression,
     );
-    let flattenedPropertyExpressionChain = new AbstractPropertyExpression(
-      '',
-      multiplicityOne,
-    );
+    let flattenedPropertyExpressionChain = new AbstractPropertyExpression('');
     flattenedPropertyExpressionChain.func = initialPropertyExpression.func;
     flattenedPropertyExpressionChain.parametersValues = [
       ...initialPropertyExpression.parametersValues,
@@ -370,17 +351,13 @@ const buildFilterConditionStateWithExists = (
             extractElementNameFromPath(
               QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE,
             ),
-            multiplicityOne,
           );
           functionExpression.parametersValues.unshift(
             guaranteeNonNullable(currentExpression.parametersValues[1]),
           );
           expressions.push(functionExpression);
         } else if (currentExpression instanceof AbstractPropertyExpression) {
-          const propertyExpression = new AbstractPropertyExpression(
-            '',
-            multiplicityOne,
-          );
+          const propertyExpression = new AbstractPropertyExpression('');
           propertyExpression.func = currentExpression.func;
           // NOTE: we must retain the rest of the parameters as those are derived property parameters
           propertyExpression.parametersValues =

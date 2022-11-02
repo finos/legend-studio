@@ -40,9 +40,9 @@ import {
   ServiceExecutionMode,
   buildLambdaVariableExpressions,
   VariableExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   generateMultiplicityString,
-  multiplicityComparator,
+  areMultiplicitiesEqual,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { ServiceRegistrationEnvironmentConfig } from '../../../../application/LegendStudioApplicationConfig.js';
 import {
@@ -336,13 +336,11 @@ export class ServiceRegistrationState {
     }
 
     // validate service parameter multiplicities
-    const supportedServiceParamMultiplicties = [
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-      TYPICAL_MULTIPLICITY_TYPE.ZEROMANY,
-      TYPICAL_MULTIPLICITY_TYPE.ZEROONE,
-    ].map((p) =>
-      this.editorStore.graphManagerState.graph.getTypicalMultiplicity(p),
-    );
+    const SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES = [
+      Multiplicity.ONE,
+      Multiplicity.ZERO_MANY,
+      Multiplicity.ZERO_ONE,
+    ];
     const invalidParams = buildLambdaVariableExpressions(
       (this.service.execution as PureExecution).func,
       this.editorStore.graphManagerState,
@@ -350,8 +348,8 @@ export class ServiceRegistrationState {
       .filter(filterByType(VariableExpression))
       .filter(
         (p) =>
-          !supportedServiceParamMultiplicties.some((m) =>
-            multiplicityComparator(m, p.multiplicity),
+          !SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES.some((m) =>
+            areMultiplicitiesEqual(m, p.multiplicity),
           ),
       );
     assertTrue(
@@ -362,7 +360,7 @@ export class ServiceRegistrationState {
             p.multiplicity.lowerBound,
             p.multiplicity.upperBound,
           )}]`,
-      )} has/have unsupported multiplicity. Supported multiplicities include ${supportedServiceParamMultiplicties.map(
+      )} has/have unsupported multiplicity. Supported multiplicities include ${SUPPORTED_SERVICE_PARAMETER_MULTIPLICITIES.map(
         (m) => ` [${generateMultiplicityString(m.lowerBound, m.upperBound)}]`,
       )}.`,
     );

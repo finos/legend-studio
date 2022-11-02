@@ -56,9 +56,7 @@ export const stub_Class = (): Class => new Class('');
 export const stub_Property = (type: Type, _class: Class): Property =>
   new Property(
     '',
-    // NOTE: this multiplicity is subjected to change so we cannot pass
-    // the one from the graph typical multiplicity index
-    new Multiplicity(1, 1),
+    Multiplicity.ONE,
     GenericTypeExplicitReference.create(new GenericType(type)),
     _class,
   );
@@ -68,9 +66,7 @@ export const stub_DerivedProperty = (
 ): DerivedProperty =>
   new DerivedProperty(
     '',
-    // NOTE: this multiplicity is subjected to change so we cannot pass
-    // the one from the graph typical multiplicity index
-    new Multiplicity(1, 1),
+    Multiplicity.ONE,
     GenericTypeExplicitReference.create(new GenericType(type)),
     _class,
   );

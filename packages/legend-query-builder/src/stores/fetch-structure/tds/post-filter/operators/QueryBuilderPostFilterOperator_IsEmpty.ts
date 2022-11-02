@@ -19,7 +19,7 @@ import {
   type ValueSpecification,
   type FunctionExpression,
   Enumeration,
-  PRIMITIVE_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
 import { buildPostFilterConditionState } from '../QueryBuilderPostFilterStateBuilder.js';
@@ -47,10 +47,7 @@ export class QueryBuilderPostFilterOperator_IsEmpty
   }
 
   isCompatibleWithType(type: Type): boolean {
-    return (
-      Object.values(PRIMITIVE_TYPE).includes(type.path as PRIMITIVE_TYPE) ||
-      type instanceof Enumeration
-    );
+    return type instanceof PrimitiveType || type instanceof Enumeration;
   }
 
   isCompatibleWithConditionValue(

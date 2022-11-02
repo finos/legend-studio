@@ -25,7 +25,6 @@ import {
   PRIMITIVE_TYPE,
   MILESTONING_START_DATE_PARAMETER_NAME,
   BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '../../../../../../../../graph/MetaModelConst.js';
 import type { PropertyOwner } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import { Class } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
@@ -37,18 +36,19 @@ import { V1_Multiplicity } from '../../../../model/packageableElements/domain/V1
 import type { V1_ValueSpecification } from '../../../../model/valueSpecification/V1_ValueSpecification.js';
 import { V1_Variable } from '../../../../model/valueSpecification/V1_Variable.js';
 import { V1_serializeValueSpecification } from '../../../pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import type { PureProtocolProcessorPlugin } from '../../../../../PureProtocolProcessorPlugin.js';
+import { Multiplicity } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { PrimitiveType } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 const buildMilestoningParameter = (
   parameterName: string,
+  plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_ValueSpecification> => {
   const milestoningParameter = new V1_Variable();
   milestoningParameter.name = parameterName;
-  const multiplicity = new V1_Multiplicity();
-  multiplicity.lowerBound = 1;
-  multiplicity.upperBound = 1;
-  milestoningParameter.multiplicity = multiplicity;
+  milestoningParameter.multiplicity = V1_Multiplicity.ONE;
   milestoningParameter.class = PRIMITIVE_TYPE.DATE;
-  const json = V1_serializeValueSpecification(milestoningParameter);
+  const json = V1_serializeValueSpecification(milestoningParameter, plugins);
   return json;
 };
 
@@ -59,10 +59,8 @@ const V1_TEMPORARY_buildMilestoningDateProperty = (
 ): Property =>
   new Property(
     propertyName,
-    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ONE),
-    GenericTypeExplicitReference.create(
-      new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.DATE)),
-    ),
+    Multiplicity.ONE,
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.DATE)),
     owner,
   );
 
@@ -127,6 +125,7 @@ export const V1_TEMPORARY_buildMilestoningClass = (
 export const V1_buildMilestoningProperties = (
   propertyOwner: PropertyOwner,
   graph: PureModel,
+  plugins: PureProtocolProcessorPlugin[],
 ): void => {
   propertyOwner.properties.forEach((property) => {
     if (property.genericType.value.rawType instanceof Class) {
@@ -145,7 +144,10 @@ export const V1_buildMilestoningProperties = (
             property._OWNER,
           );
           dateProperty.parameters = [
-            buildMilestoningParameter(BUSINESS_DATE_MILESTONING_PROPERTY_NAME),
+            buildMilestoningParameter(
+              BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+              plugins,
+            ),
           ];
           const milestonedAllVersions = new Property(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,
@@ -164,8 +166,14 @@ export const V1_buildMilestoningProperties = (
             property._OWNER,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
-            buildMilestoningParameter(MILESTONING_END_DATE_PARAMETER_NAME),
+            buildMilestoningParameter(
+              MILESTONING_START_DATE_PARAMETER_NAME,
+              plugins,
+            ),
+            buildMilestoningParameter(
+              MILESTONING_END_DATE_PARAMETER_NAME,
+              plugins,
+            ),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -188,6 +196,7 @@ export const V1_buildMilestoningProperties = (
           dateProperty.parameters = [
             buildMilestoningParameter(
               PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+              plugins,
             ),
           ];
           const milestonedAllVersions = new Property(
@@ -207,8 +216,14 @@ export const V1_buildMilestoningProperties = (
             property._OWNER,
           );
           milestonedAllVersionsInRange.parameters = [
-            buildMilestoningParameter(MILESTONING_START_DATE_PARAMETER_NAME),
-            buildMilestoningParameter(MILESTONING_END_DATE_PARAMETER_NAME),
+            buildMilestoningParameter(
+              MILESTONING_START_DATE_PARAMETER_NAME,
+              plugins,
+            ),
+            buildMilestoningParameter(
+              MILESTONING_END_DATE_PARAMETER_NAME,
+              plugins,
+            ),
           ];
           propertyOwner._generatedMilestonedProperties.push(dateProperty);
           propertyOwner._generatedMilestonedProperties.push(
@@ -231,8 +246,12 @@ export const V1_buildMilestoningProperties = (
           dateProperty.parameters = [
             buildMilestoningParameter(
               PROCESSING_DATE_MILESTONING_PROPERTY_NAME,
+              plugins,
             ),
-            buildMilestoningParameter(BUSINESS_DATE_MILESTONING_PROPERTY_NAME),
+            buildMilestoningParameter(
+              BUSINESS_DATE_MILESTONING_PROPERTY_NAME,
+              plugins,
+            ),
           ];
           const milestonedAllVersions = new Property(
             `${property.name}${MILESTONING_VERSION_PROPERTY_SUFFIX.ALL_VERSIONS}`,

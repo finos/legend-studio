@@ -90,7 +90,7 @@ export const TEST_DATA_malformedFilterExpressionWithSubtype = {
                           name: 'x',
                         },
                         {
-                          _type: 'hackedClass',
+                          _type: 'genericTypeInstance',
                           fullPath:
                             'model::pure::tests::model::simple::PersonExtension',
                         },
@@ -101,11 +101,8 @@ export const TEST_DATA_malformedFilterExpressionWithSubtype = {
                 },
                 {
                   _type: 'strictDate',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['2022-01-26'],
+
+                  value: '2022-01-26',
                 },
               ],
             },
@@ -176,11 +173,7 @@ export const TEST_DATA__misplacedTakeFunction = {
         },
         {
           _type: 'integer',
-          values: [500],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 500,
         },
       ],
     },
@@ -245,6 +238,10 @@ export const TEST_DATA__malformedTodayFunction = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
           values: [
             {
               _type: 'lambda',
@@ -268,27 +265,19 @@ export const TEST_DATA__malformedTodayFunction = {
               ],
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'Age',
+            },
+          ],
         },
       ],
     },

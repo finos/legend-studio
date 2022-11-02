@@ -41,7 +41,6 @@ import {
   SimpleFunctionExpression,
   VariableExpression,
   EnumValueExplicitReference,
-  TYPICAL_MULTIPLICITY_TYPE,
   PrimitiveType,
   PRIMITIVE_TYPE,
   GenericTypeExplicitReference,
@@ -436,7 +435,6 @@ const stringifyValue = (values: ValueSpecification[]): string => {
  */
 const setCollectionValue = (
   valueSpecification: CollectionInstanceValue,
-  graph: PureModel,
   expectedType: Type,
   value: string,
 ): void => {
@@ -444,9 +442,6 @@ const setCollectionValue = (
     instanceValue_setValues(valueSpecification, []);
     return;
   }
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   let result: unknown[] = [];
   const parseResult = CSVParser.parse<string[]>(value.trim(), {
     delimiter: ',',
@@ -476,7 +471,6 @@ const setCollectionValue = (
               GenericTypeExplicitReference.create(
                 new GenericType(expectedType),
               ),
-              multiplicityOne,
             );
             instanceValue_setValues(primitiveInstanceValue, [item.toString()]);
             return primitiveInstanceValue;
@@ -498,7 +492,6 @@ const setCollectionValue = (
               GenericTypeExplicitReference.create(
                 new GenericType(expectedType),
               ),
-              multiplicityOne,
             );
             instanceValue_setValues(primitiveInstanceValue, [item]);
             return primitiveInstanceValue;
@@ -521,7 +514,6 @@ const setCollectionValue = (
         }
         const enumValueInstanceValue = new EnumValueInstanceValue(
           GenericTypeExplicitReference.create(new GenericType(expectedType)),
-          multiplicityOne,
         );
         instanceValue_setValues(enumValueInstanceValue, [
           EnumValueExplicitReference.create(_enum),
@@ -546,7 +538,6 @@ const CollectionValueInstanceValueEditor = observer(
   }) => {
     const {
       valueSpecification,
-      graph,
       expectedType,
       className,
       resetValue,
@@ -572,7 +563,7 @@ const CollectionValueInstanceValueEditor = observer(
     const enableEdit = (): void => setEditable(true);
     const saveEdit = (): void => {
       setEditable(false);
-      setCollectionValue(valueSpecification, graph, expectedType, text);
+      setCollectionValue(valueSpecification, expectedType, text);
       setText(stringifyValue(valueSpecification.values));
       setValueSpecification(valueSpecification);
     };

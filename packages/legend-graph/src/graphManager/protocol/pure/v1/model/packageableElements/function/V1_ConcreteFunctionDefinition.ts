@@ -41,6 +41,18 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
    * @discrepancy model
    */
   body: object[] = [];
+  /**
+   * Pre constraints are not supported at the moment
+   *
+   * @discrepancy model
+   */
+  preConstraints = [];
+  /**
+   * Post constraints are not supported at the moment
+   *
+   * @discrepancy model
+   */
+  postConstraints = [];
   returnType!: string;
   returnMultiplicity!: V1_Multiplicity;
   taggedValues: V1_TaggedValue[] = [];

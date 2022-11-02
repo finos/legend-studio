@@ -25,7 +25,7 @@ import {
   VariableExpression,
   GenericTypeExplicitReference,
   GenericType,
-  TYPICAL_MULTIPLICITY_TYPE,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -123,15 +123,11 @@ export class QueryBuilderPostFilterOperator_In
   getDefaultFilterConditionValue(
     postFilterConditionState: PostFilterConditionState,
   ): ValueSpecification {
-    const multiplicityOne =
-      postFilterConditionState.postFilterState.tdsState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
     const propertyType = guaranteeNonNullable(
       postFilterConditionState.columnState.getColumnType(),
     );
     return new CollectionInstanceValue(
-      multiplicityOne,
+      Multiplicity.ONE,
       GenericTypeExplicitReference.create(new GenericType(propertyType)),
     );
   }
@@ -174,13 +170,7 @@ export class QueryBuilderPostFilterOperator_NotIn extends QueryBuilderPostFilter
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
     );
-    return expression
-      ? buildNotExpression(
-          expression,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-        )
-      : undefined;
+    return expression ? buildNotExpression(expression) : undefined;
   }
 
   override buildPostFilterConditionState(

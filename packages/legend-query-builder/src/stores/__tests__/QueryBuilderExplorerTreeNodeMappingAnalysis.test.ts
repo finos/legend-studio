@@ -78,7 +78,7 @@ type TestCase = [
     classPath: string;
     expectedMappingData: object;
     entities: Entity[];
-    rawMappingModelCoverageAnalysisResult: PlainObject<unknown>;
+    rawMappingModelCoverageAnalysisResult: PlainObject;
     maxDepth?: number;
   },
 ];

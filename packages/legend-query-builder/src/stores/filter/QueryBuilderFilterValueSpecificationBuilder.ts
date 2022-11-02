@@ -19,7 +19,6 @@ import {
   type ValueSpecification,
   extractElementNameFromPath,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { buildGenericLambdaFunctionInstanceValue } from '../QueryBuilderValueSpecificationHelper.js';
 import { fromGroupOperation } from '../QueryBuilderGroupOperationHelper.js';
@@ -40,13 +39,8 @@ const buildFilterConditionExpression = (
       node.condition,
     );
   } else if (node instanceof QueryBuilderFilterTreeGroupNodeData) {
-    const multiplicityOne =
-      filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
     const func = new SimpleFunctionExpression(
       extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-      multiplicityOne,
     );
     const clauses = node.childrenIds
       .map((e) => filterState.nodes.get(e))
@@ -71,7 +65,6 @@ const buildFilterConditionExpression = (
         const clause2 = currentClause;
         const groupClause = new SimpleFunctionExpression(
           extractElementNameFromPath(fromGroupOperation(node.groupOperation)),
-          multiplicityOne,
         );
         groupClause.parametersValues = [clause1, clause2];
         currentClause = groupClause;
@@ -97,14 +90,9 @@ export const buildFilterExpression = (
   if (!filterConditionExpressions.length) {
     return undefined;
   }
-  const multiplicityOne =
-    filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   // main filter expression
   const filterExpression = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER),
-    multiplicityOne,
   );
   // param [0]
   filterExpression.parametersValues.push(getAllFunc);

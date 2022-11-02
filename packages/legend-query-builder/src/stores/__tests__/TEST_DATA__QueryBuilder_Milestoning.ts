@@ -81,11 +81,7 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndProcessingT
             values: [
               {
                 _type: 'string',
-                values: ['Processing Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
+                value: 'Processing Temporal/Firmid',
               },
             ],
             multiplicity: {
@@ -178,20 +174,16 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBusinessTem
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Business Temporal/Date'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Date',
+              },
+            ],
           },
         ],
       },
@@ -280,17 +272,9 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
             values: [
               {
                 _type: 'string',
-                values: ['Bi Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
+                value: 'Bi Temporal/Firmid',
               },
             ],
-            multiplicity: {
-              lowerBound: 1,
-              upperBound: 1,
-            },
           },
         ],
       },
@@ -381,20 +365,16 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Bi Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Bi Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -403,20 +383,20 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget 
       {
         _type: 'var',
         class: 'Date',
-        name: 'businessDate',
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
         },
+        name: 'businessDate',
       },
       {
         _type: 'var',
         class: 'Date',
-        name: 'processingDate',
         multiplicity: {
           lowerBound: 1,
           upperBound: 1,
         },
+        name: 'processingDate',
       },
     ],
   };
@@ -478,27 +458,19 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBusinessTemporalT
                 ],
               },
             ],
-            multiplicity: {
-              lowerBound: 1,
-              upperBound: 1,
-            },
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Business Temporal/Date'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Date',
+              },
+            ],
           },
         ],
       },
@@ -589,20 +561,16 @@ export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndProcessingTempora
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Processing Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Processing Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -697,20 +665,16 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBiTempora
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Bi Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Bi Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -801,20 +765,16 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndBusinessT
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Business Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -901,20 +861,16 @@ export const TEST_DATA__simpleProjectionWithProcessingTemporalSourceAndProcessin
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Processing Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Processing Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -992,20 +948,16 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndProcessingTempor
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Processing Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Processing Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -1087,20 +1039,16 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBiTemporalTarget
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Bi Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Bi Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -1187,20 +1135,16 @@ export const TEST_DATA__simpleProjectionWithNonTemporalSourceAndBusinessTemporal
           },
           {
             _type: 'collection',
-            values: [
-              {
-                _type: 'string',
-                values: ['Business Temporal/Firmid'],
-                multiplicity: {
-                  lowerBound: 1,
-                  upperBound: 1,
-                },
-              },
-            ],
             multiplicity: {
               lowerBound: 1,
               upperBound: 1,
             },
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Firmid',
+              },
+            ],
           },
         ],
       },
@@ -1235,11 +1179,8 @@ export const TEST_DATA__SimpleProjectionWithBusinessTemporalSource = {
             },
             {
               _type: 'strictDate',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['2021-11-12'],
+
+              value: '2021-11-12',
             },
           ],
         },
@@ -1249,6 +1190,7 @@ export const TEST_DATA__SimpleProjectionWithBusinessTemporalSource = {
             lowerBound: 1,
             upperBound: 1,
           },
+
           values: [
             {
               _type: 'lambda',
@@ -1285,14 +1227,12 @@ export const TEST_DATA__SimpleProjectionWithBusinessTemporalSource = {
             lowerBound: 1,
             upperBound: 1,
           },
+
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Business Temporal/Date'],
+
+              value: 'Business Temporal/Date',
             },
           ],
         },
@@ -1402,11 +1342,8 @@ export const TEST_DATA__simpleProjectionWithAggregationInput = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Business Temporal/Date'],
+
+              value: 'Business Temporal/Date',
             },
           ],
         },
@@ -1531,11 +1468,8 @@ export const TEST_DATA__simpleProjectionWithAggregationOutput = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Business Temporal/Date'],
+
+              value: 'Business Temporal/Date',
             },
           ],
         },
@@ -1572,11 +1506,8 @@ export const TEST_DATA__getAllWithHardcodedDateInput = {
             },
             {
               _type: 'strictDate',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['2021-11-12'],
+
+              value: '2021-11-12',
             },
           ],
         },
@@ -1619,11 +1550,8 @@ export const TEST_DATA__getAllWithHardcodedDateInput = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Date'],
+
+              value: 'Date',
             },
           ],
         },
@@ -1650,11 +1578,8 @@ export const TEST_DATA__getAllWithHardcodedDateOutput = {
             },
             {
               _type: 'strictDate',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['2021-11-12'],
+
+              value: '2021-11-12',
             },
           ],
         },
@@ -1697,11 +1622,8 @@ export const TEST_DATA__getAllWithHardcodedDateOutput = {
           values: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['Date'],
+
+              value: 'Date',
             },
           ],
         },

@@ -18,8 +18,10 @@ import {
   type V1_ValueSpecificationVisitor,
   V1_ValueSpecification,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_Multiplicity } from '../../packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_PackageableElementPtr extends V1_ValueSpecification {
+  readonly multiplicity = V1_Multiplicity.ONE;
   fullPath!: string;
 
   accept_ValueSpecificationVisitor<T>(

@@ -15,11 +15,11 @@
  */
 
 import { ChevronDownIcon, ChevronRightIcon } from './CJS__Icon.cjs';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { clsx } from 'clsx';
 
 const DEFAULT_STEP_PADDING_IN_REM = 1;
-type InnerProps = Record<PropertyKey, unknown>;
+type InnerProps = PlainObject;
 
 export interface TreeNodeData {
   isSelected?: boolean | undefined;

@@ -56,11 +56,7 @@ export const TEST_DATA__lambda_simpleSingleConditionFilter = {
                 },
                 {
                   _type: 'string',
-                  values: ['NY'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'NY',
                 },
               ],
             },
@@ -124,11 +120,7 @@ export const TEST_DATA__lambda_notOperatorFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['NY'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'NY',
                     },
                   ],
                 },
@@ -197,19 +189,11 @@ export const TEST_DATA__lambda_setOperatorFilter = {
                       values: [
                         {
                           _type: 'string',
-                          values: ['NY'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'NY',
                         },
                         {
                           _type: 'string',
-                          values: ['NJ'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'NJ',
                         },
                       ],
                       multiplicity: {
@@ -279,11 +263,7 @@ export const TEST_DATA__lambda_groupConditionFilter = {
                         },
                         {
                           _type: 'float',
-                          values: [99],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 99,
                         },
                       ],
                     },
@@ -303,11 +283,7 @@ export const TEST_DATA__lambda_groupConditionFilter = {
                         },
                         {
                           _type: 'string',
-                          values: ['def'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'def',
                         },
                       ],
                     },
@@ -337,11 +313,7 @@ export const TEST_DATA__lambda_groupConditionFilter = {
                             },
                             {
                               _type: 'float',
-                              values: [0],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 0,
                             },
                           ],
                         },
@@ -361,11 +333,7 @@ export const TEST_DATA__lambda_groupConditionFilter = {
                             },
                             {
                               _type: 'string',
-                              values: ['abc'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'abc',
                             },
                           ],
                         },
@@ -400,19 +368,11 @@ export const TEST_DATA__lambda_groupConditionFilter = {
                               values: [
                                 {
                                   _type: 'string',
-                                  values: ['NY'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'NY',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['NJ'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'NJ',
                                 },
                               ],
                               multiplicity: {
@@ -482,11 +442,7 @@ export const TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup = {
                     },
                     {
                       _type: 'float',
-                      values: [99],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 99,
                     },
                   ],
                 },
@@ -510,11 +466,7 @@ export const TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup = {
                         },
                         {
                           _type: 'string',
-                          values: ['def'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'def',
                         },
                       ],
                     },
@@ -547,19 +499,11 @@ export const TEST_DATA__lambda_groupConditionFilter_withMultipleClauseGroup = {
                               values: [
                                 {
                                   _type: 'string',
-                                  values: ['NY'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'NY',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['NJ'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'NJ',
                                 },
                               ],
                               multiplicity: {
@@ -717,11 +661,7 @@ export const TEST_DATA__lambda_existsChainFilter = {
                         },
                         {
                           _type: 'string',
-                          values: ['abc'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'abc',
                         },
                       ],
                     },
@@ -802,11 +742,7 @@ export const TEST_DATA__lambda_existsChainFilterWithCustomVariableName = {
                         },
                         {
                           _type: 'string',
-                          values: ['abc'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'abc',
                         },
                       ],
                     },
@@ -944,19 +880,11 @@ export const TEST_DATA__lambda_simpleSingleConditionFilterWithParameter = {
           values: [
             {
               _type: 'string',
-              values: ['Case Type'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Case Type',
             },
             {
               _type: 'string',
-              values: ['Cases'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Cases',
             },
           ],
           multiplicity: {
@@ -1033,11 +961,7 @@ export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
                           parameters: [
                             {
                               _type: 'integer',
-                              values: [1],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 1,
                             },
                           ],
                         },
@@ -1062,6 +986,10 @@ export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
           values: [
             {
               _type: 'lambda',
@@ -1085,27 +1013,19 @@ export const TEST_DATA_lambda_dateTimeCapabilityFilterWithYesterday = {
               ],
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'Age',
+            },
+          ],
         },
       ],
     },

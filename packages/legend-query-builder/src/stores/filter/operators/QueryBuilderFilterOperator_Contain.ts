@@ -23,6 +23,7 @@ import {
   PRIMITIVE_TYPE,
   type ValueSpecification,
   type SimpleFunctionExpression,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -54,10 +55,11 @@ export class QueryBuilderFilterOperator_Contain
   isCompatibleWithFilterConditionProperty(
     filterConditionState: FilterConditionState,
   ): boolean {
-    const propertyType =
+    return (
+      PrimitiveType.STRING ===
       filterConditionState.propertyExpressionState.propertyExpression.func.value
-        .genericType.value.rawType;
-    return PRIMITIVE_TYPE.STRING === propertyType.path;
+        .genericType.value.rawType
+    );
   }
 
   isCompatibleWithFilterConditionValue(
@@ -66,7 +68,7 @@ export class QueryBuilderFilterOperator_Contain
     const type = filterConditionState.value
       ? getNonCollectionValueSpecificationType(filterConditionState.value)
       : undefined;
-    return PRIMITIVE_TYPE.STRING === type?.path;
+    return PrimitiveType.STRING === type;
   }
 
   getDefaultFilterConditionValue(
@@ -129,8 +131,6 @@ export class QueryBuilderFilterOperator_NotContain extends QueryBuilderFilterOpe
   ): ValueSpecification {
     return buildNotExpression(
       super.buildFilterConditionExpression(filterConditionState),
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
     );
   }
 

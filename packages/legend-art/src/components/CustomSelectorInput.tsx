@@ -30,6 +30,7 @@ import {
   Select,
   createFilter as _createFilter,
 } from './CJS__ReactSelect.cjs';
+import type { PlainObject } from '@finos/legend-shared';
 
 export type { InputActionMeta };
 export const createFilter = _createFilter;
@@ -46,9 +47,9 @@ interface ListChildComponentProps {
  * See https://react-window.now.sh/#/examples/list/fixed-size
  */
 const CustomMenuList: React.FC<{
-  options: Record<PropertyKey, unknown>[];
+  options: PlainObject[];
   children: React.Component<ListChildComponentProps>[];
-  getValue: () => [Record<PropertyKey, unknown>];
+  getValue: () => [PlainObject];
   selectProps: CustomSelectorInputProps;
 }> = (props) => {
   // Get row height in pixel since `react-window` does not support `rem`

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
+
 export interface Entity {
   classifierPath: string;
   path: string;
-  content: Record<PropertyKey, unknown>;
+  content: PlainObject;
 }

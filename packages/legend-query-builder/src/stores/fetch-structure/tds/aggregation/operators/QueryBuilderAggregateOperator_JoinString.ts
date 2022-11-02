@@ -22,12 +22,12 @@ import {
   matchFunctionName,
   SimpleFunctionExpression,
   VariableExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   extractElementNameFromPath,
   PrimitiveInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  PRIMITIVE_TYPE,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   assertTrue,
@@ -58,11 +58,12 @@ export class QueryBuilderAggregateOperator_JoinString
     if (
       projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
     ) {
-      const propertyType =
-        projectionColumnState.propertyExpressionState.propertyExpression.func
-          .value.genericType.value.rawType;
       // NOTE: Engine does not support Enumerations at the moment.
-      return PRIMITIVE_TYPE.STRING === propertyType.path;
+      return (
+        PrimitiveType.STRING ===
+        projectionColumnState.propertyExpressionState.propertyExpression.func
+          .value.genericType.value.rawType
+      );
     }
     return true;
   }
@@ -72,24 +73,19 @@ export class QueryBuilderAggregateOperator_JoinString
     variableName: string,
     graph: PureModel,
   ): ValueSpecification {
-    const multiplicityOne = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.JOIN_STRINGS,
       ),
-      multiplicityOne,
     );
     const delimiter = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRING)),
+        new GenericType(PrimitiveType.STRING),
       ),
-      multiplicityOne,
     );
     delimiter.values = [';'];
     expression.parametersValues.push(
-      new VariableExpression(variableName, multiplicityOne),
+      new VariableExpression(variableName, Multiplicity.ONE),
       delimiter,
     );
     return expression;
@@ -156,10 +152,7 @@ export class QueryBuilderAggregateOperator_JoinString
   override getReturnType(
     aggregateColumnState: QueryBuilderAggregateColumnState,
   ): Type {
-    const graph =
-      aggregateColumnState.aggregationState.tdsState.queryBuilderState
-        .graphManagerState.graph;
-    return graph.getType(PRIMITIVE_TYPE.STRING);
+    return PrimitiveType.STRING;
   }
 
   get hashCode(): string {

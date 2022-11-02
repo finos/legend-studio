@@ -41,11 +41,9 @@ import {
   type PackageableElement,
   type Runtime,
   type Store,
-  type ModelStore,
+  ModelStore,
   type Connection,
   type PureModelConnection,
-  PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   ELEMENT_PATH_DELIMITER,
   Package,
   Class,
@@ -74,6 +72,8 @@ import {
   DataElement,
   stub_Database,
   Measure,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -414,9 +414,7 @@ export class NewPackageableConnectionDriver extends NewElementDriver<Packageable
     const connection = new PackageableConnection(name);
     packageableConnection_setConnectionValue(
       connection,
-      this.newConnectionValueDriver.createConnection(
-        this.store ?? this.editorStore.graphManagerState.graph.modelStore,
-      ),
+      this.newConnectionValueDriver.createConnection(ModelStore.INSTANCE),
       this.editorStore.changeDetectionState.observerContext,
     ); // default to model store
     return connection;
@@ -786,14 +784,8 @@ export class NewElementState {
       case PACKAGEABLE_ELEMENT_TYPE.FUNCTION: {
         const fn = new ConcreteFunctionDefinition(
           name,
-          PackageableElementExplicitReference.create(
-            this.editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
-          ),
-          this.editorStore.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          PackageableElementExplicitReference.create(PrimitiveType.STRING),
+          Multiplicity.ONE,
         );
         // default to empty string
         fn.expressionSequence =

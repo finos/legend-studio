@@ -38,7 +38,7 @@ export class INTERNAL__UnknownValueSpecification
   readonly content: object;
 
   constructor(content: object) {
-    super(new Multiplicity(0, 0));
+    super(Multiplicity.ZERO);
 
     this.content = content;
   }

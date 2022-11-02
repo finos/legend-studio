@@ -32,6 +32,7 @@ import {
   assertNonNullable,
   NetworkClient,
   type Writable,
+  type ExtensionsConfigurationData,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../stores/ApplicationEvent.js';
 import { configureComponents } from '@finos/legend-art';
@@ -218,7 +219,7 @@ export abstract class LegendApplication {
 
   async fetchApplicationConfiguration(
     baseUrl: string,
-  ): Promise<[LegendApplicationConfig, Record<PropertyKey, object>]> {
+  ): Promise<[LegendApplicationConfig, ExtensionsConfigurationData]> {
     const client = new NetworkClient();
 
     // app config
@@ -260,7 +261,7 @@ export abstract class LegendApplication {
         versionData,
         baseUrl,
       }),
-      (configData.extensions ?? {}) as Record<PropertyKey, object>,
+      configData.extensions ?? {},
     ];
   }
 

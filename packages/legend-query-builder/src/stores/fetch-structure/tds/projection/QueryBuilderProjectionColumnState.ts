@@ -40,14 +40,14 @@ import {
   type VariableExpression,
   PackageableElementExplicitReference,
   GRAPH_MANAGER_EVENT,
-  PRIMITIVE_TYPE,
   buildSourceInformationSourceId,
   ParserError,
-  TYPICAL_MULTIPLICITY_TYPE,
   RawVariableExpression,
   Enumeration,
   RawLambda,
   stub_RawLambda,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { QueryBuilderTDSColumnState } from '../QueryBuilderTDSColumnState_.js';
 import type { QueryBuilderTDSState } from '../QueryBuilderTDSState.js';
@@ -294,16 +294,13 @@ export class QueryBuilderDerivationProjectionColumnState
     assertTrue(Array.isArray(this.lambda.parameters));
     const projectionParameter = this.lambda.parameters as object[];
     const graph = this.tdsState.queryBuilderState.graphManagerState.graph;
-    const multiplicityOne = graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
     assertTrue(projectionParameter.length === 1);
     const variable = projectionParameter[0] as VariableExpression;
     assertNonEmptyString(variable.name);
     // assign variable to query class
     const rawVariableExpression = new RawVariableExpression(
       variable.name,
-      multiplicityOne,
+      Multiplicity.ONE,
       PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.tdsState.queryBuilderState.class),
       ),
@@ -323,10 +320,9 @@ export class QueryBuilderDerivationProjectionColumnState
       )) as string;
     const resolvedType = graph.getType(type);
     assertTrue(
-      Object.values(PRIMITIVE_TYPE).includes(
-        resolvedType.path as PRIMITIVE_TYPE,
-      ) || resolvedType instanceof Enumeration,
-      'projection column must have primitive return type',
+      resolvedType instanceof PrimitiveType ||
+        resolvedType instanceof Enumeration,
+      'Projection column must have return type of either primitve type or enumeration',
     );
     this.setReturnType(resolvedType);
   }

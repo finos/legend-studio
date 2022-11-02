@@ -15,11 +15,7 @@
  */
 
 import { test, describe, expect } from '@jest/globals';
-import {
-  guaranteeType,
-  integrationTest,
-  type TEMPORARY__JestMatcher,
-} from '@finos/legend-shared';
+import { guaranteeType, integrationTest } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
 import {
   TEST_DATA__PreviewData_entities,
@@ -126,9 +122,7 @@ describe(integrationTest('Query builder preview data'), () => {
         queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
           rawLambda,
         );
-      (
-        expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
-      ).toIncludeSameMembers([jsonQuery]);
+      expect(expectedTypeaheadLambda).toEqual(jsonQuery);
     },
   );
 });

@@ -280,91 +280,47 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
               values: [
                 {
                   _type: 'string',
-                  values: ['My Optional Enum'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Optional Enum',
                 },
                 {
                   _type: 'string',
-                  values: ['My Enum'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Enum',
                 },
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'string',
-                  values: ['Full Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Full Name',
                 },
                 {
                   _type: 'string',
-                  values: ['My Date Time'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Date Time',
                 },
                 {
                   _type: 'string',
-                  values: ['My Decimal'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Decimal',
                 },
                 {
                   _type: 'string',
-                  values: ['My Float'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Float',
                 },
                 {
                   _type: 'string',
-                  values: ['My Number'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Number',
                 },
                 {
                   _type: 'string',
-                  values: ['My Optional Boolean'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Optional Boolean',
                 },
                 {
                   _type: 'string',
-                  values: ['My Strict Date'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Strict Date',
                 },
                 {
                   _type: 'string',
-                  values: ['My Strict Time'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Strict Time',
                 },
               ],
               multiplicity: {
@@ -390,11 +346,7 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['My Optional Enum'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'My Optional Enum',
                     },
                   ],
                   property: 'isNull',
@@ -420,11 +372,7 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['My Enum'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'My Enum',
                                 },
                               ],
                               property: 'getEnum',
@@ -459,22 +407,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                     },
                                     {
                                       _type: 'string',
-                                      values: ['Age'],
-                                      multiplicity: {
-                                        lowerBound: 1,
-                                        upperBound: 1,
-                                      },
+                                      value: 'Age',
                                     },
                                   ],
                                   property: 'getInteger',
                                 },
                                 {
                                   _type: 'integer',
-                                  values: [0],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 0,
                                 },
                               ],
                             },
@@ -497,22 +437,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                     },
                                     {
                                       _type: 'string',
-                                      values: ['Full Name'],
-                                      multiplicity: {
-                                        lowerBound: 1,
-                                        upperBound: 1,
-                                      },
+                                      value: 'Full Name',
                                     },
                                   ],
                                   property: 'getString',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['test'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'test',
                                 },
                               ],
                             },
@@ -533,22 +465,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                         },
                                         {
                                           _type: 'string',
-                                          values: ['My Date Time'],
-                                          multiplicity: {
-                                            lowerBound: 1,
-                                            upperBound: 1,
-                                          },
+                                          value: 'My Date Time',
                                         },
                                       ],
                                       property: 'getDateTime',
                                     },
                                     {
                                       _type: 'dateTime',
-                                      values: ['2022-03-03T12:08'],
-                                      multiplicity: {
-                                        lowerBound: 1,
-                                        upperBound: 1,
-                                      },
+                                      value: '2022-03-03T12:08',
                                     },
                                   ],
                                 },
@@ -569,22 +493,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                             },
                                             {
                                               _type: 'string',
-                                              values: ['My Decimal'],
-                                              multiplicity: {
-                                                lowerBound: 1,
-                                                upperBound: 1,
-                                              },
+                                              value: 'My Decimal',
                                             },
                                           ],
                                           property: 'getDecimal',
                                         },
                                         {
                                           _type: 'integer',
-                                          values: [3],
-                                          multiplicity: {
-                                            lowerBound: 1,
-                                            upperBound: 1,
-                                          },
+                                          value: 3,
                                         },
                                       ],
                                     },
@@ -605,22 +521,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                                 },
                                                 {
                                                   _type: 'string',
-                                                  values: ['My Float'],
-                                                  multiplicity: {
-                                                    lowerBound: 1,
-                                                    upperBound: 1,
-                                                  },
+                                                  value: 'My Float',
                                                 },
                                               ],
                                               property: 'getFloat',
                                             },
                                             {
                                               _type: 'float',
-                                              values: [0.1],
-                                              multiplicity: {
-                                                lowerBound: 1,
-                                                upperBound: 1,
-                                              },
+                                              value: 0.1,
                                             },
                                           ],
                                         },
@@ -645,22 +553,14 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                                         },
                                                         {
                                                           _type: 'string',
-                                                          values: ['My Number'],
-                                                          multiplicity: {
-                                                            lowerBound: 1,
-                                                            upperBound: 1,
-                                                          },
+                                                          value: 'My Number',
                                                         },
                                                       ],
                                                       property: 'getNumber',
                                                     },
                                                     {
                                                       _type: 'integer',
-                                                      values: [0],
-                                                      multiplicity: {
-                                                        lowerBound: 1,
-                                                        upperBound: 1,
-                                                      },
+                                                      value: 0,
                                                     },
                                                   ],
                                                 },
@@ -679,13 +579,8 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                                     },
                                                     {
                                                       _type: 'string',
-                                                      values: [
+                                                      value:
                                                         'My Optional Boolean',
-                                                      ],
-                                                      multiplicity: {
-                                                        lowerBound: 1,
-                                                        upperBound: 1,
-                                                      },
                                                     },
                                                   ],
                                                   property: 'isNotNull',
@@ -703,24 +598,15 @@ export const TEST_DATA__lambda_simpleConditionPostFilter = {
                                                         },
                                                         {
                                                           _type: 'string',
-                                                          values: [
+                                                          value:
                                                             'My Strict Date',
-                                                          ],
-                                                          multiplicity: {
-                                                            lowerBound: 1,
-                                                            upperBound: 1,
-                                                          },
                                                         },
                                                       ],
                                                       property: 'getStrictDate',
                                                     },
                                                     {
                                                       _type: 'strictDate',
-                                                      values: ['2022-03-03'],
-                                                      multiplicity: {
-                                                        lowerBound: 1,
-                                                        upperBound: 1,
-                                                      },
+                                                      value: '2022-03-03',
                                                     },
                                                   ],
                                                 },
@@ -787,6 +673,10 @@ export const TEST_DATA__lambda_aggregationPostFilter = {
             },
             {
               _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
               values: [
                 {
                   _type: 'func',
@@ -837,27 +727,19 @@ export const TEST_DATA__lambda_aggregationPostFilter = {
                   ],
                 },
               ],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['Full Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Full Name',
+                },
+              ],
             },
           ],
         },
@@ -877,22 +759,14 @@ export const TEST_DATA__lambda_aggregationPostFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['Full Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Full Name',
                     },
                   ],
                   property: 'getString',
                 },
                 {
                   _type: 'string',
-                  values: ['User1'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'User1',
                 },
               ],
             },
@@ -933,6 +807,10 @@ export const TEST_DATA__lambda_derivationPostFilter = {
             },
             {
               _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
               values: [
                 {
                   _type: 'lambda',
@@ -946,11 +824,7 @@ export const TEST_DATA__lambda_derivationPostFilter = {
                           values: [
                             {
                               _type: 'string',
-                              values: ['my full name is: '],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'my full name is: ',
                             },
                             {
                               _type: 'property',
@@ -979,27 +853,19 @@ export const TEST_DATA__lambda_derivationPostFilter = {
                   ],
                 },
               ],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['greeting'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'greeting',
+                },
+              ],
             },
           ],
         },
@@ -1019,22 +885,14 @@ export const TEST_DATA__lambda_derivationPostFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['greeting'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'greeting',
                     },
                   ],
                   property: 'getString',
                 },
                 {
                   _type: 'string',
-                  values: ['my full name is: Bob'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'my full name is: Bob',
                 },
               ],
             },
@@ -1087,6 +945,10 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
                         },
                         {
                           _type: 'collection',
+                          multiplicity: {
+                            lowerBound: 1,
+                            upperBound: 1,
+                          },
                           values: [
                             {
                               _type: 'lambda',
@@ -1110,27 +972,19 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
                               ],
                             },
                           ],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
                         },
                         {
                           _type: 'collection',
-                          values: [
-                            {
-                              _type: 'string',
-                              values: ['Full Name'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                            },
-                          ],
                           multiplicity: {
                             lowerBound: 1,
                             upperBound: 1,
                           },
+                          values: [
+                            {
+                              _type: 'string',
+                              value: 'Full Name',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1150,22 +1004,14 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Full Name'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Full Name',
                                 },
                               ],
                               property: 'getString',
                             },
                             {
                               _type: 'string',
-                              values: ['Bob'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Bob',
                             },
                           ],
                         },
@@ -1183,6 +1029,10 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
             },
             {
               _type: 'collection',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
               values: [
                 {
                   _type: 'func',
@@ -1190,29 +1040,17 @@ export const TEST_DATA__lambda_postFilterWithResultSetModifier = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Full Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Full Name',
                     },
                   ],
                 },
               ],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
             },
           ],
         },
         {
           _type: 'integer',
-          values: [10],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 10,
         },
       ],
     },
@@ -1318,27 +1156,15 @@ export const TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday = {
               values: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'string',
-                  values: ['Full Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Full Name',
                 },
                 {
                   _type: 'string',
-                  values: ['My Date Time'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'My Date Time',
                 },
               ],
               multiplicity: {
@@ -1364,11 +1190,7 @@ export const TEST_DATA_lambda__dateTimeCapabilityPostFilterWithToday = {
                     },
                     {
                       _type: 'string',
-                      values: ['My Date Time'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'My Date Time',
                     },
                   ],
                   property: 'getDateTime',

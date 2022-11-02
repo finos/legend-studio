@@ -73,10 +73,7 @@ export const TEST_DATA__PreviewData_entities = [
                     },
                     {
                       _type: 'string',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+
                       values: [' '],
                     },
                     {
@@ -425,13 +422,11 @@ export const TEST_DATA__PreviewData_lambda_non_numeric = {
                   values: [
                     {
                       _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
-                      values: ['Value'],
+                      value: 'Value',
                     },
                     {
                       _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
-                      values: ['Count'],
+                      value: 'Count',
                     },
                   ],
                 },
@@ -447,8 +442,7 @@ export const TEST_DATA__PreviewData_lambda_non_numeric = {
                   parameters: [
                     {
                       _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
-                      values: ['Count'],
+                      value: 'Count',
                     },
                   ],
                 },
@@ -458,8 +452,7 @@ export const TEST_DATA__PreviewData_lambda_non_numeric = {
                   parameters: [
                     {
                       _type: 'string',
-                      multiplicity: { lowerBound: 1, upperBound: 1 },
-                      values: ['Value'],
+                      value: 'Value',
                     },
                   ],
                 },
@@ -469,8 +462,7 @@ export const TEST_DATA__PreviewData_lambda_non_numeric = {
         },
         {
           _type: 'integer',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [10],
+          value: 10,
         },
       ],
     },
@@ -746,43 +738,35 @@ export const TEST_DATA__PreviewData_lambda_numeric = {
               values: [
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Count'],
+                  value: 'Count',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Distinct Count'],
+                  value: 'Distinct Count',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Sum'],
+                  value: 'Sum',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Min'],
+                  value: 'Min',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Max'],
+                  value: 'Max',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Average'],
+                  value: 'Average',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Std Dev (Population)'],
+                  value: 'Std Dev (Population)',
                 },
                 {
                   _type: 'string',
-                  multiplicity: { lowerBound: 1, upperBound: 1 },
-                  values: ['Std Dev (Sample)'],
+                  value: 'Std Dev (Sample)',
                 },
               ],
             },
@@ -790,8 +774,7 @@ export const TEST_DATA__PreviewData_lambda_numeric = {
         },
         {
           _type: 'integer',
-          multiplicity: { lowerBound: 1, upperBound: 1 },
-          values: [1000],
+          value: 1000,
         },
       ],
     },

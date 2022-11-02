@@ -19,14 +19,13 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   integrationTest,
-  type TEMPORARY__JestMatcher,
 } from '@finos/legend-shared';
 import TEST_DATA__PostFilterModel from './TEST_DATA__QueryBuilder_Model_PostFilter.json';
 import TEST_DATA__COVIDDataSimpleModel from './TEST_DATA__QueryBuilder_Model_COVID.json';
 import { RawLambda } from '@finos/legend-graph';
 import { TEST_DATA__lambda_simpleSingleConditionFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestFilterQueries.js';
-import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
 import { TEST_DATA__lambda_derivationPostFilter } from './TEST_DATA__QueryBuilder_Roundtrip_TestPostFilterQueries.js';
+import { QueryBuilderFilterTreeConditionNodeData } from '../filter/QueryBuilderFilterState.js';
 import { QueryBuilderPostFilterTreeConditionNodeData } from '../fetch-structure/tds/post-filter/QueryBuilderPostFilterState.js';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -90,9 +89,7 @@ describe(integrationTest('Query builder type ahead: post-filter'), () => {
             filterNode.condition.value,
           ),
         );
-      (
-        expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
-      ).toIncludeSameMembers([jsonQuery]);
+      expect(expectedTypeaheadLambda).toEqual(jsonQuery);
     },
   );
 });
@@ -154,9 +151,7 @@ describe(integrationTest('Query builder type ahead: filter'), () => {
             postFilterNode.condition.value,
           ),
         );
-      (
-        expect([expectedTypeaheadLambda]) as TEMPORARY__JestMatcher
-      ).toIncludeSameMembers([jsonQuery]);
+      expect(expectedTypeaheadLambda).toEqual(jsonQuery);
     },
   );
 });

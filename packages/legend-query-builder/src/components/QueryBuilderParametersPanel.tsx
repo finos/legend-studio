@@ -41,10 +41,10 @@ import {
 import {
   type Type,
   MULTIPLICITY_INFINITE,
-  PRIMITIVE_TYPE,
   VariableExpression,
   GenericTypeExplicitReference,
   GenericType,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -86,11 +86,8 @@ const VariableExpressionEditor = observer(
       : undefined;
 
     // type
-    const stringType =
-      queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.STRING,
-      );
-    const variableType = lambdaParameterState.variableType ?? stringType;
+    const variableType =
+      lambdaParameterState.variableType ?? PrimitiveType.STRING;
     const selectedType = buildElementOption(variableType);
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
@@ -342,11 +339,7 @@ export const QueryBuilderParametersPanel = observer(
             generateEnumerableNameFromToken(varNames, DEFAULT_VARIABLE_NAME),
             queryBuilderState.graphManagerState.graph.getMultiplicity(1, 1),
             GenericTypeExplicitReference.create(
-              new GenericType(
-                queryParameterState.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.STRING,
-                ),
-              ),
+              new GenericType(PrimitiveType.STRING),
             ),
           ),
           queryBuilderState.observableContext,

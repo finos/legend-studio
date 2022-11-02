@@ -21,7 +21,7 @@ import type {
   ValueSpecification,
   ValueSpecificationVisitor,
 } from './ValueSpecification.js';
-import type { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
 import type { PackageableElementReference } from '../packageableElements/PackageableElementReference.js';
@@ -78,6 +78,10 @@ export class LambdaFunctionInstanceValue
   implements Hashable
 {
   override values: LambdaFunction[] = [];
+
+  constructor() {
+    super(Multiplicity.ONE);
+  }
 
   override get hashCode(): string {
     return hashArray([

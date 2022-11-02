@@ -72,7 +72,7 @@ export class DataSpaceTaxonomyContext {
     artifactId: string,
     versionId: string,
     path: string,
-    json: Record<PropertyKey, unknown>,
+    json: PlainObject,
   ) {
     this.groupId = groupId;
     this.artifactId = artifactId;

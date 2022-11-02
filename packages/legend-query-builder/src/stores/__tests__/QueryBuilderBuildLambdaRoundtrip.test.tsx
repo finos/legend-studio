@@ -74,10 +74,7 @@ import {
   TEST__getTestApplicationStore,
   TEST__LegendApplicationPluginManager,
 } from '@finos/legend-application';
-import {
-  integrationTest,
-  type TEMPORARY__JestMatcher,
-} from '@finos/legend-shared';
+import { integrationTest } from '@finos/legend-shared';
 import { QueryBuilder_GraphManagerPreset } from '../../graphManager/QueryBuilder_GraphManagerPreset.js';
 import {
   TEST_DATA__lambda_simpleConditionPostFilter,
@@ -513,9 +510,7 @@ describe(
           graphManagerState.graphManager.serializeRawValueSpecification(
             queryBuilderState.buildQuery(),
           );
-        (expect([lambda]) as TEMPORARY__JestMatcher).toIncludeSameMembers([
-          jsonQuery,
-        ]);
+        expect(lambda).toEqual(jsonQuery);
       },
     );
   },

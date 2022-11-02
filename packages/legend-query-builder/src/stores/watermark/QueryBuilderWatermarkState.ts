@@ -19,11 +19,8 @@ import {
   observe_ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
-  PRIMITIVE_TYPE,
   PrimitiveInstanceValue,
-  TYPICAL_MULTIPLICITY_TYPE,
-  multiplicityComparator,
-  type VariableExpression,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
@@ -49,34 +46,10 @@ export class QueryBuilderWatermarkState implements Hashable {
     this.queryBuilderState = queryBuilderState;
   }
 
-  isParamaterCompatibleWithWaterMark = (
-    parameter: VariableExpression,
-  ): boolean => {
-    const isString =
-      this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-        PRIMITIVE_TYPE.STRING,
-      ) === parameter.genericType?.value.rawType;
-
-    const isMultiplictyOne = multiplicityComparator(
-      parameter.multiplicity,
-      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      ),
-    );
-    return isString && isMultiplictyOne;
-  };
-
   resetValue(): void {
     const watermarkConstant = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        new GenericType(
-          this.queryBuilderState.graphManagerState.graph.getPrimitiveType(
-            PRIMITIVE_TYPE.STRING,
-          ),
-        ),
-      ),
-      this.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
+        new GenericType(PrimitiveType.STRING),
       ),
     );
 

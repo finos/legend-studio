@@ -51,8 +51,8 @@ import type { PackageableConnection } from '../graph/metamodel/pure/packageableE
 import type { DataElement } from '../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import type { FileGenerationSpecification } from '../graph/metamodel/pure/packageableElements/fileGeneration/FileGenerationSpecification.js';
 import type { GenerationSpecification } from '../graph/metamodel/pure/packageableElements/generationSpecification/GenerationSpecification.js';
-import { PRIMITIVE_TYPE } from '../graph/MetaModelConst.js';
 import type { Type } from '../graph/metamodel/pure/packageableElements/domain/Type.js';
+import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 
 export class BasicGraphManagerState {
   pluginManager: GraphManagerPluginManager;
@@ -228,7 +228,7 @@ export class GraphManagerState extends BasicGraphManagerState {
   get usableClassPropertyTypes(): Type[] {
     return [
       ...this.graph.primitiveTypes.filter(
-        (type) => type.path !== PRIMITIVE_TYPE.LATESTDATE,
+        (type) => type !== PrimitiveType.LATESTDATE,
       ),
       ...this.graph.ownTypes,
       ...this.collectExposedSystemElements(this.graph.systemModel.ownTypes),

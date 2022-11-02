@@ -386,8 +386,6 @@ export const V1_classSchema = createModelSchema(V1_Class, {
 export const V1_associationSchema = createModelSchema(V1_Association, {
   _type: usingConstantValueSchema(V1_ASSOCIATION_ELEMENT_PROTOCOL_TYPE),
   name: primitive(),
-  package: primitive(),
-  properties: list(usingModelSchema(V1_propertySchema)),
   /**
    * Omit this information during protocol transformation as it can be
    * interpreted while building the graph; and will help grammar-roundtrip
@@ -407,6 +405,8 @@ export const V1_associationSchema = createModelSchema(V1_Association, {
         skipIfEmpty: false,
       }),
   ),
+  package: primitive(),
+  properties: list(usingModelSchema(V1_propertySchema)),
   derivedProperties: alias(
     'qualifiedProperties', // 'derived properties' used to be called 'qualified properties'
     custom(
@@ -471,6 +471,8 @@ export const V1_functionSchema = createModelSchema(
     name: primitive(),
     package: primitive(),
     parameters: list(usingModelSchema(V1_rawVariableModelSchema)),
+    postConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
+    preConstraints: list(primitive()), // NOTE: these are not currently supported and just added to pass roundtrip test
     returnMultiplicity: usingModelSchema(V1_multiplicitySchema),
     returnType: primitive(),
     stereotypes: custom(

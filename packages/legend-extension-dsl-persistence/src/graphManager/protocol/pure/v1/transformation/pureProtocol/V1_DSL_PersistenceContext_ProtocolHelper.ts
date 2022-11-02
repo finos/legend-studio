@@ -126,18 +126,18 @@ enum V1_ServiceParameterValueType {
   CONNECTION_VALUE = 'connectionValue',
 }
 
-const V1_primitiveTypeValueModelSchema = createModelSchema(
-  V1_PrimitiveTypeValue,
-  {
+const V1_primitiveTypeValueModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_PrimitiveTypeValue> =>
+  createModelSchema(V1_PrimitiveTypeValue, {
     _type: usingConstantValueSchema(
       V1_ServiceParameterValueType.PRIMITIVE_TYPE_VALUE,
     ),
     primitiveType: custom(
-      (val) => V1_serializeValueSpecification(val),
-      (val) => V1_deserializeValueSpecification(val),
+      (val) => V1_serializeValueSpecification(val, plugins),
+      (val) => V1_deserializeValueSpecification(val, plugins),
     ),
-  },
-);
+  });
 
 const V1_connectionValueModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
@@ -157,7 +157,7 @@ export const V1_serializeServiceParameterValue = (
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_ServiceParameterValue> => {
   if (protocol instanceof V1_PrimitiveTypeValue) {
-    return serialize(V1_primitiveTypeValueModelSchema, protocol);
+    return serialize(V1_primitiveTypeValueModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_ConnectionValue) {
     return serialize(V1_connectionValueModelSchema(plugins), protocol);
   }
@@ -173,7 +173,7 @@ export const V1_deserializeServiceParameterValue = (
 ): V1_ServiceParameterValue => {
   switch (json._type) {
     case V1_ServiceParameterValueType.PRIMITIVE_TYPE_VALUE:
-      return deserialize(V1_primitiveTypeValueModelSchema, json);
+      return deserialize(V1_primitiveTypeValueModelSchema(plugins), json);
     case V1_ServiceParameterValueType.CONNECTION_VALUE:
       return deserialize(V1_connectionValueModelSchema(plugins), json);
     default:

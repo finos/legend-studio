@@ -93,19 +93,11 @@ export const TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc = (
               values: [
                 {
                   _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'First Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
               ],
               multiplicity: {
@@ -117,20 +109,16 @@ export const TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc = (
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -138,11 +126,7 @@ export const TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc = (
           parameters: [
             {
               _type: 'string',
-              values: ['Last Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name',
             },
           ],
         },
@@ -169,11 +153,7 @@ export const TEST_DATA_lambda_olapGroupBy_SimpleStringRankFunc = (
         },
         {
           _type: 'string',
-          values: ['testCol1'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'testCol1',
         },
       ],
     },
@@ -258,19 +238,11 @@ export const TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy = {
               values: [
                 {
                   _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'First Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
               ],
               multiplicity: {
@@ -282,20 +254,16 @@ export const TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy = {
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'lambda',
@@ -320,11 +288,7 @@ export const TEST_DATA__lambda_olapGroupBy_StringRankNoSortBy = {
         },
         {
           _type: 'string',
-          values: ['testCol1'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'testCol1',
         },
       ],
     },
@@ -413,19 +377,11 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                   ],
                   multiplicity: {
@@ -437,20 +393,16 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -458,11 +410,7 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
               ],
             },
@@ -489,30 +437,22 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
             },
             {
               _type: 'string',
-              values: ['testCol1'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'testCol1',
             },
           ],
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['Last Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'Last Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -520,11 +460,7 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
           parameters: [
             {
               _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'First Name',
             },
           ],
         },
@@ -551,11 +487,7 @@ export const TEST_DATA__lambda_olapGroupBy_StackedGroupBy = {
         },
         {
           _type: 'string',
-          values: ['testCol2'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'testCol2',
         },
       ],
     },
@@ -779,59 +711,31 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                               values: [
                                 {
                                   _type: 'string',
-                                  values: ['Is Apple'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Is Apple',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Legal Name'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Legal Name',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Employee Size'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Employee Size',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Inc Type'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Inc Type',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Age'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Age',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['First Name'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'First Name',
                                 },
                                 {
                                   _type: 'string',
-                                  values: ['Last Name'],
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
+                                  value: 'Last Name',
                                 },
                               ],
                               multiplicity: {
@@ -846,59 +750,31 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                           values: [
                             {
                               _type: 'string',
-                              values: ['Is Apple'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Is Apple',
                             },
                             {
                               _type: 'string',
-                              values: ['Legal Name'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Legal Name',
                             },
                             {
                               _type: 'string',
-                              values: ['Employee Size'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Employee Size',
                             },
                             {
                               _type: 'string',
-                              values: ['Inc Type'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Inc Type',
                             },
                             {
                               _type: 'string',
-                              values: ['Age'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Age',
                             },
                             {
                               _type: 'string',
-                              values: ['First Name'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'First Name',
                             },
                             {
                               _type: 'string',
-                              values: ['Last Name'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Last Name',
                             },
                           ],
                           multiplicity: {
@@ -912,11 +788,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                           parameters: [
                             {
                               _type: 'string',
-                              values: ['Age'],
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
+                              value: 'Age',
                             },
                           ],
                         },
@@ -943,30 +815,22 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                         },
                         {
                           _type: 'string',
-                          values: ['olapGroupBy Col 1'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'olapGroupBy Col 1',
                         },
                       ],
                     },
                     {
                       _type: 'collection',
-                      values: [
-                        {
-                          _type: 'string',
-                          values: ['Legal Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
-                        },
-                      ],
                       multiplicity: {
                         lowerBound: 1,
                         upperBound: 1,
                       },
+                      values: [
+                        {
+                          _type: 'string',
+                          value: 'Legal Name',
+                        },
+                      ],
                     },
                     {
                       _type: 'func',
@@ -974,11 +838,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                       parameters: [
                         {
                           _type: 'string',
-                          values: ['Age'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Age',
                         },
                       ],
                     },
@@ -1005,30 +865,22 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                     },
                     {
                       _type: 'string',
-                      values: ['olapGroupBy Col 2'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'olapGroupBy Col 2',
                     },
                   ],
                 },
                 {
                   _type: 'collection',
-                  values: [
-                    {
-                      _type: 'string',
-                      values: ['Employee Size'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                    },
-                  ],
                   multiplicity: {
                     lowerBound: 1,
                     upperBound: 1,
                   },
+                  values: [
+                    {
+                      _type: 'string',
+                      value: 'Employee Size',
+                    },
+                  ],
                 },
                 {
                   _type: 'func',
@@ -1036,11 +888,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Age'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Age',
                     },
                   ],
                 },
@@ -1067,30 +915,22 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
                 },
                 {
                   _type: 'string',
-                  values: ['olapGroupBy Col 3'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'olapGroupBy Col 3',
                 },
               ],
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['Inc Type'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Inc Type',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -1098,11 +938,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
               ],
             },
@@ -1129,30 +965,22 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
             },
             {
               _type: 'string',
-              values: ['olapGroupBy Col 4'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'olapGroupBy Col 4',
             },
           ],
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -1160,11 +988,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
           ],
         },
@@ -1191,11 +1015,7 @@ export const TEST_DATA__lambda_olapGroupBy_MultiStackedGroupBy = {
         },
         {
           _type: 'string',
-          values: ['olapGroupBy Col 5'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'olapGroupBy Col 5',
         },
       ],
     },
@@ -1284,19 +1104,11 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                   ],
                   multiplicity: {
@@ -1308,20 +1120,16 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -1329,11 +1137,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
               ],
             },
@@ -1360,11 +1164,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter = {
             },
             {
               _type: 'string',
-              values: ['testCol1'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'testCol1',
             },
           ],
         },
@@ -1385,21 +1185,13 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleStringRankWithPostFilter = {
                     },
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                   ],
                 },
                 {
                   _type: 'string',
-                  values: ['test'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'test',
                 },
               ],
             },
@@ -1498,19 +1290,11 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                   ],
                   multiplicity: {
@@ -1522,20 +1306,16 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -1543,11 +1323,7 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
               ],
             },
@@ -1574,11 +1350,7 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
             },
             {
               _type: 'string',
-              values: ['testCol1'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'testCol1',
             },
           ],
         },
@@ -1599,21 +1371,13 @@ export const TEST_DATA__lambda_olapGroupBy_RankWithPostFilterOnOlapColumn = {
                     },
                     {
                       _type: 'string',
-                      values: ['testCol1'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'testCol1',
                     },
                   ],
                 },
                 {
                   _type: 'integer',
-                  values: [1],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 1,
                 },
               ],
             },
@@ -1729,27 +1493,15 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
               values: [
                 {
                   _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'First Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
               ],
               multiplicity: {
@@ -1761,20 +1513,16 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -1782,11 +1530,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
             {
               _type: 'lambda',
@@ -1813,11 +1557,7 @@ export const TEST_DATA__lambda_olapGroupBy_SimpleOlapAggregation_Sum = {
         },
         {
           _type: 'string',
-          values: ['Age Sum'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'Age Sum',
         },
       ],
     },
@@ -1923,27 +1663,15 @@ export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
               values: [
                 {
                   _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'First Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Last Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Last Name',
                 },
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
               ],
               multiplicity: {
@@ -1955,20 +1683,16 @@ export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -1976,11 +1700,7 @@ export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
           ],
         },
@@ -1990,11 +1710,7 @@ export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
             {
               _type: 'lambda',
@@ -2021,11 +1737,7 @@ export const TEST_DATA__lambda_olapGroupBy_Aggreation_Sum_SortBy = {
         },
         {
           _type: 'string',
-          values: ['Age Sum'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'Age Sum',
         },
       ],
     },
@@ -2135,27 +1847,15 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Age'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Age',
                     },
                   ],
                   multiplicity: {
@@ -2167,20 +1867,16 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -2188,11 +1884,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'lambda',
@@ -2219,30 +1911,22 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
             },
             {
               _type: 'string',
-              values: ['Age Sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age Sum',
             },
           ],
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['First Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'First Name',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -2250,11 +1934,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
             {
               _type: 'lambda',
@@ -2281,11 +1961,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation = {
         },
         {
           _type: 'string',
-          values: ['Age Sum 2'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'Age Sum 2',
         },
       ],
     },
@@ -2395,27 +2071,15 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Age'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Age',
                     },
                   ],
                   multiplicity: {
@@ -2427,20 +2091,16 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -2448,11 +2108,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'lambda',
@@ -2479,30 +2135,22 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
             },
             {
               _type: 'string',
-              values: ['Age Sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age Sum',
             },
           ],
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['Age Sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'Age Sum',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -2510,11 +2158,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
           ],
         },
@@ -2541,11 +2185,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank = {
         },
         {
           _type: 'string',
-          values: ['Age Rank'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'Age Rank',
         },
       ],
     },
@@ -2655,27 +2295,15 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
                   values: [
                     {
                       _type: 'string',
-                      values: ['First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'First Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Last Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Last Name',
                     },
                     {
                       _type: 'string',
-                      values: ['Age'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Age',
                     },
                   ],
                   multiplicity: {
@@ -2687,20 +2315,16 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['First Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'First Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -2708,11 +2332,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Age'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Age',
                 },
                 {
                   _type: 'lambda',
@@ -2739,30 +2359,22 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
             },
             {
               _type: 'string',
-              values: ['Age Sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age Sum',
             },
           ],
         },
         {
           _type: 'collection',
-          values: [
-            {
-              _type: 'string',
-              values: ['Age Sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-            },
-          ],
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
+          values: [
+            {
+              _type: 'string',
+              value: 'Age Sum',
+            },
+          ],
         },
         {
           _type: 'func',
@@ -2770,11 +2382,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
           parameters: [
             {
               _type: 'string',
-              values: ['Age'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Age',
             },
           ],
         },
@@ -2801,11 +2409,7 @@ export const TEST_DATA__lambda_olapGroupBy_Stacked_Aggregation_Rank_VarName = {
         },
         {
           _type: 'string',
-          values: ['Age Rank'],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 'Age Rank',
         },
       ],
     },
@@ -2856,11 +2460,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
                   },
                   {
                     _type: 'string',
-                    values: ['_'],
-                    multiplicity: {
-                      lowerBound: 1,
-                      upperBound: 1,
-                    },
+                    value: '_',
                   },
                 ],
               },
@@ -2984,11 +2584,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
                     },
                     {
                       _type: 'string',
-                      values: [' '],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: ' ',
                     },
                     {
                       _type: 'property',
@@ -3582,39 +3178,31 @@ export const TEST_DATA__GroupBy_postFilter_OlapGroupBy = {
                 },
                 {
                   _type: 'collection',
-                  values: [
-                    {
-                      _type: 'string',
-                      values: ['Full Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                    },
-                  ],
                   multiplicity: {
                     lowerBound: 1,
                     upperBound: 1,
                   },
+                  values: [
+                    {
+                      _type: 'string',
+                      value: 'Full Name',
+                    },
+                  ],
                 },
               ],
             },
             {
               _type: 'collection',
-              values: [
-                {
-                  _type: 'string',
-                  values: ['Full Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                },
-              ],
               multiplicity: {
                 lowerBound: 1,
                 upperBound: 1,
               },
+              values: [
+                {
+                  _type: 'string',
+                  value: 'Full Name',
+                },
+              ],
             },
             {
               _type: 'func',
@@ -3622,11 +3210,7 @@ export const TEST_DATA__GroupBy_postFilter_OlapGroupBy = {
               parameters: [
                 {
                   _type: 'string',
-                  values: ['Full Name'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Full Name',
                 },
                 {
                   _type: 'lambda',
@@ -3653,11 +3237,7 @@ export const TEST_DATA__GroupBy_postFilter_OlapGroupBy = {
             },
             {
               _type: 'string',
-              values: ['olap sum'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'olap sum',
             },
           ],
         },
@@ -3682,21 +3262,13 @@ export const TEST_DATA__GroupBy_postFilter_OlapGroupBy = {
                         },
                         {
                           _type: 'string',
-                          values: ['Full Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Full Name',
                         },
                       ],
                     },
                     {
                       _type: 'string',
-                      values: ['User1'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'User1',
                     },
                   ],
                 },
@@ -3714,21 +3286,13 @@ export const TEST_DATA__GroupBy_postFilter_OlapGroupBy = {
                         },
                         {
                           _type: 'string',
-                          values: ['olap sum'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'olap sum',
                         },
                       ],
                     },
                     {
                       _type: 'integer',
-                      values: [0],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 0,
                     },
                   ],
                 },

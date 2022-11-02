@@ -69,7 +69,6 @@ import {
   type Constraint,
   type Property,
   type DerivedProperty,
-  PRIMITIVE_TYPE,
   MULTIPLICITY_INFINITE,
   Class,
   GenericType,
@@ -979,9 +978,7 @@ const ConstraintEditor = observer(
               }
               lambdaEditorState={constraintState}
               forceBackdrop={hasParserError}
-              expectedType={editorStore.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.BOOLEAN,
-              )}
+              expectedType={PrimitiveType.BOOLEAN}
               onEditorFocus={onLambdaEditorFocus}
             />
           </div>
@@ -1556,9 +1553,6 @@ export const ClassFormEditor = observer(
         ); // attempting to read the hashCode of immutable element will throw an error
     const classState = editorState.classState;
     const isReadOnly = editorState.isReadOnly;
-    const defaultType = editorStore.graphManagerState.graph.getPrimitiveType(
-      PRIMITIVE_TYPE.STRING,
-    );
 
     // Tab
     const selectedTab = editorState.selectedTab;
@@ -1621,9 +1615,12 @@ export const ClassFormEditor = observer(
     const add = (): void => {
       if (!isReadOnly) {
         if (selectedTab === UML_EDITOR_TAB.PROPERTIES) {
-          class_addProperty(_class, stub_Property(defaultType, _class));
+          class_addProperty(
+            _class,
+            stub_Property(PrimitiveType.STRING, _class),
+          );
         } else if (selectedTab === UML_EDITOR_TAB.DERIVED_PROPERTIES) {
-          const dp = stub_DerivedProperty(defaultType, _class);
+          const dp = stub_DerivedProperty(PrimitiveType.STRING, _class);
           class_addDerivedProperty(_class, dp);
           classState.addDerivedPropertyState(dp);
         } else if (selectedTab === UML_EDITOR_TAB.CONSTRAINTS) {

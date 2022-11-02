@@ -20,10 +20,9 @@ import {
   raw,
   serialize,
   deserialize,
-  optional,
-  list,
   custom,
   alias,
+  optional,
 } from 'serializr';
 import {
   type PlainObject,
@@ -85,7 +84,7 @@ export const V1_rawVariableModelSchema = createModelSchema(V1_RawVariable, {
   name: primitive(),
 });
 
-export const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
+const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
   V1_RawPrimitiveInstanceValue,
   {
     type: alias(
@@ -145,10 +144,24 @@ export const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
         },
       ),
     ),
-    multiplicity: usingModelSchema(V1_multiplicitySchema),
-    values: optional(list(primitive())),
+    value: optional(primitive()),
   },
 );
+
+/**
+ * @backwardCompatibility
+ */
+const deserializePrimitiveInstanceValue = (
+  json: PlainObject<V1_RawValueSpecification>,
+): V1_RawValueSpecification =>
+  deserialize(V1_rawPrimitiveInstanceValueSchema, {
+    ...json,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    value:
+      Array.isArray(json.values) && json.values.length === 1
+        ? json.values[0]
+        : json.value,
+  });
 
 class V1_RawValueSpecificationSerializer
   implements
@@ -159,11 +172,13 @@ class V1_RawValueSpecificationSerializer
   ): PlainObject<V1_RawValueSpecification> {
     return serialize(V1_rawLambdaModelSchema, rawValueSpecification);
   }
+
   visit_Variable(
     rawValueSpecification: V1_RawVariable,
   ): PlainObject<V1_RawValueSpecification> {
     return serialize(V1_rawVariableModelSchema, rawValueSpecification);
   }
+
   visit_PrimitiveInstanceValue(
     rawValueSpecification: V1_RawPrimitiveInstanceValue,
   ): PlainObject<V1_RawValueSpecification> {
@@ -196,7 +211,7 @@ export function V1_deserializeRawValueSpecification(
     case V1_RawValueSpecificationType.CSTRICTDATE:
     case V1_RawValueSpecificationType.CSTRICTTIME:
     case V1_RawValueSpecificationType.CLATESTDATE:
-      return deserialize(V1_rawPrimitiveInstanceValueSchema, json);
+      return deserializePrimitiveInstanceValue(json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize raw value specification of type '${json._type}'`,

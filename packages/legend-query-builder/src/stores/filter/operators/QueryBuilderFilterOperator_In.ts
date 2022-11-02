@@ -26,9 +26,9 @@ import {
   CollectionInstanceValue,
   GenericTypeExplicitReference,
   GenericType,
-  TYPICAL_MULTIPLICITY_TYPE,
   Enumeration,
   PRIMITIVE_TYPE,
+  Multiplicity,
 } from '@finos/legend-graph';
 import {
   buildFilterConditionState,
@@ -124,15 +124,11 @@ export class QueryBuilderFilterOperator_In
   getDefaultFilterConditionValue(
     filterConditionState: FilterConditionState,
   ): ValueSpecification | undefined {
-    const multiplicityOne =
-      filterConditionState.filterState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-        TYPICAL_MULTIPLICITY_TYPE.ONE,
-      );
     const propertyType =
       filterConditionState.propertyExpressionState.propertyExpression.func.value
         .genericType.value.rawType;
     return new CollectionInstanceValue(
-      multiplicityOne,
+      Multiplicity.ONE,
       GenericTypeExplicitReference.create(new GenericType(propertyType)),
     );
   }
@@ -173,8 +169,6 @@ export class QueryBuilderFilterOperator_NotIn extends QueryBuilderFilterOperator
   ): ValueSpecification {
     return buildNotExpression(
       super.buildFilterConditionExpression(filterConditionState),
-      filterConditionState.filterState.queryBuilderState.graphManagerState
-        .graph,
     );
   }
 

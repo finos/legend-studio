@@ -57,6 +57,7 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   isBoolean,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { forwardRef, useState } from 'react';
 import type { CellMouseOverEvent } from '@ag-grid-community/core';
@@ -323,7 +324,7 @@ const QueryBuilderGridResult = observer(
       useState<CellMouseOverEvent | null>(null);
     const columns = executionResult.result.columns;
     const rowData = executionResult.result.rows.map((_row) => {
-      const row: Record<PropertyKey, unknown> = {};
+      const row: PlainObject = {};
       const cols = executionResult.result.columns;
       _row.values.forEach((value, idx) => {
         // `ag-grid` shows `false` value as empty string so we have

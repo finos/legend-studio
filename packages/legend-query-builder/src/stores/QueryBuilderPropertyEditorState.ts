@@ -31,8 +31,6 @@ import {
   type Enum,
   type ValueSpecification,
   type PureModel,
-  TYPICAL_MULTIPLICITY_TYPE,
-  CollectionInstanceValue,
   AbstractPropertyExpression,
   DerivedProperty,
   Enumeration,
@@ -56,8 +54,12 @@ import {
   Association,
   getGeneratedMilestonedPropertiesForAssociation,
   PropertyExplicitReference,
+  PrimitiveType,
 } from '@finos/legend-graph';
-import { generateDefaultValueForPrimitiveType } from './QueryBuilderValueSpecificationHelper.js';
+import {
+  createNullishValue,
+  generateDefaultValueForPrimitiveType,
+} from './QueryBuilderValueSpecificationHelper.js';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import type { QueryBuilderMilestoningState } from './QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
@@ -369,42 +371,29 @@ export const getPropertyPath = (
   return propertyNameChain.join('.');
 };
 
+/**
+ * TODO: this currently ignores the multiplicity of the parameters
+ * we should check for the multiplicity and adaptively produce
+ * either simple primitive/enum instance value or collection
+ */
 export const generateValueSpecificationForParameter = (
   parameter: VariableExpression,
   graph: PureModel,
 ): ValueSpecification => {
   if (parameter.genericType) {
     const type = parameter.genericType.value.rawType;
-    if (
-      (
-        [
-          PRIMITIVE_TYPE.STRING,
-          PRIMITIVE_TYPE.BOOLEAN,
-          PRIMITIVE_TYPE.NUMBER,
-          PRIMITIVE_TYPE.FLOAT,
-          PRIMITIVE_TYPE.DECIMAL,
-          PRIMITIVE_TYPE.INTEGER,
-          PRIMITIVE_TYPE.DATE,
-          PRIMITIVE_TYPE.STRICTDATE,
-          PRIMITIVE_TYPE.DATETIME,
-          PRIMITIVE_TYPE.LATESTDATE,
-        ] as string[]
-      ).includes(type.name)
-    ) {
+    if (type instanceof PrimitiveType) {
       const primitiveInstanceValue = new PrimitiveInstanceValue(
         GenericTypeExplicitReference.create(
           new GenericType(
             // NOTE: since the default generated value for type Date is a StrictDate
             // we need to adjust the generic type accordingly
             // See https://github.com/finos/legend-studio/issues/1391
-            type.name === PRIMITIVE_TYPE.DATE
-              ? graph.getType(PRIMITIVE_TYPE.STRICTDATE)
-              : type,
+            type === PrimitiveType.DATE ? PrimitiveType.STRICTDATE : type,
           ),
         ),
-        parameter.multiplicity,
       );
-      if (type.name !== PRIMITIVE_TYPE.LATESTDATE) {
+      if (type !== PrimitiveType.LATESTDATE) {
         instanceValue_setValues(primitiveInstanceValue, [
           generateDefaultValueForPrimitiveType(type.name as PRIMITIVE_TYPE),
         ]);
@@ -413,7 +402,6 @@ export const generateValueSpecificationForParameter = (
     } else if (type instanceof Enumeration) {
       const enumValueInstanceValue = new EnumValueInstanceValue(
         GenericTypeExplicitReference.create(new GenericType(type)),
-        parameter.multiplicity,
       );
       if (type.values.length) {
         const enumValueRef = EnumValueExplicitReference.create(
@@ -426,9 +414,7 @@ export const generateValueSpecificationForParameter = (
   }
   // for arguments of types we don't support, we will fill them with `[]`
   // which in Pure is equivalent to `null` in other languages
-  return new CollectionInstanceValue(
-    graph.getTypicalMultiplicity(TYPICAL_MULTIPLICITY_TYPE.ZERO),
-  );
+  return createNullishValue(graph);
 };
 
 const fillDerivedPropertyParameterValues = (
@@ -529,8 +515,7 @@ export class QueryBuilderDerivedPropertyExpressionState {
         // required and no values provided. LatestDate doesn't have any values so we skip that check for it.
         if (
           isRequired &&
-          paramValue.genericType?.value.rawType.name !==
-            PRIMITIVE_TYPE.LATESTDATE &&
+          paramValue.genericType?.value.rawType !== PrimitiveType.LATESTDATE &&
           !paramValue.values.length
         ) {
           return false;

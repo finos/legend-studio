@@ -32,10 +32,7 @@ import {
 export const observe_RawPrimitiveInstanceValue = skipObserved(
   (metamodel: RawPrimitiveInstanceValue): RawPrimitiveInstanceValue => {
     makeObservable(metamodel, {
-      multiplicity: observable,
-      // NOTE: we're being defensive here, technically, since the values
-      // are all of primitive types, it's safe to just use `observable`
-      values: observable.shallow,
+      value: observable,
       hashCode: computed,
     });
 

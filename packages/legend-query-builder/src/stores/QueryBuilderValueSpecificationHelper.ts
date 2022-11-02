@@ -22,7 +22,6 @@ import {
   LambdaFunction,
   LambdaFunctionInstanceValue,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   DATE_FORMAT,
   DATE_TIME_FORMAT,
@@ -31,7 +30,7 @@ import {
   PrimitiveInstanceValue,
   EnumValueInstanceValue,
   SimpleFunctionExpression,
-  type PrimitiveType,
+  PrimitiveType,
   type Enumeration,
   extractElementNameFromPath,
   AbstractPropertyExpression,
@@ -41,6 +40,10 @@ import {
   DerivedProperty,
   MILESTONING_STEREOTYPE,
   PackageableElementExplicitReference,
+  Multiplicity,
+  CollectionInstanceValue,
+  GenericTypeExplicitReference,
+  GenericType,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -79,19 +82,13 @@ export const getCollectionValueSpecificationType = (
       const primitiveType = val.genericType.value.rawType;
       switch (primitiveType.path) {
         case PRIMITIVE_TYPE.STRING:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
-          );
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.STRING);
           break;
         case PRIMITIVE_TYPE.INTEGER:
         case PRIMITIVE_TYPE.DECIMAL:
         case PRIMITIVE_TYPE.FLOAT:
         case PRIMITIVE_TYPE.NUMBER:
-          addUniqueEntry(
-            valuePrimitiveTypes,
-            graph.getPrimitiveType(PRIMITIVE_TYPE.NUMBER),
-          );
+          addUniqueEntry(valuePrimitiveTypes, PrimitiveType.NUMBER);
           break;
         default:
           valuePrimitiveTypes.push(undefined);
@@ -137,14 +134,9 @@ export const unwrapNotExpression = (
 
 export const buildNotExpression = (
   expression: ValueSpecification,
-  graph: PureModel,
 ): ValueSpecification => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const expressionNot = new SimpleFunctionExpression(
     extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.NOT),
-    multiplicityOne,
   );
   expressionNot.parametersValues.push(expression);
   return expressionNot;
@@ -235,19 +227,15 @@ export const buildGenericLambdaFunctionInstanceValue = (
   lambdaBodyExpressions: ValueSpecification[],
   graph: PureModel,
 ): LambdaFunctionInstanceValue => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeAny = graph.getType(CORE_PURE_PATH.ANY);
-  const functionInstanceValue = new LambdaFunctionInstanceValue(
-    multiplicityOne,
-  );
+  const functionInstanceValue = new LambdaFunctionInstanceValue();
   const functionType = new FunctionType(
-    PackageableElementExplicitReference.create(typeAny),
-    multiplicityOne,
+    PackageableElementExplicitReference.create(
+      graph.getType(CORE_PURE_PATH.ANY),
+    ),
+    Multiplicity.ONE,
   );
   functionType.parameters.push(
-    new VariableExpression(lambdaParameterName, multiplicityOne),
+    new VariableExpression(lambdaParameterName, Multiplicity.ONE),
   );
   const lambdaFunction = new LambdaFunction(functionType);
   lambdaFunction.expressionSequence = lambdaBodyExpressions;
@@ -362,3 +350,14 @@ export const extractNullableNumberFromInstanceValue = (
   }
   return undefined;
 };
+
+/**
+ * NOTE: Pure doesn't have a nullish value, rather we use empty collection of type Nil
+ */
+export const createNullishValue = (graph: PureModel): CollectionInstanceValue =>
+  new CollectionInstanceValue(
+    Multiplicity.ZERO,
+    GenericTypeExplicitReference.create(
+      new GenericType(graph.getType(CORE_PURE_PATH.ANY)),
+    ),
+  );

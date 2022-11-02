@@ -25,8 +25,8 @@ import {
 import {
   type PureModel,
   type ValueSpecification,
-  PRIMITIVE_TYPE,
   type ObserverContext,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { prettyCONSTName } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -68,8 +68,8 @@ export const LambdaParameterValuesEditor = observer(
           <ModalHeader title="Set Parameter Values" />
           <ModalBody className="lambda-parameter-values__modal__body">
             {lambdaParametersState.parameterStates.map((paramState) => {
-              const stringType = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
-              const variableType = paramState.variableType ?? stringType;
+              const variableType =
+                paramState.variableType ?? PrimitiveType.STRING;
               return (
                 <div
                   key={paramState.uuid}
@@ -95,9 +95,7 @@ export const LambdaParameterValuesEditor = observer(
                       obseverContext={observerContext}
                       typeCheckOption={{
                         expectedType: variableType,
-                        match:
-                          variableType ===
-                          graph.getPrimitiveType(PRIMITIVE_TYPE.DATETIME),
+                        match: variableType === PrimitiveType.DATETIME,
                       }}
                       className="query-builder__parameters__value__editor"
                       resetValue={(): void => paramState.mockParameterValue()}

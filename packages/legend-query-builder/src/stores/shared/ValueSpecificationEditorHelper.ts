@@ -30,7 +30,6 @@ import {
   PrimitiveInstanceValue,
   PrimitiveType,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
 } from '@finos/legend-graph';
 import { addDays, formatDate, Randomizer } from '@finos/legend-shared';
 import { instanceValue_setValues } from './ValueSpecificationModifierHelper.js';
@@ -84,14 +83,10 @@ export const buildPrimitiveInstanceValue = (
   type: PRIMITIVE_TYPE,
   value: unknown,
 ): PrimitiveInstanceValue => {
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
   const instance = new PrimitiveInstanceValue(
     GenericTypeExplicitReference.create(
       new GenericType(graph.getPrimitiveType(type)),
     ),
-    multiplicityOne,
   );
   instanceValue_setValues(instance, [value]);
   return instance;
@@ -112,11 +107,10 @@ export const generateVariableExpressionMockValue = (
   if (varType instanceof PrimitiveType) {
     const primitiveInstanceValue = new PrimitiveInstanceValue(
       GenericTypeExplicitReference.create(
-        varType.name === PRIMITIVE_TYPE.DATE
-          ? new GenericType(graph.getPrimitiveType(PRIMITIVE_TYPE.STRICTDATE))
+        varType === PrimitiveType.DATE
+          ? new GenericType(PrimitiveType.STRICTDATE)
           : new GenericType(varType),
       ),
-      multiplicity,
     );
     instanceValue_setValues(primitiveInstanceValue, [
       createMockPrimitiveProperty(
@@ -128,7 +122,6 @@ export const generateVariableExpressionMockValue = (
   } else if (varType instanceof Enumeration) {
     const enumValueInstance = new EnumValueInstanceValue(
       GenericTypeExplicitReference.create(new GenericType(varType)),
-      multiplicity,
     );
     const mock = createMockEnumerationProperty(varType);
     if (mock !== '') {

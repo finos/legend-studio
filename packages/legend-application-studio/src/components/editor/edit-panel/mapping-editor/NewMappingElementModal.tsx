@@ -37,11 +37,11 @@ import {
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type PackageableElement,
-  PRIMITIVE_TYPE,
   fromElementPathToMappingElementId,
   Class,
   Enumeration,
   Association,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { BASIC_SET_IMPLEMENTATION_TYPE } from '../../../../stores/shared/ModelClassifierUtils.js';
 import {
@@ -169,9 +169,7 @@ export const NewMappingElementModal = observer(() => {
             mapping,
             id,
             spec.target,
-            editorStore.graphManagerState.graph.getPrimitiveType(
-              PRIMITIVE_TYPE.STRING,
-            ),
+            PrimitiveType.STRING,
           );
         } else if (spec.target instanceof Association) {
           throw new UnsupportedOperationError();

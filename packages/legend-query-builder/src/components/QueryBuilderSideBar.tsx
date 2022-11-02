@@ -32,7 +32,6 @@ import {
   type Mapping,
   type Runtime,
   type ValueSpecification,
-  PRIMITIVE_TYPE,
   LATEST_DATE,
   MILESTONING_STEREOTYPE,
   PrimitiveInstanceValue,
@@ -42,6 +41,7 @@ import {
   RuntimePointer,
   VARIABLE_REFERENCE_TOKEN,
   isElementDeprecated,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -59,12 +59,12 @@ const getParameterValue = (
   } else {
     if (
       parameter instanceof PrimitiveInstanceValue &&
-      parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.STRICTDATE
+      parameter.genericType.value.rawType === PrimitiveType.STRICTDATE
     ) {
       return parameter.values[0] as string;
     } else if (
       parameter instanceof PrimitiveInstanceValue &&
-      parameter.genericType.value.rawType.name === PRIMITIVE_TYPE.LATESTDATE
+      parameter.genericType.value.rawType === PrimitiveType.LATESTDATE
     ) {
       return LATEST_DATE;
     }

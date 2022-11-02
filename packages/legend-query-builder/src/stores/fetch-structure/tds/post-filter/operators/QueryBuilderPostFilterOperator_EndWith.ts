@@ -19,6 +19,7 @@ import {
   type ValueSpecification,
   type FunctionExpression,
   PRIMITIVE_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import {
   type Hashable,
@@ -51,10 +52,7 @@ export class QueryBuilderPostFilterOperator_EndWith
   }
 
   isCompatibleWithType(type: Type): boolean {
-    if (type.path === PRIMITIVE_TYPE.STRING) {
-      return true;
-    }
-    return false;
+    return PrimitiveType.STRING === type;
   }
 
   isCompatibleWithConditionValue(
@@ -63,7 +61,7 @@ export class QueryBuilderPostFilterOperator_EndWith
     const type = postFilterConditionState.value
       ? getNonCollectionValueSpecificationType(postFilterConditionState.value)
       : undefined;
-    return PRIMITIVE_TYPE.STRING === type?.path;
+    return PrimitiveType.STRING === type;
   }
 
   getDefaultFilterConditionValue(
@@ -128,13 +126,7 @@ export class QueryBuilderPostFilterOperator_NotEndWith extends QueryBuilderPostF
     const expression = super.buildPostFilterConditionExpression(
       postFilterConditionState,
     );
-    return expression
-      ? buildNotExpression(
-          expression,
-          postFilterConditionState.postFilterState.tdsState.queryBuilderState
-            .graphManagerState.graph,
-        )
-      : undefined;
+    return expression ? buildNotExpression(expression) : undefined;
   }
 
   override buildPostFilterConditionState(

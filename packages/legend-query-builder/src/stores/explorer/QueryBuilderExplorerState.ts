@@ -30,7 +30,6 @@ import {
   type MappingModelCoverageAnalysisResult,
   type EnumMappedProperty,
   type MappedEntity,
-  TYPICAL_MULTIPLICITY_TYPE,
   AbstractPropertyExpression,
   Class,
   VariableExpression,
@@ -198,19 +197,11 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   const treeData = explorerState.nonNullableTreeData;
   const propertySearchIndexedTreeNodes =
     explorerState.propertySearchState.indexedExplorerTreeNodes;
-
-  const multiplicityOne =
-    explorerState.queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-      TYPICAL_MULTIPLICITY_TYPE.ONE,
-    );
   const projectionColumnLambdaVariable = new VariableExpression(
     DEFAULT_LAMBDA_VARIABLE_NAME,
-    multiplicityOne,
+    Multiplicity.ONE,
   );
-  const propertyExpression = new AbstractPropertyExpression(
-    '',
-    multiplicityOne,
-  );
+  const propertyExpression = new AbstractPropertyExpression('');
   propertyExpression_setFunc(
     propertyExpression,
     PropertyExplicitReference.create(guaranteeNonNullable(node.property)),
@@ -239,13 +230,9 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
     if (parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData) {
       parentPropertyExpression = new SimpleFunctionExpression(
         extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.SUBTYPE),
-        multiplicityOne,
       );
     } else {
-      parentPropertyExpression = new AbstractPropertyExpression(
-        '',
-        multiplicityOne,
-      );
+      parentPropertyExpression = new AbstractPropertyExpression('');
       propertyExpression_setFunc(
         parentPropertyExpression,
         PropertyExplicitReference.create(
@@ -262,7 +249,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
       )
     ) {
       const subclass = new InstanceValue(
-        multiplicityOne,
+        Multiplicity.ONE,
         GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
       );
       currentExpression.parametersValues.push(subclass);
@@ -286,7 +273,7 @@ export const buildPropertyExpressionFromExplorerTreeNodeData = (
   currentExpression.parametersValues.push(projectionColumnLambdaVariable);
   if (currentExpression instanceof SimpleFunctionExpression) {
     const subclass = new InstanceValue(
-      multiplicityOne,
+      Multiplicity.ONE,
       GenericTypeExplicitReference.create(new GenericType(currentNode.type)),
     );
     currentExpression.parametersValues.push(subclass);
@@ -506,7 +493,7 @@ export const getQueryBuilderSubTypeNodeData = (
       ? parentNode.property.multiplicity
       : parentNode instanceof QueryBuilderExplorerTreeSubTypeNodeData
       ? parentNode.multiplicity
-      : new Multiplicity(1, 1),
+      : Multiplicity.ONE,
   );
   subTypeNode.childrenIds =
     generateExplorerTreeClassNodeChildrenIDs(subTypeNode);

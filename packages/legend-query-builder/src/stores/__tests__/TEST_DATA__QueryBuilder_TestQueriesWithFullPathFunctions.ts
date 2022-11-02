@@ -36,30 +36,46 @@ export const TEST_DATA__lambda_input_graphFetchWithFullPathFunctions = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'model::target::NPerson',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'fullName',
-                  subTrees: [],
-                },
-              ],
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'model::target::NPerson',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'fullName',
+                    subTrees: [],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'model::target::NPerson',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'fullName',
-              subTrees: [],
-            },
-          ],
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'model::target::NPerson',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'fullName',
+                subTrees: [],
+              },
+            ],
+          },
         },
       ],
     },
@@ -89,30 +105,46 @@ export const TEST_DATA__lambda_output_graphFetchWithFullPathFunctions = {
               ],
             },
             {
-              _type: 'rootGraphFetchTree',
-              class: 'model::target::NPerson',
-              subTrees: [
-                {
-                  _type: 'propertyGraphFetchTree',
-                  parameters: [],
-                  property: 'fullName',
-                  subTrees: [],
-                },
-              ],
+              _type: 'classInstance',
+              multiplicity: {
+                lowerBound: 1,
+                upperBound: 1,
+              },
+              type: 'rootGraphFetchTree',
+              value: {
+                _type: 'rootGraphFetchTree',
+                class: 'model::target::NPerson',
+                subTrees: [
+                  {
+                    _type: 'propertyGraphFetchTree',
+                    parameters: [],
+                    property: 'fullName',
+                    subTrees: [],
+                  },
+                ],
+              },
             },
           ],
         },
         {
-          _type: 'rootGraphFetchTree',
-          class: 'model::target::NPerson',
-          subTrees: [
-            {
-              _type: 'propertyGraphFetchTree',
-              parameters: [],
-              property: 'fullName',
-              subTrees: [],
-            },
-          ],
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: 'rootGraphFetchTree',
+          value: {
+            _type: 'rootGraphFetchTree',
+            class: 'model::target::NPerson',
+            subTrees: [
+              {
+                _type: 'propertyGraphFetchTree',
+                parameters: [],
+                property: 'fullName',
+                subTrees: [],
+              },
+            ],
+          },
         },
       ],
     },
@@ -173,11 +205,7 @@ export const TEST_DATA__lambda_input_filterWithFullPathFunctions = {
                         },
                         {
                           _type: 'string',
-                          values: ['abc'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'abc',
                         },
                       ],
                     },
@@ -258,11 +286,7 @@ export const TEST_DATA__lambda_output_filterWithFullPathFunctions = {
                         },
                         {
                           _type: 'string',
-                          values: ['abc'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'abc',
                         },
                       ],
                     },
@@ -402,27 +426,15 @@ export const TEST_DATA__lambda_input_projectionWithFullPathFunctions = {
                       values: [
                         {
                           _type: 'string',
-                          values: ['Edited First Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Edited First Name',
                         },
                         {
                           _type: 'string',
-                          values: ['Last Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Last Name',
                         },
                         {
                           _type: 'string',
-                          values: ['Firm/Legal Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Firm/Legal Name',
                         },
                       ],
                       multiplicity: {
@@ -443,11 +455,7 @@ export const TEST_DATA__lambda_input_projectionWithFullPathFunctions = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Edited First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Edited First Name',
                     },
                   ],
                 },
@@ -457,11 +465,7 @@ export const TEST_DATA__lambda_input_projectionWithFullPathFunctions = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Firm/Legal Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Firm/Legal Name',
                     },
                   ],
                 },
@@ -475,11 +479,7 @@ export const TEST_DATA__lambda_input_projectionWithFullPathFunctions = {
         },
         {
           _type: 'integer',
-          values: [500],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 500,
         },
       ],
     },
@@ -599,27 +599,15 @@ export const TEST_DATA__lambda_output_projectionWithFullPathFunctions = {
                       values: [
                         {
                           _type: 'string',
-                          values: ['Edited First Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Edited First Name',
                         },
                         {
                           _type: 'string',
-                          values: ['Last Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Last Name',
                         },
                         {
                           _type: 'string',
-                          values: ['Firm/Legal Name'],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: 'Firm/Legal Name',
                         },
                       ],
                       multiplicity: {
@@ -640,11 +628,7 @@ export const TEST_DATA__lambda_output_projectionWithFullPathFunctions = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Edited First Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Edited First Name',
                     },
                   ],
                 },
@@ -654,11 +638,7 @@ export const TEST_DATA__lambda_output_projectionWithFullPathFunctions = {
                   parameters: [
                     {
                       _type: 'string',
-                      values: ['Firm/Legal Name'],
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
+                      value: 'Firm/Legal Name',
                     },
                   ],
                 },
@@ -672,11 +652,7 @@ export const TEST_DATA__lambda_output_projectionWithFullPathFunctions = {
         },
         {
           _type: 'integer',
-          values: [500],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
+          value: 500,
         },
       ],
     },

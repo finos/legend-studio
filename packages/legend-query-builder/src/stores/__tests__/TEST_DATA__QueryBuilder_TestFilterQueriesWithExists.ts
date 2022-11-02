@@ -78,11 +78,7 @@ export const TEST_DATA__lambda_input_filterWithExists = {
                                 },
                                 {
                                   _type: 'string',
-                                  multiplicity: {
-                                    lowerBound: 1,
-                                    upperBound: 1,
-                                  },
-                                  values: [''],
+                                  value: '',
                                 },
                               ],
                             },
@@ -158,11 +154,7 @@ export const lambda_output_filterWithExists = {
                         },
                         {
                           _type: 'string',
-                          values: [''],
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
+                          value: '',
                         },
                       ],
                     },

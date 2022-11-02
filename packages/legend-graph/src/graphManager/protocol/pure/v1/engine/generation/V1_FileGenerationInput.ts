@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import { type PlainObject, SerializationFactory } from '@finos/legend-shared';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 import { PureClientVersion } from '../../../../../../graphManager/GraphManagerUtils.js';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
@@ -23,12 +23,9 @@ import type { V1_PureModelContext } from '../../model/context/V1_PureModelContex
 export class V1_GenerateFileInput {
   clientVersion?: string | undefined;
   model: V1_PureModelContext;
-  config?: Record<PropertyKey, unknown> | undefined;
+  config?: PlainObject | undefined;
 
-  constructor(
-    model: V1_PureModelContext,
-    config?: Record<PropertyKey, unknown>,
-  ) {
+  constructor(model: V1_PureModelContext, config?: PlainObject) {
     this.clientVersion = PureClientVersion.V1_0_0;
     this.model = model;
     this.config = config;

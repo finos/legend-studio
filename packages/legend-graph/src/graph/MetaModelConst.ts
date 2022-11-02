@@ -40,9 +40,6 @@ export enum ROOT_PACKAGE_NAME {
   PROJECT_DEPENDENCY_ROOT = 'PROJECT_DEPENDENCY_ROOT',
 }
 
-// Pure model connection does not use an actual store so this is just a dummy value
-export const MODEL_STORE_NAME = 'ModelStore';
-
 export enum PRIMITIVE_TYPE {
   STRING = 'String',
   BOOLEAN = 'Boolean',
@@ -58,14 +55,6 @@ export enum PRIMITIVE_TYPE {
   // NOTE: `LatestDate` is a special type that is used for milestoning in store so its used in the body of function and lamdba but never should be exposed to users
   // as such, if there is a day we want to have `LatestDate` in the graph but not exposed to the users
   LATESTDATE = 'LatestDate',
-}
-
-export enum TYPICAL_MULTIPLICITY_TYPE {
-  ONE = 'one',
-  ZEROONE = 'zeroone',
-  ZEROMANY = 'zeromany',
-  ONEMANY = 'onemany',
-  ZERO = 'zero',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
@@ -104,6 +93,7 @@ export const AUTO_IMPORTS = [
 
 export enum CORE_PURE_PATH {
   ANY = 'meta::pure::metamodel::type::Any',
+  NIL = 'meta::pure::metamodel::type::Nil',
 
   PROFILE_DOC = 'meta::pure::profiles::doc',
   PROFILE_TEMPORAL = 'meta::pure::profiles::temporal',

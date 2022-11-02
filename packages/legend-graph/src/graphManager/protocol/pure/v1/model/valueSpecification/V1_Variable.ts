@@ -21,9 +21,9 @@ import {
 import type { V1_Multiplicity } from '../../model/packageableElements/domain/V1_Multiplicity.js';
 
 export class V1_Variable extends V1_ValueSpecification {
-  class?: string | undefined;
   name!: string;
-  multiplicity?: V1_Multiplicity | undefined;
+  multiplicity!: V1_Multiplicity;
+  class?: string | undefined;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

@@ -21,13 +21,13 @@ import {
   GenericType,
   GenericTypeExplicitReference,
   PrimitiveInstanceValue,
-  PRIMITIVE_TYPE,
   SimpleFunctionExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   getAllClassDerivedProperties,
   CORE_PURE_PATH,
   PropertyExplicitReference,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type { QueryBuilderPostFilterOperator } from '../QueryBuilderPostFilterOperator.js';
@@ -52,16 +52,9 @@ export const buildPostFilterConditionExpression = (
   const graph =
     filterConditionState.postFilterState.tdsState.queryBuilderState
       .graphManagerState.graph;
-  const multiplicityOne = graph.getTypicalMultiplicity(
-    TYPICAL_MULTIPLICITY_TYPE.ONE,
-  );
-  const typeString = graph.getPrimitiveType(PRIMITIVE_TYPE.STRING);
   // property expression
   const colState = filterConditionState.columnState;
-  const tdsPropertyExpression = new AbstractPropertyExpression(
-    '',
-    multiplicityOne,
-  );
+  const tdsPropertyExpression = new AbstractPropertyExpression('');
   let tdsDerivedPropertyName: TDS_COLUMN_GETTER;
   const correspondingTDSDerivedProperty = operator.getTDSColumnGetter();
   if (correspondingTDSDerivedProperty) {
@@ -79,11 +72,10 @@ export const buildPostFilterConditionExpression = (
   );
   const variableName = new VariableExpression(
     filterConditionState.postFilterState.lambdaParameterName,
-    multiplicityOne,
+    Multiplicity.ONE,
   );
   const colInstanceValue = new PrimitiveInstanceValue(
-    GenericTypeExplicitReference.create(new GenericType(typeString)),
-    multiplicityOne,
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
   );
   colInstanceValue.values = [colState.columnName];
   tdsPropertyExpression.parametersValues = [variableName, colInstanceValue];
@@ -91,7 +83,6 @@ export const buildPostFilterConditionExpression = (
   if (operatorFunctionFullPath) {
     const expression = new SimpleFunctionExpression(
       extractElementNameFromPath(operatorFunctionFullPath),
-      multiplicityOne,
     );
     expression.parametersValues.push(tdsPropertyExpression);
     if (filterConditionState.value) {

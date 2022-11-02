@@ -79,11 +79,15 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
   // See https://github.com/finos/legend-studio/issues/295
   // See https://github.com/finos/legend-studio/issues/294
-  'embedded-relational-mapping.pure': SKIP,
-  'nested-embedded-relational-mapping.pure': SKIP,
-  'relational-mapping-filter.pure': SKIP,
-  // TODO: remove these when Engine composer handles empty `preConstraints`/`postConstraints`.
-  'basic-function-overloading.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'STO_Relational-embedded-relational-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.CHECK_HASH,
+  ],
+  'STO_Relational-nested-embedded-relational-mapping.pure': SKIP,
+  'STO_Relational-relational-mapping-filter.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+    ROUNTRIP_TEST_PHASES.CHECK_HASH,
+  ],
 };
 
 type GrammarRoundtripOptions = {

@@ -35,11 +35,11 @@ import {
 
 const MORPHIR_TYPE_NAME = `morphir`;
 
-interface FMT_Morphir_LegendStudioApplicationPluginConfigData {
+type FMT_Morphir_LegendStudioApplicationPluginConfigData = {
   visualizer: { url: string };
   linterServer: { url: string };
   linterApp: { url: string };
-}
+};
 
 export class FMT_Morphir_LegendStudioApplicationPlugin
   extends LegendStudioApplicationPlugin
@@ -56,10 +56,8 @@ export class FMT_Morphir_LegendStudioApplicationPlugin
   }
 
   override configure(
-    _configData: object,
+    configData: FMT_Morphir_LegendStudioApplicationPluginConfigData,
   ): FMT_Morphir_LegendStudioApplicationPlugin {
-    const configData =
-      _configData as FMT_Morphir_LegendStudioApplicationPluginConfigData;
     this._morphirVisualizerUrl = guaranteeNonEmptyString(
       configData.visualizer.url,
       `Can't configure Morphir generator: 'visualizer.url' field is missing or empty`,

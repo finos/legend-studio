@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
+import type {
   V1_ValueSpecification,
+  V1_ValueSpecificationVisitor,
 } from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import { V1_AbstractAppliedFunction } from '../raw/V1_AbstractAppliedFunction.js';
 
-export class V1_AppliedFunction extends V1_ValueSpecification {
+export class V1_AppliedFunction extends V1_AbstractAppliedFunction {
   function!: string;
+  // fControl!: string;
   parameters: V1_ValueSpecification[] = [];
 
   accept_ValueSpecificationVisitor<T>(

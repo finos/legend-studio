@@ -43,6 +43,7 @@ import {
   isNonNullable,
   returnUndefOnError,
   uuid,
+  type PlainObject,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../../../../EditorStore.js';
 import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
@@ -304,7 +305,7 @@ export class ServiceTestSetupState {
     return paramValues.map((pValue) => {
       const spec = returnUndefOnError(() =>
         this.editorStore.graphManagerState.graphManager.buildValueSpecification(
-          pValue.value as Record<PropertyKey, unknown>,
+          pValue.value as PlainObject,
           this.editorStore.graphManagerState.graph,
         ),
       );

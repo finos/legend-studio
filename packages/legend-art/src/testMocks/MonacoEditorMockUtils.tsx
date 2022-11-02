@@ -76,7 +76,7 @@ export const MockedMonacoEditorAPI = {
   create: (): typeof MockedMonacoEditorInstance => MockedMonacoEditorInstance,
   focus: createMock(),
   createModel: createMock(),
-  createDiffEditor: (): Record<PropertyKey, unknown> => ({
+  createDiffEditor: () => ({
     getOriginalEditor: (): typeof MockedMonacoEditorInstance =>
       MockedMonacoEditorInstance,
     getModifiedEditor: (): typeof MockedMonacoEditorInstance =>

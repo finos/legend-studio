@@ -96,28 +96,20 @@ export const simpleDerivationProjection = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
           values: [
             {
               _type: 'string',
-              values: ['Last Name (lowercase)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name (lowercase)',
             },
             {
               _type: 'string',
-              values: ['Last Name (UPPERCASE)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name (UPPERCASE)',
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
       ],
     },
@@ -144,17 +136,18 @@ export const groupByWithDerivationProjection = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
           values: [
             {
               _type: 'lambda',
               body: [
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: [''],
+
+                  value: '',
                 },
               ],
               parameters: [
@@ -165,13 +158,13 @@ export const groupByWithDerivationProjection = {
               ],
             },
           ],
+        },
+        {
+          _type: 'collection',
           multiplicity: {
             lowerBound: 1,
             upperBound: 1,
           },
-        },
-        {
-          _type: 'collection',
           values: [
             {
               _type: 'func',
@@ -182,11 +175,8 @@ export const groupByWithDerivationProjection = {
                   body: [
                     {
                       _type: 'string',
-                      multiplicity: {
-                        lowerBound: 1,
-                        upperBound: 1,
-                      },
-                      values: [''],
+
+                      value: '',
                     },
                   ],
                   parameters: [
@@ -220,35 +210,23 @@ export const groupByWithDerivationProjection = {
               ],
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 2,
+            upperBound: 2,
+          },
           values: [
             {
               _type: 'string',
-              values: ['(derivation_1)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: '(derivation_1)',
             },
             {
               _type: 'string',
-              values: ['(derivation_2)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: '(derivation_2)',
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
       ],
     },
@@ -329,11 +307,8 @@ export const groupByWithDerivationAndAggregation = {
                         },
                         {
                           _type: 'string',
-                          multiplicity: {
-                            lowerBound: 1,
-                            upperBound: 1,
-                          },
-                          values: [''],
+
+                          value: '',
                         },
                       ],
                     },
@@ -386,11 +361,8 @@ export const groupByWithDerivationAndAggregation = {
                             },
                             {
                               _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['asd'],
+
+                              value: 'asd',
                             },
                           ],
                         },
@@ -457,11 +429,8 @@ export const groupByWithDerivationAndAggregation = {
                             },
                             {
                               _type: 'string',
-                              multiplicity: {
-                                lowerBound: 1,
-                                upperBound: 1,
-                              },
-                              values: ['asd'],
+
+                              value: 'asd',
                             },
                           ],
                         },
@@ -512,44 +481,28 @@ export const groupByWithDerivationAndAggregation = {
         },
         {
           _type: 'collection',
+          multiplicity: {
+            lowerBound: 4,
+            upperBound: 4,
+          },
           values: [
             {
               _type: 'string',
-              values: ['Last Name'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name',
             },
             {
               _type: 'string',
-              values: ['Last Name (UPPER)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name (UPPER)',
             },
             {
               _type: 'string',
-              values: ['Last Name (count)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'Last Name (count)',
             },
             {
               _type: 'string',
-              values: ['LName (distinct count)'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'LName (distinct count)',
             },
           ],
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
         },
       ],
     },

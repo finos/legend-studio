@@ -18,7 +18,7 @@ import type { V1_ValueSpecificationVisitor } from '../../../model/valueSpecifica
 import { V1_CDate } from './V1_CDate.js';
 
 export class V1_CStrictDate extends V1_CDate {
-  values: string[] = [];
+  value!: string;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,

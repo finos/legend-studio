@@ -81,7 +81,6 @@ import type { V1_DataElement } from '../../../model/packageableElements/data/V1_
 import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
-import { V1_getIncludedMappingPath } from '../../../helpers/V1_DSL_Mapping_Helper.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { getFunctionName } from '../../../../../../../graph/helpers/DomainHelper.js';
@@ -280,8 +279,8 @@ export class V1_ElementSecondPassBuilder
       V1_buildFullPath(element.package, element.name),
     );
     const mappingIncludesSet = new Set<string>();
-    mapping.includes = element.includedMappings.map((i) => {
-      const includedMappingPath = V1_getIncludedMappingPath(i);
+    mapping.includes = element.includedMappings.map((mappingInclude) => {
+      const includedMappingPath = mappingInclude.includedMapping;
       assertNonEmptyString(
         includedMappingPath,
         `Mapping include path is missing or empty`,
@@ -291,7 +290,7 @@ export class V1_ElementSecondPassBuilder
         `Duplicated mapping include '${includedMappingPath}' in mapping '${mapping.path}'`,
       );
       mappingIncludesSet.add(includedMappingPath);
-      return V1_buildMappingInclude(i, this.context, mapping);
+      return V1_buildMappingInclude(mappingInclude, this.context, mapping);
     });
     mapping.enumerationMappings = element.enumerationMappings.map(
       (enumerationMapping) =>

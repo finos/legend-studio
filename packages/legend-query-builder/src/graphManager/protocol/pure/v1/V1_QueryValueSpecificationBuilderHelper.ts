@@ -47,10 +47,10 @@ import {
   V1_Lambda,
   V1_ValueSpecificationBuilder,
   AbstractPropertyExpression,
-  TYPICAL_MULTIPLICITY_TYPE,
   VariableExpression,
   CORE_PURE_PATH,
-  PRIMITIVE_TYPE,
+  Multiplicity,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../../QueryBuilderSupportedFunctions.js';
 
@@ -168,7 +168,10 @@ const buildAggregationExpression = (
       ),
     ) ??
     new INTERNAL__UnknownValueSpecification(
-      V1_serializeValueSpecification(columnLambda),
+      V1_serializeValueSpecification(
+        columnLambda,
+        compileContext.extensions.plugins,
+      ),
     );
 
   // aggregate lambda
@@ -249,9 +252,7 @@ export const V1_buildExistsFunctionExpression = (
       if (variable.name && !variable.class) {
         const variableExpression = new VariableExpression(
           variable.name,
-          compileContext.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
-          ),
+          Multiplicity.ONE,
         );
         variableExpression.genericType = precedingExpression.genericType;
         processingContext.addInferredVariables(
@@ -408,7 +409,10 @@ export const V1_buildProjectFunctionExpression = (
       );
     } catch {
       return new INTERNAL__UnknownValueSpecification(
-        V1_serializeValueSpecification(value),
+        V1_serializeValueSpecification(
+          value,
+          compileContext.extensions.plugins,
+        ),
       );
     }
   });
@@ -528,7 +532,10 @@ export const V1_buildGroupByFunctionExpression = (
       );
     } catch {
       return new INTERNAL__UnknownValueSpecification(
-        V1_serializeValueSpecification(value),
+        V1_serializeValueSpecification(
+          value,
+          compileContext.extensions.plugins,
+        ),
       );
     }
   });
@@ -630,9 +637,8 @@ export const V1_buildWatermarkFunctionExpression = (
   const watermarkValueParamType =
     watermarkValueParam.genericType?.value.rawType;
   assertTrue(
-    compileContext.graph.getPrimitiveType(PRIMITIVE_TYPE.STRING) ===
-      watermarkValueParamType,
-    "Can't build forWatermark() expression: watermark parameter is expected to be of type string.",
+    PrimitiveType.STRING === watermarkValueParamType,
+    "Can't build forWatermark() expression: parameter is expected to be a string",
   );
 
   const expression = V1_buildBaseSimpleFunctionExpression(

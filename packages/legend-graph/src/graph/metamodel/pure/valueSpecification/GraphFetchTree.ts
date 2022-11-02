@@ -24,6 +24,7 @@ import type {
 import { InstanceValue } from './InstanceValue.js';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../Core_HashUtils.js';
+import { Multiplicity } from '../packageableElements/domain/Multiplicity.js';
 
 export abstract class GraphFetchTree implements Hashable {
   subTrees: GraphFetchTree[] = [];
@@ -79,40 +80,15 @@ export class PropertyGraphFetchTree extends GraphFetchTree implements Hashable {
   }
 }
 
-export abstract class GraphFetchTreeInstanceValue
+export class GraphFetchTreeInstanceValue
   extends InstanceValue
   implements Hashable
 {
-  override values: GraphFetchTree[] = [];
-}
-
-export class PropertyGraphFetchTreeInstanceValue
-  extends GraphFetchTreeInstanceValue
-  implements Hashable
-{
-  override values: PropertyGraphFetchTree[] = [];
-
-  override get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.PROPERTY_GRAPH_FETCH_TREE_INSTANCE_VALUE,
-      this.genericType?.ownerReference.valueForSerialization ?? '',
-      this.multiplicity,
-      hashArray(this.values),
-    ]);
-  }
-
-  override accept_ValueSpecificationVisitor<T>(
-    visitor: ValueSpecificationVisitor<T>,
-  ): T {
-    return visitor.visit_PropertyGraphFetchTreeInstanceValue(this);
-  }
-}
-
-export class RootGraphFetchTreeInstanceValue
-  extends GraphFetchTreeInstanceValue
-  implements Hashable
-{
   override values: RootGraphFetchTree[] = [];
+
+  constructor() {
+    super(Multiplicity.ONE);
+  }
 
   override get hashCode(): string {
     return hashArray([
@@ -126,6 +102,6 @@ export class RootGraphFetchTreeInstanceValue
   override accept_ValueSpecificationVisitor<T>(
     visitor: ValueSpecificationVisitor<T>,
   ): T {
-    return visitor.visit_RootGraphFetchTreeInstanceValue(this);
+    return visitor.visit_GraphFetchTreeInstanceValue(this);
   }
 }

@@ -29,7 +29,7 @@ import {
   observe_PrimitiveInstanceValue,
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
-  TYPICAL_MULTIPLICITY_TYPE,
+  PrimitiveType,
 } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useDrop } from 'react-dnd';
@@ -103,14 +103,7 @@ const MilestoningParameterEditor = observer(
       const parameter = observe_PrimitiveInstanceValue(
         new PrimitiveInstanceValue(
           GenericTypeExplicitReference.create(
-            new GenericType(
-              queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                PRIMITIVE_TYPE.STRICTDATE,
-              ),
-            ),
-          ),
-          queryBuilderState.graphManagerState.graph.getTypicalMultiplicity(
-            TYPICAL_MULTIPLICITY_TYPE.ONE,
+            new GenericType(PrimitiveType.STRICTDATE),
           ),
         ),
         queryBuilderState.observableContext,
@@ -142,10 +135,7 @@ const MilestoningParameterEditor = observer(
                 : queryBuilderState.milestoningState.setProcessingDate(val)
             }
             typeCheckOption={{
-              expectedType:
-                queryBuilderState.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.DATE,
-                ),
+              expectedType: PrimitiveType.DATE,
             }}
             resetValue={resetMilestoningParameter}
           />

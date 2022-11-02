@@ -33,11 +33,7 @@ export const TEST_DATA_lambda_watermark_Constant = {
         },
         {
           _type: 'string',
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          values: ['watermarkValue'],
+          value: 'watermarkValue',
         },
       ],
     },
@@ -114,11 +110,7 @@ export const TEST_DATA_lambda_watermark_filter_Constant = {
             },
             {
               _type: 'string',
-              values: ['test'],
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
+              value: 'test',
             },
           ],
         },
@@ -141,11 +133,7 @@ export const TEST_DATA_lambda_watermark_filter_Constant = {
                 },
                 {
                   _type: 'string',
-                  values: ['Test'],
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
+                  value: 'Test',
                 },
               ],
             },
@@ -190,11 +178,7 @@ export const TEST_DATA_lambda_watermark_olapGroupBy = {
                 },
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['test'],
+                  value: 'test',
                 },
               ],
             },
@@ -237,11 +221,7 @@ export const TEST_DATA_lambda_watermark_olapGroupBy = {
               values: [
                 {
                   _type: 'string',
-                  multiplicity: {
-                    lowerBound: 1,
-                    upperBound: 1,
-                  },
-                  values: ['First Name'],
+                  value: 'First Name',
                 },
               ],
             },
@@ -261,11 +241,7 @@ export const TEST_DATA_lambda_watermark_olapGroupBy = {
           parameters: [
             {
               _type: 'string',
-              multiplicity: {
-                lowerBound: 1,
-                upperBound: 1,
-              },
-              values: ['First Name'],
+              value: 'First Name',
             },
             {
               _type: 'lambda',
@@ -292,11 +268,7 @@ export const TEST_DATA_lambda_watermark_olapGroupBy = {
         },
         {
           _type: 'string',
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-          values: ['sum First Name'],
+          value: 'sum First Name',
         },
       ],
     },

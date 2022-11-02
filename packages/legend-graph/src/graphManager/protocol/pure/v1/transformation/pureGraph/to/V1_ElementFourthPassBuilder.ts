@@ -82,14 +82,22 @@ export class V1_ElementFourthPassBuilder
     const _class = this.context.currentSubGraph.getOwnClass(
       V1_buildFullPath(element.package, element.name),
     );
-    V1_buildMilestoningProperties(_class, this.context.graph);
+    V1_buildMilestoningProperties(
+      _class,
+      this.context.graph,
+      this.context.extensions.plugins,
+    );
   }
 
   visit_Association(element: V1_Association): void {
     const association = this.context.currentSubGraph.getOwnAssociation(
       V1_buildFullPath(element.package, element.name),
     );
-    V1_buildMilestoningProperties(association, this.context.graph);
+    V1_buildMilestoningProperties(
+      association,
+      this.context.graph,
+      this.context.extensions.plugins,
+    );
   }
 
   visit_ConcreteFunctionDefinition(

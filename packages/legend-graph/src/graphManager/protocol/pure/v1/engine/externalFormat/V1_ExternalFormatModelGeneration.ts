@@ -15,7 +15,7 @@
  */
 
 import { createModelSchema, optional, primitive, raw } from 'serializr';
-import { SerializationFactory } from '@finos/legend-shared';
+import { type PlainObject, SerializationFactory } from '@finos/legend-shared';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
 
@@ -23,14 +23,14 @@ export class V1_ExternalFormatModelGenerationInput {
   clientVersion?: string | undefined;
   sourceSchemaSet: string;
   model: V1_PureModelContext;
-  config?: Record<PropertyKey, unknown> | undefined;
+  config?: PlainObject | undefined;
   generateBinding: boolean | undefined;
   targetBindingPath: string | undefined;
 
   constructor(
     sourceSchemaSet: string,
     model: V1_PureModelContext,
-    config?: Record<PropertyKey, unknown>,
+    config?: PlainObject,
   ) {
     this.model = model;
     this.sourceSchemaSet = sourceSchemaSet;

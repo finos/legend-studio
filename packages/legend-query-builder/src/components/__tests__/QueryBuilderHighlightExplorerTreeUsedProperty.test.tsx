@@ -48,7 +48,7 @@ type TestCase = [
     classPath: string;
     entities: Entity[];
     rawLambda: { parameters?: object; body?: object };
-    rawMappingModelCoverageAnalysisResult: PlainObject<unknown>;
+    rawMappingModelCoverageAnalysisResult: PlainObject;
     /**
      * Assuming the root node is already expanded
      */

@@ -165,18 +165,12 @@ export const QueryBuilderDiffViewPanel = observer(
                     {
                       parameters: diffViewState.initialQuery.parameters
                         ? pruneSourceInformation(
-                            diffViewState.initialQuery.parameters as Record<
-                              PropertyKey,
-                              unknown
-                            >,
+                            diffViewState.initialQuery.parameters,
                           )
                         : undefined,
                       body: diffViewState.initialQuery.body
                         ? pruneSourceInformation(
-                            diffViewState.initialQuery.body as Record<
-                              PropertyKey,
-                              unknown
-                            >,
+                            diffViewState.initialQuery.body,
                           )
                         : undefined,
                     },
@@ -187,18 +181,12 @@ export const QueryBuilderDiffViewPanel = observer(
                     {
                       parameters: diffViewState.currentQuery.parameters
                         ? pruneSourceInformation(
-                            diffViewState.currentQuery.parameters as Record<
-                              PropertyKey,
-                              unknown
-                            >,
+                            diffViewState.currentQuery.parameters,
                           )
                         : undefined,
                       body: diffViewState.currentQuery.body
                         ? pruneSourceInformation(
-                            diffViewState.currentQuery.body as Record<
-                              PropertyKey,
-                              unknown
-                            >,
+                            diffViewState.currentQuery.body,
                           )
                         : undefined,
                     },

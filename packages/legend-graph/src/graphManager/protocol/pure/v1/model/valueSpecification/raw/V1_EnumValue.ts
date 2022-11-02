@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  type V1_ValueSpecificationVisitor,
-  V1_ValueSpecification,
-} from '../../../model/valueSpecification/V1_ValueSpecification.js';
+import type { V1_ValueSpecificationVisitor } from '../V1_ValueSpecification.js';
+import { V1_DataTypeValueSpecification } from './V1_DataTypeValueSpecification.js';
 
-export class V1_EnumValue extends V1_ValueSpecification {
+export class V1_EnumValue extends V1_DataTypeValueSpecification {
   fullPath!: string;
   value!: string;
 

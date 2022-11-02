@@ -35,7 +35,7 @@ import {
   RefreshIcon,
   TimesIcon,
 } from '@finos/legend-art';
-import { type ValueSpecification, PRIMITIVE_TYPE } from '@finos/legend-graph';
+import { type ValueSpecification, PrimitiveType } from '@finos/legend-graph';
 import { BasicValueSpecificationEditor } from '@finos/legend-query-builder';
 import {
   filterByType,
@@ -242,9 +242,7 @@ const ServiceTestParameterEditor = observer(
             typeCheckOption={{
               expectedType:
                 paramState.varExpression.genericType?.value.rawType ??
-                setupState.editorStore.graphManagerState.graph.getPrimitiveType(
-                  PRIMITIVE_TYPE.STRING,
-                ),
+                PrimitiveType.STRING,
             }}
             className="query-builder__parameters__value__editor"
             resetValue={(): void => {
