@@ -580,7 +580,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
       this.isRunningQuery = true;
       const promise =
         this.editorStore.graphManagerState.graphManager.executeMapping(
-          this.getExecutionQuery(),
+          this.queryState.query,
           this.selectedExecutionContextState.executionContext.mapping.value,
           this.selectedExecutionContextState.executionContext.runtime,
           this.editorStore.graphManagerState.graph,
@@ -607,10 +607,6 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     } finally {
       this.isRunningQuery = false;
     }
-  }
-
-  getExecutionQuery(): RawLambda {
-    return this.queryState.query;
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
