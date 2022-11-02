@@ -1,5 +1,7 @@
 # @finos/legend-application-studio
 
+## 20.0.3
+
 ## 20.0.2
 
 ## 20.0.1
