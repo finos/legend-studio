@@ -32,9 +32,9 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'F10', // Chrome: Developer Tools > Sources: Step over next function call
   'F11', // Chrome: Developer Tools > Sources: Step into next function call
   'Meta+Shift+p', // Chrome: Developer Tools: Open Command Prompt inside developer tools
-  'Ctrl+Shift+p',
+  'Control+Shift+p',
   'Meta+p', // Print
-  'Ctrl+p',
+  'Control+p',
 ];
 
 const buildReactHotkeysConfiguration = (
