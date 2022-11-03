@@ -127,7 +127,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "model::target::_Person",
+                "propertyOwner": "model::target::_Person",
                 "property": "fullName"
               },
               "source": "model_target__Person",
@@ -160,7 +160,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "model::target::_Firm",
+                "propertyOwner": "model::target::_Firm",
                 "property": "employees"
               },
               "source": "model_target__Firm",
@@ -187,7 +187,7 @@
               "enumMappingId": "model_target_IncType",
               "explodeProperty": false,
               "property": {
-                "class": "model::target::_Firm",
+                "propertyOwner": "model::target::_Firm",
                 "property": "type"
               },
               "source": "model_target__Firm",

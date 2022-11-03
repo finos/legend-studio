@@ -81,7 +81,7 @@ export const TEST_DATA__ServiceRoundtrip = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                class: 'my::Person',
+                propertyOwner: 'my::Person',
                 property: 'givenNames',
               },
               source: '',

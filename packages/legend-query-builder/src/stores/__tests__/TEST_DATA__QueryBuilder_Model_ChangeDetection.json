@@ -252,7 +252,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "name"
               },
               "relationalOperation": {
@@ -302,7 +302,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Firm",
+                "propertyOwner": "my::Firm",
                 "property": "legalName"
               },
               "relationalOperation": {

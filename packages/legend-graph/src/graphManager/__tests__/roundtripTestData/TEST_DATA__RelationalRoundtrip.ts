@@ -3392,7 +3392,7 @@ export const TEST_DATA__simpleEmbeddedRelationalRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'name',
               },
               relationalOperation: {
@@ -3436,7 +3436,7 @@ export const TEST_DATA__simpleEmbeddedRelationalRoundtrip = [
                 root: false,
               },
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'firm',
               },
             },
@@ -3642,7 +3642,7 @@ export const TEST_DATA__multiLevelEmbeddedRelationalRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'name',
               },
               relationalOperation: {
@@ -3730,7 +3730,7 @@ export const TEST_DATA__multiLevelEmbeddedRelationalRoundtrip = [
                 root: false,
               },
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'firm',
               },
             },
@@ -3762,7 +3762,7 @@ export const TEST_DATA__multiLevelEmbeddedRelationalRoundtrip = [
                 root: false,
               },
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'address',
               },
             },
@@ -8977,7 +8977,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Person',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -8996,7 +8996,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Person',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Person',
                 property: 'age',
               },
               relationalOperation: {
@@ -9015,7 +9015,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Person',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -9034,7 +9034,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Person',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Person',
                 property: 'firm',
               },
               relationalOperation: {
@@ -9051,7 +9051,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
+                propertyOwner:
                   'apps::meta::pure::tests::model::simple::EntityWithAddress',
                 property: 'address',
               },
@@ -9069,7 +9069,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
+                propertyOwner:
                   'apps::meta::pure::tests::model::simple::EntityWithLocations',
                 property: 'locations',
               },
@@ -9087,7 +9087,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Person',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Person',
                 property: 'manager',
               },
               relationalOperation: {
@@ -9133,7 +9133,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -9152,7 +9152,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Firm',
                 property: 'employees',
               },
               relationalOperation: {
@@ -9169,7 +9169,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
+                propertyOwner:
                   'apps::meta::pure::tests::model::simple::EntityWithAddress',
                 property: 'address',
               },
@@ -9216,7 +9216,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'apps::meta::pure::tests::model::simple::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -9235,7 +9235,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::FirmExtension',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::FirmExtension',
                 property: 'establishedDate',
               },
               relationalOperation: {
@@ -9288,7 +9289,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
                 root: false,
               },
               property: {
-                class: 'apps::meta::pure::tests::model::simple::FirmExtension',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::FirmExtension',
                 property: 'employeesExt',
               },
             },
@@ -9324,7 +9326,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Address',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::Address',
                 property: 'name',
               },
               relationalOperation: {
@@ -9343,7 +9346,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Address',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::Address',
                 property: 'street',
               },
               relationalOperation: {
@@ -9363,7 +9367,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
               _type: 'relationalPropertyMapping',
               enumMappingId: 'GE',
               property: {
-                class:
+                propertyOwner:
                   'apps::meta::pure::tests::model::simple::GeographicEntity',
                 property: 'type',
               },
@@ -9383,7 +9387,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Address',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::Address',
                 property: 'comments',
               },
               relationalOperation: {
@@ -9431,7 +9436,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Location',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::Location',
                 property: 'place',
               },
               relationalOperation: {
@@ -9450,7 +9456,8 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::meta::pure::tests::model::simple::Location',
+                propertyOwner:
+                  'apps::meta::pure::tests::model::simple::Location',
                 property: 'censusdate',
               },
               relationalOperation: {
@@ -9510,7 +9517,7 @@ export const TEST_DATA__RelationalAssociationMapping = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class:
+                propertyOwner:
                   'apps::meta::pure::tests::model::simple::PlaceOfInterest',
                 property: 'name',
               },
@@ -9675,7 +9682,7 @@ export const TEST_DATA__XStoreAssociationMapping = [
                 parameters: [],
               },
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'employer',
               },
               source: 'p',
@@ -9695,7 +9702,7 @@ export const TEST_DATA__XStoreAssociationMapping = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'name',
               },
               source: '',
@@ -9729,7 +9736,7 @@ export const TEST_DATA__XStoreAssociationMapping = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                class: 'test::Firm',
+                propertyOwner: 'test::Firm',
                 property: 'id',
               },
               source: '',
@@ -9754,7 +9761,7 @@ export const TEST_DATA__XStoreAssociationMapping = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                class: 'test::Firm',
+                propertyOwner: 'test::Firm',
                 property: 'legalName',
               },
               source: '',

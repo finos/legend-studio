@@ -7007,7 +7007,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Product',
+                propertyOwner: 'meta::pure::tests::model::simple::Product',
                 property: 'name',
               },
               relationalOperation: {
@@ -7026,7 +7026,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Product',
+                propertyOwner: 'meta::pure::tests::model::simple::Product',
                 property: 'synonyms',
               },
               relationalOperation: {
@@ -7053,7 +7053,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Synonym',
+                propertyOwner: 'meta::pure::tests::model::simple::Synonym',
                 property: 'name',
               },
               relationalOperation: {
@@ -7072,7 +7072,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Synonym',
+                propertyOwner: 'meta::pure::tests::model::simple::Synonym',
                 property: 'typeAsString',
               },
               relationalOperation: {
@@ -7092,7 +7092,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
               _type: 'relationalPropertyMapping',
               enumMappingId: 'SynonymEnum',
               property: {
-                class: 'meta::pure::tests::model::simple::Synonym',
+                propertyOwner: 'meta::pure::tests::model::simple::Synonym',
                 property: 'type',
               },
               relationalOperation: {
@@ -7111,7 +7111,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Synonym',
+                propertyOwner: 'meta::pure::tests::model::simple::Synonym',
                 property: 'product',
               },
               relationalOperation: {
@@ -7138,7 +7138,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'id',
               },
               relationalOperation: {
@@ -7157,7 +7157,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'quantity',
               },
               relationalOperation: {
@@ -7176,7 +7176,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'account',
               },
               relationalOperation: {
@@ -7188,7 +7188,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'product',
               },
               relationalOperation: {
@@ -7200,7 +7200,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'date',
               },
               relationalOperation: {
@@ -7219,7 +7219,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'settlementDateTime',
               },
               relationalOperation: {
@@ -7238,7 +7238,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'latestEventDate',
               },
               relationalOperation: {
@@ -7263,7 +7263,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Trade',
+                propertyOwner: 'meta::pure::tests::model::simple::Trade',
                 property: 'events',
               },
               relationalOperation: {
@@ -7290,7 +7290,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'id',
               },
               relationalOperation: {
@@ -7309,7 +7309,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'quantity',
               },
               relationalOperation: {
@@ -7328,7 +7328,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'date',
               },
               relationalOperation: {
@@ -7347,7 +7347,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'settlementDateTime',
               },
               relationalOperation: {
@@ -7366,7 +7366,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'pnl',
               },
               relationalOperation: {
@@ -7389,7 +7389,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'pnlContact',
               },
               relationalOperation: {
@@ -7404,7 +7404,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Order',
+                propertyOwner: 'meta::pure::tests::model::simple::Order',
                 property: 'zeroPnl',
               },
               relationalOperation: {
@@ -7457,7 +7457,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::OrderPnl',
+                propertyOwner: 'meta::pure::tests::model::simple::OrderPnl',
                 property: 'pnl',
               },
               relationalOperation: {
@@ -7476,7 +7476,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::OrderPnl',
+                propertyOwner: 'meta::pure::tests::model::simple::OrderPnl',
                 property: 'supportContactName',
               },
               relationalOperation: {
@@ -7495,7 +7495,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::OrderPnl',
+                propertyOwner: 'meta::pure::tests::model::simple::OrderPnl',
                 property: 'order',
               },
               relationalOperation: {
@@ -7522,7 +7522,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::AccountPnl',
+                propertyOwner: 'meta::pure::tests::model::simple::AccountPnl',
                 property: 'pnl',
               },
               relationalOperation: {
@@ -7541,7 +7541,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::AccountPnl',
+                propertyOwner: 'meta::pure::tests::model::simple::AccountPnl',
                 property: 'account',
               },
               relationalOperation: {
@@ -7568,7 +7568,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::TradeEvent',
+                propertyOwner: 'meta::pure::tests::model::simple::TradeEvent',
                 property: 'eventType',
               },
               relationalOperation: {
@@ -7587,7 +7587,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::TradeEvent',
+                propertyOwner: 'meta::pure::tests::model::simple::TradeEvent',
                 property: 'date',
               },
               relationalOperation: {
@@ -7606,7 +7606,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::TradeEvent',
+                propertyOwner: 'meta::pure::tests::model::simple::TradeEvent',
                 property: 'initiator',
               },
               relationalOperation: {
@@ -7618,7 +7618,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::TradeEvent',
+                propertyOwner: 'meta::pure::tests::model::simple::TradeEvent',
                 property: 'traderAddress',
               },
               relationalOperation: {
@@ -7676,7 +7676,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Account',
+                propertyOwner: 'meta::pure::tests::model::simple::Account',
                 property: 'name',
               },
               relationalOperation: {
@@ -7695,7 +7695,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Account',
+                propertyOwner: 'meta::pure::tests::model::simple::Account',
                 property: 'createDate',
               },
               relationalOperation: {
@@ -7714,7 +7714,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Account',
+                propertyOwner: 'meta::pure::tests::model::simple::Account',
                 property: 'trades',
               },
               relationalOperation: {
@@ -7726,7 +7726,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Account',
+                propertyOwner: 'meta::pure::tests::model::simple::Account',
                 property: 'orders',
               },
               relationalOperation: {
@@ -7738,7 +7738,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Account',
+                propertyOwner: 'meta::pure::tests::model::simple::Account',
                 property: 'accountPnl',
               },
               relationalOperation: {
@@ -7765,7 +7765,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'id',
               },
               relationalOperation: {
@@ -7784,7 +7784,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'time',
               },
               relationalOperation: {
@@ -7803,7 +7803,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'source',
               },
               relationalOperation: {
@@ -7815,7 +7815,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'target',
               },
               relationalOperation: {
@@ -7827,7 +7827,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'active',
               },
               relationalOperation: {
@@ -7861,7 +7861,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Interaction',
+                propertyOwner: 'meta::pure::tests::model::simple::Interaction',
                 property: 'longestInteractionBetweenSourceAndTarget',
               },
               relationalOperation: {
@@ -7930,7 +7930,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -7949,7 +7949,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'age',
               },
               relationalOperation: {
@@ -7968,7 +7968,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -7987,7 +7987,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'firm',
               },
               relationalOperation: {
@@ -7999,7 +7999,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::EntityWithAddress',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::EntityWithAddress',
                 property: 'address',
               },
               relationalOperation: {
@@ -8011,7 +8012,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::EntityWithLocations',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::EntityWithLocations',
                 property: 'locations',
               },
               relationalOperation: {
@@ -8023,7 +8025,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'manager',
               },
               relationalOperation: {
@@ -8050,7 +8052,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'meta::pure::tests::model::simple::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -8069,7 +8071,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'meta::pure::tests::model::simple::Firm',
                 property: 'employees',
               },
               relationalOperation: {
@@ -8081,7 +8083,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::EntityWithAddress',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::EntityWithAddress',
                 property: 'address',
               },
               relationalOperation: {
@@ -8108,7 +8111,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Firm',
+                propertyOwner: 'meta::pure::tests::model::simple::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -8127,7 +8130,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::FirmExtension',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::FirmExtension',
                 property: 'establishedDate',
               },
               relationalOperation: {
@@ -8146,7 +8150,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'embeddedPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::FirmExtension',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::FirmExtension',
                 property: 'employeesExt',
               },
               source: 'meta_pure_tests_model_simple_FirmExtension',
@@ -8204,7 +8209,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Address',
+                propertyOwner: 'meta::pure::tests::model::simple::Address',
                 property: 'name',
               },
               relationalOperation: {
@@ -8223,7 +8228,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Address',
+                propertyOwner: 'meta::pure::tests::model::simple::Address',
                 property: 'street',
               },
               relationalOperation: {
@@ -8243,7 +8248,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
               _type: 'relationalPropertyMapping',
               enumMappingId: 'GE',
               property: {
-                class: 'meta::pure::tests::model::simple::GeographicEntity',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::GeographicEntity',
                 property: 'type',
               },
               relationalOperation: {
@@ -8262,7 +8268,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Address',
+                propertyOwner: 'meta::pure::tests::model::simple::Address',
                 property: 'comments',
               },
               relationalOperation: {
@@ -8296,7 +8302,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Location',
+                propertyOwner: 'meta::pure::tests::model::simple::Location',
                 property: 'place',
               },
               relationalOperation: {
@@ -8315,7 +8321,7 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Location',
+                propertyOwner: 'meta::pure::tests::model::simple::Location',
                 property: 'censusdate',
               },
               relationalOperation: {
@@ -8349,7 +8355,8 @@ export const TEST_DATA__relationalCompleteGraphEntities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::PlaceOfInterest',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::PlaceOfInterest',
                 property: 'name',
               },
               relationalOperation: {
@@ -9106,7 +9113,7 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::model::simple::Person',
+                propertyOwner: 'apps::pure::studio::model::simple::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -9125,7 +9132,7 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::model::simple::Person',
+                propertyOwner: 'apps::pure::studio::model::simple::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -9144,7 +9151,7 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::model::simple::Person',
+                propertyOwner: 'apps::pure::studio::model::simple::Person',
                 property: 'firm',
               },
               relationalOperation: {
@@ -9177,7 +9184,7 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::model::simple::Firm',
+                propertyOwner: 'apps::pure::studio::model::simple::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -9196,7 +9203,7 @@ export const TEST_DATA__targetSetImplementationThroughAssociation = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'apps::pure::studio::model::simple::Firm',
+                propertyOwner: 'apps::pure::studio::model::simple::Firm',
                 property: 'employees',
               },
               relationalOperation: {
@@ -12640,7 +12647,7 @@ export const TEST_DATA__embeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -12659,7 +12666,7 @@ export const TEST_DATA__embeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -12678,7 +12685,7 @@ export const TEST_DATA__embeddedRelationalTestData = [
             {
               _type: 'embeddedPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::Person',
+                propertyOwner: 'meta::pure::tests::model::simple::Person',
                 property: 'firm',
               },
               source: 'meta_pure_tests_model_simple_Person',
@@ -12784,7 +12791,8 @@ export const TEST_DATA__embeddedRelationalTestData = [
             {
               _type: 'embeddedPropertyMapping',
               property: {
-                class: 'meta::pure::tests::model::simple::EntityWithAddress',
+                propertyOwner:
+                  'meta::pure::tests::model::simple::EntityWithAddress',
                 property: 'address',
               },
               source: 'meta_pure_tests_model_simple_Person',
@@ -13302,7 +13310,7 @@ export const TEST_DATA__otherwiseEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Firm',
+                propertyOwner: 'other::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -13321,7 +13329,7 @@ export const TEST_DATA__otherwiseEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Firm',
+                propertyOwner: 'other::Firm',
                 property: 'otherInformation',
               },
               relationalOperation: {
@@ -13368,7 +13376,7 @@ export const TEST_DATA__otherwiseEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'name',
               },
               relationalOperation: {
@@ -13387,7 +13395,7 @@ export const TEST_DATA__otherwiseEmbeddedRelationalTestData = [
             {
               _type: 'otherwiseEmbeddedPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'firm',
               },
               source: 'alias1',
@@ -13679,7 +13687,7 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Address',
+                propertyOwner: 'other::Address',
                 property: 'line1',
               },
               relationalOperation: {
@@ -13698,7 +13706,7 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Address',
+                propertyOwner: 'other::Address',
                 property: 'postcode',
               },
               relationalOperation: {
@@ -13745,7 +13753,7 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'name',
               },
               relationalOperation: {
@@ -13764,7 +13772,7 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
             {
               _type: 'embeddedPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'firm',
               },
               source: 'alias1',
@@ -13812,7 +13820,7 @@ export const TEST_DATA__inlineEmbeddedRelationalTestData = [
             {
               _type: 'inlineEmbeddedPropertyMapping',
               property: {
-                class: 'other::Person',
+                propertyOwner: 'other::Person',
                 property: 'address',
               },
               source: 'alias1',

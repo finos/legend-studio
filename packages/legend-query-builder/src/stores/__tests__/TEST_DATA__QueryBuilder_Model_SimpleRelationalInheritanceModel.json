@@ -325,7 +325,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Firm",
+                "propertyOwner": "model::Firm",
                 "property": "employees"
               },
               "relationalOperation": {
@@ -371,7 +371,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "firstName"
               },
               "relationalOperation": {
@@ -390,7 +390,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "lastName"
               },
               "relationalOperation": {
@@ -438,7 +438,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::LegalEntity",
+                "propertyOwner": "model::LegalEntity",
                 "property": "legalName"
               },
               "relationalOperation": {

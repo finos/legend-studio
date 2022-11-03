@@ -9140,7 +9140,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "firstName"
               },
               "relationalOperation": {
@@ -9159,7 +9159,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "age"
               },
               "relationalOperation": {
@@ -9178,7 +9178,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "lastName"
               },
               "relationalOperation": {
@@ -9197,7 +9197,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "firm"
               },
               "relationalOperation": {
@@ -9214,7 +9214,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "address"
               },
               "relationalOperation": {
@@ -9231,7 +9231,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "locations"
               },
               "relationalOperation": {
@@ -9248,7 +9248,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Person",
+                "propertyOwner": "model::pure::tests::model::simple::Person",
                 "property": "manager"
               },
               "relationalOperation": {
@@ -9282,7 +9282,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::PersonExtension",
+                "propertyOwner": "model::pure::tests::model::simple::PersonExtension",
                 "property": "birthdate"
               },
               "relationalOperation": {
@@ -9330,7 +9330,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Firm",
+                "propertyOwner": "model::pure::tests::model::simple::Firm",
                 "property": "legalName"
               },
               "relationalOperation": {
@@ -9349,7 +9349,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Firm",
+                "propertyOwner": "model::pure::tests::model::simple::Firm",
                 "property": "employees"
               },
               "relationalOperation": {
@@ -9366,7 +9366,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Firm",
+                "propertyOwner": "model::pure::tests::model::simple::Firm",
                 "property": "address"
               },
               "relationalOperation": {
@@ -9412,7 +9412,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::FirmExtension",
+                "propertyOwner": "model::pure::tests::model::simple::FirmExtension",
                 "property": "legalName"
               },
               "relationalOperation": {
@@ -9431,7 +9431,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::FirmExtension",
+                "propertyOwner": "model::pure::tests::model::simple::FirmExtension",
                 "property": "establishedDate"
               },
               "relationalOperation": {
@@ -9484,7 +9484,7 @@
                 "root": false
               },
               "property": {
-                "class": "model::pure::tests::model::simple::FirmExtension",
+                "propertyOwner": "model::pure::tests::model::simple::FirmExtension",
                 "property": "employeesExt"
               }
             }
@@ -9520,7 +9520,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Address",
+                "propertyOwner": "model::pure::tests::model::simple::Address",
                 "property": "name"
               },
               "relationalOperation": {
@@ -9539,7 +9539,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Address",
+                "propertyOwner": "model::pure::tests::model::simple::Address",
                 "property": "street"
               },
               "relationalOperation": {
@@ -9559,7 +9559,7 @@
               "_type": "relationalPropertyMapping",
               "enumMappingId": "GE",
               "property": {
-                "class": "model::pure::tests::model::simple::Address",
+                "propertyOwner": "model::pure::tests::model::simple::Address",
                 "property": "type"
               },
               "relationalOperation": {
@@ -9578,7 +9578,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Address",
+                "propertyOwner": "model::pure::tests::model::simple::Address",
                 "property": "comments"
               },
               "relationalOperation": {
@@ -9626,7 +9626,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Location",
+                "propertyOwner": "model::pure::tests::model::simple::Location",
                 "property": "place"
               },
               "relationalOperation": {
@@ -9645,7 +9645,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Location",
+                "propertyOwner": "model::pure::tests::model::simple::Location",
                 "property": "censusdate"
               },
               "relationalOperation": {
@@ -9705,7 +9705,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::PlaceOfInterest",
+                "propertyOwner": "model::pure::tests::model::simple::PlaceOfInterest",
                 "property": "name"
               },
               "relationalOperation": {
@@ -9753,7 +9753,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Product",
+                "propertyOwner": "model::pure::tests::model::simple::Product",
                 "property": "name"
               },
               "relationalOperation": {
@@ -9772,7 +9772,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Product",
+                "propertyOwner": "model::pure::tests::model::simple::Product",
                 "property": "synonyms"
               },
               "relationalOperation": {
@@ -9818,7 +9818,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Synonym",
+                "propertyOwner": "model::pure::tests::model::simple::Synonym",
                 "property": "name"
               },
               "relationalOperation": {
@@ -9837,7 +9837,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Synonym",
+                "propertyOwner": "model::pure::tests::model::simple::Synonym",
                 "property": "typeAsString"
               },
               "relationalOperation": {
@@ -9857,7 +9857,7 @@
               "_type": "relationalPropertyMapping",
               "enumMappingId": "SynonymEnum",
               "property": {
-                "class": "model::pure::tests::model::simple::Synonym",
+                "propertyOwner": "model::pure::tests::model::simple::Synonym",
                 "property": "type"
               },
               "relationalOperation": {
@@ -9876,7 +9876,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Synonym",
+                "propertyOwner": "model::pure::tests::model::simple::Synonym",
                 "property": "product"
               },
               "relationalOperation": {
@@ -9922,7 +9922,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "id"
               },
               "relationalOperation": {
@@ -9941,7 +9941,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "quantity"
               },
               "relationalOperation": {
@@ -9960,7 +9960,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "account"
               },
               "relationalOperation": {
@@ -9977,7 +9977,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "product"
               },
               "relationalOperation": {
@@ -9994,7 +9994,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "date"
               },
               "relationalOperation": {
@@ -10013,7 +10013,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "settlementDateTime"
               },
               "relationalOperation": {
@@ -10032,7 +10032,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "latestEventDate"
               },
               "relationalOperation": {
@@ -10060,7 +10060,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Trade",
+                "propertyOwner": "model::pure::tests::model::simple::Trade",
                 "property": "events"
               },
               "relationalOperation": {
@@ -10106,7 +10106,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "id"
               },
               "relationalOperation": {
@@ -10125,7 +10125,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "quantity"
               },
               "relationalOperation": {
@@ -10144,7 +10144,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "date"
               },
               "relationalOperation": {
@@ -10163,7 +10163,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "settlementDateTime"
               },
               "relationalOperation": {
@@ -10182,7 +10182,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "pnl"
               },
               "relationalOperation": {
@@ -10210,7 +10210,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "pnlContact"
               },
               "relationalOperation": {
@@ -10231,7 +10231,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Order",
+                "propertyOwner": "model::pure::tests::model::simple::Order",
                 "property": "zeroPnl"
               },
               "relationalOperation": {
@@ -10312,7 +10312,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::OrderPnl",
+                "propertyOwner": "model::pure::tests::model::simple::OrderPnl",
                 "property": "pnl"
               },
               "relationalOperation": {
@@ -10331,7 +10331,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::OrderPnl",
+                "propertyOwner": "model::pure::tests::model::simple::OrderPnl",
                 "property": "supportContactName"
               },
               "relationalOperation": {
@@ -10350,7 +10350,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::OrderPnl",
+                "propertyOwner": "model::pure::tests::model::simple::OrderPnl",
                 "property": "order"
               },
               "relationalOperation": {
@@ -10396,7 +10396,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::AccountPnl",
+                "propertyOwner": "model::pure::tests::model::simple::AccountPnl",
                 "property": "pnl"
               },
               "relationalOperation": {
@@ -10415,7 +10415,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::AccountPnl",
+                "propertyOwner": "model::pure::tests::model::simple::AccountPnl",
                 "property": "account"
               },
               "relationalOperation": {
@@ -10461,7 +10461,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::TradeEvent",
+                "propertyOwner": "model::pure::tests::model::simple::TradeEvent",
                 "property": "eventType"
               },
               "relationalOperation": {
@@ -10480,7 +10480,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::TradeEvent",
+                "propertyOwner": "model::pure::tests::model::simple::TradeEvent",
                 "property": "date"
               },
               "relationalOperation": {
@@ -10499,7 +10499,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::TradeEvent",
+                "propertyOwner": "model::pure::tests::model::simple::TradeEvent",
                 "property": "initiator"
               },
               "relationalOperation": {
@@ -10516,7 +10516,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::TradeEvent",
+                "propertyOwner": "model::pure::tests::model::simple::TradeEvent",
                 "property": "traderAddress"
               },
               "relationalOperation": {
@@ -10595,7 +10595,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Account",
+                "propertyOwner": "model::pure::tests::model::simple::Account",
                 "property": "name"
               },
               "relationalOperation": {
@@ -10614,7 +10614,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Account",
+                "propertyOwner": "model::pure::tests::model::simple::Account",
                 "property": "createDate"
               },
               "relationalOperation": {
@@ -10633,7 +10633,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Account",
+                "propertyOwner": "model::pure::tests::model::simple::Account",
                 "property": "trades"
               },
               "relationalOperation": {
@@ -10650,7 +10650,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Account",
+                "propertyOwner": "model::pure::tests::model::simple::Account",
                 "property": "orders"
               },
               "relationalOperation": {
@@ -10667,7 +10667,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Account",
+                "propertyOwner": "model::pure::tests::model::simple::Account",
                 "property": "accountPnl"
               },
               "relationalOperation": {
@@ -10713,7 +10713,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "id"
               },
               "relationalOperation": {
@@ -10732,7 +10732,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "time"
               },
               "relationalOperation": {
@@ -10751,7 +10751,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "source"
               },
               "relationalOperation": {
@@ -10768,7 +10768,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "target"
               },
               "relationalOperation": {
@@ -10785,7 +10785,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "active"
               },
               "relationalOperation": {
@@ -10828,7 +10828,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::pure::tests::model::simple::Interaction",
+                "propertyOwner": "model::pure::tests::model::simple::Interaction",
                 "property": "longestInteractionBetweenSourceAndTarget"
               },
               "relationalOperation": {

@@ -230,7 +230,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "name"
               },
               "relationalOperation": {
@@ -249,7 +249,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "address"
               },
               "relationalOperation": {
@@ -295,7 +295,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::AddressType2",
+                "propertyOwner": "model::AddressType2",
                 "property": "zipcode"
               },
               "relationalOperation": {
@@ -314,7 +314,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::AddressType2",
+                "propertyOwner": "model::AddressType2",
                 "property": "streetName"
               },
               "relationalOperation": {
@@ -333,7 +333,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::AddressType2",
+                "propertyOwner": "model::AddressType2",
                 "property": "zip"
               },
               "relationalOperation": {

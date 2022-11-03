@@ -599,7 +599,7 @@
             {
               "_type": "purePropertyMapping",
               "property": {
-                "class": "myPackage::test::shared::src::_Bicycle",
+                "propertyOwner": "myPackage::test::shared::src::_Bicycle",
                 "property": "roadster"
               },
               "source": "ui_meta_pure_mapping_modelToModel_test_shared_src__Bicycle",

@@ -26,6 +26,7 @@ import {
   returnUndefOnError,
   IllegalStateError,
 } from '@finos/legend-shared';
+import type { PropertyOwner } from '../graph/metamodel/pure/packageableElements/domain/AbstractProperty.js';
 import { PrimitiveType } from '../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { Enumeration } from '../graph/metamodel/pure/packageableElements/domain/Enumeration.js';
 import { Multiplicity } from '../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
@@ -388,6 +389,15 @@ export class PureModel extends BasicModel {
         this.dependencyManager.getOwnNullableAssociation(path) ??
         this.systemModel.getOwnNullableAssociation(path),
       `Can't find association '${path}'`,
+    );
+  getPropertyOwner = (path: string): PropertyOwner =>
+    guaranteeNonNullable(
+      this.getOwnNullableAssociation(path) ??
+        this.generationModel.getOwnNullableAssociation(path) ??
+        this.dependencyManager.getOwnNullableAssociation(path) ??
+        this.systemModel.getOwnNullableAssociation(path) ??
+        guaranteeType(this.getType(path), Class),
+      `Can't find property owner '${path}'`,
     );
   getFunction = (path: string): ConcreteFunctionDefinition =>
     guaranteeType(

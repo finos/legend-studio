@@ -7063,7 +7063,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'name',
               },
               source: 'test_Person',
@@ -7095,7 +7095,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'age',
               },
               source: 'test_Person',
@@ -7185,7 +7185,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'master',
               },
               source: 'test_Person',
@@ -7217,7 +7217,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'weight',
               },
               source: 'test_Person',
@@ -7249,7 +7249,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'isEmployed',
               },
               source: 'test_Person',
@@ -7301,7 +7301,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'description',
               },
               source: 'test_Person',
@@ -7424,7 +7424,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'employedDate',
               },
               source: 'test_Person',
@@ -7457,7 +7457,7 @@ export const TEST_DATA__FlatDataMappingRoundtrip = [
               _type: 'flatDataPropertyMapping',
               enumMappingId: 'titleMap',
               property: {
-                class: 'test::Person',
+                propertyOwner: 'test::Person',
                 property: 'title',
               },
               source: 'test_Person',
@@ -7744,7 +7744,7 @@ export const TEST_DATA__FlatDataAssociationMapping = [
             {
               _type: 'flatDataAssociationPropertyMapping',
               property: {
-                class: '',
+                propertyOwner: '',
                 property: 'pid',
               },
               flatData: 'model::multiSection',
@@ -7755,7 +7755,7 @@ export const TEST_DATA__FlatDataAssociationMapping = [
             {
               _type: 'flatDataAssociationPropertyMapping',
               property: {
-                class: '',
+                propertyOwner: '',
                 property: 'fid',
               },
               flatData: 'model::multiSection',
@@ -7777,7 +7777,7 @@ export const TEST_DATA__FlatDataAssociationMapping = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'model::person',
+                propertyOwner: 'model::person',
                 property: 'name',
               },
               source: 'm_p',
@@ -7809,7 +7809,7 @@ export const TEST_DATA__FlatDataAssociationMapping = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'model::person',
+                propertyOwner: 'model::person',
                 property: 'eid',
               },
               source: 'm_p',
@@ -7851,7 +7851,7 @@ export const TEST_DATA__FlatDataAssociationMapping = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'model::firm',
+                propertyOwner: 'model::firm',
                 property: 'fname',
               },
               source: 'm_f',
@@ -14806,7 +14806,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::Residential',
+                propertyOwner: 'myFlatDataTest::Residential',
                 property: 'id',
               },
               source:
@@ -14841,14 +14841,14 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               class: 'myFlatDataTest::Origination',
               id: 'datamarts_rmd_domain_cerebro_instruments_residential_1_0_0_referenceData_product_loans_v2_resi_Residential.resiOrigination',
               property: {
-                class: 'myFlatDataTest::Residential',
+                propertyOwner: 'myFlatDataTest::Residential',
                 property: 'resiOrigination',
               },
               propertyMappings: [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::Origination',
+                    propertyOwner: 'myFlatDataTest::Origination',
                     property: 'originationDate',
                   },
                   source:
@@ -14881,7 +14881,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::Origination',
+                    propertyOwner: 'myFlatDataTest::Origination',
                     property: 'originationBalance',
                   },
                   source:
@@ -14914,7 +14914,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::Origination',
+                    propertyOwner: 'myFlatDataTest::Origination',
                     property: 'originationRate',
                   },
                   source:
@@ -14947,7 +14947,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::Origination',
+                    propertyOwner: 'myFlatDataTest::Origination',
                     property: 'originationInterestOnlyFlag',
                   },
                   source:
@@ -15180,7 +15180,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'primaryFirstName',
               },
               source: 'b1',
@@ -15212,7 +15212,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'primaryLastName',
               },
               source: 'b1',
@@ -15244,7 +15244,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'borrowerType',
               },
               source: 'b1',
@@ -15276,7 +15276,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'financialLiabilities',
               },
               source: 'b1',
@@ -15308,7 +15308,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'income',
               },
               source: 'b1',
@@ -15340,7 +15340,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'incomeCurrency',
               },
               source: 'b1',
@@ -15372,7 +15372,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'scraFlag',
               },
               source: 'b1',
@@ -15584,7 +15584,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
             {
               _type: 'flatDataPropertyMapping',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'eRecordFlag',
               },
               source: 'b1',
@@ -15800,14 +15800,14 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
               class: 'myFlatDataTest::entity::Address',
               id: 'b1.resiBorrAddress',
               property: {
-                class: 'myFlatDataTest::ResiBorrower',
+                propertyOwner: 'myFlatDataTest::ResiBorrower',
                 property: 'resiBorrAddress',
               },
               propertyMappings: [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::entity::Address',
+                    propertyOwner: 'myFlatDataTest::entity::Address',
                     property: 'addressLine1',
                   },
                   source: 'b1.resiBorrAddress',
@@ -15839,7 +15839,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::entity::Address',
+                    propertyOwner: 'myFlatDataTest::entity::Address',
                     property: 'city',
                   },
                   source: 'b1.resiBorrAddress',
@@ -15871,7 +15871,7 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                 {
                   _type: 'flatDataPropertyMapping',
                   property: {
-                    class: 'myFlatDataTest::entity::Address',
+                    propertyOwner: 'myFlatDataTest::entity::Address',
                     property: 'postalCode',
                   },
                   source: 'b1.resiBorrAddress',
@@ -15905,14 +15905,14 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                   class: 'myFlatDataTest::geography::State',
                   id: 'b1.resiBorrAddress.state',
                   property: {
-                    class: 'myFlatDataTest::entity::Address',
+                    propertyOwner: 'myFlatDataTest::entity::Address',
                     property: 'state',
                   },
                   propertyMappings: [
                     {
                       _type: 'flatDataPropertyMapping',
                       property: {
-                        class: 'myFlatDataTest::geography::State',
+                        propertyOwner: 'myFlatDataTest::geography::State',
                         property: 'name',
                       },
                       source: 'b1.resiBorrAddress.state',
@@ -15951,14 +15951,14 @@ export const TEST_DATA__EmbeddedFlatDataMappingRoundtrip = [
                   class: 'myFlatDataTest::geography::Country',
                   id: 'b1.resiBorrAddress.country',
                   property: {
-                    class: 'myFlatDataTest::entity::Address',
+                    propertyOwner: 'myFlatDataTest::entity::Address',
                     property: 'country',
                   },
                   propertyMappings: [
                     {
                       _type: 'flatDataPropertyMapping',
                       property: {
-                        class: 'myFlatDataTest::geography::Country',
+                        propertyOwner: 'myFlatDataTest::geography::Country',
                         property: 'countryName',
                       },
                       source: 'b1.resiBorrAddress.country',

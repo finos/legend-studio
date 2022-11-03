@@ -2798,7 +2798,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Firm',
+                propertyOwner: 'model::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -2827,7 +2827,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Firm',
+                propertyOwner: 'model::Firm',
                 property: 'employees',
               },
               relationalOperation: {
@@ -2844,7 +2844,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Firm',
+                propertyOwner: 'model::Firm',
                 property: 'isApple',
               },
               relationalOperation: {
@@ -2888,7 +2888,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
               _type: 'relationalPropertyMapping',
               enumMappingId: 'model_IncType',
               property: {
-                class: 'model::Firm',
+                propertyOwner: 'model::Firm',
                 property: 'incType',
               },
               relationalOperation: {
@@ -2936,7 +2936,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Person',
+                propertyOwner: 'model::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -2955,7 +2955,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Person',
+                propertyOwner: 'model::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -2974,7 +2974,7 @@ export const TEST_DATA__OlapGroupBy_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                class: 'model::Person',
+                propertyOwner: 'model::Person',
                 property: 'age',
               },
               relationalOperation: {

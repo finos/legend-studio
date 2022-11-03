@@ -161,7 +161,7 @@ export const V1_transformPropertyReference = (
   },
 ): V1_PropertyPointer => {
   const property = new V1_PropertyPointer();
-  property.class =
+  property.propertyOwner =
     options?.isTransformingEmbeddedPropertyMapping ||
     options?.isTransformingLocalPropertyMapping
       ? undefined

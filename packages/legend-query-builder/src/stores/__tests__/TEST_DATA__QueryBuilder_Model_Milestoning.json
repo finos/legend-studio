@@ -533,7 +533,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "processingTemporal"
               },
               "relationalOperation": {
@@ -550,7 +550,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "firmID"
               },
               "relationalOperation": {
@@ -561,7 +561,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "biTemporal"
               },
               "relationalOperation": {
@@ -578,7 +578,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "businessTemporal"
               },
               "relationalOperation": {
@@ -595,7 +595,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person",
+                "propertyOwner": "my::Person",
                 "property": "date"
               },
               "relationalOperation": {
@@ -635,7 +635,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person1",
+                "propertyOwner": "my::Person1",
                 "property": "businessTemporal"
               },
               "relationalOperation": {
@@ -652,7 +652,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person1",
+                "propertyOwner": "my::Person1",
                 "property": "processingTemporal"
               },
               "relationalOperation": {
@@ -669,7 +669,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person1",
+                "propertyOwner": "my::Person1",
                 "property": "firmID"
               },
               "relationalOperation": {
@@ -680,7 +680,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person1",
+                "propertyOwner": "my::Person1",
                 "property": "biTemporal"
               },
               "relationalOperation": {
@@ -726,7 +726,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person2",
+                "propertyOwner": "my::Person2",
                 "property": "biTemporal"
               },
               "relationalOperation": {
@@ -743,7 +743,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person2",
+                "propertyOwner": "my::Person2",
                 "property": "businessTemporal"
               },
               "relationalOperation": {
@@ -760,7 +760,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person2",
+                "propertyOwner": "my::Person2",
                 "property": "firmID"
               },
               "relationalOperation": {
@@ -771,7 +771,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Person2",
+                "propertyOwner": "my::Person2",
                 "property": "processingTemporal"
               },
               "relationalOperation": {
@@ -817,7 +817,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Firm",
+                "propertyOwner": "my::Firm",
                 "property": "businessTemporal"
               },
               "relationalOperation": {
@@ -837,7 +837,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Firm",
+                "propertyOwner": "my::Firm",
                 "property": "biTemporal"
               },
               "relationalOperation": {
@@ -857,7 +857,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "my::Firm",
+                "propertyOwner": "my::Firm",
                 "property": "processingTemporal"
               },
               "relationalOperation": {

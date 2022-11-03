@@ -226,7 +226,7 @@ export const TEST_DATA__SimpleGraph = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'demo::other::NPerson',
+                propertyOwner: 'demo::other::NPerson',
                 property: 'fullName',
               },
               source: 'demo_other_NPerson',
@@ -279,7 +279,7 @@ export const TEST_DATA__SimpleGraph = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'demo::other::NFirm',
+                propertyOwner: 'demo::other::NFirm',
                 property: 'nEmployees',
               },
               source: 'demo_other_NFirm',
@@ -318,7 +318,7 @@ export const TEST_DATA__SimpleGraph = [
               _type: 'purePropertyMapping',
               enumMappingId: 'demo_other_IncType',
               property: {
-                class: 'demo::other::NFirm',
+                propertyOwner: 'demo::other::NFirm',
                 property: 'incType',
               },
               source: 'demo_other_NFirm',

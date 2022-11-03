@@ -52,7 +52,10 @@ import {
   V1_multiplicitySchema,
   V1_packageableElementPointerDeserializerSchema,
 } from '../../../transformation/pureProtocol/serializationHelpers/V1_CoreSerializationHelper.js';
-import { V1_propertyPointerModelSchema } from './V1_DomainSerializationHelper.js';
+import {
+  V1_propertyPointerModelSchema,
+  V1_deserializePropertyPointer,
+} from './V1_DomainSerializationHelper.js';
 import { V1_FlatDataInputData } from '../../../model/packageableElements/store/flatData/mapping/V1_FlatDataInputData.js';
 import { V1_ObjectInputData } from '../../../model/packageableElements/store/modelToModel/mapping/V1_ObjectInputData.js';
 import { V1_ExpectedOutputMappingTestAssert } from '../../../model/packageableElements/mapping/V1_ExpectedOutputMappingTestAssert.js';
@@ -152,7 +155,10 @@ const purePropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     source: primitive(),
     target: optional(primitive()),
     transform: usingModelSchema(V1_rawLambdaModelSchema),
@@ -314,7 +320,10 @@ const relationalPropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     relationalOperation: raw(),
     source: optional(primitive()),
     target: optional(primitive()),
@@ -328,7 +337,10 @@ const flatDataAssociationPropertyMappingModelSchema = createModelSchema(
       V1_PropertyMappingType.ASSOCIATION_FLAT_DATA,
     ),
     flatData: primitive(),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     sectionName: primitive(),
     source: optional(primitive()),
     target: optional(primitive()),
@@ -344,7 +356,10 @@ const embeddedRelationalPropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     /**
      * Omit this information during protocol transformation as it can be
      * interpreted while building the graph; and will help grammar-roundtrip
@@ -368,7 +383,10 @@ const otherwiseEmbeddedRelationalPropertyMappingModelSchgema =
       (val) => V1_serializeRelationalPropertyMapping(val),
       (val) => V1_deserializeRelationalPropertyMapping(val),
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     /**
      * Omit this information during protocol transformation as it can be
      * interpreted while building the graph; and will help grammar-roundtrip
@@ -394,7 +412,10 @@ const inlineEmbeddedPropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     /**
      * Omit this information during protocol transformation as it can be
      * interpreted while building the graph; and will help grammar-roundtrip
@@ -417,7 +438,10 @@ const xStorePropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     source: primitive(),
     target: optional(primitive()),
   },
@@ -477,7 +501,10 @@ const flatDataPropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     source: primitive(),
     target: optional(primitive()),
     transform: usingModelSchema(V1_rawLambdaModelSchema),
@@ -493,7 +520,10 @@ const embeddedFlatDataPropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     propertyMappings: list(
       custom(
         (val) => V1_serializeFlatDataPropertyMapping(val),
@@ -559,7 +589,10 @@ const aggregationAwarePropertyMappingModelSchema = createModelSchema(
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
-    property: usingModelSchema(V1_propertyPointerModelSchema),
+    property: custom(
+      (val) => serialize(V1_propertyPointerModelSchema, val),
+      (val) => V1_deserializePropertyPointer(val),
+    ),
     source: optional(primitive()),
     target: optional(primitive()),
   },

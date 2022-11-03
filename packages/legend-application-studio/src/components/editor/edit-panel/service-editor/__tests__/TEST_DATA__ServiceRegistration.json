@@ -100,7 +100,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "test::Person",
+                "propertyOwner": "test::Person",
                 "property": "firstName"
               },
               "relationalOperation": {

@@ -275,6 +275,7 @@ export {
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export {
   V1_propertyPointerModelSchema,
+  V1_deserializePropertyPointer,
   V1_stereotypePtrSchema,
   V1_taggedValueSchema,
 } from './graphManager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';

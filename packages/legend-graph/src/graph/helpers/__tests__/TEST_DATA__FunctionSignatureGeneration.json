@@ -326,7 +326,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "firstName"
               },
               "relationalOperation": {
@@ -345,7 +345,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "class": "model::Person",
+                "propertyOwner": "model::Person",
                 "property": "lastName"
               },
               "relationalOperation": {

@@ -246,7 +246,7 @@ export class V1_PropertyMappingBuilder
       property = PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           mappingClass,
-          protocol.property.class,
+          protocol.property.propertyOwner,
         ),
         _property,
       );
@@ -258,8 +258,8 @@ export class V1_PropertyMappingBuilder
       );
     } else {
       assertNonEmptyString(
-        protocol.property.class,
-        `Pure instance property mapping 'property.class' field is missing or empty`,
+        protocol.property.propertyOwner,
+        `Pure instance property mapping 'property.propertyOwner' field is missing or empty`,
       );
       property = this.context.resolveProperty(protocol.property);
     }
@@ -351,9 +351,9 @@ export class V1_PropertyMappingBuilder
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
-    if (protocol.property.class) {
+    if (protocol.property.propertyOwner) {
       propertyOwnerClass = this.context.resolveClass(
-        protocol.property.class,
+        protocol.property.propertyOwner,
       ).value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
@@ -391,7 +391,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           propertyOwnerClass,
-          protocol.property.class ?? '',
+          protocol.property.propertyOwner ?? '',
         ),
         property,
       ),
@@ -444,9 +444,9 @@ export class V1_PropertyMappingBuilder
     // since we do not do look up, due to nesting structure introudced by embedded mappings, we might not have the class information
     // as such, here we have to resolve the class being mapped depending on where the property mapping is in the class mapping
     let propertyOwnerClass: Class;
-    if (protocol.property.class) {
+    if (protocol.property.propertyOwner) {
       propertyOwnerClass = this.context.resolveClass(
-        protocol.property.class,
+        protocol.property.propertyOwner,
       ).value;
     } else if (
       this.immediateParent instanceof EmbeddedFlatDataPropertyMapping
@@ -483,7 +483,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           propertyOwnerClass,
-          protocol.property.class ?? '',
+          protocol.property.propertyOwner ?? '',
         ),
         property,
       ),
@@ -556,7 +556,7 @@ export class V1_PropertyMappingBuilder
       property = PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           mappingClass,
-          protocol.property.class,
+          protocol.property.propertyOwner,
         ),
         _property,
       ).value;
@@ -570,9 +570,9 @@ export class V1_PropertyMappingBuilder
     } else {
       if (this.immediateParent instanceof AssociationImplementation) {
         propertyOwner = this.immediateParent.association.value;
-      } else if (protocol.property.class) {
+      } else if (protocol.property.propertyOwner) {
         propertyOwner = this.context.resolveClass(
-          protocol.property.class,
+          protocol.property.propertyOwner,
         ).value;
       } else if (
         this.immediateParent instanceof
@@ -631,7 +631,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           propertyOwner,
-          protocol.property.class ?? '',
+          protocol.property.propertyOwner ?? '',
         ),
         property,
       ),
@@ -772,7 +772,7 @@ export class V1_PropertyMappingBuilder
         PropertyImplicitReference.create(
           PackageableElementImplicitReference.create(
             propertyOwner,
-            protocol.property.class ?? '',
+            protocol.property.propertyOwner ?? '',
           ),
           property,
         ),
@@ -804,9 +804,9 @@ export class V1_PropertyMappingBuilder
       `Inline embedded property mapping 'property.property' field is missing or empty`,
     );
     let propertyOwnerClass: Class;
-    if (protocol.property.class) {
+    if (protocol.property.propertyOwner) {
       propertyOwnerClass = this.context.resolveClass(
-        protocol.property.class,
+        protocol.property.propertyOwner,
       ).value;
     } else if (
       this.immediateParent instanceof RootRelationalInstanceSetImplementation ||
@@ -831,7 +831,7 @@ export class V1_PropertyMappingBuilder
     );
     const _class = PackageableElementImplicitReference.create(
       complexClass,
-      protocol.property.class ?? '',
+      protocol.property.propertyOwner ?? '',
     );
     const id = `${this.immediateParent.id.value}_${property.name}`;
     const topParent = guaranteeNonNullable(this.topParent);
@@ -844,7 +844,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           propertyOwnerClass,
-          protocol.property.class ?? '',
+          protocol.property.propertyOwner ?? '',
         ),
         property,
       ),
@@ -888,7 +888,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           property.propertyOwnerClass,
-          protocol.property.class ?? '',
+          protocol.property.propertyOwner ?? '',
         ),
         property.property,
       ),
@@ -949,7 +949,7 @@ export class V1_PropertyMappingBuilder
         PropertyImplicitReference.create(
           PackageableElementImplicitReference.create(
             property.propertyOwnerClass,
-            protocol.property.class ?? '',
+            protocol.property.propertyOwner ?? '',
           ),
           property.property,
         ),
@@ -1012,8 +1012,8 @@ export class V1_PropertyMappingBuilder
       `XStore property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
-      protocol.property.class,
-      `XStore property mapping 'property.class' field is missing or empty`,
+      protocol.property.propertyOwner,
+      `XStore property mapping 'property.propertyOwner' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.property.property,
@@ -1042,7 +1042,7 @@ export class V1_PropertyMappingBuilder
       PropertyImplicitReference.create(
         PackageableElementImplicitReference.create(
           _association,
-          protocol.property.class,
+          protocol.property.propertyOwner,
         ),
         property,
       ),
@@ -1073,8 +1073,8 @@ export class V1_PropertyMappingBuilder
       `Aggregation-aware property mapping 'property' field is missing`,
     );
     assertNonEmptyString(
-      protocol.property.class,
-      `Aggregation-aware property mapping 'property.class' field is missing or empty`,
+      protocol.property.propertyOwner,
+      `Aggregation-aware property mapping 'property.propertyOwner' field is missing or empty`,
     );
     assertNonEmptyString(
       protocol.property.property,

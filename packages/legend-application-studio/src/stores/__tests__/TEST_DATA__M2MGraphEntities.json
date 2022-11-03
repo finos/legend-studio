@@ -1274,7 +1274,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "fullName"
               },
               "source": "",
@@ -1299,7 +1299,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "age"
               },
               "source": "",
@@ -1322,7 +1322,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "description"
               },
               "source": "",
@@ -1356,7 +1356,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "fullName"
               },
               "source": "",
@@ -1379,7 +1379,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "age"
               },
               "source": "",
@@ -1402,7 +1402,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "ui::test1::Target_Something",
+                "propertyOwner": "ui::test1::Target_Something",
                 "property": "description"
               },
               "source": "",

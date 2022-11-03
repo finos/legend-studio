@@ -28,6 +28,7 @@ import {
 } from 'serializr';
 import {
   deserializeArray,
+  type PlainObject,
   serializeArray,
   usingConstantValueSchema,
   usingModelSchema,
@@ -66,10 +67,26 @@ export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
   {
-    class: optional(primitive()),
     property: primitive(),
+    propertyOwner: optional(primitive()),
   },
 );
+
+/**
+ * @backwardCompatibility
+ */
+export const V1_deserializePropertyPointer = (
+  json: PlainObject<V1_PropertyPointer>,
+): V1_PropertyPointer => {
+  if (json.class) {
+    return deserialize(V1_propertyPointerModelSchema, {
+      property: json.property,
+      propertyOwner: json.class,
+    });
+  } else {
+    return deserialize(V1_propertyPointerModelSchema, json);
+  }
+};
 
 // ------------------------------------- Profile -------------------------------------
 

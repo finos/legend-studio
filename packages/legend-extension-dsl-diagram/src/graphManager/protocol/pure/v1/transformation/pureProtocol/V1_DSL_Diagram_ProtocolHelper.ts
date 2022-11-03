@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  custom,
+  list,
+  optional,
+  primitive,
+  serialize,
+} from 'serializr';
 import {
   usingConstantValueSchema,
   usingModelSchema,
@@ -26,7 +33,10 @@ import { V1_Rectangle } from '../../model/packageableElements/diagram/geometry/V
 import { V1_Line } from '../../model/packageableElements/diagram/geometry/V1_DSL_Diagram_Line.js';
 import { V1_PropertyView } from '../../model/packageableElements/diagram/V1_DSL_Diagram_PropertyView.js';
 import { V1_GeneralizationView } from '../../model/packageableElements/diagram/V1_DSL_Diagram_GeneralizationView.js';
-import { V1_propertyPointerModelSchema } from '@finos/legend-graph';
+import {
+  V1_propertyPointerModelSchema,
+  V1_deserializePropertyPointer,
+} from '@finos/legend-graph';
 
 export const V1_DIAGRAM_ELEMENT_PROTOCOL_TYPE = 'diagram';
 
@@ -56,7 +66,10 @@ const classViewModelSchema = createModelSchema(V1_ClassView, {
 
 const propertyViewModelSchema = createModelSchema(V1_PropertyView, {
   line: usingModelSchema(lineModelSchema),
-  property: usingModelSchema(V1_propertyPointerModelSchema),
+  property: custom(
+    (val) => serialize(V1_propertyPointerModelSchema, val),
+    (val) => V1_deserializePropertyPointer(val),
+  ),
   sourceView: primitive(),
   targetView: primitive(),
 });

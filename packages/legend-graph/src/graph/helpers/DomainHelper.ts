@@ -472,6 +472,19 @@ export const getAllClassConstraints = (_class: Class): Constraint[] =>
     .map((c) => c.constraints)
     .flat();
 
+export const getAllOwnProperty = (
+  propertyOwner: PropertyOwner,
+  name: string,
+): AbstractProperty =>
+  guaranteeNonNullable(
+    propertyOwner instanceof Class
+      ? getAllOwnClassProperties(propertyOwner).find(
+          (property) => property.name === name,
+        )
+      : propertyOwner.properties.find((property) => property.name === name),
+    `Can't find property '${name}' in owner '${propertyOwner.path}'`,
+  );
+
 /**
  * Check if the first type subtype of the second type
  *

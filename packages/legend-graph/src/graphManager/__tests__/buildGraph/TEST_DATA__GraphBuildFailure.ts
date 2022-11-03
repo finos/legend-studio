@@ -269,7 +269,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'fullName',
               },
               source: 'ui_mapping_editor_domain_Target_Something',
@@ -304,7 +304,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'age',
               },
               source: 'ui_mapping_editor_domain_Target_Something',
@@ -337,7 +337,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'description',
               },
               source: 'ui_mapping_editor_domain_Target_Something',
@@ -381,7 +381,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'fullName',
               },
               source: 'targetSomething',
@@ -404,7 +404,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'age',
               },
               source: 'targetSomething',
@@ -427,7 +427,7 @@ export const TEST_DATA__MissingTargetClassinMapping = [
             {
               _type: 'purePropertyMapping',
               property: {
-                class: 'ui::test1::Target_Something',
+                propertyOwner: 'ui::test1::Target_Something',
                 property: 'description',
               },
               source: 'targetSomething',
