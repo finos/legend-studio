@@ -1,5 +1,7 @@
 # @finos/legend-application-taxonomy-deployment
 
+## 8.6.0
+
 ## 8.5.0
 
 ## 8.4.0

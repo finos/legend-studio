@@ -1,5 +1,23 @@
 # @finos/legend-graph
 
+## 20.0.0
+
+### Major Changes
+
+- [#1602](https://github.com/finos/legend-studio/pull/1602) [`12a63454`](https://github.com/finos/legend-studio/commit/12a63454e29f8bd9ce22c1f4fe37e1a9a28fb2a7) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Make `ModelStore` a singleton which can be accessed with `ModelStore.INSTANCE`. Remove `ModelStore` getter from `PureModel`.
+
+- [#1602](https://github.com/finos/legend-studio/pull/1602) [`12a63454`](https://github.com/finos/legend-studio/commit/12a63454e29f8bd9ce22c1f4fe37e1a9a28fb2a7) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Removed `TYPICAL_MULTIPLICITY_TYPE` and the method `PureModel.getTypicalMultiplicity()` as typical multiplicities like `[1]`, `[0..*]`, `[1..*]`, etc. are now exposed as static singletons, e.g. `Multiplicity.ONE`, `Multiplicity.ZERO_MANY`, etc.
+
+- [#1602](https://github.com/finos/legend-studio/pull/1602) [`12a63454`](https://github.com/finos/legend-studio/commit/12a63454e29f8bd9ce22c1f4fe37e1a9a28fb2a7) ([@akphi](https://github.com/akphi)) - **BREAKING CHANGE:** Renamed `multiplicityComparator()` to `areMultiplicitiesEqual()`
+
+### Minor Changes
+
+- [#1602](https://github.com/finos/legend-studio/pull/1602) [`12a63454`](https://github.com/finos/legend-studio/commit/12a63454e29f8bd9ce22c1f4fe37e1a9a28fb2a7) ([@akphi](https://github.com/akphi)) - Since primitive types are so fundamental to the system, we want to make them more convenient for usage by exposing them as singletons, e.g. `PrimitiveType.STRING`, `PrimitiveType.BOOLEAN`, etc.
+
+### Patch Changes
+
+- [#1572](https://github.com/finos/legend-studio/pull/1572) [`cb6451c3`](https://github.com/finos/legend-studio/commit/cb6451c33e0e747ced31b631c6f5e3ba0ac6c53a) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Leverage engine to execute queries with parameters ([#1535](https://github.com/finos/legend-studio/issues/1535)).
+
 ## 19.2.1
 
 ## 19.2.0
