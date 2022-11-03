@@ -23,7 +23,7 @@ import {
   matchFunctionName,
   MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
-  type VariableExpression,
+  VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -225,7 +225,11 @@ export const buildPropertyExpressionChain = (
       );
     }
   }
-  (currentExpression as VariableExpression).name = lambdaParameterName;
+
+  // Update the root lambda name based on the parent's lambda parameter name.
+  if (currentExpression instanceof VariableExpression) {
+    currentExpression.name = lambdaParameterName;
+  }
   return newPropertyExpression;
 };
 
