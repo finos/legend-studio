@@ -109,6 +109,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   };
 
   onBlock?: ((onProceed: () => void) => void) | undefined;
+  onNativePlatformNavigationBlock?: (() => void) | undefined;
 
   constructor(historyApiClient: History) {
     makeObservable<WebApplicationNavigator, '_isNavigationBlocked'>(this, {
@@ -214,9 +215,11 @@ export class WebApplicationNavigator implements ApplicationNavigator {
   blockNavigation(
     blockCheckers: (() => boolean)[],
     onBlock?: ((onProceed: () => void) => void) | undefined,
+    onNativePlatformNavigationBlock?: (() => void) | undefined,
   ): void {
     this._isNavigationBlocked = true;
     this.onBlock = onBlock;
+    this.onNativePlatformNavigationBlock = onNativePlatformNavigationBlock;
 
     // Here we attempt to cancel the effect of the back button
     // See https://medium.com/codex/angular-guards-disabling-browsers-back-button-for-specific-url-fdf05d9fe155#4f13
@@ -227,6 +230,7 @@ export class WebApplicationNavigator implements ApplicationNavigator {
     // but there's no page forward, so effectively, the user remains on the same page
     this.window.onpopstate = () => {
       window.history.forward();
+      this.onNativePlatformNavigationBlock?.();
     };
 
     // Block browser navigation: e.g. reload, setting `window.href` directly, etc.

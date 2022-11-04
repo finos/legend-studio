@@ -35,6 +35,8 @@ const PLATFORM_NATIVE_KEYBOARD_SHORTCUTS = [
   'Control+Shift+p',
   'Meta+p', // Print
   'Control+p',
+  'Meta+s', // Save
+  'Control+s',
 ];
 
 const buildReactHotkeysConfiguration = (

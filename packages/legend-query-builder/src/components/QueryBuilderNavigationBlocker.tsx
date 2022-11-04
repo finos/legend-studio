@@ -51,6 +51,10 @@ export const QueryBuilderNavigationBlocker = observer(
             ],
           });
         },
+        () =>
+          applicationStore.notifyWarning(
+            `Navigation from the query builder is blocked`,
+          ),
       );
       return (): void => {
         applicationStore.navigator.unblockNavigation();
