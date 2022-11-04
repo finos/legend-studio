@@ -41,5 +41,5 @@ export {
   LegendQueryBaseStore,
   type LegendQueryApplicationStore,
 } from './stores/LegendQueryBaseStore.js';
-export { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+export { LEGEND_QUERY_APP_EVENT } from './stores/LegendQueryAppEvent.js';
 export { LegendQueryEventService } from './stores/LegendQueryEventService.js';

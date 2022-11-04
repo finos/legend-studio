@@ -14,7 +14,24 @@
  * limitations under the License.
  */
 
-export enum LEGEND_QUERY_APP_EVENT {
-  // TODO: split this into specific events
-  GENERIC_FAILURE = 'application.failure.generic',
+import type { TelemetryService } from '@finos/legend-shared';
+import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
+
+type QueryViewed_TelemetryData = {
+  query: {
+    name: string;
+    id: string;
+    versionId: string;
+    groupId: string;
+    artifactId: string;
+  };
+};
+
+export class LegendQueryTelemetry {
+  static logEvent_ViewQuery(
+    telemetryService: TelemetryService,
+    data: QueryViewed_TelemetryData,
+  ): void {
+    telemetryService.logEvent(LEGEND_QUERY_APP_EVENT.QUERY_VIEWED, data);
+  }
 }

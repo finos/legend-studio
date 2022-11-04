@@ -59,7 +59,7 @@ import {
   generateMappingQueryCreatorRoute,
   generateServiceQueryCreatorRoute,
 } from './LegendQueryRouter.js';
-import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryAppEvent.js';
+import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 import {
   type Entity,
   type ProjectGAVCoordinates,
@@ -84,6 +84,7 @@ import {
   MappingQueryBuilderState,
   ServiceQueryBuilderState,
 } from '@finos/legend-query-builder';
+import { LegendQueryTelemetry } from './LegendQueryTelemetry.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -766,6 +767,20 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     // leverage initialization of query builder state to ensure we handle unsupported queries
     queryBuilderState.initializeWithQuery(
       await this.graphManagerState.graphManager.pureCodeToLambda(query.content),
+    );
+
+    // send analytics
+    LegendQueryTelemetry.logEvent_ViewQuery(
+      this.applicationStore.telemetryService,
+      {
+        query: {
+          id: query.id,
+          name: query.name,
+          groupId: query.groupId,
+          artifactId: query.artifactId,
+          versionId: query.versionId,
+        },
+      },
     );
 
     return queryBuilderState;

@@ -158,6 +158,10 @@ export const Editor = withEditorStore(
             ],
           });
         },
+        () =>
+          applicationStore.notifyWarning(
+            `Navigation from the editor is blocked`,
+          ),
       );
       return (): void => {
         applicationStore.navigator.unblockNavigation();

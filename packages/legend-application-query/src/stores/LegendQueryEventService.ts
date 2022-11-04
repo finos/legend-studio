@@ -15,8 +15,8 @@
  */
 
 import type { EventService } from '@finos/legend-application';
+import { LEGEND_QUERY_APP_EVENT } from './LegendQueryAppEvent.js';
 
-const QUERY_CREATE = 'query_created';
 type QueryCreated_EventData = {
   queryId: string;
 };
@@ -33,6 +33,6 @@ export class LegendQueryEventService {
   }
 
   notify_QueryCreated(data: QueryCreated_EventData): void {
-    this.eventService.notify(QUERY_CREATE, data);
+    this.eventService.notify(LEGEND_QUERY_APP_EVENT.QUERY_CREATED, data);
   }
 }
