@@ -44,7 +44,6 @@ import {
   GenericType,
   PrimitiveType,
   Multiplicity,
-  MULTIPLICITY_INFINITE,
   getMultiplicityPrettyDescription,
 } from '@finos/legend-graph';
 import {
