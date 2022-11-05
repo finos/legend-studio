@@ -64,7 +64,7 @@ import { DerivedProperty } from '../metamodel/pure/packageableElements/domain/De
 import type { Enum } from '../metamodel/pure/packageableElements/domain/Enum.js';
 import type { Constraint } from '../metamodel/pure/packageableElements/domain/Constraint.js';
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
-import type { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
+import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { AnnotatedElement } from '../metamodel/pure/packageableElements/domain/AnnotatedElement.js';
 import type { ConcreteFunctionDefinition } from '../metamodel/pure/packageableElements/domain/ConcreteFunctionDefinition.js';
 
@@ -564,6 +564,27 @@ export const getMultiplicityDescription = (
     multiplicity.upperBound === undefined
   ) {
     return `[${MULTIPLICITY_INFINITE}] - May have many values`;
+  }
+  return `[${multiplicity.lowerBound}..${
+    multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+  }] - ${
+    multiplicity.upperBound
+      ? `Must have from ${multiplicity.lowerBound} to ${multiplicity.upperBound} value(s)`
+      : `Must have at least ${multiplicity.lowerBound} values(s)`
+  }`;
+};
+
+export const getMultiplicityPrettyDescription = (
+  multiplicity: Multiplicity,
+): string => {
+  if (multiplicity === Multiplicity.ONE) {
+    return `[${multiplicity.lowerBound.toString()}] - Required`;
+  } else if (multiplicity === Multiplicity.ZERO_MANY) {
+    return `[${MULTIPLICITY_INFINITE}] - List`;
+  } else if (multiplicity === Multiplicity.ZERO_ONE) {
+    return `[${multiplicity.lowerBound}..${
+      multiplicity.upperBound ?? MULTIPLICITY_INFINITE
+    }] - Optional`;
   }
   return `[${multiplicity.lowerBound}..${
     multiplicity.upperBound ?? MULTIPLICITY_INFINITE

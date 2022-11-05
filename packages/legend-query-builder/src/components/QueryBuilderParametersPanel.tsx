@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { QueryBuilderState } from '../stores/QueryBuilderState.js';
 import {
@@ -40,11 +39,12 @@ import {
 } from '../stores/QueryBuilderParametersState.js';
 import {
   type Type,
-  MULTIPLICITY_INFINITE,
   VariableExpression,
   GenericTypeExplicitReference,
   GenericType,
   PrimitiveType,
+  Multiplicity,
+  getMultiplicityPrettyDescription,
 } from '@finos/legend-graph';
 import {
   type PackageableElementOption,
@@ -55,9 +55,21 @@ import {
 import { useDrag } from 'react-dnd';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
-import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
+import {
+  valueSpecification_setMultiplicity,
+  variableExpression_setName,
+} from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
+
+type MultiplicityOption = { label: string; value: Multiplicity };
+
+const buildMultiplicityOption = (
+  multiplicity: Multiplicity,
+): MultiplicityOption => ({
+  label: getMultiplicityPrettyDescription(multiplicity),
+  value: multiplicity,
+});
 
 const VariableExpressionEditor = observer(
   (props: {
@@ -89,6 +101,7 @@ const VariableExpressionEditor = observer(
     const variableType =
       lambdaParameterState.variableType ?? PrimitiveType.STRING;
     const selectedType = buildElementOption(variableType);
+    const selectedMultiplicity = buildMultiplicityOption(multiplity);
     const typeOptions: PackageableElementOption<Type>[] =
       queryBuilderState.graphManagerState.graph.primitiveTypes
         .map(buildElementOption)
@@ -104,37 +117,16 @@ const VariableExpressionEditor = observer(
     };
 
     // multiplicity
-    const changeLowerBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      lambdaParameterState.changeMultiplicity(
-        varState,
-        parseInt(event.target.value),
-        multiplity.upperBound,
-      );
-    };
-    const [upperBound, setUppBound] = useState<string>(
-      multiplity.upperBound === undefined
-        ? MULTIPLICITY_INFINITE
-        : multiplity.upperBound.toString(),
-    );
-    const changeUpperBound: React.ChangeEventHandler<HTMLInputElement> = (
-      event,
-    ) => {
-      const value = event.target.value;
-      if (
-        value === MULTIPLICITY_INFINITE ||
-        value === '' ||
-        !isNaN(parseInt(value, 10))
-      ) {
-        lambdaParameterState.changeMultiplicity(
-          varState,
-          multiplity.lowerBound,
-          value === MULTIPLICITY_INFINITE || value === ''
-            ? undefined
-            : parseInt(value, 10),
-        );
-        setUppBound(value);
+    const validParamMultiplicityList = [
+      Multiplicity.ONE,
+      Multiplicity.ZERO_ONE,
+      Multiplicity.ZERO_MANY,
+    ];
+    const multilicityOptions: MultiplicityOption[] =
+      validParamMultiplicityList.map(buildMultiplicityOption);
+    const changeMultiplicity = (val: MultiplicityOption): void => {
+      if (multiplity !== val.value) {
+        valueSpecification_setMultiplicity(varState, val.value);
       }
     };
 
@@ -202,19 +194,17 @@ const VariableExpressionEditor = observer(
                 The multiplity determines how many values a parameter can have.
                 Default is set to mandatory single vlue.
               </div>
-              <input
-                className="panel__content__form__section__input panel__content__form__section__number-input"
-                type="number"
-                spellCheck={false}
-                value={multiplity.lowerBound}
-                onChange={changeLowerBound}
-              />
-              ..
-              <input
-                className="panel__content__form__section__input panel__content__form__section__number-input"
-                spellCheck={false}
-                value={upperBound}
-                onChange={changeUpperBound}
+              <CustomSelectorInput
+                placeholder="Choose a multiplicity..."
+                options={multilicityOptions}
+                onChange={changeMultiplicity}
+                value={selectedMultiplicity}
+                hasError={
+                  !validParamMultiplicityList.includes(
+                    selectedMultiplicity.value,
+                  )
+                }
+                darkMode={!applicationStore.TEMPORARY__isLightThemeEnabled}
               />
             </div>
           </ModalBody>
