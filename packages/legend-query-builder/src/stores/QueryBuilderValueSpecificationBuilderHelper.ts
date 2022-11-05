@@ -23,6 +23,7 @@ import {
   matchFunctionName,
   MILESTONING_STEREOTYPE,
   SimpleFunctionExpression,
+  VariableExpression,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import {
@@ -133,6 +134,7 @@ const isDefaultDatePropagationSupported = (
 export const buildPropertyExpressionChain = (
   propertyExpression: AbstractPropertyExpression,
   queryBuilderState: QueryBuilderState,
+  lambdaParameterName: string,
   /**
    * As of now, we don't support date propagation for aggregation-class functions
    * so we have this temporary flag to disable date propagation, there could be other
@@ -222,6 +224,11 @@ export const buildPropertyExpressionChain = (
         currentExpression.parametersValues,
       );
     }
+  }
+
+  // Update the root lambda name based on the parent's lambda parameter name.
+  if (currentExpression instanceof VariableExpression) {
+    currentExpression.name = lambdaParameterName;
   }
   return newPropertyExpression;
 };

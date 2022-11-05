@@ -78,6 +78,7 @@ const buildFilterConditionExpressionWithExists = (
     buildPropertyExpressionChain(
       filterConditionState.propertyExpressionState.propertyExpression,
       filterConditionState.propertyExpressionState.queryBuilderState,
+      filterConditionState.filterState.lambdaParameterName,
     );
   while (
     currentPropertyExpression instanceof AbstractPropertyExpression ||
@@ -225,6 +226,7 @@ export const buildFilterConditionExpression = (
   const propertyExpression = buildPropertyExpressionChain(
     filterConditionState.propertyExpressionState.propertyExpression,
     filterConditionState.propertyExpressionState.queryBuilderState,
+    filterConditionState.filterState.lambdaParameterName,
   );
   expression.parametersValues.push(guaranteeNonNullable(propertyExpression));
   // NOTE: there are simple operators which do not require any params (e.g. isEmpty)
