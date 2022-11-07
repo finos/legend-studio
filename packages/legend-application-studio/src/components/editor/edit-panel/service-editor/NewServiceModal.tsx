@@ -83,7 +83,7 @@ export const NewServiceModal = observer(
           }}
           className="modal search-modal modal--dark"
         >
-          <ModalTitle title="Promot to Service" />
+          <ModalTitle title="Promote to Service" />
           <div className="input-group">
             <input
               ref={nameRef}
