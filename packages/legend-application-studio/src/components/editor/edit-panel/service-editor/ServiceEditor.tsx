@@ -459,7 +459,7 @@ export const ServiceEditor = observer(() => {
                       className="service-editor__tab__hint"
                       tabIndex={-1}
                       onClick={seeDocumentation}
-                      title="Click to see more details on advanced search"
+                      title="click to see more details on service test"
                     >
                       <InfoCircleIcon />
                     </button>
