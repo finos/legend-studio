@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': patch
 ---
 
-add field descriptions and model element path to model connector
+Add field descriptions and element paths to create model connection modal

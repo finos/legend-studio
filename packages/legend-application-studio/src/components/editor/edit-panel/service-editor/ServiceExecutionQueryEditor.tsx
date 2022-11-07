@@ -80,7 +80,7 @@ const ServiceExecutionResultViewer = observer(
           paper: 'editor-modal__content',
         }}
       >
-        <Modal>
+        <Modal darkMode={true} className="editor-modal">
           <ModalHeader title="Execution Result" />
           <ModalBody>
             <TextInputEditor
