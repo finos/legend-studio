@@ -27,7 +27,12 @@ import {
   NewDataElementDriver,
   NewServiceDriver,
 } from '../../../stores/editor/NewElementState.js';
-import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
+import {
+  Dialog,
+  compareLabelFn,
+  CustomSelectorInput,
+  PanelDivider,
+} from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
@@ -242,6 +247,9 @@ const NewPureModelConnectionDriverEditor = observer(
     }
     return (
       <>
+        <div className="panel__content__form__section__header__prompt">
+          Source Store
+        </div>
         <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
             className="explorer__new-element-modal__driver__dropdown"
@@ -250,6 +258,9 @@ const NewPureModelConnectionDriverEditor = observer(
             value={selectedStoreOption}
             darkMode={true}
           />
+        </div>
+        <div className="panel__content__form__section__header__prompt">
+          Source Class
         </div>
         <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
@@ -309,6 +320,9 @@ const NewConnectionDriverEditor = observer(() => {
   };
   return (
     <>
+      <div className="panel__content__form__section__header__prompt">
+        Connection Type (relational vs. JSON)
+      </div>
       <div className="explorer__new-element-modal__driver">
         <CustomSelectorInput
           className="explorer__new-element-modal__driver__dropdown"
@@ -491,6 +505,7 @@ export const CreateNewElementModal = observer(() => {
           {getElementTypeLabel(editorStore, newElementState.type) ?? 'element'}
         </div>
         <div>
+          {/* {selectedTypeOption.label === 'Mode' } */}
           {newElementState.showType && (
             <CustomSelectorInput
               options={typeOptions}
