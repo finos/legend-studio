@@ -35,6 +35,7 @@ import {
 } from '../../../../stores/shared/modifier/DSL_Mapping_GraphModifierHelper.js';
 import {
   buildElementOption,
+  getPackageableElementOptionFormatter,
   useApplicationNavigationContext,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
@@ -82,6 +83,9 @@ const ModelConnectionEditor = observer(
             onChange={onSourceClassChange}
             value={{ label: sourceClass.name, value: sourceClass }}
             darkMode={true}
+            formatOptionLabel={getPackageableElementOptionFormatter({
+              darkMode: true,
+            })}
           />
         </div>
         <div className="panel__content__form__section">

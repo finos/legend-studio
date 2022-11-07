@@ -422,7 +422,7 @@ export class JsonModelConnectionValueState extends ConnectionValueState {
   }
 
   label(): string {
-    return 'Pure model connection';
+    return 'Model Connection';
   }
 }
 

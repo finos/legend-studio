@@ -27,12 +27,7 @@ import {
   NewDataElementDriver,
   NewServiceDriver,
 } from '../../../stores/editor/NewElementState.js';
-import {
-  Dialog,
-  compareLabelFn,
-  CustomSelectorInput,
-  PanelDivider,
-} from '@finos/legend-art';
+import { Dialog, compareLabelFn, CustomSelectorInput } from '@finos/legend-art';
 import type { EditorStore } from '../../../stores/EditorStore.js';
 import { prettyCONSTName } from '@finos/legend-shared';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../../../stores/LegendStudioApplicationPlugin.js';
@@ -247,7 +242,7 @@ const NewPureModelConnectionDriverEditor = observer(
     }
     return (
       <>
-        <div className="panel__content__form__section__header__prompt">
+        <div className="panel__content__form__section__header__label">
           Source Store
         </div>
         <div className="explorer__new-element-modal__driver">
@@ -259,12 +254,12 @@ const NewPureModelConnectionDriverEditor = observer(
             darkMode={true}
           />
         </div>
-        <div className="panel__content__form__section__header__prompt">
+        <div className="panel__content__form__section__header__label">
           Source Class
         </div>
         <div className="explorer__new-element-modal__driver">
           <CustomSelectorInput
-            className="sub-panel__content__form__section__dropdown panel__content__form__section__dropdown"
+            className="sub-panel__content__form__section__dropdown"
             options={classOptions}
             onChange={onClassSelectionChange}
             value={selectedClassOption}
@@ -320,8 +315,8 @@ const NewConnectionDriverEditor = observer(() => {
   };
   return (
     <>
-      <div className="panel__content__form__section__header__prompt">
-        Connection Type (relational vs. JSON)
+      <div className="panel__content__form__section__header__label">
+        Connection Type
       </div>
       <div className="explorer__new-element-modal__driver">
         <CustomSelectorInput
@@ -505,7 +500,6 @@ export const CreateNewElementModal = observer(() => {
           {getElementTypeLabel(editorStore, newElementState.type) ?? 'element'}
         </div>
         <div>
-          {/* {selectedTypeOption.label === 'Mode' } */}
           {newElementState.showType && (
             <CustomSelectorInput
               options={typeOptions}

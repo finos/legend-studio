@@ -2,4 +2,4 @@
 '@finos/legend-application-studio': patch
 ---
 
-add field descriptions to model connector
+add field descriptions and model element path to model connector
