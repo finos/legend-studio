@@ -161,7 +161,7 @@ export class DependencyManager {
   );
   getOwnNullableDataElement = buildDependencyElementGetter(
     this,
-    (dep: BasicModel, path: string) => dep.getOwnDataElement(path),
+    (dep: BasicModel, path: string) => dep.getOwnNullableDataElement(path),
   );
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
