@@ -48,7 +48,11 @@ import {
 } from '../../../../stores/shared/modifier/DSL_Service_GraphModifierHelper.js';
 import { validate_ServicePattern } from '@finos/legend-graph';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  LEGEND_APPLICATION_DOCUMENTATION_KEY,
+  useApplicationNavigationContext,
+  useApplicationStore,
+} from '@finos/legend-application';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../stores/LegendStudioApplicationNavigationContext.js';
 
 const ServiceGeneralEditor = observer(() => {
@@ -398,6 +402,7 @@ const ServiceGeneralEditor = observer(() => {
 
 export const ServiceEditor = observer(() => {
   const editorStore = useEditorStore();
+  const applicationStore = useApplicationStore();
   const serviceState = editorStore.getCurrentEditorState(ServiceEditorState);
   const service = serviceState.service;
   const isReadOnly = serviceState.isReadOnly;
@@ -411,6 +416,10 @@ export const ServiceEditor = observer(() => {
     editorStore.applicationStore.config.options
       .TEMPORARY__serviceRegistrationConfig.length,
   );
+  const seeDocumentation = (): void =>
+    applicationStore.assistantService.openDocumentationEntry(
+      LEGEND_APPLICATION_DOCUMENTATION_KEY.QUESTION_HOW_TO_WRITE_A_SERVICE_TEST,
+    );
 
   useApplicationNavigationContext(
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SERVICE_EDITOR,
@@ -445,6 +454,16 @@ export const ServiceEditor = observer(() => {
                   })}
                 >
                   {prettyCONSTName(tab)}
+                  {tab === SERVICE_TAB.TEST && (
+                    <button
+                      className="service-editor__tab__hint"
+                      tabIndex={-1}
+                      onClick={seeDocumentation}
+                      title="Click to see more details on advanced search"
+                    >
+                      <InfoCircleIcon />
+                    </button>
+                  )}
                 </div>
               ))}
           </div>

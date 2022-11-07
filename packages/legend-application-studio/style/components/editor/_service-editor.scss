@@ -103,6 +103,18 @@
     background: var(--color-yellow-200);
   }
 
+  &__tab__hint {
+    @include flexCenter;
+
+    border-radius: 0.2rem;
+    margin-left: 1rem;
+    color: var(--color-light-grey-300);
+
+    svg {
+      font-size: 1.2rem;
+    }
+  }
+
   &__general.panel__content__lists {
     padding-left: 2rem;
   }
