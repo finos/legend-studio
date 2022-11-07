@@ -438,9 +438,10 @@ export class EditorStore implements CommandRegistrar {
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       trigger: this.createEditorCommandTrigger(
         () =>
-          this.isInitialized &&
-          (!this.isInConflictResolutionMode ||
-            this.conflictResolutionState.hasResolvedAllConflicts),
+          this.isInViewerMode ||
+          (this.isInitialized &&
+            (!this.isInConflictResolutionMode ||
+              this.conflictResolutionState.hasResolvedAllConflicts)),
       ),
       action: () => {
         flowResult(this.toggleTextMode()).catch(
