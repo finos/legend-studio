@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 0.4.3
+
+### Patch Changes
+
+- [#1628](https://github.com/finos/legend-studio/pull/1628) [`e4db6a45`](https://github.com/finos/legend-studio/commit/e4db6a45a79e76bf6d28277cc924b3dfbd5f1730) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Improve editing of multiplicity for parameters in query builder ([#1617](https://github.com/finos/legend-studio/issues/1617)).
+
+- [#1623](https://github.com/finos/legend-studio/pull/1623) [`207919a2`](https://github.com/finos/legend-studio/commit/207919a2d3217bb6129d3c70b22e9dcf5fef0fdc) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Update sequent lambda names once the filter root lambda parameter name is changed ([#1622](https://github.com/finos/legend-studio/issues/1622)).
+
 ## 0.4.2
 
 ### Patch Changes
