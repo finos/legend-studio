@@ -121,6 +121,10 @@ input[type='number']::-webkit-outer-spin-button {
   background: var(--color-dark-shade-100);
 }
 
+.scrollbar--light::-webkit-scrollbar-thumb {
+  background: var(--color-light-shade-100);
+}
+
 ::-webkit-scrollbar-thumb:window-inactive {
   background: var(--color-dark-shade-100);
 }
