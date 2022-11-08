@@ -1,4 +1,4 @@
-FROM finos/legend-shared-server:0.22.6
+FROM finos/legend-shared-server:0.23.0
 COPY dist/studio /app/bin/webapp-content/web/studio/
 # TODO: consider supplying a default config file
 # However we have 2 config files: (1) for the static server, (2) for the application
