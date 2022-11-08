@@ -330,14 +330,22 @@ export class EditorStore implements CommandRegistrar {
   }
 
   get isInitialized(): boolean {
-    return (
-      Boolean(
-        this.sdlcState.currentProject &&
-          this.sdlcState.currentWorkspace &&
-          this.sdlcState.currentRevision &&
-          this.sdlcState.remoteWorkspaceRevision,
-      ) && this.graphManagerState.systemBuildState.hasSucceeded
-    );
+    if (this.isInViewerMode) {
+      return (
+        Boolean(
+          this.sdlcState.currentProject && this.sdlcState.currentWorkspace,
+        ) && this.graphManagerState.systemBuildState.hasSucceeded
+      );
+    } else {
+      return (
+        Boolean(
+          this.sdlcState.currentProject &&
+            this.sdlcState.currentWorkspace &&
+            this.sdlcState.currentRevision &&
+            this.sdlcState.remoteWorkspaceRevision,
+        ) && this.graphManagerState.systemBuildState.hasSucceeded
+      );
+    }
   }
 
   get isInGrammarTextMode(): boolean {
@@ -438,10 +446,9 @@ export class EditorStore implements CommandRegistrar {
       key: LEGEND_STUDIO_COMMAND_KEY.TOGGLE_TEXT_MODE,
       trigger: this.createEditorCommandTrigger(
         () =>
-          this.isInViewerMode ||
-          (this.isInitialized &&
-            (!this.isInConflictResolutionMode ||
-              this.conflictResolutionState.hasResolvedAllConflicts)),
+          this.isInitialized &&
+          (!this.isInConflictResolutionMode ||
+            this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
         flowResult(this.toggleTextMode()).catch(
