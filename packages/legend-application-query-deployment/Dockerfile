@@ -1,4 +1,4 @@
-FROM finos/legend-shared-server:0.23.0
+FROM finos/legend-shared-server:0.23.3
 COPY dist/query /app/bin/webapp-content/web/query/
 # TODO: consider supplying a default config file
 # However we have 2 config files: (1) for the static server, (2) for the application
