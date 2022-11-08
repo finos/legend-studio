@@ -618,7 +618,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
    * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
    * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
    */
-  getFunctionParameterStates(): LambdaParameterState[] {
+  getParameterStatesWithFunctionValues(): LambdaParameterState[] {
     return this.parameterState.parameterStates.filter(
       (ps) =>
         ps.value instanceof SimpleFunctionExpression &&
@@ -629,7 +629,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   getExecutionQuery(): RawLambda {
-    const funcParameterStates = this.getFunctionParameterStates();
+    const funcParameterStates = this.getParameterStatesWithFunctionValues();
     if (funcParameterStates.length > 0) {
       const letlambdaFunction = buildParametersLetLambdaFunc(
         this.editorStore.graphManagerState.graph,
@@ -655,7 +655,7 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
-    const funcParameterStates = this.getFunctionParameterStates();
+    const funcParameterStates = this.getParameterStatesWithFunctionValues();
     return this.parameterState.parameterStates
       .filter((ps) => !funcParameterStates.includes(ps))
       .map((queryParamState) => {

@@ -121,7 +121,7 @@ export class QueryBuilderResultState {
    * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
    * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
    */
-  getFunctionParameterStates(): LambdaParameterState[] {
+  getParameterStatesWithFunctionValues(): LambdaParameterState[] {
     return this.queryBuilderState.parametersState.parameterStates.filter(
       (ps) =>
         ps.value instanceof SimpleFunctionExpression &&
@@ -146,7 +146,7 @@ export class QueryBuilderResultState {
         this.queryBuilderState.unsupportedQueryState.rawLambda,
         'Lambda is required to execute query',
       );
-      const funcParameterStates = this.getFunctionParameterStates();
+      const funcParameterStates = this.getParameterStatesWithFunctionValues();
       if (
         !this.queryBuilderState.isParameterSupportDisabled &&
         funcParameterStates.length > 0
@@ -177,7 +177,7 @@ export class QueryBuilderResultState {
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
-    const funcParameterStates = this.getFunctionParameterStates();
+    const funcParameterStates = this.getParameterStatesWithFunctionValues();
     return this.queryBuilderState.parametersState.parameterStates
       .filter((ps) => !funcParameterStates.includes(ps))
       .map((queryParamState) => {
