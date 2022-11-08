@@ -78,7 +78,9 @@ const CustomMenuList: React.FC<{
   if (children.length) {
     return (
       <FixedSizeList
-        className={selectProps.darkMode ? 'selector-menu--dark' : ''}
+        className={
+          selectProps.darkMode ? 'scrollbar--light selector-menu--dark' : ''
+        }
         ref={listRef}
         width="100%"
         height={Math.min(children.length, MAX_OPTIONS_LENGTH) * ROW_HEIGHT}
