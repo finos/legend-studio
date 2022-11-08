@@ -66,6 +66,8 @@ import {
   ParameterValue,
   buildRawLambdaFromLambdaFunction,
   SimpleFunctionExpression,
+  Multiplicity,
+  areMultiplicitiesEqual,
 } from '@finos/legend-graph';
 import { type Entity, parseGACoordinates } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
@@ -612,13 +614,22 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
-  getExecutionQuery(): RawLambda {
-    const funcParameterStates = this.parameterState.parameterStates.filter(
+  /**
+   * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
+   * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
+   */
+  getFunctionParameterStates(): LambdaParameterState[] {
+    return this.parameterState.parameterStates.filter(
       (ps) =>
         ps.value instanceof SimpleFunctionExpression &&
-        ps.parameter.multiplicity.upperBound,
+        [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
+          areMultiplicitiesEqual(p, ps.parameter.multiplicity),
+        ),
     );
-    // Hack query execution with parameters are of type SimpleFunctionExpression by using let statements
+  }
+
+  getExecutionQuery(): RawLambda {
+    const funcParameterStates = this.getFunctionParameterStates();
     if (funcParameterStates.length > 0) {
       const letlambdaFunction = buildParametersLetLambdaFunc(
         this.editorStore.graphManagerState.graph,
@@ -644,14 +655,9 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
+    const funcParameterStates = this.getFunctionParameterStates();
     return this.parameterState.parameterStates
-      .filter(
-        (ps) =>
-          !(
-            ps.value instanceof SimpleFunctionExpression &&
-            ps.parameter.multiplicity.upperBound
-          ),
-      )
+      .filter((ps) => !funcParameterStates.includes(ps))
       .map((queryParamState) => {
         const paramValue = new ParameterValue();
         paramValue.name = queryParamState.parameter.name;

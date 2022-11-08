@@ -37,10 +37,15 @@ import {
   buildRawLambdaFromLambdaFunction,
   ParameterValue,
   SimpleFunctionExpression,
+  areMultiplicitiesEqual,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { ExecutionPlanState } from '@finos/legend-application';
-import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
+import {
+  type LambdaParameterState,
+  buildParametersLetLambdaFunc,
+} from './shared/LambdaParameterState.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -112,6 +117,20 @@ export class QueryBuilderResultState {
     return false;
   }
 
+  /**
+   * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
+   * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
+   */
+  getFunctionParameterStates(): LambdaParameterState[] {
+    return this.queryBuilderState.parametersState.parameterStates.filter(
+      (ps) =>
+        ps.value instanceof SimpleFunctionExpression &&
+        [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
+          areMultiplicitiesEqual(p, ps.parameter.multiplicity),
+        ),
+    );
+  }
+
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
@@ -127,13 +146,7 @@ export class QueryBuilderResultState {
         this.queryBuilderState.unsupportedQueryState.rawLambda,
         'Lambda is required to execute query',
       );
-      // Hack query execution with parameters are of type SimpleFunctionExpression by using let statements
-      const funcParameterStates =
-        this.queryBuilderState.parametersState.parameterStates.filter(
-          (ps) =>
-            ps.value instanceof SimpleFunctionExpression &&
-            ps.parameter.multiplicity.upperBound,
-        );
+      const funcParameterStates = this.getFunctionParameterStates();
       if (
         !this.queryBuilderState.isParameterSupportDisabled &&
         funcParameterStates.length > 0
@@ -146,7 +159,6 @@ export class QueryBuilderResultState {
           this.queryBuilderState.parametersState.parameterStates
             .filter((ps) => !funcParameterStates.includes(ps))
             .map((e) => e.parameter);
-
         const letRawLambda = buildRawLambdaFromLambdaFunction(
           letlambdaFunction,
           this.queryBuilderState.graphManagerState,
@@ -165,14 +177,9 @@ export class QueryBuilderResultState {
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
+    const funcParameterStates = this.getFunctionParameterStates();
     return this.queryBuilderState.parametersState.parameterStates
-      .filter(
-        (ps) =>
-          !(
-            ps.value instanceof SimpleFunctionExpression &&
-            ps.parameter.multiplicity.upperBound
-          ),
-      )
+      .filter((ps) => !funcParameterStates.includes(ps))
       .map((queryParamState) => {
         const paramValue = new ParameterValue();
         paramValue.name = queryParamState.parameter.name;

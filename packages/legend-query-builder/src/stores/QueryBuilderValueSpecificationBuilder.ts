@@ -161,6 +161,7 @@ export const buildLambdaFunction = (
     queryBuilderState.parametersState.parameterStates.length
   ) {
     // Hack query execution with parameters are of type SimpleFunctionExpression by using let statements
+    // because Engine doesn't support processing SimpleFunctionExpression as parameter values.
     const funcParameterStates =
       queryBuilderState.parametersState.parameterStates.filter(
         (ps) =>
