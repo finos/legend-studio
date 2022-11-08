@@ -24,6 +24,17 @@ import {
   observe_ValueSpecification,
   observe_VariableExpression,
   VariableExpression,
+  SimpleFunctionExpression,
+  PackageableElementExplicitReference,
+  LambdaFunction,
+  FunctionType,
+  CORE_PURE_PATH,
+  extractElementNameFromPath,
+  Multiplicity,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  SUPPORTED_FUNCTIONS,
+  areMultiplicitiesEqual,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -32,6 +43,7 @@ import {
   hashArray,
   IllegalStateError,
   uuid,
+  isNonNullable,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { generateVariableExpressionMockValue } from './ValueSpecificationEditorHelper.js';
@@ -49,6 +61,41 @@ enum LAMABA_PARAMETER_HASH_STRUCTURE {
   LAMBDA_PARAMETER_STATE = 'LAMBDA_PARAMETER_STATE',
   LAMBDA_PARAMETERS_STATE = 'LAMBDA_PARAMETERS_STATE',
 }
+
+export const buildParametersLetLambdaFunc = (
+  graph: PureModel,
+  lambdaParametersStates: LambdaParameterState[],
+): LambdaFunction => {
+  const letlambdaFunction = new LambdaFunction(
+    new FunctionType(
+      PackageableElementExplicitReference.create(
+        graph.getType(CORE_PURE_PATH.ANY),
+      ),
+      Multiplicity.ONE,
+    ),
+  );
+  letlambdaFunction.expressionSequence = lambdaParametersStates
+    .map((queryParamState) => {
+      if (queryParamState.value) {
+        const letFunc = new SimpleFunctionExpression(
+          extractElementNameFromPath(SUPPORTED_FUNCTIONS.LET),
+        );
+        const letVar = new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRING),
+          ),
+        );
+        letVar.values = [queryParamState.variableName];
+        letFunc.parametersValues.push(letVar);
+        letFunc.parametersValues.push(queryParamState.value);
+        return letFunc;
+      }
+      return undefined;
+    })
+    .filter(isNonNullable);
+  return letlambdaFunction;
+};
+
 export class LambdaParameterState implements Hashable {
   readonly uuid = uuid();
   readonly parameter: VariableExpression;
@@ -109,18 +156,11 @@ export class LambdaParameterState implements Hashable {
 
   changeMultiplicity(
     variableExpression: VariableExpression,
-    lowerBound: number,
-    uppderBound: number | undefined,
+    mul: Multiplicity,
   ): void {
     const current = this.parameter.multiplicity;
-    if (
-      current.lowerBound !== lowerBound ||
-      current.upperBound !== uppderBound
-    ) {
-      valueSpecification_setMultiplicity(
-        variableExpression,
-        this.graph.getMultiplicity(lowerBound, uppderBound),
-      );
+    if (!areMultiplicitiesEqual(current, mul)) {
+      valueSpecification_setMultiplicity(variableExpression, mul);
       this.mockParameterValue();
     }
   }

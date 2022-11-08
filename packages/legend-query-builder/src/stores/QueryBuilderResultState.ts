@@ -36,9 +36,11 @@ import {
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
   ParameterValue,
+  SimpleFunctionExpression,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { ExecutionPlanState } from '@finos/legend-application';
+import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -125,13 +127,53 @@ export class QueryBuilderResultState {
         this.queryBuilderState.unsupportedQueryState.rawLambda,
         'Lambda is required to execute query',
       );
+      // Hack query execution with parameters are of type SimpleFunctionExpression by using let statements
+      const funcParameterStates =
+        this.queryBuilderState.parametersState.parameterStates.filter(
+          (ps) =>
+            ps.value instanceof SimpleFunctionExpression &&
+            ps.parameter.multiplicity.upperBound,
+        );
+      if (
+        !this.queryBuilderState.isParameterSupportDisabled &&
+        funcParameterStates.length > 0
+      ) {
+        const letlambdaFunction = buildParametersLetLambdaFunc(
+          this.queryBuilderState.graphManagerState.graph,
+          funcParameterStates,
+        );
+        letlambdaFunction.functionType.parameters =
+          this.queryBuilderState.parametersState.parameterStates
+            .filter((ps) => !funcParameterStates.includes(ps))
+            .map((e) => e.parameter);
+
+        const letRawLambda = buildRawLambdaFromLambdaFunction(
+          letlambdaFunction,
+          this.queryBuilderState.graphManagerState,
+        );
+        // reset paramaters
+        if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
+          letRawLambda.body = [
+            ...(letRawLambda.body as object[]),
+            ...(query.body as object[]),
+          ];
+          query = letRawLambda;
+        }
+      }
     }
     return query;
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
-    return this.queryBuilderState.parametersState.parameterStates.map(
-      (queryParamState) => {
+    return this.queryBuilderState.parametersState.parameterStates
+      .filter(
+        (ps) =>
+          !(
+            ps.value instanceof SimpleFunctionExpression &&
+            ps.parameter.multiplicity.upperBound
+          ),
+      )
+      .map((queryParamState) => {
         const paramValue = new ParameterValue();
         paramValue.name = queryParamState.parameter.name;
         paramValue.value =
@@ -139,8 +181,7 @@ export class QueryBuilderResultState {
             guaranteeNonNullable(queryParamState.value),
           );
         return paramValue;
-      },
-    );
+      });
   }
 
   *exportData(

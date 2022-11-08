@@ -36,6 +36,7 @@ import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificati
 import type { QueryBuilderFetchStructureState } from './fetch-structure/QueryBuilderFetchStructureState.js';
 import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../graphManager/QueryBuilderSupportedFunctions.js';
 import { buildWatermarkExpression } from './watermark/QueryBuilderWatermarkValueSpecificationBuilder.js';
+import { buildParametersLetLambdaFunc } from './shared/LambdaParameterState.js';
 
 const buildGetAllFunction = (
   _class: Class,
@@ -159,9 +160,38 @@ export const buildLambdaFunction = (
     !queryBuilderState.isParameterSupportDisabled &&
     queryBuilderState.parametersState.parameterStates.length
   ) {
-    lambdaFunction.functionType.parameters =
-      queryBuilderState.parametersState.parameterStates.map((e) => e.parameter);
+    // Hack query execution with parameters are of type SimpleFunctionExpression by using let statements
+    const funcParameterStates =
+      queryBuilderState.parametersState.parameterStates.filter(
+        (ps) =>
+          ps.value instanceof SimpleFunctionExpression &&
+          ps.parameter.multiplicity.upperBound,
+      );
+    if (
+      funcParameterStates.length === 0 ||
+      !options?.isBuildingExecutionQuery
+    ) {
+      lambdaFunction.functionType.parameters =
+        queryBuilderState.parametersState.parameterStates.map(
+          (e) => e.parameter,
+        );
+    } else {
+      // NOTE: if we are executing:
+      // 1. set the parameters to empty
+      // 2. add let statements for each parameter
+      lambdaFunction.functionType.parameters =
+        queryBuilderState.parametersState.parameterStates
+          .filter((ps) => !funcParameterStates.includes(ps))
+          .map((e) => e.parameter);
+      const letsFuncs = buildParametersLetLambdaFunc(
+        queryBuilderState.graphManagerState.graph,
+        funcParameterStates,
+      );
+      lambdaFunction.expressionSequence = [
+        ...letsFuncs.expressionSequence,
+        ...lambdaFunction.expressionSequence,
+      ];
+    }
   }
-
   return lambdaFunction;
 };
