@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 5.0.5
+
+### Patch Changes
+
+- [#1667](https://github.com/finos/legend-studio/pull/1667) [`0fb1e7c6`](https://github.com/finos/legend-studio/commit/0fb1e7c6f3edb35ddb4783bd21159f581c367976) ([@xannem](https://github.com/xannem)) - make scrollbar color lighter in dark mode selector
+
 ## 5.0.4
 
 ## 5.0.3

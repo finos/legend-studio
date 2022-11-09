@@ -1,5 +1,18 @@
 # @finos/legend-application-studio
 
+## 20.0.6
+
+### Patch Changes
+
+- [#1673](https://github.com/finos/legend-studio/pull/1673) [`8f2ad24a`](https://github.com/finos/legend-studio/commit/8f2ad24a458365a55f69b6189de304c9a3107f50) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Move building execution lambdas and parameter values to `legend-query-builder`.
+
+- [#1668](https://github.com/finos/legend-studio/pull/1668) [`e63ee326`](https://github.com/finos/legend-studio/commit/e63ee3268aab39cb123b4c16d6e3d43320695b5d) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Fixed a regression introduced by #1572 where query execution with parameters of type `SimpleFunctionExpression` failed.
+  Fixed a regression introduced by #1628 where failed to update mocked value after parameter's multiplicity is changed.
+
+- [#1662](https://github.com/finos/legend-studio/pull/1662) [`8e084dd0`](https://github.com/finos/legend-studio/commit/8e084dd0b98c9fad7c9b6f8591df16ec4081b462) ([@xannem](https://github.com/xannem)) - Add field descriptions and element paths to create model connection modal
+
+- [#1663](https://github.com/finos/legend-studio/pull/1663) [`e50a97ae`](https://github.com/finos/legend-studio/commit/e50a97aea214c4e5153c157c6e6269eec45286f3) ([@YannanGao-gs](https://github.com/YannanGao-gs)) - Add an icon to open service test doc ([#1621](https://github.com/finos/legend-studio/issues/1621)).
+
 ## 20.0.5
 
 ## 20.0.4
