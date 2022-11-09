@@ -41,6 +41,7 @@ import {
   ExclamationTriangleIcon,
   SearchIcon,
   FileImportIcon,
+  SettingsEthernetIcon,
 } from '@finos/legend-art';
 import {
   getElementIcon,
@@ -733,6 +734,10 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
   };
   const showModelImporter = (): void =>
     editorStore.openState(editorStore.modelImporterState);
+  const openConfigurationEditor = (): void =>
+    editorStore.openSingletonEditorState(
+      editorStore.projectConfigurationEditorState,
+    );
 
   return (
     <div className="panel__header__actions">
@@ -746,6 +751,14 @@ const ProjectExplorerActionPanel = observer((props: { disabled: boolean }) => {
           <FileImportIcon />
         </button>
       )}
+      <button
+        className="panel__header__action panel__header__action--config"
+        disabled={disabled}
+        title="Project Configuration Panel"
+        onClick={openConfigurationEditor}
+      >
+        <SettingsEthernetIcon />
+      </button>
       {!editorStore.isInViewerMode && (
         <DropdownMenu
           className="panel__header__action"
