@@ -262,6 +262,12 @@
     cursor: pointer;
   }
 
+  .light-theme &__list-editor__preview,
+  .light-theme &__list-editor__edit-icon {
+    background: var(--color-dark-grey-400);
+    color: var(--color-light-grey-100);
+  }
+
   &__list-editor__save-button {
     @include flexCenter;
 
@@ -292,6 +298,7 @@
   &:hover &__list-editor__preview,
   &:hover &__list-editor__edit-icon {
     background: var(--color-dark-grey-300);
+    color: var(--color-light-grey-100);
   }
 
   .selector-input__indicators,

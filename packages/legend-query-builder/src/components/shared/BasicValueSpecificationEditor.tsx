@@ -465,9 +465,14 @@ const setCollectionValue = (
     return;
   }
   let result: unknown[] = [];
-  const parseResult = CSVParser.parse<string[]>(value.trim(), {
+  let parseResult = CSVParser.parse<string[]>(value.trim(), {
     delimiter: ',',
   });
+  if (parseResult.data[0]?.length === 1) {
+    parseResult = CSVParser.parse<string[]>(value.trim(), {
+      delimiter: '\\n',
+    });
+  }
   const parseData = parseResult.data[0] as string[]; // only take the first line
   if (parseResult.errors.length) {
     if (
