@@ -35,16 +35,12 @@ import {
   EXECUTION_SERIALIZATION_FORMAT,
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
-  ParameterValue,
-  SimpleFunctionExpression,
-  areMultiplicitiesEqual,
-  Multiplicity,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { ExecutionPlanState } from '@finos/legend-application';
 import {
-  type LambdaParameterState,
-  buildParametersLetLambdaFunc,
+  buildExecutionParameterValues,
+  getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 
 const DEFAULT_LIMIT = 1000;
@@ -117,20 +113,6 @@ export class QueryBuilderResultState {
     return false;
   }
 
-  /**
-   * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
-   * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
-   */
-  getParameterStatesWithFunctionValues(): LambdaParameterState[] {
-    return this.queryBuilderState.parametersState.parameterStates.filter(
-      (ps) =>
-        ps.value instanceof SimpleFunctionExpression &&
-        [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
-          areMultiplicitiesEqual(p, ps.parameter.multiplicity),
-        ),
-    );
-  }
-
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
@@ -146,49 +128,15 @@ export class QueryBuilderResultState {
         this.queryBuilderState.unsupportedQueryState.rawLambda,
         'Lambda is required to execute query',
       );
-      const funcParameterStates = this.getParameterStatesWithFunctionValues();
-      if (
-        !this.queryBuilderState.isParameterSupportDisabled &&
-        funcParameterStates.length > 0
-      ) {
-        const letlambdaFunction = buildParametersLetLambdaFunc(
-          this.queryBuilderState.graphManagerState.graph,
-          funcParameterStates,
-        );
-        letlambdaFunction.functionType.parameters =
-          this.queryBuilderState.parametersState.parameterStates
-            .filter((ps) => !funcParameterStates.includes(ps))
-            .map((e) => e.parameter);
-        const letRawLambda = buildRawLambdaFromLambdaFunction(
-          letlambdaFunction,
+      if (!this.queryBuilderState.isParameterSupportDisabled) {
+        return getExecutionQueryFromRawLambda(
+          query,
+          this.queryBuilderState.parametersState.parameterStates,
           this.queryBuilderState.graphManagerState,
         );
-        // reset paramaters
-        if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
-          letRawLambda.body = [
-            ...(letRawLambda.body as object[]),
-            ...(query.body as object[]),
-          ];
-          query = letRawLambda;
-        }
       }
     }
     return query;
-  }
-
-  buildExecutionParameterValues(): ParameterValue[] {
-    const funcParameterStates = this.getParameterStatesWithFunctionValues();
-    return this.queryBuilderState.parametersState.parameterStates
-      .filter((ps) => !funcParameterStates.includes(ps))
-      .map((queryParamState) => {
-        const paramValue = new ParameterValue();
-        paramValue.name = queryParamState.parameter.name;
-        paramValue.value =
-          this.queryBuilderState.graphManagerState.graphManager.serializeValueSpecification(
-            guaranteeNonNullable(queryParamState.value),
-          );
-        return paramValue;
-      });
   }
 
   *exportData(
@@ -213,6 +161,10 @@ export class QueryBuilderResultState {
           this.queryBuilderState.graphManagerState.graph,
           {
             serializationFormat,
+            parameterValues: buildExecutionParameterValues(
+              this.queryBuilderState.parametersState.parameterStates,
+              this.queryBuilderState.graphManagerState,
+            ),
           },
         )) as ExecutionResult;
       let contentType: ContentType;
@@ -258,7 +210,6 @@ export class QueryBuilderResultState {
         `Runtime is required to execute query`,
       );
       const query = this.buildExecutionRawLambda();
-      const parameterValues = this.buildExecutionParameterValues();
       const startTime = Date.now();
       const promise =
         this.queryBuilderState.graphManagerState.graphManager.executeMapping(
@@ -267,7 +218,10 @@ export class QueryBuilderResultState {
           runtime,
           this.queryBuilderState.graphManagerState.graph,
           {
-            parameterValues: parameterValues,
+            parameterValues: buildExecutionParameterValues(
+              this.queryBuilderState.parametersState.parameterStates,
+              this.queryBuilderState.graphManagerState,
+            ),
           },
         );
       this.setQueryRunPromise(promise);

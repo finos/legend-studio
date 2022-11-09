@@ -23,7 +23,6 @@ import {
   stringifyLosslessJSON,
   UnsupportedOperationError,
   filterByType,
-  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import type { ServiceEditorState } from './ServiceEditorState.js';
 import {
@@ -63,11 +62,6 @@ import {
   VariableExpression,
   stub_PackageableRuntime,
   stub_Mapping,
-  ParameterValue,
-  buildRawLambdaFromLambdaFunction,
-  SimpleFunctionExpression,
-  Multiplicity,
-  areMultiplicitiesEqual,
 } from '@finos/legend-graph';
 import { type Entity, parseGACoordinates } from '@finos/legend-storage';
 import { runtime_addMapping } from '../../../shared/modifier/DSL_Mapping_GraphModifierHelper.js';
@@ -83,7 +77,8 @@ import {
   service_setExecution,
 } from '../../../shared/modifier/DSL_Service_GraphModifierHelper.js';
 import {
-  buildParametersLetLambdaFunc,
+  buildExecutionParameterValues,
+  getExecutionQueryFromRawLambda,
   LambdaEditorState,
   LambdaParametersState,
   LambdaParameterState,
@@ -591,7 +586,10 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
           this.editorStore.graphManagerState.graph,
           {
             useLosslessParse: true,
-            parameterValues: this.buildExecutionParameterValues(),
+            parameterValues: buildExecutionParameterValues(
+              this.parameterState.parameterStates,
+              this.editorStore.graphManagerState,
+            ),
           },
         );
       this.setQueryRunPromise(promise);
@@ -614,59 +612,12 @@ export abstract class ServicePureExecutionState extends ServiceExecutionState {
     }
   }
 
-  /**
-   * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
-   * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
-   */
-  getParameterStatesWithFunctionValues(): LambdaParameterState[] {
-    return this.parameterState.parameterStates.filter(
-      (ps) =>
-        ps.value instanceof SimpleFunctionExpression &&
-        [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
-          areMultiplicitiesEqual(p, ps.parameter.multiplicity),
-        ),
-    );
-  }
-
   getExecutionQuery(): RawLambda {
-    const funcParameterStates = this.getParameterStatesWithFunctionValues();
-    if (funcParameterStates.length > 0) {
-      const letlambdaFunction = buildParametersLetLambdaFunc(
-        this.editorStore.graphManagerState.graph,
-        funcParameterStates,
-      );
-      const letRawLambda = buildRawLambdaFromLambdaFunction(
-        letlambdaFunction,
-        this.editorStore.graphManagerState,
-      );
-      // reset parameters
-      if (
-        Array.isArray(this.queryState.query.body) &&
-        Array.isArray(letRawLambda.body)
-      ) {
-        letRawLambda.body = [
-          ...(letRawLambda.body as object[]),
-          ...(this.queryState.query.body as object[]),
-        ];
-        return letRawLambda;
-      }
-    }
-    return this.queryState.query;
-  }
-
-  buildExecutionParameterValues(): ParameterValue[] {
-    const funcParameterStates = this.getParameterStatesWithFunctionValues();
-    return this.parameterState.parameterStates
-      .filter((ps) => !funcParameterStates.includes(ps))
-      .map((queryParamState) => {
-        const paramValue = new ParameterValue();
-        paramValue.name = queryParamState.parameter.name;
-        paramValue.value =
-          this.editorStore.graphManagerState.graphManager.serializeValueSpecification(
-            guaranteeNonNullable(queryParamState.value),
-          );
-        return paramValue;
-      });
+    return getExecutionQueryFromRawLambda(
+      this.queryState.query,
+      this.parameterState.parameterStates,
+      this.editorStore.graphManagerState,
+    );
   }
 
   get serviceExecutionParameters():
