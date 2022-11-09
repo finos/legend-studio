@@ -33,6 +33,7 @@ import {
 } from '@finos/legend-art';
 import {
   getQueryParameters,
+  getQueryParameterValue,
   guaranteeNonNullable,
   sanitizeURL,
 } from '@finos/legend-shared';
@@ -258,11 +259,18 @@ export const QuerySetupLandingPage = withQuerySetupLandingPageStore(
       sanitizeURL(applicationStore.navigator.getCurrentAddress()),
       true,
     );
-    const showAdvancedActions =
-      params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS];
-    const showAllGroups =
-      params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS];
-    const tagToFocus = params[LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG];
+    const showAdvancedActions = getQueryParameterValue(
+      params,
+      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS,
+    );
+    const showAllGroups = getQueryParameterValue(
+      params,
+      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS,
+    );
+    const tagToFocus = getQueryParameterValue(
+      params,
+      LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG,
+    );
     const goToStudio = (): void =>
       applicationStore.navigator.visitAddress(
         applicationStore.config.studioUrl,

@@ -538,6 +538,14 @@ export const getQueryParameters = <T>(url: string, isFullUrl = false): T => {
   return params as unknown as T;
 };
 
+export const getQueryParameterValue = (
+  data: Record<string, string | undefined>,
+  paramKey: string,
+): string | undefined => {
+  const paramValue = data[paramKey];
+  return paramValue ? decodeURIComponent(paramValue) : undefined;
+};
+
 export const stringifyQueryParams = (params: PlainObject): string => {
   const data: PlainObject = {};
   Object.entries(params).forEach(([key, value]) => {
@@ -548,6 +556,7 @@ export const stringifyQueryParams = (params: PlainObject): string => {
   });
   return _stringifyQueryParams(data);
 };
+
 export const addQueryParamsStringToUrl = (
   url: string,
   val: string | undefined,
