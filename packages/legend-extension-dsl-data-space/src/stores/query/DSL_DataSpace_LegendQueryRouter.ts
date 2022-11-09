@@ -41,9 +41,9 @@ export interface DataSpaceQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.RUNTIME_PATH]?: string;
 }
 
-export interface DataSpaceQueryEditorQueryParams {
+export type DataSpaceQueryEditorQueryParams = {
   [DATA_SPACE_QUERY_CREATOR_QUERY_PARAM_TOKEN.CLASS_PATH]?: string;
-}
+};
 
 export const DATA_SPACE_QUERY_ROUTE_PATTERN = Object.freeze({
   SETUP: `/dataspace`,

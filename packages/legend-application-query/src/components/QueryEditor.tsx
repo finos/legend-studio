@@ -47,6 +47,7 @@ import {
 import {
   debounce,
   getQueryParameters,
+  getQueryParameterValue,
   sanitizeURL,
 } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -651,10 +652,13 @@ export const ServiceQueryCreator = observer(() => {
   const params = useParams<ServiceQueryCreatorPathParams>();
   const gav = params[LEGEND_QUERY_PATH_PARAM_TOKEN.GAV];
   const servicePath = params[LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH];
-  const executionKey = getQueryParameters<ServiceQueryCreatorQueryParams>(
-    sanitizeURL(applicationStore.navigator.getCurrentAddress()),
-    true,
-  )[LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY];
+  const executionKey = getQueryParameterValue(
+    getQueryParameters<ServiceQueryCreatorQueryParams>(
+      sanitizeURL(applicationStore.navigator.getCurrentAddress()),
+      true,
+    ),
+    LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY,
+  );
 
   return (
     <ServiceQueryCreatorStoreProvider

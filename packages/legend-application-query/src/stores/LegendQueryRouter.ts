@@ -55,11 +55,11 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   EDIT_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_PATH_PARAM_TOKEN.QUERY_ID}`,
 });
 
-export interface QuerySetupQueryParams {
+export type QuerySetupQueryParams = {
   [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ALL_GROUPS]?: string;
   [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.SHOW_ADVANCED_ACTIONS]?: string;
   [LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN.TAG]?: string;
-}
+};
 
 export const generateQuerySetupRoute = (
   showAllGroups?: boolean | undefined,
@@ -160,9 +160,9 @@ export interface ServiceQueryCreatorPathParams {
   [LEGEND_QUERY_PATH_PARAM_TOKEN.SERVICE_PATH]: string;
 }
 
-export interface ServiceQueryCreatorQueryParams {
+export type ServiceQueryCreatorQueryParams = {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string;
-}
+};
 
 export const generateExistingQueryEditorRoute = (queryId: string): string =>
   generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
