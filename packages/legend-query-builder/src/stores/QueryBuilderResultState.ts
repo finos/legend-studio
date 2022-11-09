@@ -36,9 +36,16 @@ import {
   RawExecutionResult,
   buildRawLambdaFromLambdaFunction,
   ParameterValue,
+  SimpleFunctionExpression,
+  areMultiplicitiesEqual,
+  Multiplicity,
 } from '@finos/legend-graph';
 import { buildLambdaFunction } from './QueryBuilderValueSpecificationBuilder.js';
 import { ExecutionPlanState } from '@finos/legend-application';
+import {
+  type LambdaParameterState,
+  buildParametersLetLambdaFunc,
+} from './shared/LambdaParameterState.js';
 
 const DEFAULT_LIMIT = 1000;
 
@@ -110,6 +117,20 @@ export class QueryBuilderResultState {
     return false;
   }
 
+  /**
+   * Hack query execution with parameters that are of type SimpleFunctionExpression by using let statements
+   * because Engine doesn't support processing SimpleFunctionExpression as parameter values.
+   */
+  getParameterStatesWithFunctionValues(): LambdaParameterState[] {
+    return this.queryBuilderState.parametersState.parameterStates.filter(
+      (ps) =>
+        ps.value instanceof SimpleFunctionExpression &&
+        [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
+          areMultiplicitiesEqual(p, ps.parameter.multiplicity),
+        ),
+    );
+  }
+
   buildExecutionRawLambda(): RawLambda {
     let query: RawLambda;
     if (this.queryBuilderState.isQuerySupported) {
@@ -125,13 +146,41 @@ export class QueryBuilderResultState {
         this.queryBuilderState.unsupportedQueryState.rawLambda,
         'Lambda is required to execute query',
       );
+      const funcParameterStates = this.getParameterStatesWithFunctionValues();
+      if (
+        !this.queryBuilderState.isParameterSupportDisabled &&
+        funcParameterStates.length > 0
+      ) {
+        const letlambdaFunction = buildParametersLetLambdaFunc(
+          this.queryBuilderState.graphManagerState.graph,
+          funcParameterStates,
+        );
+        letlambdaFunction.functionType.parameters =
+          this.queryBuilderState.parametersState.parameterStates
+            .filter((ps) => !funcParameterStates.includes(ps))
+            .map((e) => e.parameter);
+        const letRawLambda = buildRawLambdaFromLambdaFunction(
+          letlambdaFunction,
+          this.queryBuilderState.graphManagerState,
+        );
+        // reset paramaters
+        if (Array.isArray(query.body) && Array.isArray(letRawLambda.body)) {
+          letRawLambda.body = [
+            ...(letRawLambda.body as object[]),
+            ...(query.body as object[]),
+          ];
+          query = letRawLambda;
+        }
+      }
     }
     return query;
   }
 
   buildExecutionParameterValues(): ParameterValue[] {
-    return this.queryBuilderState.parametersState.parameterStates.map(
-      (queryParamState) => {
+    const funcParameterStates = this.getParameterStatesWithFunctionValues();
+    return this.queryBuilderState.parametersState.parameterStates
+      .filter((ps) => !funcParameterStates.includes(ps))
+      .map((queryParamState) => {
         const paramValue = new ParameterValue();
         paramValue.name = queryParamState.parameter.name;
         paramValue.value =
@@ -139,8 +188,7 @@ export class QueryBuilderResultState {
             guaranteeNonNullable(queryParamState.value),
           );
         return paramValue;
-      },
-    );
+      });
   }
 
   *exportData(

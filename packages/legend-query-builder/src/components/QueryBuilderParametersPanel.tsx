@@ -55,10 +55,7 @@ import {
 import { useDrag } from 'react-dnd';
 import { generateEnumerableNameFromToken } from '@finos/legend-shared';
 import { DEFAULT_VARIABLE_NAME } from '../stores/QueryBuilderConfig.js';
-import {
-  valueSpecification_setMultiplicity,
-  variableExpression_setName,
-} from '../stores/shared/ValueSpecificationModifierHelper.js';
+import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaParameterState } from '../stores/shared/LambdaParameterState.js';
 import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEditor.js';
 
@@ -125,9 +122,7 @@ const VariableExpressionEditor = observer(
     const multilicityOptions: MultiplicityOption[] =
       validParamMultiplicityList.map(buildMultiplicityOption);
     const changeMultiplicity = (val: MultiplicityOption): void => {
-      if (multiplity !== val.value) {
-        valueSpecification_setMultiplicity(varState, val.value);
-      }
+      lambdaParameterState.changeMultiplicity(varState, val.value);
     };
 
     const close = (): void => {
