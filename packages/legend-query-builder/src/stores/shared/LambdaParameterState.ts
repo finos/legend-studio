@@ -19,6 +19,8 @@ import {
   type Type,
   type ValueSpecification,
   type PureModel,
+  type GraphManagerState,
+  type RawLambda,
   GenericType,
   GenericTypeExplicitReference,
   observe_ValueSpecification,
@@ -35,6 +37,8 @@ import {
   PrimitiveType,
   SUPPORTED_FUNCTIONS,
   areMultiplicitiesEqual,
+  ParameterValue,
+  buildRawLambdaFromLambdaFunction,
 } from '@finos/legend-graph';
 import {
   addUniqueEntry,
@@ -44,6 +48,7 @@ import {
   IllegalStateError,
   uuid,
   isNonNullable,
+  guaranteeNonNullable,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import { generateVariableExpressionMockValue } from './ValueSpecificationEditorHelper.js';
@@ -94,6 +99,102 @@ export const buildParametersLetLambdaFunc = (
     })
     .filter(isNonNullable);
   return letlambdaFunction;
+};
+
+/**
+ * For most query executions we will use the stragtical method of sending in `paramValues` as part of the execution input payload.
+ * However when the user wants to use a function value as the parameter value, engine does not understand this i.e for date param the functions `now()`, `today()`.
+ * Engine Does not support this because those functions require a building of execution nodes inside the execution plan.
+ * To continue supporting this execution flow , we will add let statements for parameter values with function values so that they can be evaluated to constants in the execution plan.
+ */
+export const doesLambdaParameterStateContainFunctionValues = (
+  parameterState: LambdaParameterState,
+): boolean =>
+  parameterState.value instanceof SimpleFunctionExpression &&
+  [Multiplicity.ONE, Multiplicity.ZERO_ONE].some((p) =>
+    areMultiplicitiesEqual(p, parameterState.parameter.multiplicity),
+  );
+
+export const getParameterStatesWithFunctionValues = (
+  parameterStates: LambdaParameterState[],
+): LambdaParameterState[] =>
+  parameterStates.filter(doesLambdaParameterStateContainFunctionValues);
+
+export const buildExecutionParameterValues = (
+  paramStates: LambdaParameterState[],
+  graphState: GraphManagerState,
+): ParameterValue[] =>
+  paramStates
+    .filter((ps) => !doesLambdaParameterStateContainFunctionValues(ps))
+    .map((queryParamState) => {
+      const paramValue = new ParameterValue();
+      paramValue.name = queryParamState.parameter.name;
+      paramValue.value = graphState.graphManager.serializeValueSpecification(
+        guaranteeNonNullable(queryParamState.value),
+      );
+      return paramValue;
+    });
+
+export const getExecutionQueryFromRawLambda = (
+  rawLambda: RawLambda,
+  parameterStates: LambdaParameterState[],
+  graphManagerState: GraphManagerState,
+): RawLambda => {
+  const paramsWithLetStatements =
+    getParameterStatesWithFunctionValues(parameterStates);
+  if (paramsWithLetStatements.length > 0) {
+    const execuLambdaFunction = buildParametersLetLambdaFunc(
+      graphManagerState.graph,
+      paramsWithLetStatements,
+    );
+    // remove parameters added as let statements from lambda parameters
+    execuLambdaFunction.functionType.parameters = parameterStates
+      .filter((ps) => !paramsWithLetStatements.includes(ps))
+      .map((e) => e.parameter);
+    const execQuery = buildRawLambdaFromLambdaFunction(
+      execuLambdaFunction,
+      graphManagerState,
+    );
+    // reset paramaters
+    if (Array.isArray(rawLambda.body) && Array.isArray(execQuery.body)) {
+      execQuery.body = [
+        ...(execQuery.body as object[]),
+        ...(rawLambda.body as object[]),
+      ];
+      return execQuery;
+    }
+  }
+  return rawLambda;
+};
+
+export const buildExecutionQueryFromLambdaFunction = (
+  lambdaFunction: LambdaFunction,
+  parameterStates: LambdaParameterState[],
+  graphManagerState: GraphManagerState,
+): LambdaFunction => {
+  const funcParameterStates =
+    getParameterStatesWithFunctionValues(parameterStates);
+  if (funcParameterStates.length) {
+    // To handle parameter value with function calls we
+    // 1. remove those parameters from parameter list
+    // 2. add let statements with parameter values
+    lambdaFunction.functionType.parameters = parameterStates
+      .filter((ps) => !funcParameterStates.includes(ps))
+      .map((e) => e.parameter);
+    const letsFuncs = buildParametersLetLambdaFunc(
+      graphManagerState.graph,
+      funcParameterStates,
+    );
+    lambdaFunction.expressionSequence = [
+      ...letsFuncs.expressionSequence,
+      ...lambdaFunction.expressionSequence,
+    ];
+  } else {
+    lambdaFunction.functionType.parameters = parameterStates.map(
+      (e) => e.parameter,
+    );
+  }
+  return lambdaFunction;
 };
 
 export class LambdaParameterState implements Hashable {

@@ -31,6 +31,7 @@ import {
 import type { Entity } from '@finos/legend-storage';
 import { integrationTest } from '@finos/legend-shared';
 import { TEST__setUpQueryBuilder } from '../QueryBuilderComponentTestUtils.js';
+import { buildExecutionParameterValues } from '../../stores/shared/LambdaParameterState.js';
 
 type QueryPropertyParameterTestCase = [
   string,
@@ -105,8 +106,10 @@ describe(integrationTest(`test query execution with parameters`), () => {
           (queryParamState.value as PrimitiveInstanceValue).values = ['GS_LTD'];
         },
       );
-      const parameterValues =
-        queryBuilderState.resultState.buildExecutionParameterValues();
+      const parameterValues = buildExecutionParameterValues(
+        queryBuilderState.parametersState.parameterStates,
+        queryBuilderState.graphManagerState,
+      );
       expect(JSON.stringify(parameterValues)).toEqual(
         JSON.stringify(expectedParameterValues),
       );
