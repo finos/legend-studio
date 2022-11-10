@@ -54,24 +54,24 @@ const cases: TestCase[] = [
       noOfParameters: 1,
     },
   ],
-  // [
-  //   'Open query builder by querying a bitemporal class',
-  //   {
-  //     classPath: 'model::Person_Bitemporal',
-  //     hasProcessingDate: true,
-  //     hasBusinessDate: true,
-  //     noOfParameters: 2,
-  //   },
-  // ],
-  // [
-  //   'Open query builder by querying a business temporal milestoned class',
-  //   {
-  //     classPath: 'model::Person_BusinessTemporal',
-  //     hasProcessingDate: false,
-  //     hasBusinessDate: true,
-  //     noOfParameters: 1,
-  //   },
-  // ],
+  [
+    'Open query builder by querying a bitemporal class',
+    {
+      classPath: 'model::Person_Bitemporal',
+      hasProcessingDate: true,
+      hasBusinessDate: true,
+      noOfParameters: 2,
+    },
+  ],
+  [
+    'Open query builder by querying a business temporal milestoned class',
+    {
+      classPath: 'model::Person_BusinessTemporal',
+      hasProcessingDate: false,
+      hasBusinessDate: true,
+      noOfParameters: 1,
+    },
+  ],
 ];
 
 describe(

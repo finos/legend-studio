@@ -249,7 +249,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::Demographics",
+                "owner": "domain::Demographics",
                 "property": "fips"
               },
               "relationalOperation": {
@@ -268,7 +268,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::Demographics",
+                "owner": "domain::Demographics",
                 "property": "state"
               },
               "relationalOperation": {
@@ -314,7 +314,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "id"
               },
               "relationalOperation": {
@@ -333,7 +333,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "fips"
               },
               "relationalOperation": {
@@ -352,7 +352,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "date"
               },
               "relationalOperation": {
@@ -371,7 +371,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "caseType"
               },
               "relationalOperation": {
@@ -390,7 +390,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "cases"
               },
               "relationalOperation": {
@@ -409,7 +409,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "lastReportedFlag"
               },
               "relationalOperation": {
@@ -428,7 +428,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "domain::COVIDData",
+                "owner": "domain::COVIDData",
                 "property": "demographics"
               },
               "relationalOperation": {

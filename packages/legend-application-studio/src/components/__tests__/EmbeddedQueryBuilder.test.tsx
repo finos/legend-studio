@@ -60,7 +60,7 @@ const entities = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'name',
               },
               source: '',

@@ -149,7 +149,7 @@ export const TEST_DATA__simpleDebuggingCase = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'myPack::BasicPerson',
+                owner: 'myPack::BasicPerson',
                 property: 'fullName',
               },
               source: '',
@@ -197,7 +197,7 @@ export const TEST_DATA__simpleDebuggingCase = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'myPack::BasicPerson',
+                owner: 'myPack::BasicPerson',
                 property: 'title',
               },
               source: '',

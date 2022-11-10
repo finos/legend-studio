@@ -108,7 +108,7 @@ export const TEST_DATA__MappingRoundtrip = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'tClass',
+                owner: 'tClass',
                 property: 'fullName',
               },
               explodeProperty: false,
@@ -171,7 +171,7 @@ export const TEST_DATA__MappingRoundtrip = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'tClass',
+                owner: 'tClass',
                 property: 'fullName',
               },
               source: '',
@@ -233,7 +233,7 @@ export const TEST_DATA__MappingRoundtrip = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'tClass',
+                owner: 'tClass',
                 property: 'name',
               },
               source: '',
@@ -580,7 +580,7 @@ export const TEST_DATA__LocalPropertyMapping = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'test::Person',
+                owner: 'test::Person',
                 property: 'name',
               },
               source: '',
@@ -736,7 +736,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'test::FiscalCalendar',
+                owner: 'test::FiscalCalendar',
                 property: 'date',
               },
               source: '',
@@ -761,7 +761,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'test::FiscalCalendar',
+                owner: 'test::FiscalCalendar',
                 property: 'fiscalYear',
               },
               source: '',
@@ -786,7 +786,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'test::FiscalCalendar',
+                owner: 'test::FiscalCalendar',
                 property: 'fiscalMonth',
               },
               source: '',
@@ -811,7 +811,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'test::FiscalCalendar',
+                owner: 'test::FiscalCalendar',
                 property: 'fiscalQtr',
               },
               source: '',
@@ -909,7 +909,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
                     _type: 'purePropertyMapping',
                     explodeProperty: false,
                     property: {
-                      propertyOwner: 'test::Sales',
+                      owner: 'test::Sales',
                       property: 'salesDate',
                     },
                     source: '',
@@ -935,7 +935,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
                     _type: 'purePropertyMapping',
                     explodeProperty: false,
                     property: {
-                      propertyOwner: 'test::Sales',
+                      owner: 'test::Sales',
                       property: 'revenue',
                     },
                     source: '',
@@ -973,7 +973,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
                 _type: 'purePropertyMapping',
                 explodeProperty: false,
                 property: {
-                  propertyOwner: 'test::Sales',
+                  owner: 'test::Sales',
                   property: 'salesDate',
                 },
                 source: '',
@@ -999,7 +999,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
                 _type: 'purePropertyMapping',
                 explodeProperty: false,
                 property: {
-                  propertyOwner: 'test::Sales',
+                  owner: 'test::Sales',
                   property: 'revenue',
                 },
                 source: '',
@@ -1028,7 +1028,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             {
               _type: 'AggregationAwarePropertyMapping',
               property: {
-                propertyOwner: 'test::Sales',
+                owner: 'test::Sales',
                 property: 'salesDate',
               },
               source: 'a',
@@ -1037,7 +1037,7 @@ export const TEST_DATA__AggregationAwareMappingRoundtrip = [
             {
               _type: 'AggregationAwarePropertyMapping',
               property: {
-                propertyOwner: 'test::Sales',
+                owner: 'test::Sales',
                 property: 'revenue',
               },
               source: 'a',
@@ -1229,7 +1229,7 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'my::models::Product',
+                owner: 'my::models::Product',
                 property: 'productId',
               },
               relationalOperation: {
@@ -1248,7 +1248,7 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'my::models::Product',
+                owner: 'my::models::Product',
                 property: 'productName',
               },
               relationalOperation: {
@@ -1267,7 +1267,7 @@ export const TEST_DATA__Relational_LocalPropertyMappingRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'my::models::Product',
+                owner: 'my::models::Product',
                 property: 'description',
               },
               relationalOperation: {

@@ -83,7 +83,7 @@ import type { DataElement } from '../../../../../../../DSL_Data_Exports.js';
 import {
   getClassProperty,
   getEnumValue,
-  getAllOwnProperty,
+  getOwnProperty,
   getStereotype,
   getTag,
 } from '../../../../../../../graph/helpers/DomainHelper.js';
@@ -319,15 +319,15 @@ export class V1_GraphBuilderContext {
     pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      pointer.propertyOwner,
-      `Property pointer 'propertyOwner' field is missing or empty`,
+      pointer.owner,
+      `Property pointer 'owner' field is missing or empty`,
     );
     assertNonEmptyString(
       pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolvePropertyOwner(pointer.propertyOwner);
-    const value = getAllOwnProperty(ownerReference.value, pointer.property);
+    const ownerReference = this.resolvePropertyOwner(pointer.owner);
+    const value = getOwnProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };
 
@@ -335,14 +335,14 @@ export class V1_GraphBuilderContext {
     pointer: V1_PropertyPointer,
   ): PropertyImplicitReference => {
     assertNonEmptyString(
-      pointer.propertyOwner,
-      `Property pointer 'propertyOwner' field is missing or empty`,
+      pointer.owner,
+      `Property pointer 'owner' field is missing or empty`,
     );
     assertNonEmptyString(
       pointer.property,
       `Property pointer 'property' field is missing or empty`,
     );
-    const ownerReference = this.resolveClass(pointer.propertyOwner);
+    const ownerReference = this.resolveClass(pointer.owner);
     const value = getClassProperty(ownerReference.value, pointer.property);
     return PropertyImplicitReference.create(ownerReference, value);
   };

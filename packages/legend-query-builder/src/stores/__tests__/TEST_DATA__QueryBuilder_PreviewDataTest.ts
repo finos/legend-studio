@@ -193,7 +193,7 @@ export const TEST_DATA__PreviewData_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -212,7 +212,7 @@ export const TEST_DATA__PreviewData_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -231,7 +231,7 @@ export const TEST_DATA__PreviewData_entities = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'age',
               },
               relationalOperation: {

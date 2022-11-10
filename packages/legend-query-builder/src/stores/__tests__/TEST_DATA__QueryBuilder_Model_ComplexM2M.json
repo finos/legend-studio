@@ -358,7 +358,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "propertyOwner": "model::target::NPerson",
+                "owner": "model::target::NPerson",
                 "property": "fullName"
               },
               "source": "model_target_NPerson",
@@ -424,7 +424,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "propertyOwner": "model::target::NFirm",
+                "owner": "model::target::NFirm",
                 "property": "nEmployees"
               },
               "source": "model_target_NFirm",
@@ -450,7 +450,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "propertyOwner": "model::target::NFirm",
+                "owner": "model::target::NFirm",
                 "property": "name"
               },
               "source": "model_target_NFirm",
@@ -476,7 +476,7 @@
               "enumMappingId": "model_target_IncType",
               "explodeProperty": false,
               "property": {
-                "propertyOwner": "model::target::NFirm",
+                "owner": "model::target::NFirm",
                 "property": "incType"
               },
               "source": "model_target_NFirm",

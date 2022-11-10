@@ -223,7 +223,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "firmID"
               },
               "relationalOperation": {
@@ -242,7 +242,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "firstName"
               },
               "relationalOperation": {
@@ -261,7 +261,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "lastName"
               },
               "relationalOperation": {
@@ -280,7 +280,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "age"
               },
               "relationalOperation": {
@@ -299,7 +299,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "hobbies"
               },
               "relationalOperation": {
@@ -334,7 +334,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Firm",
+                "owner": "my::Firm",
                 "property": "employees"
               },
               "relationalOperation": {
@@ -351,7 +351,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Firm",
+                "owner": "my::Firm",
                 "property": "legalName"
               },
               "relationalOperation": {
@@ -370,7 +370,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Firm",
+                "owner": "my::Firm",
                 "property": "id"
               },
               "relationalOperation": {

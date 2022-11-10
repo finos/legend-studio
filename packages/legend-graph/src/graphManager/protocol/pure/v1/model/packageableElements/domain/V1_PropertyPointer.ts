@@ -20,14 +20,14 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.j
 export class V1_PropertyPointer implements Hashable {
   // NOTE: In Pure protocol, this property is required, but for cases like embedded property mapping,
   // this should not be set, so most likely we will change Pure protocol to match this eventually.
-  propertyOwner?: string | undefined;
+  owner?: string | undefined;
   property!: string;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PROPERTY_POINTER,
       this.property,
-      this.propertyOwner ?? '',
+      this.owner ?? '',
     ]);
   }
 }

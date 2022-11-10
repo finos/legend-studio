@@ -239,7 +239,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "Oct::models::Firm",
+                "owner": "Oct::models::Firm",
                 "property": "id"
               },
               "relationalOperation": {
@@ -258,7 +258,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "Oct::models::Firm",
+                "owner": "Oct::models::Firm",
                 "property": "name"
               },
               "relationalOperation": {
@@ -293,7 +293,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "Oct::models::Person",
+                "owner": "Oct::models::Person",
                 "property": "fName"
               },
               "relationalOperation": {
@@ -312,7 +312,7 @@
             {
               "_type": "inlineEmbeddedPropertyMapping",
               "property": {
-                "propertyOwner": "Oct::models::Person",
+                "owner": "Oct::models::Person",
                 "property": "firm"
               },
               "setImplementationId": "testInlineMapping"

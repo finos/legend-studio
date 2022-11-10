@@ -214,7 +214,7 @@ export const TEST_DATA__RelationalServiceTestable = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -233,7 +233,7 @@ export const TEST_DATA__RelationalServiceTestable = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Person',
+                owner: 'model::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -281,7 +281,7 @@ export const TEST_DATA__RelationalServiceTestable = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Firm',
+                owner: 'model::Firm',
                 property: 'legalName',
               },
               relationalOperation: {
@@ -300,7 +300,7 @@ export const TEST_DATA__RelationalServiceTestable = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'model::Firm',
+                owner: 'model::Firm',
                 property: 'employees',
               },
               relationalOperation: {

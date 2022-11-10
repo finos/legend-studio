@@ -46,9 +46,9 @@ export const V1_buildEmbeddedRelationalMappingProperty = (
   sourceSetImplementation: SetImplementation;
 } => {
   let propertyOwnerClass: Class;
-  if (propertyMapping.property.propertyOwner) {
+  if (propertyMapping.property.owner) {
     propertyOwnerClass = context.resolveClass(
-      propertyMapping.property.propertyOwner,
+      propertyMapping.property.owner,
     ).value;
   } else if (
     immediateParent instanceof RootRelationalInstanceSetImplementation ||

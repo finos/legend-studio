@@ -281,7 +281,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -300,7 +300,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -322,7 +322,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
                 binding: 'joinChain::store::FirmBinding',
               },
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'managerFirm',
               },
               relationalOperation: {
@@ -353,7 +353,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
                 binding: 'joinChain::store::FirmBinding',
               },
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'managerManagerFirm',
               },
               relationalOperation: {
@@ -388,7 +388,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
                 binding: 'joinChain::store::FirmBinding',
               },
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'managerManagerFirmDup1',
               },
               relationalOperation: {
@@ -423,7 +423,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
                 binding: 'joinChain::store::FirmBinding',
               },
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'managerManagerFirmDup2',
               },
               relationalOperation: {
@@ -455,7 +455,7 @@ export const TEST_DATA__SemiStructuredRelationalTypeRoundtrip = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'joinChain::model::Person',
+                owner: 'joinChain::model::Person',
                 property: 'manager',
               },
               relationalOperation: {

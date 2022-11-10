@@ -116,7 +116,7 @@ export const TEST_DATA__roundtrip = [
             ],
           },
           property: {
-            propertyOwner: 'tClass',
+            owner: 'tClass',
             property: 'prop1',
           },
           sourceView: '709b74cb-2605-4f4d-bf5d-8996b543279b',

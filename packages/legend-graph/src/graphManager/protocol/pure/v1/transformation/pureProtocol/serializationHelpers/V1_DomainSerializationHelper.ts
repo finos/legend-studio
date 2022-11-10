@@ -67,8 +67,8 @@ export const V1_FUNCTION_ELEMENT_PROTOCOL_TYPE = 'function';
 export const V1_propertyPointerModelSchema = createModelSchema(
   V1_PropertyPointer,
   {
+    owner: optional(primitive()),
     property: primitive(),
-    propertyOwner: optional(primitive()),
   },
 );
 
@@ -80,8 +80,8 @@ export const V1_deserializePropertyPointer = (
 ): V1_PropertyPointer => {
   if (json.class) {
     return deserialize(V1_propertyPointerModelSchema, {
+      owner: json.class,
       property: json.property,
-      propertyOwner: json.class,
     });
   } else {
     return deserialize(V1_propertyPointerModelSchema, json);

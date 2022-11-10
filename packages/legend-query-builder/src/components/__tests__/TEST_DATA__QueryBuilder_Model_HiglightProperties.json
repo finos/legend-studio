@@ -239,7 +239,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Person",
+                "owner": "my::Person",
                 "property": "name"
               },
               "relationalOperation": {
@@ -276,7 +276,7 @@
             {
               "_type": "relationalPropertyMapping",
               "property": {
-                "propertyOwner": "my::Firm",
+                "owner": "my::Firm",
                 "property": "legalName"
               },
               "relationalOperation": {

@@ -569,7 +569,7 @@ export const TEST_DATA__complexRelationalModel = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'test::Person',
+                owner: 'test::Person',
                 property: 'firstName',
               },
               relationalOperation: {
@@ -588,7 +588,7 @@ export const TEST_DATA__complexRelationalModel = [
             {
               _type: 'relationalPropertyMapping',
               property: {
-                propertyOwner: 'test::Person',
+                owner: 'test::Person',
                 property: 'lastName',
               },
               relationalOperation: {
@@ -777,7 +777,7 @@ export const TEST_DATA__temporalModel = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'test::Person',
+                owner: 'test::Person',
                 property: 'name',
               },
               source: '',
@@ -803,7 +803,7 @@ export const TEST_DATA__temporalModel = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'test::Person1',
+                owner: 'test::Person1',
                 property: 'name',
               },
               source: '',
@@ -829,7 +829,7 @@ export const TEST_DATA__temporalModel = [
             {
               _type: 'purePropertyMapping',
               property: {
-                propertyOwner: 'test::Person2',
+                owner: 'test::Person2',
                 property: 'name',
               },
               source: '',
@@ -1777,7 +1777,7 @@ export const TEST_DATA__M2MModel = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'demo::other::NPerson',
+                owner: 'demo::other::NPerson',
                 property: 'fullName',
               },
               source: '',
@@ -1839,7 +1839,7 @@ export const TEST_DATA__M2MModel = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'demo::other::NFirm',
+                owner: 'demo::other::NFirm',
                 property: 'nEmployees',
               },
               source: '',
@@ -1865,7 +1865,7 @@ export const TEST_DATA__M2MModel = [
               _type: 'purePropertyMapping',
               explodeProperty: false,
               property: {
-                propertyOwner: 'demo::other::NFirm',
+                owner: 'demo::other::NFirm',
                 property: 'name',
               },
               source: '',
@@ -1891,7 +1891,7 @@ export const TEST_DATA__M2MModel = [
               enumMappingId: 'demo_other_IncType',
               explodeProperty: false,
               property: {
-                propertyOwner: 'demo::other::NFirm',
+                owner: 'demo::other::NFirm',
                 property: 'incType',
               },
               source: '',
